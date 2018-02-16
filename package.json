@@ -3,15 +3,14 @@
   "version": "0.1.0",
   "description": "Useful common components for Winterwell's web apps.",
   "main": "./bin/wwappbase.js",
-  "keywords": [
-  ],
+  "keywords": [],
   "author": "Daniel Winterstein",
   "license": "MIT",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/winterstein/wwappbase.js.git"
   },
-   "babel": {
+  "babel": {
     "presets": [
       "es2015"
     ]
@@ -25,5 +24,16 @@
     "build": "babel src --out-dir bin",
     "watch": "babel src --out-dir bin --watch",
     "prepublish": "npm run build"
-  }
+  },
+  "bugs": {
+    "url": "https://github.com/winterstein/wwappbase.js/issues"
+  },
+  "homepage": "https://github.com/winterstein/wwappbase.js#readme",
+  "bin": {
+    "wwappbase.js": "enum.js"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {}
 }
