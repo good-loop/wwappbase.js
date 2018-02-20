@@ -1,0 +1,49 @@
+<html>
+<head>
+<script src='https://rawgithub.com/winterstein/SJTest/master/SJTest.min.js'></script>
+<script>SJTest.on = true;</script>
+<script>
+window.exports = {};
+
+/**
+ * @param src {!String} url for the script
+ * @param onLoad {?Function} called on-load and on-error
+ * 
+ * NB: copy-pasta of Good-Loop's unit.js addScript()
+ */
+ let addScript = function(src, params) {
+	let {async, onload, onerror} = params || {};
+	let script = document.createElement('script');
+	script.setAttribute( 'src', src);
+	if (onerror) script.addEventListener('error', onerror); 
+	if (onload) script.addEventListener('load', onload);
+	script.async = async;
+	script.type = 'text/javascript';
+	// c.f. https://stackoverflow.com/questions/538745/how-to-tell-if-a-script-tag-failed-to-load
+	// c.f. https://stackoverflow.com/questions/6348494/addeventlistener-vs-onclick
+	var head = document.getElementsByTagName("head")[0];
+	(head || document.body).appendChild( script );	
+	document.body.appendChild(script);
+};
+
+// There must be a good way to do this!
+function require(pkg) {
+	console.warn("req", pkg);	
+	let f = '../bin/'+pkg+'.js';
+	if (pkg[0] !== '.') {
+		f = '../node_modules/'+pkg+'/index.js';
+	}
+	f = f.replace(".js.js", ".js");	
+	addScript(f);
+}
+
+
+</script>
+</head>
+<body>
+
+	<script src='../bin/wwappbase.js'></script>
+	<script src='test.wwappbase.js'></script>
+
+</body>
+</html>	

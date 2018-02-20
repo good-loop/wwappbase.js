@@ -24,7 +24,6 @@
     "babel-preset-react": "^6.24.1",
     "babel-polyfill": "^6.26.0",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0"
   },
@@ -37,9 +36,6 @@
     "url": "https://github.com/winterstein/wwappbase.js/issues"
   },
   "homepage": "https://github.com/winterstein/wwappbase.js#readme",
-  "bin": {
-    "wwappbase.js": "enum.js"
-  },
   "directories": {
     "test": "test"
   },
