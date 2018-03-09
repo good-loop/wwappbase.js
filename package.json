@@ -1,6 +1,6 @@
 {
   "name": "wwappbase.js",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Useful common components for Winterwell's web apps.",
   "main": "./bin/wwappbase.js",
   "keywords": [],
@@ -45,9 +45,5 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {},
-  "directories": {
-    "bin": "bin"
-  }
-
+  "dependencies": {}
 }
