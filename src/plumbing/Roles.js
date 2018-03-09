@@ -1,6 +1,6 @@
 
 import Login from 'you-again';
-import DataStore from './plumbing/DataStore';
+import DataStore from './DataStore';
 import {assMatch} from 'sjtest';
 import pv from 'promise-value';
 
