@@ -1,6 +1,6 @@
 {
   "name": "wwappbase.js",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Useful common components for Winterwell's web apps.",
   "main": "./bin/wwappbase.js",
   "keywords": [],
@@ -35,8 +35,7 @@
   "scripts": {
     "build": "webpack --config webpack.config.js --progress --colors",
     "watch": "webpack --config webpack.config.js --progress --colors --watch",
-    "prepublish": "npm run build",
-    "postinstall": "npm run build"
+    "prepublish": "npm run build"
   },
   "bugs": {
     "url": "https://github.com/winterstein/wwappbase.js/issues"
