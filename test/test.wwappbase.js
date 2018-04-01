@@ -5,6 +5,7 @@ SJTest.run({name:'DataStore',
 		DataStore.setValue(['misc','foo'], 'FOO :)');
 		let foo = DataStore.getValue(['misc','foo']);
 		assert(foo === "FOO :)", foo);
+		return foo;
 	},	
 
 });
