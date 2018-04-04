@@ -2,7 +2,7 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-  entry: ["babel-polyfill", './src/wwappbase.js'],
+  entry: ['./src/wwappbase.js'],
   output: { path: __dirname, filename: './bin/wwappbase.js' },
   devtool: 'source-map',
   resolve: {
