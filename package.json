@@ -1,6 +1,6 @@
 {
   "name": "wwappbase.js",
-  "version": "0.2.9",
+  "version": "0.3.0",
   "description": "Useful common components for Winterwell's web apps.",
   "main": "./index.js",
   "files": [ "*.map", "src" ],
