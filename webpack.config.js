@@ -2,7 +2,7 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-  entry: ['./src/wwappbase.js'],
+  entry: [ "./src/wwappbase.js" ],
   output: { path: __dirname, filename: './index.js' },
   devtool: 'source-map',
   resolve: {

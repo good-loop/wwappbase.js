@@ -1,6 +1,6 @@
 {
   "name": "wwappbase.js",
-  "version": "0.2.4",
+  "version": "0.2.7",
   "description": "Useful common components for Winterwell's web apps.",
   "main": "./index.js",
   "files": [ "*.map" ],
@@ -39,6 +39,8 @@
     "babel-plugin-transform-flow-strip-types": "^6.22.0",
     "babel-plugin-transform-react-jsx": "^6.24.1",
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-plugin-transform-exponentiation-operator": "^6.24.1",
+    "babel-polyfill": "^6.26.0",
     "webpack": "^3.11.0"
   },
   "scripts": {
