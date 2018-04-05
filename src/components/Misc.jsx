@@ -21,7 +21,7 @@ import Autocomplete from 'react-autocomplete';
 // import I18n from 'easyi18n';
 import {getType, getId, nonce} from '../data/DataClass';
 import md5 from 'md5';
-import Settings from '../Settings';
+import Settings from '../plumbing/Settings';
 
 const Misc = {};
 
