@@ -1,8 +1,9 @@
 {
   "name": "wwappbase.js",
-  "version": "0.2.2",
+  "version": "0.2.4",
   "description": "Useful common components for Winterwell's web apps.",
-  "files": [ "bin", "src" ],
+  "main": "./index.js",
+  "files": [ "*.map" ],
   "keywords": [],
   "author": "Daniel Winterstein",
   "license": "MIT",
