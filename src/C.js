@@ -21,10 +21,10 @@ C.isProduction = () => C.SERVER_TYPE!=='local' && C.SERVER_TYPE!=='test';
  * app config
  */
 C.app = {
-	name: "SoGive",
-	service: "sogive",
+	name: "Calstat",
+	service: "calstat",
 	logo: "/img/SoGive-Light-70px.png",
-	facebookAppId: "1847521215521290"
+	facebookAppId: ""
 };
 
 /**
