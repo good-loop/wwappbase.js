@@ -1,67 +1,105 @@
-/** 
- * Wrapper for server calls.
- *
- */
-import _ from 'lodash';
-import $ from 'jquery';
-import {SJTest, assert, assMatch} from 'sjtest';
-import {XId, encURI} from 'wwutils';
-import C from '../C.js';
+'use strict';
 
-import Login from 'you-again';
-import NGO from '../data/charity/NGO';
-
-// Try to avoid using this for modularity!
-import DataStore from './DataStore';
-import Messaging, {notifyUser} from './Messaging';
-
-// Error Logging - but only the first error
-window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {
-	// NB: source & line num are not much use in a minified file
-	let msg = error? ""+error+"\n\n"+error.stack : ""+messageOrEvent;
-	$.ajax('/log', {data: {
-		msg: window.location+' '+msg+' user-id: '+Login.getId(), // NB: browser type (user agent) will be sent as a header
-		type: "error"
-	}});
+Object.defineProperty(exports, "__esModule", {
+	value: true
 });
 
-const ServerIO = {};
-export default ServerIO;
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _jquery = require('jquery');
+
+var _jquery2 = _interopRequireDefault(_jquery);
+
+var _sjtest = require('sjtest');
+
+var _wwutils = require('wwutils');
+
+var _C = require('../../../../src-js/C.js');
+
+var _youAgain = require('you-again');
+
+var _youAgain2 = _interopRequireDefault(_youAgain);
+
+var _NGO = require('../data/charity/NGO');
+
+var _NGO2 = _interopRequireDefault(_NGO);
+
+var _DataStore = require('./DataStore');
+
+var _DataStore2 = _interopRequireDefault(_DataStore);
+
+var _Messaging = require('./Messaging');
+
+var _Messaging2 = _interopRequireDefault(_Messaging);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+// Error Logging - but only the first error
+
+
+// Try to avoid using this for modularity!
+window.onerror = _lodash2.default.once(function (messageOrEvent, source, lineno, colno, error) {
+	// NB: source & line num are not much use in a minified file
+	var msg = error ? "" + error + "\n\n" + error.stack : "" + messageOrEvent;
+	_jquery2.default.ajax('/log', { data: {
+			msg: window.location + ' ' + msg + ' user-id: ' + _youAgain2.default.getId(), // NB: browser type (user agent) will be sent as a header
+			type: "error"
+		} });
+}); /** 
+     * Wrapper for server calls.
+     *
+     */
+
+
+var ServerIO = {};
+exports.default = ServerIO;
 // for debug
+
 window.ServerIO = ServerIO;
 
 // allow switching backend during testing
-ServerIO.base = 
-	null;
-	// 'https://app.sogive.org';
+ServerIO.base = null;
+// 'https://app.sogive.org';
 
 
 /**
  * @param query {!String} query string
  * @param status {?KStatus} optional to request draft
  */
-ServerIO.search = function({q, prefix, from, size, status, recommended}) {
+ServerIO.search = function (_ref) {
+	var q = _ref.q,
+	    prefix = _ref.prefix,
+	    from = _ref.from,
+	    size = _ref.size,
+	    status = _ref.status,
+	    recommended = _ref.recommended;
+
 	// assMatch( q || prefix, String);
-	return ServerIO.load('/search.json', {data: {q, prefix, from, size, status, recommended}} );
+	return ServerIO.load('/search.json', { data: { q: q, prefix: prefix, from: from, size: size, status: status, recommended: recommended } });
 };
 
-
-ServerIO.getCharity = function(charityId, status) {
-	return ServerIO.getDataItem({type: C.TYPES.NGO, id: charityId, status: status});
+ServerIO.getCharity = function (charityId, status) {
+	return ServerIO.getDataItem({ type: _C.C.TYPES.NGO, id: charityId, status: status });
 };
 
-
-ServerIO.donate = function(data) {
+ServerIO.donate = function (data) {
 	// Anything to assert here?
 	return ServerIO.post('/donation', data);
 };
 
-ServerIO.getDonations = function({from, to, status=C.KStatus.PUBLISHED}) {	
-	const params = {
+ServerIO.getDonations = function (_ref2) {
+	var from = _ref2.from,
+	    to = _ref2.to,
+	    _ref2$status = _ref2.status,
+	    status = _ref2$status === undefined ? _C.C.KStatus.PUBLISHED : _ref2$status;
+
+	var params = {
 		data: {
-			from, to,
-			status,
-			sort:'date-desc'
+			from: from, to: to,
+			status: status,
+			sort: 'date-desc'
 		}
 	};
 	return ServerIO.load('/donation/list', params);
@@ -70,67 +108,70 @@ ServerIO.getDonations = function({from, to, status=C.KStatus.PUBLISHED}) {
 /**
  * TODO delete and just use Crud.js
  */
-ServerIO.saveCharity = function(charity, status) {
-	assert(NGO.isa(charity), charity);
-	let params = {		
-		data: {action: 'save', item: JSON.stringify(charity), status: status},
-		method: 'PUT'};
-	return ServerIO.load('/charity/'+encURI(NGO.id(charity))+'.json', params);
+ServerIO.saveCharity = function (charity, status) {
+	(0, _sjtest.assert)(_NGO2.default.isa(charity), charity);
+	var params = {
+		data: { action: 'save', item: JSON.stringify(charity), status: status },
+		method: 'PUT' };
+	return ServerIO.load('/charity/' + (0, _wwutils.encURI)(_NGO2.default.id(charity)) + '.json', params);
 };
-
 
 /**
  * TODO handle charity or fundraiser
  */
-ServerIO.getDonationDraft = ({from, charity, fundRaiser}) => {
-	assMatch(charity || fundRaiser, String);
-	let to = charity;
-	let q = fundRaiser? "fundRaiser:"+fundRaiser : null;
-	let status = C.KStatus.DRAFT;
-	return ServerIO.load('/donation/list.json', {data: {from, to, q, status}, swallow: true});
-};
+ServerIO.getDonationDraft = function (_ref3) {
+	var from = _ref3.from,
+	    charity = _ref3.charity,
+	    fundRaiser = _ref3.fundRaiser;
 
+	(0, _sjtest.assMatch)(charity || fundRaiser, String);
+	var to = charity;
+	var q = fundRaiser ? "fundRaiser:" + fundRaiser : null;
+	var status = _C.C.KStatus.DRAFT;
+	return ServerIO.load('/donation/list.json', { data: { from: from, to: to, q: q, status: status }, swallow: true });
+};
 
 /**
  * @param charity {name:String}
  */
-ServerIO.addCharity = function(charity, status=C.KStatus.DRAFT) {
-	let params = {		
-		data: {action: 'new', item: JSON.stringify(charity), status: status},
-		method: 'PUT'};
+ServerIO.addCharity = function (charity) {
+	var status = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : _C.C.KStatus.DRAFT;
+
+	var params = {
+		data: { action: 'new', item: JSON.stringify(charity), status: status },
+		method: 'PUT' };
 	return ServerIO.load('/charity.json', params);
 };
 
-ServerIO.discardEdits = function(charity, status) {
-	assert(NGO.isa(charity), charity);
-	let params = {		
-		data: {action: 'discard-edits', status: status}
+ServerIO.discardEdits = function (charity, status) {
+	(0, _sjtest.assert)(_NGO2.default.isa(charity), charity);
+	var params = {
+		data: { action: 'discard-edits', status: status }
 	};
-	return ServerIO.load('/charity/'+encURI(NGO.id(charity))+'.json', params);
+	return ServerIO.load('/charity/' + (0, _wwutils.encURI)(_NGO2.default.id(charity)) + '.json', params);
 };
 
-ServerIO.upload = function(file, progress, load) {
+ServerIO.upload = function (file, progress, load) {
 	// Provide a pre-constructed XHR so we can insert progress/load callbacks
-	const xhr = () => {
-		const request = $.ajaxSettings.xhr();
+	var xhr = function xhr() {
+		var request = _jquery2.default.ajaxSettings.xhr();
 		request.onProgress = progress;
 		request.onLoad = load; // ??@Roscoe - Any particular reason for using onLoad instead of .then? ^Dan
 		return request;
 	};
 
-	const data = new FormData(); // This is a browser native thing: https://developer.mozilla.org/en-US/docs/Web/API/FormData
+	var data = new FormData(); // This is a browser native thing: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 	data.append('upload', file);
 
 	return ServerIO.load('/upload.json', {
-		xhr,
-		data,
+		xhr: xhr,
+		data: data,
 		type: 'POST',
 		contentType: false,
 		processData: false,
-		swallow: true,
+		swallow: true
 	});
 };
-
 
 /**
  * Submits an AJAX request. This is the key base method
@@ -153,92 +194,88 @@ ServerIO.upload = function(file, progress, load) {
  *
  * @returns A <a href="http://api.jquery.com/jQuery.ajax/#jqXHR">jqXHR object</a>.
 **/
-ServerIO.load = function(url, params) {
-	assMatch(url,String);
+ServerIO.load = function (url, params) {
+	(0, _sjtest.assMatch)(url, String);
 	console.log("ServerIO.load", url, params);
 	params = ServerIO.addDefaultParams(params);
 	// sanity check: no Objects except arrays
-	_.values(params.data).map(
-		v => assert( ! _.isObject(v) || _.isArray(v), v)
-	);
+	_lodash2.default.values(params.data).map(function (v) {
+		return (0, _sjtest.assert)(!_lodash2.default.isObject(v) || _lodash2.default.isArray(v), v);
+	});
 	// sanity check: status
-	assert( ! params.data.status || C.KStatus.has(params.data.status), params.data.status);
+	(0, _sjtest.assert)(!params.data.status || _C.C.KStatus.has(params.data.status), params.data.status);
 	// add the base
-	if (url.substring(0,4) !== 'http' && ServerIO.base) {
+	if (url.substring(0, 4) !== 'http' && ServerIO.base) {
 		url = ServerIO.base + url;
 	}
 	params.url = url;
 	// send cookies & add auth
-	Login.sign(params);
+	_youAgain2.default.sign(params);
 	// debug: add stack
 	if (window.DEBUG) {
 		try {
-			const stack = new Error().stack;			
+			var stack = new Error().stack;
 			// stacktrace, chop leading "Error at Object." bit
-			params.data.stacktrace = (""+stack).replace(/\s+/g,' ').substr(16);
-		} catch(error) {
+			params.data.stacktrace = ("" + stack).replace(/\s+/g, ' ').substr(16);
+		} catch (error) {
 			// oh well
 		}
 	}
 	// Make the ajax call
-	let defrd = $.ajax(params); // The AJAX request.
+	var defrd = _jquery2.default.ajax(params); // The AJAX request.
 	if (params.swallow) {
 		// no message display
 		return defrd;
 	}
-	defrd = defrd
-		.then(ServerIO.handleMessages)
-		.fail(function(response, huh, bah) {
-			console.error('fail',url,params,response,huh,bah);
-			// error message
-			let text = response.status===404? 
-				"404: Sadly that content could not be found."
-				: "Could not load "+params.url+" from the server";
-			if (response.responseText && ! (response.status >= 500)) {
-				// NB: dont show the nginx error page for a 500 server fail
-				text = response.responseText;
-			}
-			let msg = {
-				id: 'error from '+params.url,
-				type:'error', 
-				text
-			};
-			// HACK hide details
-			if (msg.text.indexOf('\n----') !== -1) {
-				let i = msg.text.indexOf('\n----');
-				msg.details = msg.text.substr(i);
-				msg.text = msg.text.substr(0, i);
-			}
-			// bleurgh - a frameworky dependency
-			notifyUser(msg);
-			return response;
-		});
+	defrd = defrd.then(ServerIO.handleMessages).fail(function (response, huh, bah) {
+		console.error('fail', url, params, response, huh, bah);
+		// error message
+		var text = response.status === 404 ? "404: Sadly that content could not be found." : "Could not load " + params.url + " from the server";
+		if (response.responseText && !(response.status >= 500)) {
+			// NB: dont show the nginx error page for a 500 server fail
+			text = response.responseText;
+		}
+		var msg = {
+			id: 'error from ' + params.url,
+			type: 'error',
+			text: text
+		};
+		// HACK hide details
+		if (msg.text.indexOf('\n----') !== -1) {
+			var i = msg.text.indexOf('\n----');
+			msg.details = msg.text.substr(i);
+			msg.text = msg.text.substr(0, i);
+		}
+		// bleurgh - a frameworky dependency
+		(0, _Messaging.notifyUser)(msg);
+		return response;
+	});
 	return defrd;
 };
 
-
-ServerIO.post = function(url, data) {
-	return ServerIO.load(url, {data, method:'POST'});
+ServerIO.post = function (url, data) {
+	return ServerIO.load(url, { data: data, method: 'POST' });
 };
 
-ServerIO.handleMessages = function(response) {
-	console.log('handleMessages',response);
-	const newMessages = response && response.messages;
-	if ( ! newMessages || newMessages.length===0) {
+ServerIO.handleMessages = function (response) {
+	console.log('handleMessages', response);
+	var newMessages = response && response.messages;
+	if (!newMessages || newMessages.length === 0) {
 		return response;
 	}
-	newMessages.forEach(msg => notifyUser(msg));
+	newMessages.forEach(function (msg) {
+		return (0, _Messaging.notifyUser)(msg);
+	});
 	return response;
 };
 
-ServerIO.addDefaultParams = function(params) {
-	if ( ! params) params = {};
-	if ( ! params.data) params.data = {};
+ServerIO.addDefaultParams = function (params) {
+	if (!params) params = {};
+	if (!params.data) params.data = {};
 	return params;
 };
 
-ServerIO.importDataSet = function(dataset) {
-	assert(_.isString(dataset));
-	return ServerIO.load('/import.json', {data: {dataset}} );
+ServerIO.importDataSet = function (dataset) {
+	(0, _sjtest.assert)(_lodash2.default.isString(dataset));
+	return ServerIO.load('/import.json', { data: { dataset: dataset } });
 };
-

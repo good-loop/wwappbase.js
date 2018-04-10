@@ -2,9 +2,9 @@ import React from 'react';
 import { Nav, NavItem } from 'react-bootstrap';
 import Login from 'you-again';
 
-import C from '../C';
+import {C} from "../../../../src-js/C.js";
 import DataStore from '../plumbing/DataStore';
-import {LoginLink} from './LoginWidget/LoginWidget.jsx';
+import {LoginLink} from './LoginWidget/LoginWidget.js';
 
 // import {XId,yessy,uid} from '../js/util/orla-utils.js';
 

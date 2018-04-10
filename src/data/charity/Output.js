@@ -1,7 +1,20 @@
+'use strict';
 
-import {assert, assMatch} from 'sjtest';
-import _ from 'lodash';
-import {isa, defineType} from '../DataClass';
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _sjtest = require('sjtest');
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _DataClass = require('../DataClass');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 /* Output type, which also does Impact: 
 {
@@ -20,32 +33,37 @@ import {isa, defineType} from '../DataClass';
 */
 
 /** impact utils */
-const Output = defineType('Output');
-const This = Output;
-export default Output;
+var Output = (0, _DataClass.defineType)('Output');
+var This = Output;
+exports.default = Output;
 
-Output.number = obj => This.assIsa(obj) && obj.number;
-Output.cost = obj => This.assIsa(obj) && obj.cost;
 
-Output.make = (base = {}) => {
-	assMatch(base.amount, "?String", base);
-	return {
-		'@type': This.type,
-		...base
-	};
+Output.number = function (obj) {
+	return This.assIsa(obj) && obj.number;
+};
+Output.cost = function (obj) {
+	return This.assIsa(obj) && obj.cost;
+};
+
+Output.make = function () {
+	var base = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
+	(0, _sjtest.assMatch)(base.amount, "?String", base);
+	return _extends({
+		'@type': This.type
+	}, base);
 };
 
 /**
  * A scaled version 
  * @param donationAmount {Money}
  */
-Output.scaleByDonation = (output, donationAmount) => {
+Output.scaleByDonation = function (output, donationAmount) {
 	// deep copy
-	let impact = _.cloneDeep(output);
+	var impact = _lodash2.default.cloneDeep(output);
 	// TODO scaled by donationAmount
 	// TODO change units if necc
 	// TODO Java needs a mirror of this :(
 	console.error("scale!", impact, donationAmount);
 	return impact;
 };
-

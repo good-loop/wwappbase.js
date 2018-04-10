@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import SJTest, {assert} from 'sjtest';
 import Login from 'you-again';
 import printer from '../utils/printer.js';
-import C from '../C';
+import {C} from "../../../../src-js/C.js";
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIO';
 import Roles from '../plumbing/Roles';

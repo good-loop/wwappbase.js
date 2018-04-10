@@ -15,7 +15,7 @@ import DataStore from '../plumbing/DataStore';
 import ActionMan from '../plumbing/ActionMan';
 import ServerIO from '../plumbing/ServerIO';
 import printer from '../utils/printer';
-import C from '../C';
+import {C} from "../../../../src-js/C.js";
 import Money from '../data/charity/Money';
 import Autocomplete from 'react-autocomplete';
 // import I18n from 'easyi18n';

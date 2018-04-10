@@ -1,47 +1,71 @@
+'use strict';
 
-import _ from 'lodash';
-import {assert, assMatch} from 'sjtest';
-import {isa, nonce, defineType} from './DataClass';
-import {uid, blockProp} from 'wwutils';
-import Money from './charity/Money';
-import C from '../C';
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
 
-const Basket = defineType(C.TYPES.Basket);
-const This = Basket;
-export default Basket;
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
+var _lodash = require('lodash');
+
+var _lodash2 = _interopRequireDefault(_lodash);
+
+var _sjtest = require('sjtest');
+
+var _DataClass = require('./DataClass');
+
+var _wwutils = require('wwutils');
+
+var _Money = require('./charity/Money');
+
+var _Money2 = _interopRequireDefault(_Money);
+
+var _C = require('../../../../src-js/C.js');
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var Basket = (0, _DataClass.defineType)(_C.C.TYPES.Basket);
+var This = Basket;
+exports.default = Basket;
 
 // To get a Basket, use ActionMan.getBasketPV
 
 // Basket is normally DRAFT (PUBLISHED = paid for)
 
-Basket.isa = (obj) => isa(obj, Basket.type)
-		// sneaky place to add safety checks
-		&& blockProp(obj, 'charity', 'Basket.js - use Basket.charityId()')
-		&& true;
+Basket.isa = function (obj) {
+	return (0, _DataClass.isa)(obj, Basket.type)
+	// sneaky place to add safety checks
+	&& (0, _wwutils.blockProp)(obj, 'charity', 'Basket.js - use Basket.charityId()') && true;
+};
 
-This.eventId = obj => obj.eventId;
-This.charityId = obj => obj.charityId;
+This.eventId = function (obj) {
+	return obj.eventId;
+};
+This.charityId = function (obj) {
+	return obj.charityId;
+};
 
-Basket.idForUxid = (uxid) => "for_"+uxid;
-
+Basket.idForUxid = function (uxid) {
+	return "for_" + uxid;
+};
 
 /**
  * @returns {!Object[]}
  */
-Basket.getItems = (basket) => {
-	if ( ! basket.items) basket.items = [];
+Basket.getItems = function (basket) {
+	if (!basket.items) basket.items = [];
 	return basket.items;
 };
 
 /** Add up the prices of all the items in the basket 
  * @returns {Money} never null
 */
-Basket.getTotal = (basket) => {
+Basket.getTotal = function (basket) {
 	// Using this clumsy forEach instead of a reduce because this makes it clearer
 	// that the total's Money object (thus currency) is based on the first item
-	let total = null;
-	Basket.getItems(basket).forEach((item) => {
-		Money.assIsa(item.price);
+	var total = null;
+	Basket.getItems(basket).forEach(function (item) {
+		_Money2.default.assIsa(item.price);
 		// skip over any NaNs
 		if (isNaN(item.price.value)) {
 			console.warn("Basket.js getTotal: NaN", basket, item);
@@ -50,25 +74,25 @@ Basket.getTotal = (basket) => {
 		if (total === null) {
 			total = item.price;
 		} else {
-			total = Money.add(total, item.price);
+			total = _Money2.default.add(total, item.price);
 		}
 	});
-	if (total && basket.hasTip && Money.isa(basket.tip)) {
-		total = Money.add(total, basket.tip);
+	if (total && basket.hasTip && _Money2.default.isa(basket.tip)) {
+		total = _Money2.default.add(total, basket.tip);
 	}
-	return total || Money.make();
+	return total || _Money2.default.make();
 };
 
-Basket.make = (base = {}) => {
+Basket.make = function () {
+	var base = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+
 	// event??
-	let ma = {
+	var ma = _extends({
 		items: [],
-		hasTip: true,
-		// tip: Money.make({value: 1}), // TODO tip/fee based on event and tickets
-		...base,
-		'@type': Basket.type,
-	};
+		hasTip: true
+	}, base, {
+		'@type': Basket.type
+	});
 	Basket.assIsa(ma);
 	return ma;
 };
-
