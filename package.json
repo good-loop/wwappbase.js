@@ -1,6 +1,6 @@
 {
   "name": "wwappbase.js",
-  "version": "0.4.7",
+  "version": "0.4.8",
   "description": "Useful common components for Winterwell's web apps.",
   "main": "bin/index.js",
   "files": [ "bin" ],
@@ -27,8 +27,8 @@
 
   },
   "scripts": {
-	"prepare":"babel src --quiet --plugins transform-react-jsx,transform-object-rest-spread,transform-es2015-arrow-functions --out-dir bin",
-	"prepublish":"npm run prepare"
+	"compile":"babel src --quiet --plugins transform-react-jsx,transform-object-rest-spread,transform-es2015-arrow-functions --out-dir bin",
+	"prepublish":"npm run compile"
   },
   "bugs": {
     "url": "https://github.com/winterstein/wwappbase.js/issues"
