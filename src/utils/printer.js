@@ -1,5 +1,3 @@
-"use strict";
-
 /**
  * file: Printer.js Purpose: converts objects into html.
  *
@@ -17,7 +15,8 @@
  * @depends underscore.js
  */
 
-function Printer() {}
+function Printer() {
+}
 
 /**
  * Matches
@@ -41,19 +40,19 @@ Printer.URL_REGEX = /https?\:\/\/[0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*(:(0-9)*‌​)
  * @param n
  * @return x to n significant figures
  */
-Printer.prototype.toNSigFigs = function (x, n) {
-	if (x == 0) return "0";
+Printer.prototype.toNSigFigs = function(x, n) {
+	if (x==0) return "0";
 	assert(n > 0, "Printer.js - toNSigFigs: n is not greater than 0");
-	var snum = new Intl.NumberFormat('en-GB', { maximumSignificantDigits: n }).format(x);
+	let snum = new Intl.NumberFormat('en-GB', {maximumSignificantDigits: n}).format(x);
 	return snum;
 };
 
 /**
  * Convenience for new Intl.NumberFormat().format() directly
  */
-Printer.prototype.prettyNumber = function (x, sigFigs) {
-	if (!sigFigs) sigFigs = 3;
-	var snum = new Intl.NumberFormat('en-GB', { maximumSignificantDigits: sigFigs }).format(x);
+Printer.prototype.prettyNumber = function(x, sigFigs) {
+	if ( ! sigFigs) sigFigs = 3;
+	let snum = new Intl.NumberFormat('en-GB', {maximumSignificantDigits: sigFigs}).format(x);
 	return snum;
 };
 
@@ -69,65 +68,65 @@ Printer.prototype.prettyNumber = function (x, sigFigs) {
 * @returns {String} Representation of the supplied object.
 */
 Printer.prototype.str = function (object) {
-	if (typeof object === 'string') return object;
-	try {
-		return JSON.stringify(object);
-	} catch (error) {
-		return JSON.stringify(escapeCircularReferences(object));
-	}
-};
+		if (typeof(object)==='string') return object;
+		try {
+			return JSON.stringify(object);
+		} catch (error) {
+			return JSON.stringify(escapeCircularReferences(object));
+		}
+	};
 
-function escapeCircularReferences(object, cache) {
-	var escapedObject;
+	function escapeCircularReferences(object, cache) {
+		var escapedObject;
 
-	if (!cache) {
-		cache = [];
-	}
-
-	if (object instanceof jQuery) {
-		return '{jQuery}';
-	} else if (_.isObject(object)) {
-		if (cache.indexOf(object) > -1) {
-			return '{circ}';
+		if (!cache) {
+			cache = [];
 		}
 
-		cache.push(object);
+		if (object instanceof jQuery) {
+			return '{jQuery}';
+		} else if (_.isObject(object)) {
+			if (cache.indexOf(object) > -1) {
+				return '{circ}';
+			}
 
-		escapedObject = {};
+			cache.push(object);
 
-		for (var key in object) {
-			if (object.hasOwnProperty(key)) {
-				var value = escapeCircularReferences(object[key], cache);
+			escapedObject = {};
 
-				if (value !== undefined) {
-					escapedObject[key] = value;
+			for (var key in object) {
+				if (object.hasOwnProperty(key)) {
+					var value = escapeCircularReferences(object[key], cache);
+
+					if (value !== undefined) {
+						escapedObject[key] = value;
+					}
 				}
 			}
-		}
-	} else if (_.isArray(object)) {
-		if (cache.indexOf(object) > -1) {
-			return '[circ]';
-		}
-
-		cache.push(object);
-
-		escapedObject = [];
-
-		for (var i = 0, j = object.length; i < j; i++) {
-			var value = escapeCircularReferences(object[i], cache);
-
-			if (value) {
-				escapedObject.push(value);
-			} else {
-				escapedObject.push(null);
+		} else if (_.isArray(object)) {
+			if (cache.indexOf(object) > -1) {
+				return '[circ]';
 			}
-		}
-	} else {
-		escapedObject = object;
-	}
 
-	return escapedObject;
-}
+			cache.push(object);
+
+			escapedObject = [];
+
+			for (var i = 0, j = object.length; i < j; i++) {
+				var value = escapeCircularReferences(object[i], cache);
+
+				if (value) {
+					escapedObject.push(value);
+				} else {
+					escapedObject.push(null);
+				}
+			}
+		} else {
+			escapedObject = object;
+		}
+
+		return escapedObject;
+	}
 
 /**
  * Convert user text (eg a tweet) into html. Performs a clean, converts
@@ -144,42 +143,42 @@ function escapeCircularReferences(object, cache) {
  *
  */
 Printer.prototype.textToHtml = function (contents, context, external) {
-	if (!contents) return "";
-	var service = context && context.service ? context.service : null;
+	if ( ! contents) return "";
+	var service = context && context.service? context.service : null;
 	// TODO This is too strong! e.g. it would clean away < this >, or "1<2 but 3>2"
 	// TODO convert @you #tag and links ??emoticons -- See TwitterPlugin
 	// contents = cleanPartial(contents);
 
 	// convert & > into html entities (before we add any tags ourselves)
-	contents = contents.replace(/</g, '&lt;');
-	contents = contents.replace(/>/g, '&gt;');
+	contents = contents.replace(/</g,'&lt;');
+	contents = contents.replace(/>/g,'&gt;');
 	// &s (but protect &s in urls)
-	contents = contents.replace(/(\s|^)&(\s|$)/g, '$1&amp;$2');
+	contents = contents.replace(/(\s|^)&(\s|$)/g,'$1&amp;$2');
 
 	// Paragraphs & markdown linebreaks
 	if (service != 'twitter' && service != 'facebook' && service != 'youtube') {
 		// only one br for a paragraph??
-		contents = contents.replace(/\n\n+/g, "<br/>");
-		contents = contents.replace(/   \n/g, "<br/>");
+		contents = contents.replace(/\n\n+/g,"<br/>");
+		contents = contents.replace(/   \n/g,"<br/>");
 	}
 
 	// TODO lists +
 	// var ulli = /^ ?-\s*(.+)\s*$/gm;
 	// contents = contents.replace(ulli, "<li>$1</li>");
-	if (service === 'TODOsoda.sh') {
+	if (service==='TODOsoda.sh') {
 		// Checkboxes from github style []s
-		contents = contents.replace(/\[( |x|X)\](.+$)/gm, function (r) {
+		contents = contents.replace(/\[( |x|X)\](.+$)/gm, function(r) {
 			console.log(r);
 			var on = r[1] === 'x' || r[1] === 'X';
-			return "<label><input class='subtask' type='checkbox' " + (on ? "checked='true'" : '') + " /> " + r.substring(3).trim() + "</label>";
+			return "<label><input class='subtask' type='checkbox' "+(on?"checked='true'":'')+" /> "+r.substring(3).trim()+"</label>";
 		});
 	}
 
 	// normalise whitespace
-	contents = contents.replace(/\s+/g, " ");
+	contents = contents.replace(/\s+/g," ");
 
 	// links
-	if (external) {
+	if(external) {
 		// NOTE: _parent required for IFRAME embed
 		contents = contents.replace(Printer.URL_REGEX, "<a href='$1' target='_blank' rel='nofollow' target='_parent'>$1</a>");
 	} else {
@@ -188,26 +187,25 @@ Printer.prototype.textToHtml = function (contents, context, external) {
 
 	// TODO break-up over-long urls?
 	// @username to their profile page
-	if (external) {
-		if (service == 'twitter') {
+	if(external) {
+		if(service == 'twitter') {
 			contents = contents.replace(Printer.AT_YOU_SIR, "$1<a href='https://twitter.com/$2' target='_parent'>@$2</a>");
-		} else if (service == 'facebook') {
+		} else if(service == 'facebook') {
 			// TODO: Is linking @Name in facebook even possible?
 		}
 	} else {
-		contents = contents.replace(Printer.AT_YOU_SIR, "$1<a href='/profile?xid=$2%40" + service + "'>@$2</a>");
+		contents = contents.replace(Printer.AT_YOU_SIR, "$1<a href='/profile?xid=$2%40"+service+"'>@$2</a>");
 	}
 
 	// hashtag to a twitter search
-	if (external) {
-		if (service == 'twitter') {
+	if(external) {
+		if(service == 'twitter') {
 			contents = contents.replace(Printer.HASHTAG, "$1<a href='https://twitter.com/search/%23$2' target='_parent'>#$2</a>");
-		} else if (service == 'facebook') {
+		} else if(service == 'facebook') {
 			// TODO: Is linking @Name in facebook even possible?
 		}
 	} else {
-		if (service == 'soda.sh') {
-			/* hashtags in notes are sodash tags */
+		if (service == 'soda.sh') { /* hashtags in notes are sodash tags */
 			contents = contents.replace(Printer.HASHTAG, "$1<a href='/stream?tag=$2'>#$2</a>");
 		} else {
 			contents = contents.replace(Printer.HASHTAG, "$1<a href='/stream?q=%23$2'>#$2</a>");
@@ -230,51 +228,53 @@ Printer.prototype.textToHtml = function (contents, context, external) {
  * TODO a better idea, would be to convert into some sort of Dt object, with a nice toString()
  * @param msecs {number} a time length in milliseconds
  */
-Printer.prototype.dt = function (msecs) {
+Printer.prototype.dt = function(msecs) {
 	// days?
-	if (msecs > 1000 * 60 * 60 * 24) {
-		var v = msecs / (1000 * 60 * 60 * 24);
-		return this.toNSigFigs(v, 2) + " days";
+	if (msecs > 1000*60*60*24) {
+		var v = msecs / (1000*60*60*24);
+		return this.toNSigFigs(v, 2)+" days";
 	}
-	if (msecs > 1000 * 60 * 60) {
-		var v = msecs / (1000 * 60 * 60);
-		return this.toNSigFigs(v, 2) + " hours";
+	if (msecs > 1000*60*60) {
+		var v = msecs / (1000*60*60);
+		return this.toNSigFigs(v, 2)+" hours";
 	}
-	if (msecs > 1000 * 60) {
-		var v = msecs / (1000 * 60);
-		return this.toNSigFigs(v, 2) + " minutes";
+	if (msecs > 1000*60) {
+		var v = msecs / (1000*60);
+		return this.toNSigFigs(v, 2)+" minutes";
 	}
 	var v = msecs / 1000;
-	return this.toNSigFigs(v, 2) + " seconds";
+	return this.toNSigFigs(v, 2)+" seconds";
 };
 
 function encodeHashtag(text, service) {
-	service = (service || '').toLowerCase().replace(/\W/g, '');
+	service = (service || '')
+		.toLowerCase()
+		.replace(/\W/g, '');
 
 	switch (service) {
-		case 'sodash':
-			return text.replace(HASHTAG, '$1<a href="/stream?tag=$2">#$2</a>');
-		default:
-			// Return internal link by default.
-			return text.replace(HASHTAG, '$1<a href="/stream?q=$2">#$2</a>');
+	case 'sodash':
+		return text.replace(HASHTAG, '$1<a href="/stream?tag=$2">#$2</a>');
+	default: // Return internal link by default.
+		return text.replace(HASHTAG, '$1<a href="/stream?q=$2">#$2</a>');
 	}
 }
 
 function encodeReference(text, service) {
-	service = (service || '').toLowerCase().replace(/\W/g, '');
+	service = (service || '')
+		.toLowerCase()
+		.replace(/\W/g, '');
 
 	switch (service) {
-		case 'twitter':
-			return text.replace(AT_YOU_SIR, '$1<a href="https://twitter.com/%2" target="_blank">@$2</a>');
-		default:
-			// Return internal link by default.
-			return text.replace(AT_YOU_SIR, '$1<a href="/profile?who=$2">@$2</a>');
+	case 'twitter':
+		return text.replace(AT_YOU_SIR, '$1<a href="https://twitter.com/%2" target="_blank">@$2</a>');
+	default: // Return internal link by default.
+		return text.replace(AT_YOU_SIR, '$1<a href="/profile?who=$2">@$2</a>');
 	}
 }
 
 //	export
 /** Default Printer -- can be replaced. */
-var printer = new Printer();
+const printer = new Printer();
 if (typeof module !== 'undefined') {
 	module.exports = printer;
-}
+}	

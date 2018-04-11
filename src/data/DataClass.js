@@ -75,7 +75,7 @@ Meta.get = (obj, fieldName) => {
  * @returns random url-safe nonce of the requested length.
  * 
  * Let's see:
- * 60^6 ~ 50 bn 
+ * 60^6 ~ 50 bn
  * But the birthday paradox gives n^2 pairings, so consider n^2 for likelihood of a clash.
  * For n = 1000 items, this is safe. For n = 1m items, 6 chars isn't enough - add a timestamp to avoid the all-to-all pairings.
  */
@@ -112,3 +112,4 @@ const defineType = (type) => {
 };
 
 export {defineType, isa, getType, getId, Meta, nonce};
+	

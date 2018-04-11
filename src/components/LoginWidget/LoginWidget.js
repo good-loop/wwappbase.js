@@ -1,21 +1,11 @@
 'use strict';
 
-var _C3 = require('../../../../../src-js/C.js');
-
 Object.defineProperty(exports, "__esModule", {
 	value: true
 });
 exports.LoginWidgetEmbed = exports.LoginLink = undefined;
 
-var _extends = Object.assign || function (target) {
-	for (var i = 1; i < arguments.length; i++) {
-		var source = arguments[i];for (var key in source) {
-			if (Object.prototype.hasOwnProperty.call(source, key)) {
-				target[key] = source[key];
-			}
-		}
-	}return target;
-};
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 var _react = require('react');
 
@@ -47,11 +37,11 @@ var _Misc = require('../Misc');
 
 var _Misc2 = _interopRequireDefault(_Misc);
 
+import {C} from "../../../../../src-js/C.js";
+
 var _C2 = _interopRequireDefault(_C);
 
-function _interopRequireDefault(obj) {
-	return obj && obj.__esModule ? obj : { default: obj };
-}
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 // For testing
 if (("" + window.location).indexOf('login=local') !== -1) {
@@ -68,9 +58,13 @@ if (("" + window.location).indexOf('login=local') !== -1) {
 var STATUS_PATH = ['widget', _C2.default.show.LoginWidget, 'status'];
 
 var LoginLink = function LoginLink() {
-	return _react2.default.createElement('a', { href: window.location, onClick: function onClick(e) {
-			e.preventDefault();e.stopPropagation();_DataStore2.default.setShow(_C2.default.show.LoginWidget, true);
-		} }, 'Login or Register');
+	return _react2.default.createElement(
+		'a',
+		{ href: window.location, onClick: function onClick(e) {
+				e.preventDefault();e.stopPropagation();_DataStore2.default.setShow(_C2.default.show.LoginWidget, true);
+			} },
+		'Login or Register'
+	);
 };
 
 var canSignIn = {
@@ -87,9 +81,28 @@ var SocialSignin = function SocialSignin(_ref) {
 	if (!services) {
 		return null;
 	}
-	return _react2.default.createElement('div', { className: 'social-signin' }, services.map(function (service) {
-		return _react2.default.createElement(SocialSignInButton, { service: service, verb: verb, key: service });
-	}), _react2.default.createElement('p', null, _react2.default.createElement('small', null, 'We will never share your data or post to social media without your consent. You can read our ', _react2.default.createElement('a', { href: 'https://sogive.org/privacy-policy.html', target: '_new' }, 'privacy policy'), ' for more information.')));
+	return _react2.default.createElement(
+		'div',
+		{ className: 'social-signin' },
+		services.map(function (service) {
+			return _react2.default.createElement(SocialSignInButton, { service: service, verb: verb, key: service });
+		}),
+		_react2.default.createElement(
+			'p',
+			null,
+			_react2.default.createElement(
+				'small',
+				null,
+				'We will never share your data or post to social media without your consent. You can read our ',
+				_react2.default.createElement(
+					'a',
+					{ href: 'https://sogive.org/privacy-policy.html', target: '_new' },
+					'privacy policy'
+				),
+				' for more information.'
+			)
+		)
+	);
 };
 
 var SocialSignInButton = function SocialSignInButton(_ref2) {
@@ -98,9 +111,25 @@ var SocialSignInButton = function SocialSignInButton(_ref2) {
 
 	if (!canSignIn[service]) return null;
 
-	return _react2.default.createElement('div', { className: 'form-group' }, _react2.default.createElement('button', { onClick: function onClick() {
-			return socialLogin(service);
-		}, className: 'btn btn-default signin' }, _react2.default.createElement(_Misc2.default.Logo, { size: 'small', service: service, bgcolor: true }), ' ', _react2.default.createElement('span', null, (0, _wwutils.toTitleCase)(verb), ' with ', (0, _wwutils.toTitleCase)(service))));
+	return _react2.default.createElement(
+		'div',
+		{ className: 'form-group' },
+		_react2.default.createElement(
+			'button',
+			{ onClick: function onClick() {
+					return socialLogin(service);
+				}, className: 'btn btn-default signin' },
+			_react2.default.createElement(_Misc2.default.Logo, { size: 'small', service: service, bgcolor: true }),
+			' ',
+			_react2.default.createElement(
+				'span',
+				null,
+				(0, _wwutils.toTitleCase)(verb),
+				' with ',
+				(0, _wwutils.toTitleCase)(service)
+			)
+		)
+	);
 };
 
 var socialLogin = function socialLogin(service) {
@@ -175,13 +204,57 @@ var EmailSignin = function EmailSignin(_ref4) {
 	// login/register
 	var path = ['data', _C2.default.TYPES.User, 'loggingIn'];
 	var status = _DataStore2.default.getValue(STATUS_PATH);
-	return _react2.default.createElement('form', {
-		id: 'loginByEmail',
-		onSubmit: function onSubmit(event) {
-			event.preventDefault();
-			doItFn();
-		}
-	}, verb === 'reset' ? _react2.default.createElement('p', null, 'Forgotten your password? No problem - we will email you a link to reset it.') : null, _react2.default.createElement('div', { className: 'form-group' }, _react2.default.createElement('label', null, 'Email'), _react2.default.createElement(_Misc2.default.PropControl, { type: 'email', path: path, item: person, prop: 'email' })), verb === 'reset' ? null : _react2.default.createElement('div', { className: 'form-group' }, _react2.default.createElement('label', null, 'Password'), _react2.default.createElement(_Misc2.default.PropControl, { type: 'password', path: path, item: person, prop: 'password' })), verb === 'reset' && _DataStore2.default.getValue('widget', _C2.default.show.LoginWidget, 'reset-requested') ? _react2.default.createElement('div', { className: 'alert alert-info' }, 'A password reset email has been sent out.') : null, _react2.default.createElement('div', { className: 'form-group' }, _react2.default.createElement('button', { type: 'submit', className: 'btn btn-primary form-control', disabled: _C2.default.STATUS.isloading(status) }, buttonText)), _react2.default.createElement(LoginError, null), _react2.default.createElement(ResetLink, { verb: verb }));
+	return _react2.default.createElement(
+		'form',
+		{
+			id: 'loginByEmail',
+			onSubmit: function onSubmit(event) {
+				event.preventDefault();
+				doItFn();
+			}
+		},
+		verb === 'reset' ? _react2.default.createElement(
+			'p',
+			null,
+			'Forgotten your password? No problem - we will email you a link to reset it.'
+		) : null,
+		_react2.default.createElement(
+			'div',
+			{ className: 'form-group' },
+			_react2.default.createElement(
+				'label',
+				null,
+				'Email'
+			),
+			_react2.default.createElement(_Misc2.default.PropControl, { type: 'email', path: path, item: person, prop: 'email' })
+		),
+		verb === 'reset' ? null : _react2.default.createElement(
+			'div',
+			{ className: 'form-group' },
+			_react2.default.createElement(
+				'label',
+				null,
+				'Password'
+			),
+			_react2.default.createElement(_Misc2.default.PropControl, { type: 'password', path: path, item: person, prop: 'password' })
+		),
+		verb === 'reset' && _DataStore2.default.getValue('widget', _C2.default.show.LoginWidget, 'reset-requested') ? _react2.default.createElement(
+			'div',
+			{ className: 'alert alert-info' },
+			'A password reset email has been sent out.'
+		) : null,
+		_react2.default.createElement(
+			'div',
+			{ className: 'form-group' },
+			_react2.default.createElement(
+				'button',
+				{ type: 'submit', className: 'btn btn-primary form-control', disabled: _C2.default.STATUS.isloading(status) },
+				buttonText
+			)
+		),
+		_react2.default.createElement(LoginError, null),
+		_react2.default.createElement(ResetLink, { verb: verb })
+	);
 }; // ./EmailSignin
 
 var verbPath = ['widget', _C2.default.show.LoginWidget, 'verb'];
@@ -195,12 +268,32 @@ var ResetLink = function ResetLink(_ref5) {
 		_youAgain2.default.error = null;
 		_DataStore2.default.setValue(verbPath, 'reset');
 	};
-	return _react2.default.createElement('div', { className: 'pull-right' }, _react2.default.createElement('small', null, _react2.default.createElement('a', { onClick: toReset }, 'Forgotten password?')));
+	return _react2.default.createElement(
+		'div',
+		{ className: 'pull-right' },
+		_react2.default.createElement(
+			'small',
+			null,
+			_react2.default.createElement(
+				'a',
+				{ onClick: toReset },
+				'Forgotten password?'
+			)
+		)
+	);
 };
 
 var LoginError = function LoginError() {
 	if (!_youAgain2.default.error) return _react2.default.createElement('div', null);
-	return _react2.default.createElement('div', { className: 'form-group' }, _react2.default.createElement('div', { className: 'alert alert-danger' }, _youAgain2.default.error.text));
+	return _react2.default.createElement(
+		'div',
+		{ className: 'form-group' },
+		_react2.default.createElement(
+			'div',
+			{ className: 'alert alert-danger' },
+			_youAgain2.default.error.text
+		)
+	);
 };
 
 /**
@@ -229,9 +322,32 @@ var LoginWidget = function LoginWidget(_ref6) {
 		reset: 'Reset Password'
 	}[verb];
 
-	return _react2.default.createElement(_reactBootstrap.Modal, { show: showDialog, className: 'login-modal', onHide: function onHide() {
-			return _DataStore2.default.setShow(_C2.default.show.LoginWidget, false);
-		} }, _react2.default.createElement(_reactBootstrap.Modal.Header, { closeButton: true }, _react2.default.createElement(_reactBootstrap.Modal.Title, null, _react2.default.createElement(_Misc2.default.Logo, { service: logo, size: 'large', transparent: false }), title)), _react2.default.createElement(_reactBootstrap.Modal.Body, null, _react2.default.createElement(LoginWidgetGuts, { services: services })), _react2.default.createElement(_reactBootstrap.Modal.Footer, null, _react2.default.createElement(SwitchVerb, null)));
+	return _react2.default.createElement(
+		_reactBootstrap.Modal,
+		{ show: showDialog, className: 'login-modal', onHide: function onHide() {
+				return _DataStore2.default.setShow(_C2.default.show.LoginWidget, false);
+			} },
+		_react2.default.createElement(
+			_reactBootstrap.Modal.Header,
+			{ closeButton: true },
+			_react2.default.createElement(
+				_reactBootstrap.Modal.Title,
+				null,
+				_react2.default.createElement(_Misc2.default.Logo, { service: logo, size: 'large', transparent: false }),
+				title
+			)
+		),
+		_react2.default.createElement(
+			_reactBootstrap.Modal.Body,
+			null,
+			_react2.default.createElement(LoginWidgetGuts, { services: services })
+		),
+		_react2.default.createElement(
+			_reactBootstrap.Modal.Footer,
+			null,
+			_react2.default.createElement(SwitchVerb, null)
+		)
+	);
 }; // ./LoginWidget
 
 
@@ -241,7 +357,12 @@ var LoginWidgetEmbed = function LoginWidgetEmbed(_ref7) {
 	    onLogin = _ref7.onLogin;
 
 	if (!verb) verb = _DataStore2.default.getValue(verbPath) || 'register';
-	return _react2.default.createElement('div', { className: 'login-widget' }, _react2.default.createElement(LoginWidgetGuts, { services: services, verb: verb, onLogin: onLogin }), _react2.default.createElement(SwitchVerb, { verb: verb }));
+	return _react2.default.createElement(
+		'div',
+		{ className: 'login-widget' },
+		_react2.default.createElement(LoginWidgetGuts, { services: services, verb: verb, onLogin: onLogin }),
+		_react2.default.createElement(SwitchVerb, { verb: verb })
+	);
 };
 
 var SwitchVerb = function SwitchVerb(_ref8) {
@@ -249,13 +370,31 @@ var SwitchVerb = function SwitchVerb(_ref8) {
 
 	if (!verb) verb = _DataStore2.default.getValue(verbPath);
 	if (verb === 'register') {
-		return _react2.default.createElement('div', { className: 'switch-verb' }, 'Already have an account? ', _react2.default.createElement('button', { className: 'btn btn-primary', onClick: function onClick(e) {
-				return (0, _wwutils.stopEvent)(e) && _DataStore2.default.setValue(verbPath, 'login');
-			} }, 'Login'));
+		return _react2.default.createElement(
+			'div',
+			{ className: 'switch-verb' },
+			'Already have an account? ',
+			_react2.default.createElement(
+				'button',
+				{ className: 'btn btn-primary', onClick: function onClick(e) {
+						return (0, _wwutils.stopEvent)(e) && _DataStore2.default.setValue(verbPath, 'login');
+					} },
+				'Login'
+			)
+		);
 	}
-	return _react2.default.createElement('div', { className: 'switch-verb' }, 'Don\'t yet have an account? ', _react2.default.createElement('button', { className: 'btn btn-primary', onClick: function onClick(e) {
-			return (0, _wwutils.stopEvent)(e) && _DataStore2.default.setValue(verbPath, 'register');
-		} }, 'Register'));
+	return _react2.default.createElement(
+		'div',
+		{ className: 'switch-verb' },
+		'Don\'t yet have an account? ',
+		_react2.default.createElement(
+			'button',
+			{ className: 'btn btn-primary', onClick: function onClick(e) {
+					return (0, _wwutils.stopEvent)(e) && _DataStore2.default.setValue(verbPath, 'register');
+				} },
+			'Register'
+		)
+	);
 };
 
 var LoginWidgetGuts = function LoginWidgetGuts(_ref9) {
@@ -264,10 +403,27 @@ var LoginWidgetGuts = function LoginWidgetGuts(_ref9) {
 	    onLogin = _ref9.onLogin;
 
 	if (!verb) verb = _DataStore2.default.getValue(verbPath) || 'login';
-	return _react2.default.createElement('div', { className: 'login-guts container-fluid' }, _react2.default.createElement('div', { className: 'login-divs row' }, _react2.default.createElement('div', { className: 'login-email col-sm-6' }, _react2.default.createElement(EmailSignin, {
-		verb: verb,
-		onLogin: onLogin
-	})), _react2.default.createElement('div', { className: 'login-social col-sm-6' }, _react2.default.createElement(SocialSignin, { verb: verb, services: services }))));
+	return _react2.default.createElement(
+		'div',
+		{ className: 'login-guts container-fluid' },
+		_react2.default.createElement(
+			'div',
+			{ className: 'login-divs row' },
+			_react2.default.createElement(
+				'div',
+				{ className: 'login-email col-sm-6' },
+				_react2.default.createElement(EmailSignin, {
+					verb: verb,
+					onLogin: onLogin
+				})
+			),
+			_react2.default.createElement(
+				'div',
+				{ className: 'login-social col-sm-6' },
+				_react2.default.createElement(SocialSignin, { verb: verb, services: services })
+			)
+		)
+	);
 };
 
 exports.default = LoginWidget;
