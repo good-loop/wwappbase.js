@@ -6,9 +6,8 @@ import _ from 'lodash';
 import $ from 'jquery';
 import {SJTest, assert, assMatch} from 'sjtest';
 import {XId, encURI} from 'wwutils';
-import {C} from "../../../../src-js/C.js";
+import C from "../C";
 import Login from 'you-again';
-import NGO from '../data/charity/NGO';
 
 // Try to avoid using this for modularity!
 import DataStore from './DataStore';
@@ -34,80 +33,6 @@ ServerIO.base =
 	null;
 	// 'https://app.sogive.org';
 
-
-/**
- * @param query {!String} query string
- * @param status {?KStatus} optional to request draft
- */
-ServerIO.search = function({q, prefix, from, size, status, recommended}) {
-	// assMatch( q || prefix, String);
-	return ServerIO.load('/search.json', {data: {q, prefix, from, size, status, recommended}} );
-};
-
-
-ServerIO.getCharity = function(charityId, status) {
-	return ServerIO.getDataItem({type: C.TYPES.NGO, id: charityId, status: status});
-};
-
-
-ServerIO.donate = function(data) {
-	// Anything to assert here?
-	return ServerIO.post('/donation', data);
-};
-
-ServerIO.getDonations = function({from, to, status=C.KStatus.PUBLISHED}) {	
-	const params = {
-		data: {
-			from, to,
-			status,
-			sort:'date-desc'
-		}
-	};
-	return ServerIO.load('/donation/list', params);
-};
-
-/**
- * TODO delete and just use Crud.js
- */
-ServerIO.saveCharity = function(charity, status) {
-	assert(NGO.isa(charity), charity);
-	let params = {		
-		data: {action: 'save', item: JSON.stringify(charity), status: status},
-		method: 'PUT'};
-	return ServerIO.load('/charity/'+encURI(NGO.id(charity))+'.json', params);
-};
-
-
-/**
- * TODO handle charity or fundraiser
- */
-ServerIO.getDonationDraft = ({from, charity, fundRaiser}) => {
-	assMatch(charity || fundRaiser, String);
-	let to = charity;
-	let q = fundRaiser? "fundRaiser:"+fundRaiser : null;
-	let status = C.KStatus.DRAFT;
-	return ServerIO.load('/donation/list.json', {data: {from, to, q, status}, swallow: true});
-};
-
-
-/**
- * @param charity {name:String}
- */
-ServerIO.addCharity = function(charity, status=C.KStatus.DRAFT) {
-	let params = {		
-		data: {action: 'new', item: JSON.stringify(charity), status: status},
-		method: 'PUT'};
-	return ServerIO.load('/charity.json', params);
-};
-
-ServerIO.discardEdits = function(charity, status) {
-	assert(NGO.isa(charity), charity);
-	let params = {		
-		data: {action: 'discard-edits', status: status}
-	};
-	return ServerIO.load('/charity/'+encURI(NGO.id(charity))+'.json', params);
-};
-
 ServerIO.upload = function(file, progress, load) {
 	// Provide a pre-constructed XHR so we can insert progress/load callbacks
 	const xhr = () => {
@@ -129,7 +54,6 @@ ServerIO.upload = function(file, progress, load) {
 		swallow: true,
 	});
 };
-
 
 /**
  * Submits an AJAX request. This is the key base method
@@ -235,9 +159,3 @@ ServerIO.addDefaultParams = function(params) {
 	if ( ! params.data) params.data = {};
 	return params;
 };
-
-ServerIO.importDataSet = function(dataset) {
-	assert(_.isString(dataset));
-	return ServerIO.load('/import.json', {data: {dataset}} );
-};
-

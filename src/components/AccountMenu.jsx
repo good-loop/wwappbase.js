@@ -2,7 +2,7 @@ import React from 'react';
 import { Nav, NavItem } from 'react-bootstrap';
 import Login from 'you-again';
 
-import {C} from "../../../../src-js/C.js";
+import C from "../C";
 import DataStore from '../plumbing/DataStore';
 import {LoginLink} from './LoginWidget/LoginWidget.js';
 

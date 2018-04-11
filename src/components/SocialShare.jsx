@@ -8,10 +8,6 @@ import {encURI} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import C from '../C';
 
-import Money from '../data/charity/Money';
-import NGO from '../data/charity/NGO';
-import Project from '../data/charity/Project';
-
 import Misc from './Misc.jsx';
 
 

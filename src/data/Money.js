@@ -1,6 +1,10 @@
+/**
+	Money NB: based on the thing.org type MonetaryAmount
+*/
 import {assert} from 'sjtest';
-import {isa} from '../DataClass';
-import {C} from "../../../../../src-js/C.js";
+
+import {isa} from './DataClass';
+import C from '../C';
 
 /** impact utils */
 const Money = {};
@@ -16,6 +20,7 @@ export default Money;
 }
 
 */
+
 // ref: https://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric
 const isNumeric = value => {
 	return ! isNaN(value - parseFloat(value));
@@ -28,23 +33,30 @@ const isNumeric = value => {
  */
 Money.value = ma => {
 	if ( ! ma) return 0;
-	if (ma.value === undefined) {
-		// Patch bad server data?
-		if (ma.value100) ma.value = ma.value100 / 100;
-		else return 0;
+	if (ma.value100p) {
+		return ma.value100p / 10000;
 	}
-	return parseFloat(ma.value);
+	if (ma.value) {
+		return parseFloat(ma.value);
+	}	
+	// Patch old server data?
+	if (ma.value100) {
+		ma.value100p = ma.value100 * 100;
+		return ma.value100p / 10000;
+	}
+	return 0;
 };
 
 // duck type: needs a value
 Money.isa = (obj) => {
 	if ( ! obj) return false;
 	if (isa(obj, C.TYPES.Money)) return true;
+	if (isa(obj, C.TYPES.MonetaryAmount)) return true; // old data!
 	// allow blank values
 	if (isNumeric(obj.value) || obj.value==='') return true;
 };
 
-Money.assIsa = (obj, msg) => assert(Money.isa(obj), "Money.js - not Money "+(msg||'')+" "+JSON.stringify(obj));
+Money.assIsa = (obj) => assert(Money.isa(obj), "Money.js - "+JSON.stringify(obj));
 
 Money.make = (base = {}) => {
 	const item = {
@@ -58,26 +70,11 @@ Money.make = (base = {}) => {
 	return item;
 };
 
-/**
- * Check currencies match. Case insensitive.
- */
-const assCurrencyEq = (a, b, msg) => {
-	const m = "Money.js assCurrencyEq "+(msg||'')+" a:"+JSON.stringify(a)+"  b:"+JSON.stringify(b);
-	Money.assIsa(a, m);
-	Money.assIsa(b, m);
-	// allow no-currency to padd
-	if ( ! a.currency || ! b.currency) {
-		return true;
-	}
-	assert(typeof(a.currency) === 'string' && typeof(b.currency) === 'string', m);
-	assert(a.currency.toUpperCase() === b.currency.toUpperCase(), m);
-};
-
 // Will fail if not called on 2 Moneys of the same currency
 Money.add = (amount1, amount2) => {
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);
-	assCurrencyEq(amount1, amount2, "add()");
+	assert(amount1.currency === amount2.currency);
 	return Money.make({
 		...amount1,
 		value: amount1.value + amount2.value,
@@ -88,7 +85,7 @@ Money.add = (amount1, amount2) => {
 Money.sub = (amount1, amount2) => {
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);
-	assCurrencyEq(amount1, amount2, "sub");
+	assert(amount1.currency === amount2.currency);
 	return Money.make({
 		...amount1,
 		value: amount1.value - amount2.value,
@@ -113,7 +110,6 @@ Money.mul = (amount, multiplier) => {
 Money.divide = (total, part) => {
 	Money.assIsa(total);
 	Money.assIsa(part);
-	assCurrencyEq(total, part);
+	assert(total.currency === part.currency, "Money.js divide "+total.currency+" != "+part.currency);
 	return Money.value(total) / Money.value(part);
 };
-

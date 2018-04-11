@@ -6,7 +6,7 @@ const assert = SJTest.assert;
 import printer from '../utils/printer.js';
 // Plumbing
 import DataStore from '../plumbing/DataStore';
-import C from '../C.js';
+import C from '../C';
 
 const MessageBar = ({messages}) => {
 	if ( ! messages || messages.length===0) return <div></div>;

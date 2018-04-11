@@ -3,7 +3,7 @@
 import _ from 'lodash';
 import $ from 'jquery';
 import {SJTest, assert, assMatch} from 'sjtest';
-import C from '../C.js';
+import C from '../C';
 import DataStore from './DataStore';
 import {getId, getType} from '../data/DataClass';
 import Login from 'you-again';
