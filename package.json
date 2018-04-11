@@ -34,7 +34,8 @@
     "babel-plugin-transform-es2015-arrow-functions": "^6.22.0"
   },
   "scripts": {
-	"prepare":"babel original-src --quiet --plugins transform-object-rest-spread,transform-es2015-arrow-functions --out-dir src"
+	"prepare":"babel original-src --quiet --plugins transform-object-rest-spread,transform-es2015-arrow-functions --out-dir src",
+	"prepublish":"npm run prepare"
   },
   "bugs": {
     "url": "https://github.com/winterstein/wwappbase.js/issues"
