@@ -9,9 +9,7 @@ import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIO';
 import Roles from '../plumbing/Roles';
 import Misc from './Misc';
-import GiftAidForm from './GiftAidForm';
 import {XId} from 'wwutils';
-import Transfer from '../data/Transfer';
 
 const AccountPage = () => {
 	let proles =Roles.getRoles();
@@ -24,6 +22,9 @@ const AccountPage = () => {
 			// 	<Misc.Card title='Gift Aid'>
 			// 	<GiftAidForm />
 			// </Misc.Card>
+	// TODO support plug and play widgets
+	// {pvCreditToMe.value && pvCreditToMe.value.hits? <CreditToMe credits={pvCreditToMe.value.hits} /> : null}
+	// {Roles.iCan(C.CAN.uploadCredit).value ? <UploadCredit /> : null}
 	return (
 		<div className=''>
 			<h2>My Account</h2>
@@ -36,8 +37,6 @@ const AccountPage = () => {
 				{proles.resolved? <p>No role</p> : <Misc.Loading />}
 				{roles? roles.map((role, i) => <RoleLine key={i+role} role={role} />) : null}				
 			</Misc.Card>
-			{pvCreditToMe.value && pvCreditToMe.value.hits? <CreditToMe credits={pvCreditToMe.value.hits} /> : null}
-			{Roles.iCan(C.CAN.uploadCredit).value ? <UploadCredit /> : null}
 		</div>
 	);
 };

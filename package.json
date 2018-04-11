@@ -1,6 +1,6 @@
 {
   "name": "wwappbase.js",
-  "version": "0.4.8",
+  "version": "0.4.10",
   "description": "Useful common components for Winterwell's web apps.",
   "main": "bin/index.js",
   "files": [ "bin" ],
