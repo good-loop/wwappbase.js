@@ -1,6 +1,6 @@
 {
   "name": "wwappbase.js",
-  "version": "0.4.10",
+  "version": "0.4.11",
   "description": "Useful common components for Winterwell's web apps.",
   "main": "bin/index.js",
   "files": [ "bin" ],
@@ -23,11 +23,13 @@
 	"babel-preset-es2015": "^6.24.1",
 	"babel-cli": "^6.26.0",
 	"babel-plugin-transform-react-jsx": "^6.24.1",
-	"babel-preset-react": "^6.24.1"
-
+	"babel-preset-react": "^6.24.1",
+	"webpack": "^3.11.0",
+	"babel-loader": "^7.1.2"
   },
   "scripts": {
-	"compile":"babel src --quiet --plugins transform-react-jsx,transform-object-rest-spread,transform-es2015-arrow-functions --out-dir bin",
+	"compile":"babel src --quiet --plugins transform-exponentiation-operator,transform-react-jsx,transform-object-rest-spread,transform-es2015-arrow-functions --out-dir bin",
+	"test":"webpack --config webpack.config.js --progress --colors --watch",
 	"prepublish":"npm run compile"
   },
   "bugs": {
