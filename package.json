@@ -19,10 +19,15 @@
   "devDependencies": {
 	 "babel-plugin-transform-object-rest-spread": "^6.26.0",
 	 "babel-plugin-transform-exponentiation-operator": "^6.24.1",
-    "babel-plugin-transform-es2015-arrow-functions": "^6.22.0"
+    "babel-plugin-transform-es2015-arrow-functions": "^6.22.0",
+	"babel-preset-es2015": "^6.24.1",
+	"babel-cli": "^6.26.0",
+	"babel-plugin-transform-react-jsx": "^6.24.1",
+	"babel-preset-react": "^6.24.1"
+
   },
   "scripts": {
-	"prepare":"babel src --quiet --plugins transform-object-rest-spread,transform-es2015-arrow-functions --out-dir bin",
+	"prepare":"babel src --quiet --plugins transform-react-jsx,transform-object-rest-spread,transform-es2015-arrow-functions --out-dir bin",
 	"prepublish":"npm run prepare"
   },
   "bugs": {
