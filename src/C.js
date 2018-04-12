@@ -25,6 +25,7 @@ C.app = {
 // Roles.defineRole(C.ROLES.admin, C.CAN.values);
 // Roles.defineRole(C.ROLES.goodlooper, [C.CAN.edit, C.CAN.publish, C.CAN.goodloop]);
 
+
 // Below here: apps should leave as-is
 
 /**

@@ -2,8 +2,8 @@ var path = require('path');
 var webpack = require('webpack');
 
 module.exports = {
-  entry: ["babel-polyfill", './src/index.js'],
-  output: { path: __dirname, filename: './test/bundle.js' },
+  entry: ['./src/index.js'],
+  output: { path: __dirname, filename: './test/calstat-test-app/src-js/wwappbase-test-output.js' },
   devtool: 'source-map',
   resolve: {
     extensions: ['*', '.js', '.jsx'],
