@@ -188,3 +188,5 @@ Apr 12, 2018 2:45:00 PM Thread[DataLog.save,5,main] SEVERE: DataLog Cannot save!
 Apr 12, 2018 3:00:00 PM Thread[DataLog.save,5,main] FINE: DataLog Saving 7 simple + 2 dist + 0 historical 0...  butcher 
 Apr 12, 2018 3:00:00 PM Thread[DataLog.save,5,main] WARNING: DataLog SQLStorage: Stat cannot access the DB yet: no DB url / login details  butcher 
 Apr 12, 2018 3:00:00 PM Thread[DataLog.save,5,main] SEVERE: DataLog Cannot save! Database not initialised. Losing counts for: [mem_used, stat_bucket_retro_set, mem_free, stat_bucket_dist, stat_bucket_count, time.minutes, stat_bucket_retro_count] [Stat, Stat/counts]  butcher 
+Apr 12, 2018 3:15:00 PM Thread[DataLog.save,5,main] FINE: DataLog Saving 7 simple + 2 dist + 0 historical 0...  butcher 
+Apr 12, 2018 3:15:00 PM Thread[DataLog.save,5,main] WARNING: DataLog SQLStorage: Stat cannot access the DB yet: no DB url / login details  butcher 
