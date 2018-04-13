@@ -1,5 +1,4 @@
-"use strict";
-
+'use strict';
 import Enum from 'easy-enums';
 import Roles from './Roles';
 
@@ -47,6 +46,9 @@ C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED 
 
 C.STATUS = new Enum('loading clean dirty saving');
 
+/** dialogs you can show/hide.*/
+C.show = new Enum('LoginWidget');
+
 export default C;
 // also for debug
-window.C = C;
+// window.C = C;

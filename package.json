@@ -2,7 +2,7 @@
   "name": "wwappbase.js",
   "version": "0.4.14",
   "description": "Useful common components for Winterwell's web apps.",
-  "main": "bin/wwappbase.js",
+  "main": "bin/index.js",
   "files": [ "bin" ],
   "keywords": [],
   "author": "Daniel Winterstein",
@@ -43,7 +43,8 @@
 
   },
   "scripts": {
-	"compile":"webpack -p",
+	"compile":"babel src --plugins transform-react-jsx,transform-es2015-spread,transform-es2015-arrow-functions,transform-exponentiation-operator --out-dir bin",
+	"sanitycheck": "webpack --config webpack.dev.config.js",
 	"watch":"webpack --config webpack.dev.config.js",
 	"prepublish":"npm run compile"
   },
