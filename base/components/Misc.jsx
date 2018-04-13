@@ -15,24 +15,31 @@ import DataStore from '../plumbing/DataStore';
 import ActionMan from '../plumbing/ActionMan';
 import ServerIO from '../plumbing/ServerIO';
 import printer from '../utils/printer';
-import C from "../C";
-import Money from '../data/Money';
+import C from '../C';
+import Money from '../data/charity/Money';
 import Autocomplete from 'react-autocomplete';
 // import I18n from 'easyi18n';
 import {getType, getId, nonce} from '../data/DataClass';
 import md5 from 'md5';
-import Settings from '../plumbing/Settings';
+import Settings from '../Settings';
 
 const Misc = {};
 
 /**
 E.g. "Loading your settings...""
+See https://www.w3schools.com/howto/howto_css_loader.asp
+http://tobiasahlin.com/spinkit/
 */
-Misc.Loading = ({text}) => (
-	<div>
-		<span className="glyphicon glyphicon-cog spinning" /> Loading {text || ''}...
-	</div>
-);
+Misc.Loading = ({text}) => {
+	return (<div className='loader-box'><center>	
+		<div className="loader" />
+		{text===undefined? 'Loading...' : text}
+	</center>
+	</div>);
+	// <div>
+	// 	<span className="glyphicon glyphicon-cog spinning" /> Loading {text || ''}...
+	// </div>
+};
 
 /**
  * 
@@ -63,6 +70,7 @@ Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSi
 		amount = {value: amount, currency:'GBP'};
 	}
 	let value = amount? amount.value : 0;
+	if (isNaN(value)) value = 0; // avoid ugly NaNs
 	if (maximumFractionDigits===0) { // because if maximumSignificantDigits is also set, these two can conflict
 		value = Math.round(value);
 	}
@@ -115,7 +123,7 @@ Misc.Time = ({time}) => {
 Misc.Logo = ({service, size, transparent, bgcolor, color}) => {
 	assert(service, 'Misc.Logo');
 	if (service==='twitter' || service==='facebook'|| service==='instagram') {
-		return <Misc.Icon fa={service+"-square"} size={size==='small'? '2x' : '4x'} className={'color-'+service} />;
+		return <span className={'color-'+service}><Misc.Icon fa={service+"-square"} size={size==='small'? '2x' : '4x'} /></span>;
 	}
 	let klass = "img-rounded logo";
 	if (size) klass += " logo-"+size;
@@ -158,31 +166,50 @@ Misc.Icon = ({glyph, fa, size, className, ...other}) => {
  * @param modelValueFromInput {?Function} See standardModelValueFromInput
  * @param required {?Boolean} If set, this field should be filled in before a form submit. 
 * 		TODO mark that somehow
+* @param validator {?(value, rawValue) => String} Generate an error message if invalid
+* @param https {?Boolean} if true, urls must use https not http (recommended)
  */
-Misc.PropControl = ({type="text", path, prop, label, help, error, recursing, ...stuff}) => {
+Misc.PropControl = ({type="text", path, prop, label, help, error, validator, recursing, ...stuff}) => {
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
-	if (Misc.ControlTypes.isdate(type) && ! error && ! recursing) {
-		const value = DataStore.getValue(proppath);
-		if (value) {
+	if (Misc.ControlTypes.isdate(type) && ! validator) {
+		validator = (v, rawValue) => {
+			if ( ! v) {
+				// raw but no date suggests the server removed it
+				if (rawValue) return 'Please use the date format yyyy-mm-dd';
+				return null;
+			}
 			try {
-				let sdate = "" + new Date(value);
+				let sdate = "" + new Date(v);
 				if (sdate === 'Invalid Date') {
-					error = 'Please use the date format yyyy-mm-dd';
+					return 'Please use the date format yyyy-mm-dd';
 				}
 			} catch (er) {
-				error = 'Please use the date format yyyy-mm-dd';
+				return 'Please use the date format yyyy-mm-dd';
 			}
-		} else {
-			const rawPath = path.concat(prop+"_raw");
-			const rawValue = DataStore.getValue(rawPath);
-			// raw but no date suggests the server removed it
-			if (rawValue) error = 'Please use the date format yyyy-mm-dd';
-		}
+		};
+	} // date
+	// url: https
+	if (stuff.https !== false && (Misc.ControlTypes.isurl(type) || Misc.ControlTypes.isimg(type) || Misc.ControlTypes.isimgUpload(type))
+			&& ! validator)
+	{
+		validator = v => {
+			if (v && v.substr(0,5) === 'http:') {
+				return "Please use https for secure urls";
+			}
+			return null;
+		};
+	}
+	// validate!
+	if (validator) {
+		const value = DataStore.getValue(proppath);
+		const rawPath = path.concat(prop+"_raw");
+		const rawValue = DataStore.getValue(rawPath);
+		error = validator(value, rawValue);
 	}
 
 	// label / help? show it and recurse
@@ -204,6 +231,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, error, recursing, ...
 		);
 	}
 
+	// unpack
 	let {item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
 	assert( ! type || Misc.ControlTypes.has(type), 'Misc.PropControl: '+type);
@@ -234,7 +262,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, error, recursing, ...
 		</div>);
 	} // ./checkbox
 
-	// Yes-no radio buttons? (eg in the Gift Aid form)
+	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
 	if (type === 'yesNo') {
 		const onChange = e => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
@@ -322,6 +350,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, error, recursing, ...
 	}
 
 	if (type==='img') {
+		delete otherStuff.https;
 		return (<div>
 				<FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
 			<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} style={{background:bg}} /></div>
@@ -330,6 +359,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, error, recursing, ...
 	}
 
 	if (type === 'imgUpload') {
+		delete otherStuff.https;
 		const uploadAccepted = (accepted, rejected) => {
 			const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
 			const load = (event) => console.log('UPLOAD SUCCESS', event);
@@ -366,6 +396,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, error, recursing, ...
 	} // ./imgUpload
 
 	if (type==='url') {
+		delete otherStuff.https;
 		return (<div>
 			<FormControl type='url' name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
 			<div className='pull-right'><small>{value? <a href={value} target='_blank'>open in a new tab</a> : null}</small></div>
@@ -376,7 +407,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, error, recursing, ...
 	// date
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
-	if (type==='date') {
+	if (Misc.ControlTypes.isdate(type)) {
 		const acprops = {prop, item, value, onChange, ...otherStuff};
 		return <PropControlDate {...acprops} />;
 	}
@@ -690,7 +721,7 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 	if (type==='number') {		
 		return numFromAnything(inputValue);
 	}
-	// add in https:// if missing
+	// url: add in https:// if missing
 	if (type==='url' && eventType==='blur') {
 		if (inputValue.indexOf('://') === -1 && inputValue[0] !== '/' && 'http'.substr(0, inputValue.length) !== inputValue.substr(0,4)) {
 			inputValue = 'https://'+inputValue;
@@ -720,6 +751,7 @@ Misc.ImgThumbnail = ({url, style}) => {
 	return (<img className='img-thumbnail' style={style} alt='thumbnail' src={url} />);
 };
 
+Misc.VideoThumbnail = ({url}) => url? <video width={200} height={150} src={url} controls /> : null;
 
 /**
  * This replaces the react-bootstrap version 'cos we saw odd bugs there. 

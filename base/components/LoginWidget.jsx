@@ -4,17 +4,17 @@ import Login from 'you-again';
 import {Modal} from 'react-bootstrap';
 import { XId, uid, stopEvent, toTitleCase} from 'wwutils';
 import Cookies from 'js-cookie';
-import DataStore from '../plumbing/DataStore';
-import ActionMan from '../plumbing/ActionMan';
-import Misc from './Misc';
-import C from '../C.js';
+import DataStore from '../../plumbing/DataStore';
+import ActionMan from '../../plumbing/ActionMan';
+import Misc from '../Misc';
+import C from '../../C';
 
 // For testing
 if ( (""+window.location).indexOf('login=local') !== -1) {	
 	Login.ENDPOINT = 'http://localyouagain.winterwell.com/youagain.json';
 	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
 }
-const t = C && C.show && C.show.LoginWidget || null;
+
 /**
 	TODO:
 	- doEmailLogin(email, password) and doSocialLogin(service) are available as props now

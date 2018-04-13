@@ -8,6 +8,11 @@ import {encURI} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import C from '../C';
 
+import Money from '../data/charity/Money';
+import NGO from '../data/charity/NGO';
+import FundRaiser from '../data/charity/FundRaiser';
+import Project from '../data/charity/Project';
+
 import Misc from './Misc.jsx';
 
 
@@ -56,21 +61,30 @@ const shareOnFacebook = ({url, shareText, take2}) => {
 }; // ./shareOnFacebook
 
 
-const SocialShare = ({charity, donation, shareText}) => {
+const SocialShare = ({charity, fundraiser, donation, shareText}) => {
+	let item = fundraiser || charity;
 	if ( ! shareText) {
-		shareText = NGO.summaryDescription(charity) || NGO.displayName(charity);
+		if (fundraiser) {
+			shareText = fundraiser.story;
+		}
+		if ( ! shareText) {
+			shareText = NGO.summaryDescription(charity) || NGO.displayName(charity);
+		}
 	}
 	let lcn = ""+window.location;
+	let title = fundraiser? fundraiser.name : NGO.displayName(charity);
+	let desc = NGO.summaryDescription(charity);
+	let image = fundraiser? fundraiser.img || NGO.image(charity) : NGO.image(charity);
 	let pageInfo = {
-		title: NGO.displayName(charity),
-		image: NGO.image(charity),
-		desc:	NGO.summaryDescription(charity),
-		shareText: shareText
+		title,
+		image,
+		desc,
+		shareText
 	};
 	// TODO make this line nicer
 	// TODO just send the charity ID, and load the rest server side, to give a nicer url
 	// Also window.location might contain parameters we dont want to share.
-	let url = "https://app.sogive.org/share?link="+encURI(lcn)+"&title="+encURI(pageInfo.title)+"&image="+encURI(pageInfo.image)+"&desc="+encURI(pageInfo.desc);
+	let url = window.location.protocol+'//'+window.location.host+"/share?link="+encURI(lcn)+"&title="+encURI(pageInfo.title)+"&image="+encURI(pageInfo.image)+"&desc="+encURI(pageInfo.desc);
 	pageInfo.url = url;
 
 	return (

@@ -4,14 +4,20 @@ import ReactDOM from 'react-dom';
 import SJTest, {assert} from 'sjtest';
 import Login from 'you-again';
 import printer from '../utils/printer.js';
-import C from "../C";
+import C from '../C';
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIO';
-import Roles from '../plumbing/Roles';
+import Roles from '../Roles';
 import Misc from './Misc';
+import GiftAidForm from './GiftAidForm';
 import {XId} from 'wwutils';
+import Transfer from '../data/Transfer';
+import {LoginLink} from './LoginWidget/LoginWidget';
 
 const AccountPage = () => {
+	if ( ! Login.isLoggedIn()) {
+		return <div><h2>My Account: Please login</h2><LoginLink title='Login' /></div>;
+	}
 	let proles =Roles.getRoles();
 	let roles = proles.value;
 	const pvCreditToMe = DataStore.fetch(['list', 'Transfer', 'to:'+Login.getId()], () => {	
@@ -22,9 +28,6 @@ const AccountPage = () => {
 			// 	<Misc.Card title='Gift Aid'>
 			// 	<GiftAidForm />
 			// </Misc.Card>
-	// TODO support plug and play widgets
-	// {pvCreditToMe.value && pvCreditToMe.value.hits? <CreditToMe credits={pvCreditToMe.value.hits} /> : null}
-	// {Roles.iCan(C.CAN.uploadCredit).value ? <UploadCredit /> : null}
 	return (
 		<div className=''>
 			<h2>My Account</h2>
@@ -37,6 +40,8 @@ const AccountPage = () => {
 				{proles.resolved? <p>No role</p> : <Misc.Loading />}
 				{roles? roles.map((role, i) => <RoleLine key={i+role} role={role} />) : null}				
 			</Misc.Card>
+			{pvCreditToMe.value && pvCreditToMe.value.hits? <CreditToMe credits={pvCreditToMe.value.hits} /> : null}
+			{Roles.iCan(C.CAN.uploadCredit).value ? <UploadCredit /> : null}
 		</div>
 	);
 };
