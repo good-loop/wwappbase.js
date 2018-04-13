@@ -1,8 +1,8 @@
 {
   "name": "wwappbase.js",
-  "version": "0.4.13",
+  "version": "0.4.14",
   "description": "Useful common components for Winterwell's web apps.",
-  "main": "bin/index.js",
+  "main": "bin/wwappbase.js",
   "files": [ "bin" ],
   "keywords": [],
   "author": "Daniel Winterstein",
@@ -23,9 +23,9 @@
 	"babel-plugin-transform-async-to-generator": "^6.24.1",
 	"babel-plugin-transform-react-remove-prop-types": "^0.4.13",
 	"babel-polyfill": "^6.26.0",
-        "babel-preset-stage-2": "^6.24.1",
+  "babel-preset-stage-2": "^6.24.1",
 	"eslint-config-airbnb": "^15.1.0",
-        "eslint-plugin-import": "^2.2.0",
+  "eslint-plugin-import": "^2.2.0",
 	"eslint": "^4.19.1",
 	"eslint-plugin-jsx-a11y": "^4.0.0",
 	"eslint-plugin-react": "^6.10.3",
@@ -43,9 +43,8 @@
 
   },
   "scripts": {
-	"compile":"babel src --quiet --plugins transform-exponentiation-operator,transform-react-jsx,transform-object-rest-spread,transform-es2015-arrow-functions --out-dir bin",
+	"compile":"webpack -p",
 	"watch":"webpack --config webpack.dev.config.js",
-	"test":"gnome-terminal -e 'webpack --config webpack.dev.config.js --colors --progress' && cd test/calstat-test-app/ && npm run calstat-test",
 	"prepublish":"npm run compile"
   },
   "bugs": {
@@ -76,7 +75,6 @@
 	"you-again": "^0.7.0",
 	"js-cookie": "^2.2.0",
 	"lodash": "^4.17.4",
-	"easy-enums": "^1.1.5",
 	"easyi18n": "^1.1.0"
   }
 }

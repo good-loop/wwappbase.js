@@ -3,7 +3,7 @@ var webpack = require('webpack');
 
 module.exports = {
   entry: ['./src/index.js'],
-  output: { path: __dirname, filename: './test/calstat-test-app/src-js/wwappbase-test-output.js' },
+  output: { path: __dirname, filename: './bin/wwappbase.js' },
   devtool: 'source-map',
   resolve: {
     extensions: ['*', '.js', '.jsx'],
