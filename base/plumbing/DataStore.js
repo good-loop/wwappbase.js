@@ -1,5 +1,5 @@
 
-import C from '../C.js';
+import C from '../C';
 import _ from 'lodash';
 import {getId, getType} from '../data/DataClass';
 import {assert,assMatch} from 'sjtest';
