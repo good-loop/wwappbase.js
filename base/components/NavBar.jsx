@@ -2,7 +2,7 @@ import React from 'react';
 
 import AccountMenu from './AccountMenu';
 import C from '../C';
-import Roles from '../base/Roles';
+import Roles from '../Roles';
 
 /**
  * 

@@ -5,8 +5,6 @@ import SJTest, {assert} from 'sjtest';
 import Login from 'you-again';
 import printer from '../utils/printer.js';
 import C from '../C';
-import Roles from '../base/Roles';
-import Misc from './Misc';
 
 const E404Page = () => {
 	return (
