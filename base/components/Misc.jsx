@@ -12,7 +12,6 @@ import PV from 'promise-value';
 import Dropzone from 'react-dropzone';
 
 import DataStore from '../plumbing/DataStore';
-import ActionMan from '../plumbing/ActionMan';
 import ServerIO from '../plumbing/ServerIO';
 import printer from '../utils/printer';
 import C from '../C';
@@ -826,48 +825,6 @@ Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
 		return React.cloneElement(Kid, {collapse, onHeaderClick: onHeaderClick});
 	});
 	return (<div className='CardAccordion'>{kids}</div>);
-};
-
-/**
- * save buttons
- * TODO auto-save on edit -- copy from sogive
- */
-Misc.SavePublishDiscard = ({type, id, hidden }) => {
-	assert(C.TYPES.has(type), 'Misc.SavePublishDiscard');
-	assMatch(id, String);
-	let localStatus = DataStore.getLocalEditsStatus(type, id);
-	let isSaving = C.STATUS.issaving(localStatus);	
-	let item = DataStore.getData(type, id);
-	// request a save?
-	if (C.STATUS.isdirty(localStatus) && ! isSaving) {
-		saveDraftFn({type,id});
-	}
-	// if nothing has been edited, then we can't publish, save, or discard
-	// NB: modified is a persistent marker, managed by the server, for draft != published
-	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && ! item.modified;
-
-	// Sometimes we just want to autosave drafts!
-	if (hidden) return <span />;
-	const vis ={visibility: isSaving? 'visible' : 'hidden'};
-
-	return (<div className='SavePublishDiscard' title={item && item.status}>
-		<div><small>Status: {item && item.status}, Modified: {localStatus} {isSaving? "saving...":null}</small></div>
-		<button className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
-			Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-		</button>
-		&nbsp;
-		<button className='btn btn-primary' disabled={isSaving || noEdits} onClick={() => ActionMan.publishEdits(type, id)}>
-			Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-		</button>
-		&nbsp;
-		<button className='btn btn-warning' disabled={isSaving || noEdits} onClick={() => ActionMan.discardEdits(type, id)}>
-			Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-		</button>
-		&nbsp;
-		<button className='btn btn-danger' disabled={isSaving} onClick={() => ActionMan.delete(type, id)} >
-			Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />
-		</button>
-	</div>);
 };
 
 /**

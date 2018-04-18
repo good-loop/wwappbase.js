@@ -15,7 +15,7 @@ C.app = {
 	logo: "/img/logo.png"
 };
 
- C.TYPES = new Enum("App Share NGO User Donation Project Event FundRaiser Basket Ticket Money Transfer");;
+C.TYPES = new Enum("App Share NGO User Donation Project Event FundRaiser Basket Ticket Money Transfer");;
 // C.ROLES = new Enum("editor admin company goodlooper");
 // C.CAN = new Enum("edit publish admin editEvent test uploadCredit goodloop manageDonations");
 // // setup roles

@@ -9,7 +9,6 @@ import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIO';
 import Roles from '../Roles';
 import Misc from './Misc';
-import GiftAidForm from './GiftAidForm';
 import {XId} from 'wwutils';
 import Transfer from '../data/Transfer';
 import {LoginLink} from './LoginWidget/LoginWidget';
