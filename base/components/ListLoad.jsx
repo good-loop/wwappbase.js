@@ -28,8 +28,8 @@ import {getType, getId, nonce} from '../data/DataClass';
  */
 const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
-	assert(!status || C.KStatus.has(status), "ListLoad - odd status " + status);
-	let path = DataStore.getValue(['location','path']);
+	assert( ! status || C.KStatus.has(status), "ListLoad - odd status " + status);
+	let path = DataStore.getValue(['location', 'path']);
 	let id = path[1];
 	if (id) return null;
 	if ( ! servlet) servlet = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
@@ -53,7 +53,7 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	});
 	if ( ! pvItems.resolved) {
 		return (
-			<Misc.Loading text={type.toLowerCase()+'s'} />
+			<Misc.Loading text={type.toLowerCase() + 's'} />
 		);
 	}
 	if ( ! ListItem) {
@@ -94,7 +94,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
 	return (
 		<div className='ListItemWrapper'>
 			{checkboxes? <div className='pull-left'><Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} /></div> : null}
-			<a 	href={itemUrl} 
+			<a href={itemUrl}
 				onClick={event => onPick({ event, navpage, id })}
 				className={'ListItem btn btn-default status-'+item.status}
 			>
@@ -123,7 +123,7 @@ const createBlank = ({type, navpage, base, make}) => {
 	if ( ! base) base = {};
 	// make an id?
 	if ( ! getId(base)) {
-	let id = nonce(8);
+		let id = nonce(8);
 		base.id = id;
 	}
 	const id = getId(base);
