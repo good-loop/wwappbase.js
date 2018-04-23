@@ -3,7 +3,7 @@ import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
 import {isa, nonce, defineType} from './DataClass';
 import {uid, blockProp} from 'wwutils';
-import Money from './charity/Money';
+import Money from './Money';
 import C from '../C';
 import Login from 'you-again';
 import DataStore from '../plumbing/DataStore';

@@ -15,14 +15,7 @@ C.app = {
 	logo: "/img/logo.png"
 };
 
-C.TYPES = new Enum("App Share NGO User Donation Project Event FundRaiser Basket Ticket Money Transfer");;
-// C.ROLES = new Enum("editor admin company goodlooper");
-// C.CAN = new Enum("edit publish admin editEvent test uploadCredit goodloop manageDonations");
-// // setup roles
-// Roles.defineRole(C.ROLES.editor, [C.CAN.publish, C.CAN.editEvent]);
-// Roles.defineRole(C.ROLES.company, [C.CAN.uploadCredit]);
-// Roles.defineRole(C.ROLES.admin, C.CAN.values);
-// Roles.defineRole(C.ROLES.goodlooper, [C.CAN.edit, C.CAN.publish, C.CAN.goodloop]);
+C.TYPES = new Enum("App Share NGO User Donation Project Event FundRaiser Basket Ticket Money Transfer");
 
 
 // Below here: apps should leave as-is

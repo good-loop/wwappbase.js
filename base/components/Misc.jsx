@@ -15,7 +15,7 @@ import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIO';
 import printer from '../utils/printer';
 import C from '../C';
-import Money from '../data/charity/Money';
+import Money from '../data/Money';
 import Autocomplete from 'react-autocomplete';
 // import I18n from 'easyi18n';
 import {getType, getId, nonce} from '../data/DataClass';
