@@ -76,13 +76,7 @@ Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSi
 	let snum = new Intl.NumberFormat(Settings.locale, 
 		{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
 	).format(value);
-	// let snum;	
-	// if ( ! precision) {
-	// 	let sv2 = amount.value.toFixed(2);
-	// 	snum = printer.prettyNumber2_commas(sv2);
-	// } else {	
-	// 	snum = printer.prettyNumber(amount.value, precision);
-	// }
+
 	if ( ! minimumFractionDigits) {
 		// remove .0 and .00
 		if (snum.substr(snum.length-2) === '.0') snum = snum.substr(0, snum.length-2);
