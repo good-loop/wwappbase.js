@@ -12,9 +12,9 @@ import PV from 'promise-value';
 import Dropzone from 'react-dropzone';
 
 import DataStore from '../plumbing/DataStore';
-import ServerIO from '../plumbing/ServerIO';
+import ServerIO from '../plumbing/ServerIOBase';
 import printer from '../utils/printer';
-import C from '../C';
+import C from '../CBase';
 import Money from '../data/Money';
 import Autocomplete from 'react-autocomplete';
 // import I18n from 'easyi18n';
@@ -162,7 +162,7 @@ Misc.Icon = ({glyph, fa, size, className, ...other}) => {
 * @param validator {?(value, rawValue) => String} Generate an error message if invalid
 * @param https {?Boolean} if true, urls must use https not http (recommended)
  */
-Misc.PropControl = ({type="text", path, prop, label, help, error, validator, recursing, ...stuff}) => {
+Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, validator, recursing, ...stuff}) => {
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
@@ -207,18 +207,19 @@ Misc.PropControl = ({type="text", path, prop, label, help, error, validator, rec
 
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
-	if ((label || help || error) && ! Misc.ControlTypes.ischeckbox(type) && ! recursing) {
+	if ((label || help || tooltip || error) && ! Misc.ControlTypes.ischeckbox(type) && ! recursing) {
 		// Minor TODO help block id and aria-described-by property in the input
 		const labelText = label || '';
-		const helpIcon = help ? <Misc.Icon glyph='question-sign' title={help} /> : '';
+		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
 		// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 		// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 		return (
 			<div className={'form-group' + (error? ' has-error' : '')}>
-				<label htmlFor={stuff.name}>{labelText} {helpIcon}</label>
+				{label || tooltip? <label htmlFor={stuff.name}>{labelText} {helpIcon}</label> : null}
 				<Misc.PropControl
 					type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 				/>
+				{help? <span className="help-block">{help}</span> : null}
 				{error? <span className="help-block">{error}</span> : null}
 			</div>
 		);
@@ -248,9 +249,10 @@ Misc.PropControl = ({type="text", path, prop, label, help, error, validator, rec
 			if (saveFn) saveFn({path, prop, item, value: val});		
 		};
 		if (value===undefined) value = false;
-		const helpIcon = help ? <Misc.Icon glyph='question-sign' title={help} /> : null;
+		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : null;
 		return (<div>
 			<Checkbox checked={value} onChange={onChange} {...otherStuff}>{label} {helpIcon}</Checkbox>
+			{help? <span className="help-block">{help}</span> : null}
 			{error? <span className="help-block">{error}</span> : null}
 		</div>);
 	} // ./checkbox
@@ -681,24 +683,6 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
   />);
 }; //./autocomplete
 
-/**
- * A button which sets a DataStore address to a specific value
- * 
- * e.g.
- * <SetButton path={['widget','page']} value='2'>Next</SetButton>
- * is roughly equivalent to
- * <div onClick={() => DataStore.setValue(['widget','page'], 2)}>Next</div>
- * 
- * ??maybe phase this out in favour of just the direct use?? ^DW
- */
-Misc.SetButton = ({path, value, children, className}) => {
-	assert(path && path.length);
-	const doSet = () => {
-		DataStore.setValue(path, value);
-	};
-	return <span className={className} onClick={doSet}>{children}</span>;
-};
-
 
 /**
  * Convert inputs (probably text) into the model's format (e.g. numerical)
@@ -803,6 +787,10 @@ Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
 		return (<div className='CardAccordion'></div>);
 	}
 	assert(_.isArray(open), "Misc.jsx - CardAccordion - open not an array", open);
+	// NB: accordion with one child is not an array
+	if ( ! _.isArray(children)) {
+		children = [children];
+	}
 	// filter null, undefined
 	children = children.filter(x => !! x);
 	const kids = React.Children.map(children, (Kid, i) => {
@@ -821,6 +809,47 @@ Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
 	return (<div className='CardAccordion'>{kids}</div>);
 };
 
+/**
+ * save buttons
+ * TODO auto-save on edit -- copy from sogive
+ */
+Misc.SavePublishDiscard = ({type, id, hidden }) => {
+	assert(C.TYPES.has(type), 'Misc.SavePublishDiscard');
+	assMatch(id, String);
+	let localStatus = DataStore.getLocalEditsStatus(type, id);
+	let isSaving = C.STATUS.issaving(localStatus);	
+	let item = DataStore.getData(type, id);
+	// request a save?
+	if (C.STATUS.isdirty(localStatus) && ! isSaving) {
+		saveDraftFn({type,id});
+	}
+	// if nothing has been edited, then we can't publish, save, or discard
+	// NB: modified is a persistent marker, managed by the server, for draft != published
+	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && ! item.modified;
+
+	// Sometimes we just want to autosave drafts!
+	if (hidden) return <span />;
+	const vis ={visibility: isSaving? 'visible' : 'hidden'};
+
+	return (<div className='SavePublishDiscard' title={item && item.status}>
+		<div><small>Status: {item && item.status}, Modified: {localStatus} {isSaving? "saving...":null}</small></div>
+		<button className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
+			Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
+		</button>
+		&nbsp;
+		<button className='btn btn-primary' disabled={isSaving || noEdits} onClick={() => ActionMan.publishEdits(type, id)}>
+			Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
+		</button>
+		&nbsp;
+		<button className='btn btn-warning' disabled={isSaving || noEdits} onClick={() => ActionMan.discardEdits(type, id)}>
+			Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
+		</button>
+		&nbsp;
+		<button className='btn btn-danger' disabled={isSaving} onClick={() => ActionMan.delete(type, id)} >
+			Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />
+		</button>
+	</div>);
+};
 /**
  * 
  * @param {Boolean} once If set, this button can only be clicked once.

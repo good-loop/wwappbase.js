@@ -2,15 +2,15 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import _ from 'lodash';
 import SJTest, {assert} from 'sjtest';
-import C from'../C.js';
 
 import chartjs from 'chart.js';
-import RC2 from 'react-chartjs2';
+import RC2, {Line} from 'react-chartjs2';
 
 /**
 	@param dataFromLabel e.g. (label)adview -> time -> number
  */
-const ChartWidget = ({title, dataFromLabel}) => {
+const ChartWidget = ({title, dataFromLabel, ...stuff}) => {
+	console.log("ChartWidget", {title, dataFromLabel});
 	assert(dataFromLabel);
 	title = title || "Junk Data";
 	let label = "Stuff";
@@ -18,7 +18,7 @@ const ChartWidget = ({title, dataFromLabel}) => {
 	// function newDateString(days) {
 	// 	return moment().add(days, 'd').format(timeFormat);
 	// }
-	// let labels = ["January", "February", "March", "April", "May", "June", "July"];
+	let labels = [];
 	let datasets = [];
 	let keys = Object.keys(dataFromLabel);
 	let dataPoints = 0;
@@ -26,6 +26,7 @@ const ChartWidget = ({title, dataFromLabel}) => {
 		let key = keys[i];
 		// if (key !== 'mem_used') continue; Debug hack
 		let data = dataFromLabel[key];
+		labels.concat(Object.keys(data));
 		// if ( ! _.isArray(data)) {
 			// console.warn("skip not-an-array", key, data);
 			// continue;
@@ -37,14 +38,16 @@ const ChartWidget = ({title, dataFromLabel}) => {
 		console.warn(dset);
 		datasets.push(dset);
 	}
+	//window.z = datasets;
 	let chartData = {
-		// labels: labels,
-		datasets: datasets
+		labels,
+		datasets
 	}; //./data
 	let chartOptions = {
-		title: title,
+		//title: title,
 		scales: {
 			yAxes: [{
+				type: 'linear',
 				ticks: {
 					beginAtZero:true
 				}
@@ -59,11 +62,11 @@ const ChartWidget = ({title, dataFromLabel}) => {
 			}]
 		}
 	}; // ./options;
-	console.warn("Draw chart", chartOptions, chartData);
+	console.warn("RC2 Draw chart", chartOptions, chartData);
 	return (<div><h3>{title}</h3>
 				<RC2 data={chartData} options={chartOptions} type='line' />
 				<div>
-					<small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small>
+					{true ? <small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small> : null}
 				</div>
 			</div>);
 }; //./ChartWidget
@@ -72,7 +75,7 @@ const ChartWidget = ({title, dataFromLabel}) => {
  * @param data Array of {x (which can be a Time string), y}
  */
 const makeDataSet = (i, label, xydata) => {	
-	console.log(label, xydata);	
+	console.log('makeDataSet', label, xydata);	
 	// HACK pick a colour
 	let colors = ["rgba(75,192,192,1)", "rgba(192,75,192,1)", "rgba(192,192,75,1)", "rgba(75,75,192,1)", "rgba(75,192,75,1)", "rgba(192,75,75,1)"];
 	let color = colors[i % colors.length];

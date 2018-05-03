@@ -3,14 +3,14 @@
 import _ from 'lodash';
 import $ from 'jquery';
 import {SJTest, assert, assMatch} from 'sjtest';
-import C from '../C';
+import C from '../CBase';
 import DataStore from './DataStore';
 import {getId, getType} from '../data/DataClass';
 import Login from 'you-again';
 import {XId, encURI} from 'wwutils';
 
-import ServerIO from './ServerIO';
-import ActionMan from './ActionMan';
+import ServerIO from './ServerIOBase';
+import ActionMan from './ActionManBase';
 import {notifyUser} from './Messaging';
 
 /**
@@ -136,6 +136,7 @@ ServerIO.discardEdits = function(type, item) {
 
 /**
  * get an item from the backend -- does not save it into DataStore
+ * TODO merge with ServerIO.getData()
  */
 ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO - bad type: '+type);
@@ -144,17 +145,19 @@ ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
 	}
 	assMatch(id, String);
 	const params = {data: {status, ...other}, swallow};
-	return ServerIO.load('/'+servlet4type(type)+'/'+encURI(id)+'.json', params);
+	return ServerIO.getData(type, id, status, params);	
+	// return ServerIO.load('/'+servlet4type(type)+'/'+encURI(id)+'.json', params);
 };
 /**
  * get an item from DataStore, or call the backend if not there (and save it into DataStore)
+ * @returns PromiseValue
  */
-ActionMan.getDataItem = ({type, id, status, ...other}) => {
+ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
 	return DataStore.fetch(['data', type, id], () => {
-		return ServerIO.getDataItem({type, id, status, ...other});
-	});
+		return ServerIO.getDataItem({type, id, status, swallow, ...other});
+	}, ! swallow);
 };
 
 const CRUD = {	

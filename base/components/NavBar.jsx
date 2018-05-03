@@ -1,19 +1,14 @@
 import React from 'react';
 
 import AccountMenu from './AccountMenu';
-import C from '../C';
+import C from '../CBase';
 import Roles from '../Roles';
 
 /**
  * 
  * @param {*} page The current page
  */
-const NavBar = ({currentPage}) => {
-	// which pages?
-	let pages = ['dashboard', 'search'];
-	if (Roles.iCan(C.CAN.test).value) { // TODO for everyone, not just dev
-		pages = pages.concat(['event', 'fundraiser']);
-	}
+const NavBar = ({currentPage, pages}) => {
 	// make the page links
 	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
 	return (
@@ -34,7 +29,7 @@ const NavBar = ({currentPage}) => {
 						<span className="icon-bar" />
 					</button>
 					<a className="" href="#dashboard">
-						<img alt="SoGive logo" src="img/logo-white-sm.png" />
+						<img className='logo' alt="SoGive logo" src="img/logo-white-sm.png" />
 					</a>
 				</div>
 				<div id="navbar" className="navbar-collapse collapse">

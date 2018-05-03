@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import SJTest, {assert} from 'sjtest';
 import Login from 'you-again';
 import printer from '../utils/printer.js';
-import C from '../C';
+import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
 

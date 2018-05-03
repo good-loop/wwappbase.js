@@ -5,11 +5,11 @@ import SJTest, { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
 import printer from '../utils/printer.js';
 import {modifyHash} from 'wwutils';
-import C from '../C';
+import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
-import ServerIO from '../plumbing/ServerIO';
+import ServerIO from '../plumbing/ServerIOBase';
 import {getType, getId, nonce} from '../data/DataClass';
 
 /**

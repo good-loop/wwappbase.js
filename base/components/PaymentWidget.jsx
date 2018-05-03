@@ -6,7 +6,7 @@ import { StripeProvider, Elements, injectStripe,
 	CardNumberElement, CardExpiryElement, CardCVCElement, 
 	PaymentRequestButtonElement } from 'react-stripe-elements';
 
-import C from '../C';
+import C from '../CBase';
 import Money from '../data/Money';
 import Transfer from '../data/Transfer';
 import {assMatch} from 'sjtest';

@@ -1,32 +1,19 @@
 /** 
  * Wrapper for server calls.
- *
+ * This exports the same object as ServerIO.js -- it provides a generic base which ServerIO.js builds on.
  */
 import _ from 'lodash';
 import $ from 'jquery';
 import {assert, assMatch} from 'sjtest';
-import C from '../C.js';
+import C from '../../C.js';
 
 import Login from 'you-again';
 
 // Try to avoid using this for modularity!
 import {notifyUser} from './Messaging';
 
-// Error Logging - but only the first error
-window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {
-	// NB: source & line num are not much use in a minified file
-	let msg = error? ""+error+"\n\n"+error.stack : ""+messageOrEvent;
-	$.ajax('/log', {data: {
-		msg: window.location+' '+msg+' user-id: '+Login.getId(), // NB: browser type (user agent) will be sent as a header
-		type: "error"
-	}});
-});
-
 // Allow for local to point at live for debugging
-window.APIBASE = 
-	// ''; Normally use this!
-	'https://test.sogive.org';
-	// 'https://app.sogive.org';
+window.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for testing
 
 const ServerIO = {};
 export default ServerIO;
@@ -34,8 +21,7 @@ export default ServerIO;
 window.ServerIO = ServerIO;
 
 // allow switching backend during testing
-ServerIO.base = 
-	null;
+ServerIO.base = null;
 	// 'https://app.sogive.org';
 
 ServerIO.upload = function(file, progress, load) {

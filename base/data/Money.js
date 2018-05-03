@@ -3,7 +3,7 @@
 */
 import {assert} from 'sjtest';
 import {isa} from './DataClass';
-import C from '../C';
+import C from '../CBase';
 
 /** impact utils */
 const Money = {};
@@ -51,6 +51,7 @@ Money.value = ma => {
 Money.isa = (obj) => {
 	if ( ! obj) return false;
 	if (isa(obj, C.TYPES.Money)) return true;
+	if (isa(obj, C.TYPES.MonetaryAmount)) return true; // old data!
 	// allow blank values
 	if (isNumeric(obj.value) || obj.value==='') return true;
 };
