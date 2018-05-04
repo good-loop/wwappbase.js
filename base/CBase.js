@@ -15,9 +15,6 @@ C.app = {
 	logo: "/img/logo.png"
 };
 
-C.TYPES = new Enum("App Share NGO User Donation Project Event FundRaiser Basket Ticket Money Transfer");
-
-
 // Below here: apps should leave as-is
 
 /**
@@ -39,8 +36,7 @@ C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED 
 
 C.STATUS = new Enum('loading clean dirty saving');
 
-/** dialogs you can show/hide.*/
-C.show = new Enum('LoginWidget');
+C.CRUDACTION = new Enum('new save publish discard-edits delete');
 
 export default C;
 // also for debug
