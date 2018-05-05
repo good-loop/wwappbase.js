@@ -20,12 +20,60 @@ if ( (""+window.location).indexOf('login=local') !== -1) {
 	- Use them in the appropriate section of the form
 */
 
-const STATUS_PATH = ['widget', C.show.LoginWidget, 'status'];
+const STATUS_PATH = ['widget', 'LoginWidget', 'status'];
 
 const LoginLink = () => {
-	return (<a href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); DataStore.setShow(C.show.LoginWidget, true); } } >
+	return (<a href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); } } >
 		Login or Register
 	</a>);
+};
+
+
+/**
+		Login or Signup (one widget)
+		See SigninScriptlet
+
+*/
+const LoginWidget = ({showDialog, logo, title, services}) => {
+	if (showDialog === undefined) {
+		showDialog = DataStore.getValue(['widget','LoginWidget', 'show']);
+		// NB: the app is shown regardless
+	}
+	if ( ! services) services = ['twitter', 'facebook'];
+	let verb = DataStore.getValue(verbPath) || 'login';
+
+	if ( ! title) title = `Welcome ${verb==='login'? '(back)' : ''} to {C.app.name}`;
+
+	const heading = {
+		login: 'Log In',
+		register: 'Register',
+		reset: 'Reset Password'
+	}[verb];
+
+	return (
+		<Modal show={showDialog} className="login-modal" onHide={() => LoginWidget.hide()}>
+			<Modal.Header closeButton>
+				<Modal.Title>
+					<Misc.Logo service={logo} size='large' transparent={false} />
+					{title}					
+				</Modal.Title>
+			</Modal.Header>
+			<Modal.Body>
+				<LoginWidgetGuts services={services} />
+			</Modal.Body>
+			<Modal.Footer>
+				<SwitchVerb />
+			</Modal.Footer>
+		</Modal>
+	);
+}; // ./LoginWidget
+
+LoginWidget.show = () => {
+	DataStore.setValue(['widget','LoginWidget', 'show'], true);
+};
+
+LoginWidget.hide = () => {
+	DataStore.setValue(['widget','LoginWidget', 'show'], false);
 };
 
 const canSignIn = {
@@ -82,7 +130,7 @@ const emailLogin = ({verb, app, email, password}) => {
 		DataStore.setValue(STATUS_PATH, C.STATUS.clean);
 		if (Login.isLoggedIn()) {
 			// close the dialog on success
-			DataStore.setShow(C.show.LoginWidget, false);
+			LoginWidget.hide();
 		} else {
 			// poke React via DataStore (e.g. for Login.error)
 			DataStore.update({});
@@ -108,7 +156,7 @@ const EmailSignin = ({verb, onLogin}) => {
 			let call = Login.reset(e)
 				.then(function(res) {
 					if (res.success) {
-						DataStore.setValue(['widget', C.show.LoginWidget, 'reset-requested'], true);
+						DataStore.setValue(['widget', 'LoginWidget', 'reset-requested'], true);
 						if (onLogin) onLogin(res);
 					} else {
 						// poke React via DataStore (for Login.error)
@@ -146,7 +194,7 @@ const EmailSignin = ({verb, onLogin}) => {
 				<label>Password</label>
 				<Misc.PropControl type='password' path={path} item={person} prop='password' />
 			</div>}
-			{verb==='reset' && DataStore.getValue('widget', C.show.LoginWidget, 'reset-requested')? <div className="alert alert-info">A password reset email has been sent out.</div> : null}
+			{verb==='reset' && DataStore.getValue('widget', 'LoginWidget', 'reset-requested')? <div className="alert alert-info">A password reset email has been sent out.</div> : null}
 			<div className="form-group">
 				<button type="submit" className="btn btn-primary form-control" disabled={C.STATUS.isloading(status)}>
 					{ buttonText }
@@ -158,7 +206,7 @@ const EmailSignin = ({verb, onLogin}) => {
 	);
 }; // ./EmailSignin
 
-const verbPath = ['widget',C.show.LoginWidget,'verb'];
+const verbPath = ['widget','LoginWidget','verb'];
 
 const ResetLink = ({verb}) => {
 	if (verb !== 'login') return null;
@@ -186,44 +234,6 @@ const LoginError = function() {
 };
 
 
-/**
-		Login or Signup (one widget)
-		See SigninScriptlet
-
-*/
-const LoginWidget = ({showDialog, logo, title, services}) => {
-	if (showDialog === undefined) {
-		showDialog = DataStore.getShow('LoginWidget');
-		// NB: the app is shown regardless
-	}
-	if ( ! services) services = ['twitter', 'facebook'];
-	let verb = DataStore.getValue(verbPath) || 'login';
-
-	if ( ! title) title = `Welcome ${verb==='login'? '(back)' : ''} to {C.app.name}`;
-
-	const heading = {
-		login: 'Log In',
-		register: 'Register',
-		reset: 'Reset Password'
-	}[verb];
-
-	return (
-		<Modal show={showDialog} className="login-modal" onHide={() => DataStore.setShow(C.show.LoginWidget, false)}>
-			<Modal.Header closeButton>
-				<Modal.Title>
-					<Misc.Logo service={logo} size='large' transparent={false} />
-					{title}					
-				</Modal.Title>
-			</Modal.Header>
-			<Modal.Body>
-				<LoginWidgetGuts services={services} />
-			</Modal.Body>
-			<Modal.Footer>
-				<SwitchVerb />
-			</Modal.Footer>
-		</Modal>
-	);
-}; // ./LoginWidget
 
 
 const LoginWidgetEmbed = ({services, verb, onLogin}) => {

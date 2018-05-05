@@ -136,7 +136,6 @@ ServerIO.discardEdits = function(type, item) {
 
 /**
  * get an item from the backend -- does not save it into DataStore
- * TODO merge with ServerIO.getData()
  */
 ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO - bad type: '+type);
@@ -145,9 +144,11 @@ ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
 	}
 	assMatch(id, String);
 	const params = {data: {status, ...other}, swallow};
-	return ServerIO.getData(type, id, status, params);	
-	// return ServerIO.load('/'+servlet4type(type)+'/'+encURI(id)+'.json', params);
+	let url = ServerIO.getUrlForItem({type, id, status});
+	return ServerIO.load(url, params);
 };
+
+
 /**
  * get an item from DataStore, or call the backend if not there (and save it into DataStore)
  * @returns PromiseValue

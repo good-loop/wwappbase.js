@@ -47,6 +47,37 @@ ServerIO.upload = function(file, progress, load) {
 };
 
 
+
+/**
+ * ??Should we force filters into a query string `q`, or use JSON objects??
+ */
+ServerIO.search = function(type, filter) {
+	assert(C.TYPES.has(type), type);
+	let servlet = ServerIO.getServletForType(type);
+	let url = '/'+servlet+'/list.json';
+	let params = {
+		data: {}
+	};
+	if (filter) {
+		params.data.filter = JSON.stringify(filter);
+		if (filter.q) params.data.q = filter.q;
+	}
+	return ServerIO.load(url, params);
+};
+
+
+/**
+ * Note: this can be over-ridden to special case some types
+ */
+ServerIO.getUrlForItem = ({type, id, status}) => {
+	let servlet = ServerIO.getServletForType(type);
+	let url = '/'+servlet+'/'+encURI(id)+'.json';
+	return url;
+};
+ServerIO.getServletForType = (type) => {
+	return type.toLowerCase();
+};
+
 /**
  * Submits an AJAX request. This is the key base method
  *
@@ -154,9 +185,4 @@ ServerIO.addDefaultParams = function(params) {
 	if ( ! params) params = {};
 	if ( ! params.data) params.data = {};
 	return params;
-};
-
-ServerIO.importDataSet = function(dataset) {
-	assert(_.isString(dataset));
-	return ServerIO.load('/import.json', {data: {dataset}} );
 };
