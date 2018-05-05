@@ -472,10 +472,12 @@ const PropControlMoney = ({prop, value, path, proppath,
 	}
 	//Money.assIsa(value); // type can be blank
 	// handle edits
-	const onMoneyChange = e => {		
+	const onMoneyChange = e => {
+		// TODO move more of this into Money.js as Money.setValue()
+		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined		
 		let newVal = numFromAnything(e.target.value);
-		value.raw = e.target.value;
-		value.value = newVal;
+		value = Money.setValue(value, newVal);
+		value.raw = e.target.value; // Store raw, so we can display blank strings
 		DataStore.setValue(proppath, value, true); // force update 'cos editing the object makes this look like a no-op
 		// console.warn("£", value, proppath);
 		if (saveFn) saveFn({path, value});
@@ -813,7 +815,7 @@ Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
  * save buttons
  * TODO auto-save on edit -- copy from sogive
  */
-Misc.SavePublishDiscard = ({type, id, hidden }) => {
+Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => {
 	assert(C.TYPES.has(type), 'Misc.SavePublishDiscard');
 	assMatch(id, String);
 	let localStatus = DataStore.getLocalEditsStatus(type, id);
@@ -827,6 +829,9 @@ Misc.SavePublishDiscard = ({type, id, hidden }) => {
 	// NB: modified is a persistent marker, managed by the server, for draft != published
 	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && ! item.modified;
 
+	let disablePublish = isSaving || noEdits || cannotPublish;
+	let publishTooltip = cannotPublish? 'Your account cannot publish this.' : (noEdits? 'Nothing to publish' : 'Publish your edits!');
+	let disableDelete = isSaving || cannotDelete;
 	// Sometimes we just want to autosave drafts!
 	if (hidden) return <span />;
 	const vis ={visibility: isSaving? 'visible' : 'hidden'};
@@ -837,7 +842,7 @@ Misc.SavePublishDiscard = ({type, id, hidden }) => {
 			Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
 		&nbsp;
-		<button className='btn btn-primary' disabled={isSaving || noEdits} onClick={() => ActionMan.publishEdits(type, id)}>
+		<button className='btn btn-primary' disabled={disablePublish} title={publishTooltip} onClick={() => ActionMan.publishEdits(type, id)}>
 			Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
 		&nbsp;
@@ -845,7 +850,7 @@ Misc.SavePublishDiscard = ({type, id, hidden }) => {
 			Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
 		&nbsp;
-		<button className='btn btn-danger' disabled={isSaving} onClick={() => ActionMan.delete(type, id)} >
+		<button className='btn btn-danger' disabled={disableDelete} onClick={() => ActionMan.delete(type, id)} >
 			Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
 	</div>);
@@ -895,6 +900,3 @@ Misc.SubmitButton = ({path, url, once, className='btn btn-primary', onSuccess, c
 };
 
 export default Misc;
-// // TODO rejig for export {
-// 	PropControl: Misc.PropControl
-// };

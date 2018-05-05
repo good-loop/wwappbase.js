@@ -123,7 +123,7 @@ class StripeThingsClass extends Component {
 			currency: (amount.currency || 'gbp').toLowerCase(),
 			total: {
 				label: `Payment to ${recipient}`,
-				amount: residual.value*100, // uses pence
+				amount: Math.round(residual.value * 100), // uses pence
 			},
 		});
 
@@ -150,6 +150,8 @@ class StripeThingsClass extends Component {
 		console.log("PaymentWidget - handleSubmit", event);
 		// Don't submit and cause a pageload!
 		event.preventDefault();
+		// block repeat clicks, and clear old errors
+		this.setState({stripeError: false, errorMsg: '', isSaving: true});
 
 		// Within the context of `Elements`, this call to createToken knows which Element to
 		// tokenize, since there's only one in this group.
@@ -157,7 +159,18 @@ class StripeThingsClass extends Component {
 			name: this.props.username,
 			email: this.state.email
 		};
-		this.props.stripe.createToken(tokenInfo).then(({token, ...data}) => this.props.onToken(token));
+		// get the token from stripe
+		this.props.stripe.createToken(tokenInfo)		
+			// then call custom processing (e.g. publish donation)
+			.then(({token, error, ...data}) => {
+				if (token) {
+					this.props.onToken(token);
+				} else {
+					this.setState({stripeError: error, errorMsg: error && error.message, isSaving: false});
+				}
+			})
+			// on abject (eg. network) failure, mark the form as active again
+			.catch(() => this.setState({isSaving: false}));
 	
 		// However, this line of code will do the same thing:
 		// this.props.stripe.createToken({type: 'card', name: 'Jenny Rosen'});
@@ -174,6 +187,7 @@ class StripeThingsClass extends Component {
 		}
 
 		const {amount, recipient, credit} = this.props;
+		const isSaving = this.state.isSaving;
 		// TODO an email editor if this.props.email is unset
 		return (
 			<Form horizontal onSubmit={(event) => this.handleSubmit(event)}>
@@ -205,7 +219,8 @@ class StripeThingsClass extends Component {
 						</div>
 					</Col>
 				</FormGroup>
-				<button className='btn btn-primary btn-lg pull-right' type='submit'>Submit Payment</button>
+				<button className='btn btn-primary btn-lg pull-right' type='submit' disabled={isSaving} >Submit Payment</button>
+				{this.state.errorMsg? <div className='alert alert-danger'>{this.state.errorMsg}</div> : null}
 			</Form>
 		);
 	} // ./render()

@@ -9,8 +9,12 @@ import Misc from './Misc';
 import C from '../CBase';
 
 
-const ShareLink = () => {
-	return (<a href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); DataStore.setShow('ShareWidget', true); } } >
+/**
+ * a Share This button
+ */
+const ShareLink = ({thingId}) => {
+	const basePath = ['widget', 'ShareWidget', thingId];
+	return (<a href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); DataStore.setValue(basePath.concat('show'), true); } } >
 		<Misc.Icon glyph='share' /> Share
 	</a>);
 };
@@ -43,32 +47,52 @@ const deleteShare = ({share}) => {
 	DataStore.setValue(spath, shares);
 };
 
+//Collate data from form and shares paths, then send this data off to the server
+const sendEmailNotification = (url, emailData) => {
+	assMatch(url, String);
+
+	const params = {
+		data: emailData
+	};
+	ServerIO.load(url, params);
+};
+
 /**
  * A dialog for adding and managing shares
  * {
  * 	thingId: {!String} id for the share
- * 	name: {?String} optional name
+ * 	name: {?String} optional name for the thing
  * }
+ * 
+ * Note: This does NOT include the share button -- see ShareLink for that
 */
 const ShareWidget = ({thingId, name}) => {
+	const basePath = ['widget', 'ShareWidget', thingId];
+	let data = DataStore.getValue(basePath);
+	if (!data) {
+		data = {form: {}};
+		DataStore.setValue(basePath, data);
+	}
+	const {warning, show, form} = data;
 	if ( ! thingId) {
 		console.warn("ShareWidget - no thingId");
 		return null;
 	}
-	let showDialog = DataStore.getShow('ShareWidget');
+	const formPath = basePath.concat('form');
 	if ( ! name) name = thingId;
 	let title = "Share "+name;
-	let withXId = DataStore.getValue(['widget', 'ShareWidget', 'add', 'email']);
+	let { email: withXId, enableNotification } = form;
 	if (withXId) withXId += '@email';
 	let sharesPV = DataStore.fetch(['misc','shares', thingId], () => {
 		let req = Login.getShareList(thingId);
 		return req;
 	});
+	let validEmailBool = C.emailRegex.test(DataStore.getValue(formPath.concat('email')));
 	// TODO share by url on/off
 	// TODO share message email for new sharers
 
 	return (
-		<Modal show={showDialog} className="share-modal" onHide={() => DataStore.setShow('ShareWidget', false)}>
+		<Modal show={show} className="share-modal" onHide={() => DataStore.setValue(basePath.concat('show'), false)}>
 			<Modal.Header closeButton>
 				<Modal.Title>
 					<Misc.Icon glyph='share' size='large' />
@@ -79,13 +103,19 @@ const ShareWidget = ({thingId, name}) => {
 				<div className="container-fluid">
 					<div className="row form-inline">
 						<Misc.PropControl label='Email to share with' 
-							path={['widget', 'ShareWidget', 'add']} prop={'email'} type='email' />
-						&nbsp;
-						<button className='btn btn-primary' disabled={ ! withXId} 
-							onClick={() => { shareThing({thingId, withXId}); }}
-							title='Share it :)'
-						>						
-							<Misc.Icon glyph='share'/>
+							className='ng-invalid' path={formPath} prop={'email'} type='email' />
+					</div>	
+					<div className="row">
+						<Misc.PropControl path={formPath} prop='enableNotification' label='Send notification email' type='checkbox'/>
+						<Misc.PropControl path={formPath} prop='optionalMessage' id='OptionalMessage' label='Attached message' type='textarea' disabled={!enableNotification}/>
+						<button className='btn btn-primary btn-lg btn-block' disabled={!validEmailBool} 
+							onClick={()=>{
+								const {form} = DataStore.getValue(basePath) || {};
+
+								shareThing({thingId, withXId});
+								sendEmailNotification('/testEmail', {...form, senderId: Login.getId()});
+								}}>
+							Submit
 						</button>
 					</div>
 					<div className="row">
@@ -110,13 +140,14 @@ const ListShares = ({list}) => {
 };
 
 const SharedWith = ({share}) => {
-	return (<div>
-		{share._to}
+	return (
+		<div>
 		<button title="remove this person's access"
-			onClick={() => deleteShare(share)}
+				onClick={ () => deleteShare({share}) }
 		>
 			<Misc.Icon glyph='remove'/>
 		</button>
+			<p>{share._to}</p>
 	</div>);
 };
 
