@@ -23,6 +23,11 @@ ActionMan.crud = (type, id, action, item) => {
 	assert(C.TYPES.has(type), type);
 	assert(C.CRUDACTION.has(action), type);
 	if ( ! item) item = DataStore.getData(type, id);
+	if ( ! item) {
+		// No item? fine for action=delete. Make a transient dummy here
+		assert(action==='delete', action+" "+type+" "+id);
+		item = {id, "@type": type};
+	}
 	if ( ! getId(item)) {
 		assert(id==='new', id);
 		item.id = id;
@@ -160,6 +165,26 @@ ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
 		return ServerIO.getDataItem({type, id, status, swallow, ...other});
 	}, ! swallow);
 };
+
+/**
+ * Smooth update: Get an update from the server without null-ing out the local copy.
+ */
+ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
+	console.log("refreshing...", type, id);
+	assert(C.TYPES.has(type), 'Crud.js - ActionMan refreshDataItem - bad type: '+type);
+	assMatch(id, String);
+	return ServerIO.getDataItem({type, id, status, ...other})
+		.then(res => {
+			if (res.success) {
+				console.log("refreshed", type, id);
+				let item = res.cargo;
+				DataStore.setData(item);				
+			} else {
+				console.warn("refresh-failed", res, type, id);
+			}
+		});
+};
+
 
 const CRUD = {	
 };
