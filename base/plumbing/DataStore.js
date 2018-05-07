@@ -445,33 +445,3 @@ DataStore.DATA_MODIFIED_PROPERTY = 'localStatus';
 export default DataStore;
 // accessible to debug
 if (typeof(window) !== 'undefined') window.DataStore = DataStore;
-
-/**
- * Store all the state in one big object??
- */
-DataStore.update({
-	data: {
-		NGO: {},
-		User: {},
-		Donation: {}
-	},
-	draft: {
-		NGO: {},
-		User: {}
-	},
-	// Use list to store search results
-	list: {
-
-	},
-	focus: {
-		NGO: null,
-		User: null,
-	},	
-	widget: {},
-	misc: {
-	},
-	/** status of server requests, for displaying 'loading' spinners 
-	 * Normally: transient.$item_id.status
-	*/
-	transient: {}
-});

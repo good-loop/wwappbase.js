@@ -6,23 +6,22 @@ import _ from 'lodash';
 import $ from 'jquery';
 import {assert, assMatch} from 'sjtest';
 import C from '../../C.js';
+import {encURI} from 'wwutils';
 
 import Login from 'you-again';
 
 // Try to avoid using this for modularity!
 import {notifyUser} from './Messaging';
 
-// Allow for local to point at live for debugging
-window.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for testing
-
 const ServerIO = {};
 export default ServerIO;
 // for debug
 window.ServerIO = ServerIO;
 
-// allow switching backend during testing
-ServerIO.base = null;
-	// 'https://app.sogive.org';
+// Allow for local to point at live for debugging
+ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for testing
+
+
 
 ServerIO.upload = function(file, progress, load) {
 	// Provide a pre-constructed XHR so we can insert progress/load callbacks
@@ -102,8 +101,8 @@ ServerIO.getServletForType = (type) => {
 ServerIO.load = function(url, params) {
 	assMatch(url,String);
 	// prepend the API base url? e.g. to route all traffic from a local dev build to the live app.sogive.org backend.
-	if (APIBASE && url.indexOf('http') === -1) {
-		url = APIBASE+url;
+	if (ServerIO.APIBASE && url.indexOf('http') === -1) {
+		url = ServerIO.APIBASE+url;
 	}
 	console.log("ServerIO.load", url, params);
 	params = ServerIO.addDefaultParams(params);
@@ -113,10 +112,6 @@ ServerIO.load = function(url, params) {
 	);
 	// sanity check: status
 	assert( ! params.data.status || C.KStatus.has(params.data.status), params.data.status);
-	// add the base
-	if (url.substring(0,4) !== 'http' && ServerIO.base) {
-		url = ServerIO.base + url;
-	}
 	params.url = url;
 	// send cookies & add auth
 	Login.sign(params);

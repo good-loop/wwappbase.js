@@ -3,9 +3,9 @@
 	TODO It'd be nice to make this immutable (can we use Object.freeze to drive that thrgough??)
 */
 import {assert, assMatch} from 'sjtest';
-import {isa, defineType, getType} from '../DataClass';
 import {asNum} from 'wwutils';
-import C from '../../C';
+import {isa, defineType, getType} from './DataClass';
+import C from '../CBase';
 
 /** impact utils */
 const Money = defineType(C.TYPES.Money);
