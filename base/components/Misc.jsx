@@ -112,7 +112,8 @@ Misc.Time = ({time}) => {
 	}
 };
 
-/** eg a Twitter logo */
+/** eg a Twitter logo 
+ TODO transparent/opaque */
 Misc.Logo = ({service, size, transparent, bgcolor, color}) => {
 	assert(service, 'Misc.Logo');
 	if (service==='twitter' || service==='facebook'|| service==='instagram') {
@@ -124,7 +125,6 @@ Misc.Logo = ({service, size, transparent, bgcolor, color}) => {
 	if (service === 'instagram') file = '/img/'+service+'-logo.png';
 	if (service === C.app.service) {
 		file = C.app.logo;
-		if (transparent === false) file = '/img/SoGive-Light-70px.png';
 	}
 	return (
 		<img alt={service} data-pin-nopin="true" className={klass} src={file} />
@@ -786,7 +786,7 @@ Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
 	let open = DataStore.getValue(wcpath);
 	if ( ! open) open = [true]; // default to first kid open
 	if ( ! children) {
-		return (<div className='CardAccordion'></div>);
+		return (<div className='CardAccordion' />);
 	}
 	assert(_.isArray(open), "Misc.jsx - CardAccordion - open not an array", open);
 	// NB: accordion with one child is not an array
@@ -897,6 +897,13 @@ Misc.SubmitButton = ({path, url, once, className='btn btn-primary', onSuccess, c
 		{children}
 		<span className="glyphicon glyphicon-cd spinning" style={vis} />
 	</button>);
+};
+
+/**
+ * A minor convenience for raw html
+ */
+Misc.RawHtml = ({html}) => {
+	return <div dangerouslySetInnerHTML={{__html:html}} />;
 };
 
 export default Misc;

@@ -21,6 +21,28 @@ window.ServerIO = ServerIO;
 // Allow for local to point at live for debugging
 ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for testing
 
+/** 
+ * Call this from ServerIO.js 
+ * Safety check - if we deploy test code, it will complain. */
+ServerIO.checkBase = () => {	
+	if (ServerIO.APIBASE && C.isProduction()) {
+		const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE);
+		ServerIO.APIBASE = ''; // clear it
+		console.error(err);
+		window.onerror(err);
+	}
+};
+
+
+// Error Logging - but only the first error
+window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {
+	// NB: source & line num are not much use in a minified file
+	let msg = error? ""+error+"\n\n"+error.stack : ""+messageOrEvent;
+	$.ajax('/log', {data: {
+		msg: window.location+' '+msg+' user-id: '+Login.getId(), // NB: browser type (user agent) will be sent as a header
+		type: "error"
+	}});
+});
 
 
 ServerIO.upload = function(file, progress, load) {
