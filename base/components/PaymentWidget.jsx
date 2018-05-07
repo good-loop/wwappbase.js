@@ -25,6 +25,10 @@ const CREDIT_TOKEN = {
 	id: 'credit_token',
 	type: 'credit',
 };
+const FREE_TOKEN = {
+	id: 'free_token',
+	type: 'free',
+};
 
 /**
  * amount: {?Money} if null, return null
@@ -43,6 +47,21 @@ const PaymentWidget = ({amount, onToken, recipient, email}) => {
 	assMatch(onToken, Function, "PaymentWidget.jsx");
 	assMatch(recipient, String, "PaymentWidget.jsx");
 
+	// Money = £0? Then just a confirm button
+	if (Money.value(amount) === 0) {
+		const payNothing = (event) => (
+			onToken({
+				...FREE_TOKEN,
+				email,
+			})
+		);
+		return (
+			<div className='PaymentWidget'>			
+				<button onClick={payNothing} className='btn btn-primary'>Confirm Free Purchase</button>
+			</div>
+		);					
+	} // ./ £0
+
 	// Invoke the callback, with a minimal fake token that the servlet will catch
 	const skipAction = (event) => (
 		onToken({
@@ -58,7 +77,7 @@ const PaymentWidget = ({amount, onToken, recipient, email}) => {
 	);
 
 	// pay on credit??
-	let credit = Transfer.getCredit();
+	let credit = Transfer.getCredit(); // ??This is kind of SoGive specific
 	if (credit && Money.value(credit) > 0) {
 		if (Money.value(credit) >= Money.value(amount)) {
 			return (
