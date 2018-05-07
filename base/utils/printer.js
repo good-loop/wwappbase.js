@@ -33,9 +33,7 @@ Printer.HASHTAG = /(^|[^&A-Za-z0-9/])#([\w\-]+)/g;
 Printer.URL_REGEX = /https?\:\/\/[0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*(:(0-9)*‌​)*(\/?)([a-zA-Z0-9\-‌​\.\?\,\'\/\\\+&amp;%‌​\$#_]*)?/g;
 
 /**
- * Ported from StrUtils.java. TODO javascript's toPrecision could be
- * used to simplify this
- *
+ * @deprecated use prettyNumber
  * @param x
  * @param n
  * @return x to n significant figures
@@ -48,9 +46,11 @@ Printer.prototype.toNSigFigs = function(x, n) {
 };
 
 /**
+ * @param {?Number} x The number to format. If null/undefined, return ''.
  * Convenience for new Intl.NumberFormat().format() directly
  */
 Printer.prototype.prettyNumber = function(x, sigFigs) {
+	if (x===undefined || x===null) return '';
 	if ( ! sigFigs) sigFigs = 3;
 	let snum = new Intl.NumberFormat('en-GB', {maximumSignificantDigits: sigFigs}).format(x);
 	return snum;
