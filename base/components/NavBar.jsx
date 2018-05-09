@@ -29,7 +29,7 @@ const NavBar = ({currentPage, pages}) => {
 						<span className="icon-bar" />
 					</button>
 					<a className="" href="#dashboard">
-						<img className='logo' alt="SoGive logo" src="img/logo-white-sm.png" />
+						<img className='logo' alt={C.app.name} src={C.app.logo} />
 					</a>
 				</div>
 				<div id="navbar" className="navbar-collapse collapse">
