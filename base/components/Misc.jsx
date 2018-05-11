@@ -760,12 +760,14 @@ const saveDraftFn = _.debounce(
 /**
  * Just a convenience for a Bootstrap panel
  */
-Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, ...props}) => {
+Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
 	const h3 = (<h3 className="panel-title">{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
 		{title || ''} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
 	</h3>);
-	return (<div className="Card panel panel-default">
-		<div className={onHeaderClick? "panel-heading btn-link" : "panel-heading"} onClick={onHeaderClick} >
+	let hcssClasses = ['panel-heading', onHeaderClick? 'btn-link' : null].filter(x => !!x);
+
+	return (<div className={"Card panel " + (error? "panel-danger" : (warning? "panel-warning" : "panel-default")) }>
+		<div className={hcssClasses.join(" ")} onClick={onHeaderClick} >
 				{h3}
 				{ titleChildren }
 			</div>
@@ -779,6 +781,7 @@ Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildr
  * 
  * @param {?String} widgetName - Best practice is to give the widget a name.
  * @param {Misc.Card[]} children
+ *    children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
  */
 Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
 	// NB: React-BS provides Accordion, but it does not work with modular panel code. So sod that.
