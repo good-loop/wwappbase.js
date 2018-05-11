@@ -102,15 +102,17 @@ Money.isa = (obj) => {
 	if (obj.currency) return true;
 };
 
-
+/**
+ * @param base e.g. £1 is {currency:'GBP', value:1}
+ */
 Money.make = (base = {}) => {
 	const item = {
-		value: 0, // default
+		value: 0, // default to zero
 		currency: 'GBP', // default
 		...base, // Base comes after defaults so it overrides
 		'@type': C.TYPES.Money, // @type always last so it overrides any erroneous base.type
 	};
-
+	Money.value(item); // init v100p
 	Money.assIsa(item);
 	return item;
 };
