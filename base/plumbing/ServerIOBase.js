@@ -26,7 +26,7 @@ ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for
  * Safety check - if we deploy test code, it will complain. */
 ServerIO.checkBase = () => {	
 	if (ServerIO.APIBASE && C.isProduction()) {
-		const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE);
+		const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
 		ServerIO.APIBASE = ''; // clear it
 		console.error(err);
 		window.onerror(err);
