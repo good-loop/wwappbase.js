@@ -22,7 +22,6 @@ import Autocomplete from 'react-autocomplete';
 import {getType, getId, nonce} from '../data/DataClass';
 import md5 from 'md5';
 import Settings from '../Settings';
-import ActionMan from '../plumbing/ActionManBase';
 
 const Misc = {};
 
