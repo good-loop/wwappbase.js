@@ -32,7 +32,7 @@ else if (window.location.host.indexOf("local")===0) C.SERVER_TYPE = 'local';
 C.HTTPS = C.SERVER_TYPE==='local'? 'http' : 'https';
 C.isProduction = () => C.SERVER_TYPE!=='local' && C.SERVER_TYPE!=='test';
 
-C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED TRASH');
+C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED TRASH ALL_BAR_TRASH');
 
 C.STATUS = new Enum('loading clean dirty saving');
 

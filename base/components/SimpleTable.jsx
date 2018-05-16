@@ -54,8 +54,15 @@ class SimpleTable extends React.Component {
 		});
 	}
 
+	componentDidCatch(error, info) {
+		// TODO Display fallback UI
+		this.setState({error, info});
+		console.error(error, info); 
+		if (window.onerror) window.onerror("SimpleTable caught error", null, null, null, error);
+	}
+
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow} = this.props;		
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter} = this.props;		
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -63,20 +70,24 @@ class SimpleTable extends React.Component {
 			data = Object.keys(dataObject).map(k => { return {key:k, value:dataObject[k]}; });
 		}
 		assert( ! data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);
+		const originalData = data;
 
-		let tableSettings = this.state; // DataStore.getValue('widget', tableName);
+		let tableSettings = this.state;
 		if ( ! tableSettings) {
 			tableSettings = {};
-			DataStore.setValue(['widget', tableName], tableSettings, false);
 		}
+		// filter?		
+		if (tableSettings.filter) {
+			data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
+		}
+		// sort?
 		if (tableSettings.sortBy !== undefined) {
 			// TODO pluck the right column
 			let column = columns[tableSettings.sortBy];
 			// sort fn
 			let sortFn = column.sortMethod;
 			if ( ! sortFn) {
-				let getter = column.sortAccessor;
-				if ( ! getter) getter = a => getValue({item:a, column:column});
+				let getter = sortGetter(column);
 				sortFn = (a,b) => defaultSortMethodForGetter(a,b,getter);
 			}
 			// sort!
@@ -91,8 +102,17 @@ class SimpleTable extends React.Component {
 		// TODO refactor to build this first, then generate the html
 		let dataArray = [[]];
 
+		const filterChange = e => {
+			const v = e.target.value;
+			this.setState({filter: v});
+		};
+
 		return (
 			<div className={className}>
+				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
+					value={tableSettings.filter || ''} 
+					onChange={filterChange} 
+					/></div> : null}
 				<table className={cn}>
 					<thead>
 						<tr>{columns.map((col, c) => 
@@ -167,6 +187,16 @@ const getValue = ({item, row, column}) => {
 };
 
 /**
+ * @param {Column} column 
+ * @returns {Function} item -> value for use in sorts and totals
+ */
+const sortGetter = (column) => {
+	let getter = column.sortAccessor;
+	if ( ! getter) getter = a => getValue({item:a, column:column});
+	return getter;
+}
+
+/**
  * A default sort
  * NOTE: this must have the column object passed in
  * @param {*} a 
@@ -230,11 +260,15 @@ const Cell = ({item, row, column, dataRow}) => {
 const TotalCell = ({data, column}) => {
 	// sum the data for this column
 	let total = 0;
+	const getter = sortGetter(column);
 	data.forEach((rItem, row) => {
-		const v = getValue({item:rItem, row, column});
+		const v = getter(rItem);
 		if (_.isNumber(v)) total += v;
 	});
-	return <td>{defaultCellRender(total, column)}</td>;
+	if ( ! total) return <td></td>;
+	// ??custom cell render might break on a Number. But Money seems to be robust about its input.
+	let render = column.Cell || defaultCellRender;
+	return <td>{render(total, column)}</td>;
 };
 const Editor = ({row, column, value, item}) => {
 	let path = column.path || DataStore.getPath(item);
