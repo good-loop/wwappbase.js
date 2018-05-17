@@ -113,28 +113,30 @@ class SimpleTable extends React.Component {
 					value={tableSettings.filter || ''} 
 					onChange={filterChange} 
 					/></div> : null}
-				<table className={cn}>
-					<thead>
-						<tr>{columns.map((col, c) => 
-							<Th table={this} tableSettings={tableSettings} key={c} column={col} c={c} dataArray={dataArray} headerRender={headerRender} />)}
-						</tr>
-						{addTotalRow? 
-							<tr>
-								<th>Total</th>
-								{columns.slice(1).map((col, c) => 
-									<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
-								}
+				<div className='table-responsive'>
+					<table className={cn}>
+						<thead>
+							<tr>{columns.map((col, c) => 
+								<Th table={this} tableSettings={tableSettings} key={c} column={col} c={c} dataArray={dataArray} headerRender={headerRender} />)}
 							</tr>
-							: null}
-					</thead>
-					<tbody>					
-						{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={columns} dataArray={dataArray} />) : null}
-					</tbody>
-					{csv? <tfoot><tr>
-						<td colSpan={columns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
-					</tr></tfoot>
-						: null}	
-				</table>				
+							{addTotalRow? 
+								<tr>
+									<th>Total</th>
+									{columns.slice(1).map((col, c) => 
+										<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+									}
+								</tr>
+								: null}
+						</thead>
+						<tbody>					
+							{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={columns} dataArray={dataArray} />) : null}
+						</tbody>
+						{csv? <tfoot><tr>
+							<td colSpan={columns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
+						</tr></tfoot>
+							: null}	
+					</table>				
+				</div>
 			</div>
 		);
 	}
