@@ -62,7 +62,7 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter} = this.props;		
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage} = this.props;		
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -96,6 +96,10 @@ class SimpleTable extends React.Component {
 				data = data.reverse();
 			}
 		} // sort
+		// max rows?
+		if (rowsPerPage) {
+			data = data.slice(0, rowsPerPage);
+		}
 		let cn = 'table'+(className? ' '+className : '');
 
 		// HACK build up an array view of the table
