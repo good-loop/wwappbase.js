@@ -14,6 +14,7 @@ import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
 import DataStore from '../plumbing/DataStore';
+import { relative } from 'path';
 
 const str = printer.str;
 
@@ -111,17 +112,22 @@ class SimpleTable extends React.Component {
 			this.setState({filter: v});
 		};
 
+		// scrolling ideas:
+		// 1: have divs that move onScroll
+		// 2: have 3 tables, each of which uses visibility:hidden to only partly draw
+		// style={{position:'relative', overflowY:'auto', maxHeight:'200px'}}
+
 		return (
-			<div className={className}>
+			<div className='SimpleTable'>
 				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
 					value={tableSettings.filter || ''} 
 					onChange={filterChange} 
 					/></div> : null}
-				<div className='table-responsive'>
+				<div>
 					<table className={cn}>
 						<thead>
 							<tr>{columns.map((col, c) => 
-								<Th table={this} tableSettings={tableSettings} key={c} column={col} c={c} dataArray={dataArray} headerRender={headerRender} />)}
+								<Th table={this} tableSettings={tableSettings} key={c} column={col} c={c} dataArray={dataArray} headerRender={headerRender} showSortButtons />)}
 							</tr>
 							{addTotalRow? 
 								<tr>
@@ -139,7 +145,7 @@ class SimpleTable extends React.Component {
 							<td colSpan={columns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
 						</tr></tfoot>
 							: null}	
-					</table>				
+					</table>
 				</div>
 			</div>
 		);
@@ -147,7 +153,7 @@ class SimpleTable extends React.Component {
 } // ./SimpleTable
 
 // TODO onClick={} sortBy
-const Th = ({column, c, table, tableSettings, dataArray, headerRender}) => {
+const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortButtons}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
 	let sortByMe = (""+tableSettings.sortBy) === (""+c);
 	let onClick = e => { 
@@ -167,9 +173,12 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender}) => {
 	if (headerRender) hText = headerRender(column);
 	else hText = column.Header || column.accessor || str(column);
 	dataArray[0].push(column.Header || column.accessor || str(column)); // csv gets the text, never jsx!
+	const cellGuts = [hText];
+	if (sortByMe) cellGuts.push(<Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />);
+	else if (showSortButtons) cellGuts.push(<Misc.Icon className='text-muted' glyph='triangle-bottom' />);
+
 	return (<th onClick={onClick} >
-		{hText}
-		{sortByMe? <Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} /> : null}
+		{cellGuts}
 	</th>);
 };
 
