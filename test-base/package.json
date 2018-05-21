@@ -24,7 +24,6 @@
     "typescript": "^2.8.3"
   },
   "scripts": {
-    "jest-sogive": "jest --config ./jest.config.json",
-    "jest-goodloop": "jest --config /home/$USER/winterwell/adserver/test/jest.config.json"
+    "jest": "jest --config ./jest.config.json"
   }
 }

@@ -41,10 +41,11 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
  * where jest is set to read the setup file from
  */
 const puppeteer = require('puppeteer');
+const { logFolderPath } = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
 const headless = false;
-const SCREENSHOT_FOLDER_BASE = `test-screenshots`;
+const SCREENSHOT_FOLDER_BASE = `${logFolderPath}/Screenshots(success)/`;
 
 /**Setup functions run before each test
  * If you only want something to run once
@@ -68,10 +69,13 @@ beforeEach(_asyncToGenerator(function* () {
  * How barbaric.
  */
 afterEach(_asyncToGenerator(function* () {
+    //console.log(window);
     const browser = window.__BROWSER__;
     const pages = yield browser.pages();
     const date = new Date().toISOString();
-    //fs.appendFileSync('this_log.txt', this);
+    fs.appendFileSync('this_log.txt', Object.keys(window.fails).map(function (key) {
+        return `{${key}: ${typeof window[key] === 'string' ? window[key] : ''}}\n`;
+    }));
     //Start at 1 to skip over chrome home page
     for (let i = 1; i < pages.length; i++) {
         yield takeScreenshot({ page: pages[i], date });

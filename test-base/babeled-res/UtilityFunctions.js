@@ -65,6 +65,8 @@ const disableAnimations = {
         }`
 };
 
+const logFolderPath = `test-results`;
+
 function writeToLog(string) {
     fs.appendFileSync('log.txt', string);
 }
@@ -76,6 +78,7 @@ function timeout(ms) {
 module.exports = {
     disableAnimations,
     login,
+    logFolderPath,
     onFail,
     timeout,
     writeToLog

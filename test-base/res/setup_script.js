@@ -3,10 +3,11 @@
  * where jest is set to read the setup file from
  */
 const puppeteer = require('puppeteer');
+const {logFolderPath} = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
 const headless = false;
-const SCREENSHOT_FOLDER_BASE = `test-screenshots`;
+const SCREENSHOT_FOLDER_BASE = `${logFolderPath}/Screenshots(success)/`;
 
 /**Setup functions run before each test
  * If you only want something to run once
@@ -33,7 +34,10 @@ afterEach(async () => {
     const browser = window.__BROWSER__;
     const pages = await browser.pages();
     const date = new Date().toISOString();
-    //fs.appendFileSync('this_log.txt', this);
+    // fs.appendFileSync('this_log.txt', 
+    //     Object.keys(window.fails)
+    //     .map(key => `{${key}: ${typeof window[key] === 'string' ? window[key] : ''}}\n`)
+    // );
     //Start at 1 to skip over chrome home page
     for(let i=1; i<pages.length; i++) {
         await takeScreenshot({page: pages[i], date});

@@ -25,6 +25,7 @@ const disableAnimations = {
         }`
 };
 
+const logFolderPath = `test-results`;
 
 /**Might actually be a good idea to add CSS selectors for certain elements in here
  * Many parts of page are generated from common source: will be identified by common CSS selector
@@ -62,6 +63,7 @@ async function login({page, username, password}) {
 module.exports = {
     disableAnimations,
     login,
+    logFolderPath,
     onFail, 
     timeout,  
     writeToLog

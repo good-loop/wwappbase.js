@@ -1,10 +1,10 @@
 const fs = require('fs');
+const {logFolderPath} = require('../babeled-res/UtilityFunctions');
 
 class CustomReporter {
     constructor(globalConfig, options) {
       this._globalConfig = globalConfig;
       this._options = options;
-      //this.__SCREENSHOT_FOLDER_BASE__ = 'test-screenshots';
     }
     
   //Seems to run after test suite is completed rather than
@@ -18,7 +18,7 @@ class CustomReporter {
       //Also know 100% that code in here will be called regardless of success/failure
       //Still need to somehow access browser object from in here for this to work
 
-      //const folderPath = `${this.__SCREENSHOT_FOLDER_BASE__}/${new Date().toISOString().slice(0, 10)} : ${testName}`;
+    //   const folderPath = `${logFolderPath}/Logs(failure)/${new Date().toISOString().slice(0, 10)} : ${testName}`;
       //Could check for failures either in 'aggregatedTestResult.numFailedTests'
       //or iterate over testResult.testResults
       // const date = new Date().toISOString();
@@ -31,6 +31,9 @@ class CustomReporter {
       //         date
       //     });
       // }
+      console.log(test);
+      console.log(testResult);
+      console.log(aggregatedTestResult);
   }
 
   onRunComplete(contexts, results) {
