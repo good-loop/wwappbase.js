@@ -152,7 +152,6 @@ const SharedWith = ({share}) => {
 	</div>);
 };
 
-<<<<<<< HEAD
 const canRead = (thingId) => {
 	const p = Login.checkShare(thingId)
 		.then(res => {
@@ -174,9 +173,6 @@ const canWrite = (thingId) => {
 	return PV(p);
 };
 
-export default ShareWidget;
-export {ShareLink, canRead, canWrite};
-=======
 const AccessDenied = ({thingId}) => {
 	return (<Misc.Card title='Access Denied :('>
 		<div>Sorry - you don't have access to this content.
@@ -187,6 +183,6 @@ const AccessDenied = ({thingId}) => {
 };
 
 export default ShareWidget;
-export {ShareLink, ShareWidget, AccessDenied};
->>>>>>> 4755debbf415858ac072fa301dbe690b16c87b6e
+export {ShareLink, ShareWidget, AccessDenied, canRead, canWrite};
+
 
