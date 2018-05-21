@@ -82,7 +82,9 @@ ServerIO.upload = function(file, progress, load) {
 
 
 /**
+ * TODO refactor merge with Crud.js ServerIO.list
  * ??Should we force filters into a query string `q`, or use JSON objects??
+ * @returns {Promise}
  */
 ServerIO.search = function(type, filter) {
 	assert(C.TYPES.has(type), type);

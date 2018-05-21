@@ -186,6 +186,23 @@ ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
 		});
 };
 
+ActionMan.list = ({type, status, q}) => {
+	assert(C.TYPES.has(type), type);
+	return DataStore.fetch(['list', type, q || 'all', status], () => {
+		return ServerIO.list({type, status, q});
+	});
+};
+
+ServerIO.list = ({type, status, q}) => {
+	let servlet = ServerIO.getServletForType(type);
+	assert(C.KStatus.has(status), status);
+	return ServerIO.load('/'+servlet+'/list.json', { data: { status, q } })
+	.then((res) => {
+		// console.warn(res);
+		return res.cargo.hits;
+	});
+};
+
 
 const CRUD = {	
 };

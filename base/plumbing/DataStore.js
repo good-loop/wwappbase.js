@@ -173,6 +173,7 @@ class Store {
 	 * @param {*} value The new value. Can be null to null-out a value.
 	 * @param {boolean} update Set to false to switch off sending out an update. Set to true to force an update even if it looks like a no-op.
 	 * undefined is true-without-force
+	 * @returns value
 	 */
 	// TODO handle setValue(pathbit, pathbit, pathbit, value) too
 	setValue(path, value, update) {
@@ -184,7 +185,7 @@ class Store {
 		if (oldVal === value && update !== true && ! _.isObject(value)) {
 			// The no-op test only considers String and Number 'cos in place edits of objects are common and would cause problems here.
 			// console.log("setValue no-op", path, value, "NB: beware of in-place edits - use update=true to force an update");
-			return;
+			return oldVal;
 		}
 
 		// HACK: modify the url?
@@ -208,7 +209,7 @@ class Store {
 			if ( ! newTip) {
 				if (value===null) {
 					// don't make path for null values
-					return;
+					return value;
 				}
 				newTip = tip[pkey] = {};
 			}
@@ -224,9 +225,10 @@ class Store {
 			}
 		}
 		if (update !== false) {
-			console.log("setValue -> update", path, value);
+			// console.log("setValue -> update", path, value);
 			this.update();
 		}
+		return value;
 	} // ./setValue()
 
 	/**

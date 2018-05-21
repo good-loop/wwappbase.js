@@ -44,13 +44,7 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	// from data. 
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
-	let pvItems = DataStore.fetch(['list', type, 'all'], () => {
-		return ServerIO.load(`/${servlet}/list.json`, { data: { status, q } })
-			.then((res) => {
-				// console.warn(res);
-				return res.cargo.hits;
-			});
-	});
+	let pvItems = ActionMan.list({type, status, q});
 	if ( ! pvItems.resolved) {
 		return (
 			<Misc.Loading text={type.toLowerCase() + 's'} />
