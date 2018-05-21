@@ -41,8 +41,29 @@ async function onFail({error, page}) {
     //await takeScreenshot(page);
 }
 
-function writeToLog(string) {
-    fs.appendFileSync('log.txt', string);
+function writeToLog({contents, path, testName}) {
+    const date = new Date().toISOString();
+    if(!fs.existsSync(path)) {
+        fs.mkdirSync(path);
+    }
+    fs.appendFileSync(`${path}/${testName}:${date}.txt`, contents);  
+}
+
+async function takeScreenshot({page, path, date = new Date().toISOString()}) {
+    try {
+        await page.screenshot({path: `${path}/${date}.png`});
+    }
+    catch(e) {
+        //dir not found
+        //Shouldn't give infinite loop: mkdirSync throws error if directory can't be created
+        if (e.code === 'ENOENT') {
+            fs.mkdirSync(path);
+            await takeScreenshot(page);
+        }
+        else{
+            console.log('setup_script.js -- screenshot failed ' + e.code + ': ' + e.message);
+        }
+    }
 }
 
 function timeout(ms) {
@@ -65,6 +86,7 @@ module.exports = {
     login,
     logFolderPath,
     onFail, 
+    takeScreenshot,
     timeout,  
     writeToLog
 };

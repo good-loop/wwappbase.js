@@ -1,5 +1,7 @@
-const fs = require('fs');
-const {logFolderPath} = require('../babeled-res/UtilityFunctions');
+const {
+    logFolderPath,
+    writeToLog
+} = require('../babeled-res/UtilityFunctions');
 
 class CustomReporter {
     constructor(globalConfig, options) {
@@ -18,22 +20,26 @@ class CustomReporter {
       //Also know 100% that code in here will be called regardless of success/failure
       //Still need to somehow access browser object from in here for this to work
 
-    //   const folderPath = `${logFolderPath}/Logs(failure)/${new Date().toISOString().slice(0, 10)} : ${testName}`;
-      //Could check for failures either in 'aggregatedTestResult.numFailedTests'
-      //or iterate over testResult.testResults
-      // const date = new Date().toISOString();
-      // console.log(this);
-      // //Start at 1 to skip over chrome home page
-      // for(let i=1; i<pages.length; i++) {
-      //     await takeScreenshot({page: pages[i], date});
-      //     await writeToLog({
-      //         string: '',
-      //         date
-      //     });
-      // }
-      console.log(test);
-      console.log(testResult);
-      console.log(aggregatedTestResult);
+      //testResult contains results for entire test suite.
+      //Failure message can be got from testResult.testResults -> {failureMessages}
+      //fullName and title are found in the same place.
+      testResult.testResults
+      .forEach(runData => {
+          //Only log if there are error messages to report
+          if(runData.failureMessages.length !== 0) {
+            const contents = 
+                `Test name: ${runData.fullName}\nTime taken: ${runData.duration}\nFailure Messages:       
+                ${
+                    runData.failureMessages
+                    .map(message => message + '\n')
+                }`;
+            writeToLog({
+                testName: runData.fullName,
+                contents,
+                path: `${logFolderPath}/Logs(failure)`
+            });
+          }
+      });
   }
 
   onRunComplete(contexts, results) {

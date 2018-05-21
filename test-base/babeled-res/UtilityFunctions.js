@@ -20,9 +20,30 @@ let onFail = (() => {
     };
 })();
 
+let takeScreenshot = (() => {
+    var _ref2 = _asyncToGenerator(function* ({ page, path, date = new Date().toISOString() }) {
+        try {
+            yield page.screenshot({ path: `${path}/${date}.png` });
+        } catch (e) {
+            //dir not found
+            //Shouldn't give infinite loop: mkdirSync throws error if directory can't be created
+            if (e.code === 'ENOENT') {
+                fs.mkdirSync(path);
+                yield takeScreenshot(page);
+            } else {
+                console.log('setup_script.js -- screenshot failed ' + e.code + ': ' + e.message);
+            }
+        }
+    });
+
+    return function takeScreenshot(_x2) {
+        return _ref2.apply(this, arguments);
+    };
+})();
+
 /**Login to app. Should work for both SoGive and Good-loop */
 let login = (() => {
-    var _ref2 = _asyncToGenerator(function* ({ page, username, password }) {
+    var _ref3 = _asyncToGenerator(function* ({ page, username, password }) {
         if (!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
         yield page.click('#top-right-menu > li > a');
         yield page.click('#loginByEmail > div:nth-child(1) > input');
@@ -32,8 +53,8 @@ let login = (() => {
         yield page.keyboard.press('Enter');
     });
 
-    return function login(_x2) {
-        return _ref2.apply(this, arguments);
+    return function login(_x3) {
+        return _ref3.apply(this, arguments);
     };
 })();
 
@@ -67,8 +88,12 @@ const disableAnimations = {
 
 const logFolderPath = `test-results`;
 
-function writeToLog(string) {
-    fs.appendFileSync('log.txt', string);
+function writeToLog({ contents, path, testName }) {
+    const date = new Date().toISOString();
+    if (!fs.existsSync(path)) {
+        fs.mkdirSync(path);
+    }
+    fs.appendFileSync(`${path}/${testName}:${date}.txt`, contents);
 }
 
 function timeout(ms) {
@@ -80,6 +105,7 @@ module.exports = {
     login,
     logFolderPath,
     onFail,
+    takeScreenshot,
     timeout,
     writeToLog
 };

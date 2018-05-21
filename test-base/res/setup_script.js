@@ -3,11 +3,10 @@
  * where jest is set to read the setup file from
  */
 const puppeteer = require('puppeteer');
-const {logFolderPath} = require('../babeled-res/UtilityFunctions');
+const {takeScreenshot, logFolderPath} = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
-const headless = false;
-const SCREENSHOT_FOLDER_BASE = `${logFolderPath}/Screenshots(success)/`;
+const headless = true;
 
 /**Setup functions run before each test
  * If you only want something to run once
@@ -40,35 +39,11 @@ afterEach(async () => {
     // );
     //Start at 1 to skip over chrome home page
     for(let i=1; i<pages.length; i++) {
-        await takeScreenshot({page: pages[i], date});
-        await writeToLog({
-            string: '',
+        await takeScreenshot({
+            page: pages[i], 
+            path: `${logFolderPath}/Screenshots(success)`,
             date
         });
     }
     await window.__BROWSER__.close();
 }, 10000);
-
-//Maybe save screenshots to directory named after test run?
-//Going to be quite difficult figuring out what's what in there
-async function takeScreenshot({page, date = new Date().toISOString()}) {
-    const screenshot_folder_path = `${SCREENSHOT_FOLDER_BASE}/${date.slice(0,10)} : ${window.__TESTNAME__ || 'UnknownTest'}`;
-    try {
-        await page.screenshot({path: `${screenshot_folder_path}/${date}.png`});
-    }
-    catch(e) {
-        //dir not found
-        //Shouldn't give infinite loop: mkdirSync throws error if directory can't be created
-        if (e.code === 'ENOENT') {
-            fs.mkdirSync(screenshot_folder_path);
-            await takeScreenshot(page);
-        }
-        else{
-            console.log('setup_script.js -- screenshot failed ' + e.code + ': ' + e.message);
-        }
-    }
-}
-
-async function writeToLog({string, date}) {
-    fs.appendFileSync(`${SCREENSHOT_FOLDER_BASE}/${date.slice(0,10)} : ${window.__TESTNAME__ || 'UnknownTest'}/${date}.txt`, string);
-}
