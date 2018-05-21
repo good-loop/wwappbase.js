@@ -820,6 +820,10 @@ Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
  * TODO auto-save on edit -- copy from sogive
  */
 Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => {
+	// No anon edits
+	if ( ! Login.isLoggedIn()) {
+		return (<div className='SavePublishDiscard'><i>Login to save or publish edits</i></div>);
+	}
 	assert(C.TYPES.has(type), 'Misc.SavePublishDiscard');
 	assMatch(id, String);
 	let localStatus = DataStore.getLocalEditsStatus(type, id);

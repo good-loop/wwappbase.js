@@ -4,6 +4,7 @@ import Login from 'you-again';
 import {Modal} from 'react-bootstrap';
 import { XId, uid } from 'wwutils';
 import Cookies from 'js-cookie';
+import PV from 'promise-value';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
@@ -151,6 +152,27 @@ const SharedWith = ({share}) => {
 	</div>);
 };
 
+const canRead = (thingId) => {
+	const p = Login.checkShare(thingId)
+		.then(res => {
+			return res.cargo && res.cargo.read;
+		});
+	return PV(p);
+};
+
+/**
+ * 
+ * @param {String} thingId 
+ * @returns {PromiseValue<Boolean>} .value resolves to true if they can read
+ */
+const canWrite = (thingId) => {
+	const p = Login.checkShare(thingId)
+		.then(res => {
+			return res.cargo && res.cargo.write;
+		});
+	return PV(p);
+};
+
 export default ShareWidget;
-export {ShareLink};
+export {ShareLink, canRead, canWrite};
 
