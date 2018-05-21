@@ -1,7 +1,7 @@
-const {
-    logFolderPath,
-    writeToLog
-} = require('../babeled-res/UtilityFunctions');
+// const {
+//     logFolderPath
+// } = require('../babeled-res/UtilityFunctions');
+const fs = require('fs');
 
 class CustomReporter {
     constructor(globalConfig, options) {
@@ -33,10 +33,10 @@ class CustomReporter {
                     runData.failureMessages
                     .map(message => message + '\n')
                 }`;
-            writeToLog({
+            this.writeToLog({
                 testName: runData.fullName,
                 contents,
-                path: `${logFolderPath}/Logs(failure)`
+                path: `test-results/Logs(failure)`
             });
           }
       });
@@ -48,9 +48,13 @@ class CustomReporter {
       // console.log(this._globalConfig.testFailureExitCode);
   }
 
-  // async writeToLog({string, folderPath}) {
-  //   fs.appendFileSync(`${this.__SCREENSHOT_FOLDER_BASE__}/${date.slice(0,10)} : ${window.__TESTNAME__ || 'UnknownTest'}/${date}.txt`, string);
-  // }
-  }
+  writeToLog({contents, path, testName}) {
+    const date = new Date().toISOString();
+    if(!fs.existsSync(path)) {
+        fs.mkdirSync(path);
+    }
+    fs.appendFileSync(`${path}/${testName}:${date}.txt`, contents);  
+    }
+}
   
 module.exports = CustomReporter;

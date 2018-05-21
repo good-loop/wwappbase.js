@@ -27,6 +27,8 @@ const disableAnimations = {
 
 const logFolderPath = `test-results`;
 
+const APIBASE = window.location;
+
 /**Might actually be a good idea to add CSS selectors for certain elements in here
  * Many parts of page are generated from common source: will be identified by common CSS selector
  * Could end up being more flexible having these defined in here, so that changes in source code
@@ -39,14 +41,6 @@ const logFolderPath = `test-results`;
 async function onFail({error, page}) {
     console.log(`Utility functions onFail is deprecated. So is test-manager for that matter.`);
     //await takeScreenshot(page);
-}
-
-function writeToLog({contents, path, testName}) {
-    const date = new Date().toISOString();
-    if(!fs.existsSync(path)) {
-        fs.mkdirSync(path);
-    }
-    fs.appendFileSync(`${path}/${testName}:${date}.txt`, contents);  
 }
 
 async function takeScreenshot({page, path, date = new Date().toISOString()}) {
@@ -82,11 +76,11 @@ async function login({page, username, password}) {
 }
 
 module.exports = {
+    APIBASE,
     disableAnimations,
     login,
     logFolderPath,
     onFail, 
     takeScreenshot,
-    timeout,  
-    writeToLog
+    timeout
 };
