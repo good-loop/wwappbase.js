@@ -152,12 +152,30 @@ const SharedWith = ({share}) => {
 	</div>);
 };
 
-const canRead = (thingId) => {
-	const p = Login.checkShare(thingId)
-		.then(res => {
-			return res.cargo && res.cargo.read;
-		});
-	return PV(p);
+/**
+ * Namespaces data item IDs for sharing
+ * @param {!String} type e.g. Publisher
+ * @param {!String} id the item's ID
+ * @returns {String} the thingId to be used with Login.share functions
+ */
+const shareThingId = (type, id) => {
+	assert(C.TYPES.has(type), type+" not in "+C.TYPES);
+	assMatch(id, String);
+	return type+":"+id;
+};
+
+const canRead = (type, id) => canDo(type, id, 'read');
+
+const canDo = (type, id, rw) => {
+	let sid = shareThingId(type, id);
+	return DataStore.fetch(['misc','shares', id, 'canDo', rw], () => 
+		{
+			return Login.checkShare(sid)
+				.then(res => {
+					return (res.cargo && res.cargo[rw]) || false;
+				});
+		}
+	);	 // ./fetch
 };
 
 /**
@@ -165,13 +183,7 @@ const canRead = (thingId) => {
  * @param {String} thingId 
  * @returns {PromiseValue<Boolean>} .value resolves to true if they can read
  */
-const canWrite = (thingId) => {
-	const p = Login.checkShare(thingId)
-		.then(res => {
-			return res.cargo && res.cargo.write;
-		});
-	return PV(p);
-};
+const canWrite = (type, id) => canDo(type, id, 'write');
 
 const AccessDenied = ({thingId}) => {
 	return (<Misc.Card title='Access Denied :('>
@@ -183,6 +195,6 @@ const AccessDenied = ({thingId}) => {
 };
 
 export default ShareWidget;
-export {ShareLink, ShareWidget, AccessDenied, canRead, canWrite};
+export {ShareLink, ShareWidget, AccessDenied, canRead, canWrite, shareThingId};
 
 
