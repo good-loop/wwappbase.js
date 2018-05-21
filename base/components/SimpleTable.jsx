@@ -14,6 +14,7 @@ import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
 import DataStore from '../plumbing/DataStore';
+import { relative } from 'path';
 
 const str = printer.str;
 
@@ -62,7 +63,7 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter} = this.props;		
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage} = this.props;		
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -96,6 +97,10 @@ class SimpleTable extends React.Component {
 				data = data.reverse();
 			}
 		} // sort
+		// max rows?
+		if (rowsPerPage) {
+			data = data.slice(0, rowsPerPage);
+		}
 		let cn = 'table'+(className? ' '+className : '');
 
 		// HACK build up an array view of the table
@@ -107,41 +112,48 @@ class SimpleTable extends React.Component {
 			this.setState({filter: v});
 		};
 
+		// scrolling ideas:
+		// 1: have divs that move onScroll
+		// 2: have 3 tables, each of which uses visibility:hidden to only partly draw
+		// style={{position:'relative', overflowY:'auto', maxHeight:'200px'}}
+
 		return (
-			<div className={className}>
+			<div className='SimpleTable'>
 				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
 					value={tableSettings.filter || ''} 
 					onChange={filterChange} 
 					/></div> : null}
-				<table className={cn}>
-					<thead>
-						<tr>{columns.map((col, c) => 
-							<Th table={this} tableSettings={tableSettings} key={c} column={col} c={c} dataArray={dataArray} headerRender={headerRender} />)}
-						</tr>
-						{addTotalRow? 
-							<tr>
-								<th>Total</th>
-								{columns.slice(1).map((col, c) => 
-									<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
-								}
+				<div>
+					<table className={cn}>
+						<thead>
+							<tr>{columns.map((col, c) => 
+								<Th table={this} tableSettings={tableSettings} key={c} column={col} c={c} dataArray={dataArray} headerRender={headerRender} showSortButtons />)}
 							</tr>
-							: null}
-					</thead>
-					<tbody>					
-						{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={columns} dataArray={dataArray} />) : null}
-					</tbody>
-					{csv? <tfoot><tr>
-						<td colSpan={columns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
-					</tr></tfoot>
-						: null}	
-				</table>				
+							{addTotalRow? 
+								<tr>
+									<th>Total</th>
+									{columns.slice(1).map((col, c) => 
+										<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+									}
+								</tr>
+								: null}
+						</thead>
+						<tbody>					
+							{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={columns} dataArray={dataArray} />) : null}
+						</tbody>
+						{csv? <tfoot><tr>
+							<td colSpan={columns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
+						</tr></tfoot>
+							: null}	
+					</table>
+				</div>
 			</div>
 		);
 	}
 } // ./SimpleTable
 
 // TODO onClick={} sortBy
-const Th = ({column, c, table, tableSettings, dataArray, headerRender}) => {
+const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortButtons}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
 	let sortByMe = (""+tableSettings.sortBy) === (""+c);
 	let onClick = e => { 
@@ -161,9 +173,12 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender}) => {
 	if (headerRender) hText = headerRender(column);
 	else hText = column.Header || column.accessor || str(column);
 	dataArray[0].push(column.Header || column.accessor || str(column)); // csv gets the text, never jsx!
+	const cellGuts = [hText];
+	if (sortByMe) cellGuts.push(<Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />);
+	else if (showSortButtons) cellGuts.push(<Misc.Icon className='text-muted' glyph='triangle-bottom' />);
+
 	return (<th onClick={onClick} >
-		{hText}
-		{sortByMe? <Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} /> : null}
+		{cellGuts}
 	</th>);
 };
 

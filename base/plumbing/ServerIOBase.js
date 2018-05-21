@@ -24,10 +24,22 @@ ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for
 /** 
  * Call this from ServerIO.js 
  * Safety check - if we deploy test code, it will complain. */
-ServerIO.checkBase = () => {	
+ServerIO.checkBase = () => {
 	if (ServerIO.APIBASE && C.isProduction()) {
 		const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
 		ServerIO.APIBASE = ''; // clear it
+		console.error(err);
+		window.onerror(err);
+	}
+	// TODO include datalog here too in notify
+	if (ServerIO.APIBASE && ! C.isProduction()) {
+		notifyUser("Using Server: "+ServerIO.APIBASE)	
+	}
+	// datalog endpoint
+	if (ServerIO.DATALOG_ENDPOINT && C.isProduction() && 
+			(ServerIO.DATALOG_ENDPOINT.indexOf('test') !== -1 || ServerIO.DATALOG_ENDPOINT.indexOf('local') !== -1)
+		) {
+		const err = new Error("ServerIO.js - ServerIO.DATALOG_ENDPOINT is using a test setting! Argh! "+ServerIO.DATALOG_ENDPOINT);
 		console.error(err);
 		window.onerror(err);
 	}

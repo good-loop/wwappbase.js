@@ -151,6 +151,15 @@ const SharedWith = ({share}) => {
 	</div>);
 };
 
+const AccessDenied = ({thingId}) => {
+	return (<Misc.Card title='Access Denied :('>
+		<div>Sorry - you don't have access to this content.
+			{thingId? <div><code>Content id: {thingId}</code></div> : null}
+			{Login.isLoggedIn()? <div><code>Your id: {Login.getId()}</code></div> : null}
+		</div>
+	</Misc.Card>);
+};
+
 export default ShareWidget;
-export {ShareLink};
+export {ShareLink, ShareWidget, AccessDenied};
 
