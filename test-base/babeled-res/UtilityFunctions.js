@@ -88,24 +88,18 @@ const disableAnimations = {
 
 const logFolderPath = `test-results`;
 
-function writeToLog({ contents, path, testName }) {
-    const date = new Date().toISOString();
-    if (!fs.existsSync(path)) {
-        fs.mkdirSync(path);
-    }
-    fs.appendFileSync(`${path}/${testName}:${date}.txt`, contents);
-}
+const APIBASE = window.location;
 
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = {
+    APIBASE,
     disableAnimations,
     login,
     logFolderPath,
     onFail,
     takeScreenshot,
-    timeout,
-    writeToLog
+    timeout
 };

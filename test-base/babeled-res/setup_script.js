@@ -10,7 +10,7 @@ const puppeteer = require('puppeteer');
 const { takeScreenshot, logFolderPath } = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
-const headless = true;
+const headless = false;
 
 /**Setup functions run before each test
  * If you only want something to run once
