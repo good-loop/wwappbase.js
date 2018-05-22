@@ -10,6 +10,7 @@ import Roles from '../Roles';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
+import ActionMan from '../plumbing/ActionManBase';
 import {getType, getId, nonce} from '../data/DataClass';
 
 /**
@@ -28,7 +29,7 @@ import {getType, getId, nonce} from '../data/DataClass';
  */
 const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
-	assert( ! status || C.KStatus.has(status), "ListLoad - odd status " + status);
+	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
 	let path = DataStore.getValue(['location', 'path']);
 	let id = path[1];
 	if (id) return null;
@@ -53,9 +54,9 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
 	}
-	console.warn("items", pvItems.value);
-	const listItems = pvItems.value.map(item => (
-		<ListItem key={getId(item) || JSON.stringify(item)} 
+	// make the list items	
+	const listItems = pvItems.value.map( (item, i) => (
+		<ListItem key={i}
 			type={type} 
 			servlet={servlet} 
 			navpage={navpage} 
