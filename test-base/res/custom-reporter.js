@@ -1,6 +1,3 @@
-// const {
-//     logFolderPath
-// } = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
 class CustomReporter {

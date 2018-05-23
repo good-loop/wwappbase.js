@@ -7,10 +7,10 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
  * where jest is set to read the setup file from
  */
 const puppeteer = require('puppeteer');
-const { takeScreenshot, logFolderPath } = require('../babeled-res/UtilityFunctions');
+const { takeScreenshot } = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
-const headless = false;
+const headless = true;
 
 /**Setup functions run before each test
  * If you only want something to run once
@@ -45,7 +45,7 @@ afterEach(_asyncToGenerator(function* () {
     for (let i = 1; i < pages.length; i++) {
         yield takeScreenshot({
             page: pages[i],
-            path: `${logFolderPath}/Screenshots(success)`,
+            path: `test-results/Screenshots(success)`,
             date
         });
     }

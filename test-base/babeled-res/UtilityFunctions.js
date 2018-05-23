@@ -58,6 +58,30 @@ let login = (() => {
     };
 })();
 
+/**
+ * Takes an object in form {CSS_SELECTOR: value},
+ * and fills in form accordingly
+ */
+
+
+let fillInForm = (() => {
+    var _ref4 = _asyncToGenerator(function* ({ page, Selectors, data }) {
+        const keys = Object.keys(data);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const selector = Selectors[key];
+            if (selector.includes('checkbox')) yield page.click(selector);else {
+                yield page.click(selector);
+                yield page.keyboard.type(`${data[key]}`);
+            }
+        }
+    });
+
+    return function fillInForm(_x4) {
+        return _ref4.apply(this, arguments);
+    };
+})();
+
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 const fs = require('fs');
@@ -86,8 +110,6 @@ const disableAnimations = {
         }`
 };
 
-const logFolderPath = `test-results`;
-
 const APIBASE = window.location;
 
 function timeout(ms) {
@@ -97,8 +119,8 @@ function timeout(ms) {
 module.exports = {
     APIBASE,
     disableAnimations,
+    fillInForm,
     login,
-    logFolderPath,
     onFail,
     takeScreenshot,
     timeout

@@ -3,7 +3,7 @@
  * where jest is set to read the setup file from
  */
 const puppeteer = require('puppeteer');
-const {takeScreenshot, logFolderPath} = require('../babeled-res/UtilityFunctions');
+const {takeScreenshot} = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
 const headless = true;
@@ -41,7 +41,7 @@ afterEach(async () => {
     for(let i=1; i<pages.length; i++) {
         await takeScreenshot({
             page: pages[i], 
-            path: `${logFolderPath}/Screenshots(success)`,
+            path: `test-results/Screenshots(success)`,
             date
         });
     }
