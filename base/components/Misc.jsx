@@ -417,7 +417,14 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 		// the labels prop can be a map or a function
 		let labeller = v => v;
 		if (labels) {
-			labeller = _.isFunction(labels)? labels : v => labels[v] || v;
+			if (_.isArray(labels)) {
+				labeller = v => labels[options.indexOf(v)] || v;
+			} else if (_.isFunction(labels)) {
+				labeller = labels;				
+			} else {
+				// map
+				labeller = v => labels[v] || v;
+			}
 		}
 		// make the options html
 		let domOptions = options.map(option => <option key={"option_"+option} value={option} >{labeller(option)}</option>);
@@ -746,6 +753,9 @@ const FormControl = ({value, type, required, ...otherProps}) => {
 	}
 	// add css classes for required fields
 	let klass = 'form-control'+ (required? (value? ' form-required' : ' form-required blank') : '');
+	// remove stuff intended for other types that will upset input
+	delete otherProps.options;
+	delete otherProps.labels;
 	return <input className={klass} type={type} value={value} {...otherProps} />;
 };
 

@@ -27,6 +27,8 @@ const disableAnimations = {
 
 const logFolderPath = `test-results`;
 
+const APIBASE = window.location;
+
 /**Might actually be a good idea to add CSS selectors for certain elements in here
  * Many parts of page are generated from common source: will be identified by common CSS selector
  * Could end up being more flexible having these defined in here, so that changes in source code
@@ -41,8 +43,21 @@ async function onFail({error, page}) {
     //await takeScreenshot(page);
 }
 
-function writeToLog(string) {
-    fs.appendFileSync('log.txt', string);
+async function takeScreenshot({page, path, date = new Date().toISOString()}) {
+    try {
+        await page.screenshot({path: `${path}/${date}.png`});
+    }
+    catch(e) {
+        //dir not found
+        //Shouldn't give infinite loop: mkdirSync throws error if directory can't be created
+        if (e.code === 'ENOENT') {
+            fs.mkdirSync(path);
+            await takeScreenshot(page);
+        }
+        else{
+            console.log('setup_script.js -- screenshot failed ' + e.code + ': ' + e.message);
+        }
+    }
 }
 
 function timeout(ms) {
@@ -61,10 +76,11 @@ async function login({page, username, password}) {
 }
 
 module.exports = {
+    APIBASE,
     disableAnimations,
     login,
     logFolderPath,
     onFail, 
-    timeout,  
-    writeToLog
+    takeScreenshot,
+    timeout
 };
