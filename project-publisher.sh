@@ -1,5 +1,19 @@
 #!/bin/bash
 
+#
+# TODO:
+#	Current strategy for syncing shit from project-dir, to destination-dir should involve a set array of dirs and files that are
+#	specific for each project.  This is the strategy because parallel-rsync does not have an 'ignore' function.
+#	e.g
+#	SYNC_THESE=('adunit','config','src',...etc.)
+#	and the function would be:
+#	function sync_stuff {
+#		cd $PROJECT_LOCATION
+#		for thing in ${SYNC_THESE[@]}; do
+#			parallel-rsync blah blah settings $thing $DESTINATION
+#		done
+#	}
+#
 #Project Publisher -- For Good-Loop, SoGive, and WW projects.
 #
 #
@@ -15,29 +29,27 @@ fi
 ### Preamble: Check for dependencies
 #################
 if [ $(which npm) = "" ]; then
-	echo "You must first install NPM before you can use this tool"
+	printf "\nYou must first install NPM before you can use this tool"
 	exit 1
 fi
 
 if [ $(which babel) = "" ]; then
-	echo -e "You must install babel globally before you can use this tool\nInstall with 'sudo npm install -g babel-cli'"
+	printf "\nYou must install babel globally before you can use this tool\nInstall with 'sudo npm install -g babel-cli'"
 	exit 1
 fi
 
 if [ $(which babili) = "" ]; then
-	echo -e "You must install babili globally before you can use this tool\nInstall with 'sudo npm install -g babili'"
+	printf "\nYou must install babili globally before you can use this tool\nInstall with 'sudo npm install -g babili'"
 	exit 1
 fi
 
 if [ $(which jshint) = "" ]; then
-	echo -e "In order to test the JS files before Babeling, you must have JShint installed on your machine"
-	echo -e "Install jshint with 'sudo npm install -g jshint'"
+	printf "\nIn order to test the JS files before Babeling, you must have JShint installed on your machine\nInstall jshint with 'sudo npm install -g jshint'"
 	exit 1
 fi
 
 if [ $(which parallel-ssh) = "" ]; then
-	echo -e "In order to use this publishing script, you will need Parallel-SSH installed on your machine"
-	echo -e "install Parallel-SSH with 'sudo apt-get install pssh'"
+	printf "\nIn order to use this publishing script, you will need Parallel-SSH installed on your machine\ninstall Parallel-SSH with 'sudo apt-get install pssh'"
 	exit 1
 fi
 
@@ -387,6 +399,17 @@ function convert_less_files {
 		lessc "$file" "${file%.less}.css"
 }
 
+###################################
+### Section 08: Defining the Jar Syncing Function
+###################################
+function sync_jars {
+	printf "\nSyncing JARS ...\n"
+	mv $PROJECT_LOCATION/tmp-lib $PROJECT_LOCATION/lib
+	parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive $PROJECT_LOCATION/lib $TARGET_DIRECTORY
+	mv $PROJECT_LOCATION/lib $PROJECT_LOCATION/tmp-lib
+	printf "\nJARS have been synced.\n"
+}
+
 
 #########################################
 ### Esoteric Section: Adserver Section 01: need specific config files
@@ -499,10 +522,6 @@ function compile_variants {
 ### Esoteric Section: Adserver Section 04: Performing the sync process
 ##########################################
 function adserver_sync {
-	printf "\nSyncing Jars to all targets...\n"
-	mv $PROJECT_LOCATION/tmp-lib $PROJECT_LOCATION/lib
-	parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive $PROJECT_LOCATION/lib /home/winterwell/as.good-loop.com/
-	mv $PROJECT_LOCATION/lib $PROJECT_LOCATION/tmp-lib
 	printf "\ncleaning the bin directory on all targets\n"
 	parallel-ssh -h /tmp/target.list.txt --user winterwell 'rm -rf /home/winterwell/as.good-loop.com/bin/*'
 	printf "\nensuring exact parity of variant directories\n"
