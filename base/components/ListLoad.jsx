@@ -86,7 +86,6 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
 	const id = getId(item);
 	const itemUrl = modifyHash([servlet, id], null, true);
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
-	let img = item.logo || item.img;
 	return (
 		<div className='ListItemWrapper'>
 			{checkboxes? <div className='pull-left'><Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} /></div> : null}
@@ -94,7 +93,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
 				onClick={event => onPick({ event, navpage, id })}
 				className={'ListItem btn btn-default status-'+item.status}
 			>
-				{img? <img src={img} className='logo img-thumbnail pull-left' /> : null}				
+				<Misc.Thumbnail item={item} />
 				{item.name || id}<br/>
 				<small>id: {id} {C.KStatus.isPUBLISHED(item.status)? null : item.status}</small>				
 			</a>

@@ -146,6 +146,15 @@ Misc.Icon = ({glyph, fa, size, className, ...other}) => {
 				aria-hidden="true" {...other} />);
 };
 
+/**
+ * Try to make a thumbnail image for a data item by checking: logo, img
+ */
+Misc.Thumbnail = ({item}) => {
+	if ( ! item) return null;
+	let img = item.logo || item.img;
+	return img? <img src={img} className='logo img-thumbnail pull-left' /> : null;
+};
+
 
 /**
  * Input bound to DataStore
