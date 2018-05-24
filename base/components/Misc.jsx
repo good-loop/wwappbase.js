@@ -749,7 +749,7 @@ Misc.ImgThumbnail = ({url, style}) => {
 	return (<img className='img-thumbnail' style={style} alt='thumbnail' src={url} />);
 };
 
-Misc.VideoThumbnail = ({url}) => url? <video width={200} height={150} src={url} controls /> : null;
+Misc.VideoThumbnail = ({url, width=200, height=150}) => url? <video width={width} height={height} src={url} controls /> : null;
 
 /**
  * This replaces the react-bootstrap version 'cos we saw odd bugs there. 
@@ -780,6 +780,7 @@ const saveDraftFn = _.debounce(
 
 /**
  * Just a convenience for a Bootstrap panel
+ * @param title {String|JSX} will be wrapper in h3
  */
 Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
 	const h3 = (<h3 className="panel-title">{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
@@ -804,11 +805,13 @@ Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildr
  * @param {Misc.Card[]} children
  *    children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
  */
-Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
+Misc.CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
+	showFilter = false; // TODO a keyword filter for big settings pages
 	// NB: React-BS provides Accordion, but it does not work with modular panel code. So sod that.
 	// TODO manage state
-	const wcpath = ['widget', widgetName || 'CardAccordion', 'open'];
-	let open = DataStore.getValue(wcpath);
+	const wcpath = ['widget', widgetName || 'CardAccordion'];
+	const openPath = wcpath.concat('open');
+	let open = DataStore.getValue(openPath);
 	if ( ! open) open = [true]; // default to first kid open
 	if ( ! children) {
 		return (<div className='CardAccordion' />);
@@ -818,6 +821,7 @@ Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
 	if ( ! _.isArray(children)) {
 		children = [children];
 	}
+	// TODO keyword filter
 	// filter null, undefined
 	children = children.filter(x => !! x);
 	const kids = React.Children.map(children, (Kid, i) => {
@@ -828,12 +832,15 @@ Misc.CardAccordion = ({widgetName, children, multiple, start}) => {
 				open = [];
 			}
 			open[i] = collapse;
-			DataStore.setValue(wcpath, open);
+			DataStore.setValue(openPath, open);
 		};
 		// clone with click
 		return React.cloneElement(Kid, {collapse, onHeaderClick: onHeaderClick});
 	});
-	return (<div className='CardAccordion'>{kids}</div>);
+	return (<div className='CardAccordion'>
+		{showFilter? <div className='form-inline'><Misc.PropControl path={wcpath} prop='filter' label='Filter' inline /></div> : null}
+		{kids}
+		</div>);
 };
 
 /**
