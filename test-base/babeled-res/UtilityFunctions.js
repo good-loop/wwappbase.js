@@ -41,6 +41,9 @@ let takeScreenshot = (() => {
     };
 })();
 
+/**Deprecated. Use page.waitFor(ms) instead*/
+
+
 /**Login to app. Should work for both SoGive and Good-loop */
 let login = (() => {
     var _ref3 = _asyncToGenerator(function* ({ page, username, password }) {
@@ -51,6 +54,7 @@ let login = (() => {
         yield page.click('#loginByEmail > div:nth-child(2) > input');
         yield page.keyboard.type(password);
         yield page.keyboard.press('Enter');
+        yield page.waitForSelector(`.login-modal`, { hidden: true });
     });
 
     return function login(_x3) {
@@ -110,9 +114,7 @@ const disableAnimations = {
         }`
 };
 
-const APIBASE = window.location;
-
-function timeout(ms) {
+const APIBASE = window.location;function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 

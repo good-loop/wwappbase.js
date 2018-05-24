@@ -58,6 +58,7 @@ async function takeScreenshot({page, path, date = new Date().toISOString()}) {
     }
 }
 
+/**Deprecated. Use page.waitFor(ms) instead*/
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -70,7 +71,8 @@ async function login({page, username, password}) {
     await page.keyboard.type(username);  
     await page.click('#loginByEmail > div:nth-child(2) > input');
     await page.keyboard.type(password); 
-    await page.keyboard.press('Enter');       
+    await page.keyboard.press('Enter');
+    await page.waitForSelector(`.login-modal`, {hidden: true});
 }
 
 /**
@@ -97,5 +99,5 @@ module.exports = {
     login,
     onFail, 
     takeScreenshot,
-    timeout
+    timeout,
 };
