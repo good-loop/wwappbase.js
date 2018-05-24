@@ -25,8 +25,6 @@ const disableAnimations = {
         }`
 };
 
-const logFolderPath = `test-results`;
-
 const APIBASE = window.location;
 
 /**Might actually be a good idea to add CSS selectors for certain elements in here
@@ -60,6 +58,7 @@ async function takeScreenshot({page, path, date = new Date().toISOString()}) {
     }
 }
 
+/**Deprecated. Use page.waitFor(ms) instead*/
 function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
@@ -72,15 +71,33 @@ async function login({page, username, password}) {
     await page.keyboard.type(username);  
     await page.click('#loginByEmail > div:nth-child(2) > input');
     await page.keyboard.type(password); 
-    await page.keyboard.press('Enter');       
+    await page.keyboard.press('Enter');
+    await page.waitForSelector(`.login-modal`, {hidden: true});
+}
+
+/**
+ * Takes an object in form {CSS_SELECTOR: value},
+ * and fills in form accordingly
+ */
+async function fillInForm({page, Selectors, data}) {
+    const keys = Object.keys(data);
+    for(let i=0; i<keys.length; i++){
+        const key = keys[i];
+        const selector = Selectors[key];
+        if(selector.includes('checkbox')) await page.click(selector)
+        else {
+            await page.click(selector);
+            await page.keyboard.type(`${data[key]}`);
+        }
+    }
 }
 
 module.exports = {
     APIBASE,
     disableAnimations,
+    fillInForm,
     login,
-    logFolderPath,
     onFail, 
     takeScreenshot,
-    timeout
+    timeout,
 };

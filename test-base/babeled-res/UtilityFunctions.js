@@ -41,6 +41,9 @@ let takeScreenshot = (() => {
     };
 })();
 
+/**Deprecated. Use page.waitFor(ms) instead*/
+
+
 /**Login to app. Should work for both SoGive and Good-loop */
 let login = (() => {
     var _ref3 = _asyncToGenerator(function* ({ page, username, password }) {
@@ -51,10 +54,35 @@ let login = (() => {
         yield page.click('#loginByEmail > div:nth-child(2) > input');
         yield page.keyboard.type(password);
         yield page.keyboard.press('Enter');
+        yield page.waitForSelector(`.login-modal`, { hidden: true });
     });
 
     return function login(_x3) {
         return _ref3.apply(this, arguments);
+    };
+})();
+
+/**
+ * Takes an object in form {CSS_SELECTOR: value},
+ * and fills in form accordingly
+ */
+
+
+let fillInForm = (() => {
+    var _ref4 = _asyncToGenerator(function* ({ page, Selectors, data }) {
+        const keys = Object.keys(data);
+        for (let i = 0; i < keys.length; i++) {
+            const key = keys[i];
+            const selector = Selectors[key];
+            if (selector.includes('checkbox')) yield page.click(selector);else {
+                yield page.click(selector);
+                yield page.keyboard.type(`${data[key]}`);
+            }
+        }
+    });
+
+    return function fillInForm(_x4) {
+        return _ref4.apply(this, arguments);
     };
 })();
 
@@ -86,19 +114,15 @@ const disableAnimations = {
         }`
 };
 
-const logFolderPath = `test-results`;
-
-const APIBASE = window.location;
-
-function timeout(ms) {
+const APIBASE = window.location;function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 module.exports = {
     APIBASE,
     disableAnimations,
+    fillInForm,
     login,
-    logFolderPath,
     onFail,
     takeScreenshot,
     timeout
