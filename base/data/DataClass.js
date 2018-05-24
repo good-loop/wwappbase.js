@@ -45,7 +45,12 @@ const getId = (item) => {
 	if (item.id && item['@id'] && item.id !== item['@id']) {
 		console.warn("conflicting id/@id item ids "+item.id+" vs "+item['@id'], item);
 	}
-	return item.id || item['@id'];
+	const id = item.id || item['@id'];
+	if ( ! id) { // sanity check that the user hasnt passed a promise or promise-value
+		assert( ! item.then, "Passed a promise to getId()");
+		assert( ! item.promise, "Passed a promise-value to getId()");
+	}
+	return id;
 };
 
 /**
@@ -114,12 +119,29 @@ const defineType = (type) => {
 			...base
 		};
 	};
+	// for getDataClass
+	allTypes[type] = This;
 	// for debug use only
 	window.dataclass[type] = This;
 	return This;
 };
+
+/**
+ * @param type {String}
+ * @returns the DataClass if defined for this type
+ */
+const getDataClass = type => {
+	if ( ! type) return;
+	assMatch(type, String);
+	return allTypes[type];
+};
+
+/**
+ * Keep the defined types
+ */
+const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
 window.dataclass = {};
 
-export {defineType, isa, getType, getId, Meta, nonce};
+export {defineType, isa, getType, getId, getDataClass, Meta, nonce};
 	

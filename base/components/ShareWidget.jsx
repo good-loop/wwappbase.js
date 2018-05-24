@@ -8,12 +8,21 @@ import PV from 'promise-value';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
-
+import {getType, getId, getDataClass} from '../data/DataClass';
 
 /**
  * a Share This button
  */
-const ShareLink = ({thingId}) => {
+const ShareLink = ({item, type, id, thingId}) => {
+	assert( ! thingId, "old code - switch to item, or type+id");
+	if (item) {
+		type = getType(item);
+		id = getId(item);
+	}
+	if ( ! type || ! id) {
+		return null;
+	}
+	thingId = shareThingId(type, id);
 	const basePath = ['widget', 'ShareWidget', thingId];
 	return (<a href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); DataStore.setValue(basePath.concat('show'), true); } } >
 		<Misc.Icon glyph='share' /> Share
@@ -36,7 +45,12 @@ const shareThing = ({thingId, withXId}) => {
 	DataStore.setValue(['widget', 'ShareWidget', 'add'], {});
 };
 
+/**
+ * confirm and delete
+ */
 const deleteShare = ({share}) => {
+	let ok = confirm('Remove access: Are you sure?');
+	if ( ! ok) return;
 	// call the server
 	const thingId = share.item;
 	assMatch(thingId, String);
@@ -67,18 +81,20 @@ const sendEmailNotification = (url, emailData) => {
  * 
  * Note: This does NOT include the share button -- see ShareLink for that
 */
-const ShareWidget = ({thingId, name}) => {
-	const basePath = ['widget', 'ShareWidget', thingId];
-	let data = DataStore.getValue(basePath);
-	if (!data) {
-		data = {form: {}};
-		DataStore.setValue(basePath, data);
+const ShareWidget = ({item, type, id, thingId, name}) => {
+	assert( ! thingId, "old code - switch to item, or type+id");
+	if (item) {
+		type = getType(item);
+		id = getId(item);
+		name = getDataClass(type) && getDataClass(type).name(item);
 	}
-	const {warning, show, form} = data;
-	if ( ! thingId) {
-		console.warn("ShareWidget - no thingId");
+	if ( ! type || ! id) {
 		return null;
 	}
+	thingId = shareThingId(type, id);
+	const basePath = ['widget', 'ShareWidget', thingId];
+	let data = DataStore.getValue(basePath) || DataStore.setValue(basePath, {form: {}});
+	const {warning, show, form} = data;	
 	const formPath = basePath.concat('form');
 	if ( ! name) name = thingId;
 	let title = "Share "+name;
@@ -103,12 +119,11 @@ const ShareWidget = ({thingId, name}) => {
 			<Modal.Body>
 				<div className="container-fluid">
 					<div className="row form-inline">
-						<Misc.PropControl label='Email to share with' 
-							className='ng-invalid' path={formPath} prop={'email'} type='email' />
+						<Misc.PropControl inline label='Email to share with' path={formPath} prop='email' type='email' />
 					</div>	
 					<div className="row">
-						<Misc.PropControl path={formPath} prop='enableNotification' label='Send notification email' type='checkbox'/>
-						<Misc.PropControl path={formPath} prop='optionalMessage' id='OptionalMessage' label='Attached message' type='textarea' disabled={!enableNotification}/>
+						<Misc.PropControl path={formPath} prop='enableNotification' label='Send a notification email' type='checkbox'/>
+						{enableNotification? <Misc.PropControl path={formPath} prop='optionalMessage' id='OptionalMessage' label='Attached message' type='textarea' /> : null}
 						<button className='btn btn-primary btn-lg btn-block' disabled={!validEmailBool} 
 							onClick={()=>{
 								const {form} = DataStore.getValue(basePath) || {};
@@ -142,13 +157,14 @@ const ListShares = ({list}) => {
 
 const SharedWith = ({share}) => {
 	return (
-		<div>
-		<button title="remove this person's access"
+		<div className='clearfix'>		
+			<p className='pull-left'>{share._to}</p>
+			<button className='btn btn-outline-danger pull-right' 
+				title="remove this person's access"
 				onClick={ () => deleteShare({share}) }
-		>
-			<Misc.Icon glyph='remove'/>
-		</button>
-			<p>{share._to}</p>
+			>
+				<Misc.Icon glyph='remove'/>
+			</button>
 	</div>);
 };
 
@@ -164,6 +180,11 @@ const shareThingId = (type, id) => {
 	return type+":"+id;
 };
 
+
+/**
+ * 
+ * @returns {PromiseValue<Boolean>} .value resolves to true if they can read
+ */
 const canRead = (type, id) => canDo(type, id, 'read');
 
 const canDo = (type, id, rw) => {
@@ -180,7 +201,6 @@ const canDo = (type, id, rw) => {
 
 /**
  * 
- * @param {String} thingId 
  * @returns {PromiseValue<Boolean>} .value resolves to true if they can read
  */
 const canWrite = (type, id) => canDo(type, id, 'write');
@@ -194,7 +214,22 @@ const AccessDenied = ({thingId}) => {
 	</Misc.Card>);
 };
 
+const ClaimButton = ({type, id}) => {
+	const sid = shareThingId(type, id);
+	const plist = DataStore.fetch(['misc','shares', sid, 'list'], () => Login.getShareList(sid));
+	if ( ! plist.resolved) {
+		return <Misc.Loading text='Loading access details' />;
+	}
+	if (plist.value.length !== 0) {
+		return <div>Access is held by: {plist.value}</div>;
+	}
+	return <div>This {type} has not been claimed yet. If you are the owner or manager, please claim it. <div><button className='btn btn-default' onClick={() => {
+		Login.claim(shareThingId(type, id))
+		.then(DataStore.update);
+	}}>Claim {id}</button></div></div>;
+};
+
 export default ShareWidget;
-export {ShareLink, ShareWidget, AccessDenied, canRead, canWrite, shareThingId};
+export {ShareLink, ShareWidget, AccessDenied, ClaimButton, canRead, canWrite, shareThingId};
 
 

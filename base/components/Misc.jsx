@@ -170,9 +170,10 @@ Misc.Thumbnail = ({item}) => {
  * @param required {?Boolean} If set, this field should be filled in before a form submit. 
 * 		TODO mark that somehow
 * @param validator {?(value, rawValue) => String} Generate an error message if invalid
+* @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
 * @param https {?Boolean} if true, urls must use https not http (recommended)
  */
-Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, validator, recursing, ...stuff}) => {
+Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, validator, recursing, inline, ...stuff}) => {
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
@@ -226,6 +227,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 		return (
 			<div className={'form-group' + (error? ' has-error' : '')}>
 				{label || tooltip? <label htmlFor={stuff.name}>{labelText} {helpIcon}</label> : null}
+				{inline? ' ' : null}
 				<Misc.PropControl
 					type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 				/>
