@@ -146,6 +146,15 @@ Misc.Icon = ({glyph, fa, size, className, ...other}) => {
 				aria-hidden="true" {...other} />);
 };
 
+/**
+ * Try to make a thumbnail image for a data item by checking: logo, img
+ */
+Misc.Thumbnail = ({item}) => {
+	if ( ! item) return null;
+	let img = item.logo || item.img;
+	return img? <img src={img} className='logo img-thumbnail pull-left' /> : null;
+};
+
 
 /**
  * Input bound to DataStore
@@ -161,9 +170,10 @@ Misc.Icon = ({glyph, fa, size, className, ...other}) => {
  * @param required {?Boolean} If set, this field should be filled in before a form submit. 
 * 		TODO mark that somehow
 * @param validator {?(value, rawValue) => String} Generate an error message if invalid
+* @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
 * @param https {?Boolean} if true, urls must use https not http (recommended)
  */
-Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, validator, recursing, ...stuff}) => {
+Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, validator, recursing, inline, ...stuff}) => {
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
@@ -217,6 +227,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 		return (
 			<div className={'form-group' + (error? ' has-error' : '')}>
 				{label || tooltip? <label htmlFor={stuff.name}>{labelText} {helpIcon}</label> : null}
+				{inline? ' ' : null}
 				<Misc.PropControl
 					type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 				/>
@@ -417,7 +428,14 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 		// the labels prop can be a map or a function
 		let labeller = v => v;
 		if (labels) {
-			labeller = _.isFunction(labels)? labels : v => labels[v] || v;
+			if (_.isArray(labels)) {
+				labeller = v => labels[options.indexOf(v)] || v;
+			} else if (_.isFunction(labels)) {
+				labeller = labels;				
+			} else {
+				// map
+				labeller = v => labels[v] || v;
+			}
 		}
 		// make the options html
 		let domOptions = options.map(option => <option key={"option_"+option} value={option} >{labeller(option)}</option>);
@@ -746,6 +764,9 @@ const FormControl = ({value, type, required, ...otherProps}) => {
 	}
 	// add css classes for required fields
 	let klass = 'form-control'+ (required? (value? ' form-required' : ' form-required blank') : '');
+	// remove stuff intended for other types that will upset input
+	delete otherProps.options;
+	delete otherProps.labels;
 	return <input className={klass} type={type} value={value} {...otherProps} />;
 };
 

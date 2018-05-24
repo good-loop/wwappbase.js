@@ -10,6 +10,7 @@ import Roles from '../Roles';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
+import ActionMan from '../plumbing/ActionManBase';
 import {getType, getId, nonce} from '../data/DataClass';
 
 /**
@@ -28,7 +29,11 @@ import {getType, getId, nonce} from '../data/DataClass';
  */
 const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
-	assert( ! status || C.KStatus.has(status), "ListLoad - odd status " + status);
+	if ( ! status) {
+		console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
+		status = C.KStatus.ALL_BAR_TRASH;
+	}
+	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
 	let path = DataStore.getValue(['location', 'path']);
 	let id = path[1];
 	if (id) return null;
@@ -44,13 +49,7 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	// from data. 
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
-	let pvItems = DataStore.fetch(['list', type, 'all'], () => {
-		return ServerIO.load(`/${servlet}/list.json`, { data: { status, q } })
-			.then((res) => {
-				// console.warn(res);
-				return res.cargo.hits;
-			});
-	});
+	let pvItems = ActionMan.list({type, status, q});
 	if ( ! pvItems.resolved) {
 		return (
 			<Misc.Loading text={type.toLowerCase() + 's'} />
@@ -59,9 +58,9 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
 	}
-	console.warn("items", pvItems.value);
-	const listItems = pvItems.value.map(item => (
-		<ListItem key={getId(item) || JSON.stringify(item)} 
+	// make the list items	
+	const listItems = pvItems.value.map( (item, i) => (
+		<ListItem key={i}
 			type={type} 
 			servlet={servlet} 
 			navpage={navpage} 
@@ -91,7 +90,6 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
 	const id = getId(item);
 	const itemUrl = modifyHash([servlet, id], null, true);
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
-	let img = item.logo || item.img;
 	return (
 		<div className='ListItemWrapper'>
 			{checkboxes? <div className='pull-left'><Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} /></div> : null}
@@ -99,7 +97,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
 				onClick={event => onPick({ event, navpage, id })}
 				className={'ListItem btn btn-default status-'+item.status}
 			>
-				{img? <img src={img} className='logo img-thumbnail pull-left' /> : null}				
+				<Misc.Thumbnail item={item} />
 				{item.name || id}<br/>
 				<small>id: {id} {C.KStatus.isPUBLISHED(item.status)? null : item.status}</small>				
 			</a>
