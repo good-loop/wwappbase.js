@@ -7,7 +7,7 @@ import { Checkbox, Radio, FormGroup, InputGroup, DropdownButton, MenuItem} from 
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import { setHash, XId } from 'wwutils';
+import { setHash, XId, addScript} from 'wwutils';
 import PV from 'promise-value';
 import Dropzone from 'react-dropzone';
 
@@ -939,7 +939,15 @@ Misc.SubmitButton = ({path, url, once, className='btn btn-primary', onSuccess, c
  * A minor convenience for raw html
  */
 Misc.RawHtml = ({html}) => {
-	return <div dangerouslySetInnerHTML={{__html:html}} />;
+	// extract and add scripts?!
+	let cleanhtml = html.replace(/<script[^>]+><\/script>/g, stag => {
+		let src = $(stag).attr('src');
+		addScript(src, {});
+		return '<!-- snip: script '+src+' -->';
+	});
+	return (<div>
+			<div dangerouslySetInnerHTML={{__html:cleanhtml}} />;
+		</div>);
 };
 
 export default Misc;
