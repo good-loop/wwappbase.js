@@ -29,6 +29,10 @@ import {getType, getId, nonce} from '../data/DataClass';
  */
 const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
+	if ( ! status) {
+		console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
+		status = C.KStatus.ALL_BAR_TRASH;
+	}
 	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
 	let path = DataStore.getValue(['location', 'path']);
 	let id = path[1];
