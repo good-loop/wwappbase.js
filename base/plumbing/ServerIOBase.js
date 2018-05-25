@@ -39,7 +39,8 @@ ServerIO.checkBase = () => {
 	if (ServerIO.DATALOG_ENDPOINT && C.isProduction() && 
 			(ServerIO.DATALOG_ENDPOINT.indexOf('test') !== -1 || ServerIO.DATALOG_ENDPOINT.indexOf('local') !== -1)
 		) {
-		const err = new Error("ServerIO.js - ServerIO.DATALOG_ENDPOINT is using a test setting! Argh! "+ServerIO.DATALOG_ENDPOINT);
+		const err = new Error("ServerIO.js - ServerIO.DATALOG_ENDPOINT is using a test setting! Oops "+ServerIO.DATALOG_ENDPOINT);
+		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		console.error(err);
 		window.onerror(err);
 	}
