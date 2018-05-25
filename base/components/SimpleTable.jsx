@@ -127,7 +127,6 @@ class SimpleTable extends React.Component {
 					<table className={cn}>
 						<thead>
 							<tr>{columns.map((col, c) => {
-									console.log('Th', c);
 									return <Th table={this} tableSettings={tableSettings} key={c} 
 										column={col} c={c} dataArray={dataArray} headerRender={headerRender} showSortButtons />
 								})
