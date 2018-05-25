@@ -49,12 +49,16 @@ let login = (() => {
     var _ref3 = _asyncToGenerator(function* ({ page, username, password }) {
         if (!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
         yield page.click('#top-right-menu > li > a');
+        yield page.waitForSelector(`#loginByEmail > div:nth-child(1) > input`);
+        yield page.waitForSelector('#loginByEmail > div:nth-child(2) > input');
+
         yield page.click('#loginByEmail > div:nth-child(1) > input');
         yield page.keyboard.type(username);
         yield page.click('#loginByEmail > div:nth-child(2) > input');
         yield page.keyboard.type(password);
         yield page.keyboard.press('Enter');
-        yield page.waitForSelector(`.login-modal`, { hidden: true });
+
+        yield page.waitForSelector(`#loginByEmail`, { hidden: true });
     });
 
     return function login(_x3) {
@@ -76,6 +80,15 @@ let fillInForm = (() => {
             const selector = Selectors[key];
             if (selector.includes('checkbox')) yield page.click(selector);else {
                 yield page.click(selector);
+                //Check for default value. Clear field if found
+                if (yield page.$eval(selector, function (e) {
+                    return e.value;
+                })) {
+                    yield page.keyboard.down('Control');
+                    yield page.keyboard.press('a');
+                    yield page.keyboard.up('Control');
+                    yield page.keyboard.press('Backspace');
+                }
                 yield page.keyboard.type(`${data[key]}`);
             }
         }
@@ -86,9 +99,54 @@ let fillInForm = (() => {
     };
 })();
 
+/**Retrieves ID of event with given name
+ * by querying JSON endpoint
+ */
+
+
+let IdByName = (() => {
+    var _ref5 = _asyncToGenerator(function* ({ page, fundName, eventOrFund }) {
+        const r = yield $.ajax({
+            url: `${APIBASE}${eventOrFund}/list.json`,
+            withCredentials: true,
+            jwt: 'eyJraWQiOiJ1b2J4b3UxNjJjZWVkZTJlMSIsImFsZyI6IlJTMjU2In0.eyJpc3MiOiJzb2dpdmUiLCJqdGkiOiJTX0o1UE5rNHpGT0YtVGlrSVdJcDJBIiwiaWF0IjoxNTI3MjQ5NzkwLCJkdmNzaWciOm51bGwsInN1YiI6Im1hcmtAd2ludGVyd2VsbC5jb21AZW1haWwifQ.kmdCG5Xh2YypPLmtD_FP4Gc27cbpOd2Dx1LCOlBJNWqphBN-WQa7I6v-LmhwTbdheb8t7xE10xXtrsp9mObQ8QKsGU6Emdnyp9-eKrUTQFMf5HqwD-qpsiYEjw9SWTSaQkTOP4ieCbE61QL2-_3TN8hq4AAxYmjgJG0IUKUkN5jtozXCFYddqmpEXR4teRr7P470RDEAOqleddIJqd0KCId2ohGCe5CqMDFfcCLoaW-ICghQUAx9wlUDCmEN0I9BxErDp9WJ7spqji0MeanEurLlbAU47q5SyVQS70zAUJS3OhqFK_LHmFVETEQhb5nMpik3hSZJpS5x_YT56causg'
+        });
+        const hit = r.cargo.hits.filter(function (fundraiser) {
+            return fundraiser.name === fundName;
+        });
+        if (hit && hit[0] && hit[0].id) return hit[0].id;
+        return '';
+    });
+
+    return function IdByName(_x5) {
+        return _ref5.apply(this, arguments);
+    };
+})();
+
+let eventIdFromName = (() => {
+    var _ref6 = _asyncToGenerator(function* ({ page, eventName }) {
+        return yield IdByName({ page, fundName: eventName, eventOrFund: 'event' });
+    });
+
+    return function eventIdFromName(_x6) {
+        return _ref6.apply(this, arguments);
+    };
+})();
+
+let fundIdByName = (() => {
+    var _ref7 = _asyncToGenerator(function* ({ page, fundName }) {
+        return yield IdByName({ page, fundName, eventOrFund: 'fundraiser' });
+    });
+
+    return function fundIdByName(_x7) {
+        return _ref7.apply(this, arguments);
+    };
+})();
+
 function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
 const fs = require('fs');
+const $ = require('jquery');
 
 /**Used to disable all page animations
  * Found that these were making tests less reliable
@@ -116,12 +174,14 @@ const disableAnimations = {
 
 const APIBASE = window.location;function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
-}
+};
 
 module.exports = {
     APIBASE,
     disableAnimations,
+    eventIdFromName,
     fillInForm,
+    fundIdByName,
     login,
     onFail,
     takeScreenshot,

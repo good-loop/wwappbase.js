@@ -1,4 +1,5 @@
 const fs = require('fs');
+const $ = require('jquery');
 
 /**Used to disable all page animations
  * Found that these were making tests less reliable
@@ -67,12 +68,16 @@ function timeout(ms) {
 async function login({page, username, password}) {
     if(!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
     await page.click('#top-right-menu > li > a');
+    await page.waitForSelector(`#loginByEmail > div:nth-child(1) > input`);
+    await page.waitForSelector('#loginByEmail > div:nth-child(2) > input');
+
     await page.click('#loginByEmail > div:nth-child(1) > input');
     await page.keyboard.type(username);  
     await page.click('#loginByEmail > div:nth-child(2) > input');
     await page.keyboard.type(password); 
     await page.keyboard.press('Enter');
-    await page.waitForSelector(`.login-modal`, {hidden: true});
+
+    await page.waitForSelector(`#loginByEmail`, {hidden: true});
 }
 
 /**
@@ -87,15 +92,46 @@ async function fillInForm({page, Selectors, data}) {
         if(selector.includes('checkbox')) await page.click(selector)
         else {
             await page.click(selector);
+            //Check for default value. Clear field if found
+            if(await page.$eval(selector, e => e.value)){
+                await page.keyboard.down('Control');
+                await page.keyboard.press('a');
+                await page.keyboard.up('Control');
+                await page.keyboard.press('Backspace');
+            } 
             await page.keyboard.type(`${data[key]}`);
         }
     }
 }
 
+/**Retrieves ID of event with given name
+ * by querying JSON endpoint
+ */
+async function IdByName({page, fundName, eventOrFund}) {
+    const r = await $.ajax({
+        url: `${APIBASE}${eventOrFund}/list.json`,
+        withCredentials: true,
+        jwt: 'eyJraWQiOiJ1b2J4b3UxNjJjZWVkZTJlMSIsImFsZyI6IlJTMjU2In0.eyJpc3MiOiJzb2dpdmUiLCJqdGkiOiJTX0o1UE5rNHpGT0YtVGlrSVdJcDJBIiwiaWF0IjoxNTI3MjQ5NzkwLCJkdmNzaWciOm51bGwsInN1YiI6Im1hcmtAd2ludGVyd2VsbC5jb21AZW1haWwifQ.kmdCG5Xh2YypPLmtD_FP4Gc27cbpOd2Dx1LCOlBJNWqphBN-WQa7I6v-LmhwTbdheb8t7xE10xXtrsp9mObQ8QKsGU6Emdnyp9-eKrUTQFMf5HqwD-qpsiYEjw9SWTSaQkTOP4ieCbE61QL2-_3TN8hq4AAxYmjgJG0IUKUkN5jtozXCFYddqmpEXR4teRr7P470RDEAOqleddIJqd0KCId2ohGCe5CqMDFfcCLoaW-ICghQUAx9wlUDCmEN0I9BxErDp9WJ7spqji0MeanEurLlbAU47q5SyVQS70zAUJS3OhqFK_LHmFVETEQhb5nMpik3hSZJpS5x_YT56causg',
+    });
+    const hit = r.cargo.hits.filter(fundraiser => fundraiser.name === fundName);
+    if(hit && hit[0] && hit[0].id) return hit[0].id;
+    return '';
+}
+
+async function eventIdFromName({page, eventName}) {
+    return await IdByName({page, fundName: eventName, eventOrFund:'event'});
+}
+
+async function fundIdByName({page, fundName}) {
+    return await IdByName({page, fundName, eventOrFund:'fundraiser'});
+};
+
 module.exports = {
     APIBASE,
     disableAnimations,
+    eventIdFromName,
     fillInForm,
+    fundIdByName,
     login,
     onFail, 
     takeScreenshot,

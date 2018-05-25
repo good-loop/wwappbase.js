@@ -4,6 +4,7 @@
     "chalk": "^2.4.1",
     "jest-environment-jsdom": "^22.4.3",
     "jest-environment-node": "^22.4.3",
+    "jquery": "^3.3.1",
     "mkdirp": "^0.5.1",
     "rimraf": "^2.6.2",
     "stacktrace-parser": "^0.1.4"
