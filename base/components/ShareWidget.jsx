@@ -175,7 +175,7 @@ const SharedWith = ({share}) => {
  * @returns {String} the thingId to be used with Login.share functions
  */
 const shareThingId = (type, id) => {
-	assert(C.TYPES.has(type), type+" not in "+C.TYPES);
+	assert(C.TYPES.has(type), "ShareWidget.jsx shareThingId: "+type+" not in "+C.TYPES);
 	assMatch(id, String);
 	return type+":"+id;
 };

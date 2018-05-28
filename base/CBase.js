@@ -40,4 +40,4 @@ C.CRUDACTION = new Enum('new save publish discard-edits delete');
 
 export default C;
 // also for debug
-// window.C = C;
+window.C = C;
