@@ -10,7 +10,7 @@ const puppeteer = require('puppeteer');
 const { takeScreenshot } = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
-const headless = true;
+const headless = false;
 
 /**Setup functions run before each test
  * If you only want something to run once
@@ -49,5 +49,5 @@ afterEach(_asyncToGenerator(function* () {
             date
         });
     }
-    yield window.__BROWSER__.close();
+    // await window.__BROWSER__.close();
 }), 10000);
