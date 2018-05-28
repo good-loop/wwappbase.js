@@ -90,7 +90,13 @@ async function fillInForm({page, Selectors, data}) {
     for(let i=0; i<keys.length; i++){
         const key = keys[i];
         const selector = Selectors[key];
-        if(await page.$eval(selector, e => e.type) === 'checkbox') await page.click(selector)
+        //Only clicks checkbox if value doesn't match boolean provided. Would be easier to directly manipulate the DOM state,
+        //but that doesn't seems to defeat the purpose of end-to-end testing
+        if(await page.$eval(selector, e => e.type) === 'checkbox') {
+                //Would be nicer to have this as one if statement, but there is a bit of faff around passing arguments into page.$eval()
+                const checkValue = await page.$eval(selector, e => e.checked);
+                if(checkValue != data[key]) await page.click(selector)
+            }
         else {
             await page.click(selector);
             //Check for default value. Clear field if found

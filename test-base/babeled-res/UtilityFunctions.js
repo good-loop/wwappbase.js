@@ -79,9 +79,17 @@ let fillInForm = (() => {
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const selector = Selectors[key];
+            //Only clicks checkbox if value doesn't match boolean provided. Would be easier to directly manipulate the DOM state,
+            //but that doesn't seems to defeat the purpose of end-to-end testing
             if ((yield page.$eval(selector, function (e) {
                 return e.type;
-            })) === 'checkbox') yield page.click(selector);else {
+            })) === 'checkbox') {
+                //Would be nicer to have this as one if statement, but there is a bit of faff around passing arguments into page.$eval()
+                const checkValue = yield page.$eval(selector, function (e) {
+                    return e.checked;
+                });
+                if (checkValue != data[key]) yield page.click(selector);
+            } else {
                 yield page.click(selector);
                 //Check for default value. Clear field if found
                 if (yield page.$eval(selector, function (e) {
