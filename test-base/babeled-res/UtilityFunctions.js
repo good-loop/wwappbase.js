@@ -48,6 +48,7 @@ let takeScreenshot = (() => {
 let login = (() => {
     var _ref3 = _asyncToGenerator(function* ({ page, username, password }) {
         if (!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
+        yield page.addScriptTag(disableAnimations);
         yield page.click('#top-right-menu > li > a');
         yield page.waitForSelector(`#loginByEmail > div:nth-child(1) > input`);
         yield page.waitForSelector('#loginByEmail > div:nth-child(2) > input');
@@ -78,7 +79,9 @@ let fillInForm = (() => {
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const selector = Selectors[key];
-            if (selector.includes('checkbox')) yield page.click(selector);else {
+            if ((yield page.$eval(selector, function (e) {
+                return e.type;
+            })) === 'checkbox') yield page.click(selector);else {
                 yield page.click(selector);
                 //Check for default value. Clear field if found
                 if (yield page.$eval(selector, function (e) {

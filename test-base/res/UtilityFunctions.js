@@ -67,6 +67,7 @@ function timeout(ms) {
 /**Login to app. Should work for both SoGive and Good-loop */
 async function login({page, username, password}) {
     if(!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
+    await page.addScriptTag(disableAnimations);
     await page.click('#top-right-menu > li > a');
     await page.waitForSelector(`#loginByEmail > div:nth-child(1) > input`);
     await page.waitForSelector('#loginByEmail > div:nth-child(2) > input');
@@ -89,7 +90,7 @@ async function fillInForm({page, Selectors, data}) {
     for(let i=0; i<keys.length; i++){
         const key = keys[i];
         const selector = Selectors[key];
-        if(selector.includes('checkbox')) await page.click(selector)
+        if(await page.$eval(selector, e => e.type) === 'checkbox') await page.click(selector)
         else {
             await page.click(selector);
             //Check for default value. Clear field if found
