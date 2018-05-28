@@ -193,7 +193,13 @@ const canDo = (type, id, rw) => {
 		{
 			return Login.checkShare(sid)
 				.then(res => {
-					return (res.cargo && res.cargo[rw]) || false;
+					let yes = res.cargo && res.cargo[rw];
+					// superuser powers? NB: this does need Roles to be pre-loaded by some other call for it to work.					
+					if ( ! yes && C.CAN.sudo) {
+						// sudo?
+						yes = Roles.iCan(C.CAN.sudo).value;
+					}
+					return yes;
 				});
 		}
 	);	 // ./fetch
