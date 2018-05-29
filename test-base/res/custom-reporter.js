@@ -50,7 +50,7 @@ class CustomReporter {
     if(!fs.existsSync(path)) {
         fs.mkdirSync(path);
     }
-    fs.appendFileSync(`${path}/${testName}:${date}.txt`, contents);  
+    fs.appendFileSync(`${path}/${testName}:${date}.txt`.replace(/\s/g, "."), contents);  
     }
 }
   
