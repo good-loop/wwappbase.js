@@ -17,6 +17,7 @@ const jsxFromId = {};
  *  jsx
  *  details
  * 	id
+ *  path: {?String[]|Boolean} TODO only show for this path (e.g. page + slug)
  * }
  */
 const notifyUser = (msgOrError) => {
@@ -30,6 +31,9 @@ const notifyUser = (msgOrError) => {
 	}
 	let mid = msg.id || printer.str(msg);
 	msg.id = mid;
+	if (msg.path===true) {
+		msg.path = DataStore.getValue(['location','path']);
+	}
 	
 	let msgs = DataStore.getValue('misc', 'messages-for-user') || {};
 	let oldMsg = msgs[mid];

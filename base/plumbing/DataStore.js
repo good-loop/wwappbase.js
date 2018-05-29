@@ -190,9 +190,14 @@ class Store {
 
 		// HACK: modify the url?
 		if (path[0] === 'location' && path[1] === 'params') {
-			let newParams = {};
-			assert(path.length === 3, "DataStore.js - path should be location.params.key "+path[3]);
-			newParams[path[2]] = value;
+			let newParams;
+			assert(path.length === 3 || (path.length===2 && _.isObject(value)), "DataStore.js - path should be location.params.key was: "+path);
+			if (path.length==3) {
+				newParams = {};
+				newParams[path[2]] = value;
+			} else {
+				newParams = value;
+			}
 			modifyHash(null, newParams);
 		}
 
