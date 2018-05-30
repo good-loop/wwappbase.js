@@ -101,11 +101,21 @@ class Store {
 	 * Can be null, which still triggers the on-update callbacks.
 	 */
 	update(newState) {
-		console.log('update', newState);
+		// console.log('update', newState);
+		// set a flag to detect update loops
+		if (this.updating) {
+			console.error("DataStore.js update - nested call");
+		}
+		this.updating = true;
+
+		// merge in the new state
 		if (newState) {
 			_.merge(this.appstate, newState);
 		}
+		// callbacks (e.g. React render)
 		this.callbacks.forEach(fn => fn(this.appstate));
+
+		this.updating = false;
 	}
 
 	/**
