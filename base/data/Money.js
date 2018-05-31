@@ -141,7 +141,7 @@ Money.add = (amount1, amount2) => {
 	assCurrencyEq(amount1, amount2, "add()");
 	const b100p = v100p(amount1) + v100p(amount2);
 	let added = Money.make({
-		...amount1,
+		...Object.assign({}, amount1, {raw: undefined}), //fix for bug where v100p was forcing value to be amount1.raw
 		value: b100p/10000,
 		value100p: b100p
 	});
