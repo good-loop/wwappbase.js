@@ -35,7 +35,7 @@ const ChartWidget = ({title, dataFromLabel, ...stuff}) => {
 		xydata = xydata.filter(xy => xy.y);
 		dataPoints += xydata.length;
 		let dset = makeDataSet(i, keys[i], xydata);
-		console.warn(dset);
+		// console.warn(dset);
 		datasets.push(dset);
 	}
 	//window.z = datasets;
@@ -75,7 +75,7 @@ const ChartWidget = ({title, dataFromLabel, ...stuff}) => {
  * @param data Array of {x (which can be a Time string), y}
  */
 const makeDataSet = (i, label, xydata) => {	
-	console.log('makeDataSet', label, xydata);	
+	// console.log('makeDataSet', label, xydata);	
 	// HACK pick a colour
 	let colors = ["rgba(75,192,192,1)", "rgba(192,75,192,1)", "rgba(192,192,75,1)", "rgba(75,75,192,1)", "rgba(75,192,75,1)", "rgba(192,75,75,1)"];
 	let color = colors[i % colors.length];

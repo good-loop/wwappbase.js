@@ -101,11 +101,21 @@ class Store {
 	 * Can be null, which still triggers the on-update callbacks.
 	 */
 	update(newState) {
-		console.log('update', newState);
+		// console.log('update', newState);
+		// set a flag to detect update loops
+		if (this.updating) {
+			console.error("DataStore.js update - nested call");
+		}
+		this.updating = true;
+
+		// merge in the new state
 		if (newState) {
 			_.merge(this.appstate, newState);
 		}
+		// callbacks (e.g. React render)
 		this.callbacks.forEach(fn => fn(this.appstate));
+
+		this.updating = false;
 	}
 
 	/**
@@ -190,9 +200,14 @@ class Store {
 
 		// HACK: modify the url?
 		if (path[0] === 'location' && path[1] === 'params') {
-			let newParams = {};
-			assert(path.length === 3, "DataStore.js - path should be location.params.key "+path[3]);
-			newParams[path[2]] = value;
+			let newParams;
+			assert(path.length === 3 || (path.length===2 && _.isObject(value)), "DataStore.js - path should be location.params.key was: "+path);
+			if (path.length==3) {
+				newParams = {};
+				newParams[path[2]] = value;
+			} else {
+				newParams = value;
+			}
 			modifyHash(null, newParams);
 		}
 

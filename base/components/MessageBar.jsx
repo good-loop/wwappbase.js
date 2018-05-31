@@ -1,8 +1,8 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import SJTest from 'sjtest';
-const assert = SJTest.assert;
+import SJTest, {assert} from 'sjtest';
+
 import printer from '../utils/printer.js';
 // Plumbing
 import DataStore from '../plumbing/DataStore';
@@ -14,7 +14,11 @@ import Messaging from '../plumbing/Messaging';
  * 
  * This displays messages
  */
-const MessageBar = ({messages}) => {
+const MessageBar = () => {
+	let messages = Object.values(DataStore.getValue('misc', 'messages-for-user') || {});	
+	// filter by page path?
+	messages = messages.filter(m => m.path? SJTest.match(m.path, DataStore.getValue('location','path')) : true);
+
 	if ( ! messages || messages.length===0) return <div></div>;
 	const messageUI = messages.map( (m, mi) => <MessageBarItem key={'mi'+mi} message={m} /> );
 	return (<div className='MessageBar container'>{messageUI}</div>);
