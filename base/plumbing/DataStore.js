@@ -1,7 +1,7 @@
 
 import C from '../CBase.js';
 import _ from 'lodash';
-import {getId, getType} from '../data/DataClass';
+import {getId, getType, getStatus} from '../data/DataClass';
 import {assert,assMatch} from 'sjtest';
 import {yessy, getUrlVars, parseHash, modifyHash, toTitleCase} from 'wwutils';
 import PV from 'promise-value';
@@ -16,7 +16,11 @@ class Store {
 		this.callbacks = [];
 		// init the "canonical" categories		
 		this.appstate = {
+			// published data items
 			data:{}, 
+			// draft = draft, modified, and pending
+			draft:{},
+			trash:{},
 			/** 
 			 * What are you looking at? 
 			 * This is for transient focus. It is NOT for navigation parameters
@@ -124,30 +128,46 @@ class Store {
 	 * Warning: This does NOT load data from the server.
 	 * @returns a "data-item", such as a person or document, or undefined.
 	 */
-	getData(type, id) {
+	getData(status, type, id) {
+		assert(C.KStatus.has(status), "DataStore.getData bad status: "+status);
 		assert(C.TYPES.has(type), "DataStore.getData bad type: "+type);
 		assert(id, "DataStore.getData - No id?! getData "+type);
-		let item = this.appstate.data[type][id];
+		const s = this.nodeForStatus(status);
+		let item = appstate[s][type][id];
 		return item;
 	}
 
 	/**
 	 * 
 	 */
-	setData(item, update = true) {
+	setData(status, item, update = true) {
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
 		assert(C.TYPES.has(getType(item)), item);
-		this.setValue(['data', getType(item), getId(item)], item, update);
+		const path = this.getPath(status, item);
+		this.setValue(path, item, update);
 	}
 
 	/**
 	 * the DataStore path for this item, or null
 	 */
-	getPath(item) {
+	getPath(status, item) {
+		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
 		if ( ! item) return null;
 		if ( ! C.TYPES.has(getType(item))) return null;
 		if ( ! getId(item)) return null;
-		return ['data', getType(item), getId(item)];
+		const s = this.nodeForStatus(status);
+		return [s, getType(item), getId(item)];
+	}
+
+	nodeForStatus(status) {
+		assert(C.KStatus.has(status), "DataStore bad status: "+status);
+		switch(status) {
+			case KStatus.PUBLISHED: return 'data';
+			case KStatus.DRAFT: case KStatus.MODIFIED: case KStatus.PENDING: case KStatus.REQUEST_PUBLISH: case KStatus.ARCHIVED:
+				return 'draft';			
+			case KStatus.TRASH: return 'trash';
+		}
+		throw new Error("DataStore - odd status "+status);
 	}
 
 	getValue(...path) {
@@ -231,7 +251,9 @@ class Store {
 			tip = newTip;
 		}
 		// HACK: update a data value => mark it as modified (but not for deletes)
-		if (is(oldVal) && is(value) && path[0] === 'data' && path.length > 2 && DataStore.DATA_MODIFIED_PROPERTY) {
+		if (is(oldVal) && is(value) && (path[0] === 'data' || path[0] === 'draft') 
+			&& path.length > 2 && DataStore.DATA_MODIFIED_PROPERTY) 
+		{
 			// chop path down to [data, type, id]
 			const itemPath = path.slice(0, 3);
 			const item = this.getValue(itemPath);
@@ -315,7 +337,7 @@ class Store {
 	 * Get hits from the cargo, and store them under data.type.id
 	 * @param {*} res 
 	 */
-	updateFromServer(res) {
+	updateFromServer(res, status) {
 		console.log("updateFromServer", res);
 		if ( ! res.cargo) {			
 			return res; // return for chaining .then()
@@ -326,7 +348,7 @@ class Store {
 		if ( ! hits && res.cargo) {			
 			hits = [res.cargo]; // just the one?
 		}
-		let itemstate = {data:{}};
+		let itemstate = {data:{}, draft:{}, trash:{}};
 		hits.forEach(item => {
 			try {
 				let type = getType(item);
@@ -336,16 +358,16 @@ class Store {
 					return;
 				}
 				assert(C.TYPES.has(type), "DataStore.updateFromServer: type:"+type, item);
-				let typemap = itemstate.data[type];
+				const s = status || getStatus(item);
+				const sn = this.nodeForStatus(s);
+				let typemap = itemstate[sn][type];
 				if ( ! typemap) {
 					typemap = {};
-					itemstate.data[type] = typemap;
+					itemstate[sn][type] = typemap;
 				}
-				if (item.id) {
-					typemap[item.id] = item;
-				} else if (item["@id"]) {
-					// bleurgh, thing.org style ids -- which are asking for trouble :(
-					typemap[item["@id"]] = item;
+				const id = getId(item);
+				if (id) {
+					typemap[id] = item;
 				} else {
 					console.warn("No id?!", item, "from", res);
 				}

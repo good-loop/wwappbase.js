@@ -22,7 +22,10 @@ ActionMan.crud = (type, id, action, item) => {
 	assMatch(id, String);
 	assert(C.TYPES.has(type), type);
 	assert(C.CRUDACTION.has(action), type);
-	if ( ! item) item = DataStore.getData(type, id);
+	if ( ! item) { 
+		let status = statusForAction(action);
+		item = DataStore.getData(status, type, id);
+	}
 	if ( ! item) {
 		// No item? fine for action=delete. Make a transient dummy here
 		assert(action==='delete', action+" "+type+" "+id);
@@ -92,8 +95,9 @@ ActionMan.delete = (type, pubId) => {
 	return ActionMan.crud(type, pubId, 'delete')
 		.then(e => {
 			console.warn("deleted!", type, pubId, e);
-			// remove the local version
+			// remove the local versions
 			DataStore.setValue(['data', type, pubId], null);
+			DataStore.setValue(['draft', type, pubId], null);
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return e;
@@ -111,15 +115,25 @@ const servlet4type = (type) => {
 	return stype;
 };
 
+/**
+ * ??does this make sense??
+ */
+const statusForAction = (action) => {
+	console.error("statusForAction", action);
+	return "TODO";
+};
+
 ServerIO.crud = function(type, item, action) {	
 	assert(C.TYPES.has(type), type);
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
+	const status = statusForAction(action);
 	let params = {
 		method: 'POST',
 		data: {
-			action: action,
-			type: type,
+			action,
+			status,
+			type,
 			item: JSON.stringify(item)
 		}
 	};		
@@ -162,7 +176,7 @@ ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
 ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
-	return DataStore.fetch(['data', type, id], () => {
+	return DataStore.fetch(DataStore.getPath(status, type, id), () => {
 		return ServerIO.getDataItem({type, id, status, swallow, ...other});
 	}, ! swallow);
 };

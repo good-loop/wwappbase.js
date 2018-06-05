@@ -54,6 +54,19 @@ const getId = (item) => {
 };
 
 /**
+ * DRAFT / PUBLISHED
+ * null returns null
+ */
+const getStatus = (item) => {
+	if ( ! item) return null;
+	const s = item.status;
+	if ( ! s) return null;
+	assert(C.KStatus.has(s), "DataClass.js getStatus", item);
+	return s;
+};
+
+
+/**
  * access functions for source, help, notes??
  */
 const Meta = {};
