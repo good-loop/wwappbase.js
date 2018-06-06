@@ -15,6 +15,7 @@ import printer from '../utils/printer';
 import Enum from 'easy-enums';
 import DataStore from '../plumbing/DataStore';
 import { relative } from 'path';
+import { getDataClass, getType } from '../data/DataClass';
 
 const str = printer.str;
 
@@ -63,7 +64,7 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage} = this.props;		
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, statePath} = this.props;		
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -73,10 +74,21 @@ class SimpleTable extends React.Component {
 		assert( ! data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);
 		const originalData = data;
 
+		// Table settings are stored in widget state by default. But can also be linked to a DataStore via statePath
 		let tableSettings = this.state;
+		if (statePath) {
+			tableSettings = DataStore.getValue(statePath);
+			normalSetState = this.setState;
+			this.setState = ns => {
+				let ts = DataStore.getValue(statePath) || {};
+				ts = Object.assign(ts, ns); // merge with other state settings
+				DataStore.setValue(statePath, ts);
+			};
+		}
 		if ( ! tableSettings) {
 			tableSettings = {};
 		}
+
 		// filter?		
 		if (tableSettings.filter) {
 			data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
@@ -250,8 +262,12 @@ const defaultCellRender = (v, column) => {
 		// commas
 		v = printer.prettyNumber(v, 10);
 	}
+	// e.g. Money has a to-string
+	let dc = getDataClass(getType(v));
+	if (dc && dc.str) return dc.str(v);
 	return str(v);
 };
+
 const Cell = ({item, row, column, dataRow}) => {
 	try {
 		const v = getValue({item, row, column});

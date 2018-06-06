@@ -102,6 +102,16 @@ Money.isa = (obj) => {
 	if (obj.currency) return true;
 };
 
+Money.str = obj => (Money.CURRENCY[obj.currency]||'') + Money.value(obj);
+
+/**
+ * currency code to everyday symbol
+ */
+Money.CURRENCY = {
+	GBP: "£",
+	USD: "$"
+};
+
 /**
  * @param base e.g. £1 is {currency:'GBP', value:1}
  */
