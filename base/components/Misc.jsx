@@ -55,10 +55,6 @@ Misc.Col2 = ({children}) => (
 	</div>
 );
 
-const CURRENCY = {
-	gbp: "£",
-	usd: "$"
-};
 /**
  * Money span, falsy displays as 0
  * 
@@ -86,10 +82,10 @@ Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSi
 	// pad .1 to .10
 	if (snum.match(/\.\d$/)) snum += '0';
 
-	const currencyCode = (amount.currency || 'gbp').toLowerCase();
+	const currencyCode = (amount.currency || 'GBP').toUpperCase();
 	return (
 		<span className='money'>
-			<span className='currency-symbol'>{CURRENCY[currencyCode]}</span>
+			<span className='currency-symbol'>{Money.CURRENCY[currencyCode]}</span>
 			<span className='amount'>{snum}</span>
 		</span>
 	);
@@ -501,7 +497,7 @@ const PropControlMoney = ({prop, value, path, proppath,
 		// console.warn("£", value, proppath);
 		if (saveFn) saveFn({path, value});
 	};
-	let curr = CURRENCY[value && value.currency] || <span>&pound;</span>;
+	let curr = Money.CURRENCY[value && value.currency] || <span>&pound;</span>;
 	let currency;
 	let changeCurrency = otherStuff.changeCurrency !== false;
 	if (changeCurrency) {
