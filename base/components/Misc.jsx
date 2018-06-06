@@ -305,7 +305,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 		DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
 		let mv = modelValueFromInput(e.target.value, type, e.type);
 		DataStore.setValue(proppath, mv);
-		if (saveFn) saveFn({path:path, value:mv});
+		if (saveFn) saveFn({path, value:mv});
 		e.preventDefault();
 		e.stopPropagation();
 	};
@@ -725,7 +725,20 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 			inputValue = 'https://'+inputValue;
 		}
 	}
+	// normalise text
+	if (type==='text' || type==='textarea') {
+		inputValue = normalise(inputValue);
+	}
 	return inputValue;
+};
+
+const normalise = s => {
+	if ( ! s) return s;
+	s = s.replace(/['`’‘’ʼ]/g, "'");
+	s = s.replace(/[\"“”„‟❛❜❝❞«»]/g, '"');
+	s = s.replace(/[‐‑‒–—―-]/g, '-');
+	s = s.replace(/[\u00A0\u2007\u202F\u200B]/g, ' ');
+	return s;
 };
 
 
