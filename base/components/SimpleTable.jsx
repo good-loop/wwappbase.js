@@ -73,7 +73,6 @@ class SimpleTable extends React.Component {
 
 	render() {
 		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, checkboxValues} = this.props;	
-		console.warn("props", this.props);	
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -132,7 +131,6 @@ class SimpleTable extends React.Component {
 				return obj;
 			}, []);
 		}
-		console.warn('Czech', this.state.checkboxValues);
 		// scrolling ideas:
 		// 1: have divs that move onScroll
 		// 2: have 3 tables, each of which uses visibility:hidden to only partly draw
@@ -170,6 +168,8 @@ class SimpleTable extends React.Component {
 						</tr></tfoot>
 							: null}	
 					</table>
+					{this.state.checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={this.state.checkboxValues} table={this} /> 
+					: null}
 				</div>
 			</div>
 		);
@@ -203,7 +203,7 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 	//Maybe check if this is an Object instead? Should already exist by this point, but worried because checkboxValues initially === true
 	if(checkboxValues) {
 		cellGuts.push(
-			<span style={{display: 'block'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} >
+			<span style={{display: 'block', cursor: 'pointer'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} >
 				<Misc.Icon glyph='remove'/>
 			</span>
 			// <input type='checkbox' className={headerKeyString} style={{display: 'block'}} 
@@ -375,11 +375,36 @@ const csvEscCell = s => {
 	return '"'+s+'"';
 };
 
-/**Simple panel containing checkboxes for columns that have been disabled
- * @param path DataStore path pointing to location of Object containing header names and status of checkbox. 
- */
-const deselectedCheckboxes = () => {
-
+/**Simple panel containing checkboxes for columns that have been disabled*/
+const DeselectedCheckboxes = ({columns, checkboxValues, table}) => {
+	// console.warn('CheckBoxValues', checkboxValues);
+	// const reducedCheck = columns.reduce((obj, c) => {
+	// 	const headerKeyString = c.Header || c.accessor || str(c);
+	// 	if(checkboxValues[headerKeyString] === false) {
+	// 		obj.push(
+	// 			<span style={{display: 'block', cursor: 'pointer'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}}>
+	// 				{headerKeyString}
+	// 			</span>
+	// 		);
+	// 	}
+	// 	return obj;
+	// }, []);
+	// console.warn("reducedCheck", reducedCheck);
+	return (
+		<div className='deselectedCheckboxes'>
+			{columns.map(c => {
+				const headerKeyString = c.Header || c.accessor || str(c);
+				if(checkboxValues[headerKeyString] === false) {
+					return (
+						<span style={{cursor: 'pointer'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}>
+							{headerKeyString}
+						</span>
+					);
+				}
+				return null;
+			})}
+		</div>
+	);
 };
 
 export default SimpleTable;
