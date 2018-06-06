@@ -56,6 +56,17 @@ window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {
 		type: "error"
 	}});
 });
+// quiet asserts in production
+if (C.isProduction()) {
+	SJTest.assertFailed = msg => {
+		// we usually pass in an array from ...msg
+		if (msg.length === 1) msg = msg[0];
+		console.error("assert", msg);
+		// A nice string?
+		var smsg = SJTestUtils.str(msg);
+		window.onerror(smsg, null, null, null, new Error("assert-failed: "));
+	};
+}
 
 
 ServerIO.upload = function(file, progress, load) {
