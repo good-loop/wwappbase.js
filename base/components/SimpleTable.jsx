@@ -72,7 +72,7 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, checkboxValues} = this.props;	
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, checkboxValues} = this.props;
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -143,6 +143,7 @@ class SimpleTable extends React.Component {
 					onChange={filterChange} 
 					/></div> : null}
 				<div>
+					{this.state.checkboxValues? <RemoveAllColumns table={this} /> : null}
 					<table className={cn}>
 						<thead>
 							<tr>{visibleColumns.map((col, c) => {
@@ -168,8 +169,7 @@ class SimpleTable extends React.Component {
 						</tr></tfoot>
 							: null}	
 					</table>
-					{this.state.checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={this.state.checkboxValues} table={this} /> 
-					: null}
+					{this.state.checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={this.state.checkboxValues} table={this} /> : null}
 				</div>
 			</div>
 		);
@@ -203,7 +203,7 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 	//Maybe check if this is an Object instead? Should already exist by this point, but worried because checkboxValues initially === true
 	if(checkboxValues) {
 		cellGuts.push(
-			<span style={{display: 'block', cursor: 'pointer'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} >
+			<span style={{display: 'block', cursor: 'pointer', marginBottom: '10px'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} >
 				<Misc.Icon glyph='remove'/>
 			</span>
 			// <input type='checkbox' className={headerKeyString} style={{display: 'block'}} 
@@ -377,32 +377,33 @@ const csvEscCell = s => {
 
 /**Simple panel containing checkboxes for columns that have been disabled*/
 const DeselectedCheckboxes = ({columns, checkboxValues, table}) => {
-	// console.warn('CheckBoxValues', checkboxValues);
-	// const reducedCheck = columns.reduce((obj, c) => {
-	// 	const headerKeyString = c.Header || c.accessor || str(c);
-	// 	if(checkboxValues[headerKeyString] === false) {
-	// 		obj.push(
-	// 			<span style={{display: 'block', cursor: 'pointer'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}}>
-	// 				{headerKeyString}
-	// 			</span>
-	// 		);
-	// 	}
-	// 	return obj;
-	// }, []);
-	// console.warn("reducedCheck", reducedCheck);
 	return (
-		<div className='deselectedCheckboxes'>
+		<div>
 			{columns.map(c => {
 				const headerKeyString = c.Header || c.accessor || str(c);
 				if(checkboxValues[headerKeyString] === false) {
 					return (
-						<span style={{cursor: 'pointer'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}>
+						<div className='deselectedColumn' style={{display: 'inline-block', cursor: 'pointer', margin: '15px'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}>
+							<Misc.Icon glyph='plus' />
 							{headerKeyString}
-						</span>
+						</div>
 					);
 				}
 				return null;
 			})}
+		</div>
+	);
+};
+
+const RemoveAllColumns = ({table}) => {
+	console.warn("removeColumns", table.state.checkboxValues);
+	return (
+		<div className='deselectAll' style={{display: 'inline-block', cursor: 'pointer', margin: '15px', color: '#9d130f'}} 
+			onClick={() => {
+				Object.keys(table.state.checkboxValues).forEach(k => table.state.checkboxValues[k] = !table.state.checkboxValues[k]); 
+				table.forceUpdate();}}>
+			<Misc.Icon glyph='remove' />
+			Remove all columns
 		</div>
 	);
 };
