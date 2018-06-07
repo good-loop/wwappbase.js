@@ -28,8 +28,7 @@ ServerIO.checkBase = () => {
 	if (ServerIO.APIBASE && C.isProduction()) {
 		const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
 		ServerIO.APIBASE = ''; // clear it
-		console.error(err);
-		window.onerror(err);
+		console.warn(err);
 	}
 	// TODO include datalog here too in notify
 	if (ServerIO.APIBASE && ! C.isProduction()) {
@@ -41,8 +40,7 @@ ServerIO.checkBase = () => {
 		) {
 		const err = new Error("ServerIO.js - ServerIO.DATALOG_ENDPOINT is using a test setting! Oops "+ServerIO.DATALOG_ENDPOINT);
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
-		console.error(err);
-		window.onerror(err);
+		console.warn(err);
 	}
 };
 
