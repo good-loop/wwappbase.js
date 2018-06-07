@@ -93,7 +93,7 @@ const ShareWidget = ({item, type, id, thingId, name}) => {
 	}
 	thingId = shareThingId(type, id);
 	const basePath = ['widget', 'ShareWidget', thingId];
-	let data = DataStore.getValue(basePath) || DataStore.setValue(basePath, {form: {}});
+	let data = DataStore.getValue(basePath) || DataStore.setValue(basePath, {form: {}}, false);
 	const {warning, show, form} = data;	
 	const formPath = basePath.concat('form');
 	if ( ! name) name = thingId;
