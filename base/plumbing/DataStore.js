@@ -133,7 +133,7 @@ class Store {
 		assert(C.TYPES.has(type), "DataStore.getData bad type: "+type);
 		assert(id, "DataStore.getData - No id?! getData "+type);
 		const s = this.nodeForStatus(status);
-		let item = appstate[s][type][id];
+		let item = this.getValue([s, type, id]);
 		return item;
 	}
 
