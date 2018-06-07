@@ -44,7 +44,9 @@ let takeScreenshot = (() => {
 /**Deprecated. Use page.waitFor(ms) instead*/
 
 
-/**Login to app. Should work for both SoGive and Good-loop */
+/**Login to app. Should work for both SoGive and Good-loop 
+ * Make sure that you are actually on a page with a clickable login button before running this!
+*/
 let login = (() => {
     var _ref3 = _asyncToGenerator(function* ({ page, username, password }) {
         if (!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');

@@ -64,7 +64,9 @@ function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-/**Login to app. Should work for both SoGive and Good-loop */
+/**Login to app. Should work for both SoGive and Good-loop 
+ * Make sure that you are actually on a page with a clickable login button before running this!
+*/
 async function login({page, username, password}) {
     if(!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
     await page.addScriptTag(disableAnimations);
