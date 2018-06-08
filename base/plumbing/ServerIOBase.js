@@ -4,6 +4,7 @@
  */
 import _ from 'lodash';
 import $ from 'jquery';
+import SJTest from 'sjtest';
 import {assert, assMatch} from 'sjtest';
 import C from '../../C.js';
 import {encURI} from 'wwutils';
