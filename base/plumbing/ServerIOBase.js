@@ -210,7 +210,11 @@ ServerIO.load = function(url, params) {
 
 
 ServerIO.post = function(url, data) {
-	return ServerIO.load(url, {data, method:'POST'});
+	return ServerIO.load(url, {data, method: 'POST'});
+};
+
+ServerIO.put = function(url, data) {
+	return ServerIO.load(url, {data, method: 'PUT'});
 };
 
 ServerIO.handleMessages = function(response) {
