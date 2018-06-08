@@ -73,7 +73,7 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, checkboxValues} = this.props;
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
