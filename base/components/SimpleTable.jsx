@@ -200,24 +200,20 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 	dataArray[0].push(headerKeyString); // csv gets the text, never jsx!
 
 	const cellGuts = [];
-	//Maybe check if this is an Object instead? Should already exist by this point, but worried because checkboxValues initially === true
 	if(checkboxValues) {
 		cellGuts.push(
-			<span style={{display: 'block', cursor: 'pointer', marginBottom: '10px'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} >
+			<div key={headerKeyString} style={{display: 'block', cursor: 'pointer', marginBottom: '10px'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} >
 				<Misc.Icon glyph='remove'/>
-			</span>
-			// <input type='checkbox' className={headerKeyString} style={{display: 'block'}} 
-			// 	onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} 
-			// 	defaultChecked={checkboxValues[headerKeyString]}/>
+			</div>
 		);
 	}
 	if(checkboxValues && checkboxValues[headerKeyString] === false) return null; //Don't display column if it has been deselected
-	cellGuts.push(hText);
+	// cellGuts.push(hText);
 	if (sortByMe) cellGuts.push(<Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />);
 	else if (showSortButtons) cellGuts.push(<Misc.Icon className='text-muted' glyph='triangle-bottom' />);
 	
 	return (
-		<th onClick={onClick} >
+		<th key={JSON.stringify(c)} onClick={onClick} >
 			{cellGuts}
 		</th>
 	);
@@ -383,7 +379,8 @@ const DeselectedCheckboxes = ({columns, checkboxValues, table}) => {
 				const headerKeyString = c.Header || c.accessor || str(c);
 				if(checkboxValues[headerKeyString] === false) {
 					return (
-						<div className='deselectedColumn' style={{display: 'inline-block', cursor: 'pointer', margin: '15px'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}>
+						<div key={'deselectedColumn'+headerKeyString} className='deselectedColumn' style={{display: 'inline-block', cursor: 'pointer', margin: '15px'}}
+							 onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}>
 							<Misc.Icon glyph='plus' />
 							{headerKeyString}
 						</div>
@@ -400,7 +397,7 @@ const RemoveAllColumns = ({table}) => {
 	return (
 		<div className='deselectAll' style={{display: 'inline-block', cursor: 'pointer', margin: '15px', color: '#9d130f'}} 
 			onClick={() => {
-				Object.keys(table.state.checkboxValues).forEach(k => table.state.checkboxValues[k] = !table.state.checkboxValues[k]); 
+				Object.keys(table.state.checkboxValues).forEach(k => table.state.checkboxValues[k] = false); 
 				table.forceUpdate();}}>
 			<Misc.Icon glyph='remove' />
 			Remove all columns
