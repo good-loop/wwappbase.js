@@ -208,12 +208,12 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 		);
 	}
 	if(checkboxValues && checkboxValues[headerKeyString] === false) return null; //Don't display column if it has been deselected
-	// cellGuts.push(hText);
-	if (sortByMe) cellGuts.push(<Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />);
-	else if (showSortButtons) cellGuts.push(<Misc.Icon className='text-muted' glyph='triangle-bottom' />);
+	cellGuts.push(hText);
+	if (sortByMe) cellGuts.push(<Misc.Icon key={'other-icon'} glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />);
+	else if (showSortButtons) cellGuts.push(<Misc.Icon key={'sort-glyph'} className='text-muted' glyph='triangle-bottom' />);
 	
 	return (
-		<th key={JSON.stringify(c)} onClick={onClick} >
+		<th onClick={onClick} >
 			{cellGuts}
 		</th>
 	);
