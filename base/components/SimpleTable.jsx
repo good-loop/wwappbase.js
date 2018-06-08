@@ -409,7 +409,6 @@ const DeselectedCheckboxes = ({columns, checkboxValues, table}) => {
 };
 
 const RemoveAllColumns = ({table}) => {
-	console.warn("removeColumns", table.state.checkboxValues);
 	return (
 		<div className='deselectAll' style={{display: 'inline-block', cursor: 'pointer', margin: '15px', color: '#9d130f'}} 
 			onClick={() => {
