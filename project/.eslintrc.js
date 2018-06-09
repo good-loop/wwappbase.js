@@ -63,6 +63,7 @@ module.exports = {
 		/* broken - seems to cause errors in linting */
 		"no-multi-assign": "off",
 		/* off because the warnings are more noise than signal i.e. we might switch them on sometime*/
+		"import/no-named-as-default-member": "warn",
 		"react/no-unused-state": "warn",
 		"no-restricted-globals": "warn", // triggers on isNan()
 		"jsx-a11y/alt-text": "warn",

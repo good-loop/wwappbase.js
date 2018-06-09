@@ -856,7 +856,8 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => 
 	assMatch(id, String);
 	let localStatus = DataStore.getLocalEditsStatus(type, id);
 	let isSaving = C.STATUS.issaving(localStatus);	
-	let item = DataStore.getData(type, id);
+	const status = C.KStatus.DRAFT; // its an editor - it works on drafts
+	let item = DataStore.getData(status, type, id);
 	// request a save?
 	if (C.STATUS.isdirty(localStatus) && ! isSaving) {
 		saveDraftFn({type,id});

@@ -138,34 +138,54 @@ class Store {
 	}
 
 	/**
-	 * 
+	 * @param status {?C.KStatus} If unset, use item.status
+	 * @param item {!Object}
 	 */
 	setData(status, item, update = true) {
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
 		assert(C.TYPES.has(getType(item)), item);
+		if ( ! status) status = getStatus(item);
 		const path = this.getPath(status, item);
 		this.setValue(path, item, update);
 	}
 
 	/**
-	 * the DataStore path for this item, or null
+	 * the DataStore path for this item, or null if item is null;
 	 */
-	getPath(status, item) {
+	getPathForItem(status, item) {
+		if ( ! status) status = getStatus(item);
 		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
-		if ( ! item) return null;
-		if ( ! C.TYPES.has(getType(item))) return null;
-		if ( ! getId(item)) return null;
-		const s = this.nodeForStatus(status);
-		return [s, getType(item), getId(item)];
+		if ( ! item) {
+			return null;
+		}
+		// if ( ! C.TYPES.has(getType(item))) return null;
+		// if ( ! getId(item)) return null;
+		// const s = this.nodeForStatus(status);
+		// return [s, getType(item), getId(item)];
+		return getPath(status, getType(item), getId(item));
 	}
 
+	/**
+	 * the DataStore path for this item, or null if item is null;
+	 */
+	getPath(status, type, id) {
+		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
+		assert(C.TYPES.has(type), "DataStore.js bad type: "+type);
+		assMatch(id, String, "DataStore.js bad id "+id);
+		const s = this.nodeForStatus(status);
+		return [s, type, id];
+	}
+
+	/**
+	 * @returns {String} the appstate.X node for storing data items of this status.
+	 */
 	nodeForStatus(status) {
 		assert(C.KStatus.has(status), "DataStore bad status: "+status);
 		switch(status) {
-			case KStatus.PUBLISHED: return 'data';
-			case KStatus.DRAFT: case KStatus.MODIFIED: case KStatus.PENDING: case KStatus.REQUEST_PUBLISH: case KStatus.ARCHIVED:
+			case C.KStatus.PUBLISHED: return 'data';
+			case C.KStatus.DRAFT: case C.KStatus.MODIFIED: case C.KStatus.PENDING: case C.KStatus.REQUEST_PUBLISH: case C.KStatus.ARCHIVED:
 				return 'draft';			
-			case KStatus.TRASH: return 'trash';
+			case C.KStatus.TRASH: return 'trash';
 		}
 		throw new Error("DataStore - odd status "+status);
 	}
@@ -400,6 +420,7 @@ class Store {
 	 * @returns {?value, promise} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, messaging=true) { // TODO allow retry after 10 seconds
+		assert(path && fetchFn, "DataStore.js - missing input",path,fetchFn);
 		let item = this.getValue(path);
 		if (item!==null && item!==undefined) { 
 			// Note: falsy or an empty list/object is counted as valid. It will not trigger a fresh load
@@ -482,5 +503,7 @@ const DataStore = new Store();
 // switch on data item edits => modified flag
 DataStore.DATA_MODIFIED_PROPERTY = 'localStatus';
 export default DataStore;
+let getPath = DataStore.getPath;
+export {getPath};
 // accessible to debug
 if (typeof(window) !== 'undefined') window.DataStore = DataStore;
