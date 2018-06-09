@@ -856,7 +856,7 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => 
 	assMatch(id, String);
 	let localStatus = DataStore.getLocalEditsStatus(type, id);
 	let isSaving = C.STATUS.issaving(localStatus);	
-	const status = C.KStatus.DRAFT; // its an editor - it works on drafts
+	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData(status, type, id);
 	// request a save?
 	if (C.STATUS.isdirty(localStatus) && ! isSaving) {
@@ -873,8 +873,14 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => 
 	if (hidden) return <span />;
 	const vis ={visibility: isSaving? 'visible' : 'hidden'};
 
+	// debug info on DataStore state
+	let pubv = DataStore.getData(C.KStatus.PUBLISHED, type, id);
+	let draftv = DataStore.getData(C.KStatus.DRAFT, type, id);
+	let dsi = pubv? (draftv? (pubv===draftv? "published = draft" : "published & draft") : "published only") 
+					: (draftv? "draft only" : "nothing loaded");
+
 	return (<div className='SavePublishDiscard' title={item && item.status}>
-		<div><small>Status: {item && item.status}, Modified: {localStatus} {isSaving? "saving...":null}</small></div>
+		<div><small>Status: {item && item.status}, Modified: {localStatus} {isSaving? "saving...":null}, DataStore: {dsi}</small></div>
 		<button className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
 			Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
