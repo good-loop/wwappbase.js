@@ -176,12 +176,13 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 	if (headerRender) hText = headerRender(column);
 	else hText = column.Header || column.accessor || str(column);
 	dataArray[0].push(column.Header || column.accessor || str(column)); // csv gets the text, never jsx!
-	const cellGuts = [hText];
-	if (sortByMe) cellGuts.push(<Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />);
-	else if (showSortButtons) cellGuts.push(<Misc.Icon className='text-muted' glyph='triangle-bottom' />);
+	
+	let arrow = null;
+	if (sortByMe) arrow = <Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />;
+	else if (showSortButtons) arrow = <Misc.Icon className='text-muted' glyph='triangle-bottom' />;
 
 	return (<th onClick={onClick} >
-		{cellGuts}
+		{hText}{arrow}
 	</th>);
 };
 
@@ -288,8 +289,20 @@ const TotalCell = ({data, column}) => {
 	let render = column.Cell || defaultCellRender;
 	return <td>{render(total, column)}</td>;
 };
+
+/**
+ * Editor for the use-case: each row = a DataStore data item.
+ */
 const Editor = ({row, column, value, item}) => {
-	let path = column.path || DataStore.getPath(item);
+	// what DataStore path?
+	let path = column.path;
+	if ( ! path) {
+		try {
+			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+		} catch(err) {
+			console.log("SimpleTable.jsx - cant get path-for-item", item, err);
+		}
+	}
 	let prop = column.prop || (_.isString(column.accessor) && column.accessor);
 	let dummyItem;
 	if (path && prop) {

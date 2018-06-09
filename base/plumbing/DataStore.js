@@ -145,7 +145,7 @@ class Store {
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
 		assert(C.TYPES.has(getType(item)), item);
 		if ( ! status) status = getStatus(item);
-		const path = this.getPath(status, item);
+		const path = this.getPathForItem(status, item);
 		this.setValue(path, item, update);
 	}
 
@@ -503,7 +503,8 @@ const DataStore = new Store();
 // switch on data item edits => modified flag
 DataStore.DATA_MODIFIED_PROPERTY = 'localStatus';
 export default DataStore;
-let getPath = DataStore.getPath;
+// provide getPath as a convenient export
+let getPath = DataStore.getPath.bind(DataStore);
 export {getPath};
 // accessible to debug
 if (typeof(window) !== 'undefined') window.DataStore = DataStore;

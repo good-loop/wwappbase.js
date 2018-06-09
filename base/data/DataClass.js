@@ -54,7 +54,7 @@ const getId = (item) => {
 };
 
 /**
- * DRAFT / PUBLISHED
+ * @returns DRAFT / PUBLISHED
  * null returns null
  */
 const getStatus = (item) => {
@@ -156,5 +156,5 @@ const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
 window.dataclass = {};
 
-export {defineType, isa, getType, getId, getDataClass, Meta, nonce};
+export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce};
 	

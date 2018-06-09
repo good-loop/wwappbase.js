@@ -23,7 +23,7 @@ ActionMan.crud = (type, id, action, item) => {
 	assert(C.TYPES.has(type), type);
 	assert(C.CRUDACTION.has(action), type);
 	if ( ! item) { 
-		let status = statusForAction(action);
+		let status = startStatusForAction(action);
 		item = DataStore.getData(status, type, id);
 	}
 	if ( ! item) {
@@ -116,10 +116,21 @@ const servlet4type = (type) => {
 };
 
 /**
- * ??does this make sense??
+ * What status is the data in at the start of this action.
+ * e.g. publish starts with a draft
  */
-const statusForAction = (action) => {
+const startStatusForAction = (action) => {
 	console.error("statusForAction", action);
+	switch(action) {
+		case C.CRUDACTION.publish: return C.KStatus.DRAFT;
+	}
+	return "TODO";
+};
+const serverStatusForAction = (action) => {
+	console.error("statusForAction", action);
+	switch(action) {
+		case C.CRUDACTION.publish: return C.KStatus.PUBLISHED;
+	}
 	return "TODO";
 };
 
@@ -127,7 +138,7 @@ ServerIO.crud = function(type, item, action) {
 	assert(C.TYPES.has(type), type);
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
-	const status = statusForAction(action);
+	const status = serverStatusForAction(action);
 	let params = {
 		method: 'POST',
 		data: {
