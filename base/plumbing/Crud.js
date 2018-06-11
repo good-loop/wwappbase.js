@@ -122,14 +122,22 @@ const servlet4type = (type) => {
 const startStatusForAction = (action) => {
 	console.error("statusForAction", action);
 	switch(action) {
-		case C.CRUDACTION.publish: return C.KStatus.DRAFT;
+		case C.CRUDACTION.publish:
+		case C.CRUDACTION.save: 
+			return C.KStatus.DRAFT;
 	}
 	return "TODO";
 };
+/**
+ * What status do we send to the server? e.g. publish is published, save is draft.
+ */
 const serverStatusForAction = (action) => {
 	console.error("statusForAction", action);
 	switch(action) {
-		case C.CRUDACTION.publish: return C.KStatus.PUBLISHED;
+		case C.CRUDACTION.save: 
+			return C.KStatus.DRAFT;
+		case C.CRUDACTION.publish: 
+			return C.KStatus.PUBLISHED;
 	}
 	return "TODO";
 };

@@ -504,6 +504,12 @@ const DataStore = new Store();
 DataStore.DATA_MODIFIED_PROPERTY = 'localStatus';
 export default DataStore;
 // provide getPath as a convenient export
+/**
+ * the DataStore path for this item, or null if item is null;
+ * @param status
+ * @param type
+ * @param id
+ */
 let getPath = DataStore.getPath.bind(DataStore);
 export {getPath};
 // accessible to debug

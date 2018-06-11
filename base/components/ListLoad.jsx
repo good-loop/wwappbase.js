@@ -8,7 +8,7 @@ import {modifyHash} from 'wwutils';
 import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
-import DataStore from '../plumbing/DataStore';
+import DataStore, { getPath } from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import {getType, getId, nonce} from '../data/DataClass';
@@ -128,7 +128,8 @@ const createBlank = ({type, navpage, base, make}) => {
 	const id = getId(base);
 	if ( ! getType(base)) base['@type'] = type;
 	// poke a new blank into DataStore
-	DataStore.setValue(['data', type, id], base);
+	const path = getPath(C.KStatus.DRAFT, type, id);
+	DataStore.setValue(path, base);
 	// set the id
 	onPick({navpage, id});
 	// invalidate lists
