@@ -102,8 +102,19 @@ Money.isa = (obj) => {
 	if (obj.currency) return true;
 };
 
+Money.str = obj => (Money.CURRENCY[obj.currency]||'') + Money.value(obj);
+
+/**
+ * currency code to everyday symbol
+ */
+Money.CURRENCY = {
+	GBP: "£",
+	USD: "$"
+};
+
 /**
  * @param base e.g. £1 is {currency:'GBP', value:1}
+ * WARNING - only pass in one definition of value, or you may get odd behaviour!
  */
 Money.make = (base = {}) => {
 	const item = {
@@ -140,13 +151,22 @@ Money.add = (amount1, amount2) => {
 	Money.assIsa(amount2);
 	assCurrencyEq(amount1, amount2, "add()");
 	const b100p = v100p(amount1) + v100p(amount2);
-	let added = Money.make({
-		...Object.assign({}, amount1, {raw: undefined}), //fix for bug where v100p was forcing value to be amount1.raw
+	return moneyFromv100p(b100p, amount1.currency || amount2.currency);
+};
+
+/**
+ * Convenience to process the results from arithmetic ops, without the gotchas of make() keeping bits of stale data
+ * @param {*} b100p 
+ * @param {*} currency 
+ */
+const moneyFromv100p = (b100p, currency) => {
+	const res = {
+		currency: currency,
 		value: b100p/10000,
 		value100p: b100p
-	});
-	delete added.raw;
-	return added;
+	};
+	const m = Money.make(res);	
+	return m;
 };
 
 Money.total = amounts => {
@@ -161,13 +181,7 @@ Money.sub = (amount1, amount2) => {
 	Money.assIsa(amount2);
 	assCurrencyEq(amount1, amount2, "sub");
 	const b100p = v100p(amount1) - v100p(amount2);
-	let subd = Money.make({
-		...amount1,
-		value: b100p/10000,
-		value100p: b100p
-	});
-	delete subd.raw;
-	return subd;
+	return moneyFromv100p(b100p, amount1.currency || amount2.currency);
 };
 
 /** Must be called on a Money and a scalar */
@@ -176,13 +190,7 @@ Money.mul = (amount, multiplier) => {
 	assert(isNumeric(multiplier), "Money.js - mul() "+multiplier);
 	// TODO Assert that multiplier is numeric (kind of painful in JS)
 	const b100p = v100p(amount) * multiplier;
-	const muld = Money.make({
-		...amount,
-		value: b100p/10000,
-		value100p: b100p
-	});
-	delete muld.raw;
-	return muld;
+	return moneyFromv100p(b100p, amount1.currency);
 };
 
 /** 

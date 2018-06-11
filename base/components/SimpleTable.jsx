@@ -15,6 +15,7 @@ import printer from '../utils/printer';
 import Enum from 'easy-enums';
 import DataStore from '../plumbing/DataStore';
 import { relative } from 'path';
+import { getDataClass, getType } from '../data/DataClass';
 
 const str = printer.str;
 
@@ -48,6 +49,15 @@ class SimpleTable extends React.Component {
 
 	constructor(props) {
 		super(props);
+		
+		if(props.checkboxValues === true && props.columns) {//Enable checkboxes by passing "checkboxValues" to SimpleTable. React interprets this as {checkboxValues : true}
+			const checkboxValues = props.columns.reduce((obj, e) => {
+				const colHead = e.Header || e.accessor || str(e);
+				obj[colHead] = true;  
+				return obj;
+			}, {});
+			this.state = {checkboxValues};
+		}
 	}
 
 	componentWillMount() {
@@ -63,7 +73,7 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage} = this.props;		
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -73,10 +83,21 @@ class SimpleTable extends React.Component {
 		assert( ! data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);
 		const originalData = data;
 
+		// Table settings are stored in widget state by default. But can also be linked to a DataStore via statePath
 		let tableSettings = this.state;
+		if (statePath) {
+			tableSettings = DataStore.getValue(statePath);
+			normalSetState = this.setState;
+			this.setState = ns => {
+				let ts = DataStore.getValue(statePath) || {};
+				ts = Object.assign(ts, ns); // merge with other state settings
+				DataStore.setValue(statePath, ts);
+			};
+		}
 		if ( ! tableSettings) {
 			tableSettings = {};
 		}
+
 		// filter?		
 		if (tableSettings.filter) {
 			data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
@@ -102,7 +123,6 @@ class SimpleTable extends React.Component {
 			data = data.slice(0, rowsPerPage);
 		}
 		let cn = 'table'+(className? ' '+className : '');
-
 		// HACK build up an array view of the table
 		// TODO refactor to build this first, then generate the html
 		let dataArray = [[]];
@@ -112,6 +132,17 @@ class SimpleTable extends React.Component {
 			this.setState({filter: v});
 		};
 
+		//Only show columns that have checkbox: true.
+		//Can't edit the actual columns object as that would make it impossible to reenable a column
+		//Display only columns that haven't been disabled
+		let visibleColumns = columns;
+		if(_.isObject(this.state.checkboxValues) && !_.isEmpty(this.state.checkboxValues)) {
+			visibleColumns = columns.reduce((obj, c) => {
+				const headerKeyString = c.Header || c.accessor || str(c);
+				if(this.state.checkboxValues[headerKeyString]) obj.push(c);
+				return obj;
+			}, []);
+		}
 		// scrolling ideas:
 		// 1: have divs that move onScroll
 		// 2: have 3 tables, each of which uses visibility:hidden to only partly draw
@@ -124,31 +155,33 @@ class SimpleTable extends React.Component {
 					onChange={filterChange} 
 					/></div> : null}
 				<div>
+					{this.state.checkboxValues? <RemoveAllColumns table={this} /> : null}
 					<table className={cn}>
 						<thead>
-							<tr>{columns.map((col, c) => {
+							<tr>{visibleColumns.map((col, c) => {
 									return <Th table={this} tableSettings={tableSettings} key={c} 
-										column={col} c={c} dataArray={dataArray} headerRender={headerRender} showSortButtons />
+										column={col} c={c} dataArray={dataArray} headerRender={headerRender} checkboxValues={this.state.checkboxValues} showSortButtons />
 								})
 								}
 							</tr>
 							{addTotalRow? 
 								<tr>
 									<th>Total</th>
-									{columns.slice(1).map((col, c) => 
+									{visibleColumns.slice(1).map((col, c) => 
 										<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
 									}
 								</tr>
 								: null}
 						</thead>
 						<tbody>					
-							{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={columns} dataArray={dataArray} />) : null}
+							{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />) : null}
 						</tbody>
 						{csv? <tfoot><tr>
-							<td colSpan={columns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
+							<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
 						</tr></tfoot>
 							: null}	
 					</table>
+					{this.state.checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={this.state.checkboxValues} table={this} /> : null}
 				</div>
 			</div>
 		);
@@ -156,7 +189,7 @@ class SimpleTable extends React.Component {
 } // ./SimpleTable
 
 // TODO onClick={} sortBy
-const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortButtons}) => {
+const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortButtons, checkboxValues}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
 	let sortByMe = (""+tableSettings.sortBy) === (""+c);
 	let onClick = e => { 
@@ -173,23 +206,35 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 		// tableSettings.sortBy = c;
 	};
 	let hText;
+	const headerKeyString = column.Header || column.accessor || str(column);
 	if (headerRender) hText = headerRender(column);
 	else hText = column.Header || column.accessor || str(column);
 	dataArray[0].push(column.Header || column.accessor || str(column)); // csv gets the text, never jsx!
+
+	let showColumnControl = null;
+	if(checkboxValues) {
+		if(checkboxValues[headerKeyString] === false) return null; //Don't display column if it has been deselected
+		showColumnControl = (<div key={headerKeyString} 
+			style={{display: 'block', cursor: 'pointer', marginBottom: '10px'}} 
+			onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} 
+			>
+				<Misc.Icon glyph='remove'/>
+			</div>);
+	}	
 	
 	let arrow = null;
 	if (sortByMe) arrow = <Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />;
 	else if (showSortButtons) arrow = <Misc.Icon className='text-muted' glyph='triangle-bottom' />;
 
 	return (<th onClick={onClick} >
-		{hText}{arrow}
+		{showColumnControl}{hText}{arrow}
 	</th>);
 };
 
 const Row = ({item, row, columns, dataArray}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
-
+	
 	return (<tr>
 		{columns.map(col => <Cell key={JSON.stringify(col)} row={row} column={col} item={item} dataRow={dataRow} />)}
 	</tr>);
@@ -251,8 +296,12 @@ const defaultCellRender = (v, column) => {
 		// commas
 		v = printer.prettyNumber(v, 10);
 	}
+	// e.g. Money has a to-string
+	let dc = getDataClass(getType(v));
+	if (dc && dc.str) return dc.str(v);
 	return str(v);
 };
+
 const Cell = ({item, row, column, dataRow}) => {
 	try {
 		const v = getValue({item, row, column});
@@ -348,6 +397,39 @@ const csvEscCell = s => {
 	s = s.replace(/"/g, '""');
 	// quote it
 	return '"'+s+'"';
+};
+
+/**Simple panel containing checkboxes for columns that have been disabled*/
+const DeselectedCheckboxes = ({columns, checkboxValues, table}) => {
+	return (
+		<div>
+			{columns.map(c => {
+				const headerKeyString = c.Header || c.accessor || str(c);
+				if(checkboxValues[headerKeyString] === false) {
+					return (
+						<div key={'deselectedColumn'+headerKeyString} className='deselectedColumn' style={{display: 'inline-block', cursor: 'pointer', margin: '15px'}}
+							 onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}>
+							<Misc.Icon glyph='plus' />
+							{headerKeyString}
+						</div>
+					);
+				}
+				return null;
+			})}
+		</div>
+	);
+};
+
+const RemoveAllColumns = ({table}) => {
+	return (
+		<div className='deselectAll' style={{display: 'inline-block', cursor: 'pointer', margin: '15px', color: '#9d130f'}} 
+			onClick={() => {
+				Object.keys(table.state.checkboxValues).forEach(k => table.state.checkboxValues[k] = false); 
+				table.forceUpdate();}}>
+			<Misc.Icon glyph='remove' />
+			Remove all columns
+		</div>
+	);
 };
 
 export default SimpleTable;

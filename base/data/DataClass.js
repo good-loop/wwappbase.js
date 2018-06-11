@@ -24,8 +24,11 @@ const isa = function(obj, typ) {
 /**
  * Uses schema.org or gson class to get the type.
  * Or null
+ * @param item {?any}
+ * @returns {?String} e.g. "Money"
  */
 const getType = function(item) {
+	if ( ! item) return null;
 	// schema.org type?
 	let type = item['@type'];
 	if (type) return type;
@@ -132,6 +135,8 @@ const defineType = (type) => {
 			...base
 		};
 	};
+	// a default toString
+	This.str = obj => JSON.stringify(obj);
 	// for getDataClass
 	allTypes[type] = This;
 	// for debug use only

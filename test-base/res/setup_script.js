@@ -6,15 +6,18 @@ const puppeteer = require('puppeteer');
 const {takeScreenshot} = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
-const headless = true;
-
+const options = {
+    headless: true,
+    devtools: false,
+    slowMo: 0//Introduces a delay between puppeteer actions
+};
 /**Setup functions run before each test
  * If you only want something to run once
  * before all tests in file, use beforeAll/afterAll
  */
 beforeEach(async () => {
     //Can't access global from tests
-    window.__BROWSER__ = await puppeteer.launch({headless});
+    window.__BROWSER__ = await puppeteer.launch(options);
     //Could set API.ENDPOINT here.
 });
 

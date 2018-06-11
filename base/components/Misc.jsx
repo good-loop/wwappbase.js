@@ -55,10 +55,6 @@ Misc.Col2 = ({children}) => (
 	</div>
 );
 
-const CURRENCY = {
-	gbp: "£",
-	usd: "$"
-};
 /**
  * Money span, falsy displays as 0
  * 
@@ -86,10 +82,10 @@ Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSi
 	// pad .1 to .10
 	if (snum.match(/\.\d$/)) snum += '0';
 
-	const currencyCode = (amount.currency || 'gbp').toLowerCase();
+	const currencyCode = (amount.currency || 'GBP').toUpperCase();
 	return (
 		<span className='money'>
-			<span className='currency-symbol'>{CURRENCY[currencyCode]}</span>
+			<span className='currency-symbol'>{Money.CURRENCY[currencyCode]}</span>
 			<span className='amount'>{snum}</span>
 		</span>
 	);
@@ -305,7 +301,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 		DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
 		let mv = modelValueFromInput(e.target.value, type, e.type);
 		DataStore.setValue(proppath, mv);
-		if (saveFn) saveFn({path:path, value:mv});
+		if (saveFn) saveFn({path, value:mv});
 		e.preventDefault();
 		e.stopPropagation();
 	};
@@ -501,7 +497,7 @@ const PropControlMoney = ({prop, value, path, proppath,
 		// console.warn("£", value, proppath);
 		if (saveFn) saveFn({path, value});
 	};
-	let curr = CURRENCY[value && value.currency] || <span>&pound;</span>;
+	let curr = Money.CURRENCY[value && value.currency] || <span>&pound;</span>;
 	let currency;
 	let changeCurrency = otherStuff.changeCurrency !== false;
 	if (changeCurrency) {
@@ -725,7 +721,20 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 			inputValue = 'https://'+inputValue;
 		}
 	}
+	// normalise text
+	if (type==='text' || type==='textarea') {
+		inputValue = normalise(inputValue);
+	}
 	return inputValue;
+};
+
+const normalise = s => {
+	if ( ! s) return s;
+	s = s.replace(/['`’‘’ʼ]/g, "'");
+	s = s.replace(/[\"“”„‟❛❜❝❞«»]/g, '"');
+	s = s.replace(/[‐‑‒–—―-]/g, '-');
+	s = s.replace(/[\u00A0\u2007\u202F\u200B]/g, ' ');
+	return s;
 };
 
 

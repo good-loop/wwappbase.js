@@ -4,6 +4,7 @@
  */
 import _ from 'lodash';
 import $ from 'jquery';
+import SJTest from 'sjtest';
 import {assert, assMatch} from 'sjtest';
 import C from '../../C.js';
 import {encURI} from 'wwutils';
@@ -28,8 +29,7 @@ ServerIO.checkBase = () => {
 	if (ServerIO.APIBASE && C.isProduction()) {
 		const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
 		ServerIO.APIBASE = ''; // clear it
-		console.error(err);
-		window.onerror(err);
+		console.warn(err);
 	}
 	// TODO include datalog here too in notify
 	if (ServerIO.APIBASE && ! C.isProduction()) {
@@ -41,8 +41,7 @@ ServerIO.checkBase = () => {
 		) {
 		const err = new Error("ServerIO.js - ServerIO.DATALOG_ENDPOINT is using a test setting! Oops "+ServerIO.DATALOG_ENDPOINT);
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
-		console.error(err);
-		window.onerror(err);
+		console.warn(err);
 	}
 };
 
@@ -56,6 +55,17 @@ window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {
 		type: "error"
 	}});
 });
+// quiet asserts in production
+if (C.isProduction()) {
+	SJTest.assertFailed = msg => {
+		// we usually pass in an array from ...msg
+		if (msg.length === 1) msg = msg[0];
+		console.error("assert", msg);
+		// A nice string?
+		var smsg = SJTestUtils.str(msg);
+		window.onerror(smsg, null, null, null, new Error("assert-failed: "));
+	};
+}
 
 
 ServerIO.upload = function(file, progress, load) {

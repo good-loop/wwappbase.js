@@ -10,15 +10,18 @@ const puppeteer = require('puppeteer');
 const { takeScreenshot } = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
 
-const headless = false;
-
+const options = {
+    headless: true,
+    devtools: false,
+    slowMo: 0 //Introduces a delay between puppeteer actions
+};
 /**Setup functions run before each test
  * If you only want something to run once
  * before all tests in file, use beforeAll/afterAll
  */
 beforeEach(_asyncToGenerator(function* () {
     //Can't access global from tests
-    window.__BROWSER__ = yield puppeteer.launch({ headless });
+    window.__BROWSER__ = yield puppeteer.launch(options);
     //Could set API.ENDPOINT here.
 }));
 
@@ -49,5 +52,5 @@ afterEach(_asyncToGenerator(function* () {
             date
         });
     }
-    // await window.__BROWSER__.close();
+    yield window.__BROWSER__.close();
 }), 10000);
