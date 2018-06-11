@@ -789,7 +789,11 @@ const saveDraftFn = _.debounce(
 
 
 /**
- * Just a convenience for a Bootstrap panel
+ * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
+ * 
+ * You can wrap these cards -- if you do, pass down misc parameters to enable the CardAccordion wiring to work. e.g.
+ * <Foo {...stuff}> => <Misc.Card {...stuff}>
+ * 
  * @param title {String|JSX} will be wrapper in h3
  */
 Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {

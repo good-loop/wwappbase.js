@@ -120,13 +120,12 @@ const servlet4type = (type) => {
  * e.g. publish starts with a draft
  */
 const startStatusForAction = (action) => {
-	console.error("statusForAction", action);
 	switch(action) {
 		case C.CRUDACTION.publish:
 		case C.CRUDACTION.save: 
 			return C.KStatus.DRAFT;
 	}
-	return "TODO";
+	throw new Error("TODO startStatusForAction "+action);
 };
 /**
  * What status do we send to the server? e.g. publish is published, save is draft.
@@ -139,7 +138,7 @@ const serverStatusForAction = (action) => {
 		case C.CRUDACTION.publish: 
 			return C.KStatus.PUBLISHED;
 	}
-	return "TODO";
+	throw new Error("TODO serverStatusForAction "+action);
 };
 
 ServerIO.crud = function(type, item, action) {	
