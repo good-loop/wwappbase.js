@@ -684,7 +684,8 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		pvo.promise.then(oo => {
 			DataStore.setValue(widgetPath, oo);
 			// also save the info in data
-			oo.forEach(opt => getType(opt) && getId(opt)? DataStore.setValue(['data',getType(opt), getId(opt)], opt) : null);
+			// NB: assumes we use status:published for auto-complete
+			oo.forEach(opt => getType(opt) && getId(opt)? DataStore.setValue(getPath(C.KStatus.PUBLISHED,getType(opt),getId(opt)), opt) : null);
 		});
 		// NB: no action on fail - the user just doesn't get autocomplete		
 	};

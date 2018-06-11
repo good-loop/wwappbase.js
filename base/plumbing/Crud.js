@@ -95,9 +95,9 @@ ActionMan.delete = (type, pubId) => {
 	return ActionMan.crud(type, pubId, 'delete')
 		.then(e => {
 			console.warn("deleted!", type, pubId, e);
-			// remove the local versions
-			DataStore.setValue(['data', type, pubId], null);
-			DataStore.setValue(['draft', type, pubId], null);
+			// remove the local versions			
+			DataStore.setValue(getPath(C.KStatus.PUBLISHED, type, pubId), null);
+			DataStore.setValue(getPath(C.KStatus.DRAFT, type, pubId), null);
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return e;
@@ -195,6 +195,7 @@ ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
 ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
+	assert(C.KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
 	return DataStore.fetch(DataStore.getPath(status, type, id), () => {
 		return ServerIO.getDataItem({type, id, status, swallow, ...other});
 	}, ! swallow);

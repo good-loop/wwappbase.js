@@ -20,7 +20,6 @@ import {getType, getId, nonce} from '../data/DataClass';
  * 
  * 	const path = DataStore.getValue(['location','path']);
  * 	const itemId = path[1];
- *  let pvItem = itemId? ActionMan.getDataItem(itemId) : null;
  * 
  * 
  * @param status {?String} e.g. "Draft"
