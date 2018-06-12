@@ -4,7 +4,7 @@ import _ from 'lodash';
 import $ from 'jquery';
 import {SJTest, assert, assMatch} from 'sjtest';
 import C from '../CBase';
-import DataStore from './DataStore';
+import DataStore, {getPath} from './DataStore';
 import {getId, getType} from '../data/DataClass';
 import Login from 'you-again';
 import {XId, encURI} from 'wwutils';
@@ -87,7 +87,7 @@ ActionMan.publishEdits = (type, pubId, item) => {
 };
 
 ActionMan.discardEdits = (type, pubId) => {
-	return ActionMan.crud(type, pubId, 'discard-edits');	
+	return ActionMan.crud(type, pubId, C.CRUDACTION.discardEdits);	
 };
 
 ActionMan.delete = (type, pubId) => {
@@ -122,7 +122,9 @@ const servlet4type = (type) => {
 const startStatusForAction = (action) => {
 	switch(action) {
 		case C.CRUDACTION.publish:
-		case C.CRUDACTION.save: 
+		case C.CRUDACTION.save: 		
+		case C.CRUDACTION.discardEdits: 
+		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
 	}
 	throw new Error("TODO startStatusForAction "+action);
@@ -134,6 +136,8 @@ const serverStatusForAction = (action) => {
 	console.error("statusForAction", action);
 	switch(action) {
 		case C.CRUDACTION.save: 
+		case C.CRUDACTION.discardEdits: 
+		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
 		case C.CRUDACTION.publish: 
 			return C.KStatus.PUBLISHED;
@@ -169,7 +173,7 @@ ServerIO.publishEdits = function(type, item) {
 	return ServerIO.crud(type, item, 'publish');
 };
 ServerIO.discardEdits = function(type, item) {
-	return ServerIO.crud(type, item, 'discard-edits');
+	return ServerIO.crud(type, item, C.CRUDACTION.discardEdits);
 };
 
 /**
