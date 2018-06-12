@@ -204,7 +204,8 @@ ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
  * Smooth update: Get an update from the server without null-ing out the local copy.
  */
 ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
-	console.log("refreshing...", type, id);
+	console.log("refreshing...", status, type, id);
+	assert(C.KStatus.has(status), "Crud.js bad status "+status);
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan refreshDataItem - bad type: '+type);
 	assMatch(id, String);
 	return ServerIO.getDataItem({type, id, status, ...other})
@@ -212,7 +213,7 @@ ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
 			if (res.success) {
 				console.log("refreshed", type, id);
 				let item = res.cargo;
-				DataStore.setData(item);				
+				DataStore.setData(status, item);				
 			} else {
 				console.warn("refresh-failed", res, type, id);
 			}

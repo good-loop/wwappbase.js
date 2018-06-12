@@ -62,10 +62,9 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	let items = [];
 	let itemForId = {};
 	pvItems.value.forEach(item => {
-		const id = getId(item);
-		if ( ! id) id = JSON.stringify(item);
+		let id = getId(item) || JSON.stringify(item);
 		if (itemForId[id]) {
-			continue; // skip dupe
+			return; // skip dupe
 		}
 		items.push(item);
 		itemForId[id] = item;
