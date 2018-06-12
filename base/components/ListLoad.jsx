@@ -57,8 +57,21 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
 	}
+	// filter out duplicate-id (paranoia: this should already have been done server side)
+	// NB: this prefers the 1st occurrence and preserves the list order.
+	let items = [];
+	let itemForId = {};
+	pvItems.value.forEach(item => {
+		const id = getId(item);
+		if ( ! id) id = JSON.stringify(item);
+		if (itemForId[id]) {
+			continue; // skip dupe
+		}
+		items.push(item);
+		itemForId[id] = item;
+	});
 	// make the list items	
-	const listItems = pvItems.value.map( (item, i) => (
+	const listItems = items.map( (item, i) => (
 		<ListItem key={i}
 			type={type} 
 			servlet={servlet} 
@@ -68,7 +81,7 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 			checkboxes={checkboxes} />)
 	);
 	return (<div>
-		{pvItems.value.length === 0 ? 'No results found' : null}
+		{items.length === 0 ? 'No results found' : null}
 		{listItems}
 	</div>);
 };
