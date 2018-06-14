@@ -73,7 +73,8 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, topRow, bottomRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
+		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -99,6 +100,8 @@ class SimpleTable extends React.Component {
 		}
 
 		// filter?		
+		// always filter nulls
+		data = data.filter(row => !!row);
 		if (tableSettings.filter) {
 			data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
 		}
@@ -156,6 +159,7 @@ class SimpleTable extends React.Component {
 					/></div> : null}
 				<div>
 					{this.state.checkboxValues? <RemoveAllColumns table={this} /> : null}
+					
 					<table className={cn}>
 						<thead>
 							<tr>{visibleColumns.map((col, c) => {
@@ -164,23 +168,31 @@ class SimpleTable extends React.Component {
 								})
 								}
 							</tr>
+
+							{topRow? <Row item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 							{addTotalRow? 
 								<tr>
-									<th>Total</th>
+									<th>{addTotalRow}</th>
 									{visibleColumns.slice(1).map((col, c) => 
 										<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
 									}
 								</tr>
 								: null}
+
 						</thead>
+
 						<tbody>					
 							{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />) : null}
+							{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 						</tbody>
+
 						{csv? <tfoot><tr>
 							<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
 						</tr></tfoot>
 							: null}	
+
 					</table>
+
 					{this.state.checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={this.state.checkboxValues} table={this} /> : null}
 				</div>
 			</div>

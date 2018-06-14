@@ -808,7 +808,7 @@ Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildr
 				{ titleChildren }
 			</div>
 		<div className={'panel-body' + (collapse? ' collapse' : '') }>
-				{children}
+				{collapse? null : children}
 			</div>
 	</div>);
 };
