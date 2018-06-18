@@ -108,7 +108,7 @@ class SimpleTable extends React.Component {
 		// sort?
 		if (tableSettings.sortBy !== undefined) {
 			// TODO pluck the right column
-			let column = columns[tableSettings.sortBy];
+			let column = tableSettings.sortBy;
 			// sort fn
 			let sortFn = column.sortMethod;
 			if ( ! sortFn) {
@@ -201,11 +201,11 @@ class SimpleTable extends React.Component {
 } // ./SimpleTable
 
 // TODO onClick={} sortBy
-const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortButtons, checkboxValues}) => {
+const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons, checkboxValues}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
-	let sortByMe = (""+tableSettings.sortBy) === (""+c);
+	let sortByMe = _.isEqual(tableSettings.sortBy, column);
 	let onClick = e => { 
-		console.warn('sort click', c, sortByMe, tableSettings);
+		console.warn('sort click', column, sortByMe, tableSettings);
 		if (sortByMe) {
 			table.setState({sortByReverse: ! tableSettings.sortByReverse});
 			// tableSettings.sortByReverse = ! tableSettings.sortByReverse;
@@ -214,7 +214,7 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 			table.setState({sortByReverse: false});
 			// tableSettings.sortByReverse = false;
 		}
-		table.setState({sortBy: c});
+		table.setState({sortBy: column});
 		// tableSettings.sortBy = c;
 	};
 	let hText;
