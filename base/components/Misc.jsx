@@ -797,20 +797,28 @@ const saveDraftFn = _.debounce(
  * @param title {String|JSX} will be wrapper in h3
  */
 Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
-	const h3 = (<h3 className="panel-title">{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
-		{title || ''} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
-	</h3>);
-	let hcssClasses = ['panel-heading', onHeaderClick? 'btn-link' : null].filter(x => !!x);
-
-	return (<div className={"Card panel " + (error? "panel-danger" : (warning? "panel-warning" : "panel-default")) }>
-		<div className={hcssClasses.join(" ")} onClick={onHeaderClick} >
-				{h3}
+	let header = '';
+	if (title || onHeaderClick || titleChildren) {
+		let hcssClasses = ['panel-heading', onHeaderClick? 'btn-link' : null].filter(x => !!x);
+		header = (
+			<div className={hcssClasses.join(" ")} onClick={onHeaderClick} >
+				<h3 className="panel-title">
+					{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
+					{title || <span>&nbsp;</span>} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
+				</h3>
 				{ titleChildren }
 			</div>
-		<div className={'panel-body' + (collapse? ' collapse' : '') }>
-				{collapse? null : children}
-			</div>
-	</div>);
+		);
+	}
+	
+	return (
+		<div className={"Card panel " + (error? "panel-danger" : (warning? "panel-warning" : "panel-default")) }>
+			{header}
+			<div className={'panel-body' + (collapse? ' collapse' : '') }>
+					{collapse? null : children}
+				</div>
+		</div>
+	);
 };
 
 /**
@@ -826,7 +834,15 @@ Misc.CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
 	const wcpath = ['widget', widgetName || 'CardAccordion'];
 	const openPath = wcpath.concat('open');
 	let open = DataStore.getValue(openPath);
-	if ( ! open) open = [true]; // default to first kid open
+	// Check if there's a predefined initial open state for each child
+	if ( ! open) {
+		let explicitOpen = false;
+		open = React.Children.map(children, (Kid, i) => {
+			if (Kid.props.defaultOpen !== undefined) explicitOpen = true;
+			return !!Kid.props.defaultOpen;
+		});
+		if (!explicitOpen) open = [true]; // default to first kid open
+	}
 	if ( ! children) {
 		return (<div className='CardAccordion' />);
 	}
@@ -851,10 +867,14 @@ Misc.CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
 		// clone with click
 		return React.cloneElement(Kid, {collapse, onHeaderClick: onHeaderClick});
 	});
-	return (<div className='CardAccordion'>
-		{showFilter? <div className='form-inline'><Misc.PropControl path={wcpath} prop='filter' label='Filter' inline /></div> : null}
-		{kids}
-		</div>);
+	return (
+		<div className='CardAccordion'>
+			{ showFilter ? (
+				<div className='form-inline'><Misc.PropControl path={wcpath} prop='filter' label='Filter' inline /></div>
+				) : null }
+			{kids}
+		</div>
+	);
 };
 
 /**
