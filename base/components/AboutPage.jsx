@@ -15,6 +15,8 @@ const AboutPage = () => {
 
 			<p>Please see our website for more information on SoGive: <a href='https://sogive.org'>https://sogive.org</a></p>
 
+			<p>Software version: <i>{JSON.stringify(C.app.version || 'alpha')}</i></p>
+
 			<p>We are grateful to SMART:Scotland and The Hunter Foundation for their support.</p>
 
 			<p>This app uses data from various sources:</p>
