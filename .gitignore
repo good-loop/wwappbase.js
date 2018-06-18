@@ -3,3 +3,4 @@ bin/*
 npm-debug.log
 *.jar
 test/calstat-test-app/node_modules/*
+project/web/build
