@@ -62,7 +62,12 @@ if (C.isProduction()) {
 		if (msg.length === 1) msg = msg[0];
 		console.error("assert", msg);
 		// A nice string?
-		var smsg = SJTestUtils.str(msg);
+		let smsg;
+		try {
+			smsg = JSON.stringify(msg);
+		} catch(err) {
+			smsg = ""+msg;
+		}
 		window.onerror(smsg, null, null, null, new Error("assert-failed: "));
 	};
 }
