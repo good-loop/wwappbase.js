@@ -227,8 +227,8 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 	if(checkboxValues) {
 		if(checkboxValues[headerKeyString] === false) return null; //Don't display column if it has been deselected
 		showColumnControl = (<div key={headerKeyString} 
-			style={{display: 'block', cursor: 'pointer', marginBottom: '10px'}} 
-			onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} 
+			style={{cursor: 'pointer', marginBottom: '10px'}} 
+			onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}} 
 			>
 				<Misc.Icon glyph='remove'/>
 			</div>);
@@ -238,9 +238,12 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 	if (sortByMe) arrow = <Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />;
 	else if (showSortButtons) arrow = <Misc.Icon className='text-muted' glyph='triangle-bottom' />;
 
-	return (<th onClick={onClick} >
-		{showColumnControl}{hText}{arrow}
-	</th>);
+	return (
+		<th>
+			{showColumnControl}
+			<span onClick={onClick}>{hText}{arrow}</span>
+		</th>
+	);
 };
 
 const Row = ({item, row, columns, dataArray}) => {
