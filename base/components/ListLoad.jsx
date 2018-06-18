@@ -8,7 +8,7 @@ import {modifyHash} from 'wwutils';
 import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
-import DataStore from '../plumbing/DataStore';
+import DataStore, { getPath } from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import {getType, getId, nonce} from '../data/DataClass';
@@ -20,7 +20,6 @@ import {getType, getId, nonce} from '../data/DataClass';
  * 
  * 	const path = DataStore.getValue(['location','path']);
  * 	const itemId = path[1];
- *  let pvItem = itemId? ActionMan.getDataItem(itemId) : null;
  * 
  * 
  * @param status {?String} e.g. "Draft"
@@ -58,8 +57,20 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
 	}
+	// filter out duplicate-id (paranoia: this should already have been done server side)
+	// NB: this prefers the 1st occurrence and preserves the list order.
+	let items = [];
+	let itemForId = {};
+	pvItems.value.forEach(item => {
+		let id = getId(item) || JSON.stringify(item);
+		if (itemForId[id]) {
+			return; // skip dupe
+		}
+		items.push(item);
+		itemForId[id] = item;
+	});
 	// make the list items	
-	const listItems = pvItems.value.map( (item, i) => (
+	const listItems = items.map( (item, i) => (
 		<ListItem key={i}
 			type={type} 
 			servlet={servlet} 
@@ -69,7 +80,7 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 			checkboxes={checkboxes} />)
 	);
 	return (<div>
-		{pvItems.value.length === 0 ? 'No results found' : null}
+		{items.length === 0 ? 'No results found' : null}
 		{listItems}
 	</div>);
 };
@@ -128,7 +139,8 @@ const createBlank = ({type, navpage, base, make}) => {
 	const id = getId(base);
 	if ( ! getType(base)) base['@type'] = type;
 	// poke a new blank into DataStore
-	DataStore.setValue(['data', type, id], base);
+	const path = getPath(C.KStatus.DRAFT, type, id);
+	DataStore.setValue(path, base);
 	// set the id
 	onPick({navpage, id});
 	// invalidate lists

@@ -36,7 +36,7 @@ C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED 
 
 C.STATUS = new Enum('loading clean dirty saving');
 
-C.CRUDACTION = new Enum('new save publish discard-edits delete');
+C.CRUDACTION = new Enum('new save publish discardEdits delete');
 
 export default C;
 // also for debug

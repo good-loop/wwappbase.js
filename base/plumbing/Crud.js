@@ -4,7 +4,7 @@ import _ from 'lodash';
 import $ from 'jquery';
 import {SJTest, assert, assMatch} from 'sjtest';
 import C from '../CBase';
-import DataStore from './DataStore';
+import DataStore, {getPath} from './DataStore';
 import {getId, getType} from '../data/DataClass';
 import Login from 'you-again';
 import {XId, encURI} from 'wwutils';
@@ -22,7 +22,10 @@ ActionMan.crud = (type, id, action, item) => {
 	assMatch(id, String);
 	assert(C.TYPES.has(type), type);
 	assert(C.CRUDACTION.has(action), type);
-	if ( ! item) item = DataStore.getData(type, id);
+	if ( ! item) { 
+		let status = startStatusForAction(action);
+		item = DataStore.getData(status, type, id);
+	}
 	if ( ! item) {
 		// No item? fine for action=delete. Make a transient dummy here
 		assert(action==='delete', action+" "+type+" "+id);
@@ -84,7 +87,7 @@ ActionMan.publishEdits = (type, pubId, item) => {
 };
 
 ActionMan.discardEdits = (type, pubId) => {
-	return ActionMan.crud(type, pubId, 'discard-edits');	
+	return ActionMan.crud(type, pubId, C.CRUDACTION.discardEdits);	
 };
 
 ActionMan.delete = (type, pubId) => {
@@ -92,8 +95,9 @@ ActionMan.delete = (type, pubId) => {
 	return ActionMan.crud(type, pubId, 'delete')
 		.then(e => {
 			console.warn("deleted!", type, pubId, e);
-			// remove the local version
-			DataStore.setValue(['data', type, pubId], null);
+			// remove the local versions			
+			DataStore.setValue(getPath(C.KStatus.PUBLISHED, type, pubId), null);
+			DataStore.setValue(getPath(C.KStatus.DRAFT, type, pubId), null);
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return e;
@@ -111,15 +115,47 @@ const servlet4type = (type) => {
 	return stype;
 };
 
+/**
+ * What status is the data in at the start of this action.
+ * e.g. publish starts with a draft
+ */
+const startStatusForAction = (action) => {
+	switch(action) {
+		case C.CRUDACTION.publish:
+		case C.CRUDACTION.save: 		
+		case C.CRUDACTION.discardEdits: 
+		case C.CRUDACTION.delete: // this one shouldn't matter
+			return C.KStatus.DRAFT;
+	}
+	throw new Error("TODO startStatusForAction "+action);
+};
+/**
+ * What status do we send to the server? e.g. publish is published, save is draft.
+ */
+const serverStatusForAction = (action) => {
+	console.error("statusForAction", action);
+	switch(action) {
+		case C.CRUDACTION.save: 
+		case C.CRUDACTION.discardEdits: 
+		case C.CRUDACTION.delete: // this one shouldn't matter
+			return C.KStatus.DRAFT;
+		case C.CRUDACTION.publish: 
+			return C.KStatus.PUBLISHED;
+	}
+	throw new Error("TODO serverStatusForAction "+action);
+};
+
 ServerIO.crud = function(type, item, action) {	
 	assert(C.TYPES.has(type), type);
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
+	const status = serverStatusForAction(action);
 	let params = {
 		method: 'POST',
 		data: {
-			action: action,
-			type: type,
+			action,
+			status,
+			type,
 			item: JSON.stringify(item)
 		}
 	};		
@@ -137,7 +173,7 @@ ServerIO.publishEdits = function(type, item) {
 	return ServerIO.crud(type, item, 'publish');
 };
 ServerIO.discardEdits = function(type, item) {
-	return ServerIO.crud(type, item, 'discard-edits');
+	return ServerIO.crud(type, item, C.CRUDACTION.discardEdits);
 };
 
 /**
@@ -162,7 +198,8 @@ ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
 ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
-	return DataStore.fetch(['data', type, id], () => {
+	assert(C.KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
+	return DataStore.fetch(DataStore.getPath(status, type, id), () => {
 		return ServerIO.getDataItem({type, id, status, swallow, ...other});
 	}, ! swallow);
 };
@@ -171,7 +208,8 @@ ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
  * Smooth update: Get an update from the server without null-ing out the local copy.
  */
 ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
-	console.log("refreshing...", type, id);
+	console.log("refreshing...", status, type, id);
+	assert(C.KStatus.has(status), "Crud.js bad status "+status);
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan refreshDataItem - bad type: '+type);
 	assMatch(id, String);
 	return ServerIO.getDataItem({type, id, status, ...other})
@@ -179,7 +217,7 @@ ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
 			if (res.success) {
 				console.log("refreshed", type, id);
 				let item = res.cargo;
-				DataStore.setData(item);				
+				DataStore.setData(status, item);				
 			} else {
 				console.warn("refresh-failed", res, type, id);
 			}

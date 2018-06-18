@@ -684,7 +684,8 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		pvo.promise.then(oo => {
 			DataStore.setValue(widgetPath, oo);
 			// also save the info in data
-			oo.forEach(opt => getType(opt) && getId(opt)? DataStore.setValue(['data',getType(opt), getId(opt)], opt) : null);
+			// NB: assumes we use status:published for auto-complete
+			oo.forEach(opt => getType(opt) && getId(opt)? DataStore.setValue(getPath(C.KStatus.PUBLISHED,getType(opt),getId(opt)), opt) : null);
 		});
 		// NB: no action on fail - the user just doesn't get autocomplete		
 	};
@@ -788,7 +789,11 @@ const saveDraftFn = _.debounce(
 
 
 /**
- * Just a convenience for a Bootstrap panel
+ * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
+ * 
+ * You can wrap these cards -- if you do, pass down misc parameters to enable the CardAccordion wiring to work. e.g.
+ * <Foo {...stuff}> => <Misc.Card {...stuff}>
+ * 
  * @param title {String|JSX} will be wrapper in h3
  */
 Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
@@ -803,7 +808,7 @@ Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildr
 				{ titleChildren }
 			</div>
 		<div className={'panel-body' + (collapse? ' collapse' : '') }>
-				{children}
+				{collapse? null : children}
 			</div>
 	</div>);
 };
@@ -865,7 +870,8 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => 
 	assMatch(id, String);
 	let localStatus = DataStore.getLocalEditsStatus(type, id);
 	let isSaving = C.STATUS.issaving(localStatus);	
-	let item = DataStore.getData(type, id);
+	const status = C.KStatus.DRAFT; // editors always work on drafts
+	let item = DataStore.getData(status, type, id);
 	// request a save?
 	if (C.STATUS.isdirty(localStatus) && ! isSaving) {
 		saveDraftFn({type,id});
@@ -881,8 +887,14 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => 
 	if (hidden) return <span />;
 	const vis ={visibility: isSaving? 'visible' : 'hidden'};
 
+	// debug info on DataStore state
+	let pubv = DataStore.getData(C.KStatus.PUBLISHED, type, id);
+	let draftv = DataStore.getData(C.KStatus.DRAFT, type, id);
+	let dsi = pubv? (draftv? (pubv===draftv? "published = draft" : "published & draft") : "published only") 
+					: (draftv? "draft only" : "nothing loaded");
+
 	return (<div className='SavePublishDiscard' title={item && item.status}>
-		<div><small>Status: {item && item.status}, Modified: {localStatus} {isSaving? "saving...":null}</small></div>
+		<div><small>Status: {item && item.status}, Modified: {localStatus} {isSaving? "saving...":null}, DataStore: {dsi}</small></div>
 		<button className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
 			Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>

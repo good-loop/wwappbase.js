@@ -190,7 +190,7 @@ Money.mul = (amount, multiplier) => {
 	assert(isNumeric(multiplier), "Money.js - mul() "+multiplier);
 	// TODO Assert that multiplier is numeric (kind of painful in JS)
 	const b100p = v100p(amount) * multiplier;
-	return moneyFromv100p(b100p, amount1.currency);
+	return moneyFromv100p(b100p, amount.currency);
 };
 
 /** 

@@ -8,6 +8,7 @@ module.exports = {
 	"rules": {
 		/* off because we dont agree with AirBnB's settings */
 		"radix": "off",
+		"jsx-a11y/click-events-have-key-events": "warn",
 		"prefer-destructuring": "off",
 		"arrow-body-style": "off",
 		"react/no-array-index-key": "warn",
@@ -62,6 +63,7 @@ module.exports = {
 		/* broken - seems to cause errors in linting */
 		"no-multi-assign": "off",
 		/* off because the warnings are more noise than signal i.e. we might switch them on sometime*/
+		"import/no-named-as-default-member": "warn",
 		"react/no-unused-state": "warn",
 		"no-restricted-globals": "warn", // triggers on isNan()
 		"jsx-a11y/alt-text": "warn",

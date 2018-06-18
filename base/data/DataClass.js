@@ -57,6 +57,19 @@ const getId = (item) => {
 };
 
 /**
+ * @returns DRAFT / PUBLISHED
+ * null returns null
+ */
+const getStatus = (item) => {
+	if ( ! item) return null;
+	const s = item.status;
+	if ( ! s) return null;
+	assert(C.KStatus.has(s), "DataClass.js getStatus", item);
+	return s;
+};
+
+
+/**
  * access functions for source, help, notes??
  */
 const Meta = {};
@@ -148,5 +161,5 @@ const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
 window.dataclass = {};
 
-export {defineType, isa, getType, getId, getDataClass, Meta, nonce};
+export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce};
 	

@@ -6,7 +6,8 @@ import Roles from '../Roles';
 
 /**
  * 
- * @param {*} page The current page
+ * @param {String} currentPage The current page
+ * @param {String[]} pages
  */
 const NavBar = ({currentPage, pages}) => {
 	// make the page links

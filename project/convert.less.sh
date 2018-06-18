@@ -2,17 +2,26 @@
 
 WATCH=$1
 GOTINOTIFYTOOLS=`which inotifywait`
-WEB=/home/$USER/winterwell/sogive-app/web
+DIR=`pwd`;
+PROJECT=`basename $DIR`
+echo "PROJECT: $PROJECT"
+#PROJECTPATH=/home/$USER/winterwell/code/$PROJECT
+#PROJECTPATH=/home/$USER/winterwell/$PROJECT
+PROJECTPATH=$DIR
+WEB=$PROJECTPATH/web
+OUTDIR=$WEB/style
 
 # the TOPLESS files are the top level files referenced in index.html
-TOPLESS[0]=$WEB/style/main.less;
-TOPLESS[1]=$WEB/style/print.less;
+TOPLESS[0]=$PROJECTPATH/src/style/main.less;
+TOPLESS[1]=$PROJECTPATH/src/style/print.less;
 
 # run through files
 for file in "${TOPLESS[@]}"; do
 		if [ -e "$file" ]; then
 			echo -e "converting $file"
-			lessc "$file" "${file%.less}.css"
+			F=`basename $file`
+			echo lessc "$file" "$OUTDIR/${F%.less}.css"
+			lessc "$file" "$OUTDIR/${F%.less}.css"
 		else
 			echo "less file not found: $file"				
 		fi
@@ -32,7 +41,8 @@ if [[ $WATCH == 'watch' ]]; then
 		for file in "${TOPLESS[@]}"; do
 			if [ -e "$file" ]; then
 				echo -e "converting $file"
-				lessc "$file" "${file%.less}.css"
+				F=`basename $file`
+				lessc "$file" "$OUTDIR/${F%.less}.css"
 			else
 				echo "less file not found: $file"
 			fi

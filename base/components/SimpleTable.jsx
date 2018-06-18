@@ -73,7 +73,8 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, hasFilter, rowsPerPage, checkboxValues} = this.props;
+		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, topRow, bottomRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
+		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
 			// flatten an object into rows
@@ -99,6 +100,8 @@ class SimpleTable extends React.Component {
 		}
 
 		// filter?		
+		// always filter nulls
+		data = data.filter(row => !!row);
 		if (tableSettings.filter) {
 			data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
 		}
@@ -156,6 +159,7 @@ class SimpleTable extends React.Component {
 					/></div> : null}
 				<div>
 					{this.state.checkboxValues? <RemoveAllColumns table={this} /> : null}
+					
 					<table className={cn}>
 						<thead>
 							<tr>{visibleColumns.map((col, c) => {
@@ -164,23 +168,31 @@ class SimpleTable extends React.Component {
 								})
 								}
 							</tr>
+
+							{topRow? <Row item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 							{addTotalRow? 
 								<tr>
-									<th>Total</th>
+									<th>{addTotalRow}</th>
 									{visibleColumns.slice(1).map((col, c) => 
 										<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
 									}
 								</tr>
 								: null}
+
 						</thead>
+
 						<tbody>					
 							{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />) : null}
+							{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 						</tbody>
+
 						{csv? <tfoot><tr>
 							<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
 						</tr></tfoot>
 							: null}	
+
 					</table>
+
 					{this.state.checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={this.state.checkboxValues} table={this} /> : null}
 				</div>
 			</div>
@@ -208,27 +220,27 @@ const Th = ({column, c, table, tableSettings, dataArray, headerRender, showSortB
 	let hText;
 	const headerKeyString = column.Header || column.accessor || str(column);
 	if (headerRender) hText = headerRender(column);
-	else hText = headerKeyString;
-	dataArray[0].push(headerKeyString); // csv gets the text, never jsx!
+	else hText = column.Header || column.accessor || str(column);
+	dataArray[0].push(column.Header || column.accessor || str(column)); // csv gets the text, never jsx!
 
-	const cellGuts = [];
+	let showColumnControl = null;
 	if(checkboxValues) {
-		cellGuts.push(
-			<div key={headerKeyString} style={{display: 'block', cursor: 'pointer', marginBottom: '10px'}} onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} >
+		if(checkboxValues[headerKeyString] === false) return null; //Don't display column if it has been deselected
+		showColumnControl = (<div key={headerKeyString} 
+			style={{display: 'block', cursor: 'pointer', marginBottom: '10px'}} 
+			onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]}} 
+			>
 				<Misc.Icon glyph='remove'/>
-			</div>
-		);
-	}
-	if(checkboxValues && checkboxValues[headerKeyString] === false) return null; //Don't display column if it has been deselected
-	cellGuts.push(hText);
-	if (sortByMe) cellGuts.push(<Misc.Icon key={'other-icon'} glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />);
-	else if (showSortButtons) cellGuts.push(<Misc.Icon key={'sort-glyph'} className='text-muted' glyph='triangle-bottom' />);
+			</div>);
+	}	
 	
-	return (
-		<th onClick={onClick} >
-			{cellGuts}
-		</th>
-	);
+	let arrow = null;
+	if (sortByMe) arrow = <Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />;
+	else if (showSortButtons) arrow = <Misc.Icon className='text-muted' glyph='triangle-bottom' />;
+
+	return (<th onClick={onClick} >
+		{showColumnControl}{hText}{arrow}
+	</th>);
 };
 
 const Row = ({item, row, columns, dataArray}) => {
@@ -338,8 +350,20 @@ const TotalCell = ({data, column}) => {
 	let render = column.Cell || defaultCellRender;
 	return <td>{render(total, column)}</td>;
 };
+
+/**
+ * Editor for the use-case: each row = a DataStore data item.
+ */
 const Editor = ({row, column, value, item}) => {
-	let path = column.path || DataStore.getPath(item);
+	// what DataStore path?
+	let path = column.path;
+	if ( ! path) {
+		try {
+			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+		} catch(err) {
+			console.log("SimpleTable.jsx - cant get path-for-item", item, err);
+		}
+	}
 	let prop = column.prop || (_.isString(column.accessor) && column.accessor);
 	let dummyItem;
 	if (path && prop) {
