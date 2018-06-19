@@ -37,9 +37,9 @@ USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailabl
 DO_NOT_SYNC=()
 SYNC_LIST=()
 #####TODO:  Get these parallel-rsync arguments to work
-PSYNC=$(parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x "-L --progress -h --delete-before --exclude=$DO_NOT_SYNC_LIST")
+PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
 #####
-PSSH=$(parallel-ssh -h /tmp/target.list.txt --user=winterwell)
+PSSH='parallel-ssh -h /tmp/target.list.txt --user=winterwell'
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 
 
@@ -72,7 +72,7 @@ case $1 in
 		UNITS_TO_COMPILE=$(find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
-		DO_NOT_SYNC=(".git" "bin" "boblog" "dummy-pub" "node_modules" "puppeteer-tests" "safeframe-stuff" "web-portal" "as-player.png" "backup-portal-uploads.sh" "bob.log" "com.winterwell.web.app.PublisheProjectTask.log" "compile-units.sh" "convert.less.sh" "good-loop-live-demo.png" "package.json" "pom.bob.xml" "publish-adserver.sh" "publish-adserver.sh.orig" "publish-portal.sh" "rectangle-brand-funded.png" "rectangle-countdown.png" "rectangle-default" "run-me-first.sh" "testas-player.png" "update-showcase.sh" "update-templates.sh" "uploads.backup.sh" "watch.sh" "watch-as.sh" "webpack.config.as.js" "webpack.config.dev.js" "webpack.config.js" ".babelrc" ".classpath" ".eslintrc.js" ".gitignore" ".jshintrc" ".project")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "tmp-lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
     ;;
     datalogger|DATALOGGER)
         PROJECT='datalogger'
@@ -87,7 +87,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='lg'
-		DO_NOT_SYNC=("bin" "bin.test" "boblog" "build" "bob.log" "build-less.sh" "cluster-jar-sync.sh" "cluster-sync.sh" "com.winterwell.web.app.PublishProjectTask.log" "package.json" "pom.bob.xml" "publish-lg.sh" "restart.lg.process.sh" "ssl.*.conf" "watch.sh" "webpack.config.js" ".classpath" ".eslintrc.js" ".gitignore" ".project")
+		PLEASE_SYNC=("config" "src" "src-js" "tmp-lib" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "winterwell.datalog.jar")
     ;;
     portal|PORTAL)
         PROJECT='portal'
@@ -103,7 +103,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='portalmain'
-		DO_NOT_SYNC=(".git" "bin" "boblog" "dummy-pub" "node_modules" "puppeteer-tests" "safeframe-stuff" "as-player.png" "backup-portal-uploads.sh" "bob.log" "com.winterwell.web.app.PublisheProjectTask.log" "good-loop-live-demo.png" "pom.bob.xml" "publish-adserver.sh" "publish-adserver.sh.orig" "publish-portal.sh" "rectangle-brand-funded.png" "rectangle-countdown.png" "rectangle-default" "run-me-first.sh" "testas-player.png" "update-showcase.sh" "update-templates.sh" "uploads.backup.sh" "watch.sh" "watch-as.sh"".classpath" ".eslintrc.js" ".gitignore" ".jshintrc" ".project")
+		PLEASE_SYNC=("config" "server" "src" "tmp-lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
@@ -118,7 +118,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='profilermain'
-		DO_NOT_SYNC=("bin" "boblog" "build" "src" "test" "bob.log" "com.winterwell.web.app.PublishProjectTask.log" "compile-units.sh" "pom.bob.xml" "publish-profiler.sh" "ssl.*.conf" ".classpath" ".gitignore" ".project")
+		PLEASE_SYNC=("config" "formunit" "tmp-lib")
     ;;
     sogive|SOGIVE|sogive-app|SOGIVE-APP)
         PROJECT='sogive-app'
@@ -134,7 +134,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='sogiveapp'
-		DO_NOT_SYNC=("bin" "boblog" "node_modules" "test" ".git" ".vscode" "backup-uploads.sh" "bob.log" "click-through.test.sogive.org.png" "com.winterwell.web.app.PublishProjectTask" "eg-charities.md" "eurostar-30s-720p.m4v" "get-jar-dependencies.sh" "headless-setup.sh" "org.sogive.server.SoGiveServer.log" "pom.bob.xml" "publish-sogiveapp.sh" "README.md" "run-me-first.sh" "simple-search.test.sogive.org.png" "sogive.log" "sogive.log.*" "test.sogive.org.png" "watch.sh" ".classpath" ".eslintrc.js" ".flowconfig" ".gitignore" ".project")
+		PLEASE_SYNC=("config" "data" "server" "src" "tmp-lib" "web" "package.json" "webpack.config.js" ".babelrc")
 		AUTOMATED_TESTING='yes'
 		AUTOMATED_TESTING_COMMAND="bash $PROJECT_LOCATION/test/run-tests.sh $2"
     ;;
@@ -151,7 +151,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='youagain'
-		DO_NOT_SYNC=("bin" "boblog" "build" "node_modules" "test" "bob.log" "com.winterwell.web.app.PublishProjectTask.log" "convert.less.sh" "dummy.txt" "pom.bob.xml" "publish-youagain.sh" "publish-youagain.sh.old" "README.md" "ssl.*.conf" "watch.sh" "youagain-server.log" "youagain-server.log.*" "youagain-server.sh" ".classpath" ".eslintrc.js" ".gitignore" ".project")
+		PLEASE_SYNC=("config" "dependencies" "tmp-lib" "web" "youagain-server.jar")
     ;;
     *)
         printf "\nThe project that you specified, $1 , is not currently supported by the\nproject-publisher.sh script, or, you mis-typed it. \n$USAGE"
@@ -190,12 +190,6 @@ function create_target_list {
 	rm /tmp/target.list.txt
 	printf '%s\n' ${TARGETS[@]} >> /tmp/target.list.txt
 }
-
-function create_do_not_sync_list {
-	rm /tmp/do_not_sync_list.txt
-	printf '%s\n' ${DO_NOT_SYNC[@]} >> /tmp/do_not_sync_list.txt
-}
-
 
 
 #####################
@@ -425,6 +419,7 @@ function convert_less_files {
 ### Section 08: Defining the Jar Syncing Function
 ###################################
 function rename_tmp_lib {
+	$PSSH "rm -rf $TARGET_DIRECTORY/lib/*"
 	$PSSH "cd $TARGET_DIRECTORY && mv tmp-lib lib"
 }
 
@@ -539,11 +534,14 @@ function compile_variants {
 	fi	
 }
 
+
 ##########################################
 ### Section 12: Defining the Sync
 ##########################################
 function sync_whole_project {
-	$PSYNC $PROJECT_LOCATION $TARGET_DIRECTORY
+	for item in $(PLEASE_SYNC[@]); do
+		cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
+	done
 }
 
 ##########################################
@@ -560,8 +558,6 @@ function run_automated_tests {
 ##########################################
 printf "\nCreating Target List"
 create_target_list
-printf "\nCreating List of Excluded Items from Sync"
-create_do_not_sync_list
 printf "\nStopping $SERVICE_NAME on $TARGETS"
 stop_proc
 image_optimisation
