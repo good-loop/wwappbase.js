@@ -36,9 +36,7 @@ SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','yo
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 DO_NOT_SYNC=()
 SYNC_LIST=()
-#####TODO:  Get these parallel-rsync arguments to work
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
-#####
 PSSH='parallel-ssh -h /tmp/target.list.txt --user=winterwell'
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 
@@ -63,13 +61,13 @@ case $1 in
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com/'
         IMAGE_OPTIMISE='yes'
-        IMAGEDIRECTORY="/home/$USER/winterwell/adserver/web-as/vert/"
+        IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert/"
 		CONVERT_LESS='no'
         WEBPACK='no'
 		TEST_JAVASCRIPT='yes'
-		JAVASCRIPT_FILES_TO_TEST=$(find adunit/variants/ -mindepth 1 \( -name "*.js" ! -name "babeled*" ! -name "all*" \) -type f)
+		JAVASCRIPT_FILES_TO_TEST=$(find $PROJECT_LOCATION/adunit/variants/ -mindepth 1 \( -name "*.js" ! -name "babeled*" ! -name "all*" \) -type f)
 		COMPILE_UNITS='yes'
-		UNITS_TO_COMPILE=$(find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
+		UNITS_TO_COMPILE=$(cd $PROJECT_LOCATION && find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
 		PLEASE_SYNC=("adunit" "config" "server" "src" "tmp-lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
@@ -308,7 +306,7 @@ function image_optimisation {
 			mapfile -t OPTIMISEDPNGS < $IMAGEDIRECTORY/pngarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.png'); do
 				PNGMD5OUTPUT=$(md5sum $file)
-				printf "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/newpngarray.txt
+				printf '%s\n' "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/newpngarray.txt
 			done
 			mapfile -t PNGARRAY < $IMAGEDIRECTORY/newpngarray.txt
 			UNIQUEPNGS=$(diff $IMAGEDIRECTORY/pngarray.txt $IMAGEDIRECTORY/newpngarray.txt | grep ">" | awk '{print $3}')
@@ -323,7 +321,7 @@ function image_optimisation {
 			touch $IMAGEDIRECTORY/pngarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.png'); do
 				PNGMD5OUTPUT=$(md5sum $file)
-				printf "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/pngarray.txt
+				printf '%s\n' "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/pngarray.txt
 			done
 		fi
 
@@ -332,7 +330,7 @@ function image_optimisation {
 			mapfile -t OPTIMISEDJPGS < $IMAGEDIRECTORY/jpgarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.jpg'); do
 				JPGMD5OUTPUT=$(md5sum $file)
-				printf "$JPGMD5OUTPUT" >> $IMAGEDIRECTORY/newjpgarray.txt
+				printf '%s\n' "$JPGMD5OUTPUT" >> $IMAGEDIRECTORY/newjpgarray.txt
 			done
 			mapfile -t JPGARRAY < $IMAGEDIRECTORY/newjpgarray.txt
 			UNIQUEJPGS=$(diff $IMAGEDIRECTORY/jpgarray.txt $IMAGEDIRECTORY/newjpgarray.txt | grep ">" | awk '{print $3}')
@@ -347,7 +345,7 @@ function image_optimisation {
 			touch $IMAGEDIRECTORY/jpgarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.jpg'); do
 				JPGMD5OUTPUT=$(md5sum $file)
-				printf "$JPGMD5OUTPUT" >> $IMAGEDIRECTORY/jpgarray.txt
+				printf '%s\n' "$JPGMD5OUTPUT" >> $IMAGEDIRECTORY/jpgarray.txt
 			done
 		fi
 
@@ -356,7 +354,7 @@ function image_optimisation {
 			mapfile -t OPTIMISEDJPEGS < $IMAGEDIRECTORY/jpegarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.jpeg'); do
 				JPEGMD5OUTPUT=$(md5sum $file)
-				printf "$JPEGMD5OUTPUT" >> $IMAGEDIRECTORY/newjpegarray.txt
+				printf '%s\n' "$JPEGMD5OUTPUT" >> $IMAGEDIRECTORY/newjpegarray.txt
 			done
 			mapfile -t JPEGARRAY < $IMAGEDIRECTORY/newjpegarray.txt
 			UNIQUEJPEGS=$(diff $IMAGEDIRECTORY/jpegarray.txt $IMAGEDIRECTORY/newjpegarray.txt | grep ">" | awk '{print $3}')
@@ -371,7 +369,7 @@ function image_optimisation {
 			touch $IMAGEDIRECTORY/jpegarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.jpeg'); do
 				JPEGMD5OUTPUT=$(md5sum $file)
-				printf "$JPEGMD5OUTPUT" >> $IMAGEDIRECTORY/jpegarray.txt
+				printf '%s\n' "$JPEGMD5OUTPUT" >> $IMAGEDIRECTORY/jpegarray.txt
 			done
 		fi
 	fi
@@ -381,10 +379,12 @@ function image_optimisation {
 ### Section 05: Define the Webpack Function
 ##################################
 function webpack {
-    ##### Section 04.01 : Update the node_modules directory from the package.json file
-    $PSSH "cd $TARGET_DIRECTORY && npm i"
-    ##### Section 04.02 : Webpack the project for production usage
-    $PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
+	if [[ $WEBPACK = yes ]]; then
+		printf "\nGetting NPM Dependencies ..."
+		$PSSH "cd $TARGET_DIRECTORY && npm i"
+		printf "\nWebpacking ..."
+    	$PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
+	fi
 }
 
 ##################################
