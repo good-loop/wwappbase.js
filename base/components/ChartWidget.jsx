@@ -9,67 +9,92 @@ import RC2, {Line} from 'react-chartjs2';
 /**
 	@param dataFromLabel e.g. (label)adview -> time -> number
  */
-const ChartWidget = ({title, dataFromLabel, ...stuff}) => {
-	console.log("ChartWidget", {title, dataFromLabel});
-	assert(dataFromLabel);
-	title = title || "Junk Data";
-	let label = "Stuff";
-	let timeFormat = 'MM/DD/YYYY HH:mm';
-	// function newDateString(days) {
-	// 	return moment().add(days, 'd').format(timeFormat);
-	// }
-	let labels = [];
-	let datasets = [];
-	let keys = Object.keys(dataFromLabel);
-	let dataPoints = 0;
-	for(let i=0; i<keys.length; i++) {
-		let key = keys[i];
-		// if (key !== 'mem_used') continue; Debug hack
-		let data = dataFromLabel[key];
-		labels.concat(Object.keys(data));
-		// if ( ! _.isArray(data)) {
-			// console.warn("skip not-an-array", key, data);
-			// continue;
-		// }
-		let xydata = Object.keys(data).map(k => { return {x:k, y:data[k]}; });
-		xydata = xydata.filter(xy => xy.y);
-		dataPoints += xydata.length;
-		let dset = makeDataSet(i, keys[i], xydata);
-		// console.warn(dset);
-		datasets.push(dset);
+class ChartWidget extends React.Component {
+	constructor(props) {
+		super(props);
 	}
-	//window.z = datasets;
-	let chartData = {
-		labels,
-		datasets
-	}; //./data
-	let chartOptions = {
-		//title: title,
-		scales: {
-			yAxes: [{
-				type: 'linear',
-				ticks: {
-					beginAtZero:true
-				}
-			}],
-			xAxes: [{
-				type: 'time',
-				time: {
-					displayFormats: {							
-						quarter: 'MMM YYYY'
-					}
-				}
-			}]
+
+	componentWillMount() {
+		this.setState({		
+		});
+	}
+
+	componentDidCatch() {
+		this.setState({error, info});
+		console.error(error, info); 
+		if (window.onerror) window.onerror("ChartWidget caught error", null, null, null, error);
+	}
+
+	shouldComponentUpdate(nextProps, nextState) {
+		//A bit hacky, but it looks like the page is always refreshed when data is changed.
+		//If this remains the case, it's a lot easier to do this and avoid -- potentially expensive -- equality checks
+		return false;
+	}
+
+	render() {
+		let {title, dataFromLabel} = this.props;
+		console.log("ChartWidget", {title, dataFromLabel});
+		assert(dataFromLabel);
+		title = title || "Junk Data";
+		let label = "Stuff";
+		let timeFormat = 'MM/DD/YYYY HH:mm';
+		// function newDateString(days) {
+		// 	return moment().add(days, 'd').format(timeFormat);
+		// }
+		let labels = [];
+		let datasets = [];
+		let keys = Object.keys(dataFromLabel);
+		let dataPoints = 0;
+		for(let i=0; i<keys.length; i++) {
+			let key = keys[i];
+			// if (key !== 'mem_used') continue; Debug hack
+			let data = dataFromLabel[key];
+			labels.concat(Object.keys(data));
+			// if ( ! _.isArray(data)) {
+				// console.warn("skip not-an-array", key, data);
+				// continue;
+			// }
+			let xydata = Object.keys(data).map(k => { return {x:k, y:data[k]}; });
+			xydata = xydata.filter(xy => xy.y);
+			dataPoints += xydata.length;
+			let dset = makeDataSet(i, keys[i], xydata);
+			// console.warn(dset);
+			datasets.push(dset);
 		}
-	}; // ./options;
-	console.warn("RC2 Draw chart", chartOptions, chartData);
-	return (<div><h3>{title}</h3>
-				<RC2 data={chartData} options={chartOptions} type='line' />
-				<div>
-					{true ? <small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small> : null}
-				</div>
-			</div>);
-}; //./ChartWidget
+		//window.z = datasets;
+		let chartData = {
+			labels,
+			datasets
+		}; //./data
+		let chartOptions = {
+			// animation: false,
+			//title: title,
+			scales: {
+				yAxes: [{
+					type: 'linear',
+					ticks: {
+						beginAtZero:true
+					}
+				}],
+				xAxes: [{
+					type: 'time',
+					time: {
+						displayFormats: {							
+							quarter: 'MMM YYYY'
+						}
+					}
+				}]
+			}
+		}; // ./options;
+		console.warn("RC2 Draw chart", chartOptions, chartData);
+		return (<div><h3>{title}</h3>
+					<RC2 data={chartData} options={chartOptions} type='line' />
+					<div>
+						{true ? <small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small> : null}
+					</div>
+				</div>);
+	}
+}
 
 /**
  * @param data Array of {x (which can be a Time string), y}
