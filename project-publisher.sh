@@ -36,7 +36,9 @@ SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','yo
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 DO_NOT_SYNC=()
 SYNC_LIST=()
-PSYNC=$(parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive --extra-arg -L --extra-arg --delete-before --extra-arg --exclude=$DO_NOT_SYNC_LIST)
+#####TODO:  Get these parallel-rsync arguments to work
+PSYNC=$(parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x "-L --progress -h --delete-before --exclude=$DO_NOT_SYNC_LIST")
+#####
 PSSH=$(parallel-ssh -h /tmp/target.list.txt --user=winterwell)
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 
@@ -58,7 +60,7 @@ case $1 in
         PROJECT='adserver'
         PRODUCTION_SERVERS=('gl-es-01.soda.sh','gl-es-02.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
-		PROJECT_LOCATION="~/winterwell/adserver"
+		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com/'
         IMAGE_OPTIMISE='yes'
         IMAGEDIRECTORY="/home/$USER/winterwell/adserver/web-as/vert/"
@@ -68,6 +70,7 @@ case $1 in
 		JAVASCRIPT_FILES_TO_TEST=$(find adunit/variants/ -mindepth 1 \( -name "*.js" ! -name "babeled*" ! -name "all*" \) -type f)
 		COMPILE_UNITS='yes'
 		UNITS_TO_COMPILE=$(find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
 		DO_NOT_SYNC=(".git" "bin" "boblog" "dummy-pub" "node_modules" "puppeteer-tests" "safeframe-stuff" "web-portal" "as-player.png" "backup-portal-uploads.sh" "bob.log" "com.winterwell.web.app.PublisheProjectTask.log" "compile-units.sh" "convert.less.sh" "good-loop-live-demo.png" "package.json" "pom.bob.xml" "publish-adserver.sh" "publish-adserver.sh.orig" "publish-portal.sh" "rectangle-brand-funded.png" "rectangle-countdown.png" "rectangle-default" "run-me-first.sh" "testas-player.png" "update-showcase.sh" "update-templates.sh" "uploads.backup.sh" "watch.sh" "watch-as.sh" "webpack.config.as.js" "webpack.config.dev.js" "webpack.config.js" ".babelrc" ".classpath" ".eslintrc.js" ".gitignore" ".jshintrc" ".project")
     ;;
@@ -75,13 +78,14 @@ case $1 in
         PROJECT='datalogger'
         PRODUCTION_SERVERS=('gl-es-03.soda.sh','gl-es-04.soda.sh','gl-es-05.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
-		PROJECT_LOCATION="~/winterwell/open-code/winterwell.datalog"
+		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
         TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com/'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='lg'
 		DO_NOT_SYNC=("bin" "bin.test" "boblog" "build" "bob.log" "build-less.sh" "cluster-jar-sync.sh" "cluster-sync.sh" "com.winterwell.web.app.PublishProjectTask.log" "package.json" "pom.bob.xml" "publish-lg.sh" "restart.lg.process.sh" "ssl.*.conf" "watch.sh" "webpack.config.js" ".classpath" ".eslintrc.js" ".gitignore" ".project")
     ;;
@@ -89,7 +93,7 @@ case $1 in
         PROJECT='portal'
         PRODUCTION_SERVERS=('heppner.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
-		PROJECT_LOCATION="~/winterwell/adserver"
+		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
@@ -97,6 +101,7 @@ case $1 in
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='portalmain'
 		DO_NOT_SYNC=(".git" "bin" "boblog" "dummy-pub" "node_modules" "puppeteer-tests" "safeframe-stuff" "as-player.png" "backup-portal-uploads.sh" "bob.log" "com.winterwell.web.app.PublisheProjectTask.log" "good-loop-live-demo.png" "pom.bob.xml" "publish-adserver.sh" "publish-adserver.sh.orig" "publish-portal.sh" "rectangle-brand-funded.png" "rectangle-countdown.png" "rectangle-default" "run-me-first.sh" "testas-player.png" "update-showcase.sh" "update-templates.sh" "uploads.backup.sh" "watch.sh" "watch-as.sh"".classpath" ".eslintrc.js" ".gitignore" ".jshintrc" ".project")
     ;;
@@ -104,13 +109,14 @@ case $1 in
         PROJECT='profiler'
         PRODUCTION_SERVERS=('hugh.soda.sh')
         TEST_SERVERS=('none')
-		PROJECT_LOCATION="~/winterwell/code/profiler"
+		PROJECT_LOCATION="/home/$USER/winterwell/code/profiler"
         TARGET_DIRECTORY='/home/winterwell/profiler/'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='profilermain'
 		DO_NOT_SYNC=("bin" "boblog" "build" "src" "test" "bob.log" "com.winterwell.web.app.PublishProjectTask.log" "compile-units.sh" "pom.bob.xml" "publish-profiler.sh" "ssl.*.conf" ".classpath" ".gitignore" ".project")
     ;;
@@ -118,7 +124,7 @@ case $1 in
         PROJECT='sogive-app'
         PRODUCTION_SERVERS=('heppner.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
-		PROJECT_LOCATION="~/winterwell/sogive-app"
+		PROJECT_LOCATION="/home/$USER/winterwell/sogive-app"
         TARGET_DIRECTORY='/home/winterwell/sogive-app/'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
@@ -126,6 +132,7 @@ case $1 in
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='sogiveapp'
 		DO_NOT_SYNC=("bin" "boblog" "node_modules" "test" ".git" ".vscode" "backup-uploads.sh" "bob.log" "click-through.test.sogive.org.png" "com.winterwell.web.app.PublishProjectTask" "eg-charities.md" "eurostar-30s-720p.m4v" "get-jar-dependencies.sh" "headless-setup.sh" "org.sogive.server.SoGiveServer.log" "pom.bob.xml" "publish-sogiveapp.sh" "README.md" "run-me-first.sh" "simple-search.test.sogive.org.png" "sogive.log" "sogive.log.*" "test.sogive.org.png" "watch.sh" ".classpath" ".eslintrc.js" ".flowconfig" ".gitignore" ".project")
 		AUTOMATED_TESTING='yes'
@@ -135,13 +142,14 @@ case $1 in
         PROJECT='youagain'
         PRODUCTION_SERVERS=('bester.soda.sh')
         TEST_SERVERS=('none')
-		PROJECT_LOCATION="~/winterwell/code/youagain-server"
+		PROJECT_LOCATION="/home/$USER/winterwell/code/youagain-server"
         TARGET_DIRECTORY='/home/winterwell/youagain/'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no' #for now
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='youagain'
 		DO_NOT_SYNC=("bin" "boblog" "build" "node_modules" "test" "bob.log" "com.winterwell.web.app.PublishProjectTask.log" "convert.less.sh" "dummy.txt" "pom.bob.xml" "publish-youagain.sh" "publish-youagain.sh.old" "README.md" "ssl.*.conf" "watch.sh" "youagain-server.log" "youagain-server.log.*" "youagain-server.sh" ".classpath" ".eslintrc.js" ".gitignore" ".project")
     ;;
@@ -389,23 +397,13 @@ function webpack {
 ### Section 06: Define the Functions that can start and stop a process on the server
 ##################################
 function stop_proc {
-	if [[ $SERVICE_NAME = '' ]]; then
-		$RESTART_SERVICE='false'
-	else
-		$RESTART_SERVICE='true'
-	fi
-	if [[ $RESTART_SERVICE = 'true' ]]; then
+	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
 		$PSSH "sudo service $SERVICE_NAME stop"
 	fi
 }
 
 function start_proc {
-	if [[ $SERVICE_NAME = '' ]]; then
-		$RESTART_SERVICE='false'
-	else
-		$RESTART_SERVICE='true'
-	fi
-	if [[ $RESTART_SERVICE = 'true' ]]; then
+	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
 		$PSSH "sudo service $SERVICE_NAME start"
 	fi
 }
@@ -478,46 +476,46 @@ function compile_variants {
 			printf "\n${VARIANTDIRS[*]}\n"
 			printf "\nFound \e[1m${#VARIANTDIRS[@]}\e[0m ad-unit variants to compile.\n"
 
-			VARIANTLIST='~/winterwell/adserver/adunit/js/base.html.js'
-			LESSLIST='~/winterwell/adserver/adunit/style/base.less'
+			VARIANTLIST="/home/$USER/winterwell/adserver/adunit/js/base.html.js"
+			LESSLIST="/home/$USER/winterwell/adserver/adunit/style/base.less"
 			COLOUR=$RANDOM
 
 			for variant in ${VARIANTDIRS[*]}; do
 				# Build up the list of .html.js files we'll compile together later
-				if [ -f ~/winterwell/adserver/adunit/variants/$variant/unit.html.js -a -f ~/winterwell/adserver/adunit/variants/$variant/unit.less ]; then
-					VARIANTLIST="$VARIANTLIST ~/winterwell/adserver/adunit/variants/$variant/unit.html.js"
-					LESSLIST="$LESSLIST ~/winterwell/adserver/adunit/variants/$variant/unit.less"
+				if [ -f /home/$USER/winterwell/adserver/adunit/variants/$variant/unit.html.js -a -f /home/$USER/winterwell/adserver/adunit/variants/$variant/unit.less ]; then
+					VARIANTLIST="$VARIANTLIST /home/$USER/winterwell/adserver/adunit/variants/$variant/unit.html.js"
+					LESSLIST="$LESSLIST /home/$USER/winterwell/adserver/adunit/variants/$variant/unit.less"
 				else
 					printf "\nVariant dir \e[1m\e[3$(( $COLOUR % 7 + 1))m$variant\e[0m is missing unit.html.js or unit.less, skipping\n"
 				fi
 				COLOUR=$(($COLOUR + 1))
 			done
 
-			cat $LESSLIST > ~/winterwell/adserver/adunit/style/all_intermediate.less
-			lessc ~/winterwell/adserver/adunit/style/all_intermediate.less web-as/all.css
-			rm ~/winterwell/adserver/adunit/style/all_intermediate.less
+			cat $LESSLIST > /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less
+			lessc /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less web-as/all.css
+			rm /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less
 
 			# Compiling all JS (all variants at once) to single file
-			VARIANTLIST="$VARIANTLIST ~/winterwell/adserver/adunit/js/unit.act.js ~/winterwell/adserver/adunit/js/unit.js"
+			VARIANTLIST="$VARIANTLIST /home/$USER/winterwell/adserver/adunit/js/unit.act.js /home/$USER/winterwell/adserver/adunit/js/unit.js"
 
-			if [ ! -d ~/winterwell/adserver/adunit/compiled ]; then
-				mkdir -p ~/winterwell/adserver/adunit/compiled
+			if [ ! -d /home/$USER/winterwell/adserver/adunit/compiled ]; then
+				mkdir -p /home/$USER/winterwell/adserver/adunit/compiled
 			fi
 
 			printf "\nCompiling all variants to one miraculous file\n"
 			printf "\n\tBabeling ES6 sources...\n"
-			babel --quiet $VARIANTLIST --out-file ~/winterwell/adserver/adunit/compiled/babeled-unit.js
+			babel --quiet $VARIANTLIST --out-file /home/$USER/winterwell/adserver/adunit/compiled/babeled-unit.js
 			printf "\n\tIncluding non-ES6 files...\n"
-			cat ~/winterwell/adserver/adunit/lib/zepto.min.js ~/winterwell/adserver/adunit/lib/js.cookie.js ~/winterwell/adserver/adunit/lib/datalog.js ~/winterwell/adserver/adunit/compiled/babeled-unit.js > ~/winterwell/adserver/adunit/compiled/all_debug.js
+			cat /home/$USER/winterwell/adserver/adunit/lib/zepto.min.js /home/$USER/winterwell/adserver/adunit/lib/js.cookie.js /home/$USER/winterwell/adserver/adunit/lib/datalog.js /home/$USER/winterwell/adserver/adunit/compiled/babeled-unit.js > /home/$USER/winterwell/adserver/adunit/compiled/all_debug.js
 
 			## Minify JS and remove intermediate files
 			printf "\n\tMinifying...\n"
-			babili --quiet ~/winterwell/adserver/adunit/compiled/all_debug.js --out-file ~/winterwell/adserver/adunit/compiled/all.js
-			rm ~/winterwell/adserver/adunit/compiled/babeled-unit.js
+			babili --quiet /home/$USER/winterwell/adserver/adunit/compiled/all_debug.js --out-file /home/$USER/winterwell/adserver/adunit/compiled/all.js
+			rm /home/$USER/winterwell/adserver/adunit/compiled/babeled-unit.js
 
 
 			#Other directories containing JS files that need to be babel'ed:
-			OTHERJSDIRS=("~/winterwell/adserver/web-as")
+			OTHERJSDIRS=("/home/$USER/winterwell/adserver/web-as")
 			OTHERJSFILES=()
 			for jsfile in $(find ${OTHERJSDIRS[@]} -maxdepth 1 -type f \( -iname '*.js' ! -iname '*.babeled.js' \) | rev | cut -c 4-128 | rev); do
 				printf "\nBabeling \e[3$(($COLOUR % 7 + 1))m$jsfile.js ...\n\e[0m\n"
@@ -526,8 +524,8 @@ function compile_variants {
 			done
 
 			#Other directories containing LESS files that need to be converted:
-			OTHERDIRS=("~/winterwell/adserver/web-portal")
-			OTHERDIRS+=("~/winterwell/adserver/web-as")
+			OTHERDIRS=("/home/$USER/winterwell/adserver/web-portal")
+			OTHERDIRS+=("/home/$USER/winterwell/adserver/web-as")
 			LESSFILES=()
 			for lessfile in $(find ${OTHERDIRS[@]} -type f -name '*.less'); do
 				LESSFILES+=("$lessfile")
@@ -561,23 +559,23 @@ function run_automated_tests {
 ### Section 14: Performing the Actual Publish
 ##########################################
 printf "\nCreating Target List"
-$create_target_list
+create_target_list
 printf "\nCreating List of Excluded Items from Sync"
-$create_do_not_sync_list
-printf "\nStopping Service on Server(s)"
-$stop_proc
-$image_optimisation
-$convert_less_files
-$test_js
-$compile_variants
-printf "\nSyncing Project"
-$sync_whole_project
+create_do_not_sync_list
+printf "\nStopping $SERVICE_NAME on $TARGETS"
+stop_proc
+image_optimisation
+convert_less_files
+test_js
+compile_variants
+printf "\nSyncing $PROJECT to $TARGETS"
+sync_whole_project
 printf "\nSyncing Configs"
-$sync_configs
+sync_configs
 printf "\nRenaming lib directory"
-$rename_tmp_lib
-$webpack
-printf "\nStarting Process"
-$start_proc
+rename_tmp_lib
+webpack
+printf "\nStarting $SERVICE_NAME on $TARGETS"
+start_proc
 printf "\nPublishing Process has completed\n"
-$run_automated_tests
+run_automated_tests
