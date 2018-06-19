@@ -37,7 +37,7 @@ USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailabl
 DO_NOT_SYNC=()
 SYNC_LIST=()
 #####TODO:  Get these parallel-rsync arguments to work
-PSYNC=$(parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive --extra-arg -L --extra-arg --delete-before --extra-arg --exclude=$DO_NOT_SYNC_LIST)
+PSYNC=$(parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x "-L --progress -h --delete-before --exclude=$DO_NOT_SYNC_LIST")
 #####
 PSSH=$(parallel-ssh -h /tmp/target.list.txt --user=winterwell)
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
