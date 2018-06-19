@@ -429,10 +429,14 @@ function rename_tmp_lib {
 #########################################
 function sync_configs {
 	if [[ $PROJECT = 'adserver' ]]; then
-		$PSYNC /home/$USER/winterwell/logins/good-loop/adserver/*.properties $TARGET_DIRECTORY/config/
+		for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
+			$PSYNC $config $TARGET_DIRECTORY/config/
+		done
 	fi
 	if [[ $PROJECT = 'sogive-app' ]]; then
-		$PSYNC /home/$USER/winterwell/logins/sogive-app/*.properties $TARGET_DIRECTORY/config/
+		for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
+			$PSYNC $config $TARGET_DIRECTORY/config/
+		done
 	fi
 }
 
@@ -539,7 +543,8 @@ function compile_variants {
 ### Section 12: Defining the Sync
 ##########################################
 function sync_whole_project {
-	for item in $(PLEASE_SYNC[@]); do
+	for item in ${PLEASE_SYNC[@]}; do
+		printf "\nSyncing $item ..."
 		cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
 	done
 }
