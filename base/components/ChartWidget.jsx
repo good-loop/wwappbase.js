@@ -80,7 +80,8 @@ class ChartWidget extends React.Component {
 					type: 'time',
 					time: {
 						displayFormats: {							
-							quarter: 'MMM YYYY'
+							quarter: 'MMM YYYY',
+							hour: 'MMM D hA'
 						}
 					}
 				}]
