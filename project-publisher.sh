@@ -36,7 +36,9 @@ SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','yo
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 DO_NOT_SYNC=()
 SYNC_LIST=()
+#####TODO:  Get these parallel-rsync arguments to work
 PSYNC=$(parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive --extra-arg -L --extra-arg --delete-before --extra-arg --exclude=$DO_NOT_SYNC_LIST)
+#####
 PSSH=$(parallel-ssh -h /tmp/target.list.txt --user=winterwell)
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 
@@ -68,6 +70,7 @@ case $1 in
 		JAVASCRIPT_FILES_TO_TEST=$(find adunit/variants/ -mindepth 1 \( -name "*.js" ! -name "babeled*" ! -name "all*" \) -type f)
 		COMPILE_UNITS='yes'
 		UNITS_TO_COMPILE=$(find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
 		DO_NOT_SYNC=(".git" "bin" "boblog" "dummy-pub" "node_modules" "puppeteer-tests" "safeframe-stuff" "web-portal" "as-player.png" "backup-portal-uploads.sh" "bob.log" "com.winterwell.web.app.PublisheProjectTask.log" "compile-units.sh" "convert.less.sh" "good-loop-live-demo.png" "package.json" "pom.bob.xml" "publish-adserver.sh" "publish-adserver.sh.orig" "publish-portal.sh" "rectangle-brand-funded.png" "rectangle-countdown.png" "rectangle-default" "run-me-first.sh" "testas-player.png" "update-showcase.sh" "update-templates.sh" "uploads.backup.sh" "watch.sh" "watch-as.sh" "webpack.config.as.js" "webpack.config.dev.js" "webpack.config.js" ".babelrc" ".classpath" ".eslintrc.js" ".gitignore" ".jshintrc" ".project")
     ;;
@@ -82,6 +85,7 @@ case $1 in
         WEBPACK='no'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='lg'
 		DO_NOT_SYNC=("bin" "bin.test" "boblog" "build" "bob.log" "build-less.sh" "cluster-jar-sync.sh" "cluster-sync.sh" "com.winterwell.web.app.PublishProjectTask.log" "package.json" "pom.bob.xml" "publish-lg.sh" "restart.lg.process.sh" "ssl.*.conf" "watch.sh" "webpack.config.js" ".classpath" ".eslintrc.js" ".gitignore" ".project")
     ;;
@@ -97,6 +101,7 @@ case $1 in
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='portalmain'
 		DO_NOT_SYNC=(".git" "bin" "boblog" "dummy-pub" "node_modules" "puppeteer-tests" "safeframe-stuff" "as-player.png" "backup-portal-uploads.sh" "bob.log" "com.winterwell.web.app.PublisheProjectTask.log" "good-loop-live-demo.png" "pom.bob.xml" "publish-adserver.sh" "publish-adserver.sh.orig" "publish-portal.sh" "rectangle-brand-funded.png" "rectangle-countdown.png" "rectangle-default" "run-me-first.sh" "testas-player.png" "update-showcase.sh" "update-templates.sh" "uploads.backup.sh" "watch.sh" "watch-as.sh"".classpath" ".eslintrc.js" ".gitignore" ".jshintrc" ".project")
     ;;
@@ -111,6 +116,7 @@ case $1 in
         WEBPACK='no'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='profilermain'
 		DO_NOT_SYNC=("bin" "boblog" "build" "src" "test" "bob.log" "com.winterwell.web.app.PublishProjectTask.log" "compile-units.sh" "pom.bob.xml" "publish-profiler.sh" "ssl.*.conf" ".classpath" ".gitignore" ".project")
     ;;
@@ -126,6 +132,7 @@ case $1 in
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='sogiveapp'
 		DO_NOT_SYNC=("bin" "boblog" "node_modules" "test" ".git" ".vscode" "backup-uploads.sh" "bob.log" "click-through.test.sogive.org.png" "com.winterwell.web.app.PublishProjectTask" "eg-charities.md" "eurostar-30s-720p.m4v" "get-jar-dependencies.sh" "headless-setup.sh" "org.sogive.server.SoGiveServer.log" "pom.bob.xml" "publish-sogiveapp.sh" "README.md" "run-me-first.sh" "simple-search.test.sogive.org.png" "sogive.log" "sogive.log.*" "test.sogive.org.png" "watch.sh" ".classpath" ".eslintrc.js" ".flowconfig" ".gitignore" ".project")
 		AUTOMATED_TESTING='yes'
@@ -142,6 +149,7 @@ case $1 in
         WEBPACK='no' #for now
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='youagain'
 		DO_NOT_SYNC=("bin" "boblog" "build" "node_modules" "test" "bob.log" "com.winterwell.web.app.PublishProjectTask.log" "convert.less.sh" "dummy.txt" "pom.bob.xml" "publish-youagain.sh" "publish-youagain.sh.old" "README.md" "ssl.*.conf" "watch.sh" "youagain-server.log" "youagain-server.log.*" "youagain-server.sh" ".classpath" ".eslintrc.js" ".gitignore" ".project")
     ;;
@@ -389,23 +397,13 @@ function webpack {
 ### Section 06: Define the Functions that can start and stop a process on the server
 ##################################
 function stop_proc {
-	if [[ $SERVICE_NAME = '' ]]; then
-		$RESTART_SERVICE='false'
-	else
-		$RESTART_SERVICE='true'
-	fi
-	if [[ $RESTART_SERVICE = 'true' ]]; then
+	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
 		$PSSH "sudo service $SERVICE_NAME stop"
 	fi
 }
 
 function start_proc {
-	if [[ $SERVICE_NAME = '' ]]; then
-		$RESTART_SERVICE='false'
-	else
-		$RESTART_SERVICE='true'
-	fi
-	if [[ $RESTART_SERVICE = 'true' ]]; then
+	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
 		$PSSH "sudo service $SERVICE_NAME start"
 	fi
 }
@@ -564,20 +562,20 @@ printf "\nCreating Target List"
 create_target_list
 printf "\nCreating List of Excluded Items from Sync"
 create_do_not_sync_list
-printf "\nStopping Service on Server(s)"
+printf "\nStopping $SERVICE_NAME on $TARGETS"
 stop_proc
 image_optimisation
 convert_less_files
 test_js
 compile_variants
-printf "\nSyncing Project"
+printf "\nSyncing $PROJECT to $TARGETS"
 sync_whole_project
 printf "\nSyncing Configs"
 sync_configs
 printf "\nRenaming lib directory"
 rename_tmp_lib
 webpack
-printf "\nStarting Process"
+printf "\nStarting $SERVICE_NAME on $TARGETS"
 start_proc
 printf "\nPublishing Process has completed\n"
 run_automated_tests
