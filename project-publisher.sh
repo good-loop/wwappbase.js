@@ -1,5 +1,7 @@
 #!/bin/bash
 
+VERSION='1.0.1'
+
 ######
 ## TODO: Build in an argument handler in cases where $2='local'  in order to bypass this publisher
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -40,7 +42,6 @@ fi
 #################
 SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','youagain')
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
-DO_NOT_SYNC=()
 SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
 PSSH='parallel-ssh -h /tmp/target.list.txt --user=winterwell'
@@ -140,7 +141,6 @@ case $1 in
 		SERVICE_NAME='sogiveapp'
 		PLEASE_SYNC=("config" "data" "server" "src" "lib" "web" "package.json" "webpack.config.js" ".babelrc")
 		AUTOMATED_TESTING='yes'
-		AUTOMATED_TESTING_COMMAND="cd $PROJECT_LOCATION && bash test/run-tests.sh $2"
     ;;
     youagain|YOUAGAIN)
         PROJECT='youagain'
@@ -562,7 +562,11 @@ function sync_whole_project {
 ##########################################
 function run_automated_tests {
 	if [[ $AUTOMATED_TESTING = 'yes' ]]; then
-		$AUTOMATED_TESTING_COMMAND
+		if [[ $PROJECT = 'sogive-app' ]]; then
+			printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
+			cd $PROJECT_LOCATION/test
+			bash run-tests.sh $2
+		fi
 	fi
 }
 
