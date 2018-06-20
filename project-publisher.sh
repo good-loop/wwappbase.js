@@ -1,11 +1,37 @@
 #!/bin/bash
 
-VERSION='1.0.2'
+VERSION='1.0.5'
 
 ######
-## TODO: Build in an argument handler in cases where $2='local'  in order to bypass this publisher
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
 #####
+
+#####
+## HOW TO ADD A NEW PROJECT
+#####
+# Copy the following template into Section 01 of this script in order to add a new Project
+#
+# newproject|NEWPROJECT)
+#         PROJECT='newproject'
+#         PRODUCTION_SERVERS=('production-server-name.soda.sh')
+#         TEST_SERVERS=('test-server-name.soda.sh')
+# 		PROJECT_LOCATION="/home/$USER/winterwell/newproject"
+#         TARGET_DIRECTORY='/home/winterwell/newproject'
+#         IMAGE_OPTIMISE='no'
+#         IMAGEDIRECTORY="" #Only needed if 'IMAGE_OPTIMISE' is set to 'yes'
+# 		CONVERT_LESS='no'
+#		LESS_FILES_LOCATION="" #Only needed if 'CONVERT_LESS' is set to 'yes' 
+#         WEBPACK='no'
+# 		TEST_JAVASCRIPT='no'
+# 		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/" #Only needed if 'TEST_JAVASCRIPT' is set to 'yes', and you must ammend Section 10 to accomodate for how to find and process your JS files
+# 		COMPILE_UNITS='no'
+# 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
+# 		RESTART_SERVICE_AFTER_SYNC='yes'
+# 		SERVICE_NAME='adservermain'
+# 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+#		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
+#     ;;
+
 
 
 #################
@@ -72,9 +98,9 @@ case $1 in
 		CONVERT_LESS='no'
         WEBPACK='no'
 		TEST_JAVASCRIPT='yes'
-		JAVASCRIPT_FILES_TO_TEST=$(find $PROJECT_LOCATION/adunit/variants/ -mindepth 1 \( -name "*.js" ! -name "babeled*" ! -name "all*" \) -type f)
+		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/"
 		COMPILE_UNITS='yes'
-		UNITS_TO_COMPILE=$(cd $PROJECT_LOCATION && find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
+		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
@@ -172,6 +198,10 @@ case $2 in
     test|TEST)
         TYPE_OF_PUBLISH='test'
         TARGETS=$TEST_SERVERS
+		if [[ $TEST_SERVERS = '' ]]; then
+			printf "\n The project, $PROJECT , has no test servers."
+			exit 0
+		fi
     ;;
     production|PRODUCTION)
         TYPE_OF_PUBLISH='production'
@@ -180,9 +210,17 @@ case $2 in
     local|LOCAL|localhost|LOCALHOST)
         TYPE_OF_PUBLISH='local'
         TARGETS='localhost'
+		printf "\nLocalhost publishes do not require this portion of the script to run"
+		exit 0
     ;;
     *)
-        printf "\nThe second argument of, $2 , is either invalid, or is not supported by this script\n$USAGE"
+		if [[ $2 = '' ]]; then
+        	printf "\n$USAGE"
+			exit 0
+		else
+			printf "\nYour second argument of, $2 , is either invalid, or not supported by this script\n$USAGE"
+			exit 0
+		fi
     ;;
 esac
 
@@ -456,16 +494,25 @@ function sync_configs {
 function test_js {
 	if [[ $TEST_JAVASCRIPT = 'yes' ]]; then
 		printf "\nTesting the JS files for syntax errors...\n"
-		for jsfile in ${JAVASCRIPT_FILES_TO_TEST[*]}; do
-			TESTINGVJSFILE=$(jshint --verbose $jsfile | grep -E E[0-9]+.$)
-			if [[ $TESTINGVJSFILE = "" ]]; then
-				printf "\n$jsfile is OK!\n"
-			else
-				printf "\n$jsfile has syntax errors.\n"
-				printf "\nexiting publishing process...\n"
-				exit 3
-			fi
-		done
+		case $PROJECT in
+			adserver)
+				JS_FILE_LIST=$(find $JAVASCRIPT_FILES_TO_TEST -mindepth 1 \( -name "*.js" ! -name "babeled*" ! -name "all*" \) -type f)
+				for jsfile in ${JS_FILE_LIST[*]}; do
+					TESTINGVJSFILE=$(jshint --verbose $jsfile | grep -E E[0-9]+.$)
+					if [[ $TESTINGVJSFILE = "" ]]; then
+						printf "\n$jsfile is OK!\n"
+					else
+						printf "\n$jsfile has syntax errors.\n"
+						printf "\nexiting publishing process...\n"
+						exit 3
+					fi
+				done
+			;;
+			*)
+				printf "\n Unknown Project specified.  I don't know where the JS files are, the ones that need to be tested"
+				exit 0
+			;;
+		esac
 	fi
 }
 
@@ -475,6 +522,7 @@ function test_js {
 function compile_variants {
 	if [[ $COMPILE_UNITS = 'yes' ]]; then
 		#### Compile Adserver Units
+		UNITS_TO_COMPILE=$(find $UNITS_LOCATION -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $8}')
 		if [[ $PROJECT = 'adserver' ]]; then
 			VARIANTDIRS=()
 			for variant in ${UNITS_TO_COMPILE[*]}; do
@@ -499,7 +547,7 @@ function compile_variants {
 			done
 
 			cat $LESSLIST > /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less
-			lessc /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less web-as/all.css
+			lessc /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less /home/$USER/winterwell/adserver/adunit/style/web-as/all.css
 			rm /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less
 
 			# Compiling all JS (all variants at once) to single file
