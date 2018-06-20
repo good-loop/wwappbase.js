@@ -1,5 +1,10 @@
 #!/bin/bash
 
+######
+## TODO: Build in an argument handler in cases where $2='local'  in order to bypass this publisher
+#####
+
+
 #################
 ### Preamble: Check for dependencies
 #################
@@ -70,7 +75,7 @@ case $1 in
 		UNITS_TO_COMPILE=$(cd $PROJECT_LOCATION && find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
-		PLEASE_SYNC=("adunit" "config" "server" "src" "tmp-lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
     ;;
     datalogger|DATALOGGER)
         PROJECT='datalogger'
@@ -85,7 +90,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='lg'
-		PLEASE_SYNC=("config" "src" "src-js" "tmp-lib" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "winterwell.datalog.jar")
+		PLEASE_SYNC=("config" "src" "src-js" "lib" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "winterwell.datalog.jar")
     ;;
     portal|PORTAL)
         PROJECT='portal'
@@ -101,7 +106,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='portalmain'
-		PLEASE_SYNC=("config" "server" "src" "tmp-lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
+		PLEASE_SYNC=("config" "server" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
@@ -116,7 +121,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='profilermain'
-		PLEASE_SYNC=("config" "formunit" "tmp-lib")
+		PLEASE_SYNC=("config" "formunit" "lib")
     ;;
     sogive|SOGIVE|sogive-app|SOGIVE-APP)
         PROJECT='sogive-app'
@@ -132,7 +137,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='sogiveapp'
-		PLEASE_SYNC=("config" "data" "server" "src" "tmp-lib" "web" "package.json" "webpack.config.js" ".babelrc")
+		PLEASE_SYNC=("config" "data" "server" "src" "lib" "web" "package.json" "webpack.config.js" ".babelrc")
 		AUTOMATED_TESTING='yes'
 		AUTOMATED_TESTING_COMMAND="bash $PROJECT_LOCATION/test/run-tests.sh $2"
     ;;
@@ -149,7 +154,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='youagain'
-		PLEASE_SYNC=("config" "dependencies" "tmp-lib" "web" "youagain-server.jar")
+		PLEASE_SYNC=("config" "dependencies" "lib" "web" "youagain-server.jar")
     ;;
     *)
         printf "\nThe project that you specified, $1 , is not currently supported by the\nproject-publisher.sh script, or, you mis-typed it. \n$USAGE"
@@ -408,8 +413,8 @@ function start_proc {
 function convert_less_files {
 	if [[ $CONVERT_LESS = 'yes' ]]; then
 		LESS_FILES=$(find $PROJECT_LOCATION/ -type f -iname "*.less")
-		for $file in ${LESS_FILES[@]}; do
-			printf"converting $file\n"
+		for file in ${LESS_FILES[@]}; do
+			printf"\nconverting $file"
 			lessc "$file" "${file%.less}.css"
 		done
 	fi
@@ -419,10 +424,12 @@ function convert_less_files {
 ### Section 08: Defining the Jar Syncing Function
 ###################################
 function rename_tmp_lib {
-	$PSSH "rm -rf $TARGET_DIRECTORY/lib/*"
-	$PSSH "cd $TARGET_DIRECTORY && mv tmp-lib lib"
+	mv $PROJECT_LOCATION/tmp-lib $PROJECT_LOCATION/lib
 }
 
+function rename_lib {
+	mv $PROJECT_LOCATION/lib $PROJECT_LOCATION/tmp-lib
+}
 
 #########################################
 ### Section 09: Sync the Config Files
@@ -569,14 +576,15 @@ image_optimisation
 convert_less_files
 test_js
 compile_variants
+printf "\nRenaming lib directory"
+rename_tmp_lib
 printf "\nSyncing $PROJECT to $TARGETS"
 sync_whole_project
 printf "\nSyncing Configs"
 sync_configs
-printf "\nRenaming lib directory"
-rename_tmp_lib
 webpack
 printf "\nStarting $SERVICE_NAME on $TARGETS"
 start_proc
 printf "\nPublishing Process has completed\n"
+rename_lib
 run_automated_tests
