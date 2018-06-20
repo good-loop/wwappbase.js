@@ -1,5 +1,11 @@
 #!/bin/bash
 
+######
+## TODO: Build in an argument handler in cases where $2='local'  in order to bypass this publisher
+## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
+#####
+
+
 #################
 ### Preamble: Check for dependencies
 #################
@@ -36,10 +42,8 @@ SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','yo
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 DO_NOT_SYNC=()
 SYNC_LIST=()
-#####TODO:  Get these parallel-rsync arguments to work
-PSYNC=$(parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x "-L --progress -h --delete-before --exclude=$DO_NOT_SYNC_LIST")
-#####
-PSSH=$(parallel-ssh -h /tmp/target.list.txt --user=winterwell)
+PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
+PSSH='parallel-ssh -h /tmp/target.list.txt --user=winterwell'
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 
 
@@ -61,25 +65,25 @@ case $1 in
         PRODUCTION_SERVERS=('gl-es-01.soda.sh','gl-es-02.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
-        TARGET_DIRECTORY='/home/winterwell/as.good-loop.com/'
+        TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='yes'
-        IMAGEDIRECTORY="/home/$USER/winterwell/adserver/web-as/vert/"
+        IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert/"
 		CONVERT_LESS='no'
         WEBPACK='no'
 		TEST_JAVASCRIPT='yes'
-		JAVASCRIPT_FILES_TO_TEST=$(find adunit/variants/ -mindepth 1 \( -name "*.js" ! -name "babeled*" ! -name "all*" \) -type f)
+		JAVASCRIPT_FILES_TO_TEST=$(find $PROJECT_LOCATION/adunit/variants/ -mindepth 1 \( -name "*.js" ! -name "babeled*" ! -name "all*" \) -type f)
 		COMPILE_UNITS='yes'
-		UNITS_TO_COMPILE=$(find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
+		UNITS_TO_COMPILE=$(cd $PROJECT_LOCATION && find adunit/variants/ -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
-		DO_NOT_SYNC=(".git" "bin" "boblog" "dummy-pub" "node_modules" "puppeteer-tests" "safeframe-stuff" "web-portal" "as-player.png" "backup-portal-uploads.sh" "bob.log" "com.winterwell.web.app.PublisheProjectTask.log" "compile-units.sh" "convert.less.sh" "good-loop-live-demo.png" "package.json" "pom.bob.xml" "publish-adserver.sh" "publish-adserver.sh.orig" "publish-portal.sh" "rectangle-brand-funded.png" "rectangle-countdown.png" "rectangle-default" "run-me-first.sh" "testas-player.png" "update-showcase.sh" "update-templates.sh" "uploads.backup.sh" "watch.sh" "watch-as.sh" "webpack.config.as.js" "webpack.config.dev.js" "webpack.config.js" ".babelrc" ".classpath" ".eslintrc.js" ".gitignore" ".jshintrc" ".project")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
     ;;
     datalogger|DATALOGGER)
         PROJECT='datalogger'
         PRODUCTION_SERVERS=('gl-es-03.soda.sh','gl-es-04.soda.sh','gl-es-05.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
-        TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com/'
+        TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no'
@@ -87,7 +91,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='lg'
-		DO_NOT_SYNC=("bin" "bin.test" "boblog" "build" "bob.log" "build-less.sh" "cluster-jar-sync.sh" "cluster-sync.sh" "com.winterwell.web.app.PublishProjectTask.log" "package.json" "pom.bob.xml" "publish-lg.sh" "restart.lg.process.sh" "ssl.*.conf" "watch.sh" "webpack.config.js" ".classpath" ".eslintrc.js" ".gitignore" ".project")
+		PLEASE_SYNC=("config" "src" "src-js" "lib" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "winterwell.datalog.jar")
     ;;
     portal|PORTAL)
         PROJECT='portal'
@@ -103,14 +107,14 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='portalmain'
-		DO_NOT_SYNC=(".git" "bin" "boblog" "dummy-pub" "node_modules" "puppeteer-tests" "safeframe-stuff" "as-player.png" "backup-portal-uploads.sh" "bob.log" "com.winterwell.web.app.PublisheProjectTask.log" "good-loop-live-demo.png" "pom.bob.xml" "publish-adserver.sh" "publish-adserver.sh.orig" "publish-portal.sh" "rectangle-brand-funded.png" "rectangle-countdown.png" "rectangle-default" "run-me-first.sh" "testas-player.png" "update-showcase.sh" "update-templates.sh" "uploads.backup.sh" "watch.sh" "watch-as.sh"".classpath" ".eslintrc.js" ".gitignore" ".jshintrc" ".project")
+		PLEASE_SYNC=("config" "server" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
         PRODUCTION_SERVERS=('hugh.soda.sh')
         TEST_SERVERS=('none')
 		PROJECT_LOCATION="/home/$USER/winterwell/code/profiler"
-        TARGET_DIRECTORY='/home/winterwell/profiler/'
+        TARGET_DIRECTORY='/home/winterwell/profiler'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no'
@@ -118,14 +122,14 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='profilermain'
-		DO_NOT_SYNC=("bin" "boblog" "build" "src" "test" "bob.log" "com.winterwell.web.app.PublishProjectTask.log" "compile-units.sh" "pom.bob.xml" "publish-profiler.sh" "ssl.*.conf" ".classpath" ".gitignore" ".project")
+		PLEASE_SYNC=("config" "formunit" "lib")
     ;;
     sogive|SOGIVE|sogive-app|SOGIVE-APP)
         PROJECT='sogive-app'
         PRODUCTION_SERVERS=('heppner.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/sogive-app"
-        TARGET_DIRECTORY='/home/winterwell/sogive-app/'
+        TARGET_DIRECTORY='/home/winterwell/sogive-app'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
 		LESS_FILES_LOCATION="$PROJECT_LOCATION/web/style"
@@ -134,16 +138,16 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='sogiveapp'
-		DO_NOT_SYNC=("bin" "boblog" "node_modules" "test" ".git" ".vscode" "backup-uploads.sh" "bob.log" "click-through.test.sogive.org.png" "com.winterwell.web.app.PublishProjectTask" "eg-charities.md" "eurostar-30s-720p.m4v" "get-jar-dependencies.sh" "headless-setup.sh" "org.sogive.server.SoGiveServer.log" "pom.bob.xml" "publish-sogiveapp.sh" "README.md" "run-me-first.sh" "simple-search.test.sogive.org.png" "sogive.log" "sogive.log.*" "test.sogive.org.png" "watch.sh" ".classpath" ".eslintrc.js" ".flowconfig" ".gitignore" ".project")
+		PLEASE_SYNC=("config" "data" "server" "src" "lib" "web" "package.json" "webpack.config.js" ".babelrc")
 		AUTOMATED_TESTING='yes'
-		AUTOMATED_TESTING_COMMAND="bash $PROJECT_LOCATION/test/run-tests.sh $2"
+		AUTOMATED_TESTING_COMMAND="cd $PROJECT_LOCATION && bash test/run-tests.sh $2"
     ;;
     youagain|YOUAGAIN)
         PROJECT='youagain'
         PRODUCTION_SERVERS=('bester.soda.sh')
         TEST_SERVERS=('none')
 		PROJECT_LOCATION="/home/$USER/winterwell/code/youagain-server"
-        TARGET_DIRECTORY='/home/winterwell/youagain/'
+        TARGET_DIRECTORY='/home/winterwell/youagain'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no' #for now
@@ -151,7 +155,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='youagain'
-		DO_NOT_SYNC=("bin" "boblog" "build" "node_modules" "test" "bob.log" "com.winterwell.web.app.PublishProjectTask.log" "convert.less.sh" "dummy.txt" "pom.bob.xml" "publish-youagain.sh" "publish-youagain.sh.old" "README.md" "ssl.*.conf" "watch.sh" "youagain-server.log" "youagain-server.log.*" "youagain-server.sh" ".classpath" ".eslintrc.js" ".gitignore" ".project")
+		PLEASE_SYNC=("config" "dependencies" "lib" "web" "youagain-server.jar")
     ;;
     *)
         printf "\nThe project that you specified, $1 , is not currently supported by the\nproject-publisher.sh script, or, you mis-typed it. \n$USAGE"
@@ -190,12 +194,6 @@ function create_target_list {
 	rm /tmp/target.list.txt
 	printf '%s\n' ${TARGETS[@]} >> /tmp/target.list.txt
 }
-
-function create_do_not_sync_list {
-	rm /tmp/do_not_sync_list.txt
-	printf '%s\n' ${DO_NOT_SYNC[@]} >> /tmp/do_not_sync_list.txt
-}
-
 
 
 #####################
@@ -314,7 +312,7 @@ function image_optimisation {
 			mapfile -t OPTIMISEDPNGS < $IMAGEDIRECTORY/pngarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.png'); do
 				PNGMD5OUTPUT=$(md5sum $file)
-				printf "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/newpngarray.txt
+				printf '%s\n' "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/newpngarray.txt
 			done
 			mapfile -t PNGARRAY < $IMAGEDIRECTORY/newpngarray.txt
 			UNIQUEPNGS=$(diff $IMAGEDIRECTORY/pngarray.txt $IMAGEDIRECTORY/newpngarray.txt | grep ">" | awk '{print $3}')
@@ -329,7 +327,7 @@ function image_optimisation {
 			touch $IMAGEDIRECTORY/pngarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.png'); do
 				PNGMD5OUTPUT=$(md5sum $file)
-				printf "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/pngarray.txt
+				printf '%s\n' "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/pngarray.txt
 			done
 		fi
 
@@ -338,7 +336,7 @@ function image_optimisation {
 			mapfile -t OPTIMISEDJPGS < $IMAGEDIRECTORY/jpgarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.jpg'); do
 				JPGMD5OUTPUT=$(md5sum $file)
-				printf "$JPGMD5OUTPUT" >> $IMAGEDIRECTORY/newjpgarray.txt
+				printf '%s\n' "$JPGMD5OUTPUT" >> $IMAGEDIRECTORY/newjpgarray.txt
 			done
 			mapfile -t JPGARRAY < $IMAGEDIRECTORY/newjpgarray.txt
 			UNIQUEJPGS=$(diff $IMAGEDIRECTORY/jpgarray.txt $IMAGEDIRECTORY/newjpgarray.txt | grep ">" | awk '{print $3}')
@@ -353,7 +351,7 @@ function image_optimisation {
 			touch $IMAGEDIRECTORY/jpgarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.jpg'); do
 				JPGMD5OUTPUT=$(md5sum $file)
-				printf "$JPGMD5OUTPUT" >> $IMAGEDIRECTORY/jpgarray.txt
+				printf '%s\n' "$JPGMD5OUTPUT" >> $IMAGEDIRECTORY/jpgarray.txt
 			done
 		fi
 
@@ -362,7 +360,7 @@ function image_optimisation {
 			mapfile -t OPTIMISEDJPEGS < $IMAGEDIRECTORY/jpegarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.jpeg'); do
 				JPEGMD5OUTPUT=$(md5sum $file)
-				printf "$JPEGMD5OUTPUT" >> $IMAGEDIRECTORY/newjpegarray.txt
+				printf '%s\n' "$JPEGMD5OUTPUT" >> $IMAGEDIRECTORY/newjpegarray.txt
 			done
 			mapfile -t JPEGARRAY < $IMAGEDIRECTORY/newjpegarray.txt
 			UNIQUEJPEGS=$(diff $IMAGEDIRECTORY/jpegarray.txt $IMAGEDIRECTORY/newjpegarray.txt | grep ">" | awk '{print $3}')
@@ -377,7 +375,7 @@ function image_optimisation {
 			touch $IMAGEDIRECTORY/jpegarray.txt
 			for file in $(find $IMAGEDIRECTORY/ -type f -name '*.jpeg'); do
 				JPEGMD5OUTPUT=$(md5sum $file)
-				printf "$JPEGMD5OUTPUT" >> $IMAGEDIRECTORY/jpegarray.txt
+				printf '%s\n' "$JPEGMD5OUTPUT" >> $IMAGEDIRECTORY/jpegarray.txt
 			done
 		fi
 	fi
@@ -387,10 +385,12 @@ function image_optimisation {
 ### Section 05: Define the Webpack Function
 ##################################
 function webpack {
-    ##### Section 04.01 : Update the node_modules directory from the package.json file
-    $PSSH "cd $TARGET_DIRECTORY && npm i"
-    ##### Section 04.02 : Webpack the project for production usage
-    $PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
+	if [[ $WEBPACK = yes ]]; then
+		printf "\nGetting NPM Dependencies ..."
+		$PSSH "cd $TARGET_DIRECTORY && npm i"
+		printf "\nWebpacking ..."
+    	$PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
+	fi
 }
 
 ##################################
@@ -413,9 +413,9 @@ function start_proc {
 ##################################
 function convert_less_files {
 	if [[ $CONVERT_LESS = 'yes' ]]; then
-		LESS_FILES=$(find $PROJECT_LOCATION/ -type f -iname "*.less")
-		for $file in ${LESS_FILES[@]}; do
-			printf"converting $file\n"
+		LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
+		for file in ${LESS_FILES[@]}; do
+			printf "\nconverting $file"
 			lessc "$file" "${file%.less}.css"
 		done
 	fi
@@ -425,19 +425,26 @@ function convert_less_files {
 ### Section 08: Defining the Jar Syncing Function
 ###################################
 function rename_tmp_lib {
-	$PSSH "cd $TARGET_DIRECTORY && mv tmp-lib lib"
+	mv $PROJECT_LOCATION/tmp-lib $PROJECT_LOCATION/lib
 }
 
+function rename_lib {
+	mv $PROJECT_LOCATION/lib $PROJECT_LOCATION/tmp-lib
+}
 
 #########################################
 ### Section 09: Sync the Config Files
 #########################################
 function sync_configs {
 	if [[ $PROJECT = 'adserver' ]]; then
-		$PSYNC /home/$USER/winterwell/logins/good-loop/adserver/*.properties $TARGET_DIRECTORY/config/
+		for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
+			$PSYNC $config $TARGET_DIRECTORY/config/
+		done
 	fi
 	if [[ $PROJECT = 'sogive-app' ]]; then
-		$PSYNC /home/$USER/winterwell/logins/sogive-app/*.properties $TARGET_DIRECTORY/config/
+		for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
+			$PSYNC $config $TARGET_DIRECTORY/config/
+		done
 	fi
 }
 
@@ -539,11 +546,15 @@ function compile_variants {
 	fi	
 }
 
+
 ##########################################
 ### Section 12: Defining the Sync
 ##########################################
 function sync_whole_project {
-	$PSYNC $PROJECT_LOCATION $TARGET_DIRECTORY
+	for item in ${PLEASE_SYNC[@]}; do
+		printf "\nSyncing $item ..."
+		cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
+	done
 }
 
 ##########################################
@@ -560,22 +571,21 @@ function run_automated_tests {
 ##########################################
 printf "\nCreating Target List"
 create_target_list
-printf "\nCreating List of Excluded Items from Sync"
-create_do_not_sync_list
 printf "\nStopping $SERVICE_NAME on $TARGETS"
 stop_proc
 image_optimisation
 convert_less_files
 test_js
 compile_variants
+printf "\nRenaming lib directory"
+rename_tmp_lib
 printf "\nSyncing $PROJECT to $TARGETS"
 sync_whole_project
 printf "\nSyncing Configs"
 sync_configs
-printf "\nRenaming lib directory"
-rename_tmp_lib
 webpack
 printf "\nStarting $SERVICE_NAME on $TARGETS"
 start_proc
 printf "\nPublishing Process has completed\n"
+rename_lib
 run_automated_tests
