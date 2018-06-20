@@ -2,6 +2,7 @@
 
 ######
 ## TODO: Build in an argument handler in cases where $2='local'  in order to bypass this publisher
+## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
 #####
 
 
@@ -64,7 +65,7 @@ case $1 in
         PRODUCTION_SERVERS=('gl-es-01.soda.sh','gl-es-02.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
-        TARGET_DIRECTORY='/home/winterwell/as.good-loop.com/'
+        TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='yes'
         IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert/"
 		CONVERT_LESS='no'
@@ -82,7 +83,7 @@ case $1 in
         PRODUCTION_SERVERS=('gl-es-03.soda.sh','gl-es-04.soda.sh','gl-es-05.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
-        TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com/'
+        TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no'
@@ -113,7 +114,7 @@ case $1 in
         PRODUCTION_SERVERS=('hugh.soda.sh')
         TEST_SERVERS=('none')
 		PROJECT_LOCATION="/home/$USER/winterwell/code/profiler"
-        TARGET_DIRECTORY='/home/winterwell/profiler/'
+        TARGET_DIRECTORY='/home/winterwell/profiler'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no'
@@ -128,7 +129,7 @@ case $1 in
         PRODUCTION_SERVERS=('heppner.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/sogive-app"
-        TARGET_DIRECTORY='/home/winterwell/sogive-app/'
+        TARGET_DIRECTORY='/home/winterwell/sogive-app'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
 		LESS_FILES_LOCATION="$PROJECT_LOCATION/web/style"
@@ -139,14 +140,14 @@ case $1 in
 		SERVICE_NAME='sogiveapp'
 		PLEASE_SYNC=("config" "data" "server" "src" "lib" "web" "package.json" "webpack.config.js" ".babelrc")
 		AUTOMATED_TESTING='yes'
-		AUTOMATED_TESTING_COMMAND="bash $PROJECT_LOCATION/test/run-tests.sh $2"
+		AUTOMATED_TESTING_COMMAND="cd $PROJECT_LOCATION && bash test/run-tests.sh $2"
     ;;
     youagain|YOUAGAIN)
         PROJECT='youagain'
         PRODUCTION_SERVERS=('bester.soda.sh')
         TEST_SERVERS=('none')
 		PROJECT_LOCATION="/home/$USER/winterwell/code/youagain-server"
-        TARGET_DIRECTORY='/home/winterwell/youagain/'
+        TARGET_DIRECTORY='/home/winterwell/youagain'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
         WEBPACK='no' #for now
@@ -412,9 +413,9 @@ function start_proc {
 ##################################
 function convert_less_files {
 	if [[ $CONVERT_LESS = 'yes' ]]; then
-		LESS_FILES=$(find $PROJECT_LOCATION/ -type f -iname "*.less")
+		LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
 		for file in ${LESS_FILES[@]}; do
-			printf"\nconverting $file"
+			printf "\nconverting $file"
 			lessc "$file" "${file%.less}.css"
 		done
 	fi
