@@ -11,7 +11,7 @@ import Misc from './Misc';
 const AboutPage = () => {
 	return (
 		<div className='AboutPage'>
-			<h2>About SoGive</h2>
+			<h2>About {C.app.name}</h2>
 
 			<p>Please see our website for more information on SoGive: <a href='https://sogive.org'>https://sogive.org</a></p>
 

@@ -39,6 +39,7 @@ const str = printer.str;
  */
 
 /**
+ * data: {Object[]} each row an item
  * 
  * dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
  * So the columns should use accessors 'key' and 'value'
@@ -73,7 +74,9 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, headerRender, className, csv, addTotalRow, topRow, bottomRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
+		let {tableName='SimpleTable', data, dataObject, columns, 
+			headerRender, className, csv, addTotalRow, 
+			topRow, bottomRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
