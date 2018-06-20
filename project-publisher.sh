@@ -1,5 +1,7 @@
 #!/bin/bash
 
+VERSION='1.0.0'
+
 ######
 ## TODO: Build in an argument handler in cases where $2='local'  in order to bypass this publisher
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -562,6 +564,7 @@ function sync_whole_project {
 ##########################################
 function run_automated_tests {
 	if [[ $AUTOMATED_TESTING = 'yes' ]]; then
+		printf "\nRunning Automated Tests ..."
 		$AUTOMATED_TESTING_COMMAND
 	fi
 }
