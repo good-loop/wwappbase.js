@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.1'
+VERSION='1.0.2'
 
 ######
 ## TODO: Build in an argument handler in cases where $2='local'  in order to bypass this publisher
@@ -79,7 +79,7 @@ case $1 in
 		SERVICE_NAME='adservermain'
 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
     ;;
-    datalogger|DATALOGGER)
+    datalog|DATALOG|datalogger|DATALOGGER)
         PROJECT='datalogger'
         PRODUCTION_SERVERS=('gl-es-03.soda.sh','gl-es-04.soda.sh','gl-es-05.soda.sh')
         TEST_SERVERS=('hugh.soda.sh')
