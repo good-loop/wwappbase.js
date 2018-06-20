@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.4'
+VERSION='1.0.5'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -522,7 +522,7 @@ function test_js {
 function compile_variants {
 	if [[ $COMPILE_UNITS = 'yes' ]]; then
 		#### Compile Adserver Units
-		UNITS_TO_COMPILE=$(find $UNITS_LOCATION -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $3}')
+		UNITS_TO_COMPILE=$(find $UNITS_LOCATION -maxdepth 1 -mindepth 1 -type d | awk -F '/' '{print $8}')
 		if [[ $PROJECT = 'adserver' ]]; then
 			VARIANTDIRS=()
 			for variant in ${UNITS_TO_COMPILE[*]}; do
@@ -547,7 +547,7 @@ function compile_variants {
 			done
 
 			cat $LESSLIST > /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less
-			lessc /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less web-as/all.css
+			lessc /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less /home/$USER/winterwell/adserver/adunit/style/web-as/all.css
 			rm /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less
 
 			# Compiling all JS (all variants at once) to single file
