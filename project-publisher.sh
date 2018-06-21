@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.6'
+VERSION='1.0.7'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -89,8 +89,8 @@ fi
 case $1 in
     adserver|ADSERVER)
         PROJECT='adserver'
-        PRODUCTION_SERVERS=('gl-es-01.soda.sh' 'gl-es-02.soda.sh')
-        TEST_SERVERS=('hugh.soda.sh' 'simmons.soda.sh')
+        PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='yes'
@@ -107,8 +107,8 @@ case $1 in
     ;;
     datalog|DATALOG|datalogger|DATALOGGER)
         PROJECT='datalogger'
-        PRODUCTION_SERVERS=('gl-es-03.soda.sh' 'gl-es-04.soda.sh' 'gl-es-05.soda.sh')
-        TEST_SERVERS=('hugh.soda.sh' 'simmons.soda.sh')
+        PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
         TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
         IMAGE_OPTIMISE='no'
@@ -122,8 +122,8 @@ case $1 in
     ;;
     portal|PORTAL)
         PROJECT='portal'
-        PRODUCTION_SERVERS=('heppner.soda.sh')
-        TEST_SERVERS=('hugh.soda.sh' 'simmons.soda.sh')
+        PRODUCTION_SERVERS=(heppner.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='no'
@@ -138,8 +138,8 @@ case $1 in
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
-        PRODUCTION_SERVERS=('hugh.soda.sh')
-        TEST_SERVERS=('none')
+        PRODUCTION_SERVERS=(hugh.soda.sh)
+        TEST_SERVERS=()
 		PROJECT_LOCATION="/home/$USER/winterwell/code/profiler"
         TARGET_DIRECTORY='/home/winterwell/profiler'
         IMAGE_OPTIMISE='no'
@@ -153,8 +153,8 @@ case $1 in
     ;;
     sogive|SOGIVE|sogive-app|SOGIVE-APP)
         PROJECT='sogive-app'
-        PRODUCTION_SERVERS=('heppner.soda.sh')
-        TEST_SERVERS=('hugh.soda.sh')
+        PRODUCTION_SERVERS=(heppner.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/sogive-app"
         TARGET_DIRECTORY='/home/winterwell/sogive-app'
         IMAGE_OPTIMISE='no'
@@ -170,8 +170,8 @@ case $1 in
     ;;
     youagain|YOUAGAIN)
         PROJECT='youagain'
-        PRODUCTION_SERVERS=('bester.soda.sh')
-        TEST_SERVERS=('none')
+        PRODUCTION_SERVERS=(bester.soda.sh)
+        TEST_SERVERS=()
 		PROJECT_LOCATION="/home/$USER/winterwell/code/youagain-server"
         TARGET_DIRECTORY='/home/winterwell/youagain'
         IMAGE_OPTIMISE='no'
@@ -197,7 +197,7 @@ esac
 case $2 in
     test|TEST)
         TYPE_OF_PUBLISH='test'
-        TARGETS=$TEST_SERVERS
+        TARGETS=${TEST_SERVERS[@]}
 		if [[ $TEST_SERVERS = '' ]]; then
 			printf "\n The project, $PROJECT , has no test servers."
 			exit 0
@@ -205,7 +205,7 @@ case $2 in
     ;;
     production|PRODUCTION)
         TYPE_OF_PUBLISH='production'
-        TARGETS=$PRODUCTION_SERVERS
+        TARGETS=${PRODUCTION_SERVERS[@]}
     ;;
     local|LOCAL|localhost|LOCALHOST)
         TYPE_OF_PUBLISH='local'
