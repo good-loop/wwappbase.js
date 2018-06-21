@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.5'
+VERSION='1.0.6'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -89,8 +89,8 @@ fi
 case $1 in
     adserver|ADSERVER)
         PROJECT='adserver'
-        PRODUCTION_SERVERS=('gl-es-01.soda.sh','gl-es-02.soda.sh')
-        TEST_SERVERS=('hugh.soda.sh')
+        PRODUCTION_SERVERS=('gl-es-01.soda.sh' 'gl-es-02.soda.sh')
+        TEST_SERVERS=('hugh.soda.sh' 'simmons.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='yes'
@@ -107,8 +107,8 @@ case $1 in
     ;;
     datalog|DATALOG|datalogger|DATALOGGER)
         PROJECT='datalogger'
-        PRODUCTION_SERVERS=('gl-es-03.soda.sh','gl-es-04.soda.sh','gl-es-05.soda.sh')
-        TEST_SERVERS=('hugh.soda.sh')
+        PRODUCTION_SERVERS=('gl-es-03.soda.sh' 'gl-es-04.soda.sh' 'gl-es-05.soda.sh')
+        TEST_SERVERS=('hugh.soda.sh' 'simmons.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
         TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
         IMAGE_OPTIMISE='no'
@@ -123,7 +123,7 @@ case $1 in
     portal|PORTAL)
         PROJECT='portal'
         PRODUCTION_SERVERS=('heppner.soda.sh')
-        TEST_SERVERS=('hugh.soda.sh')
+        TEST_SERVERS=('hugh.soda.sh' 'simmons.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='no'
