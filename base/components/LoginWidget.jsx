@@ -22,8 +22,8 @@ if ( (""+window.location).indexOf('login=local') !== -1) {
 
 const STATUS_PATH = ['widget', 'LoginWidget', 'status'];
 
-const LoginLink = () => {
-	return (<a href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); } } >
+const LoginLink = ({className}) => {
+	return (<a className={className} href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); } } >
 		Login or Register
 	</a>);
 };

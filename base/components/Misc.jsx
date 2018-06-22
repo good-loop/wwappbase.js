@@ -795,8 +795,12 @@ const saveDraftFn = _.debounce(
  * <Foo {...stuff}> => <Misc.Card {...stuff}>
  * 
  * @param title {String|JSX} will be wrapper in h3
+ * @param error {any} If set, colour the card red
+ * @param warning {any} If set, colour the card yellow
  */
 Misc.Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
+	// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.
+	if ( ! children) return null; 
 	let header = '';
 	if (title || onHeaderClick || titleChildren) {
 		let hcssClasses = ['panel-heading', onHeaderClick? 'btn-link' : null].filter(x => !!x);

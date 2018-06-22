@@ -28,7 +28,6 @@ const BasicAccountPage = () => {
 const LoginCard = () => {
 	return (<Misc.Card title='Login'>
 		ID: {Login.getId()} <br />
-		My donations: shown on the <a href='#dashboard'>Dashboard</a>
 	</Misc.Card>);
 }
 
