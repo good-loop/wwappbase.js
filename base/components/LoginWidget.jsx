@@ -142,7 +142,8 @@ const emailLogin = ({verb, app, email, password}) => {
 
 const EmailSignin = ({verb, onLogin}) => {
 	// we need a place to stash form info. Maybe appstate.widget.LoginWidget.name etc would be better?
-	let person = DataStore.appstate.data.User.loggingIn;	
+	const path = ['data', C.TYPES.User, 'loggingIn'];
+	let person = DataStore.getValue(path);	
 
 	const doItFn = () => {
 		if ( ! person) {
@@ -174,8 +175,7 @@ const EmailSignin = ({verb, onLogin}) => {
 		reset: 'Reset password',
 	}[verb];
 
-	// login/register
-	let path = ['data', C.TYPES.User, 'loggingIn'];
+	// login/register	
 	let status = DataStore.getValue(STATUS_PATH);
 	return (
 		<form

@@ -53,7 +53,7 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 		return (
 			<Misc.Loading text={type.toLowerCase() + 's'} />
 		);
-	}
+	}	
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
 	}
@@ -61,14 +61,18 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let items = [];
 	let itemForId = {};
-	pvItems.value.forEach(item => {
-		let id = getId(item) || JSON.stringify(item);
-		if (itemForId[id]) {
-			return; // skip dupe
-		}
-		items.push(item);
-		itemForId[id] = item;
-	});
+	if (pvItems.value) {
+		pvItems.value.forEach(item => {
+			let id = getId(item) || JSON.stringify(item);
+			if (itemForId[id]) {
+				return; // skip dupe
+			}
+			items.push(item);
+			itemForId[id] = item;
+		});
+	} else {
+		console.warn("ListLoad,jsx - item list load failed for "+type+" "+status,pvItems);
+	}
 	// make the list items	
 	const listItems = items.map( (item, i) => (
 		<ListItem key={i}
@@ -124,19 +128,20 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
  * 	make: {?Function} use to make the blank. base -> base
  * }
  */
-const createBlank = ({type, navpage, base, make}) => {
-	assert( ! getId(base), "ListLoad - createBlank - no ID (could be an object reuse bug) "+type);
+const createBlank = ({type, navpage, base, id, make}) => {
+	assert( ! getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) "+type+". Safety hack: Pass in an id param instead");
 	// Call the make?
 	if (make) {
 		base = make(base);
 	}
 	if ( ! base) base = {};
-	// make an id?
+	// specify the id?
+	if (id) base.id = id;
+	// make an id? (make() might have done it)
 	if ( ! getId(base)) {
-		let id = nonce(8);
-		base.id = id;
+		base.id = nonce(8);
 	}
-	const id = getId(base);
+	id = getId(base);
 	if ( ! getType(base)) base['@type'] = type;
 	// poke a new blank into DataStore
 	const path = getPath(C.KStatus.DRAFT, type, id);
@@ -147,13 +152,22 @@ const createBlank = ({type, navpage, base, make}) => {
 	DataStore.invalidateList(type);
 };
 
-const CreateButton = ({type, navpage, base, make}) => {
-	if ( ! navpage) navpage = DataStore.getValue('location', 'path')[0];
-	return (
-		<button className='btn btn-default' onClick={() => createBlank({type,navpage,base,make})}>
+const CreateButton = ({type, props, navpage, base, make}) => {
+	assert(type);
+	assert( ! base || ! base.id, "ListLoad - dont pass in ids (defence against object reuse bugs) "+type);
+	if ( ! navpage) navpage = DataStore.getValue('location', 'path')[0];	
+	// merge any form props into the base
+	const cpath = ['widget','CreateButton'];	
+	base = Object.assign({}, base, DataStore.getValue(cpath));
+	// was an ID passed in by editor props?
+	let id = base.id;
+	delete base.id;
+	return (<div className={props? 'well' : ''}>
+		{props? props.map(prop => <Misc.PropControl key={prop} label={prop} prop={prop} path={cpath} inline />) : null}
+		<button className='btn btn-default' onClick={() => createBlank({type,navpage,base,id,make})}>
 			<Misc.Icon glyph='plus' /> Create
-		</button>
-	);
+		</button>		
+	</div>);
 };
 
 export {CreateButton};
