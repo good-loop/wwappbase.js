@@ -500,6 +500,14 @@ class Store {
 const is = x => x !== undefined && x !== null;
 
 const DataStore = new Store();
+// create some of the common data nodes
+DataStore.update({
+	transient: {},
+	data: {},
+	draft: {},
+	widget: {},
+	list: {}
+});
 // switch on data item edits => modified flag
 DataStore.DATA_MODIFIED_PROPERTY = 'localStatus';
 export default DataStore;

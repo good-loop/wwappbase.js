@@ -84,3 +84,8 @@ const Roles = {
 };
 
 export default Roles;
+export {
+	defineRole,
+	iCan,
+	getRoles
+}

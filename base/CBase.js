@@ -18,6 +18,12 @@ C.app = {
 // Below here: apps should leave as-is
 
 /**
+ * This is usually overwritten.
+ * Use C.TYPES = new Enum("My Stuff "+C.TYPES.values.join(" ")) to combine
+ */
+C.TYPES = new Enum("Money User");
+
+/**
  * Special ID for things which dont yet have an ID
  */
 C.newId = 'new';

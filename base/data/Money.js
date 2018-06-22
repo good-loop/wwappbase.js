@@ -8,7 +8,7 @@ import {isa, defineType, getType} from './DataClass';
 import C from '../CBase';
 
 /** impact utils */
-const Money = defineType(C.TYPES.Money);
+const Money = defineType('Money'); // not this 'cos its project specific: C.TYPES.Money
 const This = Money;
 export default Money;
 
