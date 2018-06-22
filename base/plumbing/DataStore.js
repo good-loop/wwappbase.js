@@ -378,7 +378,8 @@ class Store {
 					return;
 				}
 				assert(C.TYPES.has(type), "DataStore.updateFromServer: type:"+type, item);
-				const s = status || getStatus(item);
+				const s = status || getStatus(item);			
+				assert(s, "DataStore.js - updateFromServer - no status in method call or item",item);
 				const sn = this.nodeForStatus(s);
 				let typemap = itemstate[sn][type];
 				if ( ! typemap) {

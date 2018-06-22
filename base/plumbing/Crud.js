@@ -41,10 +41,11 @@ ActionMan.crud = (type, id, action, item) => {
 	}
 	// mark the widget as saving
 	DataStore.setLocalEditsStatus(type, id, C.STATUS.saving);
+	const status = serverStatusForAction(action);
 	// call the server
 	return ServerIO.crud(type, item, action)
-		.then(DataStore.updateFromServer.bind(DataStore))
-		.then((res) => {
+		.then(res => DataStore.updateFromServer(res, status))
+		.then(res => {
 			// success :)
 			const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
 			if (action==='delete') {
@@ -105,15 +106,6 @@ ActionMan.delete = (type, pubId) => {
 };
 
 // ServerIO //
-const servlet4type = (type) => {
-	let stype = type.toLowerCase();
-	// NGO = charity
-	if (stype==='ngo') stype = 'charity';
-	// "advert"" can fall foul of adblocker!	
-	if (stype==='advert') stype = 'vert';
-	if (stype==='advertiser') stype = 'vertiser';
-	return stype;
-};
 
 /**
  * What status is the data in at the start of this action.
@@ -133,7 +125,6 @@ const startStatusForAction = (action) => {
  * What status do we send to the server? e.g. publish is published, save is draft.
  */
 const serverStatusForAction = (action) => {
-	console.error("statusForAction", action);
 	switch(action) {
 		case C.CRUDACTION.save: 
 		case C.CRUDACTION.discardEdits: 
@@ -162,7 +153,7 @@ ServerIO.crud = function(type, item, action) {
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
-	let stype = servlet4type(type);
+	let stype = ServerIO.getServletForType(type);
 	// NB: load() includes handle messages
 	return ServerIO.load('/'+stype+'/'+encURI(getId(item))+'.json', params);
 };
