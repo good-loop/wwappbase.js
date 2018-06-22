@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.7'
+VERSION='1.0.8'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -79,9 +79,12 @@ DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 ##################
 if [[ $1 = '' ]]; then
     printf "$USAGE"
+	exit 0
 fi
-
-
+if [[ $1 = 'help' ]]; then
+	printf "$USAGE"
+	exit 0
+fi
 
 #################
 ### Section 01: Get the name of the project and handle invalid first arguments
