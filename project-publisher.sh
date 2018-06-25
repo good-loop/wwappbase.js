@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.10'
+VERSION='1.0.11'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -482,12 +482,20 @@ function rename_lib {
 ### Section 09: Sync the Config Files
 #########################################
 function sync_configs {
+	GIT_SHORTHAND='git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins'
 	if [[ $PROJECT = 'adserver' ]]; then
+		printf "\nEnsuring that your Logins are up-to-date...\n"
+		$GIT_SHORTHAND gc --prune=now
+		$GIT_SHORTHAND pull origin master
+		$GIT_SHORTHAND reset --hard FETCH_HEAD
 		for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
 			$PSYNC $config $TARGET_DIRECTORY/config/
 		done
 	fi
 	if [[ $PROJECT = 'sogive-app' ]]; then
+		$GIT_SHORTHAND gc --prune=now
+		$GIT_SHORTHAND pull origin master
+		$GIT_SHORTHAND reset --hard FETCH_HEAD
 		for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
 			$PSYNC $config $TARGET_DIRECTORY/config/
 		done
