@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.11'
+VERSION='1.0.12'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -482,7 +482,7 @@ function rename_lib {
 ### Section 09: Sync the Config Files
 #########################################
 function sync_configs {
-	GIT_SHORTHAND='git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins'
+	GIT_SHORTHAND="git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins"
 	if [[ $PROJECT = 'adserver' ]]; then
 		printf "\nEnsuring that your Logins are up-to-date...\n"
 		$GIT_SHORTHAND gc --prune=now
