@@ -171,7 +171,9 @@ const moneyFromv100p = (b100p, currency) => {
 
 Money.total = amounts => {
 	// assMatch(amounts, "Money[]", "Money.js - total()");
-	let ttl = amounts.reduce( (acc, m) => Money.add(acc, m), Money.make());
+	let ttl = amounts.reduce( (acc, m) => {
+		Money.add(acc, m)
+	}, Money.make());
 	return ttl;
 };
 
