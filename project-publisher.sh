@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.9'
+VERSION='1.0.10'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -81,11 +81,6 @@ if [[ $1 = '' ]]; then
     printf "$USAGE"
 	exit 0
 fi
-if [[ $1 = 'help' ]]; then
-	printf "$USAGE"
-	exit 0
-fi
-
 #################
 ### Section 01: Get the name of the project and handle invalid first arguments
 #################
@@ -186,6 +181,14 @@ case $1 in
 		SERVICE_NAME='youagain'
 		PLEASE_SYNC=("config" "dependencies" "lib" "web" "youagain-server.jar")
     ;;
+	help|HELP)
+		printf "\n$VERSION\n\n$USAGE\n"
+		exit 0
+	;;
+	v|V|version|VERSION)
+		printf "\n$VERSION\n"
+		exit 0
+	;;
     *)
         printf "\nThe project that you specified, $1 , is not currently supported by the\nproject-publisher.sh script, or, you mis-typed it. \n$USAGE"
 		exit 0
@@ -626,22 +629,22 @@ function run_automated_tests {
 ##########################################
 ### Section 14: Performing the Actual Publish
 ##########################################
-printf "\nCreating Target List"
+printf "\nCreating Target List\n"
 create_target_list
-printf "\nStopping $SERVICE_NAME on $TARGETS"
+printf "\nStopping $SERVICE_NAME on $TARGETS\n"
 stop_proc
 image_optimisation
 convert_less_files
 test_js
 compile_variants
-printf "\nRenaming lib directory"
+printf "\nRenaming lib directory\n"
 rename_tmp_lib
-printf "\nSyncing $PROJECT to $TARGETS"
+printf "\nSyncing $PROJECT to $TARGETS\n"
 sync_whole_project
-printf "\nSyncing Configs"
+printf "\nSyncing Configs\n"
 sync_configs
 webpack
-printf "\nStarting $SERVICE_NAME on $TARGETS"
+printf "\nStarting $SERVICE_NAME on $TARGETS\n"
 start_proc
 printf "\nPublishing Process has completed\n"
 rename_lib
