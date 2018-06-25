@@ -188,42 +188,39 @@ ServerIO.load = function(url, params) {
 		.then(response => {
 			// check for success markers from JsonResponse or JSend
 			if (response.success === false || response.status==='error' || response.status==='fail') {
-				loadFail(response,url,params);
-				throw new Error("")
+				throw response;
 			}
 			return response;
 		})
-		.catch(
-			(response,url,params) => loadFail(response,url,params)
-		);
+		// on fail (inc a code-200-but-really-failed thrown above)
+		.catch(response => {
+			console.error('fail',url,params,response);
+			// error message
+			let text = response.status===404? 
+				"404: Sadly that content could not be found."
+				: "Could not load "+params.url+" from the server";
+			if (response.responseText && ! (response.status >= 500)) {
+				// NB: dont show the nginx error page for a 500 server fail
+				text = response.responseText;
+			}
+			let msg = {
+				id: 'error from '+params.url,
+				type:'error', 
+				text
+			};
+			// HACK hide details
+			if (msg.text.indexOf('\n----') !== -1) {
+				let i = msg.text.indexOf('\n----');
+				msg.details = msg.text.substr(i);
+				msg.text = msg.text.substr(0, i);
+			}
+			// bleurgh - a frameworky dependency
+			notifyUser(msg);
+			// carry on error handling
+			throw response;
+		});
 	return defrd;
 };
-
-const loadFail = (response,url,params) => {
-	console.error('fail',url,params,response);
-	// error message
-	let text = response.status===404? 
-		"404: Sadly that content could not be found."
-		: "Could not load "+params.url+" from the server";
-	if (response.responseText && ! (response.status >= 500)) {
-		// NB: dont show the nginx error page for a 500 server fail
-		text = response.responseText;
-	}
-	let msg = {
-		id: 'error from '+params.url,
-		type:'error', 
-		text
-	};
-	// HACK hide details
-	if (msg.text.indexOf('\n----') !== -1) {
-		let i = msg.text.indexOf('\n----');
-		msg.details = msg.text.substr(i);
-		msg.text = msg.text.substr(0, i);
-	}
-	// bleurgh - a frameworky dependency
-	notifyUser(msg);
-	return response;
-}
 
 
 ServerIO.post = function(url, data) {

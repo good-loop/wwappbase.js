@@ -438,11 +438,8 @@ class Store {
 		// process the result async
 		let promiseWithCargoUnwrap = pvPromiseOrValue.promise.then(res => {
 			if ( ! res) return res;
-			// HACK handle WW standard json wrapper: check success and unwrap cargo 			
-			if (res.success === false) {
-				// pass it to the fail() handler
-				throw new Error(JSON.stringify(res.errors));
-			}
+			// HACK handle WW standard json wrapper: unwrap cargo 			
+			// NB: success/fail is checked at the ajax level in in ServerIOBase
 			// TODO let's make unwrap a configurable setting
 			if (res.cargo) {
 				console.log("unwrapping cargo to store at "+path, res);
@@ -453,7 +450,7 @@ class Store {
 			// what if anything to do here??
 			console.warn("DataStore fetch fail", path, response);
 			// BV: Typically ServerIO will call notifyUser
-			return response;
+			throw response;
 		});
 		// wrap this promise as a PV
 		const pv = PV(promiseWithCargoUnwrap);
@@ -465,6 +462,9 @@ class Store {
 			// finally, clear the promise from DataStore
 			this.setValue(fpath, null, false);
 			return res;
+		}).catch(res => {
+			// keep the fpath promise to avoid repeated ajax calls??
+			throw res;
 		});
 		this.setValue(fpath, pv, false);
 		return pv;
