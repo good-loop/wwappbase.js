@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.8'
+VERSION='1.0.9'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -97,7 +97,7 @@ case $1 in
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='yes'
-        IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert/"
+        IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert"
 		CONVERT_LESS='no'
         WEBPACK='no'
 		TEST_JAVASCRIPT='yes'
@@ -232,7 +232,9 @@ esac
 ### Section 03: Create the list of target servers AND create list of items that should not be sync'ed
 #####################
 function create_target_list {
-	rm /tmp/target.list.txt
+	if [[ -f /tmp/target.list.txt ]]; then
+		rm /tmp/target.list.txt
+	fi
 	printf '%s\n' ${TARGETS[@]} >> /tmp/target.list.txt
 }
 
@@ -603,7 +605,7 @@ function compile_variants {
 ##########################################
 function sync_whole_project {
 	for item in ${PLEASE_SYNC[@]}; do
-		printf "\nSyncing $item ..."
+		printf "\nSyncing $item ...\n"
 		cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
 	done
 }
