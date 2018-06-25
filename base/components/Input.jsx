@@ -5,7 +5,7 @@ import React from 'react';
 // FormControl removed in favour of basic <inputs> while debugging input lag
 // import {assert, assMatch} from 'sjtest';
 // import _ from 'lodash';
-// import Enum from 'easy-enums';
+import Enum from 'easy-enums';
 // import { setHash, XId, addScript} from 'wwutils';
 // import PV from 'promise-value';
 // import Dropzone from 'react-dropzone';

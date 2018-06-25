@@ -36,10 +36,13 @@ const notifyUser = (msgOrError) => {
 	}
 	
 	let msgs = DataStore.getValue('misc', 'messages-for-user') || {};
+	// already there?
 	let oldMsg = msgs[mid];
 	if (oldMsg && oldMsg.closed) {
+		console.log("Messaging.js - skip old closed msg", mid, oldMsg);
 		return;
 	}
+	// NB: if oldMsg is not closed, then it can get updated by replacement by msg
 
 	// HACK allow react to send through custom widgets
 	let jsx = msg.jsx;
@@ -49,13 +52,9 @@ const notifyUser = (msgOrError) => {
 		delete msg.jsx;
 		jsxFromId[msg.id] = jsx;
 	}
-
-	// already there?
-	if (oldMsg) {
-		return; // no dupes
-	}
+	
 	// set
-	msgs[mid] = msg; //{type:'error', text: action+" failed: "+(err && err.responseText)};		
+	msgs[mid] = msg; 
 	DataStore.setValue(['misc', 'messages-for-user'], msgs);
 };
 
