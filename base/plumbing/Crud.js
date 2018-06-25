@@ -215,6 +215,10 @@ ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
 		});
 };
 
+/**
+ * 
+ * @returns PV( {hits: Object[]} )
+ */
 ActionMan.list = ({type, status, q}) => {
 	assert(C.TYPES.has(type), type);
 	return DataStore.fetch(['list', type, q || 'all', status], () => {
@@ -222,6 +226,10 @@ ActionMan.list = ({type, status, q}) => {
 	});
 };
 
+/**
+ * 
+ * @returns promise( {hits: Object[]} )
+ */
 ServerIO.list = ({type, status, q}) => {
 	let servlet = ServerIO.getServletForType(type);
 	assert(C.KStatus.has(status), status);

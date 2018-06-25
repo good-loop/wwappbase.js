@@ -61,8 +61,9 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let items = [];
 	let itemForId = {};
-	if (pvItems.value) {
-		pvItems.value.forEach(item => {
+	let hits = pvItems.value && pvItems.value.hits;
+	if (hits) {
+		hits.forEach(item => {
 			let id = getId(item) || JSON.stringify(item);
 			if (itemForId[id]) {
 				return; // skip dupe
@@ -71,7 +72,7 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 			itemForId[id] = item;
 		});
 	} else {
-		console.warn("ListLoad,jsx - item list load failed for "+type+" "+status,pvItems);
+		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
 	}
 	// make the list items	
 	const listItems = items.map( (item, i) => (

@@ -179,16 +179,16 @@ ServerIO.load = function(url, params) {
 	}
 	// Make the ajax call
 	let defrd = $.ajax(params); // The AJAX request.
-	if (params.swallow) {
-		// no message display
-		return defrd;
-	}
+	// detect code-200-but-error responses
 	defrd = defrd
-		.then(ServerIO.handleMessages)
 		.then(response => {
 			// check for success markers from JsonResponse or JSend
 			if (response.success === false || response.status==='error' || response.status==='fail') {
 				throw response;
+			}
+			// notify user of anything
+			if ( ! params.swallow) {
+				ServerIO.handleMessages(response);
 			}
 			return response;
 		})
@@ -215,7 +215,9 @@ ServerIO.load = function(url, params) {
 				msg.text = msg.text.substr(0, i);
 			}
 			// bleurgh - a frameworky dependency
-			notifyUser(msg);
+			if ( ! params.swallow) {
+				notifyUser(msg);
+			}
 			// carry on error handling
 			throw response;
 		});
