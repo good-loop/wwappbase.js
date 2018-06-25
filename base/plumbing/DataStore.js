@@ -452,10 +452,7 @@ class Store {
 		}).catch(response => {
 			// what if anything to do here??
 			console.warn("DataStore fetch fail", path, response);
-			// Typically ServerIO will call notifyUser
-			// if (messaging && DataStore.Messaging && DataStore.Messaging.notifyUser) {
-			// 	DataStore.Messaging.notifyUser(err);
-			// }
+			// BV: Typically ServerIO will call notifyUser
 			return response;
 		});
 		// wrap this promise as a PV

@@ -225,11 +225,10 @@ ActionMan.list = ({type, status, q}) => {
 ServerIO.list = ({type, status, q}) => {
 	let servlet = ServerIO.getServletForType(type);
 	assert(C.KStatus.has(status), status);
-	return ServerIO.load('/'+servlet+'/list.json', { data: { status, q } })
-	.then((res) => {
-		// console.warn(res);
-		return res.cargo.hits;
-	});
+	return ServerIO.load('/'+servlet+'/list.json', { data: { status, q } });
+	// .then((res) => {
+	// 	return res.cargo.hits;
+	// });
 };
 
 
