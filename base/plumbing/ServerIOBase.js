@@ -192,10 +192,10 @@ ServerIO.load = function(url, params) {
 				throw new Error("")
 			}
 			return response;
-		},
-		// on fail
-		(response,url,params) => loadFail(response,url,params)
-	);
+		})
+		.catch(
+			(response,url,params) => loadFail(response,url,params)
+		);
 	return defrd;
 };
 
