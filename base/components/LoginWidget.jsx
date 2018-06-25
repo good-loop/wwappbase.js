@@ -62,7 +62,7 @@ const LoginWidget = ({showDialog, logo, title, services}) => {
 				<LoginWidgetGuts services={services} />
 			</Modal.Body>
 			<Modal.Footer>
-				<SwitchVerb />
+				<SwitchVerb verb={verb} />
 			</Modal.Footer>
 		</Modal>
 	);
@@ -237,7 +237,9 @@ const LoginError = function() {
 
 
 const LoginWidgetEmbed = ({services, verb, onLogin}) => {
-	if ( ! verb) verb = DataStore.getValue(verbPath) || 'register';
+	// NB: prefer the user-set verb (so they can change it)
+	verb = DataStore.getValue(verbPath) || verb || 'register';
+	
 	return (
 		<div className='login-widget'>
 			<LoginWidgetGuts services={services} verb={verb} onLogin={onLogin}/>
@@ -247,7 +249,6 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 };
 
 const SwitchVerb = ({verb}) => {
-	if ( ! verb) verb = DataStore.getValue(verbPath);
 	if (verb === 'register') {
 		return (
 			<div className='switch-verb'>

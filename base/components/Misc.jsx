@@ -22,6 +22,7 @@ import Autocomplete from 'react-autocomplete';
 import {getType, getId, nonce} from '../data/DataClass';
 import md5 from 'md5';
 import Settings from '../Settings';
+import {FormControl, ControlTypes} from './Input';
 
 const Misc = {};
 
@@ -176,7 +177,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
-	if (Misc.ControlTypes.isdate(type) && ! validator) {
+	if (ControlTypes.isdate(type) && ! validator) {
 		validator = (v, rawValue) => {
 			if ( ! v) {
 				// raw but no date suggests the server removed it
@@ -194,7 +195,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 		};
 	} // date
 	// url: https
-	if (stuff.https !== false && (Misc.ControlTypes.isurl(type) || Misc.ControlTypes.isimg(type) || Misc.ControlTypes.isimgUpload(type))
+	if (stuff.https !== false && (ControlTypes.isurl(type) || ControlTypes.isimg(type) || ControlTypes.isimgUpload(type))
 			&& ! validator)
 	{
 		validator = v => {
@@ -214,7 +215,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
-	if ((label || help || tooltip || error) && ! Misc.ControlTypes.ischeckbox(type) && ! recursing) {
+	if ((label || help || tooltip || error) && ! ControlTypes.ischeckbox(type) && ! recursing) {
 		// Minor TODO help block id and aria-described-by property in the input
 		const labelText = label || '';
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
@@ -236,7 +237,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 	// unpack
 	let {item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
-	assert( ! type || Misc.ControlTypes.has(type), 'Misc.PropControl: '+type);
+	assert( ! type || ControlTypes.has(type), 'Misc.PropControl: '+type);
 	assert(_.isArray(path), 'Misc.PropControl: not an array:'+path);
 	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path);
 	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
@@ -249,7 +250,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 	let value = item[prop]===undefined? dflt : item[prop];
 
 	// Checkbox?
-	if (Misc.ControlTypes.ischeckbox(type)) {
+	if (ControlTypes.ischeckbox(type)) {
 		const onChange = e => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.checked;
@@ -410,7 +411,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 	// date
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
-	if (Misc.ControlTypes.isdate(type)) {
+	if (ControlTypes.isdate(type)) {
 		const acprops = {prop, item, value, onChange, ...otherStuff};
 		return <PropControlDate {...acprops} />;
 	}
@@ -451,9 +452,6 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 	// NB: type=color should produce a colour picker :)
 	return <FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
 }; //./PropControl
-
-Misc.ControlTypes = new Enum("img imgUpload textarea text select autocomplete password email url color Money checkbox"
-							+" yesNo location date year number arraytext address postcode json");
 
 /**
  * Strip commas £/$/euro and parse float
@@ -760,25 +758,6 @@ Misc.ImgThumbnail = ({url, style}) => {
 };
 
 Misc.VideoThumbnail = ({url, width=200, height=150, controls=true}) => url? <video width={width} height={height} src={url} controls /> : null;
-
-/**
- * This replaces the react-bootstrap version 'cos we saw odd bugs there. 
- * Plus since we're providing state handling, we don't need a full component.
- */
-const FormControl = ({value, type, required, ...otherProps}) => {
-	if (value===null || value===undefined) value = '';
-
-	if (type==='color' && ! value) { 
-		// workaround: this prevents a harmless but annoying console warning about value not being an rrggbb format
-		return <input className='form-control' type={type} {...otherProps} />;	
-	}
-	// add css classes for required fields
-	let klass = 'form-control'+ (required? (value? ' form-required' : ' form-required blank') : '');
-	// remove stuff intended for other types that will upset input
-	delete otherProps.options;
-	delete otherProps.labels;
-	return <input className={klass} type={type} value={value} {...otherProps} />;
-};
 
 /** Hack: a debounced auto-save function for the save/publish widget */
 const saveDraftFn = _.debounce(
