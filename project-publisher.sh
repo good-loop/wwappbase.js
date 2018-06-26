@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.0.12'
+VERSION='1.1.0'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -85,6 +85,26 @@ fi
 ### Section 01: Get the name of the project and handle invalid first arguments
 #################
 case $1 in
+	my-loop|MY-LOOP|myloop|MYLOOP)
+        PROJECT='myloop'
+        PRODUCTION_SERVERS=('hugh.soda.sh')
+        TEST_SERVERS=('hugh.soda.sh')
+		PROJECT_LOCATION="/home/$USER/winterwell/my-loop"
+        TARGET_DIRECTORY='/home/winterwell/my.good-loop.com'
+        IMAGE_OPTIMISE='no'
+        IMAGEDIRECTORY=""
+		CONVERT_LESS='yes'
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
+        WEBPACK='yes'
+		TEST_JAVASCRIPT='no'
+		JAVASCRIPT_FILES_TO_TEST=""
+		COMPILE_UNITS='no'
+		UNITS_LOCATION=""
+		RESTART_SERVICE_AFTER_SYNC='no'
+		SERVICE_NAME=''
+		PLEASE_SYNC=("config" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		AUTOMATED_TESTING='no'
+    ;;
     adserver|ADSERVER)
         PROJECT='adserver'
         PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh)
