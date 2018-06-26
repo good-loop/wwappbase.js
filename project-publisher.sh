@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.1.0'
+VERSION='1.1.1'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -636,8 +636,15 @@ function compile_variants {
 ##########################################
 function sync_whole_project {
 	for item in ${PLEASE_SYNC[@]}; do
-		printf "\nSyncing $item ...\n"
-		cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
+		if [[ $item = 'tmp-lib' ]]; then
+			rename_tmp_lib
+			printf "\nSyncing JAR Files ...\n"
+			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
+			rename_lib
+		else
+			printf "\nSyncing $item ...\n"
+			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
+		fi
 	done
 }
 
@@ -665,8 +672,6 @@ image_optimisation
 convert_less_files
 test_js
 compile_variants
-printf "\nRenaming lib directory\n"
-rename_tmp_lib
 printf "\nSyncing $PROJECT to $TARGETS\n"
 sync_whole_project
 printf "\nSyncing Configs\n"
@@ -675,5 +680,4 @@ webpack
 printf "\nStarting $SERVICE_NAME on $TARGETS\n"
 start_proc
 printf "\nPublishing Process has completed\n"
-rename_lib
 run_automated_tests
