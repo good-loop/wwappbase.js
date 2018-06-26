@@ -97,7 +97,7 @@ const SocialSignin = ({verb, services}) => {
 	);
 };
 
-const SocialSignInButton = ({ service, verb}) => {
+const SocialSignInButton = ({service, verb}) => {
 	if (!canSignIn[service]) return null;
 
 	return (
@@ -284,4 +284,4 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 
 
 export default LoginWidget;
-export {LoginLink, LoginWidgetEmbed};
+export {LoginLink, LoginWidgetEmbed, SocialSignInButton};

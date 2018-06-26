@@ -364,7 +364,7 @@ class Store {
 		}
 		// must be bound to the store
 		assert(this && this.appstate, "DataStore.updateFromServer: Use with .bind(DataStore)");
-		let hits = res.cargo && res.cargo.hits;
+		let hits = (res.cargo && res.cargo.hits) || res.hits || (res.data && res.data.hits);
 		if ( ! hits && res.cargo) {			
 			hits = [res.cargo]; // just the one?
 		}

@@ -6,6 +6,7 @@ import {SJTest, assert, assMatch} from 'sjtest';
 import C from '../CBase';
 import DataStore, {getPath} from './DataStore';
 import {getId, getType} from '../data/DataClass';
+import JSend from '../data/JSend';
 import Login from 'you-again';
 import {XId, encURI} from 'wwutils';
 
@@ -61,13 +62,12 @@ ActionMan.crud = (type, id, action, item) => {
 			// clear the saving flag
 			DataStore.setLocalEditsStatus(type, id, C.STATUS.clean);
 			return res;
-		},
-		// fail?
-		(err) => {
+		})
+		.catch(err => {
 			// bleurgh
 			console.warn(err);
-			// TODO factor out message code
-			notifyUser(new Error(action+" failed: "+(err && err.responseText)));
+			let msg = JSend.message(err) || '';
+			notifyUser(new Error(action+" failed: "+msg));
 			// mark the object as dirty
 			DataStore.setLocalEditsStatus(type, id, C.STATUS.dirty);
 			return err;
