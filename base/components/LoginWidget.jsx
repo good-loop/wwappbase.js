@@ -14,6 +14,8 @@ if ( (""+window.location).indexOf('login=local') !== -1) {
 	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
 }
 
+const VERB_PATH = ['widget','LoginWidget','verb'];
+
 /**
 	TODO:
 	- doEmailLogin(email, password) and doSocialLogin(service) are available as props now
@@ -26,6 +28,15 @@ const LoginLink = ({className}) => {
 	return (<a className={className} href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); } } >
 		Login or Register
 	</a>);
+	
+};
+
+const LoginButton = () => {
+	return (
+			<div className='switch-verb'>
+				<button className='btn btn-lg btn-primary' onClick={e => stopEvent(e) && DataStore.setValue(VERB_PATH, 'login')} >Log in</button>
+			</div>
+		);
 };
 
 
@@ -40,7 +51,7 @@ const LoginWidget = ({showDialog, logo, title, services}) => {
 		// NB: the app is shown regardless
 	}
 	if ( ! services) services = ['twitter', 'facebook'];
-	let verb = DataStore.getValue(verbPath) || 'login';
+	let verb = DataStore.getValue(VERB_PATH) || 'login';
 
 	if ( ! title) title = `Welcome ${verb==='login'? '(back)' : ''} to {C.app.name}`;
 
@@ -206,14 +217,13 @@ const EmailSignin = ({verb, onLogin}) => {
 	);
 }; // ./EmailSignin
 
-const verbPath = ['widget','LoginWidget','verb'];
 
 const ResetLink = ({verb}) => {
 	if (verb !== 'login') return null;
 	const toReset = () => {
 		// clear any error from a failed login
 		Login.error = null;
-		DataStore.setValue(verbPath, 'reset');
+		DataStore.setValue(VERB_PATH, 'reset');
 	};
 	return (
 		<div className='pull-right'>
@@ -238,7 +248,7 @@ const LoginError = function() {
 
 const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 	// NB: prefer the user-set verb (so they can change it)
-	verb = DataStore.getValue(verbPath) || verb || 'register';
+	verb = DataStore.getValue(VERB_PATH) || verb || 'register';
 	
 	return (
 		<div className='login-widget'>
@@ -249,22 +259,23 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 };
 
 const SwitchVerb = ({verb}) => {
+	if ( ! verb) verb = DataStore.getValue(VERB_PATH);
 	if (verb === 'register') {
 		return (
 			<div className='switch-verb'>
-				Already have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && DataStore.setValue(verbPath, 'login')} >Login</button>
+				Already have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && DataStore.setValue(VERB_PATH, 'login')} >Login</button>
 			</div>
 		);
 	}
 	return (
 		<div className='switch-verb'>
-			Don&#39;t yet have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && DataStore.setValue(verbPath, 'register')} >Register</button>
+			Don&#39;t yet have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && DataStore.setValue(VERB_PATH, 'register')} >Register</button>
 		</div>
 	);
 };
 
 const LoginWidgetGuts = ({services, verb, onLogin}) => {
-	if (!verb) verb = DataStore.getValue(verbPath) || 'login';
+	if (!verb) verb = DataStore.getValue(VERB_PATH) || 'login';
 	return (
 		<div className="login-guts container-fluid">
 			<div className="login-divs row">
@@ -284,4 +295,4 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 
 
 export default LoginWidget;
-export {LoginLink, LoginWidgetEmbed, SocialSignInButton};
+export {LoginLink, LoginButton, LoginWidgetEmbed, SocialSignInButton};
