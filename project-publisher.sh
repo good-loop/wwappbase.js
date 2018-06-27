@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.1.2'
+VERSION='1.1.3'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -70,7 +70,7 @@ SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','yo
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
-PSSH='parallel-ssh -h /tmp/target.list.txt --user=winterwell'
+PSSH='parallel-ssh -t 100000000 -h /tmp/target.list.txt --user=winterwell'
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 
 
