@@ -746,12 +746,12 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 	}
 	// normalise text
 	if (type==='text' || type==='textarea') {
-		inputValue = normalise(inputValue);
+		inputValue = Misc.normalise(inputValue);
 	}
 	return inputValue;
 };
 
-const normalise = s => {
+Misc.normalise = s => {
 	if ( ! s) return s;
 	s = s.replace(/['`’‘’ʼ]/g, "'");
 	s = s.replace(/[\"“”„‟❛❜❝❞«»]/g, '"');
