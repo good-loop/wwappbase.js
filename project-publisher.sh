@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.1.1'
+VERSION='1.1.2'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -636,10 +636,10 @@ function compile_variants {
 ##########################################
 function sync_whole_project {
 	for item in ${PLEASE_SYNC[@]}; do
-		if [[ $item = 'tmp-lib' ]]; then
+		if [[ $item = 'lib' ]]; then
 			rename_tmp_lib
 			printf "\nSyncing JAR Files ...\n"
-			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
+			cd $PROJECT_LOCATION && $PSYNC lib $TARGET_DIRECTORY
 			rename_lib
 		else
 			printf "\nSyncing $item ...\n"
