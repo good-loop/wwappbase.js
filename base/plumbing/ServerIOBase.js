@@ -166,7 +166,7 @@ ServerIO.getServletForType = (type) => {
 **/
 ServerIO.load = function(url, params) {
 	assMatch(url,String);
-	// prepend the API base url? e.g. to route all traffic from a local dev build to the live app.sogive.org backend.
+	// prepend the API base url? e.g. to route all traffic from a local dev build to the live backend.
 	if (ServerIO.APIBASE && url.indexOf('http') === -1) {
 		url = ServerIO.APIBASE+url;
 	}
