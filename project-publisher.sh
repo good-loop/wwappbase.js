@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.1.3'
+VERSION='1.1.4'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -194,12 +194,12 @@ case $1 in
         TARGET_DIRECTORY='/home/winterwell/youagain'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
-        WEBPACK='no' #for now
+        WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='youagain'
-		PLEASE_SYNC=("config" "dependencies" "lib" "web" "youagain-server.jar")
+		PLEASE_SYNC=("config" "dependencies" "lib" "web" "youagain-server.jar" "src")
     ;;
 	help|HELP)
 		printf "\n$VERSION\n\n$USAGE\n"
