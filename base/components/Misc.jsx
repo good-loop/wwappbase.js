@@ -386,7 +386,7 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 				<div className='pull-left'>
 					<Dropzone
 						className='DropZone'
-						accept='image/jpeg, image/png'
+						accept='image/jpeg, image/png, image/svg+xml'
 						style={{}}
 						onDrop={uploadAccepted}
 					>
