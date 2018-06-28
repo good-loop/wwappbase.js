@@ -52,10 +52,15 @@ const notifyUser = (msgOrError) => {
 		delete msg.jsx;
 		jsxFromId[msg.id] = jsx;
 	}
+	// no-op?
+	if (oldMsg && JSON.stringify(msg) === JSON.stringify(oldMsg)) {
+		return;
+	}
 	
 	// set
 	msgs[mid] = msg; 
-	DataStore.setValue(['misc', 'messages-for-user'], msgs);
+	// NB update:false as a hack fix to an infinite loop w render seen june 2018
+	DataStore.setValue(['misc', 'messages-for-user'], msgs, false);
 };
 
 const Messaging = {
