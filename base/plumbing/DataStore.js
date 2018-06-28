@@ -126,6 +126,9 @@ class Store {
 	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.
 	 * type, id
 	 * Warning: This does NOT load data from the server.
+	 * @param status {!C.KStatus}
+	 * @param type {!C.TYPES}
+	 * @param id {!String}
 	 * @returns a "data-item", such as a person or document, or undefined.
 	 */
 	getData(status, type, id) {

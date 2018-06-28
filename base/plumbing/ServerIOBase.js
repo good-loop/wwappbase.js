@@ -33,7 +33,7 @@ ServerIO.checkBase = () => {
 	}
 	// TODO include datalog here too in notify
 	if (ServerIO.APIBASE && ! C.isProduction()) {
-		notifyUser("Using Server: "+ServerIO.APIBASE)	
+		notifyUser("Using Server: "+ServerIO.APIBASE);
 	}
 	// datalog endpoint
 	if (ServerIO.DATALOG_ENDPOINT && C.isProduction() && 
@@ -42,6 +42,20 @@ ServerIO.checkBase = () => {
 		const err = new Error("ServerIO.js - ServerIO.DATALOG_ENDPOINT is using a test setting! Oops "+ServerIO.DATALOG_ENDPOINT);
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		console.warn(err);
+	}
+	if (ServerIO.DATALOG_ENDPOINT && ! C.isProduction() && ServerIO.DATALOG_ENDPOINT.indexOf('https://lg') !== -1) {
+		notifyUser("Using DataLog Server: "+ServerIO.DATALOG_ENDPOINT);
+	}
+	// profiler
+	if (ServerIO.PROFILER_ENDPOINT && C.isProduction() && 
+			(ServerIO.PROFILER_ENDPOINT.indexOf('test') !== -1 || ServerIO.PROFILER_ENDPOINT.indexOf('local') !== -1)
+		) {
+		const err = new Error("ServerIO.js - ServerIO.PROFILER_ENDPOINT is using a test setting! Oops "+ServerIO.PROFILER_ENDPOINT);
+		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com/profile';
+		console.warn(err);
+	}
+	if (ServerIO.PROFILER_ENDPOINT && ! C.isProduction() && ServerIO.PROFILER_ENDPOINT.indexOf('https://profiler') !== -1) {
+		notifyUser("Using Profiler Server: "+ServerIO.PROFILER_ENDPOINT);
 	}
 };
 
