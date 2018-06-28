@@ -26,17 +26,9 @@ const STATUS_PATH = ['widget', 'LoginWidget', 'status'];
 
 const LoginLink = ({className}) => {
 	return (<a className={className} href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); } } >
-		Login or Register
+		Log in
 	</a>);
 	
-};
-
-const LoginButton = () => {
-	return (
-			<div className='switch-verb'>
-				<button className='btn btn-lg btn-primary' onClick={e => stopEvent(e) && DataStore.setValue(VERB_PATH, 'login')} >Log in</button>
-			</div>
-		);
 };
 
 
