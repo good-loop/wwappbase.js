@@ -410,11 +410,11 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 				<div className='pull-left'>
 					<Dropzone
 						className='DropZone'
-						accept='image/jpeg, image/png'
+						accept='image/jpeg, image/png, image/svg+xml'
 						style={{}}
 						onDrop={uploadAccepted}
 					>
-						Drop a JPG or PNG image here
+						Drop a JPG, PNG, or SVG image here
 					</Dropzone>
 				</div>
 				<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail style={{background: bg}} url={value} /></div>
