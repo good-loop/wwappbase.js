@@ -108,7 +108,7 @@ const SocialSignin = ({verb, services}) => {
 	);
 };
 
-const SocialSignInButton = ({service, verb}) => {
+const SocialSignInButton = ({service, verb='sign in'}) => {
 	if (!canSignIn[service]) return null;
 
 	return (
