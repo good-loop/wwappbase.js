@@ -287,4 +287,4 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 
 
 export default LoginWidget;
-export {LoginLink, LoginButton, LoginWidgetEmbed, SocialSignInButton};
+export {LoginLink, LoginWidgetEmbed, SocialSignInButton};
