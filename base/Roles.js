@@ -17,13 +17,14 @@ const getRoles = () => {
 		console.error("Roles.js huh? "+Login.isLoggedIn()+" but "+Login.getId());
 		return pv([]);
 	}
+	// NB: store under user xid so a change in user is fine
 	let shared = DataStore.fetch(['misc', 'roles', uxid],
 		() => {
 			let req = Login.getSharedWith({prefix:"role:*"});
 			return req.then(function(res) {
 				if ( ! res.success) {
 					console.error(res);
-					return null;
+					return []; // this will get stored, otherwise an error causes the system to thrash by trying repeatedly
 				}
 				let shares = res.cargo;				
 				let roles = shares.filter(s => s.item && s.item.substr(0,5)==='role:').map(s => s.item.substr(5));
