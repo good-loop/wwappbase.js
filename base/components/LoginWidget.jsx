@@ -94,7 +94,7 @@ const SocialSignin = ({verb, services}) => {
 		<div className="social-signin">
 			{ services.map(service => <SocialSignInButton service={service} verb={verb} key={service} />)}
 			<p><small>We will never share your data or post to social media without your consent.
-				You can read our <a href='https://sogive.org/privacy-policy.html' target="_new">privacy policy</a> for more information.
+				You can read our <a href={C.app.privacyPolicy || 'https://sogive.org/privacy-policy.html'} target="_new">privacy policy</a> for more information.
 			</small></p>
 		</div>
 	);
