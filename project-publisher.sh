@@ -1,10 +1,15 @@
 #!/bin/bash
 
-VERSION='1.1.5'
+VERSION='Version=1.1.6'
 
-######
-## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
 #####
+## Versioning number/serialisation schema:
+##
+## First Digit = Major rewrite/overhaul/feature added. The script will be super distinguished against previous versions
+## Second Digit = New Project Added to Script // New Syncing/Processing Parameter added
+## Third Digit = Minor Edit -- Spelling mistakes, pretty-printing progress to terminal, fixing extra backslashes, etc.
+#####
+
 
 #####
 ## HOW TO ADD A NEW PROJECT
