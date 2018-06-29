@@ -30,7 +30,7 @@ const NavBar = ({currentPage, pages}) => {
 						<span className="icon-bar" />
 					</button>
 					<a className="" href="#dashboard">
-						<img className='logo-large' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+						<img className='logo-xlarge' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 					</a>
 				</div>
 				<div id="navbar" className="navbar-collapse collapse">

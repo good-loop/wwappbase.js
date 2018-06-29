@@ -9,13 +9,14 @@ const fs = require('fs');
 const options = {
     headless: true,
     devtools: false,
-    slowMo: 0//Introduces a delay between puppeteer actions
+    slowMo: 0,//Introduces a delay between puppeteer actions
 };
 /**Setup functions run before each test
  * If you only want something to run once
  * before all tests in file, use beforeAll/afterAll
  */
 beforeEach(async () => {
+    window.__BROWSER_OPTIONS__ = options;
     //Can't access global from tests
     window.__BROWSER__ = await puppeteer.launch(options);
     //Could set API.ENDPOINT here.
