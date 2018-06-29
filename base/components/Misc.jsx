@@ -65,7 +65,8 @@ Misc.Loading = ({text}) => {
 	// 	<span className="glyphicon glyphicon-cog spinning" /> Loading {text || ''}...
 	// </div>
 };
-Try
+
+
 /**
  * 
  * @param {
