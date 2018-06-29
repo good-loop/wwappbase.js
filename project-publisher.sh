@@ -1,10 +1,15 @@
 #!/bin/bash
 
-VERSION='1.1.4'
+VERSION='Version=1.1.7'
 
-######
-## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
 #####
+## Versioning number/serialisation schema:
+##
+## First Digit = Major rewrite/overhaul/feature added. The script will be super distinguished against previous versions
+## Second Digit = New Project Added to Script // New Syncing/Processing Parameter added
+## Third Digit = Minor Edit -- Spelling mistakes, pretty-printing progress to terminal, fixing extra backslashes, New help text, fixing small bugs, etc.
+#####
+
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -29,6 +34,7 @@ VERSION='1.1.4'
 # 		RESTART_SERVICE_AFTER_SYNC='yes'
 # 		SERVICE_NAME='adservermain'
 # 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+#		# Use "lib" instead of "tmp-lib" for syncing your JAR files
 #		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
 #     ;;
 
@@ -510,6 +516,7 @@ function sync_configs {
 		$GIT_SHORTHAND reset --hard FETCH_HEAD
 		for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
 			$PSYNC $config $TARGET_DIRECTORY/config/
+			$PSSH "mv $TARGET_DIRECTORY/config/$HOSTNAME.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
 		done
 	fi
 	if [[ $PROJECT = 'sogive-app' ]]; then
