@@ -1,13 +1,13 @@
 #!/bin/bash
 
-VERSION='Version=1.1.6'
+VERSION='Version=1.1.7'
 
 #####
 ## Versioning number/serialisation schema:
 ##
 ## First Digit = Major rewrite/overhaul/feature added. The script will be super distinguished against previous versions
 ## Second Digit = New Project Added to Script // New Syncing/Processing Parameter added
-## Third Digit = Minor Edit -- Spelling mistakes, pretty-printing progress to terminal, fixing extra backslashes, etc.
+## Third Digit = Minor Edit -- Spelling mistakes, pretty-printing progress to terminal, fixing extra backslashes, New help text, fixing small bugs, etc.
 #####
 
 
@@ -34,6 +34,7 @@ VERSION='Version=1.1.6'
 # 		RESTART_SERVICE_AFTER_SYNC='yes'
 # 		SERVICE_NAME='adservermain'
 # 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+#		# Use "lib" instead of "tmp-lib" for syncing your JAR files
 #		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
 #     ;;
 
