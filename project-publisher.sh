@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='1.1.4'
+VERSION='1.1.5'
 
 ######
 ## TODO: Create a dummy project template which is completely commented out, but contains any and all params that this script could handle
@@ -510,6 +510,7 @@ function sync_configs {
 		$GIT_SHORTHAND reset --hard FETCH_HEAD
 		for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
 			$PSYNC $config $TARGET_DIRECTORY/config/
+			$PSSH "mv $TARGET_DIRECTORY/config/$HOSTNAME.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
 		done
 	fi
 	if [[ $PROJECT = 'sogive-app' ]]; then
