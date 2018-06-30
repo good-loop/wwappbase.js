@@ -102,10 +102,13 @@ const SocialSignin = ({verb, services}) => {
 
 const SocialSignInButton = ({service, verb='sign in'}) => {
 	if (!canSignIn[service]) return null;
-
+	// TODO this will prep FB on mouseover -- But what about mobile or fast clickers?
+	// TODO You Again should catch failure, and switch to a click through approach.
 	return (
 		<div className='form-group'>
-			<button onClick={() => socialLogin(service)} className="btn btn-default signin">
+			<button onClick={() => socialLogin(service)} className="btn btn-default signin"
+				onMouseOver={() => service==='facebook'? Login.prepFB(C.app.facebookAppId) : null}
+			>
 				<Misc.Logo size='small' service={service} bgcolor /> <span>{toTitleCase(verb)} with {toTitleCase(service)}</span>
 			</button>
 		</div>
@@ -114,7 +117,7 @@ const SocialSignInButton = ({service, verb='sign in'}) => {
 
 
 const socialLogin = (service) => {
-	Login.auth(service, C.app.facebookAppId);
+	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
 	// auth doesnt return a future, so rely on Login's change listener
 	// to close stuff.
 }; // ./socialLogin
