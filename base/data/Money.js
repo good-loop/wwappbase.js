@@ -96,10 +96,12 @@ Money.isa = (obj) => {
 	if (isa(obj, C.TYPES.Money)) return true;
 	// OLD format
 	if (getType(obj) === 'MonetaryAmount') return true;	
-	// allow blank values
 	if (obj.value100p) return true;
+	if (obj.value100) return true;
+		// allow blank values
 	if (isNumeric(obj.value) || obj.value==='') return true;
 	if (obj.currency) return true;
+	return false;
 };
 
 Money.str = obj => (Money.CURRENCY[obj.currency]||'') + Money.value(obj);
@@ -146,7 +148,7 @@ const assCurrencyEq = (a, b, msg) => {
 /** Will fail if not called on 2 Moneys of the same currency
  * @returns {Money} a fresh object
  */
-Money.add = (amount1, amount2) => {
+Money.add = (amount1, amount2) => {	
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);
 	assCurrencyEq(amount1, amount2, "add()");
@@ -172,6 +174,10 @@ const moneyFromv100p = (b100p, currency) => {
 Money.total = amounts => {
 	// assMatch(amounts, "Money[]", "Money.js - total()");
 	let ttl = amounts.reduce( (acc, m) => {
+		if ( ! Money.isa(m)) {
+			console.warn(new Error("Money.total() - Not Money? "+JSON.stringify(m)), amounts);
+			return acc;
+		}
 		Money.add(acc, m)
 	}, Money.make());
 	return ttl;
