@@ -115,10 +115,11 @@ async function fillInForm({page, Selectors, data}) {
 
 /**Retrieves ID of event with given name
  * by querying JSON endpoint
+ * @param eventOrFundOrVertiserOrVert seriously needs a new name. Thankfully, is only ever called internally.
  */
-async function IdByName({page, fundName, eventOrFund}) {
+async function IdByName({page, fundName, eventOrFundOrVertiserOrVert}) {
     const r = await $.ajax({
-        url: `${APIBASE}${eventOrFund}/list.json`,
+        url: `${APIBASE}${eventOrFundOrVertiserOrVert}/list.json`,
         withCredentials: true,
         jwt: 'eyJraWQiOiJ1b2J4b3UxNjJjZWVkZTJlMSIsImFsZyI6IlJTMjU2In0.eyJpc3MiOiJzb2dpdmUiLCJqdGkiOiJTX0o1UE5rNHpGT0YtVGlrSVdJcDJBIiwiaWF0IjoxNTI3MjQ5NzkwLCJkdmNzaWciOm51bGwsInN1YiI6Im1hcmtAd2ludGVyd2VsbC5jb21AZW1haWwifQ.kmdCG5Xh2YypPLmtD_FP4Gc27cbpOd2Dx1LCOlBJNWqphBN-WQa7I6v-LmhwTbdheb8t7xE10xXtrsp9mObQ8QKsGU6Emdnyp9-eKrUTQFMf5HqwD-qpsiYEjw9SWTSaQkTOP4ieCbE61QL2-_3TN8hq4AAxYmjgJG0IUKUkN5jtozXCFYddqmpEXR4teRr7P470RDEAOqleddIJqd0KCId2ohGCe5CqMDFfcCLoaW-ICghQUAx9wlUDCmEN0I9BxErDp9WJ7spqji0MeanEurLlbAU47q5SyVQS70zAUJS3OhqFK_LHmFVETEQhb5nMpik3hSZJpS5x_YT56causg',
     });
@@ -128,11 +129,19 @@ async function IdByName({page, fundName, eventOrFund}) {
 }
 
 async function eventIdFromName({page, eventName}) {
-    return await IdByName({page, fundName: eventName, eventOrFund:'event'});
+    return await IdByName({page, fundName: eventName, eventOrFundOrVertiserOrVert:'event'});
 }
 
 async function fundIdByName({page, fundName}) {
-    return await IdByName({page, fundName, eventOrFund:'fundraiser'});
+    return await IdByName({page, fundName, eventOrFundOrVertiserOrVert:'fundraiser'});
+};
+
+async function vertiserIdByName({vertiserName}) {
+    return await IdByName({fundName: vertiserName, eventOrFundOrVertiserOrVert:'vertiser'});
+};
+
+async function vertIdByName({vertName}) {
+    return await IdByName({fundName: vertName, eventOrFundOrVertiserOrVert:'vert'}); 
 };
 
 module.exports = {
@@ -145,4 +154,6 @@ module.exports = {
     onFail, 
     takeScreenshot,
     timeout,
+    vertIdByName,
+    vertiserIdByName
 };
