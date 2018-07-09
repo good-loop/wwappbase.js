@@ -889,7 +889,7 @@ Misc.CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
  * save buttons
  * TODO auto-save on edit -- copy from sogive
  */
-Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => {
+Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publishTooltipText='Your account cannot publish this.'}) => {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
 		return (<div className='SavePublishDiscard'><i>Login to save or publish edits</i></div>);
@@ -909,7 +909,7 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete }) => 
 	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && ! item.modified;
 
 	let disablePublish = isSaving || noEdits || cannotPublish;
-	let publishTooltip = cannotPublish? 'Your account cannot publish this.' : (noEdits? 'Nothing to publish' : 'Publish your edits!');
+	let publishTooltip = cannotPublish? publishTooltipText : (noEdits? 'Nothing to publish' : 'Publish your edits!');
 	let disableDelete = isSaving || cannotDelete;
 	// Sometimes we just want to autosave drafts!
 	if (hidden) return <span />;
