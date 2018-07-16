@@ -44,7 +44,7 @@ ServerIO.checkBase = () => {
 		console.warn(err);
 	}
 	if (ServerIO.DATALOG_ENDPOINT && ! C.isProduction() && ServerIO.DATALOG_ENDPOINT.indexOf('https://lg') !== -1) {
-		notifyUser("Using DataLog Server: "+ServerIO.DATALOG_ENDPOINT);
+		console.warn("Using production DataLog Server: "+ServerIO.DATALOG_ENDPOINT); // this is common enough
 	}
 	// profiler
 	if (ServerIO.PROFILER_ENDPOINT && C.isProduction() && 
@@ -55,7 +55,7 @@ ServerIO.checkBase = () => {
 		console.warn(err);
 	}
 	if (ServerIO.PROFILER_ENDPOINT && ! C.isProduction() && ServerIO.PROFILER_ENDPOINT.indexOf('https://profiler') !== -1) {
-		notifyUser("Using Profiler Server: "+ServerIO.PROFILER_ENDPOINT);
+		console.warn("Using production Profiler Server: "+ServerIO.PROFILER_ENDPOINT);
 	}
 };
 
