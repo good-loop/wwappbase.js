@@ -791,6 +791,11 @@ const saveDraftFn = _.debounce(
 		return true;
 	}, 5000);
 
+const publishDraftFn = _.debounce(
+	({type, id}) => {
+		ActionMan.publishEdits(type, id);
+		return true;
+	}, 5000);
 
 /**
  * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
@@ -889,7 +894,7 @@ Misc.CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
  * save buttons
  * TODO auto-save on edit -- copy from sogive
  */
-Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publishTooltipText='Your account cannot publish this.'}) => {
+Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publishTooltipText='Your account cannot publish this.', autoPublish, autoSave = true}) => {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
 		return (<div className='SavePublishDiscard'><i>Login to save or publish edits</i></div>);
@@ -901,8 +906,12 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publi
 	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData(status, type, id);
 	// request a save?
-	if (C.STATUS.isdirty(localStatus) && ! isSaving) {
+	if (autoSave && C.STATUS.isdirty(localStatus) && ! isSaving) {
 		saveDraftFn({type,id});
+	}
+	// If setting enabled, will automatically publish every five seconds
+	if (autoPublish && C.STATUS.isdirty(localStatus)) {
+		publishDraftFn({type, id});
 	}
 	// if nothing has been edited, then we can't publish, save, or discard
 	// NB: modified is a persistent marker, managed by the server, for draft != published
