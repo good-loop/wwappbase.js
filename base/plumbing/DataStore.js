@@ -495,6 +495,16 @@ class Store {
 		this.setValue(ppath, null, false);
 	}
 
+	/**
+	 * Resolve a list against the data/draft node to get the data items.
+	 */
+	getDataList(listOfRefs) {
+		if ( ! listOfRefs) return [];
+		// ?? if the data item is missing -- what should go into the list?? null / the ref / a promise ??
+		let items = listOfRefs.map(ref => this.getData(getStatus(ref), getType(ref), getId(ref)) || ref);
+		return items;
+	}
+
 } // ./Store
 
 // NB: this is also in wwutils, but npm or something is being weird about versioning. Feb 2018
@@ -507,6 +517,14 @@ DataStore.update({
 	data: {},
 	draft: {},
 	widget: {},
+	/**
+	 * list should be: type -> list-id (e.g. 'all' or 'q=foo') -> refs[]
+	 * Where refs are {id, type, status}
+	 * 
+	 * And store the actual data objects in the data/draft node.
+	 * 
+	 * This way list displays always access up-to-date data.
+	 */
 	list: {}
 });
 // switch on data item edits => modified flag
