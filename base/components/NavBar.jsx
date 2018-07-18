@@ -9,25 +9,16 @@ import Roles from '../Roles';
  * @param {String} currentPage The current page
  * @param {String[]} pages
  */
-const NavBar = ({currentPage, pages}) => {
+const NavBar = ({currentPage, pages, children}) => {
 	// make the page links
 	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
 	return (
 		<nav className="navbar navbar-fixed-top navbar-inverse">
 			<div className="container">
 				<div className="navbar-header" title="Dashboard">
-					<button
-						type="button"
-						className="navbar-toggle collapsed"
-						data-toggle="collapse"
-						data-target="#navbar"
-						aria-expanded="false"
-						aria-controls="navbar"
-					>
+					<button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
 						<span className="sr-only">Toggle navigation</span>
-						<span className="icon-bar" />
-						<span className="icon-bar" />
-						<span className="icon-bar" />
+						<span className="icon-bar" /><span className="icon-bar" /><span className="icon-bar" />
 					</button>
 					<a className="" href="#dashboard">
 						<img className='logo-xlarge' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
@@ -37,6 +28,7 @@ const NavBar = ({currentPage, pages}) => {
 					<ul className="nav navbar-nav">
 						{pageLinks}
 					</ul>
+					{children}
 					<div>
 						<AccountMenu active={currentPage === 'account'} />
 					</div>
@@ -59,10 +51,11 @@ const navClick = (e) => {
 		$('button.navbar-toggle').click();
 	}
 };
-const NavLink = ({currentPage, targetPage}) => {
+
+const NavLink = ({currentPage, targetPage, name}) => {
 	return (<li className={currentPage === targetPage? 'active' : ''}>
 				<a className="nav-item nav-link" href={'#'+targetPage} onClick={navClick} >
-					{targetPage}
+					{name || targetPage}
 				</a>
 			</li>);
 };

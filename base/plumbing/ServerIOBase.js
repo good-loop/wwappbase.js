@@ -119,7 +119,7 @@ ServerIO.upload = function(file, progress, load) {
 ServerIO.search = function(type, filter) {
 	assert(C.TYPES.has(type), type);
 	let servlet = ServerIO.getServletForType(type);
-	let url = '/'+servlet+'/list.json';
+	let url = '/'+servlet+'/_list.json';
 	let params = {
 		data: {}
 	};
@@ -136,7 +136,7 @@ ServerIO.search = function(type, filter) {
  */
 ServerIO.getUrlForItem = ({type, id, status}) => {
 	let servlet = ServerIO.getServletForType(type);
-	let url = '/'+servlet+'/'+encURI(id)+'.json';
+	let url = '/'+servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json';
 	return url;
 };
 ServerIO.getServletForType = (type) => {
