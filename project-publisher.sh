@@ -1,6 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.1.7'
+VERSION='Version=1.2.7'
+
+###
+# New in 1.2.7 : Changed the way in which JARs are moved from tmp-lib to a 'lib' directory.  Old style was destructive, new style is addative
+###
 
 #####
 ## Versioning number/serialisation schema:
@@ -496,12 +500,13 @@ function convert_less_files {
 ###################################
 ### Section 08: Defining the Jar Syncing Function
 ###################################
-function rename_tmp_lib {
-	mv $PROJECT_LOCATION/tmp-lib $PROJECT_LOCATION/lib
-}
-
-function rename_lib {
-	mv $PROJECT_LOCATION/lib $PROJECT_LOCATION/tmp-lib
+function move_items_to_lib {
+	if [ -d = "$PROJECT_LOCATION/lib" ]; then
+		cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
+	else
+		mkdir $PROJECT_LOCATION/lib
+		cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
+	fi
 }
 
 #########################################
@@ -644,10 +649,9 @@ function compile_variants {
 function sync_whole_project {
 	for item in ${PLEASE_SYNC[@]}; do
 		if [[ $item = 'lib' ]]; then
-			rename_tmp_lib
+			move_items_to_lib
 			printf "\nSyncing JAR Files ...\n"
 			cd $PROJECT_LOCATION && $PSYNC lib $TARGET_DIRECTORY
-			rename_lib
 		else
 			printf "\nSyncing $item ...\n"
 			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
