@@ -173,13 +173,15 @@ const moneyFromv100p = (b100p, currency) => {
 
 Money.total = amounts => {
 	// assMatch(amounts, "Money[]", "Money.js - total()");
+	let zero = Money.make();
+	Money.assIsa(zero);
 	let ttl = amounts.reduce( (acc, m) => {
 		if ( ! Money.isa(m)) {
 			console.warn(new Error("Money.total() - Not Money? "+JSON.stringify(m)), amounts);
 			return acc;
 		}
-		Money.add(acc, m)
-	}, Money.make());
+		return Money.add(acc, m);
+	}, zero);
 	return ttl;
 };
 
