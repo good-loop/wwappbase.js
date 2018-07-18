@@ -1021,7 +1021,8 @@ Misc.RadioGroup = ({path, prop, headers, noDefault}) => {
 
 	const proppath = path.concat(prop);
 	const checkedValue = DataStore.getValue(proppath) || (!noDefault && headers[0]);
-	
+	const colSize = Math.floor(12/headers.length);
+
 	//Place default value in DataStore
 	if(!noDefault && !DataStore.getValue(proppath)) {
 		DataStore.setValue(proppath, headers[0]);
@@ -1039,7 +1040,7 @@ Misc.RadioGroup = ({path, prop, headers, noDefault}) => {
 								DataStore.setValue(proppath, h);
 							}}
 						/>
-						<label className='btn-primary btn-lg col-md-3' htmlFor={h}>{h}</label>
+						<label className={`btn-primary btn-lg col-md-${colSize}`} htmlFor={h}>{h}</label>
 					</div>
 				)
 			})}
