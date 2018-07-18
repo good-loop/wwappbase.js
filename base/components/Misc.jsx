@@ -1008,4 +1008,43 @@ Misc.RawHtml = ({html}) => {
 		</div>);
 };
 
+/**
+ * BootStrap radio button group
+ * Records which radio is currently active in DataStore[path, prop]
+ * @param headers Array of possible options
+ * @param noDefault If unset, first header will be selected by default.
+ */
+Misc.RadioGroup = ({path, prop, headers, noDefault}) => {
+	assMatch(path, 'String[]');
+	assMatch(prop, 'String');
+	assMatch(headers, 'String[]');
+
+	const proppath = path.concat(prop);
+	const checkedValue = DataStore.getValue(proppath) || (!noDefault && headers[0]);
+	
+	//Place default value in DataStore
+	if(!noDefault && !DataStore.getValue(proppath)) {
+		DataStore.setValue(proppath, headers[0]);
+	}
+
+	return (
+		<div className={'btn-group container timeline-widget'}>
+			{headers.map((h, i) => {
+				return(
+					<div key={h}>
+						<input type='radio'
+							id={h}
+							checked={checkedValue === h}
+							onChange={() => {
+								DataStore.setValue(proppath, h);
+							}}
+						/>
+						<label className='btn-primary btn-lg col-md-3' htmlFor={h}>{h}</label>
+					</div>
+				)
+			})}
+		</div>
+	);
+};
+
 export default Misc;
