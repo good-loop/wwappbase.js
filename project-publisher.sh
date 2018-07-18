@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.2.7'
+VERSION='Version=1.2.8'
 
 ###
+# New in 1.2.8 : Fixed a check for a directory syntax
 # New in 1.2.7 : Changed the way in which JARs are moved from tmp-lib to a 'lib' directory.  Old style was destructive, new style is addative
 ###
 
@@ -501,7 +502,7 @@ function convert_less_files {
 ### Section 08: Defining the Jar Syncing Function
 ###################################
 function move_items_to_lib {
-	if [ -d = "$PROJECT_LOCATION/lib" ]; then
+	if [ -d $PROJECT_LOCATION/lib ]; then
 		cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
 	else
 		mkdir $PROJECT_LOCATION/lib
