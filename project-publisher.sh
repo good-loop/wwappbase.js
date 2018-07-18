@@ -1,6 +1,14 @@
 #!/bin/bash
 
-VERSION='Version=1.1.7'
+VERSION='Version=1.3.8'
+
+###
+# New in 1.3.8 : Added a safety feature which cleans out the tmp-lib directory after a publish. This makes it so that there are not leftover
+#				JAR files living and lurking in tmp-lib, and this means that each publish is performed cleanly and all JARs that are sync'ed
+#				Have been deemed necessary by the Java side of the publishing process.				
+# New in 1.2.8 : Fixed a check for a directory syntax
+# New in 1.2.7 : Changed the way in which JARs are moved from tmp-lib to a 'lib' directory.  Old style was destructive, new style is addative
+###
 
 #####
 ## Versioning number/serialisation schema:
@@ -496,12 +504,13 @@ function convert_less_files {
 ###################################
 ### Section 08: Defining the Jar Syncing Function
 ###################################
-function rename_tmp_lib {
-	mv $PROJECT_LOCATION/tmp-lib $PROJECT_LOCATION/lib
-}
-
-function rename_lib {
-	mv $PROJECT_LOCATION/lib $PROJECT_LOCATION/tmp-lib
+function move_items_to_lib {
+	if [ -d $PROJECT_LOCATION/lib ]; then
+		cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
+	else
+		mkdir $PROJECT_LOCATION/lib
+		cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
+	fi
 }
 
 #########################################
@@ -644,10 +653,9 @@ function compile_variants {
 function sync_whole_project {
 	for item in ${PLEASE_SYNC[@]}; do
 		if [[ $item = 'lib' ]]; then
-			rename_tmp_lib
+			move_items_to_lib
 			printf "\nSyncing JAR Files ...\n"
 			cd $PROJECT_LOCATION && $PSYNC lib $TARGET_DIRECTORY
-			rename_lib
 		else
 			printf "\nSyncing $item ...\n"
 			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
@@ -669,7 +677,14 @@ function run_automated_tests {
 }
 
 ##########################################
-### Section 14: Performing the Actual Publish
+### Section 14: Cleaning the tmp-lib directory for safety (future publishes are safer if all JARs are new and fresh)
+##########################################
+function clean_tmp_lib {
+	rm -rf $PROJECT_LOCATION/tmp-lib/*
+}
+
+##########################################
+### Section 15: Performing the Actual Publish
 ##########################################
 printf "\nCreating Target List\n"
 create_target_list
@@ -687,4 +702,6 @@ webpack
 printf "\nStarting $SERVICE_NAME on $TARGETS\n"
 start_proc
 printf "\nPublishing Process has completed\n"
+printf "\nCleaning tmp-lib directory\n"
+clean_tmp_lib
 run_automated_tests
