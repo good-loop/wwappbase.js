@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.3.8'
+VERSION='Version=1.4.8'
 
 ###
+# New in 1.4.8 : Added two new functions which allow for the preservation of files/directories throughout publishing tasks. This is useful
+#				For projects which have an 'upload' feature, allowing users to upload files to be used in the frontend.
 # New in 1.3.8 : Added a safety feature which cleans out the tmp-lib directory after a publish. This makes it so that there are not leftover
 #				JAR files living and lurking in tmp-lib, and this means that each publish is performed cleanly and all JARs that are sync'ed
 #				Have been deemed necessary by the Java side of the publishing process.				
@@ -43,6 +45,7 @@ VERSION='Version=1.3.8'
 # 		SERVICE_NAME='adservermain'
 # 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
 #		# Use "lib" instead of "tmp-lib" for syncing your JAR files
+#		PRESERVE=("web-as/uploads")
 #		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
 #     ;;
 
@@ -136,6 +139,7 @@ case $1 in
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+		PRESERVE=("web-as/uploads")
     ;;
     datalog|DATALOG|datalogger|DATALOGGER)
         PROJECT='datalogger'
@@ -167,6 +171,7 @@ case $1 in
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='portalmain'
 		PLEASE_SYNC=("config" "server" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
+		PRESERVE=("web-as/uploads")
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
@@ -198,6 +203,7 @@ case $1 in
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='sogiveapp'
 		PLEASE_SYNC=("config" "data" "server" "src" "lib" "web" "package.json" "webpack.config.js" ".babelrc")
+		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
     ;;
     youagain|YOUAGAIN)
@@ -683,6 +689,23 @@ function clean_tmp_lib {
 	rm -rf $PROJECT_LOCATION/tmp-lib/*
 }
 
+###########################################
+### Section 15: Defining the process used in order to preserve files/directories before a destructive sync
+###########################################
+function preserve_items {
+	for item in ${PRESERVE[@]}; do
+		printf "\nPreserving $item\n"
+		$PSSH "rsync -rhP $item /tmp/"
+	done
+}
+
+function restore_preserved {
+	for item in ${PRESERVE[@]}; do
+		printf "\nRestoring $item\n"
+		$PSSH "rsync -rhP /tmp/$item $TARGET_DIRECTORY/"
+	done
+}
+
 ##########################################
 ### Section 15: Performing the Actual Publish
 ##########################################
@@ -694,8 +717,10 @@ image_optimisation
 convert_less_files
 test_js
 compile_variants
+preserve_items
 printf "\nSyncing $PROJECT to $TARGETS\n"
 sync_whole_project
+restore_preserved
 printf "\nSyncing Configs\n"
 sync_configs
 webpack
