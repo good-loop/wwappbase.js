@@ -123,7 +123,7 @@ const socialLogin = (service) => {
 }; // ./socialLogin
 
 
-const emailLogin = ({verb, app, email, password}) => {
+LoginWidget.emailLogin = ({verb, app, email, password}) => {
 	assMatch(email, String, password, String);
 	let call = verb==='register'?
 		Login.register({email:email, password:password})
@@ -172,7 +172,7 @@ const EmailSignin = ({verb, onLogin}) => {
 				});
 			return;
 		}
-		emailLogin({verb, ...person});
+		LoginWidget.emailLogin({verb, ...person});
 	};
 
 	const buttonText = {
@@ -245,6 +245,15 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 	// NB: prefer the user-set verb (so they can change it)
 	verb = DataStore.getValue(VERB_PATH) || verb || 'register';
 	
+	if(Login.isLoggedIn()) {
+		const user = Login.getUser();
+		return (
+			<div>
+				<p>Logged in as {user.name || user.xid}</p>
+				<small>Not you? <button className="btn-link" onClick={() => Login.logout()}>Log out</button></small>
+			</div>);
+	}
+
 	return (
 		<div className='login-widget'>
 			<LoginWidgetGuts services={services} verb={verb} onLogin={onLogin}/>

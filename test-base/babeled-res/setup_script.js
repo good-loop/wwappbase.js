@@ -20,6 +20,7 @@ const options = {
  * before all tests in file, use beforeAll/afterAll
  */
 beforeEach(_asyncToGenerator(function* () {
+    window.__BROWSER_OPTIONS__ = options;
     //Can't access global from tests
     window.__BROWSER__ = yield puppeteer.launch(options);
     //Could set API.ENDPOINT here.
