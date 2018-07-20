@@ -937,21 +937,23 @@ Misc.RadioGroup = ({path, prop, headers, noDefault}) => {
 	}
 
 	return (
-		<div className={'btn-group container timeline-widget'}>
-			{headers.map((h, i) => {
-				return(
-					<div key={h}>
-						<input type='radio'
+		<div>
+			<ul className="nav nav-tabs">
+				{headers.map((h, i) => {
+					return(
+						<li
+							className={checkedValue === h ? "active" : ""}
 							id={h}
-							checked={checkedValue === h}
-							onChange={() => {
+							key={h}
+							onClick={() => {
 								DataStore.setValue(proppath, h);
 							}}
-						/>
-						<label className={`btn-primary btn-lg col-md-${colSize}`} htmlFor={h}>{h}</label>
-					</div>
-				)
-			})}
+						>
+							<a data-toggle="tab">{h}</a>
+						</li>
+					)
+				})}
+			</ul>
 		</div>
 	);
 };
