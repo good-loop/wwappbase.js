@@ -13,8 +13,11 @@ import Misc from './Misc';
  * @param warning {any} If set, colour the card yellow
  */
 const Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
-	// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.
-	if ( ! children) return null; 
+	// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.	
+	// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
+	if ( ! children) {
+		return null; 
+	}
 	let header = '';
 	if (title || onHeaderClick || titleChildren) {
 		let hcssClasses = ['panel-heading', onHeaderClick? 'btn-link' : null].filter(x => !!x);
