@@ -396,7 +396,9 @@ Misc.PropControl = ({type="text", path, prop, label, help, tooltip, error, valid
 			accepted.forEach(file => {
 				ServerIO.upload(file, progress, load)
 					.done(response => {
-						DataStore.setValue(path.concat(prop), response.cargo.url);
+						let imgurl = response.cargo.url;
+						// ?? odd relative path bug seen by DA July 2018: //path ??
+						DataStore.setValue(path.concat(prop), imgurl);
 					});
 			});
 	
