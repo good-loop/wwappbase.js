@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.4.8'
+VERSION='Version=1.4.9'
 
 ###
+# New in 1.4.9 : Fixed the preservation functions so that they actually work as intended.  Trust me, it was harder than it sounds.
 # New in 1.4.8 : Added two new functions which allow for the preservation of files/directories throughout publishing tasks. This is useful
 #				For projects which have an 'upload' feature, allowing users to upload files to be used in the frontend.
 # New in 1.3.8 : Added a safety feature which cleans out the tmp-lib directory after a publish. This makes it so that there are not leftover
@@ -272,13 +273,18 @@ esac
 
 
 #####################
-### Section 03: Create the list of target servers AND create list of items that should not be sync'ed
+### Section 03: Create the list of target servers, and create the list of excluded items that should be preserved
 #####################
 function create_target_list {
 	if [[ -f /tmp/target.list.txt ]]; then
 		rm /tmp/target.list.txt
 	fi
 	printf '%s\n' ${TARGETS[@]} >> /tmp/target.list.txt
+
+	if [[ -f /tmp/exclude.list.txt ]]; then
+		rm /tmp/exclude.list.txt
+	fi
+	printf '%s\n' ${PRESERVE[@]} >> /tmp/exclude.list.txt
 }
 
 
@@ -695,14 +701,15 @@ function clean_tmp_lib {
 function preserve_items {
 	for item in ${PRESERVE[@]}; do
 		printf "\nPreserving $item\n"
-		$PSSH "rsync -rhP $item /tmp/"
+		$PSSH "if [[ -d /tmp/$item ]]; then continue; else mkdir -p /tmp/$item; fi"
+		$PSSH "cd $TARGET_DIRECTORY && rsync -rRhP $item /tmp"
 	done
 }
 
 function restore_preserved {
 	for item in ${PRESERVE[@]}; do
 		printf "\nRestoring $item\n"
-		$PSSH "rsync -rhP /tmp/$item $TARGET_DIRECTORY/"
+		$PSSH "cd /tmp && rsync -rRhP $item $TARGET_DIRECTORY/"
 	done
 }
 
