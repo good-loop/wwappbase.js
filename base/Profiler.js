@@ -18,6 +18,19 @@ const putProfile = ({xid, ...doc}) => {
 	return ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {action: 'put', doc: JSON.stringify(doc)});
 };
 
+/**
+ * TODO
+ * @returns Permission[] never null
+ */
+const getPermissions = (person, dataspace, fields) => [];
+
+
+/**
+ * TODO
+ * fields {?String[]}
+ */
+const setPermissions = (person, dataspace, permissions, fields) => null;
+
 export {
 	getProfile,
 	putProfile
