@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.4.9'
+VERSION='Version=1.4.10'
 
 ###
+# New in 1.4.10 : Changed the checking of 'config-files-to-sync' from 'if' loops to 'case' checks.  Added syncing of properties files
+#					when the portal is being published.  As new portal functions require emails to be sent.
 # New in 1.4.9 : Fixed the preservation functions so that they actually work as intended.  Trust me, it was harder than it sounds.
 # New in 1.4.8 : Added two new functions which allow for the preservation of files/directories throughout publishing tasks. This is useful
 #				For projects which have an 'upload' feature, allowing users to upload files to be used in the frontend.
@@ -530,25 +532,29 @@ function move_items_to_lib {
 #########################################
 function sync_configs {
 	GIT_SHORTHAND="git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins"
-	if [[ $PROJECT = 'adserver' ]]; then
-		printf "\nEnsuring that your Logins are up-to-date...\n"
-		$GIT_SHORTHAND gc --prune=now
-		$GIT_SHORTHAND pull origin master
-		$GIT_SHORTHAND reset --hard FETCH_HEAD
-		for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
-			$PSYNC $config $TARGET_DIRECTORY/config/
-			$PSSH "mv $TARGET_DIRECTORY/config/$HOSTNAME.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
-		done
-	fi
-	if [[ $PROJECT = 'sogive-app' ]]; then
-		$GIT_SHORTHAND gc --prune=now
-		$GIT_SHORTHAND pull origin master
-		$GIT_SHORTHAND reset --hard FETCH_HEAD
-		for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
-			$PSYNC $config $TARGET_DIRECTORY/config/
-		done
-	fi
+	case $PROJECT in
+		adserver|portal)
+			printf "\nEnsuring that your Logins are up-to-date...\n"
+			$GIT_SHORTHAND gc --prune=now
+			$GIT_SHORTHAND pull origin master
+			$GIT_SHORTHAND reset --hard FETCH_HEAD
+			for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
+				$PSYNC $config $TARGET_DIRECTORY/config/
+				$PSSH "mv $TARGET_DIRECTORY/config/$HOSTNAME.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
+			done
+		;;
+		sogive)
+			printf "\nEnsuring that your Logins are up-to-date...\n"
+			$GIT_SHORTHAND gc --prune=now
+			$GIT_SHORTHAND pull origin master
+			$GIT_SHORTHAND reset --hard FETCH_HEAD
+			for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
+				$PSYNC $config $TARGET_DIRECTORY/config/
+			done
+		;;
+	esac
 }
+
 
 
 
@@ -683,7 +689,7 @@ function run_automated_tests {
 		if [[ $PROJECT = 'sogive-app' ]]; then
 			printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
 			cd $PROJECT_LOCATION/test
-			bash run-tests.sh $2
+			bash run-tests.sh $TYPE_OF_PUBLISH
 		fi
 	fi
 }
