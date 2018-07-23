@@ -23,7 +23,6 @@ const BasicAccountPage = () => {
 			<h2>My Account</h2>
 			<LoginCard />
 			<RolesCard />
-			<ListShares />
 		</div>
 	);
 };
@@ -47,30 +46,6 @@ const RolesCard = () => {
 
 const RoleLine = ({role}) => {
 	return <div className='well'>{role}</div>;
-};
-
-const ListShares = () => {
-	let sharesPV = DataStore.fetch(['widget', 'account', 'sharedPubPages'], () => {
-		let req = Login.getSharedWith(Login.getId());
-		return req;
-	});
-	
-	if(!sharesPV.value) return <Misc.Loading />
-
-	return (
-		<Misc.Card title='Your pages'>
-			{
-				sharesPV.value.map(share => {
-					const url = share.item.slice(10);
-					return (
-						<span key={url}>
-							<a href={`/#pubdash/${url}`}>{url}</a><br />
-						</span>
-					);
-				})
-			}
-		</Misc.Card>
-	);
 };
 
 export {
