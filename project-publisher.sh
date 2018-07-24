@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.4.12'
+VERSION='Version=1.4.13'
 
 ###
+# New in 1.4.13 : Preserved a youagain config file
 # New in 1.4.12 : Added more items to sync for the profiler project
 # New in 1.4.11 : Added webpacking to the publishing process of the profiler project
 # New in 1.4.10 : Changed the checking of 'config-files-to-sync' from 'if' loops to 'case' checks.  Added syncing of properties files
@@ -224,6 +225,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='youagain'
+		PRESERVE=("config/youagain.RSAKeyPair.xml")
 		PLEASE_SYNC=("config" "dependencies" "lib" "web" "youagain-server.jar" "src")
     ;;
 	help|HELP)
