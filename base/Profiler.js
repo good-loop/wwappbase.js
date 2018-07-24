@@ -6,6 +6,8 @@
 
 import ServerIO from './plumbing/ServerIOBase';
 import {assert, assMatch} from 'sjtest';
+// add funky methods to the "standard" Person data-class
+import Person from './data/Person';
 
 const getProfile = ({xid, fields, status}) => {
 	assMatch(xid, String);
@@ -19,24 +21,37 @@ const saveProfile = ({xid, ...doc}) => {
 };
 
 /**
- * TODO
- * @returns Permission[] never null
+ * TODO dataspace and fields
+ * @returns String[] never null, empty = apply sensible defaults
  */
 const getPermissions = ({person, dataspace, fields}) => {
-
+	Person.assIsa(person);
+	let perms = person.p || [];
+	return perms;
 };
 
 
 /**
+ * @param permissions {String[]}
+ * 
  * TODO
  * fields {?String[]}
  * Does NOT save
  */
 const setPermissions = ({person, dataspace, permissions, fields}) => {
-
+	Person.assIsa(person);
+	assMatch(permissions, 'String[]', "Profiler.js");
+	persion.p = permissions;
+	return person;
 };
+
+Person.getProfile = getProfile;
+Person.saveProfile = saveProfile;
+Person.getPermissions = getPermissions;
+Person.setPermissions = setPermissions;
 
 export {
 	getProfile,
 	putProfile
 };
+export default Person;
