@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.4.11'
+VERSION='Version=1.4.12'
 
 ###
+# New in 1.4.12 : Added more items to sync for the profiler project
 # New in 1.4.11 : Added webpacking to the publishing process of the profiler project
 # New in 1.4.10 : Changed the checking of 'config-files-to-sync' from 'if' loops to 'case' checks.  Added syncing of properties files
 #					when the portal is being published.  As new portal functions require emails to be sent.
@@ -190,7 +191,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='profilermain'
-		PLEASE_SYNC=("config" "formunit" "lib")
+		PLEASE_SYNC=("config" "formunit" "lib" "src" "web" "package.json" "webpack.config.js")
     ;;
     sogive|SOGIVE|sogive-app|SOGIVE-APP)
         PROJECT='sogive-app'
