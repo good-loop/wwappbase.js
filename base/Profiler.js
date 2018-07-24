@@ -12,7 +12,7 @@ const getProfile = ({xid, fields, status}) => {
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {data: {fields, status}});
 };
 
-const putProfile = ({xid, ...doc}) => {
+const saveProfile = ({xid, ...doc}) => {
 	assMatch(xid, String);
 	assert(doc);
 	return ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {action: 'put', doc: JSON.stringify(doc)});
@@ -22,14 +22,19 @@ const putProfile = ({xid, ...doc}) => {
  * TODO
  * @returns Permission[] never null
  */
-const getPermissions = (person, dataspace, fields) => [];
+const getPermissions = ({person, dataspace, fields}) => {
+
+};
 
 
 /**
  * TODO
  * fields {?String[]}
+ * Does NOT save
  */
-const setPermissions = (person, dataspace, permissions, fields) => null;
+const setPermissions = ({person, dataspace, permissions, fields}) => {
+
+};
 
 export {
 	getProfile,
