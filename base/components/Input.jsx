@@ -7,23 +7,23 @@ import React from 'react';
 import { Checkbox, Radio, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
 
 import {assert, assMatch} from 'sjtest';
-// import _ from 'lodash';
+import _ from 'lodash';
 import Enum from 'easy-enums';
 import Misc from './Misc';
 // import { setHash, XId, addScript} from 'wwutils';
-// import PV from 'promise-value';
+import PV from 'promise-value';
 import Dropzone from 'react-dropzone';
 
 import DataStore from '../plumbing/DataStore';
-// import ServerIO from '../plumbing/ServerIOBase';
+import ServerIO from '../plumbing/ServerIOBase';
 // import ActionMan from '../plumbing/ActionManBase';
-// import printer from '../utils/printer';
-// import C from '../CBase';
+import printer from '../utils/printer';
+import C from '../CBase';
 import Money from '../data/Money';
-// import Autocomplete from 'react-autocomplete';
+import Autocomplete from 'react-autocomplete';
 // // import I18n from 'easyi18n';
-// import {getType, getId, nonce} from '../data/DataClass';
-// import md5 from 'md5';
+import {getType, getId, nonce} from '../data/DataClass';
+import md5 from 'md5';
 
 
 /**
