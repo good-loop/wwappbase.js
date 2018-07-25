@@ -10,6 +10,8 @@ import {assert, assMatch} from 'sjtest';
 import Person from './data/Person';
 assert(Person);
 
+// for debug
+window.Person = Person;
 
 /**
  * 
@@ -59,6 +61,8 @@ Person.setPermissions = setPermissions;
 
 export {
 	getProfile,
-	saveProfile
+	saveProfile,
+	getPermissions,
+	setPermissions
 };
 export default Person;
