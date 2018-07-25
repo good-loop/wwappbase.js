@@ -1,6 +1,7 @@
 
 import React from 'react';
 import Misc from './Misc';
+import DataStore from '../plumbing/DataStore';
 
 /**
  * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
