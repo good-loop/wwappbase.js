@@ -1,3 +1,14 @@
+/**
+ * JSend ajax wrapper. A simple format:
+ * 
+ * {
+ * 	status: {String} "success" | "fail" | "error"
+ * 	message: {?String} error message
+ * 	data: {?Object} the data/value/cargo
+ * }
+ * 
+ * This file supports BOTH JSend and Winterwell's JsonResponse format.
+ */
 
 import {assert, assMatch} from 'sjtest';
 import {isa, defineType, getType} from './DataClass';
@@ -14,9 +25,13 @@ const KAjaxStatus = new Enum("success fail error");
  * @param {*} jobj 
  * @returns {KAjaxStatus String} success | error | fail
  */
-JSend.status = jobj => jobj.status || (jobj.success===true && 'success') || (jobj.success===false && 'error');
+JSend.status = jobj => jobj.status 
+	|| (jobj.success===true && 'success') || (jobj.success===false && 'error'); // WW's JsonResponse format
 
-JSend.success = jobj => {
+/**
+ * Boolean alternative to status
+ */
+JSend.success = jobj => {	
 	if (jobj.success===true) return true;
 	if (jobj.success===false) return false;
 
@@ -27,9 +42,13 @@ JSend.success = jobj => {
 	return null;
 };
 
+/**
+ * Optional error message
+ */
 JSend.message = jobj => {
 	if (jobj.message) return jobj.message;
 
+	// WW's JsonResponse format
 	if (jobj.errors) {
 		let m = jobj.errors[0];
 		if (typeof(m)==='string') return m;
@@ -39,3 +58,7 @@ JSend.message = jobj => {
 	return null;
 };
 
+JSend.data = jobj => {
+	return jobj.data 
+		|| jobj.cargo; // WW's JsonResponse format
+};

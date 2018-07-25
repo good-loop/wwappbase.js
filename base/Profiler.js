@@ -8,10 +8,17 @@ import ServerIO from './plumbing/ServerIOBase';
 import {assert, assMatch} from 'sjtest';
 // add funky methods to the "standard" Person data-class
 import Person from './data/Person';
+assert(Person);
 
+
+/**
+ * 
+ * @return {PV(Person)}
+ */
 const getProfile = ({xid, fields, status}) => {
 	assMatch(xid, String);
-	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {data: {fields, status}});
+	// NB: dont report 404s
+	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {data: {fields, status}, swallow:true});
 };
 
 const saveProfile = ({xid, ...doc}) => {
@@ -52,6 +59,6 @@ Person.setPermissions = setPermissions;
 
 export {
 	getProfile,
-	putProfile
+	saveProfile
 };
 export default Person;

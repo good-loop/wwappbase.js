@@ -420,6 +420,13 @@ Misc.RawHtml = ({html}) => {
 };
 
 /**
+ * Markdown text
+ */
+Misc.MDText = ({source}) => {
+
+}
+
+/**
  * BootStrap radio button group
  * Records which radio is currently active in DataStore[path, prop]
  * @param headers Array of possible options
