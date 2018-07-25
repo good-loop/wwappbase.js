@@ -49,7 +49,7 @@ const getPermissions = ({person, dataspace, fields}) => {
  */
 const setPermissions = ({person, dataspace, permissions, fields}) => {
 	Person.assIsa(person);
-	assMatch(permissions, 'String[]', "Profiler.js");
+	assMatch(permissions, 'String[]', "Profiler.js",permissions);
 	persion.p = permissions;
 	return person;
 };
