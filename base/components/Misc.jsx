@@ -269,7 +269,7 @@ Misc.AvatarImg = ({peep, ...props}) => {
  * @param d {Date}
  * @returns {String}
  */
-const isoDate = (d) => d.toISOString().replace(/T.+/, '');
+Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
 
 /**
  * 

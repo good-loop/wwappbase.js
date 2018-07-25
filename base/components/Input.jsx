@@ -7,23 +7,23 @@ import React from 'react';
 import { Checkbox, Radio, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
 
 import {assert, assMatch} from 'sjtest';
-// import _ from 'lodash';
+import _ from 'lodash';
 import Enum from 'easy-enums';
 import Misc from './Misc';
 // import { setHash, XId, addScript} from 'wwutils';
-// import PV from 'promise-value';
-// import Dropzone from 'react-dropzone';
+import PV from 'promise-value';
+import Dropzone from 'react-dropzone';
 
 import DataStore from '../plumbing/DataStore';
-// import ServerIO from '../plumbing/ServerIOBase';
+import ServerIO from '../plumbing/ServerIOBase';
 // import ActionMan from '../plumbing/ActionManBase';
-// import printer from '../utils/printer';
-// import C from '../CBase';
-// import Money from '../data/Money';
-// import Autocomplete from 'react-autocomplete';
+import printer from '../utils/printer';
+import C from '../CBase';
+import Money from '../data/Money';
+import Autocomplete from 'react-autocomplete';
 // // import I18n from 'easyi18n';
-// import {getType, getId, nonce} from '../data/DataClass';
-// import md5 from 'md5';
+import {getType, getId, nonce} from '../data/DataClass';
+import md5 from 'md5';
 
 
 /**
@@ -423,7 +423,7 @@ const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 
 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
 	// Encourage ISO8601 format
-	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is '+isoDate(new Date());
+	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is '+Misc.isoDate(new Date());
 	return (<div>
 		<Misc.FormControl type='text' name={prop} value={value} onChange={onChangeWithRaw} {...otherStuff} />
 		<div className='pull-right'><i>{datePreview}</i></div>
