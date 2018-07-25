@@ -8,6 +8,7 @@ import ServerIO from './plumbing/ServerIOBase';
 import {assert, assMatch} from 'sjtest';
 // add funky methods to the "standard" Person data-class
 import Person from './data/Person';
+import PV from 'promise-value';
 assert(Person);
 
 // for debug
@@ -23,10 +24,22 @@ const getProfile = ({xid, fields, status}) => {
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {data: {fields, status}, swallow:true});
 };
 
-const saveProfile = ({xid, ...doc}) => {
-	assMatch(xid, String);
-	assert(doc);
-	return ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {action: 'put', doc: JSON.stringify(doc)});
+/**
+ * 
+ * @return PV[]
+ */
+const saveProfile = (doc) => {
+	assert(doc, "Profiler.js - saveProfile "+doc);
+	let ids = doc.id || doc.xid;
+	// paranoia: ensure array
+	if (_.isString(ids)) ids = [ids];
+	const pvs = [];
+	ids.forEach(xid => {
+		assMatch(xid, String, "Profiler.js - saveProfile", doc);		
+		let prm = ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {action: 'put', doc: JSON.stringify(doc)});			
+		pvs.push(PV(prm));
+	});
+	return pvs;
 };
 
 /**
@@ -49,8 +62,8 @@ const getPermissions = ({person, dataspace, fields}) => {
  */
 const setPermissions = ({person, dataspace, permissions, fields}) => {
 	Person.assIsa(person);
-	assMatch(permissions, 'String[]', "Profiler.js",permissions);
-	persion.p = permissions;
+	assMatch(permissions, 'String[]', "Profiler.js ",permissions);
+	person.p = permissions;
 	return person;
 };
 
