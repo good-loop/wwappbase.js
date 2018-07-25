@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.4.13'
+VERSION='Version=1.4.14'
 
 ###
+# New in 1.4.14 : Found and fixed a bad output path where the all.css file was being created when compiling adunits.
 # New in 1.4.13 : Preserved a youagain config file
 # New in 1.4.12 : Added more items to sync for the profiler project
 # New in 1.4.11 : Added webpacking to the publishing process of the profiler project
@@ -621,7 +622,7 @@ function compile_variants {
 			done
 
 			cat $LESSLIST > /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less
-			lessc /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less /home/$USER/winterwell/adserver/adunit/style/web-as/all.css
+			lessc /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less /home/$USER/winterwell/adserver/web-as/all.css
 			rm /home/$USER/winterwell/adserver/adunit/style/all_intermediate.less
 
 			# Compiling all JS (all variants at once) to single file
