@@ -9,7 +9,7 @@ import {assert, assMatch} from 'sjtest';
 // add funky methods to the "standard" Person data-class
 import Person from './data/Person';
 import PV from 'promise-value';
-import {mapkv} from 'wwutils';
+import {mapkv, encURI} from 'wwutils';
 assert(Person);
 
 // for debug
@@ -22,7 +22,8 @@ window.Person = Person;
 const getProfile = ({xid, fields, status}) => {
 	assMatch(xid, String);
 	// NB: dont report 404s
-	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {data: {fields, status}, swallow:true});
+	// NB: /person isnt quite ready yet
+	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {data: {fields, status}, swallow:true});
 };
 
 /**
@@ -37,7 +38,7 @@ const saveProfile = (doc) => {
 	const pvs = [];
 	ids.forEach(xid => {
 		assMatch(xid, String, "Profiler.js - saveProfile", doc);		
-		let prm = ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/person/${xid}`, {action: 'put', doc: JSON.stringify(doc)});			
+		let prm = ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'put', doc: JSON.stringify(doc)});			
 		pvs.push(PV(prm));
 	});
 	return pvs;
