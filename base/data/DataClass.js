@@ -53,6 +53,10 @@ const getId = (item) => {
 		assert( ! item.then, "Passed a promise to getId()");
 		assert( ! item.promise, "Passed a promise-value to getId()");
 	}
+	// e.g. Person has an array of IDs
+	if (_.isArray(id)) {
+		return id[0]; // HACK: use the first
+	}
 	return id;
 };
 
