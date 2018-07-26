@@ -44,6 +44,9 @@ const saveProfile = (doc) => {
 };
 
 /**
+ * The underlying permissions model is rich (it can carry more options and audit info). 
+ * We mostly want to work with something simple.
+ * 
  * TODO dataspace and fields
  * @returns {String: Boolean} never null, empty = apply sensible defaults
  */
@@ -78,6 +81,7 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 	let pstrings = mapkv(permissions, (k,v) => {
 		return v? k : "-"+k;
 	});
+	// Audit trail of whats changed? TODO manage that server-side.
 	person.p = pstrings;
 	return person;
 };
