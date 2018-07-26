@@ -1,8 +1,11 @@
 #!/bin/bash
 
-VERSION='Version=1.5.0'
+VERSION='Version=1.5.3'
 
 ###
+# New in 1.5.3 : Fixed the way in which dboptions.properties files are sync'ed to targets, and renamed properly
+# New in 1.5.2 : Fixed the 'LESS_FILES_LOCATION' directory for the portal publishing process.
+# New in 1.5.1 : Added the directories 'web' and 'web-portal' to the portal syncing process.
 # New in 1.5.0 : Added new variable "CSS_OUTPUT_LOCATION" which lets individual project specify where converted LESS files should be put before syncing.
 # New in 1.4.14 : Found and fixed a bad output path where the all.css file was being created when compiling adunits.
 # New in 1.4.13 : Preserved a youagain config file
@@ -174,14 +177,14 @@ case $1 in
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
-		LESS_FILES_LOCATION="$PROJECT_LOCATION/web-portal/style"
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
 		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-portal/style"
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='portalmain'
-		PLEASE_SYNC=("config" "server" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
+		PLEASE_SYNC=("config" "server" "web" "web-portal" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
 		PRESERVE=("web-as/uploads")
     ;;
     profiler|PROFILER)
@@ -560,8 +563,13 @@ function sync_configs {
 			$GIT_SHORTHAND pull origin master
 			$GIT_SHORTHAND reset --hard FETCH_HEAD
 			for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
+				printf "\nsyncing file : $config\n"
 				$PSYNC $config $TARGET_DIRECTORY/config/
-				$PSSH "mv $TARGET_DIRECTORY/config/$HOSTNAME.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
+			done
+			printf "\nRenaming dboptions.properties file for specific servers\n"
+#			$PSSH "mv $TARGET_DIRECTORY/config/$HOSTNAME.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
+			for server in ${TARGETS[@]}; do
+				ssh winterwell@$server "mv $TARGET_DIRECTORY/config/$server.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
 			done
 		;;
 		sogive)

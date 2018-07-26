@@ -365,7 +365,7 @@ const Editor = ({row, column, value, item}) => {
 	let path = column.path;
 	if ( ! path) {
 		try {
-			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+			path = DataStore.getPathForItem(C.KStatus.ALL, item);
 		} catch(err) {
 			console.log("SimpleTable.jsx - cant get path-for-item", item, err);
 		}
@@ -384,7 +384,6 @@ const Editor = ({row, column, value, item}) => {
 		if (editedValue===undefined || editedValue===null) editedValue = value;
 		dummyItem[prop] = editedValue;
 	}
-
 	let type = column.type;
 	return (<Misc.PropControl type={type} item={dummyItem} path={path} prop={prop} 
 		saveFn={column.saveFn} 
