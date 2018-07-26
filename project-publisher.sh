@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.4.14'
+VERSION='Version=1.5.0'
 
 ###
+# New in 1.5.0 : Added new variable "CSS_OUTPUT_LOCATION" which lets individual project specify where converted LESS files should be put before syncing.
 # New in 1.4.14 : Found and fixed a bad output path where the all.css file was being created when compiling adunits.
 # New in 1.4.13 : Preserved a youagain config file
 # New in 1.4.12 : Added more items to sync for the profiler project
@@ -42,7 +43,8 @@ VERSION='Version=1.4.14'
 #         IMAGE_OPTIMISE='no'
 #         IMAGEDIRECTORY="" #Only needed if 'IMAGE_OPTIMISE' is set to 'yes'
 # 		CONVERT_LESS='no'
-#		LESS_FILES_LOCATION="" #Only needed if 'CONVERT_LESS' is set to 'yes' 
+#		LESS_FILES_LOCATION="" #Only needed if 'CONVERT_LESS' is set to 'yes'
+#		CSS_OUTPUT_LOCATION="" #Only needed if 'CONVERT_LESS' is set to 'yes'
 #         WEBPACK='no'
 # 		TEST_JAVASCRIPT='no'
 # 		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/" #Only needed if 'TEST_JAVASCRIPT' is set to 'yes', and you must ammend Section 10 to accomodate for how to find and process your JS files
@@ -119,6 +121,7 @@ case $1 in
         IMAGEDIRECTORY=""
 		CONVERT_LESS='yes'
 		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		JAVASCRIPT_FILES_TO_TEST=""
@@ -172,6 +175,7 @@ case $1 in
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
 		LESS_FILES_LOCATION="$PROJECT_LOCATION/web-portal/style"
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-portal/style"
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
@@ -204,6 +208,7 @@ case $1 in
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
 		LESS_FILES_LOCATION="$PROJECT_LOCATION/web/style"
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
@@ -497,12 +502,14 @@ function webpack {
 ##################################
 function stop_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
+		printf "\nStopping $SERVICE_NAME on $TARGETS\n"
 		$PSSH "sudo service $SERVICE_NAME stop"
 	fi
 }
 
 function start_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
+		printf "\nStarting $SERVICE_NAME on $TARGETS\n"
 		$PSSH "sudo service $SERVICE_NAME start"
 	fi
 }
@@ -512,11 +519,20 @@ function start_proc {
 ##################################
 function convert_less_files {
 	if [[ $CONVERT_LESS = 'yes' ]]; then
+		if [[ $LESS_FILES_LOCATION = "" ]]; then
+			printf "\nYour specified project $PROJECT , has the parameter 'CONVERT_LESS' set to 'yes', but no input directory has been set\nExiting process\n"
+			exit 0
+		elif
+			[[ $CSS_OUTPUT_LOCATION = "" ]]; then
+			printf "\nYour specified project $PROJECT , has the parameter 'CONVERT_LESS' set to 'yes', and an input directory IS specified,\nbut no output directory has been specified\nExiting process\n"
+			exit 0
+		fi
 		LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
 		for file in ${LESS_FILES[@]}; do
 			printf "\nconverting $file"
 			lessc "$file" "${file%.less}.css"
 		done
+		mv $LESS_FILES_LOCATION/*.css $CSS_OUTPUT_LOCATION/
 	fi
 }
 
@@ -729,7 +745,6 @@ function restore_preserved {
 ##########################################
 printf "\nCreating Target List\n"
 create_target_list
-printf "\nStopping $SERVICE_NAME on $TARGETS\n"
 stop_proc
 image_optimisation
 convert_less_files
@@ -742,7 +757,6 @@ restore_preserved
 printf "\nSyncing Configs\n"
 sync_configs
 webpack
-printf "\nStarting $SERVICE_NAME on $TARGETS\n"
 start_proc
 printf "\nPublishing Process has completed\n"
 printf "\nCleaning tmp-lib directory\n"
