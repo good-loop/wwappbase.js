@@ -27,6 +27,22 @@ const getProfile = ({xid, fields, status}) => {
 };
 
 /**
+ * Convenience method:
+ * Fetch the data for all xids. Return the profiles for those that are loaded.
+ * @param {String[]} xids 
+ * @returns {Person[]} peeps
+ */
+const getProfilesNow = xids => {
+	assert(_.isArray(xids), "Profiler.js getProfilesNow "+xids);
+	const fetcher = xid => DataStore.fetch(['data', 'Person', xid], () => {
+		return getProfile({xid});
+	});
+	let pvsPeep = xids.map(fetcher);	
+	let peeps = pvsPeep.filter(pvp => pvp.value).map(pvp => pvp.value);
+	return peeps;
+};
+
+/**
  * 
  * @return PV[]
  */
@@ -67,7 +83,7 @@ const getPermissions = ({person, dataspace, fields}) => {
 		}
 	});
 	// done
-	return perms;
+	return pmap;
 };
 
 
@@ -78,6 +94,7 @@ const getPermissions = ({person, dataspace, fields}) => {
  */
 const setPermissions = ({person, dataspace, permissions, fields}) => {
 	Person.assIsa(person);
+	assert( ! _.isArray(permissions), "Profiler.js use a map: "+permissions);
 	// inverse of getPermissions
 	let pstrings = mapkv(permissions, (k,v) => {
 		return v? k : "-"+k;
@@ -88,12 +105,14 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 };
 
 Person.getProfile = getProfile;
+Person.getProfilesNow = getProfilesNow;
 Person.saveProfile = saveProfile;
 Person.getPermissions = getPermissions;
 Person.setPermissions = setPermissions;
 
 export {
 	getProfile,
+	getProfilesNow,
 	saveProfile,
 	getPermissions,
 	setPermissions
