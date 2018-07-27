@@ -40,7 +40,7 @@ const getType = function(item) {
 };
 
 /**
- * Prefers a plain .id but also supports schema.org @id.
+ * Prefers a plain .id but also supports schema.org @id and WW's xid.
  * null returns null
  */
 const getId = (item) => {
@@ -48,7 +48,7 @@ const getId = (item) => {
 	if (item.id && item['@id'] && item.id !== item['@id']) {
 		console.warn("conflicting id/@id item ids "+item.id+" vs "+item['@id'], item);
 	}
-	const id = item.id || item['@id'];
+	const id = item.id || item['@id'] || item.xid;
 	if ( ! id) { // sanity check that the user hasnt passed a promise or promise-value
 		assert( ! item.then, "Passed a promise to getId()");
 		assert( ! item.promise, "Passed a promise-value to getId()");
