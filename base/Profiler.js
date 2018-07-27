@@ -34,6 +34,7 @@ const getProfile = ({xid, fields, status}) => {
  */
 const getProfilesNow = xids => {
 	assert(_.isArray(xids), "Profiler.js getProfilesNow "+xids);
+	xids = xids.filter(x => !!x); // no nulls
 	const fetcher = xid => DataStore.fetch(['data', 'Person', xid], () => {
 		return getProfile({xid});
 	});
