@@ -9,7 +9,7 @@ import Roles from '../Roles';
  * @param {String} currentPage The current page
  * @param {String[]} pages
  */
-const NavBar = ({currentPage, pages, children}) => {
+const NavBar = ({currentPage, pages, children, homelink}) => {
 	// make the page links
 	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
 	return (
@@ -20,7 +20,7 @@ const NavBar = ({currentPage, pages, children}) => {
 						<span className="sr-only">Toggle navigation</span>
 						<span className="icon-bar" /><span className="icon-bar" /><span className="icon-bar" />
 					</button>
-					<a className="" href="#dashboard">
+					<a className="" href={homelink ? homelink : "#dashboard"}>
 						<img className='logo-xlarge' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 					</a>
 				</div>
