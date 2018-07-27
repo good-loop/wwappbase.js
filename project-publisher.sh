@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.5.3'
+VERSION='Version=1.5.4'
 
 ###
+# New in 1.5.4 : Added 'hugh.soda.sh' as a test server for the youagain project/product
 # New in 1.5.3 : Fixed the way in which dboptions.properties files are sync'ed to targets, and renamed properly
 # New in 1.5.2 : Fixed the 'LESS_FILES_LOCATION' directory for the portal publishing process.
 # New in 1.5.1 : Added the directories 'web' and 'web-portal' to the portal syncing process.
@@ -224,7 +225,7 @@ case $1 in
     youagain|YOUAGAIN)
         PROJECT='youagain'
         PRODUCTION_SERVERS=(bester.soda.sh)
-        TEST_SERVERS=()
+        TEST_SERVERS=(hugh.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/code/youagain-server"
         TARGET_DIRECTORY='/home/winterwell/youagain'
         IMAGE_OPTIMISE='no'
