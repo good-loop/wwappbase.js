@@ -135,10 +135,26 @@ ServerIO.search = function(type, filter) {
  * Note: this can be over-ridden to special case some types
  */
 ServerIO.getUrlForItem = ({type, id, status}) => {
+	// HACK route charity requests to SoGive
+	if (type==='NGO' && C.app.service !== 'sogive') {
+		id = sogiveid(id);
+		return 'https://app.sogive.org/charity/'+encURI(id)+'.json'
+			+(status? '?status='+status : '');
+	}
 	let servlet = ServerIO.getServletForType(type);
-	let url = '/'+servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json';
+	let url = '/'+servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json'
+		+(status? '?status='+status : '');	
 	return url;
 };
+// HACK match mismatches
+const sogiveid = id => {
+	let sid = {
+		'battersea_dogs_and_cats_home': 'battersea-dogs-and-cats-home'
+	}[id];
+	if (sid) return sid;
+	return id;
+};
+
 ServerIO.getServletForType = (type) => {
 	return type.toLowerCase();
 };

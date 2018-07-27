@@ -246,7 +246,6 @@ const PropControl = ({type="text", path, prop, label, help, tooltip, error, vali
 				ServerIO.upload(file, progress, load)
 					.done(response => {
 						let imgurl = response.cargo.url;
-						// ?? odd relative path bug seen by DA July 2018: //path ??
 						DataStore.setValue(path.concat(prop), imgurl);
 					});
 			});

@@ -9,11 +9,12 @@ import Roles from '../Roles';
 import Misc from './Misc';
 
 const AboutPage = () => {
+	let website = C.app.website; // ?? default to top-level domain
 	return (
 		<div className='AboutPage'>
 			<h2>About {C.app.name}</h2>
 
-			<p>Please see our website for more information on SoGive: <a href='https://sogive.org'>https://sogive.org</a></p>
+			<p>Please see our website for more information on {C.app.name}: <a href={website}>{website}</a></p>
 
 			<p>Software version: <i>{JSON.stringify(C.app.version || 'alpha')}</i></p>
 
