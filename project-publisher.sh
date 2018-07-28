@@ -97,7 +97,7 @@ fi
 #################
 ### Preamble: Define Arrays and Variables
 #################
-SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','youagain')
+SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','youagain','myloop')
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
