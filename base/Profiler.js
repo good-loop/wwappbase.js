@@ -15,14 +15,15 @@ assert(Person);
 // for debug
 window.Person = Person;
 
+
 /**
- * 
- * @return {PV(Person)}
+ * Use with DataStore
+ * @return {promise(Person)}
  */
 const getProfile = ({xid, fields, status}) => {
 	assMatch(xid, String);
 	// NB: dont report 404s
-	// NB: /person isnt quite ready yet
+	// NB: the "standard" servlet would be /person but it isnt quite ready yet (at which point we should switch to ServerIO.getDataItem)
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {data: {fields, status}, swallow:true});
 };
 
