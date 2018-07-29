@@ -9,7 +9,8 @@ import DataStore from '../plumbing/DataStore';
  * You can wrap these cards -- if you do, pass down misc parameters to enable the CardAccordion wiring to work. e.g.
  * <Foo {...stuff}> => <Misc.Card {...stuff}>
  * 
- * @param title {String|JSX} will be wrapper in h3
+ * @param title {String|JSX} will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.
+ * @param titleChildren jsx elements to put in the header (can be used with/without title)
  * @param error {any} If set, colour the card red
  * @param warning {any} If set, colour the card yellow
  */
@@ -19,8 +20,8 @@ const Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChild
 	if ( ! children) {
 		return null; 
 	}
-	let header = '';
-	if (title || onHeaderClick || titleChildren) {
+	let header = null;
+	if (title || titleChildren) {
 		let hcssClasses = ['panel-heading', onHeaderClick? 'btn-link' : null].filter(x => !!x);
 		header = (
 			<div className={hcssClasses.join(" ")} onClick={onHeaderClick} >
