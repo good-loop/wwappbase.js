@@ -51,6 +51,8 @@ const Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChild
  *    children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
  */
 const CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
+	// filter null, undefined
+	children = children.filter(x => !! x);
 	showFilter = false; // TODO a keyword filter for big settings pages
 	// NB: React-BS provides Accordion, but it does not work with modular panel code. So sod that.
 	// TODO manage state
@@ -75,8 +77,6 @@ const CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
 		children = [children];
 	}
 	// TODO keyword filter
-	// filter null, undefined
-	children = children.filter(x => !! x);
 	const kids = React.Children.map(children, (Kid, i) => {
 		let collapse = ! open[i];
 		let onHeaderClick = e => {
