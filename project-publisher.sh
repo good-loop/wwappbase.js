@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.5.5'
+VERSION='Version=1.5.6'
 
 ###
+# New in 1.5.6 : Added names 'lg' and 'LG' as aliases for the datalogger publish.
 # New in 1.5.5 : Amended the list of needed items for a successful youagain server sync
 # New in 1.5.4 : Added 'hugh.soda.sh' as a test server for the youagain project/product
 # New in 1.5.3 : Fixed the way in which dboptions.properties files are sync'ed to targets, and renamed properly
@@ -156,7 +157,7 @@ case $1 in
 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
 		PRESERVE=("web-as/uploads")
     ;;
-    datalog|DATALOG|datalogger|DATALOGGER)
+    lg|LG|datalog|DATALOG|datalogger|DATALOGGER)
         PROJECT='datalogger'
         PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
         TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
