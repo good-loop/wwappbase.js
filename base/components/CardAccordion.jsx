@@ -51,6 +51,10 @@ const Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChild
  *    children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
  */
 const CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
+	// NB: accordion with one child is not an array
+	if ( ! _.isArray(children)) {
+		children = [children];
+	}
 	// filter null, undefined
 	children = children.filter(x => !! x);
 	showFilter = false; // TODO a keyword filter for big settings pages
@@ -72,10 +76,6 @@ const CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
 		return (<div className='CardAccordion' />);
 	}
 	assert(_.isArray(open), "Misc.jsx - CardAccordion - open not an array", open);
-	// NB: accordion with one child is not an array
-	if ( ! _.isArray(children)) {
-		children = [children];
-	}
 	// TODO keyword filter
 	const kids = React.Children.map(children, (Kid, i) => {
 		let collapse = ! open[i];
