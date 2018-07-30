@@ -1,8 +1,12 @@
 /**
+ * Easiest way to run: 
+ * 1) Open terminal
+ * 2) Enter "babel-node refreshBot9000"
+ * 
  * Adserver variant on the blink?
  * Need to see it in a live environment?
  * Then you need the refreshBot9000!
- * Simply give it a URL, and the refreshBot9000 will reload the page until it finds the Good-loop ad unit's tag
+ * Simply give it a URL, and the refreshBot9000 will reload the page until any requests to good-loop appear in the network tab
  * It really is that simple!!!!!!
  */
 const puppeteer = require('puppeteer');
@@ -25,20 +29,40 @@ const puppeteer = require('puppeteer');
 //     }
 // }
 
+const reloadTime = 5000;
+const pageToRefresh = 'http://test.good-loop.com/dfp-rectangle/';
+let goodLoopAdFound = false;
+
 async function refreshOMatic() {
     const browser = await puppeteer.launch({headless: false});
     const page = await browser.newPage();
-    await page.goto('https://www.emilyluxton.co.uk/packing/best-backpacks-for-female-travellers/'); 
+
+    // very important: cannot search through network requests for good-loop img otherwise
+    await page.setCacheEnabled(false); 
+    await page.setRequestInterception(true);
+    // listen for good-loop image being downloaded
+    page.on('request', r => {
+        // console.warn(r.url());
+        if(r.url().includes("good-loop")) {
+            goodLoopAdFound = true;
+        }
+        r.continue();            
+    });
+
+    await page.goto(pageToRefresh); 
     await refreshPage({page, browser});
 }
 
 async function refreshPage({page, browser}) {
-    await page.waitFor(10000);//Give stuff a second to load. Also prevents this from inadvertently becoming a weedy DDOS attack    
+    await page.waitFor(reloadTime);//Give stuff a second to load. Also prevents this from inadvertently becoming a weedy DDOS attack    
     await page.reload();
-    if (await page.$('.goodloopad') !== null) {
+    console.log('result: ' + goodLoopAdFound);
+
+    // if (await page.$('.goodloopad') !== null || goodLoopAdFound) {
+    if(goodLoopAdFound) {
         //Page found, do stuff
         console.log("Found it!")
-        switchToHeadedBrowser(browser);
+        // switchToHeadedBrowser(browser);
     }
     else{
         refreshPage({page, browser});
