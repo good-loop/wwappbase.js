@@ -111,16 +111,17 @@ class Store {
 			console.error("DataStore.js update - nested call");
 		}
 		this.updating = true;
-
-		// merge in the new state
-		if (newState) {
-			_.merge(this.appstate, newState);
+		try {
+			// merge in the new state
+			if (newState) {
+				_.merge(this.appstate, newState);
+			}
+			// callbacks (e.g. React render)
+			this.callbacks.forEach(fn => fn(this.appstate));
+		} finally {
+			this.updating = false;
 		}
-		// callbacks (e.g. React render)
-		this.callbacks.forEach(fn => fn(this.appstate));
-
-		this.updating = false;
-	}
+	} // ./update
 
 	/**
 	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.

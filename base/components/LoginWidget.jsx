@@ -24,9 +24,9 @@ const VERB_PATH = ['widget','LoginWidget','verb'];
 
 const STATUS_PATH = ['widget', 'LoginWidget', 'status'];
 
-const LoginLink = ({className}) => {
+const LoginLink = ({className, verb='Login'}) => {
 	return (<a className={className} href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); } } >
-		Log in
+		{verb}
 	</a>);
 	
 };
