@@ -233,7 +233,7 @@ ActionMan.list = ({type, status, q}) => {
 ServerIO.list = ({type, status, q}) => {
 	let servlet = ServerIO.getServletForType(type);
 	assert(C.KStatus.has(status), status);
-	// FIXME '/list' should be '_list' in latest code. It is set to the older endpoint for testing against live data.
+	// NB '/_list' used to be '/list' until July 2018
 	return ServerIO.load('/'+servlet + (ServerIO.dataspace? '/'+ServerIO.dataspace : '') + '/_list.json', { data: { status, q } });
 	// .then((res) => {
 	// 	return res.cargo.hits;
