@@ -78,15 +78,27 @@ const defineRole = (role, cans) => {
 	cans4role[role] = cans;	
 };
 
+/**
+ * Convenience for "is this a developer?"
+ * @returns Boolean
+ */
+const isDev = () => {
+	let cana = iCan('admin');
+	let cand = iCan('dev');
+	return cana.value || cand.value;
+};
+
 const Roles = {
 	iCan,
 	defineRole,
-	getRoles
+	getRoles,
+	isDev
 };
 
 export default Roles;
 export {
 	defineRole,
 	iCan,
-	getRoles
+	getRoles,
+	isDev
 }
