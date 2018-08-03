@@ -44,7 +44,7 @@ const args = process.argv.reduce((obj, v, i) => {
 }, {});
 
 const {url} = args;
-const REFRESH_LIMIT = +args.refresh || 20; // number of times to refresh before giving up
+const REFRESH_LIMIT = +args.refresh || Number.MAX_SAFE_INTEGER; // number of times to refresh before giving up
 const reloadTime = 5000; // how long to wait before reloading page again
 
 let refreshCounter = 0;
