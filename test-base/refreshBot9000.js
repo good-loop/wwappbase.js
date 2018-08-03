@@ -69,7 +69,7 @@ async function refreshOMatic() {
     await page.goto(url);
 
     const result = await refreshPage({page, browser});
-    browser.close();
+    // browser.close();
     return result;
 }
 
