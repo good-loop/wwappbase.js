@@ -12,6 +12,6 @@ fi
 ################
 ### Run the Bot
 ################
-cd ../test-base
+cd /home/$USER/winterwell/wwappbase.js/test-base
 npm i
 babel-node refreshBot9000 --url $1
