@@ -35,6 +35,7 @@ const str = printer.str;
  * 	sortMethod: function
  * 	sortAccessor: function
  * 	type: Used for providing an editor - see Misc.PropControl* 	
+ * 	tooltip: Text to show as help
  * }
  */
 
@@ -224,7 +225,11 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 	const headerKeyString = column.Header || column.accessor || str(column);
 	if (headerRender) hText = headerRender(column);
 	else hText = column.Header || column.accessor || str(column);
-	dataArray[0].push(column.Header || column.accessor || str(column)); // csv gets the text, never jsx!
+	dataArray[0].push(column.Header || column.accessor || str(column)); // csv gets the text, never jsx from headerRender!
+	// add in a tooltip?
+	if (column.tooltip) {
+		hText = <div title={column.tooltip}>{hText}</div>;
+	}
 
 	let showColumnControl = null;
 	if(checkboxValues) {
@@ -244,7 +249,7 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 	return (
 		<th>
 			{showColumnControl}
-			<span onClick={onClick}>{hText}{arrow}</span>
+			<span onClick={onClick}>{hText}{arrow}{help}</span>
 		</th>
 	);
 };
