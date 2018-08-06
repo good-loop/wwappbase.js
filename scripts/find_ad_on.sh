@@ -12,6 +12,6 @@ fi
 ################
 ### Run the Bot
 ################
-cd ../
+cd ../test-base
 npm i
 babel-node refreshBot9000 --url $1
