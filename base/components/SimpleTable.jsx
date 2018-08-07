@@ -371,7 +371,8 @@ const Editor = ({row, column, value, item}) => {
 	let path = column.path;
 	if ( ! path) {
 		try {
-			path = DataStore.getPathForItem(C.KStatus.ALL, item);
+			// we edit draft
+			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 		} catch(err) {
 			console.log("SimpleTable.jsx - cant get path-for-item", item, err);
 		}
