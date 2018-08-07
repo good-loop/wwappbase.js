@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=1.6.0'
+VERSION='Version=1.6.1'
 
 ###
 # New in 1.6.0 : Changed the Automated-Testing project-name matching to a case->esac loop. And added automated testing for the portal project.
@@ -728,7 +728,7 @@ function run_automated_tests {
 			;;
 			portal)
 				cd $PROJECT_LOCATION/puppeteer-tests
-				bash runt-tests.sh $TYPE_OF_PUBLISH
+				bash run-tests.sh $TYPE_OF_PUBLISH
 			;;
 		esac
 	fi
