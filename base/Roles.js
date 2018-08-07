@@ -85,7 +85,7 @@ const defineRole = (role, cans) => {
 const isDev = () => {
 	let cana = iCan('admin');
 	let cand = iCan('dev');
-	return cana.value || cand.value;
+	return !! (cana.value || cand.value);
 };
 
 const Roles = {

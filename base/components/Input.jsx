@@ -1,4 +1,4 @@
-/** TODO refactor Misc.PropControl into here
+/** PropControl provides inputs linked to DataStore.
  */
 import React from 'react';
 
