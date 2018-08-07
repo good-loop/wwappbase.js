@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.5.6'
+VERSION='Version=1.6.0'
 
 ###
+# New in 1.6.0 : Changed the Automated-Testing project-name matching to a case->esac loop. And added automated testing for the portal project.
 # New in 1.5.6 : Added names 'lg' and 'LG' as aliases for the datalogger publish.
 # New in 1.5.5 : Amended the list of needed items for a successful youagain server sync
 # New in 1.5.4 : Added 'hugh.soda.sh' as a test server for the youagain project/product
@@ -189,6 +190,7 @@ case $1 in
 		SERVICE_NAME='portalmain'
 		PLEASE_SYNC=("config" "server" "web" "web-portal" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
 		PRESERVE=("web-as/uploads")
+		AUTOMATED_TESTING='yes'
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
@@ -718,11 +720,17 @@ function sync_whole_project {
 ##########################################
 function run_automated_tests {
 	if [[ $AUTOMATED_TESTING = 'yes' ]]; then
-		if [[ $PROJECT = 'sogive-app' ]]; then
-			printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
-			cd $PROJECT_LOCATION/test
-			bash run-tests.sh $TYPE_OF_PUBLISH
-		fi
+		printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
+		case $PROJECT in
+			sogive-app)
+				cd $PROJECT_LOCATION/test
+				bash run-tests.sh $TYPE_OF_PUBLISH
+			;;
+			portal)
+				cd $PROJECT_LOCATION/puppeteer-tests
+				bash runt-tests.sh $TYPE_OF_PUBLISH
+			;;
+		esac
 	fi
 }
 
