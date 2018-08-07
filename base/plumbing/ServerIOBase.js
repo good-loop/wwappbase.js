@@ -153,7 +153,8 @@ ServerIO.getUrlForItem = ({type, id, status}) => {
 // HACK match mismatches
 const sogiveid = id => {
 	let sid = {
-		'battersea_dogs_and_cats_home': 'battersea-dogs-and-cats-home'
+		'battersea_dogs_and_cats_home': 'battersea-dogs-and-cats-home',
+		'alzheimers_research_uk': 'alzheimers-research-uk'
 	}[id];
 	if (sid) return sid;
 	return id;

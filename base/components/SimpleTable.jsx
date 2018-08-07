@@ -249,7 +249,7 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 	return (
 		<th>
 			{showColumnControl}
-			<span onClick={onClick}>{hText}{arrow}{help}</span>
+			<span onClick={onClick}>{hText}{arrow}</span>
 		</th>
 	);
 };
@@ -339,8 +339,8 @@ const Cell = ({item, row, column, dataRow}) => {
 
 		// HACK for the csv
 		dataRow.push(defaultCellRender(v, column)); // TODO use custom render - but what about html/jsx?
-
-		return <td>{render(v, column)}</td>;
+		const cellGuts = render(v, column);
+		return <td>{cellGuts}</td>;
 	} catch(err) {
 		// be robust
 		console.error(err);
@@ -358,8 +358,9 @@ const TotalCell = ({data, column}) => {
 	});
 	if ( ! total) return <td></td>;
 	// ??custom cell render might break on a Number. But Money seems to be robust about its input.
-	let render = column.Cell || defaultCellRender;
-	return <td>{render(total, column)}</td>;
+	const render = column.Cell || defaultCellRender;
+	const cellGuts = render(total, column);
+	return <td>{cellGuts}</td>;
 };
 
 /**
