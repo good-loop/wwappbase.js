@@ -334,6 +334,9 @@ const PropControl = (props) => {
 
 
 /**
+ * 
+ * TODO buttons style
+ * 
  * TODO radio buttons
  */
 const PropControlRadio = ({prop, value, path, item, dflt, saveFn, options, labels}) => {
