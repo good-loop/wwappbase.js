@@ -12,15 +12,17 @@ import DataStore from '../plumbing/DataStore';
 import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
+import PropControl from './Input';
 
 const TestPage = () => {
+	let path = ['widget', 'TestPage'];
+
 	return (
 		<div className='TestPage'>
 			<h2>Test Page</h2>
 			<p>Insert a test widget below</p>
 
-			
-
+			<PropControl type='radio' path={path} prop='radioTest' options={['daily','weekly','annual']} />
 
 		</div>
 	);

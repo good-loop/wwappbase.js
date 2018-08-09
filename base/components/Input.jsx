@@ -44,7 +44,8 @@ import md5 from 'md5';
 * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
 * @param https {?Boolean} if true, urls must use https not http (recommended)
  */
-const PropControl = ({type="text", path, prop, label, help, tooltip, error, validator, recursing, inline, ...stuff}) => {
+const PropControl = (props) => {
+	let {type="text", path, prop, label, help, tooltip, error, validator, recursing, inline, ...stuff} = props;
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
@@ -99,7 +100,7 @@ const PropControl = ({type="text", path, prop, label, help, tooltip, error, vali
 			<div className={'form-group' + (error? ' has-error' : '')}>
 				{label || tooltip? <label htmlFor={stuff.name}>{labelText} {helpIcon}</label> : null}
 				{inline? ' ' : null}
-				<Misc.PropControl
+				<PropControl
 					type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 				/>
 				{help? <span className="help-block">{help}</span> : null}
@@ -291,6 +292,9 @@ const PropControl = ({type="text", path, prop, label, help, tooltip, error, vali
 		return <PropControlDate {...acprops} />;
 	}
 
+	if (type==='radio') {
+		return <PropControlRadio {...props} />
+	}
 	if (type==='select') {
 		const { options, defaultValue, labels, ...rest} = otherStuff;
 
@@ -327,6 +331,45 @@ const PropControl = ({type="text", path, prop, label, help, tooltip, error, vali
 	// NB: type=color should produce a colour picker :)
 	return <Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
 }; //./PropControl
+
+
+/**
+ * TODO radio buttons
+ */
+const PropControlRadio = ({prop, value, path, item, dflt, saveFn, options, labels}) => {
+	const { options, defaultValue, labels, ...rest} = otherStuff;
+
+	assert(options, 'PropControl: no options for radio '+[prop, otherStuff]);
+	assert(options.map, 'PropControl: radio options for '+prop+' not an array '+options);
+	// Make an option -> nice label function
+	// the labels prop can be a map or a function
+	let labeller = v => v;
+	if (labels) {
+		if (_.isArray(labels)) {
+			labeller = v => labels[options.indexOf(v)] || v;
+		} else if (_.isFunction(labels)) {
+			labeller = labels;				
+		} else {
+			// map
+			labeller = v => labels[v] || v;
+		}
+	}
+	// make the options html
+	const onChange = e => {
+		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
+		const val = e && e.target && e.target.value;
+		DataStore.setValue(proppath, val);
+		if (saveFn) saveFn({path, prop, item, value: val});		
+	};
+
+	let domOptions = options.map(option => <div key={"option_"+option}><FormControl type='radio'  value={option} />{labeller(option)}</div>);
+	return (
+		<div className='form-control' >
+			{domOptions}
+		</div>
+	);	
+}; // ./radio
+
 
 /**
  * Strip commas £/$/euro and parse float
