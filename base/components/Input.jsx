@@ -4,7 +4,7 @@ import React from 'react';
 
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
-import { Checkbox, Radio, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
+import { Checkbox, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
 
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
@@ -156,8 +156,8 @@ const PropControl = (props) => {
 
 		return (
 			<div className='form-group'>
-				<Radio value name={prop} onChange={onChange} checked={value} inline>Yes</Radio>
-				<Radio value={false} name={prop} onChange={onChange} checked={noChecked} inline>No</Radio>
+				<BS.Radio value name={prop} onChange={onChange} checked={value} inline label='Yes' />
+				<BS.Radio value={false} name={prop} onChange={onChange} checked={noChecked} inline label='No' />
 			</div>
 		);
 	}
@@ -293,7 +293,7 @@ const PropControl = (props) => {
 		return <PropControlDate {...acprops} />;
 	}
 
-	if (type==='radio') {
+	if (type==='radio' || type==='checkboxes') {
 		return <PropControlRadio value={value} {...props} />
 	}
 	if (type==='select') {
@@ -340,7 +340,7 @@ const PropControl = (props) => {
  * 
  * TODO radio buttons
  */
-const PropControlRadio = ({prop, value, path, item, dflt, saveFn, options, labels, inline, defaultValue, ...otherStuff}) => {
+const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options, labels, inline, defaultValue, ...otherStuff}) => {
 	assert(options, 'PropControl: no options for radio '+prop);
 	assert(options.map, 'PropControl: radio options for '+prop+' not an array '+options);
 	// Make an option -> nice label function
@@ -364,12 +364,12 @@ const PropControlRadio = ({prop, value, path, item, dflt, saveFn, options, label
 		if (saveFn) saveFn({path, prop, item, value: val});		
 	};
 
-	// https://getbootstrap.com/docs/4.1/components/forms/#checkboxes-and-radios
-	// https://getbootstrap.com/docs/3.3/css/#forms
+	const Check = type==='checkboxes'? BS.Checkbox : BS.Radio;
+
 	return (
 		<div className='form-group' >
 			{options.map(option => (			
-				<BS.Radio key={"option_"+option} name={prop} value={option} 
+				<Check key={"option_"+option} name={prop} value={option} 
 						checked={option == value} 
 						onChange={onChange} {...otherStuff} 
 						label={labeller(option)}
@@ -591,7 +591,7 @@ const FormControl = ({value, type, required, ...otherProps}) => {
 };
 
 
-const ControlTypes = new Enum("img imgUpload textarea text select radio autocomplete password email url color Money checkbox"
+const ControlTypes = new Enum("img imgUpload textarea text select radio checkboxes autocomplete password email url color Money checkbox"
 							+" yesNo location date year number arraytext address postcode json");
 
 
