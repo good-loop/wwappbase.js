@@ -19,6 +19,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 // import ActionMan from '../plumbing/ActionManBase';
 import printer from '../utils/printer';
 import C from '../CBase';
+import BS from './BS';
 import Money from '../data/Money';
 import Autocomplete from 'react-autocomplete';
 // // import I18n from 'easyi18n';
@@ -293,7 +294,7 @@ const PropControl = (props) => {
 	}
 
 	if (type==='radio') {
-		return <PropControlRadio {...props} />
+		return <PropControlRadio value={value} {...props} />
 	}
 	if (type==='select') {
 		const { options, defaultValue, labels, ...rest} = otherStuff;
@@ -339,10 +340,8 @@ const PropControl = (props) => {
  * 
  * TODO radio buttons
  */
-const PropControlRadio = ({prop, value, path, item, dflt, saveFn, options, labels}) => {
-	const { options, defaultValue, labels, ...rest} = otherStuff;
-
-	assert(options, 'PropControl: no options for radio '+[prop, otherStuff]);
+const PropControlRadio = ({prop, value, path, item, dflt, saveFn, options, labels, inline, defaultValue, ...otherStuff}) => {
+	assert(options, 'PropControl: no options for radio '+prop);
 	assert(options.map, 'PropControl: radio options for '+prop+' not an array '+options);
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
@@ -361,14 +360,21 @@ const PropControlRadio = ({prop, value, path, item, dflt, saveFn, options, label
 	const onChange = e => {
 		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 		const val = e && e.target && e.target.value;
-		DataStore.setValue(proppath, val);
+		DataStore.setValue(path.concat(prop), val);
 		if (saveFn) saveFn({path, prop, item, value: val});		
 	};
 
-	let domOptions = options.map(option => <div key={"option_"+option}><FormControl type='radio'  value={option} />{labeller(option)}</div>);
+	// https://getbootstrap.com/docs/4.1/components/forms/#checkboxes-and-radios
+	// https://getbootstrap.com/docs/3.3/css/#forms
 	return (
-		<div className='form-control' >
-			{domOptions}
+		<div className='form-group' >
+			{options.map(option => (			
+				<BS.Radio key={"option_"+option} name={prop} value={option} 
+						checked={option == value} 
+						onChange={onChange} {...otherStuff} 
+						label={labeller(option)}
+						inline={inline} />)
+			)}
 		</div>
 	);	
 }; // ./radio
@@ -435,7 +441,7 @@ const PropControlMoney = ({prop, value, path, proppath,
 	let minWidth = ((""+v).length / 1.5)+"em";
 	return (<InputGroup>
 		{currency}
-		<Misc.FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{minWidth}}/>
+		<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{minWidth}}/>
 	</InputGroup>);
 }; // ./£
 
@@ -585,7 +591,7 @@ const FormControl = ({value, type, required, ...otherProps}) => {
 };
 
 
-const ControlTypes = new Enum("img imgUpload textarea text select autocomplete password email url color Money checkbox"
+const ControlTypes = new Enum("img imgUpload textarea text select radio autocomplete password email url color Money checkbox"
 							+" yesNo location date year number arraytext address postcode json");
 
 
