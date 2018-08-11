@@ -66,6 +66,7 @@ module.exports = {
 		"import/prefer-default-export": "warn",
 		"implicit-arrow-linebreak": "off",
 		"react/button-has-type": "warn",
+		"operator-linebreak": "warn",
 		/* broken - seems to cause errors in linting */
 		"no-multi-assign": "off",
 		/* off because the warnings are more noise than signal i.e. we might switch them on sometime*/
