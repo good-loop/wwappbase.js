@@ -153,6 +153,9 @@ const createBlank = ({type, navpage, base, id, make}) => {
 	DataStore.invalidateList(type);
 };
 
+/**
+ * A create-new button
+ */
 const CreateButton = ({type, props, navpage, base, make}) => {
 	assert(type);
 	assert( ! base || ! base.id, "ListLoad - dont pass in ids (defence against object reuse bugs) "+type);
