@@ -159,7 +159,7 @@ const sogiveid = id => {
 		'art_fund': 'national-art-collections-fund',
 		'battersea_dogs_and_cats_home': 'battersea-dogs-and-cats-home',
 		'bdfa': 'batten-disease-family-association',
-		'cancer_reasearch_uk': 'cancer-research-uk',
+		'cancer_research_uk': 'cancer-research-uk',
 		'care_international': 'care-international-uk',
 		'children_in_need': 'bbc-children-in-need',
 		'core_arts': 'core-arts',
