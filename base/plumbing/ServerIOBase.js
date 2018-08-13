@@ -158,8 +158,39 @@ ServerIO.getUrlForItem = ({type, id, status}) => {
 // HACK match mismatches
 const sogiveid = id => {
 	let sid = {
+		'action_against_hunger': 'action-against-hunger',
+		'against_malaria_foundation': 'against-malaria-foundation',
+		'alzheimers_research_uk': 'alzheimers-research-uk',
+		'art_fund': 'national-art-collections-fund',
 		'battersea_dogs_and_cats_home': 'battersea-dogs-and-cats-home',
-		'alzheimers_research_uk': 'alzheimers-research-uk'
+		'bdfa': 'batten-disease-family-association',
+		'cancer_research_uk': 'cancer-research-uk',
+		'care_international': 'care-international-uk',
+		'children_in_need': 'bbc-children-in-need',
+		'core_arts': 'core-arts',
+		'diabetes_uk': 'the-british-diabetic-association',
+		'end_fund': 'end-fund',
+		'great_ormand_street': 'great-ormand-street-hospital-childrens-charity',
+		'macmillan_cancer_support': 'macmillan-cancer-support',
+		'marine_conservation_society': 'marine-conservation-society',
+		'medicins_sans_frontieres': 'medecins-sans-frontieres-aka-doctors-without-borders-or-msf',
+		'meningitis_research_foundation': 'meningitis-research-foundation',
+		'movember_foundation': 'movember-europe',
+		'ms_society': 'multiple-sclerosis-society',
+		'nspcc': 'the-national-society-for-the-prevention-of-cruelty-to-children',
+		'plan_uk': 'plan-international-uk',
+		'save_the_children': 'the-save-the-children-fund',
+		'shelter_uk': 'shelter-national-campaign-for-homeless-people-limited',
+		'solar_aid': 'solar-aid',
+		'target_ovarian_cancer': 'target-ovarian-cancer',
+		'tate_foundation': 'tate-foundation',
+		'tommys': 'tommy-s',
+		'trussell_trust': 'the-trussell-trust',
+		'war_child': 'war-child-uk',
+		'woodland_trust': 'woodland-trust',
+		'wwf': 'wwf-uk'
+
+		
 	}[id];
 	if (sid) return sid;
 	return id;
