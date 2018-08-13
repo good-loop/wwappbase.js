@@ -100,6 +100,9 @@ const onPick = ({event, navpage, id}) => {
 
 /**
  * These can be clicked or control-clicked :(
+ * 
+ * @param servlet
+ * @param navpage -- How/why/when does this differ from servlet??
  */
 const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
 	if ( ! navpage) navpage = servlet;

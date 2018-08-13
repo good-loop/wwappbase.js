@@ -149,12 +149,15 @@ const defineType = (type) => {
 };
 
 /**
- * @param type {String}
- * @returns the DataClass if defined for this type
+ * @param typeOrItem {String|Object} If object, getType() is used
+ * @returns {?DataClass} the DataClass if defined for this type
  */
-const getDataClass = type => {
-	if ( ! type) return;
-	assMatch(type, String);
+const getDataClass = typeOrItem => {
+	if ( ! typeOrItem) return;
+	if (_.isString(typeOrItem)) {
+		return allTypes[typeOrItem];
+	}
+	let type = getType(typeOrItem);
 	return allTypes[type];
 };
 

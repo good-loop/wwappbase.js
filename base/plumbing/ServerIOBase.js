@@ -136,6 +136,10 @@ ServerIO.search = function(type, filter) {
 
 
 /**
+ * Contains some hacks: 
+ * NGO (charity) -> SoGive (except for SoGive)
+ * Support for /servlet/dataspace/id paths via ServerIO.dataspace (off by default)
+ * 
  * Note: this can be over-ridden to special case some types
  */
 ServerIO.getUrlForItem = ({type, id, status}) => {
@@ -150,6 +154,7 @@ ServerIO.getUrlForItem = ({type, id, status}) => {
 		+(status? '?status='+status : '');	
 	return url;
 };
+
 // HACK match mismatches
 const sogiveid = id => {
 	let sid = {

@@ -64,6 +64,31 @@ Misc.Loading = ({text}) => {
 
 
 /**
+ * list with add, TODO remove, reorder. A simpler in-memory cousin of ListLoad
+ * @param ItemEditor {Function} {item, path} -> jsx
+ * @param blankFactory {?Function} path -> blank
+ * 
+ */
+Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage}) => {
+	if ( ! ItemEditor) {
+		ItemEditor = ({item, path}) => <div className='well'>{JSON.stringify(item)}</div>;
+	}
+	let list = DataStore.getValue(path) || [];
+	assert(_.isArray(list), "ListEditor "+path, list);
+	const addBlank = () => {
+		const blank = blankFactory? {} : blankFactory(path);
+		list = list.concat(blank);
+		DataStore.setValue(path, list);
+	};
+	return (<div>
+		{list.map( (tt, i) => <ItemEditor key={'tt'+i} i={i} item={tt} path={path.concat(i)} {...stuff} />)}
+		{list.length? null : <p>{noneMessage || "None"}</p>}
+		<div><button className='btn btn-default' onClick={addBlank}><Misc.Icon glyph='plus' /> Create</button></div>
+	</div>);
+};
+
+
+/**
  * 
  * @param {
  * 	TODO?? noPadding: {Boolean} switch off Bootstrap's row padding.

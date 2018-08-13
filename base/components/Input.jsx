@@ -339,6 +339,8 @@ const PropControl = (props) => {
  * TODO buttons style
  * 
  * TODO radio buttons
+ * 
+ * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
 const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options, labels, inline, defaultValue, ...otherStuff}) => {
 	assert(options, 'PropControl: no options for radio '+prop);
