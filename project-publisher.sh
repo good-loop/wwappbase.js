@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.6.1'
+VERSION='Version=1.7.0'
 
 ###
+# New in 1.7.0 : Added 'Calstat' as a project that can be published.  Alphabetised available projects so that they are more easily found
+#					and edited by a human.
 # New in 1.6.0 : Changed the Automated-Testing project-name matching to a case->esac loop. And added automated testing for the portal project.
 # New in 1.5.6 : Added names 'lg' and 'LG' as aliases for the datalogger publish.
 # New in 1.5.5 : Amended the list of needed items for a successful youagain server sync
@@ -99,7 +101,7 @@ fi
 #################
 ### Preamble: Define Arrays and Variables
 #################
-SUPPORTED_PROJECTS=('adserver','datalogger','portal','profiler','sogive-app','youagain','myloop')
+SUPPORTED_PROJECTS=('adserver','calstat','datalogger','myloop','portal','profiler','sogive-app','youagain')
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
@@ -118,6 +120,57 @@ fi
 ### Section 01: Get the name of the project and handle invalid first arguments
 #################
 case $1 in
+    adserver|ADSERVER)
+        PROJECT='adserver'
+        PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
+		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
+        TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
+        IMAGE_OPTIMISE='yes'
+        IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert"
+		CONVERT_LESS='no'
+        WEBPACK='no'
+		TEST_JAVASCRIPT='yes'
+		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/"
+		COMPILE_UNITS='yes'
+		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
+		RESTART_SERVICE_AFTER_SYNC='yes'
+		SERVICE_NAME='adservermain'
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+		PRESERVE=("web-as/uploads")
+	;;
+	calstat|CALSTAT)
+		PROJECT='calstat'
+		PRODUCTION_SERVERS=(hugh.soda.sh)
+		TEST_SERVERS=(hugh.soda.sh)
+		PROJECT_LOCATION="/home/$USER/winterwell/calstat"
+		TARGET_DIRECTORY='/home/winterwell/calstat'
+		IMAGE_OPTIMISE='no'
+		CONVERT_LESS='yes'
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
+		WEBPACK='yes'
+		TEST_JAVASCRIPT='no'
+		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
+		SERVICE_NAME='calstat'
+		PLEASE_SYNC=("config" "lib" "src" "web" "ical-count.js" "package.json" "webpack.config.js")
+	;;
+	lg|LG|datalog|DATALOG|datalogger|DATALOGGER)
+        PROJECT='datalogger'
+        PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
+		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
+        TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
+        IMAGE_OPTIMISE='no'
+		CONVERT_LESS='no'
+        WEBPACK='no'
+		TEST_JAVASCRIPT='no'
+		COMPILE_UNITS='no'
+		RESTART_SERVICE_AFTER_SYNC='yes'
+		SERVICE_NAME='lg'
+		PLEASE_SYNC=("config" "src" "src-js" "lib" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "winterwell.datalog.jar")
+    ;;
 	my-loop|MY-LOOP|myloop|MYLOOP)
         PROJECT='myloop'
         PRODUCTION_SERVERS=('hugh.soda.sh')
@@ -138,40 +191,6 @@ case $1 in
 		SERVICE_NAME=''
 		PLEASE_SYNC=("config" "src" "web" "package.json" "webpack.config.js" ".babelrc")
 		AUTOMATED_TESTING='no'
-    ;;
-    adserver|ADSERVER)
-        PROJECT='adserver'
-        PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh)
-        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
-		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
-        TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
-        IMAGE_OPTIMISE='yes'
-        IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert"
-		CONVERT_LESS='no'
-        WEBPACK='no'
-		TEST_JAVASCRIPT='yes'
-		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/"
-		COMPILE_UNITS='yes'
-		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
-		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='adservermain'
-		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
-		PRESERVE=("web-as/uploads")
-    ;;
-    lg|LG|datalog|DATALOG|datalogger|DATALOGGER)
-        PROJECT='datalogger'
-        PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
-        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
-		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
-        TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
-        IMAGE_OPTIMISE='no'
-		CONVERT_LESS='no'
-        WEBPACK='no'
-		TEST_JAVASCRIPT='no'
-		COMPILE_UNITS='no'
-		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='lg'
-		PLEASE_SYNC=("config" "src" "src-js" "lib" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "winterwell.datalog.jar")
     ;;
     portal|PORTAL)
         PROJECT='portal'
