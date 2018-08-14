@@ -26,7 +26,7 @@ import {getType, getId, nonce} from '../data/DataClass';
  * @param servlet {?String} e.g. "publisher" Normally unset, and taken from the url.
  * @param ListItem {?React component} if set, replaces DefaultListItem
  */
-const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => {
+const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes, canDelete}) => {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
 		console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
@@ -82,7 +82,8 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes}) => 
 			navpage={navpage} 
 			item={item} 
 			onPick={onPick} 
-			checkboxes={checkboxes} />)
+			checkboxes={checkboxes}
+			canDelete={canDelete} />)
 	);
 	return (<div>
 		{items.length === 0 ? 'No results found' : null}
@@ -104,7 +105,7 @@ const onPick = ({event, navpage, id}) => {
  * @param servlet
  * @param navpage -- How/why/when does this differ from servlet??
  */
-const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
+const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete}) => {
 	if ( ! navpage) navpage = servlet;
 	const id = getId(item);
 	const itemUrl = modifyHash([servlet, id], null, true);
@@ -112,6 +113,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
 	return (
 		<div className='ListItemWrapper'>
 			{checkboxes? <div className='pull-left'><Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} /></div> : null}
+			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<a href={itemUrl}
 				onClick={event => onPick({ event, navpage, id })}
 				className={'ListItem btn btn-default status-'+item.status}
@@ -123,6 +125,12 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes}) => {
 		</div>
 	);
 };
+
+const DefaultDelete = ({type,id}) => (
+	<button className='btn btn-xs btn-default pull-right' 
+		onClick={e => ActionMan.delete(type, id)} title='Delete'>
+		<Misc.Icon glyph='trash' />
+	</button>);
 
 /**
  * Make a local blank, and set the nav url
