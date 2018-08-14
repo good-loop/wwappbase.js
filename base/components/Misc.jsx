@@ -69,19 +69,30 @@ Misc.Loading = ({text}) => {
  * @param blankFactory {?Function} path -> blank
  * 
  */
-Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage}) => {
+Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, ...stuff}) => {
 	if ( ! ItemEditor) {
-		ItemEditor = ({item, path}) => <div className='well'>{JSON.stringify(item)}</div>;
+		ItemEditor = ({item, path}) => <div>{JSON.stringify(item)}</div>;
 	}
 	let list = DataStore.getValue(path) || [];
 	assert(_.isArray(list), "ListEditor "+path, list);
 	const addBlank = () => {
-		const blank = blankFactory? {} : blankFactory(path);
+		const blank = blankFactory? blankFactory(path) : {};
 		list = list.concat(blank);
 		DataStore.setValue(path, list);
 	};
+	const remove = i => {
+		// confirm
+		let ok = confirm("Remove - Are you sure?");
+		if ( ! ok) return;
+		list.splice(i, 1); // modify list to remove the item
+		DataStore.setValue(path, list, true); // update
+	};
 	return (<div>
-		{list.map( (tt, i) => <ItemEditor key={'tt'+i} i={i} item={tt} path={path.concat(i)} {...stuff} />)}
+		{list.map( (tt, i) => 
+			<div key={'tt'+i} className='well'>
+				<button onClick={e => remove(i)} className='btn btn-danger btn-xs pull-right'><Misc.Icon glyph='trash'/></button>
+				<ItemEditor i={i} item={tt} path={path.concat(i)} {...stuff} />				
+			</div>)}
 		{list.length? null : <p>{noneMessage || "None"}</p>}
 		<div><button className='btn btn-default' onClick={addBlank}><Misc.Icon glyph='plus' /> Create</button></div>
 	</div>);
