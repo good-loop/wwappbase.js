@@ -12,7 +12,7 @@ import DataStore from '../plumbing/DataStore';
 import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
-import PropControl from './Input';
+import PropControl from './PropControl';
 
 const TestPage = () => {
 	let path = ['widget', 'TestPage'];
