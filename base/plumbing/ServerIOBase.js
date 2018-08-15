@@ -157,7 +157,10 @@ ServerIO.getUrlForItem = ({type, id, status}) => {
 
 // HACK match mismatches
 const sogiveid = id => {
+
+	// manual id matching, only needed for ids that don't follow the rule: _ --> -
 	let sid = {
+		'learning_through_landscapes-teachertraining': 'the-learning-through-landscapes-trust',
 		'action_against_hunger': 'action-against-hunger',
 		'against_malaria_foundation': 'against-malaria-foundation',
 		'alzheimers_research_uk': 'alzheimers-research-uk',
@@ -189,9 +192,12 @@ const sogiveid = id => {
 		'war_child': 'war-child-uk',
 		'woodland_trust': 'woodland-trust',
 		'wwf': 'wwf-uk'
-
-		
 	}[id];
+
+	// tries to do automatic matching, if manual match not specified above
+	if (id.includes('_') && !sid)
+		sid = id.replace(/_/g,'-');
+
 	if (sid) return sid;
 	return id;
 };
