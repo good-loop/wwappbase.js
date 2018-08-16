@@ -9,8 +9,9 @@ import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import Roles from '../Roles';
 import Misc from './Misc';
-import CardAccordion from './CardAccordion'; // Hack: this is to poke CardAccordion into Misc for older code
-import PropControl from './PropControl'; // Hack: this is to poke Input into Misc for older code
+// HACKS
+import CardAccordion from './CardAccordion'; // Hack: this is here to poke CardAccordion into Misc for older code
+import PropControl from './PropControl'; // Hack: this is here to poke Input into Misc for older code
 import {XId} from 'wwutils';
 import {LoginLink} from './LoginWidget';
 

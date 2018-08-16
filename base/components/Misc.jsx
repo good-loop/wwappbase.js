@@ -7,6 +7,8 @@ import { setHash, XId, addScript} from 'wwutils';
 import PV from 'promise-value';
 import Dropzone from 'react-dropzone';
 
+import JSend from '../data/JSend';
+
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
@@ -400,8 +402,10 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publi
 /**
  * 
  * @param {Boolean} once If set, this button can only be clicked once.
+ * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
+ * @param onSuccess {JSX} TODO rename this! shown after a successful submit. This is not a function to call!
  */
-Misc.SubmitButton = ({path, url, once, className='btn btn-primary', onSuccess, children}) => {
+Misc.SubmitButton = ({path, url, responsePath, once, className='btn btn-primary', onSuccess, children}) => {
 	assMatch(url, String);
 	assMatch(path, 'String[]');
 	const tpath = ['transient','SubmitButton'].concat(path);
@@ -416,6 +420,10 @@ Misc.SubmitButton = ({path, url, once, className='btn btn-primary', onSuccess, c
 		ServerIO.load(url, params)
 			.then(res => {
 				DataStore.setValue(tpath, C.STATUS.clean);
+				if (responsePath) {
+					const resdata = JSend.data(res);
+					DataStore.setValue(responsePath, resdata);
+				}
 			}, err => {
 				DataStore.setValue(tpath, C.STATUS.dirty);
 			});

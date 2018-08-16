@@ -10,12 +10,9 @@
  * This file supports BOTH JSend and Winterwell's JsonResponse format.
  */
 
-import {assert, assMatch} from 'sjtest';
-import {isa, defineType, getType} from './DataClass';
 import Enum from 'easy-enums';
 
-const JSend = defineType('JSend');
-const This = JSend;
+const JSend = {};
 export default JSend;
 
 const KAjaxStatus = new Enum("success fail error");
