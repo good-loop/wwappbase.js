@@ -326,14 +326,19 @@ Misc.ImgThumbnail = ({url, style}) => {
 
 Misc.VideoThumbnail = ({url, width=200, height=150, controls=true}) => url? <video width={width} height={height} src={url} controls /> : null;
 
-/** Hack: a debounced auto-save function for the save/publish widget */
-const saveDraftFn = _.debounce(
+/** Hack: a debounced auto-save function for the save/publish widget 
+ * @param {type, id}
+*/
+Misc.saveDraftFn = _.debounce(
 	({type, id}) => {
 		ActionMan.saveEdits(type, id);
 		return true;
 	}, 5000);
 
-const publishDraftFn = _.debounce(
+/**
+ * * @param {type, id}
+ */
+Misc.publishDraftFn = _.debounce(
 	({type, id}) => {
 		ActionMan.publishEdits(type, id);
 		return true;
@@ -342,7 +347,6 @@ const publishDraftFn = _.debounce(
 
 /**
  * save buttons
- * TODO auto-save on edit -- copy from sogive
  */
 Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publishTooltipText='Your account cannot publish this.', autoPublish, autoSave = true}) => {
 	// No anon edits
@@ -357,11 +361,11 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publi
 	let item = DataStore.getData(status, type, id);
 	// request a save?
 	if (autoSave && C.STATUS.isdirty(localStatus) && ! isSaving) {
-		saveDraftFn({type,id});
+		Misc.saveDraftFn({type,id});
 	}
 	// If setting enabled, will automatically publish every five seconds
 	if (autoPublish && C.STATUS.isdirty(localStatus)) {
-		publishDraftFn({type, id});
+		Misc.publishDraftFn({type, id});
 	}
 	// if nothing has been edited, then we can't publish, save, or discard
 	// NB: modified is a persistent marker, managed by the server, for draft != published

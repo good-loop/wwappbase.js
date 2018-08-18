@@ -31,8 +31,11 @@ import md5 from 'md5';
  * Input bound to DataStore.
  * aka Misc.PropControl
  * 
- * @param saveFn {Function} {path, prop, item, value} You are advised to wrap this with e.g. _.debounce(myfn, 500).
+ * @param saveFn {Function} {path, prop, value} You are advised to wrap this with e.g. _.debounce(myfn, 500).
  * NB: we cant debounce here, cos it'd be a different debounce fn each time.
+ * Save utils: Misc.saveDraftFn and Misc.savePublishFn, or Misc.SavePublishDiscard
+ * 
+ * 
  * label {?String}
  * @param path {String[]} The DataStore path to item, e.g. [data, NGO, id]
  * @param item The item being edited. Can be null, and it will be fetched by path.
@@ -148,7 +151,7 @@ const PropControl = (props) => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.value && e.target.value !== 'false';
 			DataStore.setValue(proppath, val);
-			if (saveFn) saveFn({path, prop, item, value: val});		
+			if (saveFn) saveFn({path, prop, value: val});		
 		};
 
 		// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
@@ -363,7 +366,7 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 		const val = e && e.target && e.target.value;
 		DataStore.setValue(path.concat(prop), val);
-		if (saveFn) saveFn({path, prop, item, value: val});		
+		if (saveFn) saveFn({path, prop, value: val});		
 	};
 
 	const Check = type==='checkboxes'? BS.Checkbox : BS.Radio;
