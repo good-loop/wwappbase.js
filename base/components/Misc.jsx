@@ -336,10 +336,19 @@ Misc.saveDraftFn = _.debounce(
 	}, 5000);
 
 /**
- * * @param {type, id}
+ * A debounced auto-publish function for the save/publish widget, or for SimpleTable saveFn
+ * Must provide type and id, or path
+ * * @param {type, id, path}
  */
 Misc.publishDraftFn = _.debounce(
-	({type, id}) => {
+	({type, id, path}) => {
+		if ( ! type || ! id) {
+			let item = DataStore.getValue(path);
+			id = id || getId(item);
+			type = type || getType(item);
+		}
+		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad type: "+type+" id: "+id, item);
+		assMatch(id, String,"Misc.jsx publishDraftFn id?! "+type+" id: "+id, item);
 		ActionMan.publishEdits(type, id);
 		return true;
 	}, 5000);
