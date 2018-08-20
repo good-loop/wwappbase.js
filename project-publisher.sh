@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.8.0'
+VERSION='Version=1.8.1'
 
 ###
+# New in 1.8.1 : Added "lib" dir to sync for the egbot project.
 # New in 1.8.0 : Added "egbot" as a project that can be published.
 # New in 1.7.0 : Added 'Calstat' as a project that can be published.  Alphabetised available projects so that they are more easily found
 #					and edited by a human.
@@ -175,7 +176,7 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='egbot'
-		PLEASE_SYNC=("config" "data" "data-collection" "doc" "src" "test" "web" "input.txt" "package.json" "webpack.config.js" ".babelrc")
+		PLEASE_SYNC=("config" "data" "data-collection" "doc" "lib" "src" "test" "web" "input.txt" "package.json" "webpack.config.js" ".babelrc")
 		# Use "lib" instead of "tmp-lib" for syncing your JAR files
 		#PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
