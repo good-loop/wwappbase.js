@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.7.0'
+VERSION='Version=1.8.0'
 
 ###
+# New in 1.8.0 : Added "egbot" as a project that can be published.
 # New in 1.7.0 : Added 'Calstat' as a project that can be published.  Alphabetised available projects so that they are more easily found
 #					and edited by a human.
 # New in 1.6.0 : Changed the Automated-Testing project-name matching to a case->esac loop. And added automated testing for the portal project.
@@ -156,6 +157,29 @@ case $1 in
 		SERVICE_NAME='calstat'
 		PLEASE_SYNC=("config" "lib" "src" "web" "ical-count.js" "package.json" "webpack.config.js")
 	;;
+	egbot|EGBOT)
+        PROJECT='egbot'
+        PRODUCTION_SERVERS=('robinson.soda.sh')
+        TEST_SERVERS=('robinson.soda.sh')
+		PROJECT_LOCATION="/home/$USER/winterwell/egbot"
+        TARGET_DIRECTORY='/home/winterwell/egbot.good-loop.com'
+        IMAGE_OPTIMISE='no'
+        IMAGEDIRECTORY="" #Only needed if 'IMAGE_OPTIMISE' is set to 'yes'
+		CONVERT_LESS='yes'
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style" #Only needed if 'CONVERT_LESS' is set to 'yes'
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style" #Only needed if 'CONVERT_LESS' is set to 'yes'
+        WEBPACK='yes'
+		TEST_JAVASCRIPT='no'
+		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/" #Only needed if 'TEST_JAVASCRIPT' is set to 'yes', and you must ammend Section 10 to accomodate for how to find and process your JS files
+		COMPILE_UNITS='no'
+		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
+		RESTART_SERVICE_AFTER_SYNC='yes'
+		SERVICE_NAME='egbot'
+		PLEASE_SYNC=("config" "data" "data-collection" "doc" "src" "test" "web" "input.txt" "package.json" "webpack.config.js" ".babelrc")
+		# Use "lib" instead of "tmp-lib" for syncing your JAR files
+		#PRESERVE=("web-as/uploads")
+		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
+    ;;
 	lg|LG|datalog|DATALOG|datalogger|DATALOGGER)
         PROJECT='datalogger'
         PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
