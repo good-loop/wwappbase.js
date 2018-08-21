@@ -157,15 +157,14 @@ ServerIO.getUrlForItem = ({type, id, status}) => {
 
 // HACK match mismatches
 const sogiveid = id => {
-
 	// manual id matching, only needed for ids that don't follow the rule: _ --> -
 	let sid = {
-		'learning_through_landscapes-teachertraining': 'the-learning-through-landscapes-trust',
 		'action_against_hunger': 'action-against-hunger',
 		'against_malaria_foundation': 'against-malaria-foundation',
 		'alzheimers_research_uk': 'alzheimers-research-uk',
 		'art_fund': 'national-art-collections-fund',
 		'battersea_dogs_and_cats_home': 'battersea-dogs-and-cats-home',
+		'bbct': 'bumblebee-conservation-trust',
 		'bdfa': 'batten-disease-family-association',
 		'cancer_research_uk': 'cancer-research-uk',
 		'care_international': 'care-international-uk',
@@ -174,17 +173,22 @@ const sogiveid = id => {
 		'diabetes_uk': 'the-british-diabetic-association',
 		'end_fund': 'end-fund',
 		'great_ormand_street': 'great-ormand-street-hospital-childrens-charity',
+		'learning_through_landscapes': 'the-learning-through-landscapes-trust',
+		'learning_through_landscapes-teachertraining': 'the-learning-through-landscapes-trust',
 		'macmillan_cancer_support': 'macmillan-cancer-support',
 		'marine_conservation_society': 'marine-conservation-society',
 		'medicins_sans_frontieres': 'medecins-sans-frontieres-aka-doctors-without-borders-or-msf',
 		'meningitis_research_foundation': 'meningitis-research-foundation',
 		'movember_foundation': 'movember-europe',
 		'ms_society': 'multiple-sclerosis-society',
+		'npuk': 'niemann-pick-disease-group-uk',
 		'nspcc': 'the-national-society-for-the-prevention-of-cruelty-to-children',
 		'plan_uk': 'plan-international-uk',
+		'Refuge': 'refuge',
 		'save_the_children': 'the-save-the-children-fund',
 		'shelter_uk': 'shelter-national-campaign-for-homeless-people-limited',
 		'solar_aid': 'solar-aid',
+		'st_johns_ambulance' : 'the-priory-of-england-and-the-islands-of-the-most-venerable-order-of-the-hospital-of-st-john-of-jerusalem',
 		'target_ovarian_cancer': 'target-ovarian-cancer',
 		'tate_foundation': 'tate-foundation',
 		'tommys': 'tommy-s',
