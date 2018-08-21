@@ -340,18 +340,20 @@ Misc.saveDraftFn = _.debounce(
  * Must provide type and id, or path
  * * @param {type, id, path}
  */
-Misc.publishDraftFn = _.debounce(
+Misc.publishDraftFn = 
+// _.debounce(
 	({type, id, path}) => {
 		if ( ! type || ! id) {
 			let item = DataStore.getValue(path);
 			id = id || getId(item);
 			type = type || getType(item);
 		}
-		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad type: "+type+" id: "+id, item);
-		assMatch(id, String,"Misc.jsx publishDraftFn id?! "+type+" id: "+id, item);
+		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad type: "+type+" id: "+id);
+		assMatch(id, String,"Misc.jsx publishDraftFn id?! "+type+" id: "+id);
 		ActionMan.publishEdits(type, id);
 		return true;
-	}, 5000);
+	}
+	// , 5000);
 
 
 /**

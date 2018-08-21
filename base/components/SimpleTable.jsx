@@ -326,12 +326,15 @@ const defaultCellRender = (v, column) => {
 };
 
 const Cell = ({item, row, column, dataRow}) => {
+	const citem = item;
 	try {
 		const v = getValue({item, row, column});
 		let render = column.Cell;
 		if ( ! render) {
 			if (column.editable) {
-				render = val => <Editor value={val} row={row} column={column} item={item} />;
+				// safety check we can edit this
+				assert(column.path || DataStore.getPathForItem(C.KStatus.DRAFT, item), "SimpleTable.jsx - Cell", item, column);
+				render = val => <Editor value={val} row={row} column={column} item={citem} />;
 			} else {
 				render = defaultCellRender;
 			}
@@ -373,6 +376,10 @@ const Editor = ({row, column, value, item}) => {
 		try {
 			// we edit draft
 			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+			// make sure we have a draft
+			if ( ! DataStore.getValue(path)) {				
+				DataStore.setValue(path, item, false);
+			}
 		} catch(err) {
 			console.log("SimpleTable.jsx - cant get path-for-item", item, err);
 		}
@@ -383,7 +390,7 @@ const Editor = ({row, column, value, item}) => {
 		// use item direct
 		dummyItem = item || {};
 	} else {
-		// fallback to dummies
+		// Not a DataStore item? fallback to dummies
 		if ( ! path) path = ['widget', 'SimpleTable', row, str(column)];
 		if ( ! prop) prop = 'value';
 		dummyItem = {};
@@ -395,7 +402,7 @@ const Editor = ({row, column, value, item}) => {
 	return (<Misc.PropControl type={type} item={dummyItem} path={path} prop={prop} 
 		saveFn={column.saveFn} 
 	/>);
-};
+}; // ./Editor
 const CellFormat = new Enum("percent"); // What does a spreadsheet normally offer??
 
 const CSVDownload = ({tableName, columns, data, dataArray}) => {
