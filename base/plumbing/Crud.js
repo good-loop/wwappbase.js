@@ -187,6 +187,7 @@ ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
  * @returns PromiseValue
  */
 ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
+	assert(id!=='unset', "ActionMan.getDataItem() "+type+" id:unset?!");
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
 	assert(C.KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
