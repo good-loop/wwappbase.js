@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.8.1'
+VERSION='Version=1.9.0'
 
 ###
+# New in 1.9.0 : Added the ability to specify "experiment" as a second argument for adserver and portal projects.
 # New in 1.8.1 : Added "lib" dir to sync for the egbot project.
 # New in 1.8.0 : Added "egbot" as a project that can be published.
 # New in 1.7.0 : Added 'Calstat' as a project that can be published.  Alphabetised available projects so that they are more easily found
@@ -125,7 +126,8 @@ case $1 in
     adserver|ADSERVER)
         PROJECT='adserver'
         PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh)
-        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh)
+		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='yes'
@@ -220,7 +222,8 @@ case $1 in
     portal|PORTAL)
         PROJECT='portal'
         PRODUCTION_SERVERS=(heppner.soda.sh)
-        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh)
+		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='no'
@@ -306,6 +309,14 @@ esac
 ### Section 02: Get the type of publish. Test or Production or Local
 ####################
 case $2 in
+	experiment|EXPERIMENT)
+		TYPE_OF_PUBLISH='experimental'
+		TARGETS=${EXPERIMENTAL_SERVERS[@]}
+		if [[ $EXPERIMENTAL_SERVERS = '' ]]; then
+			printf "\n The project, $PROJECT , has no experimental servers."
+			exit 0
+		fi
+	;;
     test|TEST)
         TYPE_OF_PUBLISH='test'
         TARGETS=${TEST_SERVERS[@]}
