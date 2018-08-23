@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.1'
+VERSION='Version=1.9.2'
 
 ###
+# New in 1.9.2 : Added 'egbot' to the list of supported projects. This is a superficial change to this script.
 # New in 1.9.1 : Added the ability to specify "experiment" as a second argument for the datalog project.
 # New in 1.9.0 : Added the ability to specify "experiment" as a second argument for adserver and portal projects.
 # New in 1.8.1 : Added "lib" dir to sync for the egbot project.
@@ -105,7 +106,7 @@ fi
 #################
 ### Preamble: Define Arrays and Variables
 #################
-SUPPORTED_PROJECTS=('adserver','calstat','datalogger','myloop','portal','profiler','sogive-app','youagain')
+SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','myloop','portal','profiler','sogive','youagain')
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
