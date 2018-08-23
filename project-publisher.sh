@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.0'
+VERSION='Version=1.9.1'
 
 ###
+# New in 1.9.1 : Added the ability to specify "experiment" as a second argument for the datalog project.
 # New in 1.9.0 : Added the ability to specify "experiment" as a second argument for adserver and portal projects.
 # New in 1.8.1 : Added "lib" dir to sync for the egbot project.
 # New in 1.8.0 : Added "egbot" as a project that can be published.
@@ -186,7 +187,8 @@ case $1 in
 	lg|LG|datalog|DATALOG|datalogger|DATALOGGER)
         PROJECT='datalogger'
         PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
-        TEST_SERVERS=(hugh.soda.sh simmons.soda.sh)
+        TEST_SERVERS=(hugh.soda.sh)
+		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
         TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
         IMAGE_OPTIMISE='no'
