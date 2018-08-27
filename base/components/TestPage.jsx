@@ -12,15 +12,21 @@ import DataStore from '../plumbing/DataStore';
 import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
+import SimpleTable from './SimpleTable';
 import PropControl from './PropControl';
 
 const TestPage = () => {
 	let path = ['widget', 'TestPage'];
 
+	let columns = ['a', 'b', 'c', 'd'];
+	let data = [{a:1,b:0}, {a:0, d:2}, {b:0,d:3}];
+
 	return (
 		<div className='TestPage'>
 			<h2>Test Page</h2>
 			<p>Insert a test widget below</p>
+
+			<SimpleTable columns={columns} data={data} hideEmpty />
 
 			<PropControl type='radio' path={path} prop='radioTest' options={['daily','weekly','annual']}  />
 

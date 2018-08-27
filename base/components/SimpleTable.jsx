@@ -75,9 +75,13 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, 
+		let {
+			tableName='SimpleTable', data, dataObject, columns, 
 			headerRender, className, csv, addTotalRow, 
-			topRow, bottomRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
+			topRow, bottomRow, hasFilter, rowsPerPage, statePath, 
+			// checkboxValues, copied into state for modifying
+			hideEmpty
+		} = this.props;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
@@ -143,12 +147,23 @@ class SimpleTable extends React.Component {
 		//Can't edit the actual columns object as that would make it impossible to reenable a column
 		//Display only columns that haven't been disabled
 		let visibleColumns = columns;
-		if(_.isObject(this.state.checkboxValues) && !_.isEmpty(this.state.checkboxValues)) {
-			visibleColumns = columns.reduce((obj, c) => {
+		const checkboxValues = this.state.checkboxValues;
+		if(_.isObject(checkboxValues) && !_.isEmpty(checkboxValues)) {
+			visibleColumns = columns.filter(c => {
 				const headerKeyString = c.Header || c.accessor || str(c);
-				if(this.state.checkboxValues[headerKeyString]) obj.push(c);
-				return obj;
-			}, []);
+				return checkboxValues[headerKeyString];
+			});
+		}
+		// hide columns with no data
+		if (hideEmpty) {
+			visibleColumns = visibleColumns.filter(c => {
+				const getter = sortGetter(c);
+				for(let di=0; di<data.length; di++) {
+					let vi = getter(data[di]);
+					if (vi) return true;
+				}
+				return false;
+			});
 		}
 		// scrolling ideas:
 		// 1: have divs that move onScroll
@@ -162,13 +177,13 @@ class SimpleTable extends React.Component {
 					onChange={filterChange} 
 					/></div> : null}
 				<div>
-					{this.state.checkboxValues? <RemoveAllColumns table={this} /> : null}
+					{checkboxValues? <RemoveAllColumns table={this} /> : null}
 					
 					<table className={cn}>
 						<thead>
 							<tr>{visibleColumns.map((col, c) => {
 									return <Th table={this} tableSettings={tableSettings} key={c} 
-										column={col} c={c} dataArray={dataArray} headerRender={headerRender} checkboxValues={this.state.checkboxValues} showSortButtons />
+										column={col} c={c} dataArray={dataArray} headerRender={headerRender} checkboxValues={checkboxValues} showSortButtons />
 								})
 								}
 							</tr>
@@ -197,7 +212,7 @@ class SimpleTable extends React.Component {
 
 					</table>
 
-					{this.state.checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={this.state.checkboxValues} table={this} /> : null}
+					{checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={checkboxValues} table={this} /> : null}
 				</div>
 			</div>
 		);
