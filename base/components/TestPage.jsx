@@ -25,8 +25,12 @@ const TestPage = () => {
 		<div className='TestPage'>
 			<h2>Test Page</h2>
 			<p>Insert a test widget below</p>
-
-			<SimpleTable columns={columns} data={data} hideEmpty />
+			
+			<div class="wrapper">
+    			<div class="scroller">
+					<SimpleTable columns={columns} data={data} hideEmpty />
+				</div>
+			</div>
 
 			<PropControl type='radio' path={path} prop='radioTest' options={['daily','weekly','annual']}  />
 
