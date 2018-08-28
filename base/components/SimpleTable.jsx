@@ -47,6 +47,8 @@ const str = printer.str;
  * 
  * columns: {Column[]}
  */
+// NB: use a full component for error-handling
+// Also state (though maybe we should use DataStore)
 class SimpleTable extends React.Component {
 
 	constructor(props) {
@@ -165,13 +167,10 @@ class SimpleTable extends React.Component {
 				return false;
 			});
 		}
-		// scrolling ideas:
-		// 1: have divs that move onScroll
-		// 2: have 3 tables, each of which uses visibility:hidden to only partly draw
-		// style={{position:'relative', overflowY:'auto', maxHeight:'200px'}}
+		// scrolling (credit to Irina): uses wrapper & scroller and css
 
 		return (
-				<div className='SimpleTable'>
+			<div className='SimpleTable'>
 				<div className='wrapper'>
 					<div className='scroller'>
 						{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
