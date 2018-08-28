@@ -315,7 +315,6 @@ ServerIO.put = function(url, data) {
 };
 
 ServerIO.handleMessages = function(response) {
-	console.log('handleMessages',response);
 	const newMessages = response && response.messages;
 	if ( ! newMessages || newMessages.length===0) {
 		return response;
