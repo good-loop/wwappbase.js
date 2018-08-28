@@ -75,9 +75,13 @@ class SimpleTable extends React.Component {
 	}
 
 	render() {
-		let {tableName='SimpleTable', data, dataObject, columns, 
+		let {
+			tableName='SimpleTable', data, dataObject, columns, 
 			headerRender, className, csv, addTotalRow, 
-			topRow, bottomRow, hasFilter, rowsPerPage, statePath, checkboxValues} = this.props;
+			topRow, bottomRow, hasFilter, rowsPerPage, statePath, 
+			// checkboxValues, copied into state for modifying
+			hideEmpty
+		} = this.props;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
@@ -143,12 +147,23 @@ class SimpleTable extends React.Component {
 		//Can't edit the actual columns object as that would make it impossible to reenable a column
 		//Display only columns that haven't been disabled
 		let visibleColumns = columns;
-		if(_.isObject(this.state.checkboxValues) && !_.isEmpty(this.state.checkboxValues)) {
-			visibleColumns = columns.reduce((obj, c) => {
+		const checkboxValues = this.state.checkboxValues;
+		if(_.isObject(checkboxValues) && !_.isEmpty(checkboxValues)) {
+			visibleColumns = columns.filter(c => {
 				const headerKeyString = c.Header || c.accessor || str(c);
-				if(this.state.checkboxValues[headerKeyString]) obj.push(c);
-				return obj;
-			}, []);
+				return checkboxValues[headerKeyString];
+			});
+		}
+		// hide columns with no data
+		if (hideEmpty) {
+			visibleColumns = visibleColumns.filter(c => {
+				const getter = sortGetter(c);
+				for(let di=0; di<data.length; di++) {
+					let vi = getter(data[di]);
+					if (vi) return true;
+				}
+				return false;
+			});
 		}
 		// scrolling ideas:
 		// 1: have divs that move onScroll
@@ -156,50 +171,54 @@ class SimpleTable extends React.Component {
 		// style={{position:'relative', overflowY:'auto', maxHeight:'200px'}}
 
 		return (
-			<div className='SimpleTable'>
-				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
-					value={tableSettings.filter || ''} 
-					onChange={filterChange} 
-					/></div> : null}
-				<div>
-					{this.state.checkboxValues? <RemoveAllColumns table={this} /> : null}
-					
-					<table className={cn}>
-						<thead>
-							<tr>{visibleColumns.map((col, c) => {
-									return <Th table={this} tableSettings={tableSettings} key={c} 
-										column={col} c={c} dataArray={dataArray} headerRender={headerRender} checkboxValues={this.state.checkboxValues} showSortButtons />
-								})
-								}
-							</tr>
+				<div className='SimpleTable'>
+				<div className='wrapper'>
+					<div className='scroller'>
+						{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
+							value={tableSettings.filter || ''} 
+							onChange={filterChange} 
+							/></div> : null}
+						<div>
+							{checkboxValues? <RemoveAllColumns table={this} /> : null}
+							
+							<table className={cn}>
+								<thead>
+									<tr>{visibleColumns.map((col, c) => {
+											return <Th table={this} tableSettings={tableSettings} key={c} 
+												column={col} c={c} dataArray={dataArray} headerRender={headerRender} checkboxValues={checkboxValues} showSortButtons />
+										})
+										}
+									</tr>
 
-							{topRow? <Row item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
-							{addTotalRow? 
-								<tr>
-									<th>{addTotalRow}</th>
-									{visibleColumns.slice(1).map((col, c) => 
-										<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
-									}
-								</tr>
-								: null}
+									{topRow? <Row item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+									{addTotalRow? 
+										<tr>
+											<th>{addTotalRow}</th>
+											{visibleColumns.slice(1).map((col, c) => 
+												<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+											}
+										</tr>
+										: null}
 
-						</thead>
+								</thead>
 
-						<tbody>					
-							{data? data.map( (d,i) => <Row key={"r"+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />) : null}
-							{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
-						</tbody>
+								<tbody>					
+									{data? data.map( (d,i) => <Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />) : null}
+									{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+								</tbody>
 
-						{csv? <tfoot><tr>
-							<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
-						</tr></tfoot>
-							: null}	
+								{csv? <tfoot><tr>
+									<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
+								</tr></tfoot>
+									: null}	
 
-					</table>
+							</table>
 
-					{this.state.checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={this.state.checkboxValues} table={this} /> : null}
+							{checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={checkboxValues} table={this} /> : null}
+						</div>
+					</div>	
 				</div>
-			</div>
+			</div>			
 		);
 	}
 } // ./SimpleTable

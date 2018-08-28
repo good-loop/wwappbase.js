@@ -1,3 +1,45 @@
+<<<<<<< HEAD
 
 // TODO add fixed 1st column row with scrolling
 // See Irina's pen https://codepen.io/irinapreda/pen/QVNoxj
+=======
+@sticky-col-width: 260px;
+
+.SimpleTable{
+
+    .wrapper {
+        position: relative;
+
+        .scroller {
+            margin-left: @sticky-col-width;
+            overflow-x: scroll;
+            overflow-y: visible;
+            width: 80vw;
+
+            table {
+                border-collapse: separate;
+                border-spacing: 0;
+            
+                thead th {
+                    text-align: left;
+                    white-space: nowrap;
+                }
+            
+                tr td:first-child {
+                    left: 0;
+                    position: absolute;
+                    top: auto;
+                    width: @sticky-col-width;
+                }
+                
+                tr th:first-child {
+                    left: 0;
+                    position: absolute;
+                    top: auto;
+                    width: @sticky-col-width;
+                }
+            }
+        }
+    }
+}
+>>>>>>> 4e8e5b8f522ea758c2b303688952fb3fc2de9b9a

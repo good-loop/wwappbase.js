@@ -70,6 +70,8 @@ module.exports = {
 		/* broken - seems to cause errors in linting */
 		"no-multi-assign": "off",
 		/* off because the warnings are more noise than signal i.e. we might switch them on sometime*/
+		"jsx-a11y/label-has-associated-control": "off",
+		"jsx-a11y/label-has-for": "off",
 		"import/no-named-as-default-member": "warn",
 		"react/no-unused-state": "warn",
 		"no-restricted-globals": "warn", // triggers on isNan()
