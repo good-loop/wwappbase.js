@@ -26,8 +26,8 @@ const TestPage = () => {
 			<h2>Test Page</h2>
 			<p>Insert a test widget below</p>
 			
-			<div class="wrapper">
-    			<div class="scroller">
+			<div className="wrapper">
+    			<div className="scroller">
 					<SimpleTable columns={columns} data={data} hideEmpty />
 				</div>
 			</div>
