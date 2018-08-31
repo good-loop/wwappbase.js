@@ -29,6 +29,25 @@ const FREE_TOKEN = {
 	id: 'free_token',
 	type: 'free',
 };
+// minimal transation amount by currency
+// table copied from https://stripe.com/docs/currencies (31/08/18)
+const STRIPE_MINIMUM_AMOUNTS = {
+	'GBP': 0.3,
+	'USD': 0.5,
+	'EUR': 0.5,
+	'AUD': 0.5,
+	'CAD': 0.5,
+	'BRL': 0.5,
+	'CHF': 0.5,
+	'DKK': 2.5,
+	'HKD': 4,
+	'JPY': 50,
+	'MXN': 10,
+	'NOK': 3,
+	'NZD': 0.5,
+	'SEK': 3,
+	'SGD': 0.5
+};
 
 /**
  * amount: {?Money} if null, return null
@@ -206,7 +225,9 @@ class StripeThingsClass extends Component {
 		}
 
 		const {amount, recipient, credit} = this.props;
+		const {value, currency} = amount;
 		const isSaving = this.state.isSaving;
+		const isValidAmount = value > STRIPE_MINIMUM_AMOUNTS[currency]
 		// TODO an email editor if this.props.email is unset
 		return (
 			<Form horizontal onSubmit={(event) => this.handleSubmit(event)}>
@@ -238,7 +259,7 @@ class StripeThingsClass extends Component {
 						</div>
 					</Col>
 				</FormGroup>
-				<button className='btn btn-primary btn-lg pull-right' type='submit' disabled={isSaving} >Submit Payment</button>
+				<button className='btn btn-primary btn-lg pull-right' type='submit' disabled={isSaving || !isValidAmount} title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency} >Submit Payment</button>
 				{this.state.errorMsg? <div className='alert alert-danger'>{this.state.errorMsg}</div> : null}
 			</Form>
 		);
