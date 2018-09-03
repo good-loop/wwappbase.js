@@ -172,51 +172,49 @@ class SimpleTable extends React.Component {
 
 		return (
 				<div className='SimpleTable'>
-				<div className='wrapper'>
-					<div className='scroller'>
 						{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
 							value={tableSettings.filter || ''} 
 							onChange={filterChange} 
 							/></div> : null}
 						<div>
 							{checkboxValues? <RemoveAllColumns table={this} /> : null}
-							
-							<table className={cn}>
-								<thead>
-									<tr>{visibleColumns.map((col, c) => {
-											return <Th table={this} tableSettings={tableSettings} key={c} 
-												column={col} c={c} dataArray={dataArray} headerRender={headerRender} checkboxValues={checkboxValues} showSortButtons />
-										})
-										}
-									</tr>
+							<div className='wrapper'>
+								<div className='scroller'>
+									<table className={cn}>
+										<thead>
+											<tr>{visibleColumns.map((col, c) => {
+													return <Th table={this} tableSettings={tableSettings} key={c} 
+														column={col} c={c} dataArray={dataArray} headerRender={headerRender} checkboxValues={checkboxValues} showSortButtons />
+												})
+												}
+											</tr>
 
-									{topRow? <Row item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
-									{addTotalRow? 
-										<tr>
-											<th>{addTotalRow}</th>
-											{visibleColumns.slice(1).map((col, c) => 
-												<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
-											}
-										</tr>
-										: null}
+											{topRow? <Row item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+											{addTotalRow? 
+												<tr>
+													<th>{addTotalRow}</th>
+													{visibleColumns.slice(1).map((col, c) => 
+														<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+													}
+												</tr>
+												: null}
 
-								</thead>
+										</thead>
 
-								<tbody>					
-									{data? data.map( (d,i) => <Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />) : null}
-									{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
-								</tbody>
+										<tbody>					
+											{data? data.map( (d,i) => <Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />) : null}
+											{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+										</tbody>
 
-								{csv? <tfoot><tr>
-									<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
-								</tr></tfoot>
-									: null}	
+										{csv? <tfoot><tr>
+											<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
+										</tr></tfoot>
+											: null}	
 
-							</table>
-
+									</table>
+								</div>
+							</div>	
 							{checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={checkboxValues} table={this} /> : null}
-						</div>
-					</div>	
 				</div>
 			</div>			
 		);
