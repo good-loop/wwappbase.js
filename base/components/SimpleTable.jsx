@@ -171,15 +171,14 @@ class SimpleTable extends React.Component {
 
 		return (
 			<div className='SimpleTable'>
-				<div className='wrapper'>
-					<div className='scroller'>
-						{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
-							value={tableSettings.filter || ''} 
-							onChange={filterChange} 
-							/></div> : null}
-						<div>
-							{checkboxValues? <RemoveAllColumns table={this} /> : null}
-							
+				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
+					value={tableSettings.filter || ''} 
+					onChange={filterChange} 
+					/></div> : null}
+				<div>
+					{checkboxValues? <RemoveAllColumns table={this} /> : null}
+					<div className='wrapper'>
+						<div className='scroller'>
 							<table className={cn}>
 								<thead>
 									<tr>{visibleColumns.map((col, c) => {
@@ -212,10 +211,9 @@ class SimpleTable extends React.Component {
 									: null}	
 
 							</table>
-
-							{checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={checkboxValues} table={this} /> : null}
 						</div>
 					</div>	
+					{checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={checkboxValues} table={this} /> : null}
 				</div>
 			</div>			
 		);
