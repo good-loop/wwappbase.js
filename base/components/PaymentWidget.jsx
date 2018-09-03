@@ -52,7 +52,9 @@ const STRIPE_MINIMUM_AMOUNTS = {
 /**
  * amount: {?Money} if null, return null
  * recipient: {!String}
- * onToken: {!Function} inputs: {id:String, type:String, token:String, email:String}
+ * onToken: {!Function} inputs: token|source, which are similar but different. Sources can be reused
+ * 	token = {id:String, type:String, token:String, email:String, type:"card", object:"token"}
+ * 	source = {id, card:object, owner: {email, verified_email}, type:"card", object:"source"}
  * 	Called once the user has provided payment details, and we've got a token back from Stripe. 
  * 	This should then call the server e.g. by publishing a donation - to take the actual payment.
  * 	The token string is either a Stripe authorisation token, or one of the fixed special values (e.g. credit_token).
@@ -195,13 +197,17 @@ class StripeThingsClass extends Component {
 		// tokenize, since there's only one in this group.
 		let tokenInfo = {
 			name: this.props.username,
-			email: this.state.email
+			email: this.state.email,
+			type: "card"
 		};
-		// get the token from stripe
-		this.props.stripe.createToken(tokenInfo)		
+		// get the token or reusable source from stripe
+		// see https://stripe.com/docs/sources/cards
+		this.props.stripe.createToken(tokenInfo)		// Token(tokenInfo)		
 			// then call custom processing (e.g. publish donation)
-			.then(({token, error, ...data}) => {
-				if (token) {
+			.then(({token, source, error, ...data}) => {
+				if (source) {
+					this.props.onToken(source);
+				} else if (token) {
 					this.props.onToken(token);
 				} else {
 					this.setState({stripeError: error, errorMsg: error && error.message, isSaving: false});
