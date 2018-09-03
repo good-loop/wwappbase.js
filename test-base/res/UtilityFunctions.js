@@ -1,5 +1,6 @@
 const fs = require('fs');
 const $ = require('jquery');
+const {CommonSelectors} = require('../utils/SelectorsMaster');
 
 /**Used to disable all page animations
  * Found that these were making tests less reliable
@@ -68,52 +69,22 @@ function timeout(ms) {
 /**Login to app. Should work for both SoGive and Good-loop 
  * Make sure that you are actually on a page with a clickable login button before running this!
 */
-async function login({page, username, password, type}) {
+async function login({page, username, password}) {
     if(!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
 
     await page.addScriptTag(disableAnimations);
-    await page.click('#top-right-menu > li > a');
-    await page.waitForSelector(`#loginByEmail > div:nth-child(1) > input`);
-    await page.waitForSelector('#loginByEmail > div:nth-child(2) > input');
+    await page.waitForSelector(CommonSelectors['log-in']);
+    await page.click(CommonSelectors['log-in']);
+    await page.waitForSelector(CommonSelectors['log-in-email']);
+    await page.waitForSelector(CommonSelectors['log-in-password']);
 
-    if(type === 'twitter') {
-        await loginTwitter({page, username, password});
-    }
-    else if(type === 'facebook') {
-        await loginFacebook({page, username, password});
-    } 
-    else{
-        await loginEmail({page, username, password});
-    }
-    
-    await page.waitForSelector(`#loginByEmail`, {hidden: true});
-}
-
-/**Log in using native login menu*/
-async function loginEmail({page, username, password}) {
-    await page.click('#loginByEmail > div:nth-child(1) > input');
+    await page.click(CommonSelectors['log-in-email']);
     await page.keyboard.type(username);  
-    await page.click('#loginByEmail > div:nth-child(2) > input');
+    await page.click(CommonSelectors['log-in-password']);
     await page.keyboard.type(password); 
     await page.keyboard.press('Enter');
-}
-
-/**Log user in via Twitter
- * Assume that login page is already open and ready for use
- */
-async function loginTwitter({page, username, password}) {
-    await page.click('span.color-twitter');
     
-    await page.waitForSelector('#username_or_email');
-    await page.click('#username_or_email');
-    await page.keyboard.type(username);
-    await page.click('#password');
-    await page.keyboard.type(password);
-    await page.click('#allow');
-}
-
-async function loginFacebook({page, username, password}) {
-    await page.click('span.color-facebook');
+    await page.waitForSelector(CommonSelectors['log-in-email'], {hidden: true});
 }
 
 /**

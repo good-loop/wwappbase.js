@@ -1,8 +1,16 @@
 // Styling for the Good-Loop Portal app
 @import "colours.less";
-@import "Misc.less";
-@import "SimpleTable.less";
 
+// spinner
+@import "animation.less";
+
+// Widgets
+@import "Misc.less";
+@import "LoginWidget.less";
+@import "MessageBar.less";
+@import "SimpleTable.less";
+@import "WizardProgressWidget.less";
+@import "footer.less";
 
 .TODO {
 	display: none;
@@ -38,18 +46,6 @@ img.logo-large {
 img.logo-xlarge {
 	max-width:128px;	
 	max-height:128px;	
-}
-
-@import "animation.less";
-
-// Page specific stuff
-@import "LoginWidget.less";
-@import "MessageBar.less";
-@import "WizardProgressWidget.less";
-@import "footer.less";
-
-.ListItem {
-	// uses btn btn-default as a quick hack
 }
 
 /* https://css-tricks.com/snippets/css/a-guide-to-flexbox/ */

@@ -26,7 +26,10 @@ import {getType, getId, nonce} from '../data/DataClass';
  * @param servlet {?String} e.g. "publisher" Normally unset, and taken from the url.
  * @param ListItem {?React component} if set, replaces DefaultListItem
  */
-const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes, canDelete}) => {
+const ListLoad = ({type, status, servlet, navpage, q, 
+	ListItem, 
+	checkboxes, canDelete, canCreate}) => 
+{
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
 		console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
@@ -87,6 +90,7 @@ const ListLoad = ({type, status, servlet, navpage, q, ListItem, checkboxes, canD
 	);
 	return (<div>
 		{items.length === 0 ? 'No results found' : null}
+		{canCreate? <CreateButton type={type} /> : null}
 		{listItems}
 	</div>);
 };
@@ -167,6 +171,7 @@ const createBlank = ({type, navpage, base, id, make}) => {
 
 /**
  * A create-new button
+ * @param props {?String[]} extra props
  */
 const CreateButton = ({type, props, navpage, base, make}) => {
 	assert(type);
