@@ -29,8 +29,8 @@ const FREE_TOKEN = {
 	id: 'free_token',
 	type: 'free',
 };
-// minimal transation amount by currency
-// table copied from https://stripe.com/docs/currencies (31/08/18)
+/** minimal transation amount by currency
+// table copied from https://stripe.com/docs/currencies (31/08/18) */
 const STRIPE_MINIMUM_AMOUNTS = {
 	'GBP': 0.3,
 	'USD': 0.5,
@@ -202,7 +202,7 @@ class StripeThingsClass extends Component {
 		};
 		// get the token or reusable source from stripe
 		// see https://stripe.com/docs/sources/cards
-		this.props.stripe.createToken(tokenInfo)		// Token(tokenInfo)		
+		this.props.stripe.createSource(tokenInfo)		// Token(tokenInfo)		
 			// then call custom processing (e.g. publish donation)
 			.then(({token, source, error, ...data}) => {
 				if (source) {
@@ -265,7 +265,10 @@ class StripeThingsClass extends Component {
 						</div>
 					</Col>
 				</FormGroup>
-				<button className='btn btn-primary btn-lg pull-right' type='submit' disabled={isSaving || !isValidAmount} title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency} >Submit Payment</button>
+				<button className='btn btn-primary btn-lg pull-right' type='submit' 
+					disabled={isSaving || !isValidAmount} 
+					title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency} 
+					>Submit Payment</button>
 				{this.state.errorMsg? <div className='alert alert-danger'>{this.state.errorMsg}</div> : null}
 			</Form>
 		);
