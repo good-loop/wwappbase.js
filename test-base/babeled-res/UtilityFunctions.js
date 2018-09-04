@@ -50,18 +50,20 @@ let takeScreenshot = (() => {
 let login = (() => {
     var _ref3 = _asyncToGenerator(function* ({ page, username, password }) {
         if (!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
-        yield page.addScriptTag(disableAnimations);
-        yield page.click('#top-right-menu > li > a');
-        yield page.waitForSelector(`#loginByEmail > div:nth-child(1) > input`);
-        yield page.waitForSelector('#loginByEmail > div:nth-child(2) > input');
 
-        yield page.click('#loginByEmail > div:nth-child(1) > input');
+        yield page.addScriptTag(disableAnimations);
+        yield page.waitForSelector(CommonSelectors['log-in']);
+        yield page.click(CommonSelectors['log-in']);
+        yield page.waitForSelector(CommonSelectors['log-in-email']);
+        yield page.waitForSelector(CommonSelectors['log-in-password']);
+
+        yield page.click(CommonSelectors['log-in-email']);
         yield page.keyboard.type(username);
-        yield page.click('#loginByEmail > div:nth-child(2) > input');
+        yield page.click(CommonSelectors['log-in-password']);
         yield page.keyboard.type(password);
         yield page.keyboard.press('Enter');
 
-        yield page.waitForSelector(`#loginByEmail`, { hidden: true });
+        yield page.waitForSelector(CommonSelectors['log-in-email'], { hidden: true });
     });
 
     return function login(_x3) {
@@ -181,6 +183,7 @@ function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, a
 
 const fs = require('fs');
 const $ = require('jquery');
+const { CommonSelectors } = require('../utils/SelectorsMaster');
 
 /**Used to disable all page animations
  * Found that these were making tests less reliable
@@ -206,6 +209,7 @@ const disableAnimations = {
         }`
 };
 
+// set when calling Jest CLI with --testURL $url
 const APIBASE = window.location;function timeout(ms) {
     return new Promise(resolve => setTimeout(resolve, ms));
 };

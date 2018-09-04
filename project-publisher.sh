@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.9.2'
+VERSION='Version=1.9.3'
 
 ###
+# New in 1.9.3 : Configured the sogiveapp syncing of the config (.properties) files so that the production server always gets the correct
+#					file synced to it and renamed to an appropriate name.
 # New in 1.9.2 : Added 'egbot' to the list of supported projects. This is a superficial change to this script.
 # New in 1.9.1 : Added the ability to specify "experiment" as a second argument for the datalog project.
 # New in 1.9.0 : Added the ability to specify "experiment" as a second argument for adserver and portal projects.
@@ -640,9 +642,13 @@ function sync_configs {
 			$GIT_SHORTHAND gc --prune=now
 			$GIT_SHORTHAND pull origin master
 			$GIT_SHORTHAND reset --hard FETCH_HEAD
+			printf "\nSyncing Config Files ...\n"
 			for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
 				$PSYNC $config $TARGET_DIRECTORY/config/
 			done
+			if [[ $TYPE_OF_PUBLISH = 'production' ]]; then
+				$PSSH 'mv /home/winterwell/sogive-app/config/production.sogive.properties /home/winterwell/sogive-app/config/sogive.properties'
+			fi
 		;;
 	esac
 }
