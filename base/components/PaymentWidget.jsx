@@ -227,7 +227,7 @@ class StripeThingsClass extends Component {
 		const {amount, recipient, credit} = this.props;
 		const {value, currency} = amount;
 		const isSaving = this.state.isSaving;
-		const isValidAmount = value > STRIPE_MINIMUM_AMOUNTS[currency]
+		const isValidAmount = value >= STRIPE_MINIMUM_AMOUNTS[currency]
 		// TODO an email editor if this.props.email is unset
 		return (
 			<Form horizontal onSubmit={(event) => this.handleSubmit(event)}>
