@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.3'
+VERSION='Version=1.9.4'
 
 ###
+# New in 1.9.4 : fixed a typo
 # New in 1.9.3 : Configured the sogiveapp syncing of the config (.properties) files so that the production server always gets the correct
 #					file synced to it and renamed to an appropriate name.
 # New in 1.9.2 : Added 'egbot' to the list of supported projects. This is a superficial change to this script.
@@ -637,16 +638,18 @@ function sync_configs {
 				ssh winterwell@$server "mv $TARGET_DIRECTORY/config/$server.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
 			done
 		;;
-		sogive)
+		sogive-app)
 			printf "\nEnsuring that your Logins are up-to-date...\n"
 			$GIT_SHORTHAND gc --prune=now
 			$GIT_SHORTHAND pull origin master
 			$GIT_SHORTHAND reset --hard FETCH_HEAD
 			printf "\nSyncing Config Files ...\n"
 			for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
+				printf "\nSyncing $config file ...\n"
 				$PSYNC $config $TARGET_DIRECTORY/config/
 			done
 			if [[ $TYPE_OF_PUBLISH = 'production' ]]; then
+				printf "\nRenaming production config file\n"
 				$PSSH 'mv /home/winterwell/sogive-app/config/production.sogive.properties /home/winterwell/sogive-app/config/sogive.properties'
 			fi
 		;;
