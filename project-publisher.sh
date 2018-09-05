@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.4'
+VERSION='Version=1.9.5'
 
 ###
+# New in 1.9.5 : Added 'web-iframe' directory to the list of sync'ed items during an adserver publish process.
 # New in 1.9.4 : fixed a typo
 # New in 1.9.3 : Configured the sogiveapp syncing of the config (.properties) files so that the production server always gets the correct
 #					file synced to it and renamed to an appropriate name.
@@ -145,7 +146,7 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
-		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
 		PRESERVE=("web-as/uploads")
 	;;
 	calstat|CALSTAT)
