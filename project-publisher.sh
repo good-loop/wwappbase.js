@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.9.4'
+VERSION='Version=1.9.6'
 
 ###
+# New in 1.9.6 : double brackets for some bash's
+# New in 1.9.5 : Added 'web-iframe' directory to the list of sync'ed items during an adserver publish process.
 # New in 1.9.4 : fixed a typo
 # New in 1.9.3 : Configured the sogiveapp syncing of the config (.properties) files so that the production server always gets the correct
 #					file synced to it and renamed to an appropriate name.
@@ -80,27 +82,27 @@ VERSION='Version=1.9.4'
 #################
 ### Preamble: Check for dependencies
 #################
-if [ $(which npm) = "" ]; then
+if [[ $(which npm) = "" ]]; then
 	printf "\nYou must first install NPM before you can use this tool"
 	exit 1
 fi
 
-if [ $(which babel) = "" ]; then
+if [[ $(which babel) = "" ]]; then
 	printf "\nYou must install babel globally before you can use this tool\nInstall with 'sudo npm install -g babel-cli'"
 	exit 1
 fi
 
-if [ $(which babili) = "" ]; then
+if [[ $(which babili) = "" ]]; then
 	printf "\nYou must install babili globally before you can use this tool\nInstall with 'sudo npm install -g babili'"
 	exit 1
 fi
 
-if [ $(which jshint) = "" ]; then
+if [[ $(which jshint) = "" ]]; then
 	printf "\nIn order to test the JS files before Babeling, you must have JShint installed on your machine\nInstall jshint with 'sudo npm install -g jshint'"
 	exit 1
 fi
 
-if [ $(which parallel-ssh) = "" ]; then
+if [[ $(which parallel-ssh) = "" ]]; then
 	printf "\nIn order to use this publishing script, you will need Parallel-SSH installed on your machine\ninstall Parallel-SSH with 'sudo apt-get install pssh'"
 	exit 1
 fi
@@ -145,7 +147,7 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='adservermain'
-		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
 		PRESERVE=("web-as/uploads")
 	;;
 	calstat|CALSTAT)
