@@ -380,6 +380,8 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publi
 	}
 	// if nothing has been edited, then we can't publish, save, or discard
 	// NB: modified is a persistent marker, managed by the server, for draft != published
+	// this no longer works as we force the item to be pulled from "DRAFT"
+	// will therefore never have status of "PUBLISHED"
 	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && ! item.modified;
 
 	let disablePublish = isSaving || noEdits || cannotPublish;
