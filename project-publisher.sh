@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.6'
+VERSION='Version=1.9.7'
 
 ###
+# New in 1.9.7 : Made the correct '.properties' file get renamed for the correct target server during sogive publishing
 # New in 1.9.6 : double brackets for some bash's
 # New in 1.9.5 : Added 'web-iframe' directory to the list of sync'ed items during an adserver publish process.
 # New in 1.9.4 : fixed a typo
@@ -650,10 +651,16 @@ function sync_configs {
 				printf "\nSyncing $config file ...\n"
 				$PSYNC $config $TARGET_DIRECTORY/config/
 			done
-			if [[ $TYPE_OF_PUBLISH = 'production' ]]; then
+			case $TYPE_OF_PUBLISH in
+			production)
 				printf "\nRenaming production config file\n"
 				$PSSH 'mv /home/winterwell/sogive-app/config/production.sogive.properties /home/winterwell/sogive-app/config/sogive.properties'
-			fi
+			;;
+			test)
+				printf "\nRenaming production config file\n"
+				$PSSH 'mv /home/winterwell/sogive-app/config/test.sogive.properties /home/winterwell/sogive-app/config/sogive.properties'
+			;;
+			esac
 		;;
 	esac
 }
