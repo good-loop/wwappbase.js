@@ -10,6 +10,7 @@ module.exports = {
 		"radix": "off",
 		"jsx-a11y/click-events-have-key-events": "warn",
 		"prefer-destructuring": "off",
+		"react/destructuring-assignment": "off",
 		"arrow-body-style": "off",
 		"react/no-array-index-key": "warn",
 		"arrow-parens": "off",
