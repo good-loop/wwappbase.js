@@ -35,13 +35,17 @@ const _onDragExit = (e, id) => {
 	console.log('onDragExit', dragstate.dragging, id, dragid, e);
 };
 
-const _onDrop = (e, id, onDrop) => {
+
+const _onDrop = (e, id, onDrop, el) => {
 	e.preventDefault();
 	let dragid = e.dataTransfer.getData("id");
-	console.log('onDrop', id, dragid, dragstate.dragging);
+	console.log('onDrop', el, "this", this, id, dragid, dragstate.dragging);
 	dragstate.dragging = null;
+	let x = e.clientX - window.pageXOffset;
+	let y = e.clientY - window.pageYOffset;
 	const drop = {dropzone:id, draggable:dragid, 
-		x:e.clientX, y:e.clientY};
+		x, y, screenX:e.screenX, screenY:e.screenY,
+		clientX:e.clientX, clientY:e.clientY};
 	dragstate.drops.push(drop);
 	// IE?? ev.dataTransfer.getData("text");
 	if (onDrop) onDrop(e, drop);
@@ -63,8 +67,9 @@ const _onDragEnd = (e, id, onDragStart) => {
 };
 
 // https://mobiforge.com/design-development/html5-mobile-web-touch-events
-const Draggable = ({children, id, onDragStart, onDragEnd}) => {
-	return (<div className='Draggable' id={id}
+const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
+	className = className? className+' Draggable' : 'Draggable';
+	return (<div className={className} id={id}
 		draggable
 		onDragStart={e => _onDragStart(e, id, onDragStart)}
 		onDragEnd={e => _onDragEnd(e, id, onDragEnd)}
@@ -95,7 +100,7 @@ const DropZone = ({id, children, onDrop}) => {
 		onDragOver={e => _onDragOver(e, id)} 
 		onDragEnter={e => _onDragEnter(e,id)}
 		onDragExit={e => _onDragExit(e,id)}
-		onDrop={e => _onDrop(e, id, onDrop)}>
+		onDrop={e => _onDrop(e, id, onDrop, this)}>
 		{children}
 	</div>);
 };
