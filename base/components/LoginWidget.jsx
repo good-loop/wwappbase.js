@@ -10,7 +10,7 @@ import C from '../../C';
 
 // For testing
 if ( (""+window.location).indexOf('login=local') !== -1) {	
-	Login.ENDPOINT = 'http://localyouagain.good-loop.com/youagain.json';
+	Login.ENDPOINT = 'https://localyouagain.good-loop.com/youagain.json';
 	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
 }
 
