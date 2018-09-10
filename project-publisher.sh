@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.7'
+VERSION='Version=1.9.8'
 
 ###
+# New in 1.9.8 : My-Loop's production servers are gl-es-03, gl-es-04, gl-es-05
 # New in 1.9.7 : Made the correct '.properties' file get renamed for the correct target server during sogive publishing
 # New in 1.9.6 : double brackets for some bash's
 # New in 1.9.5 : Added 'web-iframe' directory to the list of sync'ed items during an adserver publish process.
@@ -209,7 +210,7 @@ case $1 in
     ;;
 	my-loop|MY-LOOP|myloop|MYLOOP)
         PROJECT='myloop'
-        PRODUCTION_SERVERS=('hugh.soda.sh')
+		PRODUCTION_SERVERS=('gl-es-03.good-loop.com' 'gl-es-04.good-loop.com' 'gl-es-05.good-loop.com')
         TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/my-loop"
         TARGET_DIRECTORY='/home/winterwell/my.good-loop.com'
