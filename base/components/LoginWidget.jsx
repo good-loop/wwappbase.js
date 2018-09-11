@@ -1,7 +1,8 @@
 import React from 'react';
 import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
-import {Modal} from 'react-bootstrap';
+import {Modal} from 'react-bootstrap'; // TODO from BS
+
 import { XId, uid, stopEvent, toTitleCase} from 'wwutils';
 import Cookies from 'js-cookie';
 import DataStore from '../plumbing/DataStore';

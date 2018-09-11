@@ -4,10 +4,11 @@ import ReactDOM from 'react-dom';
 import SJTest, { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
 import printer from '../utils/printer.js';
-import {modifyHash} from 'wwutils';
+import {modifyHash, join} from 'wwutils';
 import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
+import PropControl from './PropControl';
 import DataStore, { getPath } from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
@@ -26,7 +27,9 @@ import {getType, getId, nonce} from '../data/DataClass';
  * @param servlet {?String} e.g. "publisher" Normally unset, and taken from the url.
  * @param ListItem {?React component} if set, replaces DefaultListItem
  */
-const ListLoad = ({type, status, servlet, navpage, q, 
+const ListLoad = ({type, status, servlet, navpage, 
+	q, // Optional query e.g. advertiser-id
+	hasFilter, // if true, offer a text filter This will be added to q
 	ListItem, 
 	checkboxes, canDelete, canCreate}) => 
 {
@@ -36,6 +39,9 @@ const ListLoad = ({type, status, servlet, navpage, q,
 		status = C.KStatus.ALL_BAR_TRASH;
 	}
 	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
+	// widget settings
+	const widgetPath = ['widget','ListLoad',type,status];
+	// selected item id from url
 	let path = DataStore.getValue(['location', 'path']);
 	let id = path[1];
 	if (id) return null;
@@ -51,7 +57,9 @@ const ListLoad = ({type, status, servlet, navpage, q,
 	// from data. 
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
-	let pvItems = ActionMan.list({type, status, q});
+	const filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
+	let q2 = join(q, filter);
+	let pvItems = ActionMan.list({type, status, q2});
 	if ( ! pvItems.resolved) {
 		return (
 			<Misc.Loading text={type.toLowerCase() + 's'} />
@@ -59,7 +67,7 @@ const ListLoad = ({type, status, servlet, navpage, q,
 	}	
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
-	}
+	}	
 	// filter out duplicate-id (paranoia: this should already have been done server side)
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let items = [];
@@ -67,10 +75,17 @@ const ListLoad = ({type, status, servlet, navpage, q,
 	let hits = pvItems.value && pvItems.value.hits;
 	if (hits) {
 		hits.forEach(item => {
-			let id = getId(item) || JSON.stringify(item);
+			// HACK fast filter
+			let sitem = JSON.stringify(item);
+			if (filter && sitem.indexOf(filter) === -1) {
+				return; // filtered out
+			}
+			// dupe?
+			let id = getId(item) || sitem;
 			if (itemForId[id]) {
 				return; // skip dupe
 			}
+			// ok
 			items.push(item);
 			itemForId[id] = item;
 		});
@@ -88,12 +103,14 @@ const ListLoad = ({type, status, servlet, navpage, q,
 			checkboxes={checkboxes}
 			canDelete={canDelete} />)
 	);
-	return (<div>
+	return (<div className='ListLoad'>
 		{items.length === 0 ? 'No results found' : null}
 		{canCreate? <CreateButton type={type} /> : null}
+		{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl path={widgetPath} prop='filter'/></div> : null}
 		{listItems}
 	</div>);
-};
+}; // ./ListLoad
+
 
 const onPick = ({event, navpage, id}) => {
 	if (event) {
@@ -123,7 +140,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete}) 
 				className={'ListItem btn btn-default status-'+item.status}
 			>
 				<Misc.Thumbnail item={item} />
-				{item.name || id}<br/>
+				{item.name || item.text || id}<br/>
 				<small>id: {id} {C.KStatus.isPUBLISHED(item.status)? null : item.status}</small>				
 			</a>
 		</div>
