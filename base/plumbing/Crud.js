@@ -79,6 +79,9 @@ ActionMan.saveEdits = (type, pubId, item) => {
 };
 
 ActionMan.publishEdits = (type, pubId, item) => {	
+	assMatch(type, String);
+	assMatch(pubId, String, "Crud.js no id to publish to "+type);
+	assert(item, "Crud.js no item to publish "+type+" "+pubId);
 	return ActionMan.crud(type, pubId, 'publish', item)
 		.then(res => {
 			// invalidate any cached list of this type

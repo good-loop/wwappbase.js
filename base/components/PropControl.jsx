@@ -176,7 +176,7 @@ const PropControl = (props) => {
 	} // ./£
 	// text based
 	const onChange = e => {
-		console.log("event", e, e.type);
+		// console.log("event", e, e.type);
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 		DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
 		let mv = modelValueFromInput(e.target.value, type, e.type);
