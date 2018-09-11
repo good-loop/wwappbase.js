@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.9'
+VERSION='Version=1.9.10'
 
 ###
+# New in 1.9.10: I realised that my.good-loop.com AND testmy.good-loop.com must have the same CDN for image-serving.
 # New in 1.9.9 : Added sandrock to the my-loop production servers.  the lg cluster will be used as a CDN. Sandrock will serve all non-image assets
 # New in 1.9.8 : My-Loop's production servers are gl-es-03, gl-es-04, gl-es-05
 # New in 1.9.7 : Made the correct '.properties' file get renamed for the correct target server during sogive publishing
@@ -212,7 +213,7 @@ case $1 in
 	my-loop|MY-LOOP|myloop|MYLOOP)
         PROJECT='myloop'
 		PRODUCTION_SERVERS=('sandrock.soda.sh' 'gl-es-03.good-loop.com' 'gl-es-04.good-loop.com' 'gl-es-05.good-loop.com')
-        TEST_SERVERS=('hugh.soda.sh')
+        TEST_SERVERS=('hugh.soda.sh' 'gl-es-03.good-loop.com' 'gl-es-04.good-loop.com' 'gl-es-05.good-loop.com')
 		PROJECT_LOCATION="/home/$USER/winterwell/my-loop"
         TARGET_DIRECTORY='/home/winterwell/my.good-loop.com'
         IMAGE_OPTIMISE='no'
