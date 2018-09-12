@@ -106,7 +106,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	return (<div className='ListLoad'>
 		{items.length === 0 ? 'No results found' : null}
 		{canCreate? <CreateButton type={type} /> : null}
-		{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl path={widgetPath} prop='filter'/></div> : null}
+		{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' path={widgetPath} prop='filter'/></div> : null}
 		{listItems}
 	</div>);
 }; // ./ListLoad

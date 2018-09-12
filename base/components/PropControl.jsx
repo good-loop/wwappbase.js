@@ -10,7 +10,7 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import Misc from './Misc';
-// import { setHash, XId, addScript} from 'wwutils';
+import {join} from 'wwutils';
 import PV from 'promise-value';
 import Dropzone from 'react-dropzone';
 
@@ -588,7 +588,9 @@ const FormControl = ({value, type, required, ...otherProps}) => {
 		return <input className='form-control' type={type} {...otherProps} />;	
 	}
 	// add css classes for required fields
-	let klass = 'form-control'+ (required? (value? ' form-required' : ' form-required blank') : '');
+	let klass = join('form-control', 
+		required? (value? 'form-required' : 'form-required blank') : null, 
+		size? 'input-'+size : null);
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
 	delete otherProps.labels;
