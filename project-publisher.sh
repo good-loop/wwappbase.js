@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.12'
+VERSION='Version=1.9.13'
 
 ###
+# New in 1.9.13: Fixed a 'duh' error of putting in a FQDN instead of an abriged one
 # New in 1.9.12: Made gl-es-03 the production profiler server, and hugh the test server
 # New in 1.9.11: Patched in Roscoe's changes needed to compile new JS units
 # New in 1.9.10: I realised that my.good-loop.com AND testmy.good-loop.com must have the same CDN for image-serving.
@@ -255,7 +256,7 @@ case $1 in
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
-        PRODUCTION_SERVERS=('gl-es-03')
+        PRODUCTION_SERVERS=('gl-es-03.good-loop.com')
         TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/code/profiler"
         TARGET_DIRECTORY='/home/winterwell/profiler'
