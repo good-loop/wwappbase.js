@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.10'
+VERSION='Version=1.9.11'
 
 ###
+# New in 1.9.11: Patched in Roscoe's changes needed to compile new JS units
 # New in 1.9.10: I realised that my.good-loop.com AND testmy.good-loop.com must have the same CDN for image-serving.
 # New in 1.9.9 : Added sandrock to the my-loop production servers.  the lg cluster will be used as a CDN. Sandrock will serve all non-image assets
 # New in 1.9.8 : My-Loop's production servers are gl-es-03, gl-es-04, gl-es-05
@@ -745,6 +746,12 @@ function compile_variants {
 			babel --quiet $VARIANTLIST --out-file /home/$USER/winterwell/adserver/adunit/compiled/babeled-unit.js
 			printf "\n\tIncluding non-ES6 files...\n"
 			cat /home/$USER/winterwell/adserver/adunit/lib/zepto.min.js /home/$USER/winterwell/adserver/adunit/lib/js.cookie.js /home/$USER/winterwell/adserver/adunit/lib/datalog.js /home/$USER/winterwell/adserver/adunit/compiled/babeled-unit.js > /home/$USER/winterwell/adserver/adunit/compiled/all_debug.js
+
+			## Babel VPAID interface
+			printf "\nBabeling and minifying vpaid-interface...\n"
+			babel --quiet adunit/js/vpaid-interface.js --out-file adunit/compiled/vpaid_debug.js
+			babili --quiet adunit/compiled/vpaid_debug.js --out-file adunit/compiled/vpaid.js
+
 
 			## Minify JS and remove intermediate files
 			printf "\n\tMinifying...\n"
