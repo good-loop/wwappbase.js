@@ -580,7 +580,7 @@ Misc.normalise = s => {
  * This replaces the react-bootstrap version 'cos we saw odd bugs there. 
  * Plus since we're providing state handling, we don't need a full component.
  */
-const FormControl = ({value, type, required, ...otherProps}) => {
+const FormControl = ({value, type, required, size, ...otherProps}) => {
 	if (value===null || value===undefined) value = '';
 
 	if (type==='color' && ! value) { 

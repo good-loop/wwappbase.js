@@ -80,7 +80,9 @@ ActionMan.saveEdits = (type, pubId, item) => {
 
 ActionMan.publishEdits = (type, pubId, item) => {	
 	assMatch(type, String);
-	assMatch(pubId, String, "Crud.js no id to publish to "+type);
+	assMatch(pubId, String, "Crud.js no id to publish to "+type);	
+	// if no item - well its the draft we publish
+	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, pubId);
 	assert(item, "Crud.js no item to publish "+type+" "+pubId);
 	return ActionMan.crud(type, pubId, 'publish', item)
 		.then(res => {
