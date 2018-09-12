@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.11'
+VERSION='Version=1.9.12'
 
 ###
+# New in 1.9.12: Made gl-es-03 the production profiler server, and hugh the test server
 # New in 1.9.11: Patched in Roscoe's changes needed to compile new JS units
 # New in 1.9.10: I realised that my.good-loop.com AND testmy.good-loop.com must have the same CDN for image-serving.
 # New in 1.9.9 : Added sandrock to the my-loop production servers.  the lg cluster will be used as a CDN. Sandrock will serve all non-image assets
@@ -254,8 +255,8 @@ case $1 in
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
-        PRODUCTION_SERVERS=(hugh.soda.sh)
-        TEST_SERVERS=()
+        PRODUCTION_SERVERS=('gl-es-03')
+        TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/code/profiler"
         TARGET_DIRECTORY='/home/winterwell/profiler'
         IMAGE_OPTIMISE='no'
