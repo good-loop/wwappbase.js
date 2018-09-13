@@ -22,6 +22,10 @@ window.ServerIO = ServerIO;
 // Allow for local to point at live for debugging
 ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for testing
 
+// HACK our special micro-services
+ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
+ServerIO.ENDPOINT_TASK = 'http://localcalstat.winterwell.com/task';
+
 /** 
  * Call this from ServerIO.js 
  * Safety check - if we deploy test code, it will complain. */
@@ -116,14 +120,12 @@ ServerIO.upload = function(file, progress, load) {
 
 
 /**
- * TODO refactor merge with Crud.js ServerIO.list
- * ??Should we force filters into a query string `q`, or use JSON objects??
- * @returns {Promise}
+ * @deprecated Use ServerIO.list from Crud.js 
  */
 ServerIO.search = function(type, filter) {
 	assert(C.TYPES.has(type), type);
-	let servlet = ServerIO.getServletForType(type);
-	let url = '/'+servlet+'/_list.json';
+	let endpoint = ServerIO.getEndpointForType(type);
+	let url = endpoint+'/_list.json';
 	let params = {
 		data: {}
 	};
@@ -149,9 +151,9 @@ ServerIO.getUrlForItem = ({type, id, status}) => {
 		return 'https://app.sogive.org/charity/'+encURI(id)+'.json'
 			+(status? '?status='+status : '');
 	}
-	let servlet = ServerIO.getServletForType(type);
-	let url = '/'+servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json'
-		+(status? '?status='+status : '');	
+	let servlet = ServerIO.getEndpointForType(type);
+	let url = servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json'
+		+ (status? '?status='+status : '');	
 	return url;
 };
 
@@ -206,8 +208,16 @@ const sogiveid = id => {
 	return id;
 };
 
-ServerIO.getServletForType = (type) => {
-	return type.toLowerCase();
+ServerIO.getEndpointForType = (type) => {
+	// HACK route NGO to sogive
+	if (type==='NGO' && C.app.service !== 'sogive') {
+		return ServerIO.ENDPOINT_NGO;
+	}
+	// HACK route Task to calstat
+	if (type==='Task' && C.app.service !== 'calstat') {
+		return ServerIO.ENDPOINT_TASK;
+	}
+	return '/'+type.toLowerCase();
 };
 
 /**

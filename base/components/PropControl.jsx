@@ -580,7 +580,7 @@ Misc.normalise = s => {
  * This replaces the react-bootstrap version 'cos we saw odd bugs there. 
  * Plus since we're providing state handling, we don't need a full component.
  */
-const FormControl = ({value, type, required, size, ...otherProps}) => {
+const FormControl = ({value, type, required, size, className, ...otherProps}) => {
 	if (value===null || value===undefined) value = '';
 
 	if (type==='color' && ! value) { 
@@ -588,7 +588,7 @@ const FormControl = ({value, type, required, size, ...otherProps}) => {
 		return <input className='form-control' type={type} {...otherProps} />;	
 	}
 	// add css classes for required fields
-	let klass = join('form-control', 
+	let klass = join(className, 'form-control', 
 		required? (value? 'form-required' : 'form-required blank') : null, 
 		size? 'input-'+size : null);
 	// remove stuff intended for other types that will upset input
@@ -598,7 +598,7 @@ const FormControl = ({value, type, required, size, ...otherProps}) => {
 };
 
 
-const ControlTypes = new Enum("img imgUpload textarea text select radio checkboxes autocomplete password email url color Money checkbox"
+const ControlTypes = new Enum("img imgUpload textarea text search select radio checkboxes autocomplete password email url color Money checkbox"
 							+" yesNo location date year number arraytext address postcode json");
 
 

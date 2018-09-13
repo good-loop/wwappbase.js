@@ -85,10 +85,21 @@ ActionMan.publishEdits = (type, pubId, item) => {
 	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, pubId);
 	assert(item, "Crud.js no item to publish "+type+" "+pubId);
 	return ActionMan.crud(type, pubId, 'publish', item)
-		.then(res => {
+		.then(res => {			
+			const lpath = listPath({type, status:C.KStatus.PUBLISHED});
+			let publist = DataStore.getValue(lpath);
+			// invalidate any (other) cached list of this type (eg filtered lists may now be out of date)
+			DataStore.invalidateList(type);
+			// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
+			if (publist) {
+				console.warn("add to pubs", res, publist);
+				DataStore.setValue(lpath, publist.concat(res));
+			}
+			return res;
+		}).catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
-			return res;
+			return err;
 		}); // ./then	
 };
 
@@ -158,9 +169,9 @@ ServerIO.crud = function(type, item, action) {
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
-	let stype = ServerIO.getServletForType(type);
+	let stype = ServerIO.getEndpointForType(type);
 	// NB: load() includes handle messages
-	return ServerIO.load('/'+stype+'/'+encURI(getId(item))+'.json', params);
+	return ServerIO.load(stype+'/'+encURI(getId(item))+'.json', params);
 };
 ServerIO.saveEdits = function(type, item) {
 	return ServerIO.crud(type, item, 'save');
@@ -221,13 +232,17 @@ ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
 		});
 };
 
+
+const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
+
 /**
  * 
  * @returns PV( {hits: Object[]} )
  */
 ActionMan.list = ({type, status, q}) => {
 	assert(C.TYPES.has(type), type);
-	return DataStore.fetch(['list', type, q || 'all', status], () => {
+	const lpath = listPath({type,status,q});
+	return DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q});
 	});
 };
@@ -237,13 +252,17 @@ ActionMan.list = ({type, status, q}) => {
  * @returns promise( {hits: Object[]} )
  */
 ServerIO.list = ({type, status, q}) => {
-	let servlet = ServerIO.getServletForType(type);
+	assert(C.TYPES.has(type), type);
+	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), status);
 	// NB '/_list' used to be '/list' until July 2018
-	return ServerIO.load('/'+servlet + (ServerIO.dataspace? '/'+ServerIO.dataspace : '') + '/_list.json', { data: { status, q } });
-	// .then((res) => {
-	// 	return res.cargo.hits;
-	// });
+	let url = servlet 
+		+ (ServerIO.dataspace? '/'+ServerIO.dataspace : '')
+		+ '/_list.json';
+	let params = {
+		data: {status, q}
+	};	
+	return ServerIO.load(url, params);
 };
 
 
