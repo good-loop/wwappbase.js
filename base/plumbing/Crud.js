@@ -85,10 +85,21 @@ ActionMan.publishEdits = (type, pubId, item) => {
 	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, pubId);
 	assert(item, "Crud.js no item to publish "+type+" "+pubId);
 	return ActionMan.crud(type, pubId, 'publish', item)
-		.then(res => {
+		.then(res => {			
+			const lpath = listPath({type, status:C.KStatus.PUBLISHED});
+			let publist = DataStore.getValue(lpath);
+			// invalidate any (other) cached list of this type (eg filtered lists may now be out of date)
+			DataStore.invalidateList(type);
+			// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
+			if (publist) {
+				console.warn("add to pubs", res, publist);
+				DataStore.setValue(lpath, publist.concat(res));
+			}
+			return res;
+		}).catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
-			return res;
+			return err;
 		}); // ./then	
 };
 
@@ -221,13 +232,17 @@ ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
 		});
 };
 
+
+const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
+
 /**
  * 
  * @returns PV( {hits: Object[]} )
  */
 ActionMan.list = ({type, status, q}) => {
 	assert(C.TYPES.has(type), type);
-	return DataStore.fetch(['list', type, q || 'all', status], () => {
+	const lpath = listPath({type,status,q});
+	return DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q});
 	});
 };

@@ -32,24 +32,27 @@ const TaskList = ({tags=[], assigned=[]}) => {
 	// TODO collapse to the side c.f. Drive etc
 	if (widget.hide) {	
 	}
+	const status =C.KStatus.PUBLISHED;
+	// HACK refactor into ListLoad
+	let items = DataStore.getValue(['list', type, status, q || 'all']);
 
 	return (
 		<div className='TaskList pull-right'>
 			<h3>Tasks</h3>
-			<QuickTaskMaker tags={tags} assigned={assigned} /> 
+			<QuickTaskMaker tags={tags} assigned={assigned} items={items} /> 
 			<div>&nbsp;</div>
 			<ListLoad 
 				hasFilter
 				q={q}
 				type={type} 
-				status={C.KStatus.ALL_BAR_TRASH} 
+				status={status} 
 				ListItem={TaskListItem}
 				checkboxes canDelete
 				className='DefaultListLoad' />
 	</div>);
 };
 
-const QuickTaskMaker = ({tags, assigned}) => {		
+const QuickTaskMaker = ({tags, assigned, items}) => {		
 	if ( ! Login.isLoggedIn()) {
 		return null;
 	}
@@ -61,7 +64,10 @@ const QuickTaskMaker = ({tags, assigned}) => {
 		base.assigned = assigned;
 		let task = Task.make(base);
 		ActionMan.publishEdits('Task', task.id, task);
+		// clear the form
 		DataStore.setValue(qpath, null);
+		// optimistic add to list TODO fold this into Crud		
+		if (items) items.push(task);
 	};
 	const ttext = DataStore.getValue(qpath.concat('text'));
 	return (
