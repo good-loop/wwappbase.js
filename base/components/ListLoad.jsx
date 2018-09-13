@@ -13,6 +13,7 @@ import DataStore, { getPath } from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import {getType, getId, nonce} from '../data/DataClass';
+import List from '../data/List';
 
 /**
  * Provide a list of items of a given type.

@@ -13,6 +13,7 @@ import {XId, encURI} from 'wwutils';
 import ServerIO from './ServerIOBase';
 import ActionMan from './ActionManBase';
 import {notifyUser} from './Messaging';
+import List from '../data/List';
 
 /**
  * @returns Promise
@@ -249,7 +250,8 @@ ActionMan.list = ({type, status, q}) => {
 
 /**
  * 
- * @returns promise( {hits: Object[]} )
+ * @returns promise(List) 
+ * List has form {hits: Object[], total: Number} -- see List.js
  */
 ServerIO.list = ({type, status, q}) => {
 	assert(C.TYPES.has(type), type);
@@ -262,7 +264,13 @@ ServerIO.list = ({type, status, q}) => {
 	let params = {
 		data: {status, q}
 	};	
-	return ServerIO.load(url, params);
+	return ServerIO.load(url, params)
+		.then(res => { 	// sanity check
+			if (JSend.success(res)) {
+				List.assIsa(JSend.data(res), "Not a List "+url);
+			}
+			return res;
+		});
 };
 
 
