@@ -158,9 +158,9 @@ ServerIO.crud = function(type, item, action) {
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
-	let stype = ServerIO.getServletForType(type);
+	let stype = ServerIO.getEndpointForType(type);
 	// NB: load() includes handle messages
-	return ServerIO.load('/'+stype+'/'+encURI(getId(item))+'.json', params);
+	return ServerIO.load(stype+'/'+encURI(getId(item))+'.json', params);
 };
 ServerIO.saveEdits = function(type, item) {
 	return ServerIO.crud(type, item, 'save');
@@ -237,13 +237,17 @@ ActionMan.list = ({type, status, q}) => {
  * @returns promise( {hits: Object[]} )
  */
 ServerIO.list = ({type, status, q}) => {
-	let servlet = ServerIO.getServletForType(type);
+	assert(C.TYPES.has(type), type);
+	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), status);
 	// NB '/_list' used to be '/list' until July 2018
-	return ServerIO.load('/'+servlet + (ServerIO.dataspace? '/'+ServerIO.dataspace : '') + '/_list.json', { data: { status, q } });
-	// .then((res) => {
-	// 	return res.cargo.hits;
-	// });
+	let url = servlet 
+		+ (ServerIO.dataspace? '/'+ServerIO.dataspace : '')
+		+ '/_list.json';
+	let params = {
+		data: {status, q}
+	};	
+	return ServerIO.load(url, params);
 };
 
 

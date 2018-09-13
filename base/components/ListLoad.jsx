@@ -31,7 +31,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	q, // Optional query e.g. advertiser-id
 	hasFilter, // if true, offer a text filter This will be added to q
 	ListItem, 
-	checkboxes, canDelete, canCreate}) => 
+	checkboxes, canDelete, canCreate, className}) => 
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
@@ -41,10 +41,12 @@ const ListLoad = ({type, status, servlet, navpage,
 	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
 	// widget settings
 	const widgetPath = ['widget','ListLoad',type,status];
+	
 	// selected item id from url
-	let path = DataStore.getValue(['location', 'path']);
-	let id = path[1];
-	if (id) return null;
+	// let path = DataStore.getValue(['location', 'path']);
+	// let id = path[1];
+	// if (id) return null;
+
 	if ( ! servlet) servlet = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
 	if ( ! navpage) navpage = servlet;
 	if ( ! servlet) {
@@ -59,7 +61,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	// Upside: clearer
 	const filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
 	let q2 = join(q, filter);
-	let pvItems = ActionMan.list({type, status, q2});
+	let pvItems = ActionMan.list({type, status, q:q2});
 	if ( ! pvItems.resolved) {
 		return (
 			<Misc.Loading text={type.toLowerCase() + 's'} />
@@ -92,22 +94,20 @@ const ListLoad = ({type, status, servlet, navpage,
 	} else {
 		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
 	}
-	// make the list items	
-	const listItems = items.map( (item, i) => (
-		<ListItem key={i}
-			type={type} 
-			servlet={servlet} 
-			navpage={navpage} 
-			item={item} 
-			onPick={onPick} 
-			checkboxes={checkboxes}
-			canDelete={canDelete} />)
-	);
-	return (<div className='ListLoad'>
+	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{items.length === 0 ? 'No results found' : null}
 		{canCreate? <CreateButton type={type} /> : null}
-		{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' path={widgetPath} prop='filter'/></div> : null}
-		{listItems}
+		{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' type='search' path={widgetPath} prop='filter'/></div> : null}
+		{items.map( (item, i) => (
+			<ListItemWrapper key={i} item={item} type={type} checkboxes={checkboxes} canDelete={canDelete} >
+				<ListItem 
+					type={type} 
+					servlet={servlet} 
+					navpage={navpage} 
+					item={item} 
+					onPick={onPick} />
+			</ListItemWrapper>
+		))}
 	</div>);
 }; // ./ListLoad
 
@@ -118,6 +118,18 @@ const onPick = ({event, navpage, id}) => {
 		event.preventDefault();
 	}
 	modifyHash([navpage, id]);
+};
+
+const ListItemWrapper = ({item, type, checkboxes, canDelete, children}) => {
+	const id = getId(item);
+	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
+	return (
+		<div className='ListItemWrapper clearfix'>
+			{checkboxes? <div className='pull-left'><Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} /></div> : null}
+			{canDelete? <DefaultDelete type={type} id={id} /> : null }
+			{children}
+		</div>
+	);
 };
 
 /**
@@ -132,18 +144,14 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete}) 
 	const itemUrl = modifyHash([servlet, id], null, true);
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	return (
-		<div className='ListItemWrapper'>
-			{checkboxes? <div className='pull-left'><Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} /></div> : null}
-			{canDelete? <DefaultDelete type={type} id={id} /> : null }
-			<a href={itemUrl}
-				onClick={event => onPick({ event, navpage, id })}
-				className={'ListItem btn btn-default status-'+item.status}
-			>
-				<Misc.Thumbnail item={item} />
-				{item.name || item.text || id}<br/>
-				<small>id: {id} {C.KStatus.isPUBLISHED(item.status)? null : item.status}</small>				
-			</a>
-		</div>
+		<a href={itemUrl}
+			onClick={event => onPick({ event, navpage, id })}
+			className={'ListItem btn btn-default status-'+item.status}
+		>
+			<Misc.Thumbnail item={item} />
+			{item.name || item.text || id}<br/>
+			<small>id: {id} {C.KStatus.isPUBLISHED(item.status)? null : item.status}</small>				
+		</a>
 	);
 };
 
