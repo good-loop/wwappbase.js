@@ -1,8 +1,9 @@
 import React, { Component } from 'react';
 import {ReactDOM} from 'react-dom';
-import {SJTest} from 'sjtest';
+import {SJTest, assMatch} from 'sjtest';
 import Login from 'you-again';
 import C from '../CBase';
+import List from '../data/List';
 import Misc from './Misc';
 import {stopEvent, join} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
@@ -14,60 +15,94 @@ import Crud from '../plumbing/Crud';
 // import {} from BS;
 
 const TaskListItem = ({item}) => {
+	// glyph fire button?? or a prod button??
 	return (<div>
-		<div>{item.tags? item.tags.join(" ") : null}</div>
-		{item.text}
+		<div className='pull-left'>
+			<Misc.PropControl path={['widget','todo']} prop='closed' type='checkbox' />
+		</div>
+		<div><small><code>{item.tags? item.tags.join(" ") : null}</code></small></div>
+		{item.text}		
 		<div>{item.assigned? item.assigned.join(" ") : null}</div>
+		{item.url && item.url !== ''+window.location? <div><small><a href={item.url}>{item.url}</a></small></div> : null}
 	</div>);
 };
 
-const TaskList = ({tags=[], assigned=[]}) => {		
-	const type = C.TYPES.Task;
-	let q = join(
-		tags.map(t => "tags:"+t).join(" "), 
-		assigned.map(t => "assigned:"+t).join(" ")
+const TaskListButton = ({bpath, value, list}) => {
+	return (<button type="button" className='btn btn-default navbar-btn navbar-nav' 
+		disabled={ ! bpath}
+		onClick={e => DataStore.setValue(bpath, ! value)}>Tasks {list? '('+list.total+')' : null}</button>
 	);
-	const wpath = ['widget', 'TaskList', 'q:'+q];
-	const widget = DataStore.getValue(wpath) || {};
-	// TODO collapse to the side c.f. Drive etc
-	if (widget.hide) {	
-	}
-	const status =C.KStatus.PUBLISHED;
-	// HACK refactor into ListLoad or List.js
-	let items = DataStore.getValue(['list', type, status, q || 'all']);
+};
 
-	return (
-		<div className='TaskList pull-right'>
-			<h3>Tasks</h3>
-			<QuickTaskMaker tags={tags} assigned={assigned} items={items} /> 
+const setTaskTags = (...tags) => {
+	// we're probably inside a render, so update after the current render
+	setTimeout( () => {
+		tags = tags.filter(t => t);	
+		assMatch(tags, 'String[]', "TaskList.jsx setTaskTags()");
+		DataStore.setValue(['widget', 'TaskList', 'tags'], tags);
+	}, 1);
+};
+
+const TaskList = ({}) => {		
+	// where are we? page + id as tags
+	let tags = DataStore.getValue('widget', 'TaskList', 'tags');
+	if ( ! tags) {
+		return <TaskListButton />
+	}
+	// widget settings
+	const wpath = ['widget', 'TaskList', tags.join("+")];
+	const widget = DataStore.getValue(wpath) || {};
+
+	const type = C.TYPES.Task;
+	let q = tags.map(t => "tags:"+t).join(" AND ")
+		// assigned.map(t => "assigned:"+t).join(" ")
+
+	const status = C.KStatus.ALL_BAR_TRASH;
+	// HACK refactor into ListLoad or List.js
+	
+	let pvItems = ActionMan.list({type, status, q:q});
+
+	// button mode?
+	if ( ! widget.show) {
+		return <TaskListButton bpath={wpath.concat('show')} list={pvItems.value} />
+	}
+
+	return (<div>
+		<TaskListButton bpath={wpath.concat('show')} value={true} list={pvItems.value} />
+		<div className='TaskList avoid-navbar' style={{position:'fixed', right:0, top:0}}>
+			<h4>Tasks for {tags.join(" ")}</h4>
+			<QuickTaskMaker tags={tags} items={pvItems.value} /> 
 			<div>&nbsp;</div>
 			<ListLoad 
-				hasFilter
+				hasFilter={pvItems.value && pvItems.value.total > 5}
 				q={q}
 				type={type} 
 				status={status} 
-				ListItem={TaskListItem}
-				checkboxes canDelete
-				className='DefaultListLoad' />
-	</div>);
+				ListItem={TaskListItem}				
+				className='DefaultListLoad' 
+				canDelete
+				/>
+	</div></div>);
 };
 
-const QuickTaskMaker = ({tags, assigned, items}) => {		
+const QuickTaskMaker = ({tags=[], assigned=[], items}) => {		
 	if ( ! Login.isLoggedIn()) {
 		return null;
 	}
 	const qpath = ['widget', 'QuickTaskMaker'];
 	const quickTask = e => {
 		e.preventDefault();
+		// make
 		let base = DataStore.getValue(qpath);
 		base.tags = tags;
 		base.assigned = assigned;
 		let task = Task.make(base);
+		// publish
 		ActionMan.publishEdits('Task', task.id, task);
 		// clear the form
 		DataStore.setValue(qpath, null);
 		// optimistic add to list TODO fold this into Crud		
-		if (items) items.push(task);
+		if (items) List.add(task, items);
 	};
 	const ttext = DataStore.getValue(qpath.concat('text'));
 	return (
@@ -78,3 +113,6 @@ const QuickTaskMaker = ({tags, assigned, items}) => {
 };
 
 export default TaskList;
+export {
+	setTaskTags
+}

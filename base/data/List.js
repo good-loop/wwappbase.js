@@ -28,4 +28,14 @@ List.isa = listy => {
 List.hits = list => List.assIsa(list) && list.hits;
 List.total = list => list.total;
 
+/**
+ * Add in place, item to list
+ * @param {*} item 
+ * @param {List} list 
+ */
+List.add = (item, list) => {
+	list.hits.push(item);
+	return list;
+};
+
 // TODO page cursor logic

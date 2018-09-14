@@ -17,6 +17,7 @@ Task.make = (base = {}) => {
 	const item = {
 		id: nonce(),
 		oxid: Login.getId(),
+		url: ""+window.location, // The whole url! Which could pick up misc cookies accidentally (cookie crumbs)
 		// created: new Date(),
 		...base, // Base comes after defaults so it overrides
 		'@type': 'Task' // @type always last so it overrides any erroneous base.type

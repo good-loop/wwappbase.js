@@ -14,12 +14,13 @@ import CardAccordion from './CardAccordion'; // Hack: this is here to poke CardA
 import PropControl from './PropControl'; // Hack: this is here to poke Input into Misc for older code
 import {XId} from 'wwutils';
 import {LoginLink} from './LoginWidget';
+import {setTaskTags} from './TaskList';
 
 const BasicAccountPage = () => {
 	if ( ! Login.isLoggedIn()) {
 		return <div><h2>My Account: Please login</h2><LoginLink title='Login' /></div>;
 	}
-
+	setTaskTags([]);
 	return (
 		<div className=''>
 			<h2>My Account</h2>
