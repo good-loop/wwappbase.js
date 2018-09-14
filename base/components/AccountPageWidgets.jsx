@@ -20,7 +20,7 @@ const BasicAccountPage = () => {
 	if ( ! Login.isLoggedIn()) {
 		return <div><h2>My Account: Please login</h2><LoginLink title='Login' /></div>;
 	}
-	setTaskTags([]);
+	setTaskTags();
 	return (
 		<div className=''>
 			<h2>My Account</h2>

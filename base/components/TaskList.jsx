@@ -30,15 +30,20 @@ const TaskListItem = ({item}) => {
 const TaskListButton = ({bpath, value, list}) => {
 	return (<button type="button" className='btn btn-default navbar-btn navbar-nav' 
 		disabled={ ! bpath}
-		onClick={e => DataStore.setValue(bpath, ! value)}>Tasks {list? '('+list.total+')' : null}</button>
+		onClick={e => DataStore.setValue(bpath, ! value)}>Tasks {list? '('+List.total(list)+')' : null}</button>
 	);
 };
 
-const setTaskTags = (...tags) => {
+const setTaskTags = (...tags) => {		
+	tags = tags.filter(t => t);	
+	assMatch(tags, 'String[]', "TaskList.jsx setTaskTags()"); //fails for [] :( TODO fix assMatch
+	let oldTags = DataStore.getValue(['widget', 'TaskList', 'tags']);
+	if (JSON.stringify(tags) === JSON.stringify(oldTags)) {
+		// no-op
+		return;
+	}
 	// we're probably inside a render, so update after the current render
-	setTimeout( () => {
-		tags = tags.filter(t => t);	
-		assMatch(tags, 'String[]', "TaskList.jsx setTaskTags()");
+	setTimeout( () => {				
 		DataStore.setValue(['widget', 'TaskList', 'tags'], tags);
 	}, 1);
 };
@@ -50,7 +55,7 @@ const TaskList = ({}) => {
 		return <TaskListButton />
 	}
 	// widget settings
-	const wpath = ['widget', 'TaskList', tags.join("+")];
+	const wpath = ['widget', 'TaskList', tags.join("+") || 'all'];
 	const widget = DataStore.getValue(wpath) || {};
 
 	const type = C.TYPES.Task;
@@ -101,7 +106,8 @@ const QuickTaskMaker = ({tags=[], assigned=[], items}) => {
 		ActionMan.publishEdits('Task', task.id, task);
 		// clear the form
 		DataStore.setValue(qpath, null);
-		// optimistic add to list TODO fold this into Crud		
+		// optimistic add to list
+		// NB: Crud will auto-add to published, but it cant handle auto-add to filtered lists
 		if (items) List.add(task, items);
 	};
 	const ttext = DataStore.getValue(qpath.concat('text'));

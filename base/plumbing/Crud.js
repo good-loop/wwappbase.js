@@ -8,7 +8,7 @@ import DataStore, {getPath} from './DataStore';
 import {getId, getType} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from 'you-again';
-import {XId, encURI} from 'wwutils';
+import {XId, encURI, mapkv} from 'wwutils';
 
 import ServerIO from './ServerIOBase';
 import ActionMan from './ActionManBase';
@@ -85,30 +85,64 @@ ActionMan.publishEdits = (type, pubId, item) => {
 	// if no item - well its the draft we publish
 	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, pubId);
 	assert(item, "Crud.js no item to publish "+type+" "+pubId);
+
+	// optimistic list mod
+	preCrudListMod({type, item, action:'publish'});
+	// call the server
 	return ActionMan.crud(type, pubId, 'publish', item)
-		.then(res => {			
-			const lpath = listPath({type, status:C.KStatus.PUBLISHED});
-			let publist = DataStore.getValue(lpath);
-			// invalidate any (other) cached list of this type (eg filtered lists may now be out of date)
-			DataStore.invalidateList(type);
-			// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
-			if (publist) {
-				console.warn("add to pubs", res, publist);
-				DataStore.setValue(lpath, publist.concat(res));
-			}
-			return res;
-		}).catch(err => {
+		.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return err;
 		}); // ./then	
 };
 
+const preCrudListMod = ({type, id, item, action}) => {
+	assert(type && (item || id) && action);
+	const pathPublished = listPath({type, status:C.KStatus.PUBLISHED});
+	const pathAllBarTrash = listPath({type, status:C.KStatus.ALL_BAR_TRASH});
+	const listPublished = DataStore.getValue(pathPublished);
+	const listAllBarTrash = DataStore.getValue(pathAllBarTrash);
+	// TODO draft list??
+	// TODO invalidate any (other) cached list of this type (eg filtered lists may now be out of date)	
+	// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
+	if (C.CRUDACTION.ispublish(action)) {		
+		if (listPublished) {
+			List.add(item, listPublished);
+			DataStore.setValue(pathPublished, listPublished);
+		}
+		if (listAllBarTrash) {
+			List.add(item, listAllBarTrash);	
+			DataStore.setValue(pathAllBarTrash, listAllBarTrash);	
+		}
+		return;
+	}
+	// delete => optimistic remove
+	if (C.CRUDACTION.isdelete(action)) {		
+		if ( ! item) item = {type, id};
+		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
+			let listForQ = DataStore.getValue('list', type, status);		
+			if ( ! listForQ) return;
+			mapkv(listForQ, (k,v) => {
+				let fnd = List.remove(item, v);
+				if (fnd) DataStore.setValue(['list',type,status,k], v);
+			});	
+		});
+	} // ./action=delete
+};
+
 ActionMan.discardEdits = (type, pubId) => {
 	return ActionMan.crud(type, pubId, C.CRUDACTION.discardEdits);	
 };
 
+/**
+ * 
+ * @param {*} type 
+ * @param {*} pubId 
+ */
 ActionMan.delete = (type, pubId) => {
+	// optimistic list mod
+	preCrudListMod({type, id:pubId, action:'delete'});
 	// ?? put a safety check in here??
 	return ActionMan.crud(type, pubId, 'delete')
 		.then(e => {

@@ -11,7 +11,7 @@
 
 */
 import {assert, assMatch} from 'sjtest';
-import {isa, defineType, getType} from './DataClass';
+import {isa, defineType, getType, getId, nonce} from './DataClass';
 import C from '../CBase';
 
 /** impact utils */
@@ -26,7 +26,15 @@ List.isa = listy => {
 };
 
 List.hits = list => List.assIsa(list) && list.hits;
-List.total = list => list.total;
+/**
+ * 
+ * @param {List} list 
+ * @returns {Number}
+ */
+List.total = list => {
+	return list.hits.length;
+	// list.total; TODO total can double count if type=all-bar-trash
+}
 
 /**
  * Add in place, item to list
@@ -36,6 +44,21 @@ List.total = list => list.total;
 List.add = (item, list) => {
 	list.hits.push(item);
 	return list;
+};
+
+/**
+ * Remove in place, item to list
+ * @param {*} item Can match on id
+ * @param {List} list 
+ * @returns {Boolean} true if a remove was made
+ */
+List.remove = (item, list) => {
+	assert(item && list, "List.js NPE");
+	const idi = getId(item) || nonce();
+	let h2 = list.hits.filter(h => h !== item && getId(h) !== idi);
+	const r = h2.length < list.hits.length;
+	list.hits = h2;
+	return r;
 };
 
 // TODO page cursor logic
