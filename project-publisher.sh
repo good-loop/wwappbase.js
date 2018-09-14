@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.13'
+VERSION='Version=1.9.14'
 
 ###
+# New in 1.9.14: Ensured that variants get sync'ed to the production portal
 # New in 1.9.13: Fixed a 'duh' error of putting in a FQDN instead of an abriged one
 # New in 1.9.12: Made gl-es-03 the production profiler server, and hugh the test server
 # New in 1.9.11: Patched in Roscoe's changes needed to compile new JS units
@@ -250,7 +251,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='portalmain'
-		PLEASE_SYNC=("config" "server" "web" "web-portal" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
+		PLEASE_SYNC=("adunit" "config" "server" "web" "web-portal" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
 		PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='yes'
     ;;
