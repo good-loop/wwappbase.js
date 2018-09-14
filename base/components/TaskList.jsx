@@ -33,7 +33,7 @@ const TaskList = ({tags=[], assigned=[]}) => {
 	if (widget.hide) {	
 	}
 	const status =C.KStatus.PUBLISHED;
-	// HACK refactor into ListLoad
+	// HACK refactor into ListLoad or List.js
 	let items = DataStore.getValue(['list', type, status, q || 'all']);
 
 	return (

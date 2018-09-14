@@ -5,7 +5,7 @@ import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
 import {endsWith} from 'wwutils';
 
-/**
+/*
  * Coding Style??
  * 
  * These files are all about defining a convention, so let's set some rules??
@@ -15,6 +15,7 @@ import {endsWith} from 'wwutils';
 
 /**
  * check the type!
+ * @param typ {!String}
  */
 const isa = function(obj, typ) {
 	if (!_.isObject(obj) || obj.length) return false;
