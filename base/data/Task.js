@@ -22,6 +22,10 @@ Task.make = (base = {}) => {
 		...base, // Base comes after defaults so it overrides
 		'@type': 'Task' // @type always last so it overrides any erroneous base.type
 	};
+	// parent-child?
+	if (item.parent) {
+		Task.assIsa(item.parent, "Task.js make()");
+	}
 	// TODO @you and #tag
 	return item;
 };

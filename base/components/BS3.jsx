@@ -37,11 +37,20 @@ BS.Radio = ({name, checked, value, label, onChange, inline}) => inline?
 
 
 // TODO for LoginWidget
-BS.Modal = ({show, onHide, className, children}) => (<div className={join('modal fade', className)} tabIndex="-1" role="dialog">
-		<div class="modal-dialog" role="document">
-		<div class="modal-content">			 
-			{children}
-	</div></div></div>);
+BS.Modal = ({show, onHide, className, children}) => {
+	if ( ! show) return null;
+	return (<div>
+		<div className={join('modal fade in', className)} 
+			style={{display:'block'}}
+			tabIndex="-1" role="dialog">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">			 
+					{children}
+			</div></div>
+		</div>
+		<div class="modal-backdrop fade in"></div>
+	</div>);
+};
 
 BS.Modal.Title = ({children}) => <h5 class="modal-title">{children}</h5>;
 BS.Modal.Header = ({children}) => (<div class="modal-header">
