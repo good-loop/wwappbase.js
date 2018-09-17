@@ -28,7 +28,7 @@ const str = printer.str;
  * Object format (all properties are optional)
  * {
  * 	accessor: string|function
- * 	Cell: function: value -> jsx
+ * 	Cell: function: value, column -> jsx
  * 	Header: string
  * 	editable: boolean
 * 		saveFn: ({item,...}) -> {}
@@ -40,12 +40,16 @@ const str = printer.str;
  */
 
 /**
- * data: {Object[]} each row an item
+ * data: {Item[]} each row an item
  * 
  * dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
  * So the columns should use accessors 'key' and 'value'
  * 
  * columns: {Column[]}
+ * 
+ * addTotalRow: {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
+ * 
+ * topRow: {Item} - A row Object. Provide an always visible (no filtering) top row, e.g. for totals including extra data.
  */
 // NB: use a full component for error-handling
 // Also state (though maybe we should use DataStore)
@@ -79,10 +83,13 @@ class SimpleTable extends React.Component {
 	render() {
 		let {
 			tableName='SimpleTable', data, dataObject, columns, 
-			headerRender, className, csv, addTotalRow, 
-			topRow, bottomRow, hasFilter, rowsPerPage, statePath, 
+			headerRender, className, csv, 
+			addTotalRow,
+			topRow, 
+			bottomRow, hasFilter, rowsPerPage, statePath, 
 			// checkboxValues, copied into state for modifying
-			hideEmpty
+			hideEmpty,
+			scroller // if true, use fix col-1 scrollbars
 		} = this.props;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
@@ -177,8 +184,8 @@ class SimpleTable extends React.Component {
 					/></div> : null}
 				<div>
 					{checkboxValues? <RemoveAllColumns table={this} /> : null}
-					<div className='wrapper'>
-						<div className='scroller'>
+					<div className={scroller? 'wrapper' : ''}>
+						<div className={scroller? 'scroller' : ''}>
 							<table className={cn}>
 								<thead>
 									<tr>{visibleColumns.map((col, c) => {
@@ -188,9 +195,9 @@ class SimpleTable extends React.Component {
 										}
 									</tr>
 
-									{topRow? <Row item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+									{topRow? <Row className='topRow' item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 									{addTotalRow? 
-										<tr>
+										<tr className='totalRow' >
 											<th>{addTotalRow}</th>
 											{visibleColumns.slice(1).map((col, c) => 
 												<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
@@ -270,11 +277,18 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 	);
 };
 
-const Row = ({item, row, columns, dataArray}) => {
+/**
+ * 
+ */
+const Row = ({item, row, columns, dataArray, className}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
-	
-	return (<tr>
+	// if (specialRow) {
+		// Use-case: e.g. for total rows to have different rendering BUT wed need per col settings
+	// 	// copy columns out, allowing the row item settings to override
+	// 	columns = columns.map(col => Object.assign({}, col, item));
+	// }
+	return (<tr className={className}>
 		{columns.map(col => <Cell key={JSON.stringify(col)} row={row} column={col} item={item} dataRow={dataRow} />)}
 	</tr>);
 };
