@@ -336,7 +336,7 @@ Misc.saveDraftFn = _.debounce(
 	}, 5000);
 
 /**
- * A debounced auto-publish function for the save/publish widget, or for SimpleTable saveFn
+ * A TODO:debounced auto-publish function for the save/publish widget, or for SimpleTable saveFn
  * Must provide type and id, or path
  * * @param {type, id, path}
  */

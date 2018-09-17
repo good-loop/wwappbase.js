@@ -24,7 +24,8 @@ ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for
 
 // HACK our special micro-services
 ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
-ServerIO.ENDPOINT_TASK = 'http://localcalstat.winterwell.com/task'; // FIXME
+ServerIO.ENDPOINT_TASK = 'https://calstat.winterwell.com/task';
+// ServerIO.ENDPOINT_TASK = 'http://localcalstat.winterwell.com/task';
 
 /** 
  * Call this from ServerIO.js 
