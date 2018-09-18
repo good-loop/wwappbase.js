@@ -11,7 +11,8 @@
             margin-left: @sticky-col-width;
             overflow-x: scroll;
             overflow-y: visible;
-            width: 75%;
+			width: calc(~"100% - 260px"); 
+			/* NB: the version of less we currently use (2.7), can't do calc nicely -- see https://stackoverflow.com/questions/11972084/less-aggressive-compilation-with-css3-calc */
             
             table {
                 border-collapse: separate;

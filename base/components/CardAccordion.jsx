@@ -2,6 +2,7 @@
 import React from 'react';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
+import {join} from 'wwutils';
 
 /**
  * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
@@ -13,8 +14,9 @@ import DataStore from '../plumbing/DataStore';
  * @param titleChildren jsx elements to put in the header (can be used with/without title)
  * @param error {any} If set, colour the card red
  * @param warning {any} If set, colour the card yellow
+ * @param className {?String} Added to the BS panel classes
  */
-const Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
+const Card = ({title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
 	// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.	
 	// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
 	if ( ! children) {
@@ -33,9 +35,13 @@ const Card = ({title, glyph, icon, children, onHeaderClick, collapse, titleChild
 			</div>
 		);
 	}
-	
+
+	let panelType = "panel-default"
+	if (error) panelType = "panel-danger";
+	else if (warning) panelType = "panel-warning";
+
 	return (
-		<div className={"Card panel " + (error? "panel-danger" : (warning? "panel-warning" : "panel-default")) }>
+		<div className={join("Card panel", panelType, className)}>
 			{header}
 			<div className={'panel-body' + (collapse? ' collapse' : '') }>
 					{collapse? null : children}
