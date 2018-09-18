@@ -28,7 +28,7 @@ const isNumeric = value => {
 
 /**
  * 
- * @param {?Money} ma 
+ * @param {?Money} ma If null, returns 0
  * @returns {Number}
  */
 Money.value = ma => {
