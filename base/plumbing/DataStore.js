@@ -1,4 +1,5 @@
 
+import JSend from '../data/JSend';
 import C from '../CBase.js';
 import _ from 'lodash';
 import {getId, getType, getStatus} from '../data/DataClass';
@@ -368,9 +369,9 @@ class Store {
 		}
 		// must be bound to the store
 		assert(this && this.appstate, "DataStore.updateFromServer: Use with .bind(DataStore)");
-		let hits = (res.cargo && res.cargo.hits) || res.hits || (res.data && res.data.hits);
-		if ( ! hits && res.cargo) {			
-			hits = [res.cargo]; // just the one?
+		let hits = res.hits || (JSend.data(res) && JSend.data(res).hits); // unwrap cargo
+		if ( ! hits && JSend.isa(res) && JSend.data(res)) {			
+			hits = [JSend.data(res)]; // just the one?
 		}
 		let itemstate = {data:{}, draft:{}, trash:{}};
 		hits.forEach(item => {
@@ -445,10 +446,10 @@ class Store {
 			// HACK handle WW standard json wrapper: unwrap cargo 			
 			// NB: success/fail is checked at the ajax level in in ServerIOBase
 			// TODO let's make unwrap a configurable setting
-			if (res.cargo) {
+			if (JSend.isa(res)) {
 				console.log("unwrapping cargo to store at "+path, res);
-				res = res.cargo;
-			}			
+				res = JSend.data(res);
+			}
 			return res;
 		}).catch(response => {
 			// what if anything to do here??

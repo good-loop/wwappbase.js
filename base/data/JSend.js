@@ -19,6 +19,18 @@ const KAjaxStatus = new Enum("success fail error");
 
 /**
  * 
+ * @returns {!Boolean} true if the input is a JSend or WW's JsonResponse object
+ */
+JSend.isa = jobj => {
+	if ( ! jobj) return false;
+	if (jobj.cargo) return true;
+	let s = JSend.success(jobj);
+	if (s === null) return false;
+	return true;	
+};
+
+/**
+ * 
  * @param {*} jobj 
  * @returns {KAjaxStatus String} success | error | fail
  */
@@ -27,6 +39,7 @@ JSend.status = jobj => jobj.status
 
 /**
  * Boolean alternative to status
+ * @returns {?Boolean} null if the success is not provided
  */
 JSend.success = jobj => {	
 	if (jobj.success===true) return true;
@@ -55,6 +68,9 @@ JSend.message = jobj => {
 	return null;
 };
 
+/**
+ * @returns the data|cargo from a jsend response, or null
+ */
 JSend.data = jobj => {
 	return jobj.data 
 		|| jobj.cargo; // WW's JsonResponse format
