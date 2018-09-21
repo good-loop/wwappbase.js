@@ -1,6 +1,7 @@
 'use strict';
 import Enum from 'easy-enums';
 import Roles from './Roles';
+import DataStore from './plumbing/DataStore';
 
 const C = {};
 
@@ -43,6 +44,28 @@ C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED 
 C.STATUS = new Enum('loading clean dirty saving');
 
 C.CRUDACTION = new Enum('new save publish discardEdits delete');
+
+/**
+ * Make "standard" DataStore nodes from C.TYPES
+ */
+C.setupDataStore = () => {
+	let basics = {
+		data: {},
+		draft: {},
+		widget: {},		
+		list: {},
+		misc: {},
+		/** status of server requests, for displaying 'loading' spinners 
+	 	* Normally: transient.$item_id.status
+		*/
+		transient: {}
+	};
+	C.TYPES.values.forEach(t => {
+		basics.data[t] = {};
+		basics.draft[t] = {};
+	});
+	DataStore.update(basics);
+};
 
 export default C;
 // also for debug
