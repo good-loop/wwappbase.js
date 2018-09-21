@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.9.14'
+VERSION='Version=1.11.0'
 
 ###
+# New in 1.11.0: New Project Param, 'POST_PUBLISHING_TASK' can be set and defined
+# New in 1.10.0: Created the ability to stop and start more than one service per each project.
 # New in 1.9.14: Ensured that variants get sync'ed to the production portal
 # New in 1.9.13: Fixed a 'duh' error of putting in a FQDN instead of an abriged one
 # New in 1.9.12: Made gl-es-03 the production profiler server, and hugh the test server
@@ -82,6 +84,7 @@ VERSION='Version=1.9.14'
 # 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
 #		# Use "lib" instead of "tmp-lib" for syncing your JAR files
 #		PRESERVE=("web-as/uploads")
+#		POST_PUBLISHING_TASK='no' # If this is set to 'yes', then you must ammend section 16 in order to specify how to handle the tasks
 #		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
 #     ;;
 
@@ -154,7 +157,7 @@ case $1 in
 		COMPILE_UNITS='yes'
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='adservermain'
+		SERVICE_NAME=('adservermain')
 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
 		PRESERVE=("web-as/uploads")
 	;;
@@ -172,7 +175,7 @@ case $1 in
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='calstat'
+		SERVICE_NAME=('calstat')
 		PLEASE_SYNC=("config" "lib" "src" "web" "ical-count.js" "package.json" "webpack.config.js")
 	;;
 	egbot|EGBOT)
@@ -192,7 +195,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='egbot'
+		SERVICE_NAME=('egbot')
 		PLEASE_SYNC=("config" "data" "data-collection" "doc" "lib" "src" "test" "web" "input.txt" "package.json" "webpack.config.js" ".babelrc")
 		# Use "lib" instead of "tmp-lib" for syncing your JAR files
 		#PRESERVE=("web-as/uploads")
@@ -211,7 +214,7 @@ case $1 in
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='lg'
+		SERVICE_NAME=('lg')
 		PLEASE_SYNC=("config" "src" "src-js" "lib" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "winterwell.datalog.jar")
     ;;
 	my-loop|MY-LOOP|myloop|MYLOOP)
@@ -231,7 +234,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		UNITS_LOCATION=""
 		RESTART_SERVICE_AFTER_SYNC='no'
-		SERVICE_NAME=''
+		SERVICE_NAME=('')
 		PLEASE_SYNC=("config" "src" "web" "package.json" "webpack.config.js" ".babelrc")
 		AUTOMATED_TESTING='no'
     ;;
@@ -250,10 +253,11 @@ case $1 in
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='portalmain'
+		SERVICE_NAME=('portalmain')
 		PLEASE_SYNC=("adunit" "config" "server" "web" "web-portal" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
 		PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='yes'
+		POST_PUBLISHING_TASK='yes'
     ;;
     profiler|PROFILER)
         PROJECT='profiler'
@@ -267,7 +271,7 @@ case $1 in
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='profilermain'
+		SERVICE_NAME=('profilermain')
 		PLEASE_SYNC=("config" "formunit" "lib" "src" "web" "package.json" "webpack.config.js")
     ;;
     sogive|SOGIVE|sogive-app|SOGIVE-APP)
@@ -284,7 +288,7 @@ case $1 in
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='sogiveapp'
+		SERVICE_NAME=('sogiveapp')
 		PLEASE_SYNC=("config" "data" "server" "src" "lib" "web" "package.json" "webpack.config.js" ".babelrc")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
@@ -301,7 +305,7 @@ case $1 in
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='youagain'
+		SERVICE_NAME=('youagain')
 		PRESERVE=("config/youagain.RSAKeyPair.xml")
 		PLEASE_SYNC=("config" "lib" "web" "src" "package.json" "webpack.config.js")
     ;;
@@ -581,15 +585,19 @@ function webpack {
 ##################################
 function stop_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
-		printf "\nStopping $SERVICE_NAME on $TARGETS\n"
-		$PSSH "sudo service $SERVICE_NAME stop"
+		for service in ${SERVICE_NAME[@]}; do
+			printf "\nStopping $SERVICE_NAME on $TARGETS\n"
+			$PSSH "sudo service $SERVICE_NAME stop"
+		done
 	fi
 }
 
 function start_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
-		printf "\nStarting $SERVICE_NAME on $TARGETS\n"
-		$PSSH "sudo service $SERVICE_NAME start"
+		for service in ${SERVICE_NAME[@]}; do
+			printf "\nStarting $SERVICE_NAME on $TARGETS\n"
+			$PSSH "sudo service $SERVICE_NAME start"
+		done
 	fi
 }
 
@@ -848,8 +856,34 @@ function restore_preserved {
 	done
 }
 
+###########################################
+### Section 16: Defining a function in-which post-publishing-tasks can be run
+###########################################
+
+function run_post_publish_tasks {
+	if [[ $POST_PUBLISHING_TASK = 'yes' ]]; then
+		printf "\nRunning post-publishing tasks\n"
+		case $PROJECT in
+			portal)
+				case $TYPE_OF_PUBLISH in
+					test)
+						$PSSH "sudo service baose restart"
+					;;
+					production)
+						rsync $PROJECT_LOCATION/lib/* winterwell@gl-es-03.soda.sh:/home/winterwell/as.good-loop.com/lib/
+						ssh winterwell@gl-es-03.soda.sh "sudo service baose restart"
+					;;
+					experiment)
+						$PSSH "sudo service baose restart"
+					;;
+				esac
+			;;
+		esac
+	fi
+}
+
 ##########################################
-### Section 15: Performing the Actual Publish
+### Section 17: Performing the Actual Publish
 ##########################################
 printf "\nCreating Target List\n"
 create_target_list
@@ -867,6 +901,7 @@ sync_configs
 webpack
 start_proc
 printf "\nPublishing Process has completed\n"
+run_post_publish_tasks
 printf "\nCleaning tmp-lib directory\n"
 clean_tmp_lib
 run_automated_tests
