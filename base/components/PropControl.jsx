@@ -491,6 +491,9 @@ const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 
 /**
 * wraps the reactjs autocomplete widget
+options {Function|Object[]|String[]}
+renderItem {?JSX}
+getItemValue {?Function} item -> prop-value
 */
 const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem, path, proppath, 
 	item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff}) => {
@@ -499,7 +502,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		if ( ! getItemValue) getItemValue = s => s;
 		if ( ! renderItem) renderItem = a => printer.str(a);
 		const type='autocomplete';
-		let items = _.isArray(options)? options : DataStore.getValue(widgetPath) || [];
+		const items = _.isArray(options)? options : DataStore.getValue(widgetPath) || [];
 		// NB: typing sends e = an event, clicking an autocomplete sends e = a value
 		const onChange2 = (e, optItem) => {
 			console.log("event", e, e.type, optItem);

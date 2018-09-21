@@ -15,7 +15,6 @@ import ActionMan from '../plumbing/ActionManBase';
 import printer from '../utils/printer';
 import C from '../CBase';
 import Money from '../data/Money';
-import Autocomplete from 'react-autocomplete';
 // import I18n from 'easyi18n';
 import {getType, getId, nonce} from '../data/DataClass';
 import md5 from 'md5';
@@ -118,7 +117,7 @@ Misc.Col2 = ({children}) => (
 /**
  * Money span, falsy displays as 0
  * 
- * @param amount {Money|Number}
+ * @param amount {?Money|Number}
  */
 Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
 	if ( ! amount) amount = 0;
