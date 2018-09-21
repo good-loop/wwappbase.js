@@ -18,7 +18,8 @@ const CommonSelectors = {
 const FacebookSelectors = {
     username: '#email',
     password: '#pass',
-    login: '#loginbutton'
+    login: '#loginbutton',
+    continue: '#u_0_4 > div._58xh._1flz > div._1fl- > div._2mgi._4k6n > button'
 };
 
 const TwitterSelectors = {
