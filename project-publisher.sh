@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.9.14'
+VERSION='Version=1.10.0'
 
 ###
+# New in 1.10.0: Created the ability to stop and start more than one service per each project.
 # New in 1.9.14: Ensured that variants get sync'ed to the production portal
 # New in 1.9.13: Fixed a 'duh' error of putting in a FQDN instead of an abriged one
 # New in 1.9.12: Made gl-es-03 the production profiler server, and hugh the test server
@@ -250,7 +251,7 @@ case $1 in
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='portalmain'
+		SERVICE_NAME=('portalmain' 'baose')
 		PLEASE_SYNC=("adunit" "config" "server" "web" "web-portal" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
 		PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='yes'
@@ -581,15 +582,19 @@ function webpack {
 ##################################
 function stop_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
-		printf "\nStopping $SERVICE_NAME on $TARGETS\n"
-		$PSSH "sudo service $SERVICE_NAME stop"
+		for service in ${SERVICE_NAME[@]}; do
+			printf "\nStopping $SERVICE_NAME on $TARGETS\n"
+			$PSSH "sudo service $SERVICE_NAME stop"
+		done
 	fi
 }
 
 function start_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
-		printf "\nStarting $SERVICE_NAME on $TARGETS\n"
-		$PSSH "sudo service $SERVICE_NAME start"
+		for service in ${SERVICE_NAME[@]}; do
+			printf "\nStarting $SERVICE_NAME on $TARGETS\n"
+			$PSSH "sudo service $SERVICE_NAME start"
+		done
 	fi
 }
 
