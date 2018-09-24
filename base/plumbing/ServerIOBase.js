@@ -209,10 +209,19 @@ const sogiveid = id => {
 	return id;
 };
 
+/**
+ * type -> servlet url
+ * This can call different micro-services, e.g. SoGive for charity data.
+ */
 ServerIO.getEndpointForType = (type) => {
-	// HACK route NGO to sogive
-	if (type==='NGO' && C.app.service !== 'sogive') {
-		return ServerIO.ENDPOINT_NGO;
+	// Future: refactor to be pluggable (but this is simpler and clearer for now)
+	// HACK route NGO=Charity, and go to sogive
+	if (type==='NGO') {
+		if (C.app.service === 'sogive') {
+			return '/charity';
+		} else {
+			return ServerIO.ENDPOINT_NGO;
+		}
 	}
 	// HACK route Task to calstat
 	if (type==='Task' && C.app.service !== 'calstat') {
