@@ -235,6 +235,8 @@ ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
 
 /**
  * get an item from DataStore, or call the backend if not there (and save it into DataStore)
+ * @param type {!String} From C.TYPES
+ * @param status {!String} From C.KStatus. If in doubt: use PUBLISHED for display, and DRAFT for editors.
  * @returns PromiseValue
  */
 ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
