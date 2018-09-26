@@ -448,7 +448,7 @@ class Store {
 			// TODO let's make unwrap a configurable setting
 			if (JSend.isa(res)) {
 				console.log("unwrapping cargo to store at "+path, res);
-				res = JSend.data(res);
+				res = JSend.data(res) || res; // HACK: stops login widget forcing rerender on each key stroke
 			}
 			return res;
 		}).catch(response => {
