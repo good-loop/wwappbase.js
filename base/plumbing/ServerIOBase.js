@@ -145,15 +145,16 @@ ServerIO.search = function(type, filter) {
  * 
  * Note: this can be over-ridden to special case some types
  */
-ServerIO.getUrlForItem = ({type, id, status}) => {
+ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	// HACK route charity requests to SoGive
 	if (type==='NGO' && C.app.service !== 'sogive') {
 		id = sogiveid(id);
 		return 'https://app.sogive.org/charity/'+encURI(id)+'.json'
 			+(status? '?status='+status : '');
 	}
+	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);
-	let url = servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json'
+	let url = domain + servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json'
 		+ (status? '?status='+status : '');	
 	return url;
 };
@@ -227,6 +228,11 @@ ServerIO.getEndpointForType = (type) => {
 	if (type==='Task' && C.app.service !== 'calstat') {
 		return ServerIO.ENDPOINT_TASK;
 	}
+	// HACK Change "advert" to "vert" to dodge some adblocking
+	if (type==='Advert') {
+		return '/vert';
+	}
+	
 	return '/'+type.toLowerCase();
 };
 

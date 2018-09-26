@@ -173,12 +173,16 @@ class Store {
 	/**
 	 * the DataStore path for this item, or null if item is null;
 	 */
-	getPath(status, type, id) {
+	getPath(status, type, id, domain) { //TODO: refactor this 
 		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
 		assert(C.TYPES.has(type), "DataStore.js bad type: "+type);
 		assMatch(id, String, "DataStore.js bad id "+id);
 		const s = this.nodeForStatus(status);
-		return [s, type, id];
+		if (domain) {
+			return [s, domain, type, id];	
+		} else {
+			return [s, type, id];
+		}
 	}
 
 	/**

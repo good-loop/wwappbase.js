@@ -221,14 +221,14 @@ ServerIO.discardEdits = function(type, item) {
 /**
  * get an item from the backend -- does not save it into DataStore
  */
-ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
+ServerIO.getDataItem = function({type, id, status, domain, swallow, ...other}) {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO - bad type: '+type);
 	if ( ! status) {
 		console.warn("Crud.js - ServerIO.getDataItem: no status - this is unwise! Editor pages should specify DRAFT. type: "+type+" id: "+id);
 	}
 	assMatch(id, String);
 	const params = {data: {status, ...other}, swallow};
-	let url = ServerIO.getUrlForItem({type, id, status});
+	let url = ServerIO.getUrlForItem({type, id, domain, status});
 	return ServerIO.load(url, params);
 };
 
@@ -239,25 +239,27 @@ ServerIO.getDataItem = function({type, id, status, swallow, ...other}) {
  * @param status {!String} From C.KStatus. If in doubt: use PUBLISHED for display, and DRAFT for editors.
  * @returns PromiseValue
  */
-ActionMan.getDataItem = ({type, id, status, swallow, ...other}) => {
+ActionMan.getDataItem = ({type, id, status, domain, swallow, ...other}) => {
 	assert(id!=='unset', "ActionMan.getDataItem() "+type+" id:unset?!");
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
 	assert(C.KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
-	return DataStore.fetch(DataStore.getPath(status, type, id), () => {
-		return ServerIO.getDataItem({type, id, status, swallow, ...other});
+	// TODO Decide if getPath should take object argument
+	let path = DataStore.getPath(status, type, id, domain);
+	return DataStore.fetch(path, () => {
+		return ServerIO.getDataItem({type, id, status, domain, swallow, ...other});
 	}, ! swallow);
 };
 
 /**
  * Smooth update: Get an update from the server without null-ing out the local copy.
  */
-ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
+ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 	console.log("refreshing...", status, type, id);
 	assert(C.KStatus.has(status), "Crud.js bad status "+status);
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan refreshDataItem - bad type: '+type);
 	assMatch(id, String);
-	return ServerIO.getDataItem({type, id, status, ...other})
+	return ServerIO.getDataItem({type, id, status, domain, ...other})
 		.then(res => {
 			if (res.success) {
 				console.log("refreshed", type, id);
@@ -270,31 +272,49 @@ ActionMan.refreshDataItem = ({type, id, status, ...other}) => {
 };
 
 
-const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
+//const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
+//const listPath = ({domain,type,status,q}) => ['list', domain, type, status, q || 'all'];
 
 /**
  * 
  * @returns PV( {hits: Object[]} )
  */
-ActionMan.list = ({type, status, q}) => {
+// Namespace anything fetched from a non-default domain
+ActionMan.list = ({type, status, q, domain}) => {
+	
 	assert(C.TYPES.has(type), type);
-	const lpath = listPath({type,status,q});
+	let lpath = [];
+	if (domain) {
+		lpath = ['list', domain, type, status, q || 'all']
+	}
+	else{
+		lpath = ['list', type, status, q || 'all'];
+	}
 	return DataStore.fetch(lpath, () => {
-		return ServerIO.list({type, status, q});
+		return ServerIO.list({type, status, q, domain});
 	});
 };
+
+/*
+ {
+	 vert: {
+		 ...adverts
+	 }
+	 portal.good-loop.com: {verty}
+ }
+*/
 
 /**
  * 
  * @returns promise(List) 
  * List has form {hits: Object[], total: Number} -- see List.js
  */
-ServerIO.list = ({type, status, q}) => {
+ServerIO.list = ({type, status, q, domain = ''}) => {
 	assert(C.TYPES.has(type), type);
 	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), status);
 	// NB '/_list' used to be '/list' until July 2018
-	let url = servlet 
+	let url = domain + servlet 
 		+ (ServerIO.dataspace? '/'+ServerIO.dataspace : '')
 		+ '/_list.json';
 	let params = {
