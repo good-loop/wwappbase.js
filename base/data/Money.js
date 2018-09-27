@@ -56,7 +56,7 @@ Money.setValue = (m, newVal) => {
 };
 
 /**
- * 
+ * @param m If null, return 0. The canonical field is `value100p` but this method will also read `value`
  * @returns {Number} in hundredth of a penny. Defaults to 0.
  */
 const v100p = m => {
@@ -81,7 +81,7 @@ const v100p = m => {
 		return m.value100p;
 	}
 	if (m.value) {
-		let v = parseFloat(m.value);
+		let v = parseFloat(m.value); // string or number
 		m.value100p = v * 10000;
 		return m.value100p;
 	}
