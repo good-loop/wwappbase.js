@@ -61,5 +61,9 @@ BS.Modal.Body = ({children}) => <div class="modal-body">{children}</div>;
 BS.Modal.Footer = ({children}) => <div class="modal-footer">{children}</div>;
 
 
+BS.Alert = ({color='warning', children}) => {
+	return <div role='alert' className={'alert alert-'+color}>{children}</div>
+};
+
 export default BS;
 
