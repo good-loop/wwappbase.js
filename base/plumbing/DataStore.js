@@ -173,7 +173,7 @@ class Store {
 	/**
 	 * the DataStore path for this item, or null if item is null;
 	 */
-	getPath(status, type, id, domain) { //TODO: refactor this 
+	getPath(status, type, id, domain) { //TODO: refactor this to {named args}
 		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
 		assert(C.TYPES.has(type), "DataStore.js bad type: "+type);
 		assMatch(id, String, "DataStore.js bad id "+id);

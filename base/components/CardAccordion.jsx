@@ -24,9 +24,12 @@ const Card = ({title, glyph, icon, children, className, onHeaderClick, collapse,
 	}
 	let header = null;
 	if (title || titleChildren) {
-		let hcssClasses = ['panel-heading', onHeaderClick? 'btn-link' : null].filter(x => !!x);
+		let hoverText = null;
+		if (error && _.isString(error)) hoverText = error;
+		else if (warning && _.isString(warning)) hoverText = warning;
 		header = (
-			<div className={hcssClasses.join(" ")} onClick={onHeaderClick} >
+			<div className={join('panel-heading', onHeaderClick? 'btn-link' : null)} onClick={onHeaderClick} 
+				title={hoverText} >
 				<h3 className="panel-title">
 					{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
 					{title || <span>&nbsp;</span>} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
