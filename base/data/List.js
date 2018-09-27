@@ -40,9 +40,15 @@ List.total = list => {
  * Add in place, item to list
  * @param {*} item 
  * @param {List} list 
+ * @param {?int} index Optional insertion index (defaults to the end of the list)
  */
-List.add = (item, list) => {
-	list.hits.push(item);
+List.add = (item, list, index) => {
+	const items = List.hits(list);
+	if (index !== undefined) {
+		items.splice(index, 0, item);
+	} else {
+		items.push(item);
+	}
 	return list;
 };
 

@@ -108,11 +108,11 @@ const preCrudListMod = ({type, id, item, action}) => {
 	// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
 	if (C.CRUDACTION.ispublish(action)) {		
 		if (listPublished) {
-			List.add(item, listPublished);
+			List.add(item, listPublished, 0);
 			DataStore.setValue(pathPublished, listPublished);
 		}
 		if (listAllBarTrash) {
-			List.add(item, listAllBarTrash);	
+			List.add(item, listAllBarTrash, 0);	
 			DataStore.setValue(pathAllBarTrash, listAllBarTrash);	
 		}
 		return;
@@ -271,9 +271,11 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 		});
 };
 
-
-//const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
-//const listPath = ({domain,type,status,q}) => ['list', domain, type, status, q || 'all'];
+/**
+ * DataStore path for list
+ * @param {?String} q Optional query
+ */
+const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
 
 /**
  * 
