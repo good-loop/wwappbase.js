@@ -61,7 +61,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
 	const filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
-	let q2 = join(q, filter);
+	let q2 = q; //join(q, filter); ??pass filter to back-end??
 	let pvItems = ActionMan.list({type, status, q:q2});
 	if ( ! pvItems.resolved) {
 		return (
@@ -100,7 +100,7 @@ const ListLoad = ({type, status, servlet, navpage,
 		{canCreate? <CreateButton type={type} /> : null}
 		{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' type='search' path={widgetPath} prop='filter'/></div> : null}
 		{items.map( (item, i) => (
-			<ListItemWrapper key={i} item={item} type={type} checkboxes={checkboxes} canDelete={canDelete} >
+			<ListItemWrapper key={getId(item) || i} item={item} type={type} checkboxes={checkboxes} canDelete={canDelete} >
 				<ListItem 
 					type={type} 
 					servlet={servlet} 
