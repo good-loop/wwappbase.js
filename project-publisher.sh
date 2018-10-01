@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.11.2'
+VERSION='Version=1.12.0'
 
 ###
+# New in 1.12.0: Added new function: 'minify_css'.  made my-loop images optimised.
 # New in 1.11.2: Added a line which copies a properties file, allowing gl-es-01 to run the BAOSE service
 # New in 1.11.1: Switched the target of the BAOSE microservice from gl-es-03 to gl-es-01
 # New in 1.11.0: New Project Param, 'POST_PUBLISHING_TASK' can be set and defined
@@ -120,6 +121,11 @@ if [[ $(which parallel-ssh) = "" ]]; then
 	exit 1
 fi
 
+if [[ $(which uglifycss) = "" ]]; then
+	printf "\nIn order to Minify CSS, you need to 'sudo npm install -g uglifycss'\n"
+	exit 1
+fi
+
 
 #################
 ### Preamble: Define Arrays and Variables
@@ -225,9 +231,10 @@ case $1 in
         TEST_SERVERS=('hugh.soda.sh' 'gl-es-03.good-loop.com' 'gl-es-04.good-loop.com' 'gl-es-05.good-loop.com')
 		PROJECT_LOCATION="/home/$USER/winterwell/my-loop"
         TARGET_DIRECTORY='/home/winterwell/my.good-loop.com'
-        IMAGE_OPTIMISE='no'
-        IMAGEDIRECTORY=""
+        IMAGE_OPTIMISE='yes'
+        IMAGEDIRECTORY="$PROJECT_LOCATION/web/img"
 		CONVERT_LESS='yes'
+		MINIFY_CSS='yes'
 		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
 		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
         WEBPACK='yes'
@@ -886,6 +893,19 @@ function run_post_publish_tasks {
 }
 
 ##########################################
+### Seciton 17: Defining the Function for minifying CSS
+##########################################
+function minify_css {
+	for css in $(find -type f -iname "*.css" $CSS_OUTPUT_LOCATION); do
+		uglifycss $css > $CSS_OUTPUT_LOCATION/$css
+	done
+}
+
+
+
+
+
+##########################################
 ### Section 17: Performing the Actual Publish
 ##########################################
 printf "\nCreating Target List\n"
@@ -893,6 +913,7 @@ create_target_list
 stop_proc
 image_optimisation
 convert_less_files
+minify_css
 test_js
 compile_variants
 preserve_items
