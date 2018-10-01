@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.12.0'
+VERSION='Version=1.12.1'
 
 ###
+# New in 1.12.1: Fixed the minify_css function
 # New in 1.12.0: Added new function: 'minify_css'.  made my-loop images optimised.
 # New in 1.11.2: Added a line which copies a properties file, allowing gl-es-01 to run the BAOSE service
 # New in 1.11.1: Switched the target of the BAOSE microservice from gl-es-03 to gl-es-01
@@ -896,8 +897,9 @@ function run_post_publish_tasks {
 ### Seciton 17: Defining the Function for minifying CSS
 ##########################################
 function minify_css {
-	for css in $(find -type f -iname "*.css" $CSS_OUTPUT_LOCATION); do
-		uglifycss $css > $CSS_OUTPUT_LOCATION/$css
+	for css in $(find $CSS_OUTPUT_LOCATION -type f -iname "*.css"); do
+		mv $css $css.original
+		uglifycss $css.original > $css
 	done
 }
 
