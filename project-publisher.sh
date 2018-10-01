@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.11.0'
+VERSION='Version=1.11.2'
 
 ###
+# New in 1.11.2: Added a line which copies a properties file, allowing gl-es-01 to run the BAOSE service
+# New in 1.11.1: Switched the target of the BAOSE microservice from gl-es-03 to gl-es-01
 # New in 1.11.0: New Project Param, 'POST_PUBLISHING_TASK' can be set and defined
 # New in 1.10.0: Created the ability to stop and start more than one service per each project.
 # New in 1.9.14: Ensured that variants get sync'ed to the production portal
@@ -870,7 +872,8 @@ function run_post_publish_tasks {
 						$PSSH "sudo service baose restart"
 					;;
 					production)
-						rsync $PROJECT_LOCATION/lib/* winterwell@gl-es-03.soda.sh:/home/winterwell/as.good-loop.com/lib/
+						rsync $PROJECT_LOCATION/lib/* winterwell@gl-es-01.soda.sh:/home/winterwell/as.good-loop.com/lib/
+						ssh winterwell@gl-es-03.soda.sh "cp /home/winterwell/as.good-loop.com/config/adserver.properties /home/winterwell/as.good-loop.com/config/batchallocateorphanspendevents.properties"
 						ssh winterwell@gl-es-03.soda.sh "sudo service baose restart"
 					;;
 					experiment)

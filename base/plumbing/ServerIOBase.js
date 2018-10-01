@@ -31,15 +31,19 @@ ServerIO.ENDPOINT_TASK = 'https://calstat.winterwell.com/task';
  * Call this from ServerIO.js 
  * Safety check - if we deploy test code, it will complain. */
 ServerIO.checkBase = () => {
-	if (ServerIO.APIBASE && C.isProduction()) {
-		const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
-		ServerIO.APIBASE = ''; // clear it
-		console.warn(err);
+	// My-Loop doesn't have a "native" API base so must use a "foreign" host - in this case portal.good-loop.com
+	if (!ServerIO.NO_API_AT_THIS_HOST) {
+		if (ServerIO.APIBASE && C.isProduction()) {
+			const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
+			ServerIO.APIBASE = ''; // clear it
+			console.warn(err);
+		}
+		// TODO include datalog here too in notify
+		if (ServerIO.APIBASE && ! C.isProduction()) {
+			notifyUser("Using Server: "+ServerIO.APIBASE);
+		}
 	}
-	// TODO include datalog here too in notify
-	if (ServerIO.APIBASE && ! C.isProduction()) {
-		notifyUser("Using Server: "+ServerIO.APIBASE);
-	}
+
 	// datalog endpoint
 	if (ServerIO.DATALOG_ENDPOINT && C.isProduction() && 
 			(ServerIO.DATALOG_ENDPOINT.indexOf('test') !== -1 || ServerIO.DATALOG_ENDPOINT.indexOf('local') !== -1)
