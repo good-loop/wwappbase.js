@@ -5,9 +5,9 @@ import Misc from './Misc';
 /**
  * Remove non-standard characters and render Markdown.
  */
-const MDText = ({source}) => {
+const MDText = ({source, renderers}) => {
 	let nsource = Misc.normalise(source);
-	return <ReactMarkdown source={nsource} />
+	return <ReactMarkdown source={nsource} renderers={renderers}/>
 };
 
 export default MDText;
