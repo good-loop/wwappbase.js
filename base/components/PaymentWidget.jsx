@@ -149,6 +149,7 @@ class StripeThingsClass extends Component {
 			residual = Money.sub(amount, credit);		
 		}
 
+		// Native widget?
 		/* We might be able to forgo the rigmarole of collecting
 		+ submitting CC data ourselves, if the browser supports
 		the generic Payments API or has Google Wallet / Apple Pay
@@ -157,7 +158,8 @@ class StripeThingsClass extends Component {
 		Here, we check if it's available - in render(), if it is,
 		we skip showing the form and just present a flashy "Pay"
 		button. */
-		
+		// ?? Does this widget get stuck on the first amount?
+		// See SoGive bug report: https://issues.soda.sh/stream?tag=148924
 		const paymentRequest = props.stripe.paymentRequest({
 			country: 'GB',
 			currency: (amount.currency || 'gbp').toLowerCase(),
