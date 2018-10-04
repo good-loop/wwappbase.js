@@ -60,7 +60,7 @@ const STRIPE_MINIMUM_AMOUNTS = {
  * 	The token string is either a Stripe authorisation token, or one of the fixed special values (e.g. credit_token).
  * 	
  */
-const PaymentWidget = ({amount, onToken, recipient, email}) => {
+const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest}) => {
 	if ( ! amount) {
 		return null; // no amount, no payment
 	}
@@ -115,7 +115,7 @@ const PaymentWidget = ({amount, onToken, recipient, email}) => {
 		<div className='section donation-amount'>			
 			<StripeProvider apiKey={stripeKey}>
 				<Elements>
-					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient} email={email} />
+					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient} email={email} usePaymentRequest={usePaymentRequest}/>
 				</Elements>
 			</StripeProvider>
 			{ ! C.isProduction() ? (
@@ -226,7 +226,7 @@ class StripeThingsClass extends Component {
 	}
 
 	render() {
-		if (this.state.canMakePayment) {
+		if (this.state.canMakePayment && this.props.usePaymentRequest) {
 			return (<PaymentRequestButtonElement paymentRequest={this.state.paymentRequest} />);
 		}
 
