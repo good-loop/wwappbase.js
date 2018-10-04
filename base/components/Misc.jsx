@@ -58,9 +58,6 @@ Misc.Loading = ({text}) => {
 			{text===undefined? 'Loading...' : text}
 		</center>
 	</div>);
-	// <div>
-	// 	<span className="glyphicon glyphicon-cog spinning" /> Loading {text || ''}...
-	// </div>
 };
 
 
