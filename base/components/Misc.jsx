@@ -362,8 +362,8 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publi
 	}
 	assert(C.TYPES.has(type), 'Misc.SavePublishDiscard');
 	assMatch(id, String);
-	let localStatus = DataStore.getLocalEditsStatus(type, id);
-	let isSaving = C.STATUS.issaving(localStatus);	
+	let localStatus = DataStore.getLocalEditsStatus(type, id) || C.STATUS.clean;
+	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData(status, type, id);
 	// request a save?
@@ -385,7 +385,7 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publi
 	let disableDelete = isSaving || cannotDelete;
 	// Sometimes we just want to autosave drafts!
 	if (hidden) return <span />;
-	const vis ={visibility: isSaving? 'visible' : 'hidden'};
+	const vis = { visibility: (isSaving ? 'visible' : 'hidden') };
 
 	// debug info on DataStore state
 	let pubv = DataStore.getData(C.KStatus.PUBLISHED, type, id);
@@ -394,7 +394,7 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publi
 					: (draftv? "draft only" : "nothing loaded");
 
 	return (<div className='SavePublishDiscard' title={item && item.status}>
-		<div><small>Status: {item && item.status}, Modified: {localStatus} {isSaving? "saving...":null}, DataStore: {dsi}</small></div>
+		<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
 		<button className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
 			Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
