@@ -175,6 +175,11 @@ const PropControl = (props) => {
 		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlMoney {...acprops} />;
 	} // ./£
+	if (type === 'XId') {
+		let service = otherStuff.service || 'WTF'; // FIXME
+		modelValueFromInput = s => Misc.normalise(s)+'@'+service;
+	}
+
 	// text based
 	const onChange = e => {
 		// console.log("event", e, e.type);
@@ -242,7 +247,7 @@ const PropControl = (props) => {
 			</div>);
 	}
 
-	if (type === 'imgUpload') {
+	if (type === 'imgUpload' || type==='videoUpload') {
 		delete otherStuff.https;
 		const uploadAccepted = (accepted, rejected) => {
 			const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
@@ -261,17 +266,20 @@ const PropControl = (props) => {
 			});
 		};
 
+		let acceptedTypes = type==='imgUpload'? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
+		let acceptedTypesDesc = type==='imgUpload'? 'JPG, PNG, or SVG image' : 'video'
+
 		return (
 			<div>
 				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
 				<div className='pull-left'>
 					<Dropzone
 						className='DropZone'
-						accept='image/jpeg, image/png, image/svg+xml'
+						accept={acceptedTypes}
 						style={{}}
 						onDrop={uploadAccepted}
 					>
-						Drop a JPG, PNG, or SVG image here
+						Drop a {acceptedTypesDesc} here
 					</Dropzone>
 				</div>
 				<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail style={{background: bg}} url={value} /></div>
@@ -602,8 +610,10 @@ const FormControl = ({value, type, required, size, className, ...otherProps}) =>
 };
 
 
-const ControlTypes = new Enum("img imgUpload textarea text search select radio checkboxes autocomplete password email url color Money checkbox"
-							+" yesNo location date year number arraytext address postcode json");
+const ControlTypes = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
+							+" yesNo location date year number arraytext address postcode json"
+							// some Good-Loop data-classes
+							+" Money XId");
 
 
 Misc.FormControl = FormControl;
