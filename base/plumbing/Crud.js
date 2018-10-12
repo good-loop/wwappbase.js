@@ -70,6 +70,8 @@ ActionMan.crud = (type, id, action, item) => {
 			// bleurgh
 			console.warn(err);
 			let msg = JSend.message(err) || 'Error';
+			// HACK remove the stacktrace which our servers put in for debug
+			msg = msg.replace(/<details>[\s\S]*<\/details>/, "").trim();
 			notifyUser(new Error(action+" failed: "+msg));
 			// mark the object as dirty
 			DataStore.setLocalEditsStatus(type, id, C.STATUS.dirty);

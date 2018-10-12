@@ -27,12 +27,15 @@ const MessageBar = () => {
 
 const MessageBarItem = ({message}) => {
 	if (message.closed) {
-		return (<div></div>);
+		return null;
 	}
+	let text = message.text;
+	// HACK remove the stacktrace which our servers put in for debug
+	text = text.replace(/<details>[\s\S]*<\/details>/, "").trim();
 	const alertType = message.type==="error"? "alert alert-danger" : "alert alert-warning";
 	return (
 		<div className={alertType}>
-			{message.text}
+			{text}
 			{Messaging.jsxFromId[message.id]}
 			<div className='hidden'>Details {message.details}</div>
 			<button onClick={ e => { message.closed=true; DataStore.update(); } } type="button" className="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>

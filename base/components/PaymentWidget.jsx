@@ -11,6 +11,7 @@ import Money from '../data/Money';
 import Transfer from '../data/Transfer';
 import {assMatch} from 'sjtest';
 import Misc from './Misc';
+import DataStore from '../plumbing/DataStore';
 
 // falsy value for SERVER_TYPE = production
 const stripeKey = (C.SERVER_TYPE) ?
@@ -60,7 +61,7 @@ const STRIPE_MINIMUM_AMOUNTS = {
  * 	The token string is either a Stripe authorisation token, or one of the fixed special values (e.g. credit_token).
  * 	
  */
-const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest}) => {
+const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, error}) => {
 	if ( ! amount) {
 		return null; // no amount, no payment
 	}
@@ -109,18 +110,18 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest}) =
 			);					
 		}
 	} // ./credit
-
-	let error = DataStore.getValue( errorPath({type, id, action});??
 	
 	return (
 		<div className='section donation-amount'>			
 			<StripeProvider apiKey={stripeKey}>
 				<Elements>
-					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient} email={email} usePaymentRequest={usePaymentRequest}/>
+					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient} 
+						email={email} usePaymentRequest={usePaymentRequest} serverError={error}
+					/>
 				</Elements>
 			</StripeProvider>
 
-			TODO {error} 
+			{error? <div className='alert alert-danger'>{error}</div> : null} 
 
 			{ ! C.isProduction() ? (
 				<small className='clear'>
@@ -193,6 +194,7 @@ class StripeThingsClass extends Component {
 		};
 	} // ./constructor
 
+
 	handleSubmit(event) {
 		console.log("PaymentWidget - handleSubmit", event);
 		// Don't submit and cause a pageload!
@@ -230,7 +232,8 @@ class StripeThingsClass extends Component {
 		
 		/* here's what we do with the token when we have it in the old donation widget! */
 		/*onToken={(stripeResponse) => { ActionMan.donate({ charity, formPath, formData, stripeResponse }); } }*/
-	}
+	} //./handleSubmit()
+
 
 	render() {
 		if (this.state.canMakePayment && this.props.usePaymentRequest) {
@@ -239,7 +242,7 @@ class StripeThingsClass extends Component {
 
 		const {amount, recipient, credit} = this.props;
 		const {value, currency} = amount;
-		const isSaving = this.state.isSaving;
+		const isSaving = this.state.isSaving && ! this.props.serverError;
 		const isValidAmount = value >= STRIPE_MINIMUM_AMOUNTS[currency]
 		// TODO an email editor if this.props.email is unset
 		return (
@@ -272,10 +275,12 @@ class StripeThingsClass extends Component {
 						</div>
 					</Col>
 				</FormGroup>
+
 				<button className='btn btn-primary btn-lg pull-right' type='submit' 
 					disabled={isSaving || !isValidAmount} 
 					title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency} 
 					>Submit Payment</button>
+
 				{this.state.errorMsg? <div className='alert alert-danger'>{this.state.errorMsg}</div> : null}
 			</Form>
 		);
