@@ -110,6 +110,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest}) =
 		}
 	} // ./credit
 
+	let error = DataStore.getValue( errorPath({type, id, action});??
 	
 	return (
 		<div className='section donation-amount'>			
@@ -118,10 +119,14 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest}) =
 					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient} email={email} usePaymentRequest={usePaymentRequest}/>
 				</Elements>
 			</StripeProvider>
+
+			TODO {error} 
+
 			{ ! C.isProduction() ? (
 				<small className='clear'>
-					Test card no: 4000008260000000 (use any CVC and any future expiry date). Or
-					{' '}
+					Test card no: 4000008260000000 (use any CVC and any future expiry date). 
+					Stolen test card no: 4000000000009979.
+					Or					
 					<button onClick={skipAction}>test: pretend I paid</button>
 				</small>
 			) : null}

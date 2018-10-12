@@ -62,18 +62,29 @@ ActionMan.crud = (type, id, action, item) => {
 			}
 			// clear the saving flag
 			DataStore.setLocalEditsStatus(type, id, C.STATUS.clean);
+			// and any error
+			DataStore.setValue(errorPath({type, id, action}), null);
 			return res;
 		})
 		.catch(err => {
 			// bleurgh
 			console.warn(err);
-			let msg = JSend.message(err) || '';
+			let msg = JSend.message(err) || 'Error';
 			notifyUser(new Error(action+" failed: "+msg));
 			// mark the object as dirty
 			DataStore.setLocalEditsStatus(type, id, C.STATUS.dirty);
+			// and log an error relating to it
+			DataStore.setValue(errorPath({type, id, action}), msg);
 			return err;
 		});
 }; // ./crud
+
+/**
+ * @returns DataStore path for crud errors from this
+ */
+const errorPath = ({type, id, action}) => {
+	return ['transient', type, id, action, 'error'];
+};
 
 ActionMan.saveEdits = (type, pubId, item) => {
 	return ActionMan.crud(type, pubId, 'save', item);
@@ -335,3 +346,6 @@ ServerIO.list = ({type, status, q, domain = ''}) => {
 const CRUD = {	
 };
 export default CRUD;
+export {
+	errorPath
+}

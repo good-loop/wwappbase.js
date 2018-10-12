@@ -7,7 +7,7 @@
  * 	data: {?Object} the data/value/cargo
  * }
  * 
- * This file supports BOTH JSend and Winterwell's JsonResponse format.
+ * This file supports BOTH JSend and Winterwell's JsonResponse format, and jQuery responses.
  */
 
 import Enum from 'easy-enums';
@@ -31,7 +31,7 @@ JSend.isa = jobj => {
 
 /**
  * 
- * @param {*} jobj 
+ * @param {JSend} jobj 
  * @returns {KAjaxStatus String} success | error | fail
  */
 JSend.status = jobj => jobj.status 
@@ -47,6 +47,14 @@ JSend.success = jobj => {
 
 	if (jobj.status===KAjaxStatus.success) return true;
 	if (jobj.status===KAjaxStatus.fail || jobj.status===KAjaxStatus.error) return false;
+
+	// a jQuery response
+	if (typeof(jobj.status)==='number') {
+		console.warn("JSend handed a jQuery response - bad form old chap", jobj);
+		if (jobj.status === 200) return true;
+		// 300 redirect??
+		return false;
+	}
 
 	console.warn("JSend: status unknown", jobj);
 	return null;
@@ -64,6 +72,11 @@ JSend.message = jobj => {
 		if (typeof(m)==='string') return m;
 		return m.text || JSON.stringify(m);
 	} 
+
+	// jQuery response
+	if (jobj.responseText) {
+		return jobj.responseText;
+	}
 	
 	return null;
 };
