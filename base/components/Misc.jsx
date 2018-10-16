@@ -344,7 +344,7 @@ Misc.publishDraftFn =
 			id = id || getId(item);
 			type = type || getType(item);
 		}
-		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad type: "+type+" id: "+id);
+		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad/missing type: "+type+" id: "+id);
 		assMatch(id, String,"Misc.jsx publishDraftFn id?! "+type+" id: "+id);
 		ActionMan.publishEdits(type, id);
 		return true;

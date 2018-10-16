@@ -33,7 +33,7 @@ const TaskListItem = ({item}) => {
 		<div className='pull-left'>
 					<Misc.PropControl path={path} 
 				prop='closed' type='checkbox' 				
-				saveFn={Misc.publishDraftFn}
+				saveFn={() => Misc.publishDraftFn({type:'Task', id:item.id})}
 			/>
 		</div>
 		{item.tags && item.tags.length? <div><small><code>{item.tags.join(" ")}</code></small></div> : null}
@@ -49,7 +49,7 @@ const TaskListItem = ({item}) => {
 
 	{item.parent? null : <QuickTaskMaker parent={item} tags={item.tags} />}
 	</div>);
-};
+}; // ./TaskListItem
 
 /**
  * navbar button to show/hide the task list
