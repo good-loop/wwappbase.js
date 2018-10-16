@@ -17,4 +17,10 @@ BS.Alert = ({color='warning', children}) => {
 	return <div role='alert' className={'alert alert-'+color}>{children}</div>
 };
 
+/**
+ * Utility for centering blocks
+ */
+BS.Center = ({children}) => <div className='ml-auto mr-auto'>{children}</div>;
+BS.Centre = BS.Center; // UK or US
+
 export default BS;
