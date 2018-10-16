@@ -16,6 +16,7 @@ import {notifyUser} from './Messaging';
 import List from '../data/List';
 
 /**
+ * @param item {DataItem} can be null, in which case the item is got from DataStore
  * @returns Promise
  */
 ActionMan.crud = (type, id, action, item) => {
