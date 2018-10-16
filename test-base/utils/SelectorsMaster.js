@@ -1,8 +1,10 @@
-// Eventually want to refactor so that all puppeteer files fetch selectors from here
 import PortalSelectors from './SelectorsPortal';
 import AdServerSelectors from './SelectorsAdServer';
 import SoGiveSelectors from './SelectorsSoGive';
+import MyLoopSelectors from './SelectorsMyLoop';
 
+
+// Selectors that are used across all platfroms are written directly in SelectorsMaster
 const CommonSelectors = {
     'log-in': '#top-right-menu > li > a',
     'log-in-email': `#loginByEmail > div:nth-child(1) > input`,
@@ -37,5 +39,6 @@ module.exports = {
     FacebookSelectors,
     PortalSelectors,
     SoGiveSelectors,
-    TwitterSelectors
+    TwitterSelectors,
+    MyLoopSelectors
 };

@@ -41,11 +41,23 @@ const Advert = {
     'mobile-video': '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(5) > div.panel-body > div:nth-child(4) > input',
 };
 
+const PubSignUp = {
+    email: '#loginByEmail > div:nth-child(1) > input',
+    password: '#loginByEmail > div:nth-child(2) > input',
+    register: '#loginByEmail > div:nth-child(3) > button',
+    next: 'div.nav-buttons.clearfix > button.pull-right:not([disabled])',
+    linkToWebsite: '#pubsignup > div > div.WizardStage > div.form-group > input',
+    claimSite: '#pubsignup > div > div.WizardStage > button',
+    wordPressInstructions: '#WordPress',
+    pubPageLink: '#pubsignup > div > div.WizardStage > div:nth-child(1) > div > a',
+};
+
 const Selectors = {
     Advertiser,
     Advert,
     General,
-    Main
+    Main,
+    PubSignUp
 };
 
 module.exports = Selectors;
