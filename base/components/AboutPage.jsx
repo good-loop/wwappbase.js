@@ -12,7 +12,7 @@ const AboutPage = () => {
 	let website = C.app.website; // ?? default to top-level domain
 	return (
 		<div className='AboutPage'>
-			<h2>About {C.app.name}</h2>
+			<h1>About {C.app.name}</h1>
 
 			<p>Please see our website for more information on {C.app.name}: <a href={website}>{website}</a></p>
 

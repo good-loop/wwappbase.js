@@ -28,7 +28,7 @@ const TestPage = () => {
 
 	return (
 		<div className='TestPage'>
-			<h2>Test Page</h2>
+			<h1>Test Page</h1>
 			<p>Insert a test widget below</p>
 
 			<PropControl type='textarea' path={path} prop='accents' label='Text with accents / unicode' />
