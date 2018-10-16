@@ -44,6 +44,56 @@ const getProfilesNow = xids => {
 	return peeps;
 };
 
+/** Puts data into the "Claim" format that it can understand */
+const createClaim = ({key, value, from, p}) => {
+	assMatch(key, String); 
+	assMatch(value, String);
+	assMatch(from, String);
+
+	return {
+		// Hard-set to public for now
+		p: p || ['public'],
+		'@class': 'com.winterwell.profiler.data.Claim',
+		t: new Date().toISOString(),
+		v: value,
+		f: from,
+		k: key,
+		kv: key + "=" + value
+	};
+};
+
+/** Helper method: searches through DataStore to find claim with given key, and updates it */
+const updateClaim = ({xid, key, value}) => {
+	const path = ['data', 'Person', xid, 'claims'];
+	const data = DataStore.getValue(path);
+	let updatedClaims = createClaim({xid, key, value, from: xid});
+
+	// TODO: Tidy this all up
+	if( !data ) DataStore.setValue(path, [updatedClaims]);
+	
+	// Will return reference to actual claim in Datastore
+	// Changing this will also cause DataStore to update
+	const previousClaimIndex = data.findIndex( claim => claim.k === key);
+	if( !previousClaimIndex ) DataStore.setValue(path, [updatedClaims]);
+
+	data[previousClaimIndex] = updatedClaims;
+	DataStore.setValue(path, data); 
+};
+
+/** Create UI call for saving claim to back-end
+	@param xids {String[]} XId format
+	@param claims {Claim[]}
+	@returns Array of promises
+*/ 
+const saveProfileClaims = (xids, claims) => {
+	if(_.isString(xids)) xids = [xids];
+	
+	return xids.map( xid => {
+		assMatch(xid, String);
+		return PV(ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'put', claims}));
+	});
+};
+
 /**
  * 
  * @return PV[]
@@ -106,6 +156,9 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 	return person;
 };
 
+Person.createClaim = createClaim;
+Person.saveProfileClaims = saveProfileClaims;
+Person.updateClaim = updateClaim;
 Person.getProfile = getProfile;
 Person.getProfilesNow = getProfilesNow;
 Person.saveProfile = saveProfile;
@@ -113,6 +166,9 @@ Person.getPermissions = getPermissions;
 Person.setPermissions = setPermissions;
 
 export {
+	createClaim,
+	saveProfileClaims,
+	updateClaim,
 	getProfile,
 	getProfilesNow,
 	saveProfile,
