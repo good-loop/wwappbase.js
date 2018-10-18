@@ -5,7 +5,7 @@
  */
 
 import ServerIO from './plumbing/ServerIOBase';
-import {assert, assMatch} from 'sjtest';
+import {assert, assMatch, assertMatch} from 'sjtest';
 // add funky methods to the "standard" Person data-class
 import Person from './data/Person';
 import PV from 'promise-value';
@@ -46,25 +46,32 @@ const getProfilesNow = xids => {
 
 /** Puts data into the "Claim" format that it can understand */
 const createClaim = ({key, value, from, p}) => {
+	if(_.isString(from)) from = [from];	
+	
 	assMatch(key, String); 
 	assMatch(value, String);
-	assMatch(from, String);
+	assMatch(from, 'String[]');
+
+	// Converting from internally held true/false to something
+	// That the back-end can understand
+	if( typeof p === 'boolean' ) p = p ? ['public'] : ['private']
 
 	return {
 		// Hard-set to public for now
-		p: p || ['public'],
+		p: p,
 		'@class': 'com.winterwell.profiler.data.Claim',
 		t: new Date().toISOString(),
 		v: value,
 		f: from,
 		k: key,
-		kv: key + "=" + value
+		// kv: key + "=" + value TODO make at the backend
 	};
 };
 
 /** Helper method: searches through DataStore to find claim with given key, and updates it */
 const updateClaim = ({xid, key, value}) => {
 	const path = ['data', 'Person', xid, 'claims'];
+
 	const data = DataStore.getValue(path);
 	let updatedClaims = createClaim({xid, key, value, from: xid});
 
@@ -87,10 +94,18 @@ const updateClaim = ({xid, key, value}) => {
 */ 
 const saveProfileClaims = (xids, claims) => {
 	if(_.isString(xids)) xids = [xids];
+
+	assMatch(xids, "String[]", "Profiler.js saveProfileClaims xids")
+	assMatch(claims, "Object[]", "Profiler.js saveProfileClaims() claims");
 	
+	if( _.isEmpty(claims) ) {
+		console.warn('Profiler.js saveProfileClaims -- no claims provided, aborting save');
+		return;
+	}
+
 	return xids.map( xid => {
 		assMatch(xid, String);
-		return PV(ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'put', claims}));
+		return PV(ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'PUT', claims: JSON.stringify(claims)}));
 	});
 };
 
