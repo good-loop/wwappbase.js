@@ -68,26 +68,6 @@ const createClaim = ({key, value, from, p}) => {
 	};
 };
 
-/** Helper method: searches through DataStore to find claim with given key, and updates it */
-const updateClaim = ({xid, key, value}) => {
-	const path = ['data', 'Person', xid, 'claims'];
-
-	const data = DataStore.getValue(path);
-	let updatedClaims = createClaim({xid, key, value, from: xid});
-
-	// TODO: Tidy this all up
-	if( !data ) DataStore.setValue(path, [updatedClaims]);
-	
-	// Will return reference to actual claim in Datastore
-	// Changing this will also cause DataStore to update
-	const previousClaimIndex = data.findIndex( claim => claim.k === key);
-	if( !previousClaimIndex ) DataStore.setValue(path, [updatedClaims]);
-
-	data[previousClaimIndex] = updatedClaims;
-	DataStore.setValue(path, data); 
-};
-
-
 /** 
  * @param xid the xid that the claim will be registered to
  * Change to return object of all unique key:value pairs for the given xid?
@@ -126,9 +106,17 @@ const getClaimsForXId = (xid) => {
 /** Create UI call for saving claim to back-end
 	@param xids {String[]} XId format
 	@param claims {Claim[]}
+	@param jwt auth token string used by the back-end to determine where data came from (see Claims.f parameter)
 	@returns Array of promises
+	(22/10/18)
+	For the moment, am assuming that all claims provided should come from the same source
+	That is why only one jwt is provided.
+
+	This is fine for now as we are only working with a single social media service (Twitter),
+	but this may need to be generalised if, for example, we wished to save Claims from a variety
+	of different sources via a single call to saveFn. Currently, this is not possible.
 */ 
-const saveProfileClaims = (xids, claims) => {
+const saveProfileClaims = (xids, claims, jwt) => {
 	if(_.isString(xids)) xids = [xids];
 
 	assMatch(xids, "String[]", "Profiler.js saveProfileClaims xids")
@@ -141,7 +129,7 @@ const saveProfileClaims = (xids, claims) => {
 
 	return xids.map( xid => {
 		assMatch(xid, String);
-		return PV(ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'PUT', claims: JSON.stringify(claims)}));
+		return PV(ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'PUT', claims: JSON.stringify(claims)}, jwt));
 	});
 };
 
@@ -209,7 +197,6 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 
 Person.createClaim = createClaim;
 Person.saveProfileClaims = saveProfileClaims;
-Person.updateClaim = updateClaim;
 Person.getProfile = getProfile;
 Person.getProfilesNow = getProfilesNow;
 Person.saveProfile = saveProfile;
@@ -220,7 +207,6 @@ export {
 	createClaim,
 	saveProfileClaims,
 	getClaimsForXId,
-	updateClaim,
 	getProfile,
 	getProfilesNow,
 	saveProfile,
