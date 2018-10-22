@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.12.1'
+VERSION='Version=1.13.0'
 
 ###
+# New in 1.13.0: Allowing for remaps of the $PROJECT_LOCATION variable if the project is being published by TeamCity
 # New in 1.12.1: Fixed the minify_css function
 # New in 1.12.0: Added new function: 'minify_css'.  made my-loop images optimised.
 # New in 1.11.2: Added a line which copies a properties file, allowing gl-es-01 to run the BAOSE service
@@ -375,6 +376,22 @@ case $2 in
 		fi
     ;;
 esac
+
+
+######################
+### Section 2.5: Insane Subsection in which $PROJECT_LOCATION can get re-mapped if this script is run by the teamcity server
+######################
+case $(printf $HOSTNAME) in
+	sandrock)
+		case $PROJECT in
+			datalogger)
+				PROJECT_LOCATION='/home/winterwell/TeamCity/buildAgent/work/c7a16811424bee11/winterwell.datalog'
+			;;
+		esac
+	;;
+esac
+
+
 
 
 #####################
