@@ -87,6 +87,42 @@ const updateClaim = ({xid, key, value}) => {
 	DataStore.setValue(path, data); 
 };
 
+
+/** 
+ * @param xid the xid that the claim will be registered to
+ * Change to return object of all unique key:value pairs for the given xid?
+ * @returns {gender: {value: 'male', permission: 'private'}, locaton: {value: 'who_knows', permission: 'public'}}
+ * Example of Claims object as of 18/10/18
+ * {"p": ["controller"], "@class": "com.winterwell.profiler.data.Claim", "t": "2018-10-18T11:14:04Z", "v": "This is Peter Pan, a test account for SoGrow...",
+	"f": ["mark@winterwell.com@email"], "k": "description", "kv": "description=This is Peter Pan, a test account for SoGrow...","o": "description-mark@winterwell.com@email"
+	}
+ */
+const getClaimsForXId = (xid) => {
+	const claims = DataStore.getValue(['data', 'Person', xid, 'claims']);
+
+	if( ! claims ) return;
+
+	const formattedClaims = claims.reduce( (obj, claim) => {
+		let {k, f, v, p} = claim;
+
+		// If contains "public", set to true
+		// set to false ("private") otherwise
+		// Reasoning is that default state is "private"/false anyway
+		// Change this to "private" if you want all options checked by default
+		if(_.isArray(p)) p = p.includes("public");
+
+		// If the claim is from the given user id
+		// add its value to the outgoing obj and continue 
+		if( f.includes(xid) ) {
+			obj[k] = {value: v, permission: p};
+			return obj;
+		}
+
+		return obj;
+	}, {});
+	return _.isEmpty(formattedClaims) ? null : formattedClaims;
+};
+
 /** Create UI call for saving claim to back-end
 	@param xids {String[]} XId format
 	@param claims {Claim[]}
@@ -183,6 +219,7 @@ Person.setPermissions = setPermissions;
 export {
 	createClaim,
 	saveProfileClaims,
+	getClaimsForXId,
 	updateClaim,
 	getProfile,
 	getProfilesNow,
