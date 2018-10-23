@@ -49,7 +49,7 @@ const createClaim = ({key, value, from, p}) => {
 	if(_.isString(from)) from = [from];	
 	
 	assMatch(key, String); 
-	assMatch(value, String);
+	// assMatch(value, String);
 	assMatch(from, 'String[]');
 
 	// Converting from internally held true/false to something
