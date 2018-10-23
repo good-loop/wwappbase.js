@@ -148,14 +148,27 @@ async function vertIdByName({vertName}) {
     return await IdByName({fundName: vertName, eventOrFundOrVertiserOrVert:'vert'}); 
 };
 
+/** Depends on current setup where ServerIO is placed in to the window */
+async function isPointingAtProduction({page}) {
+    const endpoint = await page.evaluate( () => window.ServerIO.DATALOG_ENDPOINT);
+    return endpoint.match(/\/\/lg.good-loop.com/);
+};
+
+async function soGiveFailIfPointingAtProduction({page}) {
+    const endpoint = await page.evaluate( () => window.ServerIO.APIBASE);
+    if( endpoint.match(/\/\/app.sogive.org/) || window.location.href.match(/\/\/app.sogive.org/) ) throw new Error("Test service is pointing at production server! Aborting test.");
+};
+
 module.exports = {
     APIBASE,
     disableAnimations,
     eventIdFromName,
     fillInForm,
     fundIdByName,
+    isPointingAtProduction,
     login,
     onFail, 
+    soGiveFailIfPointingAtProduction,
     takeScreenshot,
     timeout,
     vertIdByName,
