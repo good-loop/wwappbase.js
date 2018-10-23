@@ -13,6 +13,8 @@ import {endsWith} from 'wwutils';
  * 
  */
 
+const DataClass = {};
+
 /**
  * check the type!
  * @param typ {!String}
@@ -169,5 +171,9 @@ const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
 window.dataclass = {};
 
-export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce};
-	
+
+export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce};	
+// Also have a default export -- which is defineType
+const DataClass = defineType;
+
+export default DataClass;

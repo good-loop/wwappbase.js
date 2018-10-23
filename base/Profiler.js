@@ -44,29 +44,6 @@ const getProfilesNow = xids => {
 	return peeps;
 };
 
-/** Puts data into the "Claim" format that it can understand */
-const createClaim = ({key, value, from, p}) => {
-	if(_.isString(from)) from = [from];	
-	
-	assMatch(key, String); 
-	// assMatch(value, String);
-	assMatch(from, 'String[]');
-
-	// Converting from internally held true/false to something
-	// That the back-end can understand
-	if( typeof p === 'boolean' ) p = p ? ['public'] : ['private']
-
-	return {
-		// Hard-set to public for now
-		p: p,
-		'@class': 'com.winterwell.profiler.data.Claim',
-		t: new Date().toISOString(),
-		v: value,
-		f: from,
-		k: key,
-		// kv: key + "=" + value TODO make at the backend
-	};
-};
 
 /** 
  * @param xid the xid that the claim will be registered to
@@ -195,7 +172,6 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 	return person;
 };
 
-Person.createClaim = createClaim;
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
 Person.getProfilesNow = getProfilesNow;
@@ -204,7 +180,6 @@ Person.getPermissions = getPermissions;
 Person.setPermissions = setPermissions;
 
 export {
-	createClaim,
 	saveProfileClaims,
 	getClaimsForXId,
 	getProfile,
