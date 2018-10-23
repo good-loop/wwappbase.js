@@ -33,3 +33,13 @@ Claim.make = ({key, value, from, p}) => {
 };
 
 
+/**
+ * ??dubious use cases
+ */
+Claim.getClaims = person => {
+	if ( ! person ) return {};
+	Person.assIsa(person, "Profiler.js getClaims");
+	const claims = person.claims;
+	return claims || {};
+};
+

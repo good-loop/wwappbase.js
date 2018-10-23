@@ -335,7 +335,9 @@ ServerIO.load = function(url, params) {
 	return defrd;
 };
 
-
+/**
+ * Just load() with method:POST
+ */
 ServerIO.post = function(url, data) {
 	return ServerIO.load(url, {data, method: 'POST'});
 };

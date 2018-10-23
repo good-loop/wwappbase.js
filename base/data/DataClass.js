@@ -13,8 +13,6 @@ import {endsWith} from 'wwutils';
  * 
  */
 
-const DataClass = {};
-
 /**
  * check the type!
  * @param typ {!String}
