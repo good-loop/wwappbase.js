@@ -106,7 +106,6 @@ const getClaimsForXId = (xid) => {
 /** Create UI call for saving claim to back-end
 	@param xids {String[]} XId format
 	@param claims {Claim[]}
-	@param jwt auth token string used by the back-end to determine where data came from (see Claims.f parameter)
 	@returns Array of promises
 	(22/10/18)
 	For the moment, am assuming that all claims provided should come from the same source
@@ -116,7 +115,7 @@ const getClaimsForXId = (xid) => {
 	but this may need to be generalised if, for example, we wished to save Claims from a variety
 	of different sources via a single call to saveFn. Currently, this is not possible.
 */ 
-const saveProfileClaims = (xids, claims, jwt) => {
+const saveProfileClaims = (xids, claims) => {
 	if(_.isString(xids)) xids = [xids];
 
 	assMatch(xids, "String[]", "Profiler.js saveProfileClaims xids")
@@ -129,7 +128,7 @@ const saveProfileClaims = (xids, claims, jwt) => {
 
 	return xids.map( xid => {
 		assMatch(xid, String);
-		return PV(ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'PUT', claims: JSON.stringify(claims)}, jwt));
+		return PV(ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'PUT', claims: JSON.stringify(claims)}));
 	});
 };
 
