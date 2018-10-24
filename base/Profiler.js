@@ -54,9 +54,9 @@ const getProfilesNow = xids => {
  * {"p": ["controller"], "@class": "com.winterwell.profiler.data.Claim", "t": "2018-10-18T11:14:04Z", "v": "This is Peter Pan, a test account for SoGrow...",
 	"f": ["mark@winterwell.com@email"], "k": "description", "kv": "description=This is Peter Pan, a test account for SoGrow...","o": "description-mark@winterwell.com@email"
 	}
+	TODO: change to getClaimsForPerson instead of getClaimsForXId
  */
-const getClaimsForPerson = person => {
-	Person.assIsa(person, "Profiler.js getClaims");
+const getClaimsForXId = xid => {
 	const claims = DataStore.getValue(['data', 'Person', xid, 'claims']);
 
 	if( ! claims ) return;
@@ -70,13 +70,9 @@ const getClaimsForPerson = person => {
 		// Change this to "private" if you want all options checked by default
 		if(_.isArray(p)) p = p.includes("public");
 
-		// If the claim is from the given user id
-		// add its value to the outgoing obj and continue 
-		if( f.includes(xid) ) {
-			obj[k] = {value: v, permission: p};
-			return obj;
-		}
-
+		// Only allow override if the claim is coming from the user
+		if( !obj[k] || f.includes('myloop@app') ) obj[k] = {value: v, permission: p}; 
+ 
 		return obj;
 	}, {});
 	return _.isEmpty(formattedClaims) ? null : formattedClaims;
@@ -92,7 +88,7 @@ const saveProfileClaims = (xids, claims) => {
 	if(_.isString(xids)) xids = [xids];
 
 	assMatch(xids, "String[]", "Profiler.js saveProfileClaims xids")
-	assMatch(claims, "Claim[]", "Profiler.js saveProfileClaims() claims");
+	// assMatch(claims, "Claim[]", "Profiler.js saveProfileClaims() claims");
 	
 	if( _.isEmpty(claims) ) {
 		console.warn('Profiler.js saveProfileClaims -- no claims provided, aborting save');
