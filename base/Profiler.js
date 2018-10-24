@@ -44,40 +44,19 @@ const getProfilesNow = xids => {
 	return peeps;
 };
 
-/** Puts data into the "Claim" format that it can understand */
-const createClaim = ({key, value, from, p}) => {
-	if(_.isString(from)) from = [from];	
-	
-	assMatch(key, String); 
-	// assMatch(value, String);
-	assMatch(from, 'String[]');
-
-	// Converting from internally held true/false to something
-	// That the back-end can understand
-	if( typeof p === 'boolean' ) p = p ? ['public'] : ['private']
-
-	return {
-		// Hard-set to public for now
-		p: p,
-		'@class': 'com.winterwell.profiler.data.Claim',
-		t: new Date().toISOString(),
-		v: value,
-		f: from,
-		k: key,
-		// kv: key + "=" + value TODO make at the backend
-	};
-};
 
 /** 
- * @param xid the xid that the claim will be registered to
- * Change to return object of all unique key:value pairs for the given xid?
+ * TODO refactor to work with Claims as they are, with more specific utility methods. 
+ * This returns a similar but conflicting data-format for Claims, which cencourages bugs. 
+ * 
  * @returns {gender: {value: 'male', permission: 'private'}, locaton: {value: 'who_knows', permission: 'public'}}
  * Example of Claims object as of 18/10/18
  * {"p": ["controller"], "@class": "com.winterwell.profiler.data.Claim", "t": "2018-10-18T11:14:04Z", "v": "This is Peter Pan, a test account for SoGrow...",
 	"f": ["mark@winterwell.com@email"], "k": "description", "kv": "description=This is Peter Pan, a test account for SoGrow...","o": "description-mark@winterwell.com@email"
 	}
  */
-const getClaimsForXId = (xid) => {
+const getClaimsForPerson = person => {
+	Person.assIsa(person, "Profiler.js getClaims");
 	const claims = DataStore.getValue(['data', 'Person', xid, 'claims']);
 
 	if( ! claims ) return;
@@ -103,23 +82,17 @@ const getClaimsForXId = (xid) => {
 	return _.isEmpty(formattedClaims) ? null : formattedClaims;
 };
 
-/** Create UI call for saving claim to back-end
+/**
+ * Create UI call for saving claim to back-end
 	@param xids {String[]} XId format
 	@param claims {Claim[]}
-	@returns Array of promises
-	(22/10/18)
-	For the moment, am assuming that all claims provided should come from the same source
-	That is why only one jwt is provided.
-
-	This is fine for now as we are only working with a single social media service (Twitter),
-	but this may need to be generalised if, for example, we wished to save Claims from a variety
-	of different sources via a single call to saveFn. Currently, this is not possible.
+	@returns promise[]
 */ 
 const saveProfileClaims = (xids, claims) => {
 	if(_.isString(xids)) xids = [xids];
 
 	assMatch(xids, "String[]", "Profiler.js saveProfileClaims xids")
-	assMatch(claims, "Object[]", "Profiler.js saveProfileClaims() claims");
+	assMatch(claims, "Claim[]", "Profiler.js saveProfileClaims() claims");
 	
 	if( _.isEmpty(claims) ) {
 		console.warn('Profiler.js saveProfileClaims -- no claims provided, aborting save');
@@ -128,12 +101,15 @@ const saveProfileClaims = (xids, claims) => {
 
 	return xids.map( xid => {
 		assMatch(xid, String);
-		return PV(ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'PUT', claims: JSON.stringify(claims)}));
+		return ServerIO.post(
+			`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
+			{claims: JSON.stringify(claims)}
+		);
 	});
 };
 
 /**
- * 
+ * TODO refactor to use Crud
  * @return PV[]
  */
 const saveProfile = (doc) => {
@@ -194,7 +170,6 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 	return person;
 };
 
-Person.createClaim = createClaim;
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
 Person.getProfilesNow = getProfilesNow;
@@ -203,7 +178,6 @@ Person.getPermissions = getPermissions;
 Person.setPermissions = setPermissions;
 
 export {
-	createClaim,
 	saveProfileClaims,
 	getClaimsForXId,
 	getProfile,
