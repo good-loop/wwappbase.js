@@ -167,6 +167,8 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 	return person;
 };
 
+// Hm -- poking these onto the Person dataclass object was dubious.
+// We should prob switch to having a Profiler object that holds profiler-API methods
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
 Person.getProfilesNow = getProfilesNow;
