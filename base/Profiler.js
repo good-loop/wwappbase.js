@@ -1,6 +1,6 @@
 /**
  * Profiler sketch API
- * 
+ * See also the profiler java code
  * Note: use these wrapped by DataStore.fetch
  */
 
