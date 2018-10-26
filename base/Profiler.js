@@ -15,6 +15,7 @@ assert(Person);
 // for debug
 window.Person = Person;
 
+const Profiler = {};
 
 /**
  * Use with DataStore
@@ -173,6 +174,14 @@ Person.saveProfile = saveProfile;
 Person.getPermissions = getPermissions;
 Person.setPermissions = setPermissions;
 
+/**
+ * Call AnalyzeDataServlet to fetch and analyse Twitter data
+ */
+Profiler.requestAnalyzeData = xid => {
+	// NB: analyze is always for the gl dataspace
+	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
+};
+
 export {
 	saveProfileClaims,
 	getClaimsForXId,
@@ -182,4 +191,4 @@ export {
 	getPermissions,
 	setPermissions
 };
-export default Person;
+export default Profiler;
