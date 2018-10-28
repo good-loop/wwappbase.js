@@ -12,6 +12,9 @@ const This = Task;
 export default Task;
 
 /**
+ * @param tags {?String[]}
+@param assigned:
+  @param parent {Task}
  */
 Task.make = (base = {}) => {
 	const item = {
