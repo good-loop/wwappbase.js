@@ -167,6 +167,15 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 	return person;
 };
 
+
+/**
+ * Call AnalyzeDataServlet to fetch and analyse Twitter data
+ */
+const requestAnalyzeData = xid => {
+	// NB: analyze is always for the gl dataspace
+	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
+};
+
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
 Person.getProfilesNow = getProfilesNow;
@@ -174,13 +183,7 @@ Person.saveProfile = saveProfile;
 Person.getPermissions = getPermissions;
 Person.setPermissions = setPermissions;
 
-/**
- * Call AnalyzeDataServlet to fetch and analyse Twitter data
- */
-Profiler.requestAnalyzeData = xid => {
-	// NB: analyze is always for the gl dataspace
-	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
-};
+Profiler.requestAnalyzeData = requestAnalyzeData;
 
 export {
 	saveProfileClaims,
@@ -189,6 +192,7 @@ export {
 	getProfilesNow,
 	saveProfile,
 	getPermissions,
-	setPermissions
+	setPermissions,
+	requestAnalyzeData
 };
 export default Profiler;
