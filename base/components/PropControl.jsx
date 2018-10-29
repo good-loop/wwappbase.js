@@ -282,7 +282,10 @@ const PropControl = (props) => {
 						Drop a {acceptedTypesDesc} here
 					</Dropzone>
 				</div>
-				<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail style={{background: bg}} url={value} /></div>
+				<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}>
+					{type==='videoUpload'? <Misc.VideoThumbnail url={value} />
+						: <Misc.ImgThumbnail style={{background: bg}} url={value} />}
+				</div>
 				<div className='clearfix' />
 			</div>
 		);
