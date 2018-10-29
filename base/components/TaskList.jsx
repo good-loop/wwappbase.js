@@ -62,7 +62,8 @@ const TaskListButton = ({bpath, value, list}) => {
 };
 
 /**
- * called by a Page to set the context
+ * called by a Page to set the context.
+ * Recommended: tags = type e.g. Advert, item.id 
  */
 const setTaskTags = (...tags) => {		
 	tags = tags.filter(t => t);	
@@ -140,7 +141,10 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 		return null;
 	}
 	const qpath = ['widget', 'QuickTaskMaker'];
-	if (parent) qpath.push('reply-to-'+parent.id);
+	if (parent) {
+		Task.assIsa(parent, "QuickTaskMaker "+parent);
+		qpath.push('reply-to-'+parent.id);
+	}
 	const quickTask = e => {
 		e.preventDefault();
 		// make
