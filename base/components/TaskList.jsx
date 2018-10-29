@@ -22,6 +22,8 @@ const taskEditorDialogPath = ['widget','TaskEditorDialog'];
 
 /**
  * The core "show a task on the side" widget
+ * 
+ * ??swallow clicks??
  */
 const TaskListItem = ({item}) => {
 	// TODO child??
