@@ -241,7 +241,11 @@ ServerIO.getEndpointForType = (type) => {
 };
 
 /**
- * Submits an AJAX request. This is the key base method
+ * Submits an AJAX request. This is the key base method.
+ * 
+ * NB: Storing returned data items into DataStore is not done automatically
+ * (to handle partial returns, security filtered returns, etc).
+ * Methods like Crud's ActionMan.getDataItem *do* store into DataStore.
  *
  * @param {String} url The url to which the request should be made.
  *

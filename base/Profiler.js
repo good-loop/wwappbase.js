@@ -173,7 +173,9 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
 
 
 /**
- * Call AnalyzeDataServlet to fetch and analyse Twitter data
+ * Call AnalyzeDataServlet to fetch and analyse Twitter data.
+ * 
+ * ??update DataStore here??
  */
 const requestAnalyzeData = xid => {
 	// NB: analyze is always for the gl dataspace
