@@ -109,7 +109,7 @@ class Store {
 		// console.log('update', newState);
 		// set a flag to detect update loops
 		if (this.updating) {
-			console.error("DataStore.js update - nested call");
+			console.error("DataStore.js update - nested call", new Error());
 		}
 		this.updating = true;
 		try {

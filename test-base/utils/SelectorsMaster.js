@@ -13,8 +13,8 @@ const CommonSelectors = {
     Publish: `div.SavePublishDiscard > button.btn.btn-primary`,
     Discard: `div.SavePublishDiscard > button.btn.btn-warning`,
     Delete: `div.SavePublishDiscard > button.btn.btn-danger`,
-    facebookLogin: 'span.color-facebook',
-    twitterLogin: 'span.color-twitter'
+    facebookLogin: 'div.social-signin span.color-facebook',
+    twitterLogin: 'div.social-signin span.color-twitter'
 };
 
 const FacebookSelectors = {
