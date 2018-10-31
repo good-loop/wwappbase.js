@@ -312,7 +312,7 @@ const PropControl = (props) => {
 		return <PropControlRadio value={value} {...props} />
 	}
 	if (type==='select') {
-		const { options, labels, ...rest} = otherStuff;
+		const { options, labels, className, ...rest} = otherStuff;
 
 		assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
 		assert(options.map, 'Misc.PropControl: options not an array '+options);
@@ -333,8 +333,10 @@ const PropControl = (props) => {
 		let domOptions = options.map(option => <option key={"option_"+option} value={option} >{labeller(option)}</option>);
 		let sv = value || dflt;
 		return (
-			<select className='form-control' name={prop} value={sv} onChange={onChange} {...rest} >
-				{sv? <option>{sv}</option> : <option></option>}
+			/* text-muted is a useful hack for my-loop mirror card 
+			** so that unknown values are grayed out */
+			<select className={sv.includes('Unknown')? join(className, 'text-muted') : className} name={prop} value={sv} onChange={onChange} {...rest} >
+				{sv? <option disabled selected>{sv}</option> : <option></option>}
 				{domOptions}
 			</select>
 		);
