@@ -309,7 +309,7 @@ const PropControl = (props) => {
 		return <PropControlRadio value={value} {...props} />
 	}
 	if (type==='select') {
-		const { options, defaultValue, labels, ...rest} = otherStuff;
+		const { options, labels, ...rest} = otherStuff;
 
 		assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
 		assert(options.map, 'Misc.PropControl: options not an array '+options);
@@ -328,10 +328,10 @@ const PropControl = (props) => {
 		}
 		// make the options html
 		let domOptions = options.map(option => <option key={"option_"+option} value={option} >{labeller(option)}</option>);
-		let sv = value || defaultValue;
+		let sv = value || dflt;
 		return (
 			<select className='form-control' name={prop} value={sv} onChange={onChange} {...rest} >
-				{sv? null : <option></option>}
+				{sv? <option>{sv}</option> : <option></option>}
 				{domOptions}
 			</select>
 		);
@@ -354,7 +354,7 @@ const PropControl = (props) => {
  * 
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
-const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options, labels, inline, defaultValue, ...otherStuff}) => {
+const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options, labels, inline, ...otherStuff}) => {
 	assert(options, 'PropControl: no options for radio '+prop);
 	assert(options.map, 'PropControl: radio options for '+prop+' not an array '+options);
 	// Make an option -> nice label function
