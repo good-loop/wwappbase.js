@@ -176,6 +176,7 @@ const setPermissions = ({person, dataspace, permissions, fields}) => {
  * Call AnalyzeDataServlet to fetch and analyse Twitter data
  */
 const requestAnalyzeData = xid => {
+	assMatch(xid, String);
 	// NB: analyze is always for the gl dataspace
 	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
 };
