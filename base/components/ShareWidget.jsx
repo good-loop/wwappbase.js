@@ -228,12 +228,21 @@ const ClaimButton = ({type, id}) => {
 		return <Misc.Loading text='Loading access details' />;
 	}
 	if (plist.value.length !== 0) {
-		return <div>Access is held by: {plist.value}</div>;
+		return <div>Access is held by: {plist.value.map( v => v._to + '\n')}</div>;
 	}
-	return <div>This {type} has not been claimed yet. If you are the owner or manager, please claim it. <div><button className='btn btn-default' onClick={() => {
-		Login.claim(shareThingId(type, id))
-		.then(DataStore.update);
-	}}>Claim {id}</button></div></div>;
+
+	return (
+		<div>
+			This {type} has not been claimed yet. If you are the owner or manager, please claim it. 
+			<div>
+				<button className='btn btn-default' onClick={() => {
+					Login.claim(shareThingId(type, id))
+					.then(DataStore.update);}}
+				>
+					Claim {id}
+				</button>
+			</div>
+		</div>);
 };
 
 export default ShareWidget;
