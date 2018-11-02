@@ -38,27 +38,31 @@ BS.Radio = ({name, checked, value, label, onChange, inline}) => inline?
 
 // TODO for LoginWidget
 BS.Modal = ({show, onHide, className, children}) => {
-	if ( ! show) return null;
+	if ( !show ) return null;
 	return (<div>
 		<div className={join('modal fade in', className)} 
 			style={{display:'block'}}
 			tabIndex="-1" role="dialog">
-			<div class="modal-dialog" role="document">
-				<div class="modal-content">			 
+			<div className="modal-dialog" role="document">
+				<div className="modal-content">			 
 					{children}
 			</div></div>
 		</div>
-		<div class="modal-backdrop fade in"></div>
+		<div className="modal-backdrop fade in"></div>
 	</div>);
 };
 
-BS.Modal.Title = ({children}) => <h5 class="modal-title">{children}</h5>;
-BS.Modal.Header = ({children}) => (<div class="modal-header">
-	{children}
-	<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-	</div>);
-BS.Modal.Body = ({children}) => <div class="modal-body">{children}</div>;
-BS.Modal.Footer = ({children}) => <div class="modal-footer">{children}</div>;
+BS.Modal.Title = ({children}) => <h5 className="modal-title">{children}</h5>;
+BS.Modal.Header = ({children}) => (
+	<div className="modal-header">
+		{children}
+		<button type="button" className="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		</button>
+	</div>
+);
+BS.Modal.Body = ({children}) => <div className="modal-body">{children}</div>;
+BS.Modal.Footer = ({children}) => <div className="modal-footer">{children}</div>;
 
 
 BS.Alert = ({color='warning', children}) => {
