@@ -7,16 +7,17 @@ import List from '../data/List';
 import Misc from './Misc';
 import {stopEvent, join} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
-import BS from './BS';
+// import BS from './BS';
 import ListLoad from './ListLoad';
 import Task from '../data/Task';
 // init basic stuff
 import ActionMan from '../plumbing/ActionManBase';
 import Crud from '../plumbing/Crud';
 import MDText from './MDText';
+import PropControl from './PropControl';
+import {Modal} from 'react-bootstrap';
 
-
-const Modal = BS.Modal;
+// const Modal = BS.Modal;
 
 const taskEditorDialogPath = ['widget','TaskEditorDialog'];
 
@@ -29,28 +30,29 @@ const TaskListItem = ({item}) => {
 	// TODO child??
 	let path = ['data', 'Task', item.id];
 	// glyph fire button?? or a prod button??
-//  	
 
-	return (<div>
-		<div className='pull-left'>
-					<Misc.PropControl path={path} 
-				prop='closed' type='checkbox' 				
-				saveFn={() => Misc.publishDraftFn({type:'Task', id:item.id})}
-			/>
+	return (
+		<div>
+			<div className='pull-left'>
+				<Misc.PropControl path={path} 
+					prop='closed' type='checkbox' 				
+					saveFn={() => Misc.publishDraftFn({type:'Task', id:item.id})}
+				/>
+			</div>
+			{item.tags && item.tags.length? <div><small><code>{item.tags.join(" ")}</code></small></div> : null}
+			<MDText source={item.text} />
+			<div>{item.assigned && item.assigned.length? "@"+item.assigned.join(" @") : null}</div>
+			{item.url && item.url !== ''+window.location? <div><small><a href={item.url}>{item.url}</a></small></div> : null}
+			<button className='btn btn-xs' onClick={e => {
+				DataStore.setValue(taskEditorDialogPath.concat('task'), item);
+				DataStore.setValue(taskEditorDialogPath.concat('show'), true);			
+			}}>edit</button>
+
+			{item.children? item.children.map(kid => <TaskListItem key={kid.id} item={kid} />) : null}
+
+			{item.parent? null : <QuickTaskMaker parent={item} tags={item.tags} />}
 		</div>
-		{item.tags && item.tags.length? <div><small><code>{item.tags.join(" ")}</code></small></div> : null}
-		<MDText source={item.text} />
-		<div>{item.assigned && item.assigned.length? "@"+item.assigned.join(" @") : null}</div>
-		{item.url && item.url !== ''+window.location? <div><small><a href={item.url}>{item.url}</a></small></div> : null}
-<button className='btn btn-xs' onClick={e => {
- 	DataStore.setValue(taskEditorDialogPath.concat('task'), item);
- 	DataStore.setValue(taskEditorDialogPath.concat('show'), true);			
- }}>edit</button>
-
-	{item.children? item.children.map(kid => <TaskListItem key={kid.id} item={kid} />) : null}
-
-	{item.parent? null : <QuickTaskMaker parent={item} tags={item.tags} />}
-	</div>);
+	);
 }; // ./TaskListItem
 
 /**
@@ -184,25 +186,45 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
  */
 const TaskEditorDialog = () => {
 	assert(Modal, "No BS?");
-	console.log("Modal", Modal);
+
 	const widget = DataStore.getValue(taskEditorDialogPath) || {};
-	if ( ! widget.show) return null;
-	if ( ! widget.task) return null;
-	
+	if( ! widget ) return null;
+
+	const {show, task} = widget;
+
+	if ( ! show) return null;
+	if ( ! task) return null;
+
+	const taskPath = taskEditorDialogPath.concat('task');
+	const {id} = task;
+
+	// const path = 
+
+	// Debounce save function
+	// Important that this be stored to avoid publish on every key stroke
+	let debouncedSaveFn = DataStore.getValue(taskEditorDialogPath.concat('debouncedSaveFn'));
+	if( !debouncedSaveFn ) {
+
+		debouncedSaveFn = _.debounce( (id, widget) => {
+			ActionMan.publishEdits('Task', id, widget);
+		}, 5000);
+		DataStore.setValue(taskEditorDialogPath.concat('debouncedSaveFn'), debouncedSaveFn);
+	}
+
 	return (
-		<Modal show={widget.show} className="TaskEditorModal" 
-			onHide={() => DataStore.setValue(taskEditorDialogPath.concat('show'), false)} >
+		<Modal show={show} className="TaskEditorModal" onHide={() => DataStore.setValue(taskEditorDialogPath.concat('show'), false)} >
 			<Modal.Header closeButton>
 				<Modal.Title>
 					Edit Task	
 				</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
-				{JSON.stringify(widget.task)}
+				{/* Would like this to be an actual editable field */}
+				<PropControl path={taskPath} prop='url' placeholder='URL' label='URL' type='text' saveFn={() => debouncedSaveFn(id, task)} />
+				<PropControl path={taskPath} prop='text' placeholder='Task description' label='Task description' type='text' saveFn={() => debouncedSaveFn(id, task)} />
+				<PropControl path={taskPath} prop='tags' placeholder='Tags' label='Task description' type='text' saveFn={() => debouncedSaveFn(id, task)} />
 			</Modal.Body>
-			<Modal.Footer>
-				hm?
-			</Modal.Footer>
+			<Modal.Footer />
 		</Modal>
 	);
 }; // ./TaskEditorDialog
