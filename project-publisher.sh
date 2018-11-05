@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.13.0'
+VERSION='Version=1.13.1'
 
 ###
+# New in 1.13.1: Ensuring that there are no zombie JARs that are synced to a server during a publish
 # New in 1.13.0: Allowing for remaps of the $PROJECT_LOCATION variable if the project is being published by TeamCity
 # New in 1.12.1: Fixed the minify_css function
 # New in 1.12.0: Added new function: 'minify_css'.  made my-loop images optimised.
@@ -655,6 +656,7 @@ function convert_less_files {
 ###################################
 function move_items_to_lib {
 	if [ -d $PROJECT_LOCATION/lib ]; then
+		rm -rf $PROJECT_LOCATION/lib/*
 		cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
 	else
 		mkdir $PROJECT_LOCATION/lib
