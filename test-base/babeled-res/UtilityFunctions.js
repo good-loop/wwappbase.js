@@ -46,24 +46,105 @@ let takeScreenshot = (() => {
 
 /**Login to app. Should work for both SoGive and Good-loop 
  * Make sure that you are actually on a page with a clickable login button before running this!
+ * @param selectors CSS selectors for the given page
+ * @param url option param. Will go to the url before attempting to log in
+ * @param service how are you loggin in? Can be email, Twitter or Facebook
 */
 let login = (() => {
-    var _ref3 = _asyncToGenerator(function* ({ page, username, password }) {
+    var _ref3 = _asyncToGenerator(function* ({ browser, page, username, password, Selectors, service }) {
         if (!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
 
-        yield page.addScriptTag(disableAnimations);
-        yield page.waitForSelector(CommonSelectors['log-in']);
-        yield page.click(CommonSelectors['log-in']);
-        yield page.waitForSelector(CommonSelectors['log-in-email']);
-        yield page.waitForSelector(CommonSelectors['log-in-password']);
+        // support for older tests that did not have these params
+        if (!Selectors) Selectors = CommonSelectors;
+        if (!service) service = 'email';
 
-        yield page.click(CommonSelectors['log-in-email']);
-        yield page.keyboard.type(username);
-        yield page.click(CommonSelectors['log-in-password']);
-        yield page.keyboard.type(password);
-        yield page.keyboard.press('Enter');
+        yield page.waitForSelector(Selectors['log-in']);
+        yield page.click(Selectors['log-in']);
 
-        yield page.waitForSelector(CommonSelectors['log-in-email'], { hidden: true });
+        if (service === 'email') {
+            yield page.waitForSelector(Selectors['log-in-email']);
+            yield page.waitForSelector(Selectors['log-in-password']);
+
+            yield page.click(Selectors['log-in-email']);
+            yield page.keyboard.type(username);
+            yield page.click(Selectors['log-in-password']);
+            yield page.keyboard.type(password);
+            yield page.keyboard.press('Enter');
+
+            yield page.waitForSelector(Selectors['log-in-email'], { hidden: true });
+        }
+
+        if (service === 'twitter') {
+            yield page.waitForSelector(Selectors.twitterLogin);
+            yield page.click(Selectors.twitterLogin);
+            yield page.waitForSelector(Selectors.apiUsername);
+
+            yield page.click(Selectors.apiUsername);
+            yield page.keyboard.type(username);
+            yield page.click(Selectors.apiPassword);
+            yield page.keyboard.type(password);
+
+            yield page.click(Selectors.apiLogin);
+            // twitter, for some reason, wants you
+            // to enter the exact same username & password
+            // again, but on a different page
+            yield page.waitForNavigation({ waitUntil: 'load' });
+            yield page.waitFor(5000); // Give Twitter login a second to process
+            // await page.click(TwitterSelectors.username);
+            // await page.keyboard.type(twitterUsername);
+            // await page.click(TwitterSelectors.password);
+            // await page.keyboard.type(twitterPassword);
+            // await page.click(TwitterSelectors.login);
+        }
+
+        if (service === 'facebook') {
+
+            if (!browser) throw new Error('login function needs to be passed a browser object when logging in via Facebook');
+
+            // return promise and await below
+            // workaround for issue where Jest would reach end of test
+            // and deem it a success without waiting for the browser.on
+            // callback to finish executing
+            let fbResolve;
+            let fbLoginFinished = new Promise(function (resolve, reject) {
+                fbResolve = resolve;
+            });
+            fbLoginFinished.resolve = fbResolve;
+
+            browser.on('targetcreated', (() => {
+                var _ref4 = _asyncToGenerator(function* (target) {
+                    if (target._targetInfo.type !== 'page') return;
+                    const fbPage = yield target.page();
+
+                    yield fbPage.waitForSelector(Selectors.username);
+                    yield fbPage.click(Selectors.username);
+                    yield fbPage.keyboard.type(username);
+
+                    yield fbPage.click(Selectors.password);
+                    yield fbPage.keyboard.type(password);
+                    yield fbPage.click(Selectors.login);
+
+                    // only seems to appear once...
+                    // await fbPage.waitForSelector(FacebookSelectors.continue);
+                    // await fbPage.click(FacebookSelectors.continue);
+
+                    fbLoginFinished.resolve();
+                });
+
+                return function (_x4) {
+                    return _ref4.apply(this, arguments);
+                };
+            })());
+
+            // trigger above code to handle
+            // facebook login page
+            // second click to handle popup being blocked
+            yield page.click(Selectors.facebookLogin);
+            yield page.click(Selectors.facebookLogin);
+
+            // check that user is logged in, fail test if not
+            yield fbLoginFinished;
+        }
     });
 
     return function login(_x3) {
@@ -78,13 +159,13 @@ let login = (() => {
 
 
 let fillInForm = (() => {
-    var _ref4 = _asyncToGenerator(function* ({ page, Selectors, data }) {
+    var _ref5 = _asyncToGenerator(function* ({ page, Selectors, data }) {
         const keys = Object.keys(data);
         for (let i = 0; i < keys.length; i++) {
             const key = keys[i];
             const selector = Selectors[key];
-            //Only clicks checkbox if value doesn't match boolean provided. Would be easier to directly manipulate the DOM state,
-            //but that doesn't seems to defeat the purpose of end-to-end testing
+
+            //Clicks checkbox if value doesn't match boolean provided
             if ((yield page.$eval(selector, function (e) {
                 return e.type;
             })) === 'checkbox') {
@@ -93,24 +174,30 @@ let fillInForm = (() => {
                     return e.checked;
                 });
                 if (checkValue != data[key]) yield page.click(selector);
-            } else {
-                yield page.click(selector);
-                //Check for default value. Clear field if found
-                if (yield page.$eval(selector, function (e) {
-                    return e.value;
-                })) {
-                    yield page.keyboard.down('Control');
-                    yield page.keyboard.press('a');
-                    yield page.keyboard.up('Control');
-                    yield page.keyboard.press('Backspace');
-                }
-                yield page.keyboard.type(`${data[key]}`);
             }
+            // Select drop-down menu option
+            else if ((yield page.$eval(selector, function (e) {
+                    return e.tagName;
+                })) === 'SELECT') {
+                    yield page.select(selector, data[key]);
+                } else {
+                    yield page.click(selector);
+                    //Check for default value. Clear field if found
+                    if (yield page.$eval(selector, function (e) {
+                        return e.value;
+                    })) {
+                        yield page.keyboard.down('Control');
+                        yield page.keyboard.press('a');
+                        yield page.keyboard.up('Control');
+                        yield page.keyboard.press('Backspace');
+                    }
+                    yield page.keyboard.type(`${data[key]}`);
+                }
         }
     });
 
-    return function fillInForm(_x4) {
-        return _ref4.apply(this, arguments);
+    return function fillInForm(_x5) {
+        return _ref5.apply(this, arguments);
     };
 })();
 
@@ -121,7 +208,7 @@ let fillInForm = (() => {
 
 
 let IdByName = (() => {
-    var _ref5 = _asyncToGenerator(function* ({ page, fundName, eventOrFundOrVertiserOrVert }) {
+    var _ref6 = _asyncToGenerator(function* ({ page, fundName, eventOrFundOrVertiserOrVert }) {
         const r = yield $.ajax({
             url: `${APIBASE}${eventOrFundOrVertiserOrVert}/_list.json`,
             withCredentials: true,
@@ -134,48 +221,75 @@ let IdByName = (() => {
         return '';
     });
 
-    return function IdByName(_x5) {
-        return _ref5.apply(this, arguments);
-    };
-})();
-
-let eventIdFromName = (() => {
-    var _ref6 = _asyncToGenerator(function* ({ page, eventName }) {
-        return yield IdByName({ page, fundName: eventName, eventOrFundOrVertiserOrVert: 'event' });
-    });
-
-    return function eventIdFromName(_x6) {
+    return function IdByName(_x6) {
         return _ref6.apply(this, arguments);
     };
 })();
 
-let fundIdByName = (() => {
-    var _ref7 = _asyncToGenerator(function* ({ page, fundName }) {
-        return yield IdByName({ page, fundName, eventOrFundOrVertiserOrVert: 'fundraiser' });
+let eventIdFromName = (() => {
+    var _ref7 = _asyncToGenerator(function* ({ page, eventName }) {
+        return yield IdByName({ page, fundName: eventName, eventOrFundOrVertiserOrVert: 'event' });
     });
 
-    return function fundIdByName(_x7) {
+    return function eventIdFromName(_x7) {
         return _ref7.apply(this, arguments);
     };
 })();
 
-let vertiserIdByName = (() => {
-    var _ref8 = _asyncToGenerator(function* ({ vertiserName }) {
-        return yield IdByName({ fundName: vertiserName, eventOrFundOrVertiserOrVert: 'vertiser' });
+let fundIdByName = (() => {
+    var _ref8 = _asyncToGenerator(function* ({ page, fundName }) {
+        return yield IdByName({ page, fundName, eventOrFundOrVertiserOrVert: 'fundraiser' });
     });
 
-    return function vertiserIdByName(_x8) {
+    return function fundIdByName(_x8) {
         return _ref8.apply(this, arguments);
     };
 })();
 
+let vertiserIdByName = (() => {
+    var _ref9 = _asyncToGenerator(function* ({ vertiserName }) {
+        return yield IdByName({ fundName: vertiserName, eventOrFundOrVertiserOrVert: 'vertiser' });
+    });
+
+    return function vertiserIdByName(_x9) {
+        return _ref9.apply(this, arguments);
+    };
+})();
+
 let vertIdByName = (() => {
-    var _ref9 = _asyncToGenerator(function* ({ vertName }) {
+    var _ref10 = _asyncToGenerator(function* ({ vertName }) {
         return yield IdByName({ fundName: vertName, eventOrFundOrVertiserOrVert: 'vert' });
     });
 
-    return function vertIdByName(_x9) {
-        return _ref9.apply(this, arguments);
+    return function vertIdByName(_x10) {
+        return _ref10.apply(this, arguments);
+    };
+})();
+
+/** Depends on current setup where ServerIO is placed in to the window */
+let isPointingAtProduction = (() => {
+    var _ref11 = _asyncToGenerator(function* ({ page }) {
+        const endpoint = yield page.evaluate(function () {
+            return window.ServerIO.DATALOG_ENDPOINT;
+        });
+        return endpoint.match(/\/\/lg.good-loop.com/);
+    });
+
+    return function isPointingAtProduction(_x11) {
+        return _ref11.apply(this, arguments);
+    };
+})();
+
+let soGiveFailIfPointingAtProduction = (() => {
+    var _ref12 = _asyncToGenerator(function* ({ page }) {
+        const endpoint = yield page.evaluate(function () {
+            return window.ServerIO.APIBASE;
+        });
+        if (endpoint.match(/\/\/app.sogive.org/) || window.location.href.match(/\/\/app.sogive.org/)) throw new Error("Test service is pointing at production server! Aborting test.");
+    });
+
+    return function soGiveFailIfPointingAtProduction(_x12) {
+        return _ref12.apply(this, arguments);
     };
 })();
 
@@ -216,6 +330,8 @@ const APIBASE = window.location;function timeout(ms) {
 
 ;
 
+;;
+
 ;
 
 module.exports = {
@@ -224,8 +340,10 @@ module.exports = {
     eventIdFromName,
     fillInForm,
     fundIdByName,
+    isPointingAtProduction,
     login,
     onFail,
+    soGiveFailIfPointingAtProduction,
     takeScreenshot,
     timeout,
     vertIdByName,
