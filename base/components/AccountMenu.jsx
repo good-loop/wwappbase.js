@@ -16,6 +16,10 @@ const doLogout = () => {
 
 /*
 The top-right menu
+actiove {boolean} true if on the account page
+
+TODO use react for the dropdown state - not bootstrap.js
+
 */
 const AccountMenu = ({pending, active}) => {
 	if (pending) return <Misc.Loading />;
@@ -30,7 +34,8 @@ const AccountMenu = ({pending, active}) => {
 	return (
 		<ul id='top-right-menu' className="nav navbar-nav navbar-right">
 			<li className={'dropdown' + (active? ' active' : '')}>
-				<a className="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+				<a className="dropdown-toggle" 
+					data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 					{ user.name || user.xid }&nbsp;
 					<span className="caret" />
 				</a>
