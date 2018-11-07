@@ -8,6 +8,8 @@ import Cookies from 'js-cookie';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../../C';
+import ServerIO from '../../plumbing/ServerIO';
+// import { Server } from 'net';
 
 // For testing
 if ( (""+window.location).indexOf('login=local') !== -1) {	
@@ -118,6 +120,9 @@ const SocialSignInButton = ({service, verb='sign in'}) => {
 
 
 const socialLogin = (service) => {
+	// Special behaviour for My-Loop
+	// Doing it this way seemed the most maintainable option
+	if( ServerIO.MixPanelTrack && C.TRACKPATH ) ServerIO.MixPanelTrack('Social login clicked ' + service, {}, C.TRACKPATH.concat(['socialMediaLogged', service]));
 	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
 	// auth doesnt return a future, so rely on Login's change listener
 	// to close stuff.
