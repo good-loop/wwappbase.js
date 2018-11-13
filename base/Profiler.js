@@ -187,7 +187,7 @@ const requestAnalyzeData = xid => {
 // Once the ID has become associated with a Profile,
 // data on how many people have reached as.good-loop.com via "as.good-loop.com/gl.socialShareId=${SOCIAL_SHARE_ID}"
 // will be returned along with other Profile stats
-const saveSocialShareId = (xid, socialShareId) => ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {socialShareIds: JSON.stringify([socialShareId])});
+const saveSocialShareId = (xid, socialShareId, adID) => ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {socialShareIds: JSON.stringify([{socialShareId, adID}])});
 
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
