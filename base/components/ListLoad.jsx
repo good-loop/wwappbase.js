@@ -108,6 +108,7 @@ const ListLoad = ({type, status, servlet, navpage,
 				checkboxes={checkboxes} 
 				canDelete={canDelete} 
 				servlet={servlet}
+				navpage={navpage}
 			>
 				<ListItem 
 					type={type} 
@@ -119,7 +120,7 @@ const ListLoad = ({type, status, servlet, navpage,
 		))}
 	</div>);
 }; // ./ListLoad
-
+//
 
 const onPick = ({event, navpage, id}) => {
 	if (event) {
@@ -132,7 +133,7 @@ const onPick = ({event, navpage, id}) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, children}) => {
+const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children}) => {
 	const id = getId(item);
 	const itemUrl = modifyHash([servlet, id], null, true);
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
