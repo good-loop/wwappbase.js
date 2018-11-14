@@ -34,9 +34,11 @@ ServerIO.checkBase = () => {
 	// My-Loop doesn't have a "native" API base so must use a "foreign" host - in this case portal.good-loop.com
 	if (!ServerIO.NO_API_AT_THIS_HOST) {
 		if (ServerIO.APIBASE && C.isProduction()) {
-			const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
+			if (ServerIO.APIBASE.indexOf('local') !== -1 || ServerIO.APIBASE.indexOf('test') !== -1) {
+				const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
+				console.warn(err);
+			}
 			ServerIO.APIBASE = ''; // clear it
-			console.warn(err);
 		}
 		// TODO include datalog here too in notify
 		if (ServerIO.APIBASE && ! C.isProduction()) {
