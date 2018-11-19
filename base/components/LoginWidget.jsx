@@ -122,7 +122,7 @@ const SocialSignInButton = ({service, verb='sign in'}) => {
 const socialLogin = (service) => {
 	// Special behaviour for My-Loop
 	// Doing it this way seemed the most maintainable option
-	if( ServerIO.MixPanelTrack && C.TRACKPATH ) ServerIO.MixPanelTrack('Social login clicked ' + service, {}, C.TRACKPATH.concat(['socialMediaLogged', service]));
+	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack('Social login clicked ' + service, {});
 	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
 	// auth doesnt return a future, so rely on Login's change listener
 	// to close stuff.
