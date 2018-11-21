@@ -10,7 +10,16 @@ import {endsWith} from 'wwutils';
  * 
  * These files are all about defining a convention, so let's set some rules??
  * 
- * 
+ * Standard use
+
+import {isa, defineType, getType} from './DataClass';
+import C from './C';
+const MyType = defineType(C.TYPES.MyType);
+const This = MyType;
+export default MyType;
+
+...custom functions
+
  */
 
 /**
