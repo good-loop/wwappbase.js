@@ -1,7 +1,5 @@
 'use strict';
 
-function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
-
 /**NOTE: This file needs to be babeled under current setup.
  * compile.sh set to output to babeled-res. That's also
  * where jest is set to read the setup file from
@@ -19,12 +17,12 @@ const options = {
  * If you only want something to run once
  * before all tests in file, use beforeAll/afterAll
  */
-beforeEach(_asyncToGenerator(function* () {
+beforeEach(async () => {
     window.__BROWSER_OPTIONS__ = options;
     //Can't access global from tests
-    window.__BROWSER__ = yield puppeteer.launch(options);
+    window.__BROWSER__ = await puppeteer.launch(options);
     //Could set API.ENDPOINT here.
-}));
+});
 
 /**Cleanup after each test is completed
  * Note: some after-test functionality is 
@@ -37,9 +35,9 @@ beforeEach(_asyncToGenerator(function* () {
  * Might need to screenshot here and write to log over there.
  * How barbaric.
  */
-afterEach(_asyncToGenerator(function* () {
+afterEach(async () => {
     const browser = window.__BROWSER__;
-    const pages = yield browser.pages();
+    const pages = await browser.pages();
     const date = new Date().toISOString();
     // fs.appendFileSync('this_log.txt', 
     //     Object.keys(window.fails)
@@ -47,11 +45,11 @@ afterEach(_asyncToGenerator(function* () {
     // );
     //Start at 1 to skip over chrome home page
     for (let i = 1; i < pages.length; i++) {
-        yield takeScreenshot({
+        await takeScreenshot({
             page: pages[i],
             path: `test-results/Screenshots(success)`,
             date
         });
     }
-    yield window.__BROWSER__.close();
-}), 10000);
+    await window.__BROWSER__.close();
+}, 10000);
