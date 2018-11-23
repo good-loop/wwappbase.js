@@ -183,10 +183,14 @@ const requestAnalyzeData = xid => {
 	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
 };
 
+/**
+ * ??maybe just use gl.via=uxid + a post nonce??
+ * 
 // Associate the socialShareId with the given user Profile
 // Once the ID has become associated with a Profile,
 // data on how many people have reached as.good-loop.com via "as.good-loop.com/gl.socialShareId=${SOCIAL_SHARE_ID}"
 // will be returned along with other Profile stats
+ */
 const saveSocialShareId = (xid, socialShareId, adID) => ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {socialShareIds: JSON.stringify([{socialShareId, adID}])});
 
 Person.saveProfileClaims = saveProfileClaims;
