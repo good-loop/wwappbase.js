@@ -331,7 +331,7 @@ const PropControl = (props) => {
 		}
 		// make the options html
 		let domOptions = options.map(option => <option key={"option_"+option} value={option} >{labeller(option)}</option>);
-		let sv = value || dflt;
+		let sv = value || dflt || '';
 		return (
 			/* text-muted is for my-loop mirror card 
 			** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller */
