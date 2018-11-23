@@ -8,7 +8,7 @@ const Event = {};
 Event.Main = {
     EventList: `#event > div > div:nth-child(2)`,
     CreateEvent: `#event > div > div:nth-child(3) > div:nth-child(3) > button`, //Won't appear in DOM until CREATE_EDIT_EVENT has been clicked. Can also navigate directly to sogive.org/#editEvent
-    CreateEditButton: `#event > div > div > small > a`
+    CreateEditButton: `#event small > a`
 };
 Event.EditEventForm = {
     name: `input[name=name]`,

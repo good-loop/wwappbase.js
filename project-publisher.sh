@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=1.13.1'
+VERSION='Version=1.13.2'
 
 ###
 # New in 1.13.1: Ensuring that there are no zombie JARs that are synced to a server during a publish
@@ -169,7 +169,7 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
-		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
 		PRESERVE=("web-as/uploads")
 	;;
 	calstat|CALSTAT)
