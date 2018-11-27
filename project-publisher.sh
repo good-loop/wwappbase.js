@@ -3,6 +3,7 @@
 VERSION='Version=1.13.2'
 
 ###
+# New in 1.13.2: Fixed the location of the less files for sogive
 # New in 1.13.1: Ensuring that there are no zombie JARs that are synced to a server during a publish
 # New in 1.13.0: Allowing for remaps of the $PROJECT_LOCATION variable if the project is being published by TeamCity
 # New in 1.12.1: Fixed the minify_css function
@@ -294,7 +295,7 @@ case $1 in
         TARGET_DIRECTORY='/home/winterwell/sogive-app'
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
-		LESS_FILES_LOCATION="$PROJECT_LOCATION/web/style"
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
 		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
