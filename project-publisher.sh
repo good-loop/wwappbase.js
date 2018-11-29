@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.13.2'
+VERSION='Version=1.13.3'
 
 ###
+# New in 1.13.3: Ensuring that the directory 'web-iframe' is sync'ed to heppner on a production adserver publish task
 # New in 1.13.1: Ensuring that there are no zombie JARs that are synced to a server during a publish
 # New in 1.13.0: Allowing for remaps of the $PROJECT_LOCATION variable if the project is being published by TeamCity
 # New in 1.12.1: Fixed the minify_css function
@@ -905,6 +906,13 @@ function run_post_publish_tasks {
 					;;
 					experiment)
 						$PSSH "sudo service baose restart"
+					;;
+				esac
+			;;
+			adserver)
+				case $TYPE_OF_PUBLISH in
+					production)
+						rsync -r $PROJECT_LOCATION/web-iframe winterwell@heppner.soda.sh:/as.good-loop.com/
 					;;
 				esac
 			;;
