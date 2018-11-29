@@ -26,7 +26,6 @@ import Autocomplete from 'react-autocomplete';
 import {getType, getId, nonce} from '../data/DataClass';
 import md5 from 'md5';
 
-
 /**
  * Input bound to DataStore.
  * aka Misc.PropControl
@@ -81,6 +80,16 @@ const PropControl = (props) => {
 		validator = v => {
 			if (v && v.substr(0,5) === 'http:') {
 				return "Please use https for secure urls";
+			}
+			return null;
+		};
+	}
+	// Money validator
+	if (Misc.ControlTypes.isMoney(type) && ! validator && ! error) {
+		validator = v => {
+			if ( ! v) return null;	
+			if ( ! Number.isFinite(v.value)) {
+				return "Invalid number "+v.raw;
 			}
 			return null;
 		};
@@ -402,7 +411,7 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 /**
  * Strip commas £/$/euro and parse float
  * @param {*} v 
- * @returns Number. undefined/null are returned as-is.
+ * @returns Number. undefined/null are returned as-is. Bad inputs return NaN
  */
 const numFromAnything = v => {
 	if (v===undefined || v===null) return v;
