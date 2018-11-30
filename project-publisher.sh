@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.13.3'
+VERSION='Version=1.13.4'
 
 ###
+# New in 1.13.4: Allows for syncing the preact-unit directory, and adding NPM and webpacking for the preact-unit
 # New in 1.13.3: Ensuring that the directory 'web-iframe' is sync'ed to heppner on a production adserver publish task
 # New in 1.13.2: Fixed the location of the less files for sogive
 # New in 1.13.1: Ensuring that there are no zombie JARs that are synced to a server during a publish
@@ -171,7 +172,7 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
-		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
 		PRESERVE=("web-as/uploads")
 	;;
 	calstat|CALSTAT)
@@ -607,6 +608,12 @@ function webpack {
 		$PSSH "cd $TARGET_DIRECTORY && npm i"
 		printf "\nWebpacking ..."
     	$PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
+	fi
+	if [[ $PROJECTNAME = 'adserver' ]]; then
+		printf "\nGetting Preact-Unit NPM Dependencies ..."
+		$PSSH "cd $TARGET_DIRECTORY/preact-unit && npm i"
+		printf "\nWebpacking Preact-Unit ..."		
+		$PSSH "cd $TARGET_DIRECTORY/preact-unit && webpack --config ./webpack.config.js --progress -p"
 	fi
 }
 
