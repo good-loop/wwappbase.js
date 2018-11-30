@@ -79,7 +79,7 @@ const defineRole = (role, cans) => {
 };
 
 /**
- * Convenience for "is this a developer?"
+ * Convenience for "is this a developer/admin?"
  * @returns Boolean
  */
 const isDev = () => {

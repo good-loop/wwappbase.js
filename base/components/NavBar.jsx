@@ -3,13 +3,19 @@ import React from 'react';
 import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import Roles from '../Roles';
+import DataStore from '../plumbing/DataStore';
 
 /**
  * 
- * @param {String} currentPage The current page
+ * @param {?String} currentPage e.g. 'account' Read from window.location via DataStore if unset.
+ * @param {?String} homelink Relative url for the home-page. Defaults to "/"
  * @param {String[]} pages
  */
 const NavBar = ({currentPage, pages, children, homelink}) => {
+	if ( ! currentPage) {
+		let path = DataStore.getValue('location', 'path');
+		let currentPage = path && path[0];
+	}
 	// make the page links
 	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
 	return (
@@ -20,7 +26,7 @@ const NavBar = ({currentPage, pages, children, homelink}) => {
 						<span className="sr-only">Toggle navigation</span>
 						<span className="icon-bar" /><span className="icon-bar" /><span className="icon-bar" />
 					</button>
-					<a className="" href={homelink ? homelink : "#dashboard"}>
+					<a className="" href={homelink || '/'}>
 						<img className='logo-xlarge' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 					</a>
 				</div>
