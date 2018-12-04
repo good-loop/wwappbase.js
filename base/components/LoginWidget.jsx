@@ -120,7 +120,7 @@ const SocialSignInButton = ({service, verb='sign in'}) => {
 
 
 const socialLogin = (service) => {
-	// Special behaviour for My-Loop
+	// Special behaviour for My-Loop/Portal
 	// Doing it this way seemed the most maintainable option
 	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack('Social login clicked ' + service, {});
 	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
@@ -158,6 +158,10 @@ const EmailSignin = ({verb, onLogin}) => {
 	let person = DataStore.getValue(path);	
 
 	const doItFn = () => {
+		// Special behaviour for My-Loop/Portal
+		// Doing it this way seemed the most maintainable option
+		if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack('Email login attempted', {verb});
+		
 		if ( ! person) {
 			Login.error = {text: "Please fill in email and password"};
 			return;
