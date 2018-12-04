@@ -67,6 +67,8 @@ C.setupDataStore = () => {
 	DataStore.update(basics);
 };
 
+C.TRACKPATH = ['data', 'MixPanelTrack'];
+
 export default C;
 // also for debug
 window.C = C;
