@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.13.4'
+VERSION='Version=1.13.5'
 
 ###
+# New in 1.13.5: Adding new adserver to the production cluster
 # New in 1.13.4: Allows for syncing the preact-unit directory, and adding NPM and webpacking for the preact-unit
 # New in 1.13.3: Ensuring that the directory 'web-iframe' is sync'ed to heppner on a production adserver publish task
 # New in 1.13.2: Fixed the location of the less files for sogive
@@ -157,7 +158,7 @@ fi
 case $1 in
     adserver|ADSERVER)
         PROJECT='adserver'
-        PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh)
+        PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh adnode-01.soda.sh)
         TEST_SERVERS=(hugh.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
@@ -173,7 +174,7 @@ case $1 in
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
-		PRESERVE=("web-as/uploads")
+		#PRESERVE=("web-as/uploads")
 	;;
 	calstat|CALSTAT)
 		PROJECT='calstat'
