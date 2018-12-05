@@ -174,7 +174,7 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
-		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
 		#PRESERVE=("web-as/uploads")
 		POST_PUBLISHING_TASK='yes'
 	;;
@@ -687,7 +687,7 @@ function sync_configs {
 			$GIT_SHORTHAND gc --prune=now
 			$GIT_SHORTHAND pull origin master
 			$GIT_SHORTHAND reset --hard FETCH_HEAD
-			for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
+			for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*"); do
 				printf "\nsyncing file : $config\n"
 				$PSYNC $config $TARGET_DIRECTORY/config/
 			done
