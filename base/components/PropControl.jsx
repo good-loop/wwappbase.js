@@ -113,13 +113,14 @@ const PropControl = (props) => {
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
 		// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 		// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
+		// let props2 = Object.assign({}, props);
+		// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
+							// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 		return (
 			<div className={'form-group' + (error? ' has-error' : '')}>
 				{label || tooltip? <label htmlFor={stuff.name}>{labelText} {helpIcon}</label> : null}
 				{inline? ' ' : null}
-				<PropControl
-					type={type} path={path} prop={prop} error={error} {...stuff} recursing 
-				/>
+				<PropControl recursing {...props} />
 				{help? <span className="help-block">{help}</span> : null}
 				{error? <span className="help-block">{error}</span> : null}
 			</div>
