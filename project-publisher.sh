@@ -927,9 +927,9 @@ function run_post_publish_tasks {
 						rsync -r $PROJECT_LOCATION/web-iframe winterwell@heppner.soda.sh:/as.good-loop.com/
 						printf "\n\tSubtask : preparing preact\n"
 						printf "\n\tGetting NPM Dependencies for the Preact Unit\n"
-						$PSSH "cd $PROJECT_LOCATION/preact-unit && npm i"
+						$PSSH "cd $TARGET_DIRECTORY/preact-unit && npm i"
 						printf "\n\tWebpacking the Preact Unit\n"
-						$PSSH "cd $PROJECT_LOCATION/preact-unit && webpack --progress -p"
+						$PSSH "cd $TARGET_DIRECTORY/preact-unit && webpack --progress -p"
 						#########REMOVE THIS AFTER JANUARY################
 						printf "\nSPECIAL TASK: CREATING LOG.PROPERTIES FILE FOR ADNODE-01\n"
 						ssh winterwell@adnode-01.soda.sh 'printf "downgrade=com.winterwell.web.app.WebRequest.get,LgWebhookServlet,lgwebhook" >> /home/winterwell/as.good-loop.com/config/log.properties'
