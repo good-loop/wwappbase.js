@@ -176,7 +176,7 @@ case $1 in
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
-		PRESERVE=("$TARGET_DIRECTORY/config/log.properties")
+		PRESERVE=("config/log.properties")
 		POST_PUBLISHING_TASK='yes'
 	;;
 	calstat|CALSTAT)
