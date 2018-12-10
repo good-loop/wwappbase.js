@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.13.6'
+VERSION='Version=1.13.7'
 
 ###
+# New in 1.13.7: Trying to preserve log.properties on adservers
 # New in 1.13.6: Solving needs for Preact
 # New in 1.13.5: Adding new adserver to the production cluster
 # New in 1.13.4: Allows for syncing the preact-unit directory, and adding NPM and webpacking for the preact-unit
@@ -175,7 +176,7 @@ case $1 in
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
 		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
-		#PRESERVE=("web-as/uploads")
+		PRESERVE=("$TARGET_DIRECTORY/config/log.properties")
 		POST_PUBLISHING_TASK='yes'
 	;;
 	calstat|CALSTAT)
