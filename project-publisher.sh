@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.13.5'
+VERSION='Version=1.13.7'
 
 ###
+# New in 1.13.7: Trying to preserve log.properties on adservers
+# New in 1.13.6: Solving needs for Preact
 # New in 1.13.5: Adding new adserver to the production cluster
 # New in 1.13.4: Allows for syncing the preact-unit directory, and adding NPM and webpacking for the preact-unit
 # New in 1.13.3: Ensuring that the directory 'web-iframe' is sync'ed to heppner on a production adserver publish task
@@ -173,8 +175,9 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
-		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "web-iframe")
-		#PRESERVE=("web-as/uploads")
+		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+		PRESERVE=("$TARGET_DIRECTORY/config/log.properties")
+		POST_PUBLISHING_TASK='yes'
 	;;
 	calstat|CALSTAT)
 		PROJECT='calstat'
@@ -685,7 +688,7 @@ function sync_configs {
 			$GIT_SHORTHAND gc --prune=now
 			$GIT_SHORTHAND pull origin master
 			$GIT_SHORTHAND reset --hard FETCH_HEAD
-			for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*.properties"); do
+			for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*"); do
 				printf "\nsyncing file : $config\n"
 				$PSYNC $config $TARGET_DIRECTORY/config/
 			done
@@ -922,6 +925,18 @@ function run_post_publish_tasks {
 				case $TYPE_OF_PUBLISH in
 					production)
 						rsync -r $PROJECT_LOCATION/web-iframe winterwell@heppner.soda.sh:/as.good-loop.com/
+						printf "\n\tSubtask : preparing preact\n"
+						printf "\n\tGetting NPM Dependencies for the Preact Unit\n"
+						$PSSH "cd $PROJECT_LOCATION/preact-unit && npm i"
+						printf "\n\tWebpacking the Preact Unit\n"
+						$PSSH "cd $PROJECT_LOCATION/preact-unit && webpack --progress -p"
+					;;
+					test)
+						printf "\n\tSubtask : preparing preact\n"
+						printf "\n\tGetting NPM Dependencies for the Preact Unit\n"
+						$PSSH "cd $TARGET_DIRECTORY/preact-unit && npm i"
+						printf "\n\tWebpacking the Preact Unit\n"
+						$PSSH "cd $TARGET_DIRECTORY/preact-unit && webpack --progress -p"
 					;;
 				esac
 			;;
