@@ -933,6 +933,7 @@ function run_post_publish_tasks {
 						#########REMOVE THIS AFTER JANUARY################
 						printf "\nSPECIAL TASK: CREATING LOG.PROPERTIES FILE FOR ADNODE-01\n"
 						ssh winterwell@adnode-01.soda.sh 'printf "downgrade=com.winterwell.web.app.WebRequest.get,LgWebhookServlet,lgwebhook,WebRequest:user=null:action=null:req={CORS_set=true}" >> /home/winterwell/as.good-loop.com/config/log.properties'
+						ssh winterwell@adnode-01.soda.sh 'sudo service adservermain restart'
 					;;
 					test)
 						printf "\n\tSubtask : preparing preact\n"
