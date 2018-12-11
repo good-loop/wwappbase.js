@@ -337,7 +337,7 @@ Misc.saveDraftFn = _.debounce(
  * * @param {type, id, path}
  */
 Misc.publishDraftFn = 
-// _.debounce(
+_.debounce(
 	({type, id, path}) => {
 		if ( ! type || ! id) {
 			let item = DataStore.getValue(path);
@@ -349,7 +349,7 @@ Misc.publishDraftFn =
 		ActionMan.publishEdits(type, id);
 		return true;
 	}
-	// , 5000);
+	, 3000);
 
 
 /**
