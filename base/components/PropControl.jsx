@@ -276,6 +276,7 @@ const PropControl = (props) => {
 	
 			rejected.forEach(file => {
 				// TODO Inform the user that their file had a Problem
+				console.error("rejected :( "+file);
 			});
 		};
 
