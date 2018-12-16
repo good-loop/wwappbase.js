@@ -343,13 +343,17 @@ const PropControl = (props) => {
 			}
 		}
 		// make the options html
-		let domOptions = options.map(option => <option key={"option_"+option} value={option} >{labeller(option)}</option>);
+		// NB: react doesnt like the selected attribute
+		let domOptions = options.map(option => 
+			<option key={"option_"+option} value={option}>{labeller(option)}</option>);
 		let sv = value || dflt;
+		/* text-muted is for my-loop mirror card 
+		** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller */
+		let klass = join('form-control', className, sv && sv.includes('Unknown')? 'text-muted' : null);
 		return (
-			/* text-muted is for my-loop mirror card 
-			** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller */
-			<select className={sv && sv.includes('Unknown')? join(className, 'text-muted') : className} name={prop} value={sv} onChange={onChange} {...rest} >
-				{sv? <option disabled selected>{sv}</option> : <option></option>}
+			<select className={klass} 
+				name={prop} value={sv} onChange={onChange} {...rest} >
+				{sv? null : <option></option>}
 				{domOptions}
 			</select>
 		);
