@@ -118,6 +118,7 @@ Misc.Col2 = ({children}) => (
  */
 Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
 	if ( ! amount) amount = 0;
+	// NB: isNumber fails for numeric-string e.g. "1" but isString will catch that, so its OK.
 	if (_.isNumber(amount) || _.isString(amount)) {
 		amount = {value: amount, currency:'GBP'};
 	}

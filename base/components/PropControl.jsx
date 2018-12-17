@@ -424,6 +424,7 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
  */
 const numFromAnything = v => {
 	if (v===undefined || v===null) return v;
+	// NB: _.isNumber fails for numeric-strings e.g. "1" -- but the later code will handle that
 	if (_.isNumber(v)) return v;
 	// strip any commas, e.g. 1,000
 	if (_.isString(v)) {

@@ -13,6 +13,7 @@ import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
+import {asNum} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import { relative } from 'path';
 import { getDataClass, getType } from '../data/DataClass';
@@ -341,17 +342,21 @@ const defaultCellRender = (v, column) => {
 		if (CellFormat.ispercent(column.format)) {
 			// 2 sig figs
 			return printer.prettyNumber(100*v, 2)+"%";
-			}
 		}
-	if (_.isNumber(v)) {
+	}
+	// number or numeric string
+	const nv = asNum(v);
+	if (nv !== undefined && ! Number.isNan(nv)) {
 		// 1 decimal place
-		v = Math.round(v*10)/10;
+		nv = Math.round(nv*10)/10;
 		// commas
-		v = printer.prettyNumber(v, 10);
+		const sv = printer.prettyNumber(nv, 10);
+		return sv;
 	}
 	// e.g. Money has a to-string
 	let dc = getDataClass(getType(v));
 	if (dc && dc.str) return dc.str(v);
+	// just str it
 	return str(v);
 };
 
@@ -387,7 +392,8 @@ const TotalCell = ({data, column}) => {
 	const getter = sortGetter(column);
 	data.forEach((rItem, row) => {
 		const v = getter(rItem);
-		if (_.isNumber(v)) total += v;
+		// NB: 1* to force coercion of numeric-strings
+		if ($.isNumeric(v)) total += 1*v;
 	});
 	if ( ! total) return <td></td>;
 	// ??custom cell render might break on a Number. But Money seems to be robust about its input.
