@@ -139,20 +139,6 @@ class SimpleTable extends React.Component {
 				data = data.reverse();
 			}
 		} // sort
-		// max rows?
-		if (rowsPerPage) {
-			data = data.slice(0, rowsPerPage);
-		}
-		let cn = 'table'+(className? ' '+className : '');
-		// HACK build up an array view of the table
-		// TODO refactor to build this first, then generate the html
-		let dataArray = [[]];
-
-		const filterChange = e => {
-			const v = e.target.value;
-			this.setState({filter: v});
-		};
-
 		//Only show columns that have checkbox: true.
 		//Can't edit the actual columns object as that would make it impossible to reenable a column
 		//Display only columns that haven't been disabled
@@ -175,6 +161,19 @@ class SimpleTable extends React.Component {
 				return false;
 			});
 		}
+		// max rows?
+		if (rowsPerPage) {
+			data = data.slice(0, rowsPerPage);
+		}
+		let cn = 'table'+(className? ' '+className : '');
+		// HACK build up an array view of the table
+		// TODO refactor to build this first, then generate the html
+		let dataArray = [[]];
+
+		const filterChange = e => {
+			const v = e.target.value;
+			this.setState({filter: v});
+		};
 		// scrolling (credit to Irina): uses wrapper & scroller and css
 
 		return (
