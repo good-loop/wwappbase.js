@@ -346,7 +346,7 @@ const defaultCellRender = (v, column) => {
 	}
 	// number or numeric string
 	let nv = asNum(v);
-	if (nv !== undefined && ! Number.isNan(nv)) {
+	if (nv !== undefined && ! Number.isNaN(nv)) {
 		// 1 decimal place
 		nv = Math.round(nv*10)/10;
 		// commas
