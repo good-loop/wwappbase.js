@@ -302,6 +302,7 @@ case $1 in
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
 		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
+		LESS_FILES=("$LESS_FILES_LOCATION/main.less" "$LESS_FILES_LOCATION/print.less")
 		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
@@ -655,7 +656,11 @@ function convert_less_files {
 			printf "\nYour specified project $PROJECT , has the parameter 'CONVERT_LESS' set to 'yes', and an input directory IS specified,\nbut no output directory has been specified\nExiting process\n"
 			exit 0
 		fi
-		LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
+		# Usually main.less and print.less are all we have to compile
+		# But default to compiling everything which is safe
+		if [ ! "$LESS_FILES" ]; then 
+			LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
+		fi
 		for file in ${LESS_FILES[@]}; do
 			printf "\nconverting $file"
 			lessc "$file" "${file%.less}.css"
