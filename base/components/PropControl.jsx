@@ -87,11 +87,12 @@ const PropControl = (props) => {
 	// Money validator (NB: not 100% same as the backend)
 	if (Misc.ControlTypes.isMoney(type) && ! validator && ! error) {
 		validator = v => {
-			if ( ! v) return null;	
-			if ( ! Number.isFinite(v.value)) {
+			if ( ! v) return null;
+			let nv = Money.value(v);	
+			if ( ! Number.isFinite(nv)) {
 				return "Invalid number "+v.raw;
 			}
-			if (Math.round(v.value*100) != v.value*100) {
+			if (Math.round(nv*100) != nv*100) {
 				return "Fractional pence may cause an error later "+v.raw;
 			}
 			return null;
