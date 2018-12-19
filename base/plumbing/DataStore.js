@@ -312,7 +312,7 @@ class Store {
 	 * Has a data item been modified since loading?
 	 * @param {C.TYPES} type 
 	 * @param {!String} id 
-	 * @param {C.STATUS} status
+	 * @param {C.STATUS} status loading clean dirty saving
 	 * @return "dirty", "clean", etc. -- see C.STATUS
 	 */
 	setLocalEditsStatus(type, id, status, update) {

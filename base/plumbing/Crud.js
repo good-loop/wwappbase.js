@@ -55,7 +55,9 @@ ActionMan.crud = (type, id, action, item) => {
 				const pubpath = DataStore.getPathForItem(status, item);
 				const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 				let pubItem = DataStore.getValue(pubpath);
-				DataStore.setValue(draftpath, pubItem);
+				// copy it
+				let draftItem = _.cloneDeep(pubItem);
+				DataStore.setValue(draftpath, draftItem);
 			}
 			// success :)
 			const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
