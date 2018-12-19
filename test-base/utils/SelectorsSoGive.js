@@ -26,13 +26,13 @@ Event.ImagesAndBranding = {
     banner: `input[name=bannerImage]`
 };
 Event.TicketTypes = {
-    CreateButton: `#editEvent > div > div.Card.panel.panel-warning > div.panel-body > button`,
-    name: `#editEvent > div > div:nth-child(6) > div.panel-body > div > div:nth-child(2) > input`,
+    CreateButton: `#editEvent > div > div:nth-child(6) > div.panel-body > button`,
+    ticketName: `#editEvent input[placeholder="e.g. The Wee Wander"]`,
     subtitle: `#editEvent > div > div:nth-child(6) > div.panel-body > div > div:nth-child(3) > input`,
     kind: `#editEvent > div > div:nth-child(6) > div.panel-body > div > div:nth-child(4) > input`,
     price: `#editEvent > div > div:nth-child(6) > div.panel-body > div > div:nth-child(5) > span > input`,
-    stock: `#editEvent > div > div:nth-child(6) > div.panel-body > div > div.container-fluid > div > div:nth-child(1) > div > div.form-group > input`,
-    description: `#editEvent > div > div:nth-child(6) > div.panel-body > div > div:nth-child(7) > input`,
+    stock: `#editEvent input[name="stock"]`,
+    description: `#editEvent textarea[name="description"]`,
     "attendee-noun": `#editEvent > div > div:nth-child(6) > div.panel-body > div > div:nth-child(8) > input`,
     "attendee-icon": `#editEvent > div > div:nth-child(6) > div.panel-body > div > div:nth-child(9) > div > input`,
     "invite-only-checkbox": `#editEvent > div > div:nth-child(6) > div.panel-body > div > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(2) > div > label > input[type="checkbox"]`,
@@ -117,7 +117,8 @@ const Search = {};
 Search.Main = {
     SearchField: `#formq`,
     SearchButton: `span.sogive-search-box.input-group-addon`,
-    ResultsList: `#search div.results-list`
+    ResultsList: `#search div.results-list`,
+    FirstResult: `#search div.results-list div.SearchResult a`
 };
 
 // sogive.org/#edit

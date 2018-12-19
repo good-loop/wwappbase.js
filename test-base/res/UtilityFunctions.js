@@ -198,7 +198,10 @@ async function fillInForm({page, Selectors, data}) {
  * by querying JSON endpoint
  * @param eventOrFundOrVertiserOrVert seriously needs a new name. Thankfully, is only ever called internally.
  */
-async function IdByName({page, fundName, eventOrFundOrVertiserOrVert}) {
+async function IdByName({fundName, eventOrFundOrVertiserOrVert}) {
+    // Make sure that we're comparing strings
+    fundName = fundName + '';
+
     const r = await $.ajax({
         url: `${APIBASE}${eventOrFundOrVertiserOrVert}/_list.json`,
         withCredentials: true,
@@ -209,12 +212,12 @@ async function IdByName({page, fundName, eventOrFundOrVertiserOrVert}) {
     return '';
 }
 
-async function eventIdFromName({page, eventName}) {
-    return await IdByName({page, fundName: eventName, eventOrFundOrVertiserOrVert:'event'});
+async function eventIdFromName({eventName}) {
+    return await IdByName({fundName: eventName, eventOrFundOrVertiserOrVert:'event'});
 }
 
-async function fundIdByName({page, fundName}) {
-    return await IdByName({page, fundName, eventOrFundOrVertiserOrVert:'fundraiser'});
+async function fundIdByName({fundName}) {
+    return await IdByName({fundName, eventOrFundOrVertiserOrVert:'fundraiser'});
 };
 
 async function vertiserIdByName({vertiserName}) {
