@@ -47,8 +47,18 @@ ActionMan.crud = (type, id, action, item) => {
 	const status = serverStatusForAction(action);
 	// call the server
 	return ServerIO.crud(type, item, action)
-		.then(res => DataStore.updateFromServer(res, status))
 		.then(res => {
+			// update
+			let hits = DataStore.updateFromServer(res, status)
+			if (action==='publish') { // } && DataStore.getData(C.KStatus.DRAFT, type, id)) {
+				// also update the draft version
+				const pubpath = DataStore.getPathForItem(status, item);
+				const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+				let pubItem = DataStore.getValue(pubpath);
+				// copy it
+				let draftItem = _.cloneDeep(pubItem);
+				DataStore.setValue(draftpath, draftItem);
+			}
 			// success :)
 			const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
 			if (action==='delete') {

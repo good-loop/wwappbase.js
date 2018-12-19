@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.13.7'
+VERSION='Version=1.13.8'
 
 ###
+# New in 1.13.8: I feel the need for speed: Option to compile less less. Option to not run puppeteer tests.
 # New in 1.13.7: Trying to preserve log.properties on adservers
 # New in 1.13.6: Solving needs for Preact
 # New in 1.13.5: Adding new adserver to the production cluster
@@ -140,7 +141,7 @@ fi
 ### Preamble: Define Arrays and Variables
 #################
 SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','myloop','portal','profiler','sogive','youagain')
-USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
+USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION (option: --unsafe)\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
 PSSH='parallel-ssh -t 100000000 -h /tmp/target.list.txt --user=winterwell'
@@ -302,6 +303,7 @@ case $1 in
         IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
 		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
+		LESS_FILES=("$LESS_FILES_LOCATION/main.less" "$LESS_FILES_LOCATION/print.less")
 		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
         WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
@@ -537,6 +539,7 @@ function image_optimisation {
 				printf '%s\n' "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/newpngarray.txt
 			done
 			mapfile -t PNGARRAY < $IMAGEDIRECTORY/newpngarray.txt
+			# ??please doc this powerful magic - awk print 3?? (NB: nice use of diff) ^DW Dec 2018
 			UNIQUEPNGS=$(diff $IMAGEDIRECTORY/pngarray.txt $IMAGEDIRECTORY/newpngarray.txt | grep ">" | awk '{print $3}')
 			if [[ ${UNIQUEPNGS[*]} = '' ]]; then
 				printf "\nNo new PNG files to optimise\n"
@@ -655,7 +658,11 @@ function convert_less_files {
 			printf "\nYour specified project $PROJECT , has the parameter 'CONVERT_LESS' set to 'yes', and an input directory IS specified,\nbut no output directory has been specified\nExiting process\n"
 			exit 0
 		fi
-		LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
+		# Usually main.less and print.less are all we have to compile
+		# But default to compiling everything which is safe
+		if [ ! "$LESS_FILES" ]; then 
+			LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
+		fi
 		for file in ${LESS_FILES[@]}; do
 			printf "\nconverting $file"
 			lessc "$file" "${file%.less}.css"
@@ -667,14 +674,14 @@ function convert_less_files {
 ###################################
 ### Section 08: Defining the Jar Syncing Function
 ###################################
+# @DA - Why do we move jars from lib to tmp-lib, nuking each in turn?? Thanks, ^DW Dec 2018
 function move_items_to_lib {
 	if [ -d $PROJECT_LOCATION/lib ]; then
-		rm -rf $PROJECT_LOCATION/lib/*
-		cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
+		rm -rf $PROJECT_LOCATION/lib/*		
 	else
 		mkdir $PROJECT_LOCATION/lib
-		cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
 	fi
+	cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
 }
 
 #########################################
@@ -981,4 +988,9 @@ printf "\nPublishing Process has completed\n"
 run_post_publish_tasks
 printf "\nCleaning tmp-lib directory\n"
 clean_tmp_lib
-run_automated_tests
+# notests requested from the command line?
+if [[ "$3" = "--notests" ]]; then
+	printf "\nSKIPPING Automated Tests for $PROJECTNAME on the $2 site"		
+else
+	run_automated_tests
+fi

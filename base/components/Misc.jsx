@@ -63,11 +63,12 @@ Misc.Loading = ({text}) => {
 
 /**
  * list with add, TODO remove, reorder. A simpler in-memory cousin of ListLoad
- * @param ItemEditor {Function} {item, path} -> jsx
+ * @param path {String[]} path to the list (which must be an array)
+ * @param ItemEditor {Function} {item, path, i, ...stuff} -> jsx
  * @param blankFactory {?Function} path -> blank
  * 
  */
-Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, ...stuff}) => {
+Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, createText="Create", ...stuff}) => {
 	if ( ! ItemEditor) {
 		ItemEditor = ({item, path}) => <div>{JSON.stringify(item)}</div>;
 	}
@@ -92,7 +93,7 @@ Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, ...stuff}) => {
 				<ItemEditor i={i} item={tt} path={path.concat(i)} {...stuff} />				
 			</div>)}
 		{list.length? null : <p>{noneMessage || "None"}</p>}
-		<div><button className='btn btn-default' onClick={addBlank}><Misc.Icon glyph='plus' /> Create</button></div>
+		<div><button className='btn btn-default' onClick={addBlank}><Misc.Icon glyph='plus' /> {createText}</button></div>
 	</div>);
 };
 

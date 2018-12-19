@@ -312,7 +312,7 @@ class Store {
 	 * Has a data item been modified since loading?
 	 * @param {C.TYPES} type 
 	 * @param {!String} id 
-	 * @param {C.STATUS} status
+	 * @param {C.STATUS} status loading clean dirty saving
 	 * @return "dirty", "clean", etc. -- see C.STATUS
 	 */
 	setLocalEditsStatus(type, id, status, update) {
@@ -365,18 +365,17 @@ class Store {
 	/**
 	 * Get hits from the cargo, and store them under data.type.id
 	 * @param {*} res 
+	 * @returns {Item[]} hits, can be empty
 	 */
 	updateFromServer(res, status) {
 		console.log("updateFromServer", res);
-		if ( ! res.cargo) {			
-			return res; // return for chaining .then()
-		}
 		// must be bound to the store
 		assert(this && this.appstate, "DataStore.updateFromServer: Use with .bind(DataStore)");
 		let hits = res.hits || (JSend.data(res) && JSend.data(res).hits); // unwrap cargo
 		if ( ! hits && JSend.isa(res) && JSend.data(res)) {			
 			hits = [JSend.data(res)]; // just the one?
 		}
+		if ( ! hits) return [];
 		let itemstate = {data:{}, draft:{}, trash:{}};
 		hits.forEach(item => {
 			try {
@@ -407,7 +406,7 @@ class Store {
 			}
 		});
 		this.update(itemstate);
-		return res;
+		return hits;
 	} //./updateFromServer()
 
 
