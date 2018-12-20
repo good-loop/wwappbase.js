@@ -327,38 +327,7 @@ const PropControl = (props) => {
 		return <PropControlRadio value={value} {...props} />
 	}
 	if (type==='select') {
-		const { options, labels, className, ...rest} = otherStuff;
-
-		assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
-		assert(options.map, 'Misc.PropControl: options not an array '+options);
-		// Make an option -> nice label function
-		// the labels prop can be a map or a function
-		let labeller = v => v;
-		if (labels) {
-			if (_.isArray(labels)) {
-				labeller = v => labels[options.indexOf(v)] || v;
-			} else if (_.isFunction(labels)) {
-				labeller = labels;				
-			} else {
-				// map
-				labeller = v => labels[v] || v;
-			}
-		}
-		// make the options html
-		// NB: react doesnt like the selected attribute
-		let domOptions = options.map(option => 
-			<option key={"option_"+option} value={option}>{labeller(option)}</option>);
-		let sv = value || dflt;
-		/* text-muted is for my-loop mirror card 
-		** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller */
-		let klass = join('form-control', className, sv && sv.includes('Unknown')? 'text-muted' : null);
-		return (
-			<select className={klass} 
-				name={prop} value={sv} onChange={onChange} {...rest} >
-				{sv? null : <option></option>}
-				{domOptions}
-			</select>
-		);
+		return <PropControlSelect {...props} />
 	}
 	if (type==='autocomplete') {
 		let acprops ={prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
@@ -369,6 +338,45 @@ const PropControl = (props) => {
 	return <Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
 }; //./PropControl
 
+/**
+ * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
+ */
+const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => {
+	const { options, labels, className, dflt, recursing, ...rest} = otherStuff;
+	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
+	assert(options.map, 'Misc.PropControl: options not an array '+options);
+	// Make an option -> nice label function
+	// the labels prop can be a map or a function
+	let labeller = v => v;
+	if (labels) {
+		if (_.isArray(labels)) {
+			labeller = v => labels[options.indexOf(v)] || v;
+		} else if (_.isFunction(labels)) {
+			labeller = labels;				
+		} else {
+			// map
+			labeller = v => labels[v] || v;
+		}
+	}
+	// make the options html
+	// NB: react doesnt like the selected attribute
+	let domOptions = options.map(option => 
+		<option key={"option_"+option} value={option}>{labeller(option)}</option>);
+	let sv = value || dflt;
+	/* text-muted is for my-loop mirror card 
+	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
+	let klass = join('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
+	return (
+		<select className={klass} 
+			name={prop} value={sv} onChange={onChange}
+			multiple={multiple}
+			{...rest}
+		>
+			{sv? null : <option></option>}
+			{domOptions}
+		</select>
+	);
+};
 
 /**
  * 
