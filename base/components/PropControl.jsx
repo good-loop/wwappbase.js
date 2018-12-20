@@ -49,7 +49,7 @@ import md5 from 'md5';
 * @param https {?Boolean} if true, urls must use https not http (recommended)
  */
 const PropControl = (props) => {
-	let {type="text", path, prop, label, help, tooltip, error, validator, recursing, inline, ...stuff} = props;
+	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, recursing, inline, ...stuff} = props;
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
@@ -112,6 +112,8 @@ const PropControl = (props) => {
 		// Minor TODO help block id and aria-described-by property in the input
 		const labelText = label || '';
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
+		const optreq = optional? <small class='text-muted'>optional</small> 
+			: required? '*' : null;
 		// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 		// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 		// let props2 = Object.assign({}, props);
@@ -119,7 +121,9 @@ const PropControl = (props) => {
 							// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 		return (
 			<div className={'form-group' + (error? ' has-error' : '')}>
-				{label || tooltip? <label htmlFor={stuff.name}>{labelText} {helpIcon}</label> : null}
+				{label || tooltip? 
+					<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
+					: null}
 				{inline? ' ' : null}
 				<PropControl recursing {...props} />
 				{help? <span className="help-block">{help}</span> : null}
