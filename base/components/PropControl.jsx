@@ -112,8 +112,8 @@ const PropControl = (props) => {
 		// Minor TODO help block id and aria-described-by property in the input
 		const labelText = label || '';
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
-		const optreq = optional? <small class='text-muted'>optional</small> 
-			: required? '*' : null;
+		const optreq = optional? <small className='text-muted'>optional</small> 
+			: required? <small className='text-danger'>*</small> : null;
 		// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 		// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 		// let props2 = Object.assign({}, props);
@@ -331,7 +331,8 @@ const PropControl = (props) => {
 		return <PropControlRadio value={value} {...props} />
 	}
 	if (type==='select') {
-		return <PropControlSelect {...props} />
+		let props2 ={onChange, value, ...props};
+		return <PropControlSelect  {...props2} />
 	}
 	if (type==='autocomplete') {
 		let acprops ={prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
@@ -346,6 +347,7 @@ const PropControl = (props) => {
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  */
 const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => {
+	// NB: pull off internal attributes so the select is happy with rest
 	const { options, labels, className, dflt, recursing, ...rest} = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
 	assert(options.map, 'Misc.PropControl: options not an array '+options);

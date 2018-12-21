@@ -24,6 +24,9 @@ const Card = ({title, glyph, icon, children, className, onHeaderClick, collapse,
 	}
 	let header = null;
 	if (title || titleChildren) {
+		if ( ! onHeaderClick) {
+			console.log("No onHeaderClick for "+className+" "+title);
+		}
 		let hoverText = null;
 		if (error && _.isString(error)) hoverText = error;
 		else if (warning && _.isString(warning)) hoverText = warning;
