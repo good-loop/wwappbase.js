@@ -68,7 +68,8 @@ ServerIO.checkBase = () => {
 	if (ServerIO.PROFILER_ENDPOINT && ! C.isProduction() && ServerIO.PROFILER_ENDPOINT.indexOf('https://profiler') !== -1) {
 		console.warn("Using production Profiler Server: "+ServerIO.PROFILER_ENDPOINT);
 	}
-};
+}; //./checkBase()
+
 
 /**
  * Log servlet for ajax logging of client-side errors. Default "/log"

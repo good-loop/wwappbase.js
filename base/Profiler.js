@@ -184,6 +184,25 @@ const requestAnalyzeData = xid => {
 };
 
 /**
+ * Post to the /form endpoint which handles adhoc (not necc trusted) form submissions.
+ * 
+ * NB: posts use YouAgain's Login.sign() -- see ServerIOBase.
+ * 
+ * @param data {Object} e.g. {email: "foo@bar"} "notify":email is a special field
+ */
+// NB: copy-paste-improve from invest-in-change form.js
+const submitForm = ({data}) => {
+	let url = `${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`;
+	// send back referrer and form-page-url info
+	data.referrer = document.referrer;
+	data.formUrl = ""+window.location
+	let p = ServerIO.post(url, {action: 'post', data});			
+	return p;
+};
+
+/**
+ * For share posts to Twitter or Facebook by the user
+ * 
  * ??maybe just use gl.via=uxid + a post nonce??
  * 
 // Associate the socialShareId with the given user Profile
@@ -191,7 +210,9 @@ const requestAnalyzeData = xid => {
 // data on how many people have reached as.good-loop.com via "as.good-loop.com/gl.socialShareId=${SOCIAL_SHARE_ID}"
 // will be returned along with other Profile stats
  */
-const saveSocialShareId = ({xid, socialShareId, adID, name}) => ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {socialShareIds: JSON.stringify([{socialShareId, adID, name}])});
+const saveSocialShareId = ({xid, socialShareId, adID, name}) 
+	=> ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
+		{socialShareIds: JSON.stringify([{socialShareId, adID, name}])});
 
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
