@@ -210,9 +210,13 @@ const submitForm = ({data}) => {
 // data on how many people have reached as.good-loop.com via "as.good-loop.com/gl.socialShareId=${SOCIAL_SHARE_ID}"
 // will be returned along with other Profile stats
  */
-const saveSocialShareId = ({xid, socialShareId, adID, name}) 
-	=> ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
-		{socialShareIds: JSON.stringify([{socialShareId, adID, name}])});
+const saveSocialShareId = ({xid, socialShareId, adID, name}) => {
+	let ssids = JSON.stringify([{socialShareId, adID, name}]);
+	return ServerIO.post(
+		`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
+		{socialShareIds: ssids}
+		);
+};
 
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;

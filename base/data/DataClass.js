@@ -15,6 +15,8 @@ import {endsWith} from 'wwutils';
 import {isa, defineType, getType} from './DataClass';
 import C from './C';
 const MyType = defineType(C.TYPES.MyType);
+// or
+const MyType = defineType(C.TYPES.MyType, ParentType);
 const This = MyType;
 export default MyType;
 
@@ -132,25 +134,38 @@ const nonce = (n=10) => {
  * make()
  * And a type.
  * @param {!String} type 
+ * @param {?DataClass[]} parentTypes parents if creating a subtypes. 
  */
-const defineType = (type) => {
+const defineType = (type, ...parentTypes) => {
 	assMatch(type, String);
-	const This = {};
+	// copy methods from the parents
+	const This = Object.assign({}, ...parentTypes);
 	This.type = type;
 	This['@type'] = 'DataClass';
+	// ?? flatten any recursion for efficiency (then stifle recursion in make and isa)
+	This.parentTypes = parentTypes;	
 	This.isa = (obj) => isa(obj, type);
 	This.assIsa = (obj, msg) => assert(This.isa(obj), (msg||'')+" "+type+" expected, but got "+JSON.stringify(obj));
-	This.name = obj => obj && obj.name;		
 	/** convenience for getId() */
 	This.id = obj => This.assIsa(obj) && getId(obj);
 	This.make = (base = {}) => {
+		// super makes
+		if (This.parentTypes) {
+			This.parentTypes.forEach(pt => {
+				if (pt.make) {
+					base = pt.make(base);
+				}
+			});
+		}
+		// this type
 		return {
 			'@type': This.type,
 			...base
 		};
 	};
 	// a default toString
-	This.str = obj => JSON.stringify(obj);
+	if ( ! This.name) This.name = obj => obj && obj.name;
+	if ( ! This.str) This.str = obj => JSON.stringify(obj);
 	// for getDataClass
 	allTypes[type] = This;
 	// for debug use only
