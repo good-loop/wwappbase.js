@@ -213,3 +213,14 @@ Money.divide = (total, part) => {
 	assCurrencyEq(total, part);
 	return Money.value(total) / Money.value(part);
 };
+
+/**
+ * get/set an explanation text
+ * This is transient - it is NOT saved by Money.java
+ * @returns {?String}
+ */
+Money.explain = (money, expln) => {
+	Money.assIsa(money);
+	if (expln) money.explain = expln;
+	return money.explain;
+};

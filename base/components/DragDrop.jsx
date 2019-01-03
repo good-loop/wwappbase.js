@@ -12,7 +12,7 @@ const _onDragOver = (e, id) => {
 	// TODO check for validity
 	e.preventDefault();
 	let dragid = e.dataTransfer.getData("id");
-	// console.log('onDragOver', dragstate.dragging, id, dragid, e);
+	console.log('onDragOver', dragstate.dragging, id, dragid, e);
 };
 
 // must preventDefault to allow drag
@@ -35,7 +35,10 @@ const _onDragExit = (e, id) => {
 	console.log('onDragExit', dragstate.dragging, id, dragid, e);
 };
 
-
+/**
+ * Update dragstate.drops
+ * @param onDrop {?Function} (e, dropInfo) => do-stuff
+ */
 const _onDrop = (e, id, onDrop, el) => {
 	e.preventDefault();
 	let dragid = e.dataTransfer.getData("id");
@@ -95,6 +98,10 @@ const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
 	</div>);
 };
 
+/**
+ * @param id {!String} identify this dropzone in the dragstate / drop info
+ * @param onDrop {?Function} Called if there is a drop here. (e, dropInfo) => do-stuff
+ */
 const DropZone = ({id, children, onDrop}) => {
 	return (<div className='DropZone' id={id}		
 		onDragOver={e => _onDragOver(e, id)} 

@@ -8,6 +8,9 @@ import {endsWith} from 'wwutils';
 /*
  * Coding Style??
  * 
+ * ??Would it be better to use class MyType extends DataClass??
+ * And MyType only defines static methods??
+ * 
  * These files are all about defining a convention, so let's set some rules??
  * 
  * Standard use
@@ -30,7 +33,17 @@ export default MyType;
  */
 const isa = function(obj, typ) {
 	if (!_.isObject(obj) || obj.length) return false;
-	return getType(obj) === typ;
+	const otyp = getType(obj);
+	return isa2(otyp, typ);
+};
+const isa2 = (otyp, typ) => {
+	if (otyp === typ) return true;
+	// sub-type?
+	if ( ! otyp.parentTypes) return false;
+	for(let i=0; i<otyp.parentTypes.length; i++) {
+		if (isa2(otyp, parentTypes[i])) return true;
+	}
+	return false;
 };
 
 /**
@@ -143,7 +156,7 @@ const defineType = (type, ...parentTypes) => {
 	This.type = type;
 	This['@type'] = 'DataClass';
 	// ?? flatten any recursion for efficiency (then stifle recursion in make and isa)
-	This.parentTypes = parentTypes;	
+	This.parentTypes = parentTypes.length? parentTypes : null;	
 	This.isa = (obj) => isa(obj, type);
 	This.assIsa = (obj, msg) => assert(This.isa(obj), (msg||'')+" "+type+" expected, but got "+JSON.stringify(obj));
 	/** convenience for getId() */
@@ -157,10 +170,10 @@ const defineType = (type, ...parentTypes) => {
 				}
 			});
 		}
-		// this type
+		// this type + always copy base to avoid any side-effects
 		return {
+			...base,
 			'@type': This.type,
-			...base
 		};
 	};
 	// a default toString
@@ -192,7 +205,6 @@ const getDataClass = typeOrItem => {
 const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
 window.dataclass = {};
-
 
 export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce};	
 // Also have a default export -- which is defineType
