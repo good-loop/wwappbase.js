@@ -224,14 +224,6 @@ class StripeThingsClass extends Component {
 			})
 			// on abject (eg. network) failure, mark the form as active again
 			.catch(() => this.setState({isSaving: false}));
-	
-		// However, this line of code will do the same thing:
-		// this.props.stripe.createToken({type: 'card', name: 'Jenny Rosen'});
-
-		// end copy-pasted code
-		
-		/* here's what we do with the token when we have it in the old donation widget! */
-		/*onToken={(stripeResponse) => { ActionMan.donate({ charity, formPath, formData, stripeResponse }); } }*/
 	} //./handleSubmit()
 
 
