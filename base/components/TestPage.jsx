@@ -31,8 +31,18 @@ const TestPage = () => {
 			<h1>Test Page</h1>
 			<p>Insert a test widget below</p>
 
-			<PropControl type='Money' path={path} prop='money' label='Money' />
-			<pre>{JSON.stringify(widget.money)}</pre>
+			<PropControl label='Delivery' prop='delivery' path={path} 
+				help='How does the Good-Loop adunit get onto the page?'
+				type='select' multiple 
+				options={['vpaid', 'ourpage', 'app', 'direct', 'iframe', 'safeframe']} />
+			<pre>{JSON.stringify(widget.delivery)}</pre>
+
+			<PropControl label='OneWay' prop='one' path={path} 
+				help='not multiple'
+				type='select'
+				options={['vpaid', 'ourpage', 'app', 'direct', 'iframe', 'safeframe']} />
+			<pre>{JSON.stringify(widget.one)}</pre>
+
 		</div>
 	);
 

@@ -204,6 +204,7 @@ const PropControl = (props) => {
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 		DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
 		let mv = modelValueFromInput(e.target.value, type, e.type);
+		console.warn("onChange", e.target.value, mv, e);
 		DataStore.setValue(proppath, mv);
 		if (saveFn) saveFn({path, value:mv});
 		e.preventDefault();
@@ -331,7 +332,7 @@ const PropControl = (props) => {
 		return <PropControlRadio value={value} {...props} />
 	}
 	if (type==='select') {
-		let props2 ={onChange, value, ...props};
+		let props2 ={onChange, value, modelValueFromInput, ...props};
 		return <PropControlSelect  {...props2} />
 	}
 	if (type==='autocomplete') {
@@ -348,7 +349,7 @@ const PropControl = (props) => {
  */
 const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => {
 	// NB: pull off internal attributes so the select is happy with rest
-	const { options, labels, className, dflt, recursing, ...rest} = otherStuff;
+	const { options, labels, className, dflt, recursing, modelValueFromInput, ...rest} = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
 	assert(options.map, 'Misc.PropControl: options not an array '+options);
 	// Make an option -> nice label function
@@ -364,11 +365,17 @@ const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => 
 			labeller = v => labels[v] || v;
 		}
 	}
-	// make the options html
-	// NB: react doesnt like the selected attribute
-	let domOptions = options.map(option => 
-		<option key={"option_"+option} value={option}>{labeller(option)}</option>);
 	let sv = value || dflt;
+
+	if (multiple) {
+		// WTF? multi-select is pretty broken in React as of Jan 2019
+		return PropControlMultiSelect({value, prop, onChange, labeller, options, sv, className, modelValueFromInput, ...rest});
+	}
+
+	// make the options html
+	// NB: react doesnt like the selected attribute ?? but we need it for multiple??	
+	let domOptions = options.map(option => 
+		<option key={"option_"+option} value={option} >{labeller(option)}</option>);	
 	/* text-muted is for my-loop mirror card 
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
 	let klass = join('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
@@ -381,6 +388,45 @@ const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => 
 			{sv? null : <option></option>}
 			{domOptions}
 		</select>
+	);
+};
+
+/**
+ * render multi select as multi checkbox 'cos React (Jan 2019) is awkward about multi-select
+ */
+const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromInput, sv, className, type, path, saveFn, ...rest}) => {
+	assert( ! sv || sv.length !== undefined, "value should be an array", sv, prop);
+	// const mvfi = rest.modelValueFromInput;
+	// let modelValueFromInput = (s, type, etype) => {
+	// 	if (mvfi) s = mvfi(s, type, etype);
+	// 	console.warn("modelValueFromInput", s, sv);
+	// 	return [s];
+	// };
+	let onChange = e => {
+		const val = e && e.target && e.target.value;
+		const checked = e && e.target && e.target.checked;
+		let mv = modelValueFromInput(val, type, e.type);
+		console.warn("onChange", val, checked, mv, e);		
+		let vals = value || [];
+		let mvs;
+		if (checked) {
+			mvs = vals.concat(mv);
+		} else {
+			mvs = vals.filter(v => v != mv);
+		}
+		DataStore.setValue(path.concat(prop), mvs);
+		if (saveFn) saveFn({path, prop, value:mvs});
+	}
+
+	let domOptions = options.map(option => 
+		<BS.Checkbox key={"option_"+option} value={option} 
+			checked={sv && sv.indexOf(option) !== -1}
+			label={labeller(option)} onChange={onChange} inline />);	
+	let klass = join('form-group', className);
+	return (
+		<div className={klass}>
+			{domOptions}
+		</div>
 	);
 };
 

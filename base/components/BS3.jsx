@@ -10,12 +10,17 @@ import BS from './BS';
  */
 const join = (...strings) => strings.filter(s => s).join(" ");
 
-BS.Checkbox = ({name, checked, value, label, onChange, inline}) => (<div className="checkbox">
-	<label className={inline? 'checkbox-inline' : null} >
-		<input type="checkbox" name={name} value={value} onChange={onChange} checked={checked} />
-		{label}
-  </label>
-</div>);
+// NB: the `!! checked` is to avoid React complaining about a change from uncontrolled to controlled.
+BS.Checkbox = ({name, checked, value, label, onChange, inline}) => {
+	const input = <input type="checkbox" name={name} value={value} onChange={onChange} checked={ !! checked} />;
+	if (inline) {
+		// no wrapping div - c.f. https://getbootstrap.com/docs/3.3/css/#checkboxes-and-radios
+		return (<label className='checkbox-inline'>{input} {label}</label>);
+	} else {
+		// wrapping div
+		return (<div className="checkbox"><label>{input} {label}</label></div>);
+	}
+};
 
 /**
  * A radio input
