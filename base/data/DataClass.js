@@ -34,6 +34,7 @@ export default MyType;
 const isa = function(obj, typ) {
 	if (!_.isObject(obj) || obj.length) return false;
 	const otyp = getType(obj);
+	if ( ! otyp) return false;
 	return isa2(otyp, typ);
 };
 const isa2 = (otyp, typ) => {
