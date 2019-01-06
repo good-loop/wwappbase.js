@@ -14,7 +14,7 @@ import {join} from 'wwutils';
 import PV from 'promise-value';
 import Dropzone from 'react-dropzone';
 
-import DataStore from '../plumbing/DataStore';
+import DataStore, {getPath} from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 // import ActionMan from '../plumbing/ActionManBase';
 import printer from '../utils/printer';
