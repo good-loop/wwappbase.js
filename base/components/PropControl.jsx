@@ -204,7 +204,7 @@ const PropControl = (props) => {
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 		DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
 		let mv = modelValueFromInput(e.target.value, type, e.type);
-		console.warn("onChange", e.target.value, mv, e);
+		// console.warn("onChange", e.target.value, mv, e);
 		DataStore.setValue(proppath, mv);
 		if (saveFn) saveFn({path, value:mv});
 		e.preventDefault();
@@ -406,7 +406,7 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		const val = e && e.target && e.target.value;
 		const checked = e && e.target && e.target.checked;
 		let mv = modelValueFromInput(val, type, e.type);
-		console.warn("onChange", val, checked, mv, e);		
+		// console.warn("onChange", val, checked, mv, e);		
 		let vals = value || [];
 		let mvs;
 		if (checked) {
