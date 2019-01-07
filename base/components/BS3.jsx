@@ -79,5 +79,11 @@ BS.Alert = ({color='warning', children}) => {
  */
 BS.Center = ({children}) => <div className='text-center'>{children}</div>;
 BS.Centre = BS.Center; // UK or US
+
+/**
+ * a bordered well (becomes a type of Card in BS4)
+ */
+BS.Well = ({children}) => <div className='well'>{children}</div>;
+
 export default BS;
 
