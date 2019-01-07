@@ -47,9 +47,8 @@ const RolesCard = () => {
 	</Misc.Card>);
 }
 
-const RoleLine = ({role}) => {
-	return <div className='well'>{role}</div>;
-};
+// TODO use BS.Well instead for BS3/3 compatibility
+const RoleLine = ({role}) => <div className='well'>{role}</div>;
 
 export {
 	BasicAccountPage,

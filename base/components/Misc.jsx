@@ -1,5 +1,6 @@
 import React from 'react';
 
+import BS from './BS';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
@@ -88,10 +89,10 @@ Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, createText="Cre
 	};
 	return (<div>
 		{list.map( (tt, i) => 
-			<div key={'tt'+i} className='well'>
+			<BS.Well key={'tt'+i}>
 				<button onClick={e => remove(i)} className='btn btn-danger btn-xs pull-right'><Misc.Icon glyph='trash'/></button>
 				<ItemEditor i={i} item={tt} path={path.concat(i)} {...stuff} />				
-			</div>)}
+			</BS.Well>)}
 		{list.length? null : <p>{noneMessage || "None"}</p>}
 		<div><button className='btn btn-default' onClick={addBlank}><Misc.Icon glyph='plus' /> {createText}</button></div>
 	</div>);
