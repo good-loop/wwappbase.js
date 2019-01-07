@@ -62,7 +62,9 @@ const ListLoad = ({type, status, servlet, navpage,
 	// from data. 
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
-	const filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
+	// NB: case-insentive filtering
+	const _filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
+	const filter = _filter? _filter.toLowerCase() : null;
 	let q2 = q; //join(q, filter); ??pass filter to back-end??
 	let pvItems = ActionMan.list({type, status, q:q2});
 	if ( ! pvItems.resolved) {
@@ -80,8 +82,8 @@ const ListLoad = ({type, status, servlet, navpage,
 	let hits = pvItems.value && pvItems.value.hits;
 	if (hits) {
 		hits.forEach(item => {
-			// HACK fast filter
-			let sitem = JSON.stringify(item);
+			// HACK fast filter via stringify
+			let sitem = JSON.stringify(item).toLowerCase();
 			if (filter && sitem.indexOf(filter) === -1) {
 				return; // filtered out
 			}
