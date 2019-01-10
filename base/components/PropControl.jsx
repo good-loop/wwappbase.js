@@ -78,6 +78,7 @@ const PropControl = (props) => {
 			&& ! validator)
 	{
 		validator = v => {
+			// TODO detect invalid url
 			if (v && v.substr(0,5) === 'http:') {
 				return "Please use https for secure urls";
 			}

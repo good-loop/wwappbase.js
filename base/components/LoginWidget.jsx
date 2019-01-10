@@ -128,7 +128,9 @@ const socialLogin = (service) => {
 	// to close stuff.
 }; // ./socialLogin
 
-
+/**
+ * ajax call -- via Login.login() -- to login
+ */
 LoginWidget.emailLogin = ({verb, app, email, password}) => {
 	assMatch(email, String, password, String);
 	let call = verb==='register'?
@@ -143,6 +145,8 @@ LoginWidget.emailLogin = ({verb, app, email, password}) => {
 		if (Login.isLoggedIn()) {
 			// close the dialog on success
 			LoginWidget.hide();
+			// Security: wipe the password from DataStore
+			DataStore.setValue(['data', C.TYPES.User, 'loggingIn', 'password'], null);
 		} else {
 			// poke React via DataStore (e.g. for Login.error)
 			DataStore.update({});
