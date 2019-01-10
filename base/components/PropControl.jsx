@@ -106,9 +106,11 @@ const PropControl = (props) => {
 		error = validator(value, rawValue);
 	}
 
+	// Minor TODO lets refactor this so we always do the wrapper, then call a 2nd jsx function for the input (instead of the recursing flag)
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
-	if ((label || help || tooltip || error) && ! Misc.ControlTypes.ischeckbox(type) && ! recursing) {
+	// if ((label || help || tooltip || error) && ! Misc.ControlTypes.ischeckbox(type) && ! recursing) {
+	if ( ! Misc.ControlTypes.ischeckbox(type) && ! recursing) {
 		// Minor TODO help block id and aria-described-by property in the input
 		const labelText = label || '';
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
@@ -120,7 +122,7 @@ const PropControl = (props) => {
 		// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
 							// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 		return (
-			<div className={'form-group' + (error? ' has-error' : '')}>
+			<div className={join('form-group', type, error? 'has-error' : null)}>
 				{label || tooltip? 
 					<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 					: null}
