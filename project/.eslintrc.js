@@ -8,6 +8,8 @@ module.exports = {
 	"rules": {
 		/* off because we dont agree with AirBnB's settings */
 		"radix": "off",
+		"one-var":	"off",
+		"one-var-declaration-per-line": "off",
 		"no-mixed-operators": "off",
 		"jsx-a11y/click-events-have-key-events": "warn",
 		"prefer-destructuring": "off",
