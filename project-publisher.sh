@@ -618,9 +618,9 @@ function webpack {
 	fi
 	if [[ $PROJECTNAME = 'adserver' ]]; then
 		printf "\nGetting Preact-Unit NPM Dependencies ..."
-		$PSSH "cd $TARGET_DIRECTORY/preact-unit && npm i"
+		$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 		printf "\nWebpacking Preact-Unit ..."		
-		$PSSH "cd $TARGET_DIRECTORY/preact-unit && webpack --config ./webpack.config.js --progress -p"
+		$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --config ./webpack.config.js --progress -p"
 	fi
 }
 
@@ -934,16 +934,16 @@ function run_post_publish_tasks {
 						rsync -r $PROJECT_LOCATION/web-iframe winterwell@heppner.soda.sh:/as.good-loop.com/
 						printf "\n\tSubtask : preparing preact\n"
 						printf "\n\tGetting NPM Dependencies for the Preact Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/preact-unit && npm i"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Preact Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/preact-unit && webpack --progress -p"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
 					;;
 					test)
 						printf "\n\tSubtask : preparing preact\n"
 						printf "\n\tGetting NPM Dependencies for the Preact Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/preact-unit && npm i"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Preact Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/preact-unit && webpack --progress -p"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
 					;;
 				esac
 			;;
