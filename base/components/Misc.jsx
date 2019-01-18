@@ -357,8 +357,12 @@ _.debounce(
 
 /**
  * save buttons
+ * 
+ * @param saveAs {?Boolean} If set, offer a save-as button which will copy, tweak the ID and the name, then save.
  */
-Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publishTooltipText='Your account cannot publish this.', autoPublish, autoSave = true}) => {
+Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, 
+	publishTooltipText='Your account cannot publish this.', autoPublish, autoSave = true, saveAs}) => 
+{
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
 		return (<div className='SavePublishDiscard'><i>Login to save or publish edits</i></div>);
@@ -401,6 +405,11 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, publi
 		<button className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
 			Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
+		{saveAs? <span>&nbsp;</span> : null}
+		{saveAs? <button className='btn btn-default' disabled={isSaving} title='Copy and save with a new ID'
+				onClick={() => ActionMan.saveAs({type, id, onChange: _.isFunction(saveAs)? saveAs : null})} >
+				<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
+			</button> : null}
 		&nbsp;
 		<button className='btn btn-primary' disabled={disablePublish} title={publishTooltip} onClick={() => ActionMan.publishEdits(type, id)}>
 			Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
