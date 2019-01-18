@@ -5,7 +5,7 @@ import $ from 'jquery';
 import {SJTest, assert, assMatch} from 'sjtest';
 import C from '../CBase';
 import DataStore, {getPath} from './DataStore';
-import {getId, getType} from '../data/DataClass';
+import {getId, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from 'you-again';
 import {XId, encURI, mapkv} from 'wwutils';
@@ -102,6 +102,38 @@ const errorPath = ({type, id, action}) => {
 ActionMan.saveEdits = (type, pubId, item) => {
 	return ActionMan.crud(type, pubId, 'save', item);
 };
+
+/**
+ * This will modify the ID!
+ * @param onChange {Function: newItem => ()}
+ * @returns {Promise}
+ */
+ActionMan.saveAs = ({type, id, item, onChange}) => {
+	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, id);
+	if ( ! item) item = DataStore.getData(C.KStatus.PUBLISHED, type, id);
+	assert(item, "Crud.js no item "+type+" "+id);	
+	if ( ! id) id = getId(item);
+	// deep copy
+	let newItem = JSON.parse(JSON.stringify(item));
+	newItem.status = C.KStatus.DRAFT; // ensure its a draft 
+	// parentage
+	newItem.parent = id;
+	// modify
+	const newId = nonce();	
+	newItem.id = newId;
+	if (newItem.name) {
+		// make a probably unique name - use randomness TODO nicer
+		newItem.name += ' v_'+nonce(3);
+	}
+	// save local
+	DataStore.setData(C.KStatus.DRAFT, newItem);
+	// modify e.g. url
+	if (onChange) onChange(newItem);
+	// save server
+	let p = ActionMan.crud(type, newId, 'save', newItem);
+	return p;
+};
+
 
 ActionMan.publishEdits = (type, pubId, item) => {	
 	assMatch(type, String);
