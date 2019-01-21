@@ -58,6 +58,8 @@ C.setupDataStore = () => {
 		widget: {},		
 		list: {},
 		misc: {},
+		/** about the local environment */
+		env: {},
 		/** status of server requests, for displaying 'loading' spinners 
 	 	* Normally: transient.$item_id.status
 		*/

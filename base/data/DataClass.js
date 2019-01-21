@@ -187,6 +187,19 @@ const defineType = (type, ...parentTypes) => {
 	return This;
 };
 
+
+class DataClass {
+	static get _type() {
+		return 'DataClass';
+	}
+	
+	constructor(base) {
+		Object.assign(this, base);
+		console.warn('type', this, ""+this, typeof(this));
+		this['@type'] = DataClass._type;
+	}
+}
+
 /**
  * @param typeOrItem {String|Object} If object, getType() is used
  * @returns {?DataClass} the DataClass if defined for this type
@@ -207,8 +220,6 @@ const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
 window.dataclass = {};
 
-export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce};	
-// Also have a default export -- which is defineType
-const DataClass = defineType;
 
-export default DataClass;
+export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce, DataClass};	
+// no default for now - lets see how class works out
