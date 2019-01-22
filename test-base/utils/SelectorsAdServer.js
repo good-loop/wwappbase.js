@@ -1,7 +1,7 @@
 const TestAs = {
-    FirstCharityIcon: "div.charity-chooser:not(.not-ready) > ul > li:nth-child(1)",
+    FirstCharityIcon: "ul.chooser-list.ready > a:nth-child(1)",
     Banner: "#banner",
-    ClickToPlay: ".gl-play-video:not(.gl-hidden)"
+    ClickToPlay: ".gl-play-video"
 };
 
 module.exports = {

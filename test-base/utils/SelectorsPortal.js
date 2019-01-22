@@ -19,31 +19,30 @@ const Main = {
 const Advertiser = {
     Create: "#advertiser > div > div > div:nth-child(2) > button",
     'name': "#advertiser > div > div > div.form > div.form-group > input",
-    'charity-id': "div > div:nth-child(2) > div.form-group > div > input",
-    'charity-name': "#advertiser > div > div > div.form > div.Card.panel.panel-warning > div.panel-body > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(3) > input",
-    'charity-url': "#advertiser > div > div > div.form > div.Card.panel.panel-warning > div.panel-body > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(4) > div > input",
-    'charity-white-logo': "#advertiser > div > div > div.form > div.Card.panel.panel-warning > div.panel-body > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(5) > div > input",
-    'charity-colour-logo': "#advertiser > div > div > div.form > div.Card.panel.panel-warning > div.panel-body > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(7) > div > input",
-    'charity-small-print': "#advertiser > div > div > div.form > div.Card.panel.panel-warning > div.panel-body > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(9) > input",
-    'charity-circle-crop-factor': "#advertiser > div > div > div.form > div.Card.panel.panel-warning > div.panel-body > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(10) > input",
-    'parent-charity-id': "#advertiser > div > div > div.form > div.Card.panel.panel-warning > div.panel-body > div:nth-child(5) > div.form-group > div > input"
+    'contact-name': "#advertiser > div > div > div.form > div.well > div:nth-child(3) > input",
+    'contact-email': "#advertiser > div > div > div.form > div.well > div.form-group.XId > input",
+    'contact-title': "#advertiser > div > div > div.form > div.well > div:nth-child(4) > input"
 };
 
 const Advert = {
-    Create: '#advert > div > div:nth-child(2) > button',
+    Create: '#advert > div > div > div:nth-child(2) > button',
     on: '#advert > div > div:nth-child(2) > div > div:nth-child(4) > div > label',
-    name: '#advert > div > div:nth-child(2) > div > div > div:nth-child(7) > input',
-    campaign: '#advert > div > div:nth-child(2) > div > div > div:nth-child(8) > input',
+    name: '#advert input[name="name"]',
+    campaign: '#advert input[name="campaign"]',
     logo: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(1) > div > input',
     'white-logo': '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(2) > div > input',
     about: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(6) > textarea',
-    video: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(5) > div.panel-body > div:nth-child(1) > input',
-    'mobile-video': '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(5) > div.panel-body > div:nth-child(4) > input',
+    video: '#advert div.videoUpload input[name="url"]',
+    videoSeconds: '#advert input[name="videoSeconds"]',
+    viewAdverts: '#advertiser > div > div > div:nth-child(2) > a',
+    charityOne: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(6) > div.panel-body > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(2) > div.form-group.autocomplete > div > input',
+    charityTwo: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(6) > div.panel-body > div.container-fluid > div > div:nth-child(2) > div > div:nth-child(2) > div.form-group.autocomplete > div > input',
+    charityThree: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(6) > div.panel-body > div.container-fluid > div > div:nth-child(3) > div > div:nth-child(2) > div.form-group.autocomplete > div > input'
 };
 
 const PubSignUp = {
-    email: '#loginByEmail > div:nth-child(1) > input',
-    password: '#loginByEmail > div:nth-child(2) > input',
+    email: '#loginByEmail input[name="email"]',
+    password: '#loginByEmail input[name="password"]',
     register: '#loginByEmail > div:nth-child(3) > button',
     next: 'div.nav-buttons.clearfix > button.pull-right:not([disabled])',
     linkToWebsite: '#pubsignup > div > div.WizardStage > div.form-group > input',
