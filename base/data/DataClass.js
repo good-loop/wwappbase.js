@@ -27,6 +27,19 @@ export default MyType;
 
  */
 
+
+class DataClass {
+	// static get _type() {
+	// 	return 'DataClass';
+	// }
+	
+	constructor(base) {
+		Object.assign(this, base);
+		// console.warn('type', this, ""+this, typeof(this));
+		this['@type'] = this.name; //DataClass._type;
+	}
+}
+
 /**
  * check the type!
  * @param typ {!String}
@@ -46,6 +59,7 @@ const isa2 = (otyp, typ) => {
 	}
 	return false;
 };
+DataClass.isa = item => isa(item, getDataClass(this.name));
 
 /**
  * Uses schema.org or gson class to get the type.
@@ -85,6 +99,7 @@ const getId = (item) => {
 	}
 	return id;
 };
+DataClass.getId = getId;
 
 /**
  * @returns DRAFT / PUBLISHED
@@ -97,7 +112,7 @@ const getStatus = (item) => {
 	assert(C.KStatus.has(s), "DataClass.js getStatus", item);
 	return s;
 };
-
+DataClass.getStatus = getStatus;
 
 /**
  * access functions for source, help, notes??
@@ -187,18 +202,6 @@ const defineType = (type, ...parentTypes) => {
 	return This;
 };
 
-
-class DataClass {
-	static get _type() {
-		return 'DataClass';
-	}
-	
-	constructor(base) {
-		Object.assign(this, base);
-		console.warn('type', this, ""+this, typeof(this));
-		this['@type'] = DataClass._type;
-	}
-}
 
 /**
  * @param typeOrItem {String|Object} If object, getType() is used
