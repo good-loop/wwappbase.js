@@ -362,7 +362,8 @@ _.debounce(
  * @param saveAs {?Boolean} If set, offer a save-as button which will copy, tweak the ID and the name, then save.
  */
 Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete, 
-	publishTooltipText='Your account cannot publish this.', autoPublish, autoSave = true, saveAs}) => 
+	publishTooltipText='Your account cannot publish this.', autoPublish, autoSave = true, 
+	saveAs, unpublish}) => 
 {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
@@ -400,6 +401,12 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete,
 	let draftv = DataStore.getData(C.KStatus.DRAFT, type, id);
 	let dsi = pubv? (draftv? (pubv===draftv? "published = draft" : "published & draft") : "published only") 
 					: (draftv? "draft only" : "nothing loaded");
+	// Does a published version exist? (for if we show unpublish)
+	// NB: item.status = MODIFIED should be reliable but lets not entirely count on it.
+	let pubExists = pubv || (item && item.status !== C.KStatus.DRAFT);
+
+	// merge discard / unpublish / delete into one button with a dropdown of options??
+	// merge save / saveAs into one button with a dropdown of options?
 
 	return (<div className='SavePublishDiscard' title={item && item.status}>
 		<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
@@ -416,9 +423,16 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete,
 			Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
 		&nbsp;
-		<button className='btn btn-warning' disabled={isSaving || noEdits} onClick={() => ActionMan.discardEdits(type, id)}>
+		<button className='btn btn-warning' disabled={isSaving || noEdits} 
+			onClick={() => ActionMan.discardEdits(type, id)}>
 			Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 		</button>
+		{unpublish && pubExists? <span>&nbsp;</span> : null}
+		{unpublish && pubExists? <button className='btn btn-warning' disabled={isSaving || noEdits} 
+				title='Move from published to draft'
+				onClick={() => ActionMan.unpublish({type, id})} >
+				Un-Publish <span className="glyphicon glyphicon-cd spinning" style={vis} />
+			</button> : null}
 		&nbsp;
 		<button className='btn btn-danger' disabled={disableDelete} onClick={() => ActionMan.delete(type, id)} >
 			Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />

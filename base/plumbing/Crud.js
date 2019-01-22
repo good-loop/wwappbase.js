@@ -59,10 +59,15 @@ ActionMan.crud = (type, id, action, item) => {
 				let draftItem = _.cloneDeep(pubItem);
 				DataStore.setValue(draftpath, draftItem);
 			}
+			if (action==='unpublish') {
+				// remove from DataStore
+				const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
+				DataStore.setValue(pubpath, null);
+			}
 			// success :)
 			const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
 			if (action==='delete') {
-				DataStore.setUrlValue(navtype, null);
+				DataStore.setUrlValue(navtype, null);				
 			} else if (id===C.newId) {
 				// id change!
 				// updateFromServer should have stored the new item
@@ -132,6 +137,20 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 	// save server
 	let p = ActionMan.crud(type, newId, 'save', newItem);
 	return p;
+};
+
+ActionMan.unpublish = ({type, id}) => {	
+	assMatch(type, String);
+	assMatch(id, String, "Crud.js no id to unpublish "+type);	
+	// TODO optimistic list mod
+	// preCrudListMod({type, id, action:'unpublish'});
+	// call the server
+	return ActionMan.crud(type, id, 'unpublish')
+		.catch(err => {
+			// invalidate any cached list of this type
+			DataStore.invalidateList(type);
+			return err;
+		}); // ./then	
 };
 
 
