@@ -7,8 +7,8 @@ import MyLoopSelectors from './SelectorsMyLoop';
 // Selectors that are used across all platfroms are written directly in SelectorsMaster
 const CommonSelectors = {
     'log-in': '#top-right-menu > li > a',
-    'log-in-email': `#loginByEmail > div:nth-child(1) > input`,
-    'log-in-password': `#loginByEmail > div:nth-child(2) > input`,
+    'log-in-email': '#loginByEmail input[name="email"]',
+    'log-in-password': '#loginByEmail input[name="password"]',
     Save: `div.SavePublishDiscard > button.btn.btn-default`,
     Publish: `div.SavePublishDiscard > button.btn.btn-primary`,
     Discard: `div.SavePublishDiscard > button.btn.btn-warning`,

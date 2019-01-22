@@ -1,6 +1,6 @@
 const fs = require('fs');
 const $ = require('jquery');
-const {CommonSelectors} = require('../utils/SelectorsMaster');
+const {CommonSelectors, AdServerSelectors} = require('../utils/SelectorsMaster');
 
 /**Used to disable all page animations
  * Found that these were making tests less reliable
@@ -30,20 +30,6 @@ const disableAnimations = {
 // set when calling Jest CLI with --testURL $url
 const APIBASE = window.location;
 
-/**Might actually be a good idea to add CSS selectors for certain elements in here
- * Many parts of page are generated from common source: will be identified by common CSS selector
- * Could end up being more flexible having these defined in here, so that changes in source code
- * are easy to mirror in test setup. Would have to go spelunking through a raft of files otherwise.
- */
-
-/**Currently want to take screenshot and take a note of any errors */
-//Any circumstance under which call to process.arg[1] would return something bad?
-//Probably will discontinue use of this function. Lot of functionality needed on success as well as failure.
-async function onFail({error, page}) {
-    console.log(`Utility functions onFail is deprecated. So is test-manager for that matter.`);
-    //await takeScreenshot(page);
-}
-
 async function takeScreenshot({page, path, date = new Date().toISOString()}) {
     try {
         await page.screenshot({path: `${path}/${date}.png`});
@@ -59,11 +45,6 @@ async function takeScreenshot({page, path, date = new Date().toISOString()}) {
             console.log('setup_script.js -- screenshot failed ' + e.code + ': ' + e.message);
         }
     }
-}
-
-/**Deprecated. Use page.waitFor(ms) instead*/
-function timeout(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 /**Login to app. Should work for both SoGive and Good-loop 
@@ -201,7 +182,6 @@ async function fillInForm({page, Selectors, data}) {
 async function IdByName({fundName, eventOrFundOrVertiserOrVert}) {
     // Make sure that we're comparing strings
     fundName = fundName + '';
-
     const r = await $.ajax({
         url: `${APIBASE}${eventOrFundOrVertiserOrVert}/_list.json`,
         withCredentials: true,
@@ -239,6 +219,46 @@ async function soGiveFailIfPointingAtProduction({page}) {
     if( endpoint.match(/\/\/app.sogive.org/) || window.location.href.match(/\/\/app.sogive.org/) ) throw new Error("Test service is pointing at production server! Aborting test.");
 };
 
+// Goes to the given URL (which must contain a Good-loop ad), watches the video, and makes a donation 
+/**
+ * 
+ * @param { object } page puppeteer test object
+ * @param { string } type behaviour needs to be slightly different for type:banner ads
+ * @param { string } url location where good-loop adunit is hosted
+ */
+async function watchAdvertAndDonate({page, type, url}) {
+    await page.goto(url);
+    await page.waitFor(1000);//Allow 'visible' event to register. Doesn't get counted if you start working right away
+    let pageOrIFrame = page; // If unit is wrapped in iframe, need to use iframe.ACTION instead of page.ACTION
+
+    // Adunit may have been loaded in to an iframe.
+    // Puppeteer will not cycle through frames to look for a given selector, so need to tell it where to look
+    const iframe = await page.frames().find(f => f.name().slice(0, 2) === 'gl' || f.name() === 'test01');
+    
+    if ( iframe ) {
+        pageOrIFrame = iframe;
+    }
+
+    // Banner-types
+    // Ad on Vpaid page should just autoplay
+    if( type === 'banner' ) {
+        await pageOrIFrame.waitForSelector(AdServerSelectors.TestAs.Banner);
+        await pageOrIFrame.click(AdServerSelectors.TestAs.Banner);            
+    }
+    try{
+        // Click-to-play video
+        await pageOrIFrame.waitForSelector(AdServerSelectors.TestAs.ClickToPlay, { timeout: 3000 });
+        await pageOrIFrame.click(AdServerSelectors.TestAs.ClickToPlay);
+    } catch (e) { 
+        console.log("Non click-to-play video. Continuing...");
+    }
+    // Pick a charity
+    await pageOrIFrame.waitForSelector(AdServerSelectors.TestAs.FirstCharityIcon);
+    await pageOrIFrame.click(AdServerSelectors.TestAs.FirstCharityIcon);
+
+    await page.waitFor(5000);//Generally needs a second to register that donation has been made
+}
+
 module.exports = {
     APIBASE,
     disableAnimations,
@@ -247,10 +267,9 @@ module.exports = {
     fundIdByName,
     isPointingAtProduction,
     login,
-    onFail, 
     soGiveFailIfPointingAtProduction,
     takeScreenshot,
-    timeout,
     vertIdByName,
-    vertiserIdByName
+    vertiserIdByName,
+    watchAdvertAndDonate
 };

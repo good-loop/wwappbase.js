@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.13.8'
+VERSION='Version=1.14.0'
 
 ###
+# New in 1.14.0: LESS conversion now happening for preact adunits.
 # New in 1.13.8: I feel the need for speed: Option to compile less less. Option to not run puppeteer tests.
 # New in 1.13.7: Trying to preserve log.properties on adservers
 # New in 1.13.6: Solving needs for Preact
@@ -168,7 +169,9 @@ case $1 in
         TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
         IMAGE_OPTIMISE='yes'
         IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert"
-		CONVERT_LESS='no'
+		CONVERT_LESS='yes'
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/adunit/style/"
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-as/"
         WEBPACK='no'
 		TEST_JAVASCRIPT='yes'
 		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/"
@@ -937,6 +940,7 @@ function run_post_publish_tasks {
 						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Preact Unit\n"
 						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
+						$PSSH "mv $TARGET_DIRECTORY/web-as/base.css $TARGET_DIRECTORY/web-as/unit.css"
 					;;
 					test)
 						printf "\n\tSubtask : preparing preact\n"
@@ -944,6 +948,7 @@ function run_post_publish_tasks {
 						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Preact Unit\n"
 						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
+						$PSSH "mv $TARGET_DIRECTORY/web-as/base.css $TARGET_DIRECTORY/web-as/unit.css"
 					;;
 				esac
 			;;
