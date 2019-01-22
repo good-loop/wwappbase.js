@@ -90,6 +90,7 @@ Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, createText="Cre
 	return (<div>
 		{list.map( (tt, i) => 
 			<BS.Well key={'tt'+i}>
+				{list[i] && list[i].name? <h4>{i}. {list[i].name}</h4> : null}
 				<button onClick={e => remove(i)} className='btn btn-danger btn-xs pull-right'><Misc.Icon glyph='trash'/></button>
 				<ItemEditor i={i} item={tt} path={path.concat(i)} {...stuff} />				
 			</BS.Well>)}

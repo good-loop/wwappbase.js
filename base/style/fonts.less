@@ -1,19 +1,47 @@
 // Good-Loop Fonts
+// NB: adunit duplicates this in mixins.less
+
+
 @font-face {
 	font-family: "Bebas Neue";
+	// subset = upper-case ascii only??
 	src: url('/fonts/bebasneue-subset.woff') format('woff');
+	font-weight: normal;
+	font-style: normal;
+/*
+	Font subsetting info:
+	I've been using FontSquirrel's tool.
+	https://www.fontsquirrel.com/tools/webfont-generator
+	Custom Subsetting -->
+	Character types: Lowercase, Uppercase, Numbers (No lower-case for Bebas Neue)
+	Single Characters: £$©®™!?"'()*+/-=_,.…:;#%&@
+	And that's all!
+*/
+}
+
+@font-face {
+	font-family: "Montserrat Regular";
+	// what subset??
+	src: url('/fonts/montserrat-regular-subset.woff') format('woff');
 	font-weight: normal;
 	font-style: normal;
 }
 
-h1,h2,.h1,.h2 {
+.header-font {
 	font-family: "Bebas Neue", bebas, helvetica, sans-serif;
+	text-transform: uppercase;
+} 
+.body-font {
+	font-family: "Montserrat Regular", helvetica, sans-serif;
+}
+
+body {
+	.body-font();
+}
+
+h1,h2,.h1,.h2 {
+	.header-font();	
 }
 /* NB ,h3,h4,h5 look too cramped in Bebas */
 
-/* ??
-h1 
-body {
-	font-family: "open sans", helvetica, sans-serif;
-}
-*/
+// ??
