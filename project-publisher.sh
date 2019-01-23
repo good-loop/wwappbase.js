@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.14.0'
+VERSION='Version=1.15.0'
 
 ###
+# New in 1.15.0: Added ability to specify publishing of the frontend/backend/everything
 # New in 1.14.0: LESS conversion now happening for preact adunits.
 # New in 1.13.8: I feel the need for speed: Option to compile less less. Option to not run puppeteer tests.
 # New in 1.13.7: Trying to preserve log.properties on adservers
@@ -95,8 +96,10 @@ VERSION='Version=1.14.0'
 # 	UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
 # 	RESTART_SERVICE_AFTER_SYNC='yes'
 # 	SERVICE_NAME='adservermain'
-# 	PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-as" "web-test" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
-# 	# Use "lib" instead of "tmp-lib" for syncing your JAR files
+#	FRONTEND_SYNC_LIST=("adunit" "config" "server" "src" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+#	BACKEND_SYNC_LIST=("lib")
+#	# Use "lib" instead of "tmp-lib" for syncing your JAR files
+# 	WHOLE_SYNC=($FRONTEND_SYNC_LIST $BACKEND_SYNC_LIST)
 # 	PRESERVE=("web-as/uploads")
 # 	POST_PUBLISHING_TASK='no' # If this is set to 'yes', then you must ammend section 16 in order to specify how to handle the tasks
 # 	AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
@@ -142,7 +145,7 @@ fi
 #################
 SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','myloop','portal','profiler','sogive','youagain')
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION (option: --unsafe)\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
-SYNC_LIST=()
+#SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
 PSSH='parallel-ssh -t 100000000 -h /tmp/target.list.txt --user=winterwell'
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
@@ -180,7 +183,9 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
-		PLEASE_SYNC=("adunit" "config" "server" "src" "lib" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("adunit" "server" "src" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+		BACKEND_SYNC_LIST=("lib")
+		WHOLE_SYNC=("adunit" "server" "src" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "lib")
 		PRESERVE=("config/log.properties")
 		POST_PUBLISHING_TASK='yes'
 	;;
@@ -199,7 +204,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('calstat')
-		PLEASE_SYNC=("config" "lib" "src" "web" "ical-count.js" "package.json" "webpack.config.js")
+		FRONTEND_SYNC_LIST=("config" "src" "web" "ical-count.js" "package.json" "webpack.config.js")
+		BACKEND_SYNC_LIST=("lib")
+		WHOLE_SYNC=("config" "src" "web" "ical-count.js" "package.json" "webpack.config.js" "lib")
 	;;
 	egbot|EGBOT)
 		PROJECT='egbot'
@@ -219,7 +226,9 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('egbot')
-		PLEASE_SYNC=("config" "data" "data-collection" "doc" "lib" "src" "test" "web" "input.txt" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("config" "doc" "src" "test" "web" "package.json" "webpack.config.js" ".babelrc")
+		BACKEND_SYNC_LIST=("data" "data-collection" "lib" "input.txt")
+		WHOLE_SYNC=("config" "doc" "src" "test" "web" "package.json" "webpack.config.js" ".babelrc" "data" "data-collection" "lib" "input.txt")
 		# Use "lib" instead of "tmp-lib" for syncing your JAR files
 		#PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
@@ -238,7 +247,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('lg')
-		PLEASE_SYNC=("config" "src" "src-js" "lib" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "winterwell.datalog.jar")
+		FRONTEND_SYNC_LIST=("config" "src" "src-js" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js")
+		BACKEND_SYNC_LIST=("lib" "winterwell.datalog.jar")
+		WHOLE_SYNC=("config" "src" "src-js" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "lib" "winterwell.datalog.jar")
 		;;
 	my-loop|MY-LOOP|myloop|MYLOOP)
 		PROJECT='myloop'
@@ -259,7 +270,8 @@ case $1 in
 		UNITS_LOCATION=""
 		RESTART_SERVICE_AFTER_SYNC='no'
 		SERVICE_NAME=('')
-		PLEASE_SYNC=("config" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("config" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		WHOLE_SYNC=("config" "src" "web" "package.json" "webpack.config.js" ".babelrc")
 		AUTOMATED_TESTING='no'
 	;;
 	portal|PORTAL)
@@ -278,7 +290,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('portalmain')
-		PLEASE_SYNC=("adunit" "config" "server" "web" "web-portal" "src" "lib" "web-portal" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("adunit" "config" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" ".babelrc")
+		BACKEND_SYNC_LIST=("lib")
+		WHOLE_SYNC=("adunit" "config" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" ".babelrc" "lib")
 		PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='yes'
 		POST_PUBLISHING_TASK='yes'
@@ -296,7 +310,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('profilermain')
-		PLEASE_SYNC=("config" "formunit" "lib" "src" "web" "package.json" "webpack.config.js")
+		FRONTEND_SYNC_LIST=("config" "formunit" "src" "web" "package.json" "webpack.config.js")
+		BACKEND_SYNC_LIST=("lib")
+		WHOLE_SYNC=("config" "formunit" "src" "web" "package.json" "webpack.config.js" "lib")
 	;;
 	sogive|SOGIVE|sogive-app|SOGIVE-APP)
 		PROJECT='sogive-app'
@@ -314,7 +330,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('sogiveapp')
-		PLEASE_SYNC=("config" "data" "server" "src" "lib" "web" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("config" "server" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		BACKEND_SYNC_LIST=("data" "lib")
+		WHOLE_SYNC=("config" "server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
 	;;
@@ -332,7 +350,9 @@ case $1 in
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('youagain')
 		PRESERVE=("config/youagain.RSAKeyPair.xml")
-		PLEASE_SYNC=("config" "lib" "web" "src" "package.json" "webpack.config.js")
+		FRONTEND_SYNC_LIST=("config" "web" "src" "package.json" "webpack.config.js")
+		BACKEND_SYNC_LIST=("lib")
+		WHOLE_SYNC=("config" "web" "src" "package.json" "webpack.config.js" "lib")
 	;;
 	help|HELP)
 		printf "\n$VERSION\n\n$USAGE\n"
@@ -390,7 +410,6 @@ case $2 in
 	;;
 esac
 
-
 ######################
 ### Section 2.5: Insane Subsection in which $PROJECT_LOCATION can get re-mapped if this script is run by the teamcity server
 ######################
@@ -404,9 +423,43 @@ case $(printf $HOSTNAME) in
 	;;
 esac
 
+#####################
+### Section 03: Allow for Frontend/Backend/Whole Publishing only
+#####################
+case $3 in
+	frontend|FRONTEND)
+		SPECIFIC_PUBLISH_GOAL='frontend'
+		LIMITED_PUBLISH='yes'
+		SYNC_LIST=${FRONTEND_SYNC_LIST[@]}
+	;;
+	backend|BACKEND)
+		SPECIFIC_PUBLISH_GOAL='backend'
+		LIMITED_PUBLISH='yes'
+		SYNC_LIST=${BACKEND_SYNC_LIST[]}
+	;;
+	everything|EVERYTHING)
+		SPECIFIC_PUBLISH_GOAL='everything'
+		LIMITED_PUBLISH='no'
+		SYNC_LIST=${WHOLE_SYNC[@]}
+	;;
+esac
+
 
 #####################
-### Section 03: Create the list of target servers, and create the list of excluded items that should be preserved
+### Section 04: Allow skipping of automated testing
+#####################
+case $4 in
+	notests|NOTESTS)
+		SKIP_TESTS='yes'
+	;;
+	*)
+		printf "\nYour fourth argument either needs to be 'notests' or nothing at all.\n"
+		exit 0
+	;;
+esac
+
+#####################
+### Section 04: Create the list of target servers, and create the list of excluded items that should be preserved
 #####################
 function create_target_list {
 	if [[ -f /tmp/target.list.txt ]]; then
@@ -422,7 +475,7 @@ function create_target_list {
 
 
 #####################
-### Section 04: Define the Image Optimisation Function
+### Section 05: Define the Image Optimisation Function
 #####################
 function image_optimisation {
 	# Check to see if this function is needed
@@ -541,6 +594,7 @@ function image_optimisation {
 			done
 			mapfile -t PNGARRAY < $IMAGEDIRECTORY/newpngarray.txt
 			# ??please doc this powerful magic - awk print 3?? (NB: nice use of diff) ^DW Dec 2018
+			# Sure.
 			UNIQUEPNGS=$(diff $IMAGEDIRECTORY/pngarray.txt $IMAGEDIRECTORY/newpngarray.txt | grep ">" | awk '{print $3}')
 			if [[ ${UNIQUEPNGS[*]} = '' ]]; then
 				printf "\nNo new PNG files to optimise\n"
@@ -609,7 +663,7 @@ function image_optimisation {
 
 
 ##################################
-### Section 05: Define the Webpack Function
+### Section 06: Define the Webpack Function
 ##################################
 function webpack {
 	if [[ $WEBPACK = yes ]]; then
@@ -622,7 +676,7 @@ function webpack {
 
 
 ##################################
-### Section 06: Define the Functions that can start and stop a process on the server
+### Section 07: Define the Functions that can start and stop a process on the server
 ##################################
 function stop_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
@@ -644,7 +698,7 @@ function start_proc {
 
 
 ##################################
-### Section 07: Defining the 'Convert Less Files' function
+### Section 08: Defining the 'Convert Less Files' function
 ##################################
 function convert_less_files {
 	if [[ $CONVERT_LESS = 'yes' ]]; then
@@ -671,9 +725,10 @@ function convert_less_files {
 
 
 ###################################
-### Section 08: Defining the Jar Syncing Function
+### Section 09: Defining the Jar Syncing Function
 ###################################
 # @DA - Why do we move jars from lib to tmp-lib, nuking each in turn?? Thanks, ^DW Dec 2018
+# @DW - This script does not, nor has it ever, moved anything from lib to tmp-lib.  ^DA Jan 2019
 function move_items_to_lib {
 	if [ -d $PROJECT_LOCATION/lib ]; then
 		rm -rf $PROJECT_LOCATION/lib/*		
@@ -685,7 +740,7 @@ function move_items_to_lib {
 
 
 #########################################
-### Section 09: Sync the Config Files
+### Section 10: Sync the Config Files
 #########################################
 function sync_configs {
 	GIT_SHORTHAND="git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins"
@@ -731,7 +786,7 @@ function sync_configs {
 
 
 ##########################################
-### Section 10: test the JS files for syntax errors
+### Section 11: test the JS files for syntax errors
 ##########################################
 function test_js {
 	if [[ $TEST_JAVASCRIPT = 'yes' ]]; then
@@ -760,21 +815,21 @@ function test_js {
 
 
 #########################################
-### Section 11: Compile the Variants
+### Section 12: Compile the Variants
 #########################################
 # No longer a thing - since adunit shifted to preact, webpack + one invocation of lessc does everything
 #function compile_variants {}
 
 
 ##########################################
-### Section 12: Defining the Sync
+### Section 13: Defining the Sync
 ##########################################
-function sync_whole_project {
-	for item in ${PLEASE_SYNC[@]}; do
+function sync_project {
+	for item in ${SYNC_LIST[@]}; do
 		if [[ $item = 'lib' ]]; then
 			move_items_to_lib
 			printf "\nSyncing JAR Files ...\n"
-			cd $PROJECT_LOCATION && $PSYNC lib $TARGET_DIRECTORY
+			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
 		else
 			printf "\nSyncing $item ...\n"
 			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
@@ -784,10 +839,12 @@ function sync_whole_project {
 
 
 ##########################################
-### Section 13: Automated Testing
+### Section 14: Automated Testing
 ##########################################
 function run_automated_tests {
-	if [[ $AUTOMATED_TESTING = 'yes' ]]; then
+	if [[ $SKIP_TESTS = 'yes' ]]; then
+		exit 1
+	elif [[ $AUTOMATED_TESTING = 'yes' ]]; then
 		printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
 		case $PROJECT in
 			sogive-app)
@@ -804,15 +861,18 @@ function run_automated_tests {
 
 
 ##########################################
-### Section 14: Cleaning the tmp-lib directory for safety (future publishes are safer if all JARs are new and fresh)
+### Section 15: Cleaning the tmp-lib directory for safety (future publishes are safer if all JARs are new and fresh)
 ##########################################
 function clean_tmp_lib {
-	rm -rf $PROJECT_LOCATION/tmp-lib/*
+	if [[ -d $PROJECT_LOCATION/tmp-lib ]]; then
+		printf "\nCleaning tmp-lib directory\n"
+		rm -rf $PROJECT_LOCATION/tmp-lib/*
+	fi
 }
 
 
 ###########################################
-### Section 15: Defining the process used in order to preserve files/directories before a destructive sync
+### Section 16: Defining the process used in order to preserve files/directories before a destructive sync
 ###########################################
 function preserve_items {
 	for item in ${PRESERVE[@]}; do
@@ -831,7 +891,7 @@ function restore_preserved {
 
 
 ###########################################
-### Section 16: Defining a function in-which post-publishing-tasks can be run
+### Section 17: Defining a function in-which post-publishing-tasks can be run
 ###########################################
 
 function run_post_publish_tasks {
@@ -854,12 +914,19 @@ function run_post_publish_tasks {
 				esac
 			;;
 			adserver)
-				printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
-				$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
-				printf "\n\tWebpacking the Ad Unit\n"
-				$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
-				printf "\n\tConverting LESS for the Ad Unit\n"
-				$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
+				case $SPECIFIC_PUBLISH_GOAL in
+					frontend)
+						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
+						printf "\n\tWebpacking the Ad Unit\n"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
+						printf "\n\tConverting LESS for the Ad Unit\n"
+						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
+					;;
+					*)
+						printf "\n"
+					;;
+				esac
 			;;
 		esac
 	fi
@@ -867,7 +934,7 @@ function run_post_publish_tasks {
 
 
 ##########################################
-### Section 17: Defining the Function for minifying CSS
+### Section 18: Defining the Function for minifying CSS
 ##########################################
 function minify_css {
 	for css in $(find $CSS_OUTPUT_LOCATION -type f -iname "*.css"); do
@@ -876,33 +943,45 @@ function minify_css {
 	done
 }
 
-
 ##########################################
-### Section 17: Performing the Actual Publish
+### Section 19: Performing the Actual Publish
 ##########################################
 printf "\nCreating Target List\n"
 create_target_list
 stop_proc
-image_optimisation
-convert_less_files
-minify_css
-test_js
-#compile_variants
 preserve_items
-printf "\nSyncing $PROJECT to $TARGETS\n"
-sync_whole_project
+case $SPECIFIC_PUBLISH_GOAL in
+	everything)
+		image_optimisation
+		convert_less_files
+		minify_css
+		test_js
+		#compile_variants
+		printf "\nSyncing $PROJECT to $TARGETS\n"
+		printf "\nSyncing Configs\n"
+		sync_configs
+		webpack
+		sync_project
+	;;
+	frontend)
+		image_optimisation
+		convert_less_files
+		minify_css
+		test_js
+		#compile_variants
+		printf "\nSyncing $PROJECT to $TARGETS\n"
+		printf "\nSyncing Configs\n"
+		sync_configs
+		webpack
+		sync_project
+	;;
+	backend)
+		sync_project
+	;;
+esac
 restore_preserved
-printf "\nSyncing Configs\n"
-sync_configs
-webpack
 start_proc
 printf "\nPublishing Process has completed\n"
 run_post_publish_tasks
-printf "\nCleaning tmp-lib directory\n"
 clean_tmp_lib
-# notests requested from the command line?
-if [[ "$3" = "--notests" ]]; then
-	printf "\nSKIPPING Automated Tests for $PROJECTNAME on the $2 site"		
-else
-	run_automated_tests
-fi
+run_automated_tests
