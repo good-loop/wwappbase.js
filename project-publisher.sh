@@ -763,7 +763,7 @@ function test_js {
 ### Section 11: Compile the Variants
 #########################################
 # No longer a thing - since adunit shifted to preact, webpack + one invocation of lessc does everything
-function compile_variants {}
+#function compile_variants {}
 
 
 ##########################################
@@ -887,7 +887,7 @@ image_optimisation
 convert_less_files
 minify_css
 test_js
-compile_variants
+#compile_variants
 preserve_items
 printf "\nSyncing $PROJECT to $TARGETS\n"
 sync_whole_project
