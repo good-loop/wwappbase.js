@@ -623,7 +623,8 @@ function webpack {
 		printf "\nGetting Preact-Unit NPM Dependencies ..."
 		$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 		printf "\nWebpacking Preact-Unit ..."		
-		$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --config ./webpack.config.js --progress -p"
+		# no -p when invoking webpack on adunit: adunit/webpack.config.js emits production & debug builds automatically
+		$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --config ./webpack.config.js --progress"
 	fi
 }
 
