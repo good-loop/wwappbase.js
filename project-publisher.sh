@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.15.0'
+VERSION='Version=1.15.1'
 
 ###
+# New in 1.15.1: Fixed a loop-break if a fourth argument is not given. Fixed a post-publishing task for adserver publishes
 # New in 1.15.0: Added ability to specify publishing of the frontend/backend/everything
 # New in 1.14.0: LESS conversion now happening for preact adunits.
 # New in 1.13.8: I feel the need for speed: Option to compile less less. Option to not run puppeteer tests.
@@ -144,7 +145,7 @@ fi
 ### Preamble: Define Arrays and Variables
 #################
 SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','myloop','portal','profiler','sogive','youagain')
-USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION frontend|backend|everything ?notests (option: --unsafe)\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
+USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION frontend|backend|everything ?notests\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 #SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
 PSSH='parallel-ssh -t 100000000 -h /tmp/target.list.txt --user=winterwell'
@@ -919,7 +920,7 @@ function run_post_publish_tasks {
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
 						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
 						printf "\n\tConverting LESS for the Ad Unit\n"
 						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
