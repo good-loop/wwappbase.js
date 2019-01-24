@@ -144,7 +144,7 @@ fi
 ### Preamble: Define Arrays and Variables
 #################
 SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','myloop','portal','profiler','sogive','youagain')
-USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION (option: --unsafe)\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
+USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION frontend|backend|everything ?notests (option: --unsafe)\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 #SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
 PSSH='parallel-ssh -t 100000000 -h /tmp/target.list.txt --user=winterwell'
