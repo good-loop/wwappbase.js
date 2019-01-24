@@ -207,7 +207,9 @@ Misc.Icon = ({glyph, fa, size, className, ...other}) => {
  */
 Misc.Thumbnail = ({item}) => {
 	if ( ! item) return null;
-	let img = item.logo || item.img;
+	// Newer ads store logo under item.branding.logo
+	// Kept old syntax in as back-up so that the #advert page will still show icons for old ads
+	let img = ( item.branding && item.branding.logo ) || item.logo || item.img;
 	return img? <img src={img} className='logo img-thumbnail pull-left' /> : null;
 };
 
