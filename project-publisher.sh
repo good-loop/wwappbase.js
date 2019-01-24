@@ -454,7 +454,7 @@ case $4 in
 	;;
 	*)
 		printf "\nYour fourth argument either needs to be 'notests' or nothing at all.\n"
-		exit 0
+		# exit 0
 	;;
 esac
 
