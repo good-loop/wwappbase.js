@@ -15,7 +15,7 @@ export default Person;
  * Who is this person linked to?
  * @return {String[]} never null (empty list if unset)
  */
-Person.linkedIds = peep => peep.links? peep.links.map(link => link.to) : [];
+Person.linkedIds = peep => peep.links? peep.links.map(Link.to) : [];
 
 Person.getTwitterXId = () => getSocialXId('twitter')
 Person.getFacebookXId = () => getSocialXId('facebook');
