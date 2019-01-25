@@ -2,6 +2,10 @@
 import {assert, assMatch} from 'sjtest';
 import {isa, defineType, getType} from './DataClass';
 import DataStore from '../plumbing/DataStore';
+import { getClaimsForXId } from '../Profiler';
+import Link from '../data/Link';
+import Claim from '../data/Claim';
+import {XId} from 'wwutils';
 
 const Person = defineType('Person');
 const This = Person;
@@ -34,10 +38,19 @@ const getSocialXId = (service) => {
  */
 Person.getLink = (peep, service) => {
 	Person.assIsa(peep);
-	// is the XId an email XId?
+	assMatch(service, String);
+	// is the XId a match?
 	const xid = Person.getId(peep);
-	if (XId.service(xid) === 'email')
-
-	// Test claims too? No - lets enforce clean data for ourselves
+	if (XId.service(xid) === service) {
+		return Link.make({key:"link", value:xid, from:[xid], consent:['public'], w:1});
+	}
+	// links
+	if ( ! peep.links) return null;	
+	// NB: Test claims too? No - lets enforce clean data for ourselves
+	let matchedLinks = peep.links.filter(link => XId.service(link.v) === service);
+	if (matchedLinks.length) {
+		// FIXME sort them by w
+		return matchedLinks[0];
+	}
 	return null;
 };
