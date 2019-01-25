@@ -37,6 +37,20 @@ const getSocialXId = (service) => {
  * @returns {?Link} The (TODO most likely) email link
  */
 Person.getLink = (peep, service) => {
+	const links = Person.getLinks(peep, service);
+	if ( ! links) return null;
+	// FIXME sort them by w
+	return links[0];
+}
+
+
+/**
+ * 
+ * @param {Person} peep 
+ * @param {String} service
+ * @returns {?Link[]} all matching links, or null if none
+ */
+Person.getLinks = (peep, service) => {
 	Person.assIsa(peep);
 	assMatch(service, String);
 	// is the XId a match?
@@ -47,10 +61,6 @@ Person.getLink = (peep, service) => {
 	// links
 	if ( ! peep.links) return null;	
 	// NB: Test claims too? No - lets enforce clean data for ourselves
-	let matchedLinks = peep.links.filter(link => XId.service(link.v) === service);
-	if (matchedLinks.length) {
-		// FIXME sort them by w
-		return matchedLinks[0];
-	}
-	return null;
+	let matchedLinks = peep.links.filter(link => XId.service(link.v) === service);	
+	return matchedLinks.length !== 0? matchedLinks : null;
 };
