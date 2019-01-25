@@ -240,6 +240,5 @@ export {
 	setConsents,
 	requestAnalyzeData,
 	saveSocialShareId,
-	getEmailClaim,
 };
 export default Profiler;

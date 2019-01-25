@@ -54,7 +54,7 @@ Person.getLinks = (peep, service) => {
 	Person.assIsa(peep);
 	assMatch(service, String);
 	// is the XId a match?
-	const xid = Person.getId(peep);
+	const xid = Person.id(peep);
 	if (XId.service(xid) === service) {
 		return Link.make({key:"link", value:xid, from:[xid], consent:['public'], w:1});
 	}
