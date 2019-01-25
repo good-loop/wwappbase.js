@@ -291,9 +291,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('portalmain')
-		FRONTEND_SYNC_LIST=("adunit" "config" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("adunit" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" ".babelrc")
 		BACKEND_SYNC_LIST=("lib")
-		WHOLE_SYNC=("adunit" "config" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" ".babelrc" "lib")
+		WHOLE_SYNC=("adunit" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" ".babelrc" "lib")
 		PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='yes'
 		POST_PUBLISHING_TASK='yes'
