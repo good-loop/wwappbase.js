@@ -15,11 +15,11 @@ import {endsWith} from 'wwutils';
  * 
  * Standard use
 
-import {isa, defineType, getType} from './DataClass';
+import DataClass, {getType} from './DataClass';
 import C from './C';
-const MyType = defineType(C.TYPES.MyType);
+class MyType extends DataClass {};
 // or
-const MyType = defineType(C.TYPES.MyType, ParentType);
+class MyType extends ParentType {}
 const This = MyType;
 export default MyType;
 
@@ -34,23 +34,26 @@ class DataClass {
 	// }
 	
 	constructor(base) {
-		Object.assign(this, base);
-		// console.warn('type', this, ""+this, typeof(this));
+		Object.assign(this, base);		
 		this['@type'] = this.name; //DataClass._type;
+		console.warn('type', this, this.name, ""+this, typeof(this));
 	}
-}
+} // ./DataClass
 
 /**
  * check the type!
  * @param typ {!String}
  */
-const isa = function(obj, typ) {
+DataClass.isa = obj => {
 	if (!_.isObject(obj) || obj.length) return false;
+	console.warn(this, this.name);
+	let typ = this;
 	const otyp = getType(obj);
 	if ( ! otyp) return false;
 	return isa2(otyp, typ);
 };
 const isa2 = (otyp, typ) => {
+	console.warn(typ.prototype, typ.__proto__, otyp.prototype, otyp.__proto)
 	if (otyp === typ) return true;
 	// sub-type?
 	if ( ! otyp.parentTypes) return false;
@@ -59,7 +62,6 @@ const isa2 = (otyp, typ) => {
 	}
 	return false;
 };
-DataClass.isa = item => isa(item, getDataClass(this.name));
 
 /**
  * Uses schema.org or gson class to get the type.
@@ -99,7 +101,7 @@ const getId = (item) => {
 	}
 	return id;
 };
-DataClass.getId = getId;
+DataClass.id = getId;
 
 /**
  * @returns DRAFT / PUBLISHED
@@ -112,7 +114,7 @@ const getStatus = (item) => {
 	assert(C.KStatus.has(s), "DataClass.js getStatus", item);
 	return s;
 };
-DataClass.getStatus = getStatus;
+DataClass.status = getStatus;
 
 /**
  * access functions for source, help, notes??
@@ -154,54 +156,10 @@ const nonce = (n=10) => {
 	return s.join("");
 };
 
-/**
- * Setup the "standard" DataClass functions:
- * isa()
- * assIsa()
- * id()
- * name()
- * make()
- * And a type.
- * @param {!String} type 
- * @param {?DataClass[]} parentTypes parents if creating a subtypes. 
- */
-const defineType = (type, ...parentTypes) => {
-	assMatch(type, String);
-	// copy methods from the parents
-	const This = Object.assign({}, ...parentTypes);
-	This.type = type;
-	This['@type'] = 'DataClass';
-	// ?? flatten any recursion for efficiency (then stifle recursion in make and isa)
-	This.parentTypes = parentTypes.length? parentTypes : null;	
-	This.isa = (obj) => isa(obj, type);
-	This.assIsa = (obj, msg) => assert(This.isa(obj), (msg||'')+" "+type+" expected, but got "+JSON.stringify(obj));
-	/** convenience for getId() */
-	This.id = obj => This.assIsa(obj) && getId(obj);
-	This.make = (base = {}) => {
-		// super makes
-		if (This.parentTypes) {
-			This.parentTypes.forEach(pt => {
-				if (pt.make) {
-					base = pt.make(base);
-				}
-			});
-		}
-		// this type + always copy base to avoid any side-effects
-		return {
-			...base,
-			'@type': This.type,
-		};
-	};
-	// a default toString
-	if ( ! This.name) This.name = obj => obj && obj.name;
-	if ( ! This.str) This.str = obj => JSON.stringify(obj);
-	// for getDataClass
-	allTypes[type] = This;
-	// for debug use only
-	window.dataclass[type] = This;
-	return This;
-};
-
+DataClass.assIsa = (obj, msg) => assert(DataClass.isa(obj), (msg||'')+" "+type+" expected, but got "+JSON.stringify(obj));
+// NB: cannot assign DataClass.name
+DataClass.title = obj => obj && (obj.title || obj.name);
+DataClass.str = obj => JSON.stringify(obj);
 
 /**
  * @param typeOrItem {String|Object} If object, getType() is used
@@ -216,6 +174,10 @@ const getDataClass = typeOrItem => {
 	return allTypes[type];
 };
 
+DataClass.register = dclass => {
+	allTypes[dclass.name] = dclass;
+};
+
 /**
  * Keep the defined types
  */
@@ -224,5 +186,5 @@ const allTypes = {};
 window.dataclass = {};
 
 
-export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce, DataClass};	
-// no default for now - lets see how class works out
+export {getType, getId, getStatus, Meta, nonce, getDataClass};	
+export default DataClass;

@@ -11,11 +11,26 @@
 
 */
 import {assert, assMatch} from 'sjtest';
-import {isa, defineType, getType, getId, nonce} from './DataClass';
+import DataClass, {getType, getId, nonce} from './DataClass';
 import C from '../CBase';
 
+class Hit {
+	id;
+	type;
+	status;
+}
+
 /** impact utils */
-const List = defineType('List');
+class List extends DataClass {
+	/**
+	 * {Hit[]}
+	 */
+	hits;
+
+	/** {Number} */
+	total;
+};
+
 const This = List;
 export default List;
 

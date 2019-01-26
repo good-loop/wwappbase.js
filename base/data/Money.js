@@ -4,11 +4,21 @@
 */
 import {assert, assMatch} from 'sjtest';
 import {asNum} from 'wwutils';
-import {isa, defineType, getType} from './DataClass';
+import DataClass, {getType} from './DataClass';
 import C from '../CBase';
 
 /** impact utils */
-const Money = defineType('Money'); // not this 'cos its project specific: C.TYPES.Money
+class Money extends DataClass {
+	/** {Number} 1/100 of a penny, so £1 = 10,000 */
+	value100p;
+	currency = 'GBP'; // default
+
+	constructor(base) {
+		super(base);
+		Money.value(this); // init v100p from value
+	};
+}
+
 const This = Money;
 export default Money;
 
@@ -90,7 +100,7 @@ const v100p = m => {
 
 
 
-// duck type: needs a value or currency
+/** duck type: needs a value or currency */
 Money.isa = (obj) => {
 	if ( ! obj) return false;
 	if (isa(obj, C.TYPES.Money)) return true;
@@ -115,18 +125,12 @@ Money.CURRENCY = {
 };
 
 /**
+ * @deprecated -- use new Money()
  * @param base e.g. £1 is {currency:'GBP', value:1}
  * WARNING - only pass in one definition of value, or you may get odd behaviour!
  */
 Money.make = (base = {}) => {
-	const item = {
-		value: 0, // default to zero
-		currency: 'GBP', // default
-		...base, // Base comes after defaults so it overrides
-		'@type': C.TYPES.Money, // @type always last so it overrides any erroneous base.type
-	};
-	Money.value(item); // init v100p
-	Money.assIsa(item);
+	let item = new Money(base);
 	return item;
 };
 

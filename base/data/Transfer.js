@@ -1,7 +1,7 @@
 
 import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
-import {isa, nonce, defineType} from './DataClass';
+import DataClass, {nonce} from './DataClass';
 import {uid, blockProp} from 'wwutils';
 import Money from './Money';
 import C from '../CBase';
@@ -9,7 +9,12 @@ import Login from 'you-again';
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 
-const Transfer = defineType(C.TYPES.Transfer);
+class Transfer extends DataClass {
+	/** {Money} */
+	amount;
+	/** {String} */
+	to;
+}
 const This = Transfer;
 export default Transfer;
 

@@ -4,16 +4,17 @@
  */
 
 import {assert, assMatch} from 'sjtest';
-import {isa, defineType, getType} from './DataClass';
+import DataClass, {getType} from './DataClass';
 
-const Share = defineType('Share');
+class Share extends DataClass {
+}
 const This = Share;
 export default This;
 
 /**
  * Support Share or DBShare (c.f. the java server-side code)
  */
-This.isa = (obj) => isa(obj, 'Share') || getType(obj) === 'DBShare';
+This.isa = (obj) => super.isa(obj) || getType(obj) === 'DBShare';
 
 /**
  * Convenience for a common filter + strip op.

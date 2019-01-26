@@ -1,13 +1,13 @@
 
 import {assert, assMatch} from 'sjtest';
-import {isa, defineType, getType} from './DataClass';
+import DataClass, {getType} from './DataClass';
 import DataStore from '../plumbing/DataStore';
 import { getClaimsForXId } from '../Profiler';
 import Link from '../data/Link';
 import Claim from '../data/Claim';
 import {XId} from 'wwutils';
 
-const Person = defineType('Person');
+class Person extends DataClass {}
 const This = Person;
 export default Person;
 
