@@ -9,12 +9,13 @@ import {assert, assMatch, assertMatch} from 'sjtest';
 // add funky methods to the "standard" Person data-class
 import Person from './data/Person';
 import PV from 'promise-value';
-import {mapkv, encURI} from 'wwutils';
+import {mapkv, encURI, XId} from 'wwutils';
 assert(Person);
 
 // for debug
 window.Person = Person;
 
+// deprecated -- overlaps with named exports, lets use them instead
 const Profiler = {};
 
 /**
@@ -82,6 +83,7 @@ const getClaimsForXId = xid => {
 	}, {});
 	return _.isEmpty(formattedClaims) ? null : formattedClaims;
 };
+
 
 /**
  * Create UI call for saving claim to back-end
@@ -237,6 +239,6 @@ export {
 	getConsents,
 	setConsents,
 	requestAnalyzeData,
-	saveSocialShareId
+	saveSocialShareId,
 };
 export default Profiler;

@@ -32,7 +32,7 @@ const Advert = {
     logo: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(1) > div > input',
     'white-logo': '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(2) > div > input',
     about: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(6) > textarea',
-    video: '#advert div.videoUpload input[name="url"]',
+    video: '#advert input[name="url"]',
     videoSeconds: '#advert input[name="videoSeconds"]',
     viewAdverts: '#advertiser > div > div > div:nth-child(2) > a',
     charityOne: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(6) > div.panel-body > div.container-fluid > div > div:nth-child(1) > div > div:nth-child(2) > div.form-group.autocomplete > div > input',
