@@ -35,33 +35,44 @@ class DataClass {
 	
 	constructor(base) {
 		Object.assign(this, base);		
-		this['@type'] = this.name; //DataClass._type;
-		console.warn('type', this, this.name, ""+this, typeof(this));
+		this['@type'] = this.constructor.name; //name; //DataClass._type;
+		console.warn('type', this, "name", this.name, "cons", this.constructor, ""+this.constructor,
+			this.constructor.name,  ""+this, typeof(this));
 	}
+
+	/**
+	 * check the type!
+	 * @param typ {!String}
+	 */
+	static isa(obj) {
+		if ( ! _.isObject(obj) || obj.length) return false;
+		console.warn(this, this.name);
+		let typ = this;
+		const sotyp = getType(obj);
+		if ( ! sotyp) return false;
+		if (sotyp === typ.name) return true;
+		let otyp = getDataClass(sotyp);
+		return isa2(otyp, typ);
+	}
+
+	static assIsa(obj, msg) {
+		assert(this.isa(obj), (msg||'')+" "+this.name+" expected, but got "+JSON.stringify(obj));
+	}
+
 } // ./DataClass
 
 /**
- * check the type!
- * @param typ {!String}
+ * @param otyp {!DataClass}
+ * @param typ {!DataClass}
  */
-DataClass.isa = obj => {
-	if (!_.isObject(obj) || obj.length) return false;
-	console.warn(this, this.name);
-	let typ = this;
-	const otyp = getType(obj);
-	if ( ! otyp) return false;
-	return isa2(otyp, typ);
-};
 const isa2 = (otyp, typ) => {
+	if ( ! otyp) return false;
 	console.warn(typ.prototype, typ.__proto__, otyp.prototype, otyp.__proto)
 	if (otyp === typ) return true;
 	// sub-type?
-	if ( ! otyp.parentTypes) return false;
-	for(let i=0; i<otyp.parentTypes.length; i++) {
-		if (isa2(otyp, parentTypes[i])) return true;
-	}
-	return false;
+	return isa2(otyp.__proto__, typ);
 };
+window.isa2 = isa2; // debug
 
 /**
  * Uses schema.org or gson class to get the type.
@@ -117,6 +128,7 @@ const getStatus = (item) => {
 DataClass.status = getStatus;
 
 /**
+ * TODO move into SoGive
  * access functions for source, help, notes??
  */
 const Meta = {};
@@ -156,8 +168,7 @@ const nonce = (n=10) => {
 	return s.join("");
 };
 
-DataClass.assIsa = (obj, msg) => assert(DataClass.isa(obj), (msg||'')+" "+type+" expected, but got "+JSON.stringify(obj));
-// NB: cannot assign DataClass.name
+// NB: cannot assign DataClass.name as that is a reserved field name for classes
 DataClass.title = obj => obj && (obj.title || obj.name);
 DataClass.str = obj => JSON.stringify(obj);
 
@@ -175,6 +186,7 @@ const getDataClass = typeOrItem => {
 };
 
 DataClass.register = dclass => {
+	assert(dclass.name);
 	allTypes[dclass.name] = dclass;
 };
 
@@ -183,7 +195,7 @@ DataClass.register = dclass => {
  */
 const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
-window.dataclass = {};
+window.allTypes = allTypes
 
 
 export {getType, getId, getStatus, Meta, nonce, getDataClass};	
