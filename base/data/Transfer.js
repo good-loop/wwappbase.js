@@ -26,7 +26,7 @@ Transfer.getTotal = (list, to) => {
 	assMatch(to, String);
 	// Using this clumsy forEach instead of a reduce because this makes it clearer
 	// that the total's Money object (thus currency) is based on the first item
-	let total = Money.make();
+	let total = new Money();
 	list.forEach((item) => {
 		This.assIsa(item);
 		let amount = item.amount;
@@ -37,7 +37,7 @@ Transfer.getTotal = (list, to) => {
 		}
 		total = Money.add(total, amount);
 	});
-	return total || Money.make();
+	return total || new Money();
 };
 
 /**

@@ -34,6 +34,8 @@ class Store {
 			 * nav state, stored in the url (this gives nice shareable deep-linking urls)
 			 */
 			location:{}, 
+			/** browser environment */
+			env:{},
 			misc:{}
 		};
 		// init url vars

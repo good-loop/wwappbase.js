@@ -10,11 +10,11 @@ import { join } from 'wwutils';
  * You can wrap these cards -- if you do, pass down misc parameters to enable the CardAccordion wiring to work. e.g.
  * <Foo {...stuff}> => <Misc.Card {...stuff}>
  * 
- * @param title {String|JSX} will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.
+ * @param {String|JSX} title - will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.
  * @param titleChildren jsx elements to put in the header (can be used with/without title)
- * @param error {any} If set, colour the card red
+ * @param {any} error - If set, colour the card red
  * @param warning {any} If set, colour the card yellow
- * @param className {?String} Added to the BS panel classes
+ * @param {?String} className - Added to the BS panel classes
  */
 const Card = ({title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
 	// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.	

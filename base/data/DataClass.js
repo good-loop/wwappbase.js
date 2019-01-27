@@ -18,8 +18,10 @@ import {endsWith} from 'wwutils';
 import DataClass, {getType} from './DataClass';
 import C from './C';
 class MyType extends DataClass {};
+DataClass.register(MyType);
 // or
 class MyType extends ParentType {}
+
 const This = MyType;
 export default MyType;
 
@@ -27,26 +29,30 @@ export default MyType;
 
  */
 
+// SOme useful Types
+/**
+ * @typedef {String} XIdString
+ */
+/**
+ * @typedef {String} TimeString
+ */
+
 
 class DataClass {
-	// static get _type() {
-	// 	return 'DataClass';
-	// }
 	
 	constructor(base) {
 		Object.assign(this, base);		
 		this['@type'] = this.constructor.name; //name; //DataClass._type;
-		console.warn('type', this, "name", this.name, "cons", this.constructor, ""+this.constructor,
-			this.constructor.name,  ""+this, typeof(this));
+		// console.warn('type', this, "name", this.name, "cons", this.constructor, ""+this.constructor,
+		// 	this.constructor.name,  ""+this, typeof(this));
 	}
 
 	/**
 	 * check the type!
-	 * @param typ {!String}
 	 */
 	static isa(obj) {
 		if ( ! _.isObject(obj) || obj.length) return false;
-		console.warn(this, this.name);
+		// console.warn(this, this.name);
 		let typ = this;
 		const sotyp = getType(obj);
 		if ( ! sotyp) return false;
@@ -67,7 +73,7 @@ class DataClass {
  */
 const isa2 = (otyp, typ) => {
 	if ( ! otyp) return false;
-	console.warn(typ.prototype, typ.__proto__, otyp.prototype, otyp.__proto)
+	// console.warn(typ.prototype, typ.__proto__, otyp.prototype, otyp.__proto)
 	if (otyp === typ) return true;
 	// sub-type?
 	return isa2(otyp.__proto__, typ);
@@ -78,7 +84,7 @@ window.isa2 = isa2; // debug
  * Uses schema.org or gson class to get the type.
  * Or null
  * @param item {?any}
- * @returns {?String} e.g. "Money"
+ * @return {?String} e.g. "Money"
  */
 const getType = function(item) {
 	if ( ! item) return null;

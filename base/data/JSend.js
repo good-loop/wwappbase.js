@@ -12,34 +12,51 @@
 
 import Enum from 'easy-enums';
 
-const JSend = {};
-export default JSend;
-
+/**
+ * @typedef {String} KAjaxStatus
+ */
 const KAjaxStatus = new Enum("success fail error");
+
+class JSend {
+	/**
+	 * @type {KAjaxStatus}
+	 */
+	status;	
+	/** Usually set on error
+	 * @type {String} */
+	message;
+	/**
+	 * The payload, can be unset if the call failed
+	 */
+	data;
+}
+export default JSend;
 
 /**
  * 
- * @returns {!Boolean} true if the input is a JSend or WW's JsonResponse object
+ * @return {!Boolean} true if the input is a JSend or WW's JsonResponse object
  */
-JSend.isa = jobj => {
+const isa = jobj => {
 	if ( ! jobj) return false;
 	if (jobj.cargo) return true;
 	let s = JSend.success(jobj);
 	if (s === null) return false;
 	return true;	
 };
+JSend.isa = isa;
 
 /**
  * 
  * @param {JSend} jobj 
- * @returns {KAjaxStatus String} success | error | fail
+ * @return {KAjaxStatus} success | error | fail
  */
-JSend.status = jobj => jobj.status 
+const status = jobj => jobj.status 
 	|| (jobj.success===true && 'success') || (jobj.success===false && 'error'); // WW's JsonResponse format
+JSend.status = status;
 
 /**
  * Boolean alternative to status
- * @returns {?Boolean} null if the success is not provided
+ * @return {?Boolean} null if the success is not provided
  */
 JSend.success = jobj => {	
 	if (jobj.success===true) return true;
@@ -62,6 +79,7 @@ JSend.success = jobj => {
 
 /**
  * Optional error message
+ * @return {?String}
  */
 JSend.message = jobj => {
 	if (jobj.message) return jobj.message;
@@ -82,7 +100,7 @@ JSend.message = jobj => {
 };
 
 /**
- * @returns the data|cargo from a jsend response, or null
+ * @return the data|cargo from a jsend response, or null
  */
 JSend.data = jobj => {
 	return jobj.data 

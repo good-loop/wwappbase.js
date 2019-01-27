@@ -30,6 +30,7 @@ class List extends DataClass {
 	/** {Number} */
 	total;
 };
+DataClass.register(List);
 
 const This = List;
 export default List;

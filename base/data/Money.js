@@ -18,6 +18,7 @@ class Money extends DataClass {
 		Money.value(this); // init v100p from value
 	};
 }
+DataClass.register(Money);
 
 const This = Money;
 export default Money;
@@ -39,7 +40,7 @@ const isNumeric = value => {
 /**
  * 
  * @param {?Money} ma If null, returns 0
- * @returns {Number}
+ * @return {Number}
  */
 Money.value = ma => {
 	// if(ma && ma.value === '') return '';
@@ -50,7 +51,7 @@ Money.value = ma => {
  * 
  * @param {!Money} m 
  * @param {!Number|falsy} newVal Can be null or '' for unset -- which will produce a value of 0
- * @returns {Money} value and value100p set to newVal
+ * @return {Money} value and value100p set to newVal
  */
 Money.setValue = (m, newVal) => {
 	Money.assIsa(m);
@@ -67,7 +68,7 @@ Money.setValue = (m, newVal) => {
 
 /**
  * @param m If null, return 0. The canonical field is `value100p` but this method will also read `value`
- * @returns {Number} in hundredth of a penny. Defaults to 0.
+ * @return {Number} in hundredth of a penny. Defaults to 0.
  */
 const v100p = m => {
 	if ( ! m) return 0;
@@ -150,7 +151,7 @@ const assCurrencyEq = (a, b, msg) => {
 };
 
 /** Will fail if not called on 2 Moneys of the same currency
- * @returns {Money} a fresh object
+ * @return {Money} a fresh object
  */
 Money.add = (amount1, amount2) => {	
 	Money.assIsa(amount1);
@@ -171,13 +172,13 @@ const moneyFromv100p = (b100p, currency) => {
 		value: b100p/10000,
 		value100p: b100p
 	};
-	const m = Money.make(res);	
+	const m = new Money(res);	
 	return m;
 };
 
 Money.total = amounts => {
 	// assMatch(amounts, "Money[]", "Money.js - total()");
-	let zero = Money.make();
+	let zero = new Money();
 	Money.assIsa(zero);
 	let ttl = amounts.reduce( (acc, m) => {
 		if ( ! Money.isa(m)) {
@@ -198,18 +199,23 @@ Money.sub = (amount1, amount2) => {
 	return moneyFromv100p(b100p, amount1.currency || amount2.currency);
 };
 
-/** Must be called on a Money and a scalar */
-Money.mul = (amount, multiplier) => {
+/** Multiply
+ * @param {Money} amount
+ * @param {Number} multiplier
+ * @return {Money}
+*/
+const mul = (amount, multiplier) => {
 	Money.assIsa(amount);
 	assert(isNumeric(multiplier), "Money.js - mul() "+multiplier);
 	// TODO Assert that multiplier is numeric (kind of painful in JS)
 	const b100p = v100p(amount) * multiplier;
 	return moneyFromv100p(b100p, amount.currency);
 };
+Money.mul = mul;
 
 /** 
  * Called on two Moneys
- * @returns {Number}
+ * @return {Number}
  */
 Money.divide = (total, part) => {
 	Money.assIsa(total);
@@ -221,7 +227,7 @@ Money.divide = (total, part) => {
 /**
  * get/set an explanation text
  * This is transient - it is NOT saved by Money.java
- * @returns {?String}
+ * @return {?String}
  */
 Money.explain = (money, expln) => {
 	Money.assIsa(money);
