@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.15.2'
+VERSION='Version=1.15.3'
 
 ###
+# New in 1.15.3: If publishing adserver [frontend|everything] then webpacking of the preact bundles takes place
 # New in 1.15.2: Made webpacking the last step in publishing, so as to not overwrite a bundle.js with a locally generated one.
 # New in 1.15.1: Fixed a loop-break if a fourth argument is not given. Fixed a post-publishing task for adserver publishes
 # New in 1.15.0: Added ability to specify publishing of the frontend/backend/everything
@@ -926,7 +927,15 @@ function run_post_publish_tasks {
 						printf "\n\tConverting LESS for the Ad Unit\n"
 						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
-					*)
+					everything)
+						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
+						printf "\n\tWebpacking the Ad Unit\n"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
+						printf "\n\tConverting LESS for the Ad Unit\n"
+						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
+					;;
+					backend)
 						printf "\n"
 					;;
 				esac
