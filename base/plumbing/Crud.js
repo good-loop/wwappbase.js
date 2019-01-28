@@ -139,7 +139,7 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 	return p;
 };
 
-ActionMan.unpublish = ({type, id}) => {	
+ActionMan.unpublish = (type, id) => {	
 	assMatch(type, String);
 	assMatch(id, String, "Crud.js no id to unpublish "+type);	
 	// TODO optimistic list mod
