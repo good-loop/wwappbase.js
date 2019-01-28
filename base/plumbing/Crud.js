@@ -24,7 +24,7 @@ ActionMan.crud = (type, id, action, item) => {
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
 	assert(C.TYPES.has(type), type);
-	assert(C.CRUDACTION.has(action), type);
+	assert(C.CRUDACTION.has(action), "unrecognised action "+action+" for type "+type);
 	if ( ! item) { 
 		let status = startStatusForAction(action);
 		item = DataStore.getData(status, type, id);
@@ -242,6 +242,7 @@ const startStatusForAction = (action) => {
 		case C.CRUDACTION.publish:
 		case C.CRUDACTION.save: 		
 		case C.CRUDACTION.discardEdits: 
+		case C.CRUDACTION.unpublish: // is this OK?? It could be applied to either
 		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
 	}
@@ -258,6 +259,8 @@ const serverStatusForAction = (action) => {
 			return C.KStatus.DRAFT;
 		case C.CRUDACTION.publish: 
 			return C.KStatus.PUBLISHED;
+		case C.CRUDACTION.unpublish: 
+			return C.KStatus.DRAFT;
 	}
 	throw new Error("TODO serverStatusForAction "+action);
 };
