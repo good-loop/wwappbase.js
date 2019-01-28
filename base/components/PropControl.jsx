@@ -724,17 +724,26 @@ Misc.PropControl = PropControl;
  */
 const setInputStatus = ({path, status, message}) => {
 	const spath = ['misc','inputStatus'].concat(path);
-	if ( ! status) {
-		return DataStore.setValue(spath, null);
+	// no-op?
+	let old = DataStore.getValue(spath);	
+	if ( ! old && ! status) return;
+	if (old && _.isEqual(old, {status, message})) {
+		return;
 	}
-	// NB: if no-change, this should not trigger an update
-	return DataStore.setValue(spath, {status, message});
+	if ( ! status) {
+		// NB: dont update inside a render loop
+		setTimeout(() => DataStore.setValue(spath, null), 1);
+		return;
+	}	
+	// NB: dont update inside a render loop
+	setTimeout(() => DataStore.setValue(spath, {status, message}), 1);
 };
+
 /**
- * 
+ * @param {!String[]} path
  * @return {status, message} or null
  */
-const getInputStatus = ({path}) => {
+const getInputStatus = path => {
 	const spath = ['misc','inputStatus'].concat(path);
 	return DataStore.getValue(spath);
 }
