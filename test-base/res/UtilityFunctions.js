@@ -30,16 +30,16 @@ const disableAnimations = {
 // set when calling Jest CLI with --testURL $url
 const APIBASE = window.location;
 
-async function takeScreenshot({page, path, date = new Date().toISOString()}) {
+async function takeScreenshot({page, path, name = new Date().toISOString()}) {
     try {
-        await page.screenshot({path: `${path}/${date}.png`});
+        await page.screenshot({path: `${path}/${name}.png`});
     }
     catch(e) {
         //dir not found
         //Shouldn't give infinite loop: mkdirSync throws error if directory can't be created
         if (e.code === 'ENOENT') {
             fs.mkdirSync(path);
-            await takeScreenshot(page);
+            await takeScreenshot({page, path, name});
         }
         else{
             console.log('setup_script.js -- screenshot failed ' + e.code + ': ' + e.message);

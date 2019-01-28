@@ -5,11 +5,12 @@
 const puppeteer = require('puppeteer');
 const {takeScreenshot} = require('../babeled-res/UtilityFunctions');
 const fs = require('fs');
+const url = require('url');
 
 const options = {
     headless: true,
     devtools: false,
-    slowMo: 0,//Introduces a delay between puppeteer actions
+    slowMo: 0, // Introduces a delay between puppeteer actions
 };
 /**Setup functions run before each test
  * If you only want something to run once
@@ -43,10 +44,17 @@ afterEach(async () => {
     // );
     //Start at 1 to skip over chrome home page
     for(let i=1; i<pages.length; i++) {
+        const page = pages[i];
+        let glURL = 
+            url.parse(page.url())
+            .path
+            .replace(/\//g, '');
+        const name = glURL ? (date + '_' + glURL + '_') : date; 
+
         await takeScreenshot({
-            page: pages[i], 
+            page, 
             path: `test-results/Screenshots(success)`,
-            date
+            name
         });
     }
     await window.__BROWSER__.close();
