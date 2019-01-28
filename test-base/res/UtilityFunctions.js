@@ -221,19 +221,19 @@ async function soGiveFailIfPointingAtProduction({page}) {
 
 // Goes to the given URL (which must contain a Good-loop ad), watches the video, and makes a donation 
 /**
- * 
+ * Advert must already be somewhere on the page before this method is called
  * @param { object } page puppeteer test object
  * @param { string } type behaviour needs to be slightly different for type:banner ads
  * @param { string } url location where good-loop adunit is hosted
  */
-async function watchAdvertAndDonate({page, type, url}) {
-    await page.goto(url);
+async function watchAdvertAndDonate({page, type}) {
     await page.waitFor(1000);//Allow 'visible' event to register. Doesn't get counted if you start working right away
     let pageOrIFrame = page; // If unit is wrapped in iframe, need to use iframe.ACTION instead of page.ACTION
 
     // Adunit may have been loaded in to an iframe.
     // Puppeteer will not cycle through frames to look for a given selector, so need to tell it where to look
-    const iframe = await page.frames().find(f => f.name().slice(0, 2) === 'gl' || f.name() === 'test01');
+    // TODO cut down on possible values after this has been harmonised across the different pages/services
+    const iframe = await page.frames().find(f => f.name().slice(0, 2) === 'gl' || f.name() === 'test01' || f.name() === 'demo-iframe');
     
     if ( iframe ) {
         pageOrIFrame = iframe;
