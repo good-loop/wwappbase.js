@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.15.1'
+VERSION='Version=1.15.2'
 
 ###
+# New in 1.15.2: Made webpacking the last step in publishing, so as to not overwrite a bundle.js with a locally generated one.
 # New in 1.15.1: Fixed a loop-break if a fourth argument is not given. Fixed a post-publishing task for adserver publishes
 # New in 1.15.0: Added ability to specify publishing of the frontend/backend/everything
 # New in 1.14.0: LESS conversion now happening for preact adunits.
@@ -961,8 +962,8 @@ case $SPECIFIC_PUBLISH_GOAL in
 		printf "\nSyncing $PROJECT to $TARGETS\n"
 		printf "\nSyncing Configs\n"
 		sync_configs
-		webpack
 		sync_project
+		webpack
 	;;
 	frontend)
 		image_optimisation
@@ -973,8 +974,8 @@ case $SPECIFIC_PUBLISH_GOAL in
 		printf "\nSyncing $PROJECT to $TARGETS\n"
 		printf "\nSyncing Configs\n"
 		sync_configs
-		webpack
 		sync_project
+		webpack
 	;;
 	backend)
 		sync_project
