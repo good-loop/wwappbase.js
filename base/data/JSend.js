@@ -2,7 +2,7 @@
  * JSend ajax wrapper. A simple format:
  * 
  * {
- * 	status: {String} "success" | "fail" | "error"
+ * 	status: {String} "success" | "fail" | "error" | "warning"
  * 	message: {?String} error message
  * 	data: {?Object} the data/value/cargo
  * }
@@ -15,7 +15,11 @@ import Enum from 'easy-enums';
 const JSend = {};
 export default JSend;
 
-const KAjaxStatus = new Enum("success fail error");
+/**
+ * NB warning is non-standard but makes sense as success-but-be-warned.
+ * Usages of warning: none at present Jan 2019
+ */
+const KAjaxStatus = new Enum("success fail error warning");
 
 /**
  * 
@@ -32,20 +36,20 @@ JSend.isa = jobj => {
 /**
  * 
  * @param {JSend} jobj 
- * @returns {KAjaxStatus String} success | error | fail
+ * @returns {KAjaxStatus String} success | error | fail | warning
  */
 JSend.status = jobj => jobj.status 
 	|| (jobj.success===true && 'success') || (jobj.success===false && 'error'); // WW's JsonResponse format
 
 /**
- * Boolean alternative to status
- * @returns {?Boolean} null if the success is not provided
+ * Boolean alternative to status.
+ * @return {?Boolean} null if the success is not provided. warning returns true
  */
 JSend.success = jobj => {	
 	if (jobj.success===true) return true;
 	if (jobj.success===false) return false;
 
-	if (jobj.status===KAjaxStatus.success) return true;
+	if (jobj.status===KAjaxStatus.success || jobj.status===KAjaxStatus.warning) return true;
 	if (jobj.status===KAjaxStatus.fail || jobj.status===KAjaxStatus.error) return false;
 
 	// a jQuery response

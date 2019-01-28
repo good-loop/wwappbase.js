@@ -56,7 +56,7 @@ const PropControl = (props) => {
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
-	if (Misc.ControlTypes.isdate(type) && ! validator) {
+	if (Misc.KControlTypes.isdate(type) && ! validator) {
 		validator = (v, rawValue) => {
 			if ( ! v) {
 				// raw but no date suggests the server removed it
@@ -74,7 +74,7 @@ const PropControl = (props) => {
 		};
 	} // date
 	// url: https
-	if (stuff.https !== false && (Misc.ControlTypes.isurl(type) || Misc.ControlTypes.isimg(type) || Misc.ControlTypes.isimgUpload(type))
+	if (stuff.https !== false && (Misc.KControlTypes.isurl(type) || Misc.KControlTypes.isimg(type) || Misc.KControlTypes.isimgUpload(type))
 			&& ! validator)
 	{
 		validator = v => {
@@ -86,7 +86,7 @@ const PropControl = (props) => {
 		};
 	}
 	// Money validator (NB: not 100% same as the backend)
-	if (Misc.ControlTypes.isMoney(type) && ! validator && ! error) {
+	if (Misc.KControlTypes.isMoney(type) && ! validator && ! error) {
 		validator = v => {
 			if ( ! v) return null;
 			let nv = Money.value(v);	
@@ -106,12 +106,20 @@ const PropControl = (props) => {
 		const rawValue = DataStore.getValue(rawPath);
 		error = validator(value, rawValue);
 	}
+	// Has an issue been reported?
+	// TODO refactor so validators and callers use setInputStatus
+	if ( ! error) {
+		const is = getInputStatus(proppath);
+		if (is && is.status==='error') {
+			error = is.message || 'Error';
+		}
+	}
 
 	// Minor TODO lets refactor this so we always do the wrapper, then call a 2nd jsx function for the input (instead of the recursing flag)
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
-	// if ((label || help || tooltip || error) && ! Misc.ControlTypes.ischeckbox(type) && ! recursing) {
-	if ( ! Misc.ControlTypes.ischeckbox(type) && ! recursing) {
+	// if ((label || help || tooltip || error) && ! Misc.KControlTypes.ischeckbox(type) && ! recursing) {
+	if ( ! Misc.KControlTypes.ischeckbox(type) && ! recursing) {
 		// Minor TODO help block id and aria-described-by property in the input
 		const labelText = label || '';
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
@@ -138,7 +146,7 @@ const PropControl = (props) => {
 	// unpack
 	let {item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
-	assert( ! type || Misc.ControlTypes.has(type), 'Misc.PropControl: '+type);
+	assert( ! type || Misc.KControlTypes.has(type), 'Misc.PropControl: '+type);
 	assert(_.isArray(path), 'Misc.PropControl: not an array:'+path);
 	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path);
 	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
@@ -151,7 +159,7 @@ const PropControl = (props) => {
 	let value = item[prop]===undefined? dflt : item[prop];
 
 	// Checkbox?
-	if (Misc.ControlTypes.ischeckbox(type)) {
+	if (Misc.KControlTypes.ischeckbox(type)) {
 		const onChange = e => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.checked;
@@ -326,7 +334,7 @@ const PropControl = (props) => {
 	// date
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
-	if (Misc.ControlTypes.isdate(type)) {
+	if (Misc.KControlTypes.isdate(type)) {
 		const acprops = {prop, item, value, onChange, ...otherStuff};
 		return <PropControlDate {...acprops} />;
 	}
@@ -697,20 +705,45 @@ const FormControl = ({value, type, required, size, className, ...otherProps}) =>
 	return <input className={klass} type={type} value={value} {...otherProps} />;
 };
 
-
-const ControlTypes = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
+/**
+ * List of types eg textarea
+ */
+const KControlTypes = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
 							+" yesNo location date year number arraytext address postcode json"
 							// some Good-Loop data-classes
 							+" Money XId");
 
 
 Misc.FormControl = FormControl;
-Misc.ControlTypes = ControlTypes;
+Misc.KControlTypes = KControlTypes;
 Misc.PropControl = PropControl;
+
+/**
+ * 
+ * @param {?String} status - if null, remove any message
+ */
+const setInputStatus = ({path, status, message}) => {
+	const spath = ['misc','inputStatus'].concat(path);
+	if ( ! status) {
+		return DataStore.setValue(spath, null);
+	}
+	// NB: if no-change, this should not trigger an update
+	return DataStore.setValue(spath, {status, message});
+};
+/**
+ * 
+ * @return {status, message} or null
+ */
+const getInputStatus = ({path}) => {
+	const spath = ['misc','inputStatus'].concat(path);
+	return DataStore.getValue(spath);
+}
 
 export {
 	FormControl,
-	ControlTypes
+	KControlTypes,
+	setInputStatus,
+	getInputStatus
 };
 // should we rename it to Input, or StoreInput, ModelInput or some such??
 export default PropControl;
