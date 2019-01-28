@@ -595,9 +595,10 @@ function image_optimisation {
 				printf '%s\n' "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/newpngarray.txt
 			done
 			mapfile -t PNGARRAY < $IMAGEDIRECTORY/newpngarray.txt
-			# ??please doc this powerful magic - awk print 3?? (NB: nice use of diff) ^DW Dec 2018
-			# Sure.
 			UNIQUEPNGS=$(diff $IMAGEDIRECTORY/pngarray.txt $IMAGEDIRECTORY/newpngarray.txt | grep ">" | awk '{print $3}')
+			# I want to build an array [list] of PNG files that are new to the project [and therefore un-optimised].
+			# I define my array as, the DIFFerence between the old/pre-existing pngarray.txt file and the newpngarray.txt file
+			# I then use grep to only give me lines where there are new PNG files listed, and I use awk to give me clean filenames.
 			if [[ ${UNIQUEPNGS[*]} = '' ]]; then
 				printf "\nNo new PNG files to optimise\n"
 			else
