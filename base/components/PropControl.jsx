@@ -10,7 +10,7 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import Misc from './Misc';
-import {join} from 'wwutils';
+import {join, mapkv} from 'wwutils';
 import PV from 'promise-value';
 import Dropzone from 'react-dropzone';
 
@@ -49,10 +49,11 @@ import md5 from 'md5';
 * @param https {?Boolean} if true, urls must use https not http (recommended)
  */
 const PropControl = (props) => {
-	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, recursing, inline, ...stuff} = props;
+	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, recursing, inline, dflt, ...stuff} = props;
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
+	let value = DataStore.getValue(proppath) || dflt; // const? no - we do some edits e.g. undefined -> false below
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
@@ -100,8 +101,7 @@ const PropControl = (props) => {
 		};
 	}
 	// validate!
-	if (validator) {
-		const value = DataStore.getValue(proppath);
+	if (validator) {		
 		const rawPath = path.concat(prop+"_raw");
 		const rawValue = DataStore.getValue(rawPath);
 		error = validator(value, rawValue);
@@ -110,6 +110,9 @@ const PropControl = (props) => {
 	// TODO refactor so validators and callers use setInputStatus
 	if ( ! error) {
 		const is = getInputStatus(proppath);
+		if ( ! is && required && value===undefined) {
+			setInputStatus({path:proppath, status:'error', message:'Missing required input'});
+		}
 		if (is && is.status==='error') {
 			error = is.message || 'Error';
 		}
@@ -124,7 +127,7 @@ const PropControl = (props) => {
 		const labelText = label || '';
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
 		const optreq = optional? <small className='text-muted'>optional</small> 
-			: required? <small className='text-danger'>*</small> : null;
+			: required? <small className={value===undefined? null : 'text-danger'}>*</small> : null;
 		// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 		// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 		// let props2 = Object.assign({}, props);
@@ -144,7 +147,7 @@ const PropControl = (props) => {
 	}
 
 	// unpack
-	let {item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff} = stuff;
+	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
 	assert( ! type || Misc.KControlTypes.has(type), 'Misc.PropControl: '+type);
 	assert(_.isArray(path), 'Misc.PropControl: not an array:'+path);
@@ -156,7 +159,6 @@ const PropControl = (props) => {
 	if ( ! item) {
 		item = DataStore.getValue(path) || {};
 	}
-	let value = item[prop]===undefined? dflt : item[prop];
 
 	// Checkbox?
 	if (Misc.KControlTypes.ischeckbox(type)) {
@@ -718,12 +720,25 @@ Misc.FormControl = FormControl;
 Misc.KControlTypes = KControlTypes;
 Misc.PropControl = PropControl;
 
+/** INPUT STATUS */
+class InputStatus { // extends JSend
+	// TODO (needs babel config update)
+	// path;
+}
+/**
+ * e.g. "url: warning: use https for security"
+ */
+InputStatus.str = is => [(is.path? is.path[is.path.length-1] : null), is.status, is.message].join(': ');
+
+/** NB: the final path bit is to allow for status to be logged at different levels of the data-model tree */
+const statusPath = path => ['misc','inputStatus'].concat(path).concat('_status');
+
 /**
  * 
  * @param {?String} status - if null, remove any message
  */
 const setInputStatus = ({path, status, message}) => {
-	const spath = ['misc','inputStatus'].concat(path);
+	const spath = statusPath(path);
 	// no-op?
 	let old = DataStore.getValue(spath);	
 	if ( ! old && ! status) return;
@@ -736,23 +751,42 @@ const setInputStatus = ({path, status, message}) => {
 		return;
 	}	
 	// NB: dont update inside a render loop
-	setTimeout(() => DataStore.setValue(spath, {status, message}), 1);
+	setTimeout(() => DataStore.setValue(spath, {path, status, message}), 1);
 };
 
 /**
  * @param {!String[]} path
- * @return {status, message} or null
+ * @return {InputStatus} or null
  */
 const getInputStatus = path => {
-	const spath = ['misc','inputStatus'].concat(path);
+	const spath = statusPath(path);
 	return DataStore.getValue(spath);
 }
+/**
+ * @param {!String[]} path
+ * @return {!InputStatus[]} The status for this node and all child nodes
+ */
+const getInputStatuses = path => {
+	const sppath = ['misc','inputStatus'].concat(path);
+	const root = DataStore.getValue(sppath);
+	const all = [];
+	getInputStatuses2(root, all);
+	return all;
+}
+const getInputStatuses2 = (node, all) => {
+	if ( ! node) return;
+	if (node._status) all.push(node._status);
+	Object.values().forEach(kid => getInputStatuses2(kid, all));
+};
 
 export {
 	FormControl,
 	KControlTypes,
+
+	InputStatus,
 	setInputStatus,
-	getInputStatus
+	getInputStatus,
+	getInputStatuses
 };
 // should we rename it to Input, or StoreInput, ModelInput or some such??
 export default PropControl;
