@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.15.3'
+VERSION='Version=1.15.4'
 
 ###
+# New in 1.15.4: Moved the task of starting the project-process lower in the order of operations
 # New in 1.15.3: If publishing adserver [frontend|everything] then webpacking of the preact bundles takes place
 # New in 1.15.2: Made webpacking the last step in publishing, so as to not overwrite a bundle.js with a locally generated one.
 # New in 1.15.1: Fixed a loop-break if a fourth argument is not given. Fixed a post-publishing task for adserver publishes
@@ -992,8 +993,8 @@ case $SPECIFIC_PUBLISH_GOAL in
 	;;
 esac
 restore_preserved
-start_proc
 printf "\nPublishing Process has completed\n"
 run_post_publish_tasks
+start_proc
 clean_tmp_lib
 run_automated_tests
