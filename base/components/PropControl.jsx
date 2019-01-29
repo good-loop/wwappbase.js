@@ -611,7 +611,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		const items = _.isArray(options)? options : DataStore.getValue(widgetPath) || [];
 		// NB: typing sends e = an event, clicking an autocomplete sends e = a value
 		const onChange2 = (e, optItem) => {
-			console.log("event", e, e.type, optItem);
+			// console.log("event", e, e.type, optItem);
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 			DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
 			// typing sneds an event, clicking an autocomplete sends a value
@@ -767,6 +767,7 @@ const getInputStatus = path => {
  * @return {!InputStatus[]} The status for this node and all child nodes
  */
 const getInputStatuses = path => {
+	if (true) return []; // possibly causing a performance issue??
 	const sppath = ['misc','inputStatus'].concat(path);
 	const root = DataStore.getValue(sppath);
 	const all = [];
@@ -774,9 +775,9 @@ const getInputStatuses = path => {
 	return all;
 }
 const getInputStatuses2 = (node, all) => {
-	if ( ! node) return;
+	if ( ! _.isObject(node)) return;
 	if (node._status) all.push(node._status);
-	Object.values().forEach(kid => getInputStatuses2(kid, all));
+	Object.values(node).forEach(kid => getInputStatuses2(kid, all));
 };
 
 export {
