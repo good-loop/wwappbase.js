@@ -924,7 +924,7 @@ function run_post_publish_tasks {
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
 						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
 						printf "\n\tConverting LESS for the Ad Unit\n"
 						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
@@ -932,7 +932,7 @@ function run_post_publish_tasks {
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
 						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
 						printf "\n\tConverting LESS for the Ad Unit\n"
 						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
