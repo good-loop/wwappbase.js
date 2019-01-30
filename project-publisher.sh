@@ -334,9 +334,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('sogiveapp')
-		FRONTEND_SYNC_LIST=("config" "server" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc")
 		BACKEND_SYNC_LIST=("data" "lib")
-		WHOLE_SYNC=("config" "server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
+		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
 	;;
