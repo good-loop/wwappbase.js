@@ -127,7 +127,7 @@ const PropControl = (props) => {
 		const labelText = label || '';
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
 		const optreq = optional? <small className='text-muted'>optional</small> 
-			: required? <small className={value===undefined? null : 'text-danger'}>*</small> : null;
+			: required? <small className={value===undefined? 'text-danger' : null}>*</small> : null;
 		// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 		// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 		// let props2 = Object.assign({}, props);

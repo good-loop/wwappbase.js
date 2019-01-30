@@ -334,9 +334,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('sogiveapp')
-		FRONTEND_SYNC_LIST=("config" "server" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc")
 		BACKEND_SYNC_LIST=("data" "lib")
-		WHOLE_SYNC=("config" "server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
+		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
 	;;
@@ -853,7 +853,7 @@ function run_automated_tests {
 		printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
 		case $PROJECT in
 			sogive-app)
-				cd $PROJECT_LOCATION/test
+				cd $PROJECT_LOCATION/puppeteer-tests
 				bash run-tests.sh $TYPE_OF_PUBLISH
 			;;
 			portal)
@@ -924,7 +924,7 @@ function run_post_publish_tasks {
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
 						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
 						printf "\n\tConverting LESS for the Ad Unit\n"
 						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
@@ -932,7 +932,7 @@ function run_post_publish_tasks {
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
 						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
 						printf "\n\tConverting LESS for the Ad Unit\n"
 						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
