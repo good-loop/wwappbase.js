@@ -853,7 +853,7 @@ function run_automated_tests {
 		printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
 		case $PROJECT in
 			sogive-app)
-				cd $PROJECT_LOCATION/test
+				cd $PROJECT_LOCATION/puppeteer-tests
 				bash run-tests.sh $TYPE_OF_PUBLISH
 			;;
 			portal)
