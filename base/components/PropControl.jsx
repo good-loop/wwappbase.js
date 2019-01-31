@@ -740,18 +740,16 @@ const statusPath = path => ['misc','inputStatus'].concat(path).concat('_status')
 const setInputStatus = ({path, status, message}) => {
 	const spath = statusPath(path);
 	// no-op?
-	let old = DataStore.getValue(spath);	
-	if ( ! old && ! status) return;
-	if (old && _.isEqual(old, {status, message})) {
+	const old = DataStore.getValue(spath);
+	if (!old && !status) return;
+	// _.isEqual was comparing old: {status, path, message} to {status, message}
+	if (old && old.status === status && old.message === message) {
 		return;
 	}
-	if ( ! status) {
-		// NB: dont update inside a render loop
-		setTimeout(() => DataStore.setValue(spath, null), 1);
-		return;
-	}	
-	// NB: dont update inside a render loop
-	setTimeout(() => DataStore.setValue(spath, {path, status, message}), 1);
+	// No status? Null out the whole object.
+	const newStatus = status ? { path, status, message } : null;
+	// NB: don't update inside a render loop
+	setTimeout(() => DataStore.setValue(spath, newStatus), 1);
 };
 
 /**
