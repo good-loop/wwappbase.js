@@ -1,8 +1,10 @@
 #!/bin/bash
 
-VERSION='Version=1.15.4'
+VERSION='Version=1.15.5'
 
 ###
+# New in 1.15.5: Made it so that Adserver publishing now targets one LESS file instead of an entire directory
+#					Also, the syncing process will now ignore any directory called 'node_modules'.
 # New in 1.15.4: Moved the task of starting the project-process lower in the order of operations
 # New in 1.15.3: If publishing adserver [frontend|everything] then webpacking of the preact bundles takes place
 # New in 1.15.2: Made webpacking the last step in publishing, so as to not overwrite a bundle.js with a locally generated one.
@@ -178,8 +180,8 @@ case $1 in
 		IMAGE_OPTIMISE='yes'
 		IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert"
 		CONVERT_LESS='yes'
-		LESS_FILES_LOCATION="$PROJECT_LOCATION/adunit/style/"
-		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-as/"
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/adunit/style/base.less"
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-as/unit.css"
 		WEBPACK='no'
 		TEST_JAVASCRIPT='yes'
 		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/"
@@ -715,16 +717,21 @@ function convert_less_files {
 			printf "\nYour specified project $PROJECT , has the parameter 'CONVERT_LESS' set to 'yes', and an input directory IS specified,\nbut no output directory has been specified\nExiting process\n"
 			exit 0
 		fi
-		# Usually main.less and print.less are all we have to compile
-		# But default to compiling everything which is safe
-		if [ ! "$LESS_FILES" ]; then 
-			LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
-		fi
-		for file in ${LESS_FILES[@]}; do
-			printf "\nconverting $file"
-			lessc "$file" "${file%.less}.css"
-		done
-		mv $LESS_FILES_LOCATION/*.css $CSS_OUTPUT_LOCATION/
+		case $PROJECT in
+			adserver)
+				lessc $LESS_FILES_LOCATION $CSS_OUTPUT_LOCATION
+			;;
+			*)
+				if [ ! "$LESS_FILES" ]; then 
+					LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
+				fi
+				for file in ${LESS_FILES[@]}; do
+					printf "\nconverting $file"
+					lessc "$file" "${file%.less}.css"
+				done
+				mv $LESS_FILES_LOCATION/*.css $CSS_OUTPUT_LOCATION/
+			;;
+		esac
 	fi
 }
 
@@ -835,6 +842,9 @@ function sync_project {
 			move_items_to_lib
 			printf "\nSyncing JAR Files ...\n"
 			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
+		elif
+			[[ $item = 'node_modules' ]]; then
+			continue
 		else
 			printf "\nSyncing $item ...\n"
 			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
