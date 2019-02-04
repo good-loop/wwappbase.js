@@ -67,6 +67,7 @@ class DataClass {
 
 } // ./DataClass
 
+
 /**
  * @param otyp {!DataClass}
  * @param typ {!DataClass}
@@ -194,6 +195,9 @@ const getDataClass = typeOrItem => {
 DataClass.register = dclass => {
 	assert(dclass.name);
 	allTypes[dclass.name] = dclass;
+
+	// sanity check: no non static methods
+	
 };
 
 /**
