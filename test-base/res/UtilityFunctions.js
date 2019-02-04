@@ -62,6 +62,9 @@ async function login({browser, page, username, password, Selectors, service}) {
 
     await page.waitForSelector(Selectors['log-in']);
     await page.click(Selectors['log-in']);
+    // Wait for CSS transition to complete
+    // Caused puppeteer to click on wrong div sometimes
+    await page.waitFor(400);
 
     if( service === 'email' ) {
         await page.waitForSelector(Selectors['log-in-email']);
