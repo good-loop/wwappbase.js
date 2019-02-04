@@ -7,14 +7,17 @@ import {assert, assMatch} from 'sjtest';
 import DataClass, {getType} from './DataClass';
 
 class Share extends DataClass {
+
+	/**
+	 * Support Share or DBShare (c.f. the java server-side code)
+	 */
+	isa(obj) {
+		return super.isa(obj) || getType(obj) === 'DBShare';
+	}
+
 }
 const This = Share;
 export default This;
-
-/**
- * Support Share or DBShare (c.f. the java server-side code)
- */
-This.isa = (obj) => super.isa(obj) || getType(obj) === 'DBShare';
 
 /**
  * Convenience for a common filter + strip op.
