@@ -1,15 +1,15 @@
 'use strict';
 
 let takeScreenshot = (() => {
-    var _ref = _asyncToGenerator(function* ({ page, path, date = new Date().toISOString() }) {
+    var _ref = _asyncToGenerator(function* ({ page, path, name = new Date().toISOString() }) {
         try {
-            yield page.screenshot({ path: `${path}/${date}.png` });
+            yield page.screenshot({ path: `${path}/${name}.png` });
         } catch (e) {
             //dir not found
             //Shouldn't give infinite loop: mkdirSync throws error if directory can't be created
             if (e.code === 'ENOENT') {
                 fs.mkdirSync(path);
-                yield takeScreenshot(page);
+                yield takeScreenshot({ page, path, name });
             } else {
                 console.log('setup_script.js -- screenshot failed ' + e.code + ': ' + e.message);
             }
@@ -276,21 +276,21 @@ let soGiveFailIfPointingAtProduction = (() => {
 
 // Goes to the given URL (which must contain a Good-loop ad), watches the video, and makes a donation 
 /**
- * 
+ * Advert must already be somewhere on the page before this method is called
  * @param { object } page puppeteer test object
  * @param { string } type behaviour needs to be slightly different for type:banner ads
  * @param { string } url location where good-loop adunit is hosted
  */
 let watchAdvertAndDonate = (() => {
-    var _ref12 = _asyncToGenerator(function* ({ page, type, url }) {
-        yield page.goto(url);
+    var _ref12 = _asyncToGenerator(function* ({ page, type }) {
         yield page.waitFor(1000); //Allow 'visible' event to register. Doesn't get counted if you start working right away
         let pageOrIFrame = page; // If unit is wrapped in iframe, need to use iframe.ACTION instead of page.ACTION
 
         // Adunit may have been loaded in to an iframe.
         // Puppeteer will not cycle through frames to look for a given selector, so need to tell it where to look
+        // TODO cut down on possible values after this has been harmonised across the different pages/services
         const iframe = yield page.frames().find(function (f) {
-            return f.name().slice(0, 2) === 'gl' || f.name() === 'test01';
+            return f.name().slice(0, 2) === 'gl' || f.name() === 'test01' || f.name() === 'demo-iframe';
         });
 
         if (iframe) {

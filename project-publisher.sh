@@ -1,8 +1,13 @@
 #!/bin/bash
 
-VERSION='Version=1.15.1'
+VERSION='Version=1.15.5'
 
 ###
+# New in 1.15.5: Made it so that Adserver publishing now targets one LESS file instead of an entire directory
+#					Also, the syncing process will now ignore any directory called 'node_modules'.
+# New in 1.15.4: Moved the task of starting the project-process lower in the order of operations
+# New in 1.15.3: If publishing adserver [frontend|everything] then webpacking of the preact bundles takes place
+# New in 1.15.2: Made webpacking the last step in publishing, so as to not overwrite a bundle.js with a locally generated one.
 # New in 1.15.1: Fixed a loop-break if a fourth argument is not given. Fixed a post-publishing task for adserver publishes
 # New in 1.15.0: Added ability to specify publishing of the frontend/backend/everything
 # New in 1.14.0: LESS conversion now happening for preact adunits.
@@ -175,8 +180,8 @@ case $1 in
 		IMAGE_OPTIMISE='yes'
 		IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert"
 		CONVERT_LESS='yes'
-		LESS_FILES_LOCATION="$PROJECT_LOCATION/adunit/style/"
-		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-as/"
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/adunit/style/base.less"
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-as/unit.css"
 		WEBPACK='no'
 		TEST_JAVASCRIPT='yes'
 		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/"
@@ -331,9 +336,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('sogiveapp')
-		FRONTEND_SYNC_LIST=("config" "server" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc")
 		BACKEND_SYNC_LIST=("data" "lib")
-		WHOLE_SYNC=("config" "server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
+		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
 	;;
@@ -594,9 +599,10 @@ function image_optimisation {
 				printf '%s\n' "$PNGMD5OUTPUT" >> $IMAGEDIRECTORY/newpngarray.txt
 			done
 			mapfile -t PNGARRAY < $IMAGEDIRECTORY/newpngarray.txt
-			# ??please doc this powerful magic - awk print 3?? (NB: nice use of diff) ^DW Dec 2018
-			# Sure.
 			UNIQUEPNGS=$(diff $IMAGEDIRECTORY/pngarray.txt $IMAGEDIRECTORY/newpngarray.txt | grep ">" | awk '{print $3}')
+			# I want to build an array [list] of PNG files that are new to the project [and therefore un-optimised].
+			# I define my array as, the DIFFerence between the old/pre-existing pngarray.txt file and the newpngarray.txt file
+			# I then use grep to only give me lines where there are new PNG files listed, and I use awk to give me clean filenames.
 			if [[ ${UNIQUEPNGS[*]} = '' ]]; then
 				printf "\nNo new PNG files to optimise\n"
 			else
@@ -711,16 +717,21 @@ function convert_less_files {
 			printf "\nYour specified project $PROJECT , has the parameter 'CONVERT_LESS' set to 'yes', and an input directory IS specified,\nbut no output directory has been specified\nExiting process\n"
 			exit 0
 		fi
-		# Usually main.less and print.less are all we have to compile
-		# But default to compiling everything which is safe
-		if [ ! "$LESS_FILES" ]; then 
-			LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
-		fi
-		for file in ${LESS_FILES[@]}; do
-			printf "\nconverting $file"
-			lessc "$file" "${file%.less}.css"
-		done
-		mv $LESS_FILES_LOCATION/*.css $CSS_OUTPUT_LOCATION/
+		case $PROJECT in
+			adserver)
+				lessc $LESS_FILES_LOCATION $CSS_OUTPUT_LOCATION
+			;;
+			*)
+				if [ ! "$LESS_FILES" ]; then 
+					LESS_FILES=$(find $LESS_FILES_LOCATION -type f -iname "*.less")
+				fi
+				for file in ${LESS_FILES[@]}; do
+					printf "\nconverting $file"
+					lessc "$file" "${file%.less}.css"
+				done
+				mv $LESS_FILES_LOCATION/*.css $CSS_OUTPUT_LOCATION/
+			;;
+		esac
 	fi
 }
 
@@ -831,6 +842,9 @@ function sync_project {
 			move_items_to_lib
 			printf "\nSyncing JAR Files ...\n"
 			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
+		elif
+			[[ $item = 'node_modules' ]]; then
+			continue
 		else
 			printf "\nSyncing $item ...\n"
 			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
@@ -849,7 +863,7 @@ function run_automated_tests {
 		printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
 		case $PROJECT in
 			sogive-app)
-				cd $PROJECT_LOCATION/test
+				cd $PROJECT_LOCATION/puppeteer-tests
 				bash run-tests.sh $TYPE_OF_PUBLISH
 			;;
 			portal)
@@ -920,11 +934,19 @@ function run_post_publish_tasks {
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
 						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && webpack --progress -p"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
 						printf "\n\tConverting LESS for the Ad Unit\n"
 						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
-					*)
+					everything)
+						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
+						printf "\n\tWebpacking the Ad Unit\n"
+						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
+						printf "\n\tConverting LESS for the Ad Unit\n"
+						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
+					;;
+					backend)
 						printf "\n"
 					;;
 				esac
@@ -961,8 +983,8 @@ case $SPECIFIC_PUBLISH_GOAL in
 		printf "\nSyncing $PROJECT to $TARGETS\n"
 		printf "\nSyncing Configs\n"
 		sync_configs
-		webpack
 		sync_project
+		webpack
 	;;
 	frontend)
 		image_optimisation
@@ -973,16 +995,16 @@ case $SPECIFIC_PUBLISH_GOAL in
 		printf "\nSyncing $PROJECT to $TARGETS\n"
 		printf "\nSyncing Configs\n"
 		sync_configs
-		webpack
 		sync_project
+		webpack
 	;;
 	backend)
 		sync_project
 	;;
 esac
 restore_preserved
-start_proc
 printf "\nPublishing Process has completed\n"
 run_post_publish_tasks
+start_proc
 clean_tmp_lib
 run_automated_tests

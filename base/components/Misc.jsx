@@ -433,7 +433,7 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete,
 		{unpublish && pubExists? <span>&nbsp;</span> : null}
 		{unpublish && pubExists? <button className='btn btn-warning' disabled={isSaving || noEdits} 
 				title='Move from published to draft'
-				onClick={() => ActionMan.unpublish({type, id})} >
+				onClick={() => ActionMan.unpublish(type, id)} >
 				Un-Publish <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</button> : null}
 		&nbsp;

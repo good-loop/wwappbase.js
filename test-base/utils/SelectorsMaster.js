@@ -2,7 +2,7 @@ import PortalSelectors from './SelectorsPortal';
 import AdServerSelectors from './SelectorsAdServer';
 import SoGiveSelectors from './SelectorsSoGive';
 import MyLoopSelectors from './SelectorsMyLoop';
-
+import DemoPageSelectors from './SelectorsDemoPage';
 
 // Selectors that are used across all platfroms are written directly in SelectorsMaster
 const CommonSelectors = {
@@ -40,5 +40,6 @@ module.exports = {
     PortalSelectors,
     SoGiveSelectors,
     TwitterSelectors,
-    MyLoopSelectors
+    MyLoopSelectors,
+    DemoPageSelectors
 };
