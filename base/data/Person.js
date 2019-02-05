@@ -1,13 +1,24 @@
 
 import {assert, assMatch} from 'sjtest';
-import {isa, defineType, getType} from './DataClass';
+import DataClass, {getType} from './DataClass';
 import DataStore from '../plumbing/DataStore';
 import { getClaimsForXId } from '../Profiler';
 import Link from '../data/Link';
 import Claim from '../data/Claim';
 import {XId} from 'wwutils';
 
-const Person = defineType('Person');
+class Person extends DataClass {
+	/** @type {Link[]} */
+	links;
+	/** @type {Claim[]} */
+	claims;
+
+	constructor(base) {
+		super(base);
+		Object.assign(this, base);		
+	}
+}
+DataClass.register(Person);
 const This = Person;
 export default Person;
 
@@ -58,7 +69,7 @@ Person.getLinks = (peep, service) => {
 	// is the XId a match?
 	const xid = Person.id(peep);
 	if (XId.service(xid) === service) {
-		return Link.make({key:"link", value:xid, from:[xid], consent:['public'], w:1});
+		return new Link({key:"link", value:xid, from:[xid], consent:['public'], w:1});
 	}
 	// links
 	if ( ! peep.links) return null;	

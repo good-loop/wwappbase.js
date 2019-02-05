@@ -308,7 +308,7 @@ Misc.AvatarImg = ({peep, ...props}) => {
 
 /**
  * @param d {Date}
- * @returns {String}
+ * @return {String} iso format 
  */
 Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
 
@@ -318,6 +318,7 @@ Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
  * 	url: {?String} The image url. If falsy, return null
  * 	style: {?Object}
  * }
+ * @return {JSX}
  */
 Misc.ImgThumbnail = ({url, style}) => {
 	if ( ! url) return null;

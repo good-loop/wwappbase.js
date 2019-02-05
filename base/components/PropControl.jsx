@@ -515,7 +515,7 @@ const PropControlMoney = ({prop, value, path, proppath,
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
 	// Convert null and numbers into MA objects
 	if ( ! value || _.isString(value) || _.isNumber(value)) {
-		value = Money.make({value});
+		value = new Money({value});
 	}
 	// prefer raw, so users can type incomplete answers!
 	let v = value.raw || value.value;

@@ -15,11 +15,13 @@ import {endsWith} from 'wwutils';
  * 
  * Standard use
 
-import {isa, defineType, getType} from './DataClass';
+import DataClass, {getType} from './DataClass';
 import C from './C';
-const MyType = defineType(C.TYPES.MyType);
+class MyType extends DataClass {};
+DataClass.register(MyType);
 // or
-const MyType = defineType(C.TYPES.MyType, ParentType);
+class MyType extends ParentType {}
+
 const This = MyType;
 export default MyType;
 
@@ -27,31 +29,89 @@ export default MyType;
 
  */
 
+// SOme useful Types
 /**
- * check the type!
- * @param typ {!String}
+ * @typedef {String} XIdString
  */
-const isa = function(obj, typ) {
-	if (!_.isObject(obj) || obj.length) return false;
-	const otyp = getType(obj);
-	if ( ! otyp) return false;
-	return isa2(otyp, typ);
-};
+/**
+ * @typedef {String} TimeString
+ */
+
+
+class DataClass {
+
+	/**
+	 * Sub-classes with properties/fields MUST define a constructor with the line:
+	 * Object.assign(this, base);
+	 * For example:
+	 * ```
+	constructor(base) {
+		super(base);
+		Object.assign(this, base);
+	}
+	```
+	 * 
+	* WARNING: IF your class defines any property values, then
+	 * these take precedence over anything this base constructor does.
+	 * So data could easily be lost!
+	 */
+	constructor(base) {
+		Object.assign(this, base);
+		this['@type'] = this.constructor.name;		
+	}
+
+	/**
+	 * check the type!
+	 */
+	static isa(obj) {
+		if ( ! _.isObject(obj) || obj.length) return false;
+		// console.warn(this, this.name);
+		let typ = this;
+		const sotyp = getType(obj);
+		if ( ! sotyp) return false;
+		if (sotyp === typ.name) return true;
+		let otyp = getDataClass(sotyp);
+		return isa2(otyp, typ);
+	}
+
+	static assIsa(obj, msg) {
+		assert(this.isa(obj), (msg||'')+" "+this.name+" expected, but got "+JSON.stringify(obj));
+	}
+
+	/**
+	* @returns {?String} 
+	*
+	* Note: Not all classes or instance have a name. This function is defined here as it is
+	* a bit of a special case. Instances can have their own names. But you cant reassign the 
+	* builtin class property `MyClass.name` = the class name, so we can't follow the fluent naming 
+	* convention of X.f(x) => x.f. Hence why this is called getName(). And defined here so we 
+	* can explain that once.
+	*/
+	static getName(obj) {
+		return obj.name;
+	}	
+
+} // ./DataClass
+
+
+/**
+ * @param otyp {!DataClass}
+ * @param typ {!DataClass}
+ */
 const isa2 = (otyp, typ) => {
+	if ( ! otyp) return false;
+	// console.warn(typ.prototype, typ.__proto__, otyp.prototype, otyp.__proto)
 	if (otyp === typ) return true;
 	// sub-type?
-	if ( ! otyp.parentTypes) return false;
-	for(let i=0; i<otyp.parentTypes.length; i++) {
-		if (isa2(otyp, parentTypes[i])) return true;
-	}
-	return false;
+	return isa2(otyp.__proto__, typ);
 };
+window.isa2 = isa2; // debug
 
 /**
  * Uses schema.org or gson class to get the type.
  * Or null
  * @param item {?any}
- * @returns {?String} e.g. "Money"
+ * @return {?String} e.g. "Money"
  */
 const getType = function(item) {
 	if ( ! item) return null;
@@ -85,6 +145,7 @@ const getId = (item) => {
 	}
 	return id;
 };
+DataClass.id = getId;
 
 /**
  * @returns DRAFT / PUBLISHED
@@ -97,9 +158,10 @@ const getStatus = (item) => {
 	assert(C.KStatus.has(s), "DataClass.js getStatus", item);
 	return s;
 };
-
+DataClass.status = getStatus;
 
 /**
+ * TODO move into SoGive
  * access functions for source, help, notes??
  */
 const Meta = {};
@@ -139,53 +201,9 @@ const nonce = (n=10) => {
 	return s.join("");
 };
 
-/**
- * Setup the "standard" DataClass functions:
- * isa()
- * assIsa()
- * id()
- * name()
- * make()
- * And a type.
- * @param {!String} type 
- * @param {?DataClass[]} parentTypes parents if creating a subtypes. 
- */
-const defineType = (type, ...parentTypes) => {
-	assMatch(type, String);
-	// copy methods from the parents
-	const This = Object.assign({}, ...parentTypes);
-	This.type = type;
-	This['@type'] = 'DataClass';
-	// ?? flatten any recursion for efficiency (then stifle recursion in make and isa)
-	This.parentTypes = parentTypes.length? parentTypes : null;	
-	This.isa = (obj) => isa(obj, type);
-	This.assIsa = (obj, msg) => assert(This.isa(obj), (msg||'')+" "+type+" expected, but got "+JSON.stringify(obj));
-	/** convenience for getId() */
-	This.id = obj => This.assIsa(obj) && getId(obj);
-	This.make = (base = {}) => {
-		// super makes
-		if (This.parentTypes) {
-			This.parentTypes.forEach(pt => {
-				if (pt.make) {
-					base = pt.make(base);
-				}
-			});
-		}
-		// this type + always copy base to avoid any side-effects
-		return {
-			...base,
-			'@type': This.type,
-		};
-	};
-	// a default toString
-	if ( ! This.name) This.name = obj => obj && obj.name;
-	if ( ! This.str) This.str = obj => JSON.stringify(obj);
-	// for getDataClass
-	allTypes[type] = This;
-	// for debug use only
-	window.dataclass[type] = This;
-	return This;
-};
+// NB: cannot assign DataClass.name as that is a reserved field name for classes
+DataClass.title = obj => obj && (obj.title || obj.name);
+DataClass.str = obj => JSON.stringify(obj);
 
 /**
  * @param typeOrItem {String|Object} If object, getType() is used
@@ -200,15 +218,21 @@ const getDataClass = typeOrItem => {
 	return allTypes[type];
 };
 
+DataClass.register = dclass => {
+	assert(dclass.name);
+	allTypes[dclass.name] = dclass;
+
+	// sanity check: no non static methods
+	
+};
+
 /**
  * Keep the defined types
  */
 const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
-window.dataclass = {};
+window.allTypes = allTypes
+window.DataClass = DataClass;
 
-export {defineType, isa, getType, getId, getStatus, getDataClass, Meta, nonce};	
-// Also have a default export -- which is defineType
-const DataClass = defineType;
-
+export {getType, getId, getStatus, Meta, nonce, getDataClass};	
 export default DataClass;

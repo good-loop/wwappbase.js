@@ -3,12 +3,15 @@
 */
 import {assert, assMatch} from 'sjtest';
 import {asNum} from 'wwutils';
-import {isa, defineType, getType} from './DataClass';
+import DataClass from './DataClass';
 import C from '../CBase';
 import Money from './Money';
 
 /** impact utils */
-const MoneyItem = defineType('MoneyItem');
+class MoneyItem extends DataClass {
+
+};
+DataClass.register(MoneyItem);
 const This = MoneyItem;
 export default MoneyItem;
 

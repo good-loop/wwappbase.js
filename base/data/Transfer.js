@@ -1,7 +1,7 @@
 
 import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
-import {isa, nonce, defineType} from './DataClass';
+import DataClass, {nonce} from './DataClass';
 import {uid, blockProp} from 'wwutils';
 import Money from './Money';
 import C from '../CBase';
@@ -9,7 +9,16 @@ import Login from 'you-again';
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 
-const Transfer = defineType(C.TYPES.Transfer);
+class Transfer extends DataClass {
+	/** {Money} */
+	amount;
+	/** {String} */
+	to;
+	constructor(base) {
+		super(base);
+		Object.assign(this, base);
+	}
+}
 const This = Transfer;
 export default Transfer;
 
@@ -21,7 +30,7 @@ Transfer.getTotal = (list, to) => {
 	assMatch(to, String);
 	// Using this clumsy forEach instead of a reduce because this makes it clearer
 	// that the total's Money object (thus currency) is based on the first item
-	let total = Money.make();
+	let total = new Money();
 	list.forEach((item) => {
 		This.assIsa(item);
 		let amount = item.amount;
@@ -32,7 +41,7 @@ Transfer.getTotal = (list, to) => {
 		}
 		total = Money.add(total, amount);
 	});
-	return total || Money.make();
+	return total || new Money();
 };
 
 /**

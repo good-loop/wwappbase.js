@@ -156,7 +156,7 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 		base.tags = tags;
 		base.assigned = assigned;
 		base.parent = parent;
-		let task = Task.make(base);
+		let task = new Task(base);
 		// publish
 		if (parent) { // if its a child, save the parent
 			ActionMan.publishEdits('Task', parent.id, parent);
