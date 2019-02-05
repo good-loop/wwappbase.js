@@ -14,6 +14,7 @@ class Money extends DataClass {
 	currency = 'GBP'; // default
 
 	constructor(base) {
+		super(base);
 		Object.assign(this, base);
 		this['@type'] = 'Money';
 		Money.value(this); // init v100p from value
