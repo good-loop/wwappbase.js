@@ -39,12 +39,25 @@ export default MyType;
 
 
 class DataClass {
-	
+
+	/**
+	 * Sub-classes with properties/fields MUST define a constructor with the line:
+	 * Object.assign(this, base);
+	 * For example:
+	 * ```
 	constructor(base) {
-		Object.assign(this, base);		
-		this['@type'] = this.constructor.name; //name; //DataClass._type;
-		// console.warn('type', this, "name", this.name, "cons", this.constructor, ""+this.constructor,
-		// 	this.constructor.name,  ""+this, typeof(this));
+		super(base);
+		Object.assign(this, base);
+	}
+	```
+	 * 
+	* WARNING: IF your class defines any property values, then
+	 * these take precedence over anything this base constructor does.
+	 * So data could easily be lost!
+	 */
+	constructor(base) {
+		Object.assign(this, base);
+		this['@type'] = this.constructor.name;		
 	}
 
 	/**
@@ -76,7 +89,7 @@ class DataClass {
 	*/
 	static getName(obj) {
 		return obj.name;
-	}
+	}	
 
 } // ./DataClass
 

@@ -29,6 +29,11 @@ class List extends DataClass {
 
 	/** {Number} */
 	total;
+
+	constructor(base) {
+		super(base);
+		Object.assign(this, base);
+	}
 };
 DataClass.register(List);
 

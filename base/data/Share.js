@@ -11,7 +11,7 @@ class Share extends DataClass {
 	/**
 	 * Support Share or DBShare (c.f. the java server-side code)
 	 */
-	isa(obj) {
+	static isa(obj) {
 		return super.isa(obj) || getType(obj) === 'DBShare';
 	}
 

@@ -12,7 +12,7 @@ class Claim extends DataClass {
 	k;
 	v;
 	/** @type {TimeString} */
-	t;
+	t = new Date().toISOString();
 	/** @type {XIdString[]} */
 	f;
 	/** @type {String[]} */
@@ -26,25 +26,23 @@ class Claim extends DataClass {
 	 * @param {String[]|boolean} consent - Same as c!
 	*/
 	constructor({key, value, from, c, consent}) {
-		c = c || consent;
 		// convert a single XId to an array?
 		if (_.isString(from)) from = [from];	
-
-		assMatch(from, 'String[]');
-		assMatch(key, String); 
-
 		// Converting from internally held true/false to something
 		// That the back-end can understand
 		if ( typeof c === 'boolean' ) c = c ? ['public'] : ['private']
 		assMatch(c, 'String[]');
 
-		return {
-			c,
-			t: new Date().toISOString(),
+		let base = {
+			c: c || consent,
 			v: value,
 			f: from,
 			k: key
 		};
+		Object.assign(this, base);
+		this['@type'] = 'Claim';
+		assMatch(from, 'String[]');
+		assMatch(key, String); 
 		// NB: kv, o are backend fields made by the backend for internal (ES) use
 	};
 } // ./Claim

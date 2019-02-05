@@ -27,6 +27,7 @@ class Task extends DataClass {
 		}
 		// TODO @you and #tag
 		super(item);
+		Object.assign(this, item);
 	}
 
 };

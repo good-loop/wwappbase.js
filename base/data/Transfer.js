@@ -14,6 +14,10 @@ class Transfer extends DataClass {
 	amount;
 	/** {String} */
 	to;
+	constructor(base) {
+		super(base);
+		Object.assign(this, base);
+	}
 }
 const This = Transfer;
 export default Transfer;

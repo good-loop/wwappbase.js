@@ -12,6 +12,11 @@ class Person extends DataClass {
 	links;
 	/** @type {Claim[]} */
 	claims;
+
+	constructor(base) {
+		super(base);
+		Object.assign(this, base);		
+	}
 }
 DataClass.register(Person);
 const This = Person;
