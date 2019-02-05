@@ -65,6 +65,19 @@ class DataClass {
 		assert(this.isa(obj), (msg||'')+" "+this.name+" expected, but got "+JSON.stringify(obj));
 	}
 
+	/**
+	* @returns {?String} 
+	*
+	* Note: Not all classes or instance have a name. This function is defined here as it is
+	* a bit of a special case. Instances can have their own names. But you cant reassign the 
+	* builtin class property `MyClass.name` = the class name, so we can't follow the fluent naming 
+	* convention of X.f(x) => x.f. Hence why this is called getName(). And defined here so we 
+	* can explain that once.
+	*/
+	static getName(obj) {
+		return obj.name;
+	}
+
 } // ./DataClass
 
 
@@ -206,7 +219,7 @@ DataClass.register = dclass => {
 const allTypes = {};
 // Debug hack: export classes to global! Don't use this in code - use import!
 window.allTypes = allTypes
-
+window.DataClass = DataClass;
 
 export {getType, getId, getStatus, Meta, nonce, getDataClass};	
 export default DataClass;
