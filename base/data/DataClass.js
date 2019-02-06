@@ -223,7 +223,9 @@ DataClass.register = dclass => {
 	allTypes[dclass.name] = dclass;
 
 	// sanity check: no non static methods
-	
+	const nonStatic = Object.getOwnPropertyNames(dclass.__proto__)
+		.filter(fn => ! dclass.hasOwnProperty(fn));
+	assert( ! nonStatic.length, "DataClasses can only have static methods: "+dclass.name+" "+JSON.stringify(nonStatic));		
 };
 
 /**

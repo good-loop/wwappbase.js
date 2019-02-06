@@ -26,6 +26,7 @@ class Claim extends DataClass {
 	 * @param {String[]|boolean} consent - Same as c!
 	*/
 	constructor({key, value, from, c, consent}) {
+		super(); // no base passed into super 'cos its handled below
 		// convert a single XId to an array?
 		if (_.isString(from)) from = [from];	
 		// Converting from internally held true/false to something
@@ -40,7 +41,6 @@ class Claim extends DataClass {
 			k: key
 		};
 		Object.assign(this, base);
-		this['@type'] = 'Claim';
 		assMatch(from, 'String[]');
 		assMatch(key, String); 
 		// NB: kv, o are backend fields made by the backend for internal (ES) use
