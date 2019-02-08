@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.15.5'
+VERSION='Version=1.15.6'
 
 ###
+# New in 1.15.6: Portal project now is told to webpack via 'npm run build' command
 # New in 1.15.5: Made it so that Adserver publishing now targets one LESS file instead of an entire directory
 #					Also, the syncing process will now ignore any directory called 'node_modules'.
 # New in 1.15.4: Moved the task of starting the project-process lower in the order of operations
@@ -677,7 +678,14 @@ function webpack {
 		printf "\nGetting NPM Dependencies ..."
 		$PSSH "cd $TARGET_DIRECTORY && npm i"
 		printf "\nWebpacking ..."
-			$PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
+		case $PROJECT in
+			portal)
+				$PSSH "cd $TARGET_DIRECTORY && npm run build"
+			;;
+			*)
+				$PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
+			;;
+		esac
 	fi
 }
 
