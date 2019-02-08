@@ -1,5 +1,70 @@
 @form-input-width: 40em;
+@preview-margin: 5px;
+@preview-height: 100px;
+
+// Used to signify "transparent" or "no colour chosen"
+.stripe-bg() {
+	background: repeating-linear-gradient(
+		-45deg,
+		#bbb, #bbb 7px, #555 7px, #555 14px
+	);
+}
 
 .form-group.Money input, .form-group.email input, .form-group.imgUpload input, .form-group.videoUpload input, .form-group.textarea textarea {
-    max-width: @form-input-width;
+	max-width: @form-input-width;
+}
+
+.form-group.imgUpload, .form-group.videoUpload {
+	// normalise height of preview boxes
+	.video-thumbnail, .img-thumbnail, .DropZone {
+		margin: @preview-margin;
+		height: @preview-height;
+	}
+	.DropZone {
+		width: @preview-height * 1.2;
+	}
+	// let the white silhouette logo control show that the user hasn't picked a brand colour
+	.img-thumbnail.stripe-bg {
+		.stripe-bg();
+	}
+}
+
+// Let's make the colour picker (a) obvious in function and (b) pretty
+.color-container {
+	position: relative;
+	margin: @preview-margin;
+
+	.form-control[type="color"] {
+		height: @preview-height;
+		padding: 0;
+		// Allow background to show through if no colour chosen (class added in PropControl.jsx)
+		&.no-color {
+			opacity: 0;
+		}
+		// appear in front of position:absolute siblings
+		position: relative;
+		z-index: 1;
+	}
+	.color-bg, .color-decoration {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+	}
+	// Signify no colour chosen with diagonal striped background
+	.color-bg {
+		.stripe-bg();
+	}
+	.color-decoration {
+		color: white;
+		font-weight: bold;
+		text-shadow: 2px 2px 1px black;
+		z-index: 2;
+		pointer-events: none;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		text-align: center;
+	}
 }

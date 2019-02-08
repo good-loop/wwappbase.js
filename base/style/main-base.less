@@ -24,6 +24,14 @@
 	margin-top:60px;
 }
 
+// BS default has too much padding on the navbar logo
+.navbar-brand {
+	padding: 3px;
+	img { 
+		height: 100%; // ...and nothing to constrain logo height
+	}
+}
+
 .no-margin {
 	margin-top: 0px;
 	margin-bottom: 0px;
@@ -36,20 +44,25 @@
 }
 
 img.logo {
-	width: 32px;	
-	max-height: 32px;
+	width: 48px;
+	height: 48px;
 }
 img.logo-small {
-	max-width:16px;	
-	max-height:16px;	
+	width: 16px;
+	height: 16px;
 }
 img.logo-large {
-	max-width:64px;	
-	max-height:64px;	
+	width: 64px;
+	height: 64px;
 }
 img.logo-xlarge {
-	max-width:128px;	
-	max-height:128px;	
+	width: 128px;
+	height: 128px;
+}
+img {
+	&.logo, &.logo-small, &.logo-large, &.logo-xlarge {
+		object-fit: contain; // allow square container but keep proportions
+	}
 }
 
 /* https://css-tricks.com/snippets/css/a-guide-to-flexbox/ */

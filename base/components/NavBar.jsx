@@ -26,8 +26,8 @@ const NavBar = ({currentPage, pages, children, homelink}) => {
 						<span className="sr-only">Toggle navigation</span>
 						<span className="icon-bar" /><span className="icon-bar" /><span className="icon-bar" />
 					</button>
-					<a className="" href={homelink || '/'}>
-						<img className='logo-xlarge' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+					<a className="navbar-brand" href={homelink || '/'}>
+						<img alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 					</a>
 				</div>
 				<div id="navbar" className="navbar-collapse collapse">

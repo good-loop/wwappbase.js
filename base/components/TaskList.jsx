@@ -117,23 +117,26 @@ const TaskList = ({}) => {
 		return <TaskListButton bpath={wpath.concat('show')} list={pvItems.value} />
 	}
 
-	return (<div>
-		<TaskListButton bpath={wpath.concat('show')} value={true} list={pvItems.value} />
-		<TaskEditorDialog />
-		<div className='TaskList avoid-navbar' style={{position:'fixed', right:0, top:0}}>
-			<h4>Tasks for {tags.join(" ")}</h4>
-			<QuickTaskMaker tags={tags} items={pvItems.value} /> 
-			<div>&nbsp;</div>
-			<ListLoad 
-				hasFilter={pvItems.value && pvItems.value.total > 5}
-				q={q}
-				type={type} 
-				status={status} 
-				ListItem={TaskListItem}				
-				className='DefaultListLoad' 
-				canDelete
+	return (
+		<div>
+			<TaskListButton bpath={wpath.concat('show')} value={true} list={pvItems.value} />
+			<TaskEditorDialog />
+			<div className='TaskList avoid-navbar' style={{position:'fixed', right:0, top:0}}>
+				<h4>Tasks for {tags.join(" ")}</h4>
+				<QuickTaskMaker tags={tags} items={pvItems.value} />
+				<div>&nbsp;</div>
+				<ListLoad
+					hasFilter={pvItems.value && pvItems.value.total > 5}
+					q={q}
+					type={type}
+					status={status}
+					ListItem={TaskListItem}
+					className='DefaultListLoad'
+					canDelete
 				/>
-	</div></div>);
+			</div>
+		</div>
+	);
 };
 
 /**

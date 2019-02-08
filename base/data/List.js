@@ -43,7 +43,7 @@ export default List;
 // more lenient duck typing
 List.isa = listy => {
 	if ( ! listy) return false;
-	return isa(listy, 'List') || (listy.hits && listy.hits.length !== undefined);
+	return isa(listy, List) || (listy.hits && listy.hits.length !== undefined);
 };
 
 List.hits = list => List.assIsa(list) && list.hits;

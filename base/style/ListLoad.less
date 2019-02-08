@@ -1,17 +1,41 @@
+.ListLoad {
+	margin-bottom: 0.5em;
+	// separate filter box from results
+	.filter {
+		padding-bottom: 0.5em;
+		border-bottom: 1px solid #333;
+	}
+}
 
-.DefaultListLoad {
-	.ListItemWrapper {
-		border-top: 1px solid #333;
+
+.ListLoad > div {
+	&:not(:first-child) {
+		margin-top: 0.5em;
+	}
+}
+
+.ListItemWrapper {
+	// border-top: 1px solid #333;
+}
+
+.ListItem > div {
+	display: inline-flex;
+	flex-direction: row;
+	> *:not(:first-child) {
+		margin-left: 0.5em;
+	}
+	.id {
+		font-family: monospace;
 	}
 }
 
 .TaskList {
 	margin-left: 1em;
 	margin-bottom: 1em;
-   border-left: 1px solid #666;
+	border-left: 1px solid #666;
 	padding-left: 1em;	
 	background: white;
-	height:100%;
+	height: 100%;
 	max-width: 350px;
 	min-width: 200px;
 }

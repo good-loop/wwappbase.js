@@ -102,17 +102,18 @@ Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, createText="Cre
 
 /**
  * 
- * @param {
- * 	TODO?? noPadding: {Boolean} switch off Bootstrap's row padding.
- * }
+ * @param noContainer {Boolean} Dont wrap in a .container, this is going in a context which permits .rows already
+ * TODO?? noPadding: {Boolean} switch off Bootstrap's row padding.
+ * 
  */
-Misc.Col2 = ({children}) => (
-	<div className='container-fluid'>
+Misc.Col2 = ({children, noContainer}) => {
+	const row = (
 		<div className='row'>
 			<div className='col-md-6 col-sm-6'>{children[0]}</div><div className='col-md-6 col-sm-6'>{children[1]}</div>
 		</div>
-	</div>
-);
+	);
+	return noContainer ? row : <div className='container-fluid'>{row}</div>;
+};
 
 /**
  * Money span, falsy displays as 0
@@ -210,7 +211,7 @@ Misc.Thumbnail = ({item}) => {
 	// Newer ads store logo under item.branding.logo
 	// Kept old syntax in as back-up so that the #advert page will still show icons for old ads
 	let img = ( item.branding && item.branding.logo ) || item.logo || item.img;
-	return img? <img src={img} className='logo img-thumbnail pull-left' /> : null;
+	return img? <img src={img} className='logo img-thumbnail' /> : null;
 };
 
 const SECOND = 1000;
@@ -320,14 +321,16 @@ Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
  * }
  * @return {JSX}
  */
-Misc.ImgThumbnail = ({url, style}) => {
-	if ( ! url) return null;
+Misc.ImgThumbnail = ({url, style, className, ...props}) => {
+	if (!url) return null;
 	// add in base (NB this works with style=null)
-	style = Object.assign({width:'100px', maxHeight:'200px'}, style);
-	return (<img className='img-thumbnail' style={style} alt='thumbnail' src={url} />);
+	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain'}, style);
+	return <img className={`img-thumbnail ${className}`} style={style} alt='thumbnail' src={url} />;
 };
 
-Misc.VideoThumbnail = ({url, width=200, height=150, controls=true}) => url? <video width={width} height={height} src={url} controls /> : null;
+Misc.VideoThumbnail = ({url, width=200, height=150, controls=true}) => url ? (
+	<video className="video-thumbnail" width={width} height={height} src={url} controls />
+) : null;
 
 /** Hack: a debounced auto-save function for the save/publish widget 
  * @param {type, id}

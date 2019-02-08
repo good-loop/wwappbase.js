@@ -99,10 +99,11 @@ const ListLoad = ({type, status, servlet, navpage,
 	} else {
 		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
 	}
+
 	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{items.length === 0 ? 'No results found' : null}
 		{canCreate? <CreateButton type={type} /> : null}
-		{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' type='search' path={widgetPath} prop='filter'/></div> : null}
+		{hasFilter? <div className='filter form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' type='search' path={widgetPath} prop='filter'/></div> : null}
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i} 
 				item={item} 
@@ -139,13 +140,20 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	const id = getId(item);
 	const itemUrl = modifyHash([servlet, id], null, true);
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
+
+	const checkbox = checkboxes ? (
+		<div className='pull-left'>
+			<Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} />
+		</div>
+	) : null;
+
 	return (
 		<div className='ListItemWrapper clearfix'>
-			{checkboxes? <div className='pull-left'><Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} /></div> : null}
+			{checkbox}
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<a href={itemUrl}
 				onClick={event => onPick({ event, navpage, id })}
-				className={'ListItem btn btn-default status-'+item.status}
+				className={'ListItem btn btn-default status-' + item.status}
 			>
 				{children}
 			</a>
@@ -153,30 +161,44 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	);
 };
 
+
 /**
  * These can be clicked or control-clicked
  * 
  * @param servlet
  * @param navpage -- How/why/when does this differ from servlet??
+ * @param nameFn {Function} Is there a non-standard way to extract the item's display name?
+ * 	TODO If it's of a data type which has getName(), default to that
+ * @param extraDetail {Element} e.g. used on AdvertPage to add a marker to active ads
  */
-const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete}) => {
+const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, nameFn, extraDetail}) => {
 	if ( ! navpage) navpage = servlet;
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
-	return (<div>
+	const name = nameFn ? nameFn(item, id) : item.name || item.text || id;
+	const status = C.KStatus.isPUBLISHED(item.status)? null : item.status;
+	return (
+		<div>
 			<Misc.Thumbnail item={item} />
-			{item.name || item.text || id}<br/>
-			<small>id: {id} {C.KStatus.isPUBLISHED(item.status)? null : item.status}</small>				
+			<div className="info">
+				<div className="name">{name}</div>
+				<div className="detail small">
+					id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
+				</div>
+			</div>
 		</div>
 	);
 };
+
 
 const DefaultDelete = ({type,id}) => (
 	<button className='btn btn-xs btn-default pull-right' 
 		onClick={e => confirm("Delete this "+type+"?")? ActionMan.delete(type, id) : null} 
 		title='Delete'>
 		<Misc.Icon glyph='trash' />
-	</button>);
+	</button>
+);
+
 
 /**
  * Make a local blank, and set the nav url
@@ -232,5 +254,5 @@ const CreateButton = ({type, props, navpage, base, make}) => {
 	</div>);
 };
 
-export {CreateButton};
+export { CreateButton, DefaultListItem };
 export default ListLoad;

@@ -87,7 +87,7 @@ const ShareWidget = ({item, type, id, thingId, name}) => {
 	if (item) {
 		type = getType(item);
 		id = getId(item);
-		name = getDataClass(type) && getDataClass(type).name(item);
+		name = getDataClass(type) && getDataClass(type).getName(item);
 	}
 	if ( ! type || ! id) {
 		return null;

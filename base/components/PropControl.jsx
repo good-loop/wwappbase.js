@@ -110,7 +110,7 @@ const PropControl = (props) => {
 	// TODO refactor so validators and callers use setInputStatus
 	if ( ! error) {
 		const is = getInputStatus(proppath);
-		if ( ! is && required && value===undefined) {
+		if ( ! is && required && value === undefined) {
 			setInputStatus({path:proppath, status:'error', message:'Missing required input'});
 		}
 		if (is && is.status==='error') {
@@ -122,7 +122,7 @@ const PropControl = (props) => {
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
 	// if ((label || help || tooltip || error) && ! Misc.KControlTypes.ischeckbox(type) && ! recursing) {
-	if ( ! Misc.KControlTypes.ischeckbox(type) && ! recursing) {
+	if ( ! Misc.KControlTypes.ischeckbox(type) && !recursing) {
 		// Minor TODO help block id and aria-described-by property in the input
 		const labelText = label || '';
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
@@ -302,6 +302,13 @@ const PropControl = (props) => {
 		let acceptedTypes = type==='imgUpload'? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
 		let acceptedTypesDesc = type==='imgUpload'? 'JPG, PNG, or SVG image' : 'video'
 
+		// Catch special background-colour name for img and apply a special background to show img transparency
+		let className;
+		if (bg === 'transparent') {
+			bg = '';
+			className='stripe-bg';
+		}
+
 		return (
 			<div>
 				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
@@ -315,9 +322,12 @@ const PropControl = (props) => {
 						Drop a {acceptedTypesDesc} here
 					</Dropzone>
 				</div>
-				<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}>
-					{type==='videoUpload'? <Misc.VideoThumbnail url={value} />
-						: <Misc.ImgThumbnail style={{background: bg}} url={value} />}
+				<div className='pull-right'>
+					{type === 'videoUpload' ? (
+						<Misc.VideoThumbnail url={value} />
+					) : (
+						<Misc.ImgThumbnail className={className} style={{background: bg}} url={value} />
+					)}
 				</div>
 				<div className='clearfix' />
 			</div>
@@ -326,11 +336,13 @@ const PropControl = (props) => {
 
 	if (type==='url') {
 		delete otherStuff.https;
-		return (<div>
-			<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
-			<div className='pull-right'><small>{value? <a href={value} target='_blank'>open in a new tab</a> : null}</small></div>
-			<div className='clearfix' />
-		</div>);
+		return (
+			<div>
+				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
+				<div className='pull-right'><small>{value? <a href={value} target='_blank'>open in a new tab</a> : null}</small></div>
+				<div className='clearfix' />
+			</div>
+		);
 	}
 
 	// date
@@ -341,16 +353,28 @@ const PropControl = (props) => {
 		return <PropControlDate {...acprops} />;
 	}
 
-	if (type==='radio' || type==='checkboxes') {
+	if (type === 'radio' || type === 'checkboxes') {
 		return <PropControlRadio value={value} {...props} />
 	}
-	if (type==='select') {
+	if (type === 'select') {
 		let props2 ={onChange, value, modelValueFromInput, ...props};
 		return <PropControlSelect  {...props2} />
 	}
-	if (type==='autocomplete') {
+	if (type === 'autocomplete') {
 		let acprops ={prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlAutocomplete {...acprops} />;
+	}
+	if (type === 'color') {
+		return (
+			<div>
+				<Misc.FormControl type="text" name={prop} value={value} onChange={onChange} {...otherStuff} />
+				<div className="color-container">
+					<div className="color-bg" />
+					<Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />
+					<div className="color-decoration">Click to pick a colour</div>
+				</div>
+			</div>
+		);
 	}
 	// normal
 	// NB: type=color should produce a colour picker :)
@@ -693,9 +717,11 @@ Misc.normalise = s => {
 const FormControl = ({value, type, required, size, className, ...otherProps}) => {
 	if (value===null || value===undefined) value = '';
 
-	if (type==='color' && ! value) { 
-		// workaround: this prevents a harmless but annoying console warning about value not being an rrggbb format
-		return <input className='form-control' type={type} {...otherProps} />;	
+	if (type === 'color' && !value) { 
+		// Chrome spits out a console warning about type="color" needing value in format "#rrggbb"
+		// ...but if we omit value, React complains about switching an input between controlled and uncontrolled
+		// So give it a dummy value and set a class to allow us to show a "no colour picked" signifier
+		return <input className='form-control no-color' value="#000000" type={type} {...otherProps} />;	
 	}
 	// add css classes for required fields
 	let klass = join(className, 'form-control', 
