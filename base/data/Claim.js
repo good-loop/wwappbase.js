@@ -24,6 +24,7 @@ class Claim extends DataClass {
 	 * @param {String} key
 	 * @param {String[]|boolean} c - e.g. ['public']
 	 * @param {String[]|boolean} consent - Same as c!
+	 * 
 	*/
 	constructor({key, value, from, c, consent}) {
 		super(); // no base passed into super 'cos its handled below
