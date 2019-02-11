@@ -14,6 +14,9 @@ import {assert, assMatch} from 'sjtest';
 import DataClass, {getType, getId, nonce} from './DataClass';
 import C from '../CBase';
 
+/**
+ * Reference for a data item. Given this, you can get the data item from DataStore.
+ */
 class Hit {
 	id;
 	type;
@@ -23,11 +26,11 @@ class Hit {
 /** impact utils */
 class List extends DataClass {
 	/**
-	 * {Hit[]}
+	 * @type {Hit[]}
 	 */
 	hits;
 
-	/** {Number} */
+	/** @type {Number} */
 	total;
 
 	constructor(base) {
