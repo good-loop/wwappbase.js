@@ -181,18 +181,15 @@ const PropControl = (props) => {
 	if (type === 'yesNo') {
 		const onChange = e => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
-			const val = e && e.target && e.target.value && e.target.value !== 'false';
+			const val = e && e.target && e.target.value;
 			DataStore.setValue(proppath, val);
 			if (saveFn) saveFn({path, prop, value: val});		
 		};
 
-		// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
-		const noChecked = value !== null && value !== undefined && !value;
-
 		return (
 			<div className='form-group'>
-				<BS.Radio value name={prop} onChange={onChange} checked={value} inline label='Yes' />
-				<BS.Radio value={false} name={prop} onChange={onChange} checked={noChecked} inline label='No' />
+				<BS.Radio value="yes" name={prop} onChange={onChange} checked={"yes" == value} inline label='Yes' />
+				<BS.Radio value="no" name={prop} onChange={onChange} checked={"no" == value} inline label='No' />
 			</div>
 		);
 	}
