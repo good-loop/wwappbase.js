@@ -232,5 +232,5 @@ const CreateButton = ({type, props, navpage, base, make}) => {
 	</div>);
 };
 
-export {CreateButton};
+export {CreateButton,DefaultListItem};
 export default ListLoad;
