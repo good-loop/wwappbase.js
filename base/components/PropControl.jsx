@@ -235,7 +235,7 @@ const PropControl = (props) => {
 		// Pretty hacky: Value stored as ["one", "two", "three"] but displayed as "one two three"
 		// Currently used for entering list of unit-variants for publisher
 		const arrayChange = e => {
-			const oldString = DataStore.getValue(proppath);
+			const oldString = DataStore.getValue(proppath) || '';
 			const newString = e.target.value;
 
 			// Split into space-separated tokens
@@ -251,12 +251,14 @@ const PropControl = (props) => {
 			e.preventDefault();
 			e.stopPropagation();
 		};
-		return <Misc.FormControl type={type} name={prop} value={value.join(' ')} onChange={arrayChange} {...otherStuff} />;
+		const safeValue = (value || []).join(' ');
+		return <Misc.FormControl type={type} name={prop} value={safeValue} onChange={arrayChange} {...otherStuff} />;
 	}
 
 	if (type==='textarea') {
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
 	}
+	
 	if (type==='json') {
 		let spath = ['transient'].concat(proppath);
 		let svalue = DataStore.getValue(spath) || JSON.stringify(value);
