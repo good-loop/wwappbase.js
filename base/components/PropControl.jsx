@@ -361,7 +361,13 @@ const PropControl = (props) => {
 		let acprops ={prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlAutocomplete {...acprops} />;
 	}
-	if (type === 'color') {
+	// new colour picker
+	// Switched off for now because 
+	// whilst it is prettier & I like the striped bg for unset...
+	// (a) its bigger when we'd like more compact forms,
+	// and (b) it makes html colour codes the entry format - which is not ideal for the general public.
+	// NB: The native colour picker does allow entering and viewing an html code.
+	if (false && type === 'color') {
 		return (
 			<div>
 				<Misc.FormControl type="text" name={prop} value={value} onChange={onChange} {...otherStuff} />

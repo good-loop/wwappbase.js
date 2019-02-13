@@ -8,4 +8,4 @@ E.g.
 
 let myngo = {"name": "Save the Kittens"}
 
-assert( NGO.name(myngo) === 'Save the Kittens' );
+assert( NGO.getName(myngo) === 'Save the Kittens' );

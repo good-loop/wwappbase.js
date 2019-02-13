@@ -19,7 +19,21 @@ class Money extends DataClass {
 		this['@type'] = 'Money';
 		Money.value(this); // init v100p from value
 	};
-}
+
+	/** duck type: needs a value or currency */
+	static isa(obj) {
+		if ( ! obj) return false;
+		if (super.isa(obj)) return true;
+		// OLD format
+		if (getType(obj) === 'MonetaryAmount') return true;	
+		if (obj.value100p) return true;
+		if (obj.value100) return true;
+			// allow blank values
+		if (isNumeric(obj.value) || obj.value==='') return true;
+		if (obj.currency) return true;
+		return false;
+	}
+} // ./Money
 DataClass.register(Money);
 
 const This = Money;
@@ -102,20 +116,6 @@ const v100p = m => {
 };
 
 
-
-/** duck type: needs a value or currency */
-Money.isa = (obj) => {
-	if ( ! obj) return false;
-	if (isa(obj, C.TYPES.Money)) return true;
-	// OLD format
-	if (getType(obj) === 'MonetaryAmount') return true;	
-	if (obj.value100p) return true;
-	if (obj.value100) return true;
-		// allow blank values
-	if (isNumeric(obj.value) || obj.value==='') return true;
-	if (obj.currency) return true;
-	return false;
-};
 
 Money.str = obj => (Money.CURRENCY[obj.currency]||'') + Money.value(obj);
 

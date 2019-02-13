@@ -37,17 +37,20 @@ class List extends DataClass {
 		super(base);
 		Object.assign(this, base);
 	}
+
+
+	/** more lenient duck typing: does it have a hits array? */
+	static isa(listy) {
+		if ( ! listy) return false;
+		if (super.isa(listy, List)) return true;
+		return listy.hits && listy.hits.length !== undefined;
+	}
 };
 DataClass.register(List);
 
 const This = List;
 export default List;
 
-// more lenient duck typing
-List.isa = listy => {
-	if ( ! listy) return false;
-	return isa(listy, List) || (listy.hits && listy.hits.length !== undefined);
-};
 
 List.hits = list => List.assIsa(list) && list.hits;
 /**
