@@ -118,6 +118,16 @@ const PropControl = (props) => {
 		}
 	}
 
+	// if it had an error because it was required but not filled, remove the error once it is filled
+	// TODO: is this correct?
+	if(error) {
+		const is = getInputStatus(proppath);
+		if(is && is.status==='error' && required && value) {
+			setInputStatus({path:proppath, status:'ok', message:'ok'});
+			error = undefined;
+		}
+	}
+
 	// Minor TODO lets refactor this so we always do the wrapper, then call a 2nd jsx function for the input (instead of the recursing flag)
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
