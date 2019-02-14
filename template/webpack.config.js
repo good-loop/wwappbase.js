@@ -21,7 +21,7 @@ const baseConfig = {
 				exclude: /node_modules/,
 				options: {
 					presets: ['es2015', 'react'],
-					plugins: ['transform-object-rest-spread', 'transform-class-properties']
+					plugins: ['transform-object-rest-spread', 'transform-class-properties', 'transform-react-jsx', { pragma: 'h' }]
 				}
 			}
 		],
