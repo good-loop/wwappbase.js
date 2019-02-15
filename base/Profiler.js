@@ -166,7 +166,7 @@ const setConsents = ({person, dataspace, consents, fields}) => {
 	assert( ! _.isArray(consents), "Profiler.js use a map: "+consents);
 	// inverse of getConsents
 	let pstrings = mapkv(consents, (k,v) => {
-		return v? k : "-"+k;
+		return v === "yes" ? k : "-"+k;
 	});
 	// Audit trail of whats changed? TODO manage that server-side.
 	person.c = pstrings;
