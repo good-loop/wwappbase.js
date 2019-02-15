@@ -382,32 +382,25 @@ class Store {
 		hits.forEach(item => {
 			try {
 				let type = getType(item);
-				if ( ! type) {
-					// 
+				if (!type) {
 					console.log("skip server object w/o type", item);
 					return;
 				}
-				assert(C.TYPES.has(type), "DataStore.updateFromServer: type:"+type, item);
-				const s = status || getStatus(item);			
-				assert(s, "DataStore.js - updateFromServer - no status in method call or item",item);
-				const sn = this.nodeForStatus(s);
-				let typemap = itemstate[sn][type];
-				if ( ! typemap) {
-					typemap = {};
-					itemstate[sn][type] = typemap;
-				}
+				assert(C.TYPES.has(type), "DataStore.updateFromServer: bad type:" + type, item);
+				const s = status || getStatus(item);
+				assert(s, "DataStore.updateFromServer: no status in method call or item", item);
+				const statusPath = this.nodeForStatus(s);
 				const id = getId(item);
-				if (id) {
-					typemap[id] = item;
-				} else {
-					console.warn("No id?!", item, "from", res);
-				}
+				assert(id, 'DataStore.updateFromServer: no id for', item, 'from', res);
+				// Put the new item in the store, but don't trigger an update until all items are in.
+				this.setValue([statusPath, type, id], item, false);
 			} catch(err) {
 				// swallow and carry on
 				console.error(err);
 			}
 		});
-		this.update(itemstate);
+		// OK, now trigger a redraw.
+		this.update();
 		return hits;
 	} //./updateFromServer()
 
