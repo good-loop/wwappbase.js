@@ -2,7 +2,11 @@ import React from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
 import { assert } from 'sjtest';
 
-const injectGoodLoopUnit = ({ adID, CSS, adunitRef, iframe, size='landscape' }) => {
+const injectGoodLoopUnit = ({ adID, CSS, adunitRef, iframe, size }) => {
+    // Important that this is not falsy
+    if( !size ) size = 'landscape';
+
+    // GoodLoop unit script
     const $script = document.createElement('script');
     $script.async = true;
     let src = ServerIO.AS_ENDPOINT + '/unit.js?gl.size=' + size + '&';
@@ -94,10 +98,9 @@ class GoodLoopUnit extends React.Component {
     componentDidMount() {
         this.focusRef('adunitRef');
         const { adunitRef } = this;
-        const { adID, CSS } = this.props;
         const { iframe } = this.state;
 
-        injectGoodLoopUnit({ adID, CSS, adunitRef, iframe });
+        injectGoodLoopUnit({ ...this.props, adunitRef, iframe });
     }
 
     componentWillUpdate(nextProps, nextState) {
