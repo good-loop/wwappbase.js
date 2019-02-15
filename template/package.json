@@ -42,10 +42,10 @@
   "scripts": {
     "compile-watch": "webpack --config webpack.config.js --progress --colors --watch",
     "compile": "webpack --progress --colors",
-    "flow": "flow; test $? -eq 0 -o $? -eq 2",
+    "flow": "flow; test $? -eq 0 -o $? -eq 2"
   },
   "devDependencies": {
-    "webpack": "^3.11.0",
+    "webpack": "^4.16.5",
     "webpack-cli": "^3.1.0",
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.4",
