@@ -28,7 +28,7 @@ export default Person;
  */
 // (30/01/19) use filter instead of map to patch bug where Link.to returned undefined
 // filter only adds value to return array if it is not falsy
-Person.linkedIds = peep => peep.links? peep.links.filter(Link.to) : [];
+Person.linkedIds = peep => peep.links? peep.links.reduce(Link.to, []) : [];
 
 Person.getTwitterXId = () => getSocialXId('twitter')
 Person.getFacebookXId = () => getSocialXId('facebook');

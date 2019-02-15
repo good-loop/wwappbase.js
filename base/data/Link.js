@@ -8,6 +8,6 @@ import C from '../CBase';
 import Claim from './Claim';
 
 const Link = Claim; //new DataClass('Link', Claim);
-Link.to = link => link.v;
+Link.to = (linkArray, link) => link.v ? linkArray.concat(link.v) : linkArray;
 const This = Link;
 export default Link;
