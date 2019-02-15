@@ -146,9 +146,9 @@ const getConsents = ({person, dataspace, fields}) => {
 		// not?
 		if (c[0] === "-") {
 			c = c.substr(1);
-			pmap[c] = false;
+			pmap[c] = 'no';
 		} else {
-			pmap[c] = true;
+			pmap[c] = 'yes';
 		}
 	});
 	// done
