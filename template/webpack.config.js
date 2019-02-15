@@ -20,8 +20,8 @@ const baseConfig = {
 				loader: 'babel-loader',
 				exclude: /node_modules/,
 				options: {
-					presets: ['es2015', 'react'],
-					plugins: ['transform-object-rest-spread', 'transform-class-properties', 'transform-react-jsx', { pragma: 'h' }]
+					presets: ['es2015', 'react', 'flow', 'env'],
+					plugins: ['transform-object-rest-spread', 'transform-class-properties', 'transform-class-properties', ['transform-react-jsx', { pragma: 'h' }]]
 				}
 			}
 		],
