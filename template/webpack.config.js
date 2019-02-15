@@ -3,7 +3,7 @@ const path = require('path');
 
 
 const baseConfig = {
-	entry: ['babel-polyfill', './src/app.jsx'],
+	entry: ['babel-polyfill', './src/js/app.jsx'],
 	output: {
 		path: path.resolve(__dirname, './web/build/js/'),
 		// filename: is left undefined and filled in by makeConfig
