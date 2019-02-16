@@ -85,5 +85,7 @@ BS.Centre = BS.Center; // UK or US
  */
 BS.Well = ({children}) => <div className='well'>{children}</div>;
 
+BS.Col = ({sm, md, children}) => <div className={'col-md-'+md}>{children}</div>;
+
 export default BS;
 
