@@ -234,6 +234,10 @@ const createBlank = ({type, navpage, base, id, make}) => {
 
 /**
  * A create-new button
+ * @param {{
+ * 	type: !String
+ * 	navpage: ?String - defaults to the curent page from url
+ * }}
  * @param props {?String[]} extra props
  */
 const CreateButton = ({type, props, navpage, base, make}) => {
@@ -254,5 +258,16 @@ const CreateButton = ({type, props, navpage, base, make}) => {
 	</div>);
 };
 
-export { CreateButton, DefaultListItem };
+const ListItems = ({type, navpage, servlet}) => {
+	assMatch(type, String);
+	return (
+		<div>
+			<h3 className="text-capitalize">List {type}</h3>
+			<CreateButton type={type} navpage={navpage} />
+			<ListLoad type={type} hasFilter servlet={servlet} status={C.KStatus.ALL_BAR_TRASH} />
+		</div>
+	);
+};
+
+export { CreateButton, DefaultListItem, ListItems };
 export default ListLoad;
