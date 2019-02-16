@@ -31,6 +31,7 @@ import md5 from 'md5';
  * aka Misc.PropControl
  * 
  * @param saveFn {Function} {path, prop, value} 
+ * This gets called at the end of onChange.
  * You are advised to wrap this with e.g. _.debounce(myfn, 500).
  * NB: we cant debounce here, cos it'd be a different debounce fn each time.
  * Save utils: 
