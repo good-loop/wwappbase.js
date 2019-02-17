@@ -416,7 +416,7 @@ class Store {
 	 * without over-writing the fuller data.
 	 * 
 	 * @param path {String[]}
-	 * @param fetchFn {Function} () -> Promise/value, which will be wrapped using promise-value PV()
+	 * @param fetchFn {Function} () -> Promise/value, which will be wrapped using promise-value.
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
 	 * As a convenience hack, this method will extract `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.

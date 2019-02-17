@@ -1,7 +1,7 @@
 import Login from 'you-again';
 import DataStore from './plumbing/DataStore';
 import {assMatch} from 'sjtest';
-import pv from 'promise-value';
+import PromiseValue from 'promise-value';
 
 // TODO switch from storing can:x to role:x with app-defined cans
 
@@ -10,12 +10,12 @@ import pv from 'promise-value';
  */
 const getRoles = () => {
 	if ( ! Login.isLoggedIn()) {
-		return pv([]);
+		return new PromiseValue([]);
 	}
 	const uxid = Login.getId();
 	if ( ! uxid) {	// debug paranoia
 		console.error("Roles.js huh? "+Login.isLoggedIn()+" but "+Login.getId());
-		return pv([]);
+		return new PromiseValue([]);
 	}
 	// NB: store under user xid so a change in user is fine
 	let shared = DataStore.fetch(['misc', 'roles', uxid],
@@ -60,9 +60,9 @@ const iCan = (capability) => {
 				console.error("Roles.js - unknown role: "+proles.value[i]);
 				continue;
 			}
-			if (cans.indexOf(capability) !== -1) return pv(true);
+			if (cans.indexOf(capability) !== -1) return new PromiseValue(true);
 		}
-		return pv(false);
+		return new PromiseValue(false);
 	}
 	// ajax...
 	return proles.promise.then(

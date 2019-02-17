@@ -8,7 +8,7 @@ import ServerIO from './plumbing/ServerIOBase';
 import {assert, assMatch, assertMatch} from 'sjtest';
 // add funky methods to the "standard" Person data-class
 import Person from './data/Person';
-import PV from 'promise-value';
+import PromiseValue from 'promise-value';
 import {mapkv, encURI, XId} from 'wwutils';
 assert(Person);
 
@@ -124,7 +124,7 @@ const saveProfile = (doc) => {
 	ids.forEach(xid => {
 		assMatch(xid, String, "Profiler.js - saveProfile", doc);		
 		let prm = ServerIO.post(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {action: 'put', doc: JSON.stringify(doc)});			
-		pvs.push(PV(prm));
+		pvs.push(new PromiseValue(prm));
 	});
 	return pvs;
 };

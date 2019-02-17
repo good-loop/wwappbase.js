@@ -357,7 +357,7 @@ const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
 
 /**
  * 
- * @returns PV( {hits: Object[]} )
+ * @returns PromiseValue<{hits: Object[]}>
  */
 // Namespace anything fetched from a non-default domain
 ActionMan.list = ({type, status, q, domain}) => {
