@@ -65,6 +65,7 @@ const iCan = (capability) => {
 		return new PromiseValue(false);
 	}
 	// ajax...
+	// ?? is this a PV?? isnt this a promise??
 	return proles.promise.then(
 		res => iCan(capability)
 	);
