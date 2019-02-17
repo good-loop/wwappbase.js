@@ -17,9 +17,11 @@ import Enum from 'easy-enums';
  */
 
 /** 
+ * fail: bad inputs - usually check data for details.
+ * error: server error - check message for details.
+ * 
  * NB warning is non-standard but makes sense as success-but-be-warned.
  * Usages of warning: none at present Jan 2019
- * @type {KAjaxStatus}
  */
 const KAjaxStatus = new Enum("success fail error warning");
 

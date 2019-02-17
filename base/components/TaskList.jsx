@@ -68,6 +68,7 @@ const TaskListButton = ({bpath, value, list}) => {
 /**
  * called by a Page to set the context.
  * Recommended: tags = type e.g. Advert, item.id 
+ * @param tags {!String[]} Can contain nulls (ignored)
  */
 const setTaskTags = (...tags) => {		
 	tags = tags.filter(t => t);	
