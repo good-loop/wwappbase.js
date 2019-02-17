@@ -11,7 +11,7 @@ import _ from 'lodash';
 import Enum from 'easy-enums';
 import Misc from './Misc';
 import {join, mapkv} from 'wwutils';
-import PV from 'promise-value';
+import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 
 import DataStore, {getPath} from '../plumbing/DataStore';
@@ -667,7 +667,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 			if ( ! e.target.value) return;
 			if ( ! _.isFunction(options)) return;
 			let optionsOutput = options(e.target.value);
-			let pvo = PV(optionsOutput);
+			let pvo = PromiseValue(optionsOutput);
 			pvo.promise.then(oo => {
 				DataStore.setValue(widgetPath, oo);
 				// also save the info in data

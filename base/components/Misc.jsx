@@ -5,7 +5,7 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import { setHash, XId, addScript} from 'wwutils';
-import PV from 'promise-value';
+import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 
 import JSend from '../data/JSend';

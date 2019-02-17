@@ -4,6 +4,10 @@
 	See https://github.com/react-tools/react-table#example
 */
 
+// TODO it might be worth supporting one of these similar? same? formats
+// http://specs.dataatwork.org/json-table-schema/
+// https://frictionlessdata.io/specs/table-schema/
+
 import React from 'react';
 import ReactDOM from 'react-dom';
 

@@ -5,7 +5,7 @@ import _ from 'lodash';
 import {getId, getType, getStatus} from '../data/DataClass';
 import {assert,assMatch} from 'sjtest';
 import {yessy, getUrlVars, parseHash, modifyHash, toTitleCase} from 'wwutils';
-import PV from 'promise-value';
+import PromiseValue from 'promise-value';
 
 /**
  * Hold data in a simple json tree, and provide some utility methods to update it - and to attach a listener.
@@ -421,14 +421,14 @@ class Store {
 	 * As a convenience hack, this method will extract `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * @param messaging {?Boolean} If true, try to use Messaging.js to notify the user of failures.
-	 * @returns {?value, promise} (see promise-value.js)
+	 * @returns {PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, messaging=true) { // TODO allow retry after 10 seconds
 		assert(path && fetchFn, "DataStore.js - missing input",path,fetchFn);
 		let item = this.getValue(path);
 		if (item!==null && item!==undefined) { 
 			// Note: falsy or an empty list/object is counted as valid. It will not trigger a fresh load
-			return PV(item);
+			return new PromiseValue(item);
 		}
 		// only ask once
 		const fpath = ['transient', 'PromiseValue'].concat(path);
@@ -437,7 +437,7 @@ class Store {
 		let promiseOrValue = fetchFn();
 		assert(promiseOrValue!==undefined, "fetchFn passed to DataStore.fetch() should return a promise or a value. Got: undefined. Missing return statement?");
 		// Use PV to standardise the output from fetchFn()
-		let pvPromiseOrValue = PV(promiseOrValue);
+		let pvPromiseOrValue = new PromiseValue(promiseOrValue);
 		// process the result async
 		let promiseWithCargoUnwrap = pvPromiseOrValue.promise.then(res => {
 			if ( ! res) return res;
@@ -456,7 +456,7 @@ class Store {
 			throw response;
 		});
 		// wrap this promise as a PV
-		const pv = PV(promiseWithCargoUnwrap);
+		const pv = new PromiseValue(promiseWithCargoUnwrap);
 		pv.promise.then(res => {
 			// set the DataStore
 			// This is done after the cargo-unwrap PV has resolved. So any calls to fetch() during render will get a resolved PV
