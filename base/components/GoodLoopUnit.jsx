@@ -66,13 +66,14 @@ const insertAdunitCSS = ({ iframe, CSS }) => {
 
     // Has the adunit already inserted a custom CSS tag?
     // If so, delete it. Use querySelectorAll in case multiple tags were accidentaly inserted
-    // TODO: (14/02/19) attempt to fix this bug. Appears that GoodLoop scripts are executing after CSS has already been inserted
-    // Means that there will be two identical CSS script tags in the DOM. Ignoring this for now as it doesn't really matter.
     const $adunitCSS = iframe.contentDocument.querySelectorAll('#vert-css');
     if( $adunitCSS ) {
         $adunitCSS.forEach( node => node.parentElement.removeChild(node) );
     } 
-    iframe.contentDocument.head.appendChild($style);
+    // (18/02/19) Inserting in to body instead of head is a dumb dumb fix for adunit inserting it's style tag after insertAdunitCSS has already run
+    // Means that, if a user makes edits and then reloads the page, they will see the published ad's CSS rather than their local changes.
+    // Don't think that there is any event I can listen for, and I did not want to have this function run in the render method.
+    iframe.contentDocument.body.appendChild($style);
 };
 
 class GoodLoopUnit extends React.Component {
