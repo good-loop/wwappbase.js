@@ -18,7 +18,7 @@ class Person extends DataClass {
 		Object.assign(this, base);		
 	}
 }
-DataClass.register(Person);
+DataClass.register(Person, "Person");
 const This = Person;
 export default Person;
 

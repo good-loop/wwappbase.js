@@ -34,7 +34,7 @@ class Money extends DataClass {
 		return false;
 	}
 } // ./Money
-DataClass.register(Money);
+DataClass.register(Money, "Money");
 
 const This = Money;
 export default Money;

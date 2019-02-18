@@ -46,7 +46,7 @@ class List extends DataClass {
 		return listy.hits && listy.hits.length !== undefined;
 	}
 };
-DataClass.register(List);
+DataClass.register(List, "List");
 
 const This = List;
 export default List;

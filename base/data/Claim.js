@@ -47,7 +47,7 @@ class Claim extends DataClass {
 		// NB: kv, o are backend fields made by the backend for internal (ES) use
 	};
 } // ./Claim
-DataClass.register(Claim);
+DataClass.register(Claim, "Claim");
 const This = Claim;
 export default Claim;
 

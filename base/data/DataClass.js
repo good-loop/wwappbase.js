@@ -18,7 +18,7 @@ import {endsWith} from 'wwutils';
 import DataClass, {getType} from './DataClass';
 import C from './C';
 class MyType extends DataClass {};
-DataClass.register(MyType);
+DataClass.register(MyType, "MyType");
 // or
 class MyType extends ParentType {}
 
@@ -57,7 +57,7 @@ class DataClass {
 	 */
 	constructor(base) {
 		Object.assign(this, base);
-		this['@type'] = this.constructor.name;		
+		this['@type'] = this.constructor._name || this.constructor.name;		
 	}
 
 	/**
@@ -79,7 +79,7 @@ class DataClass {
 	}
 
 	/**
-	* @returns {?String} 
+	* @returns {?String} An instance name, e.g. "Daniel" NOT the class name
 	*
 	* Note: Not all classes or instance have a name. This function is defined here as it is
 	* a bit of a special case. Instances can have their own names. But you cant reassign the 
@@ -202,7 +202,7 @@ const nonce = (n=10) => {
 };
 
 // NB: cannot assign DataClass.name as that is a reserved field name for classes
-DataClass.title = obj => obj && (obj.title || obj.name);
+DataClass.title = obj => obj && (obj.title || DataClass.getName(obj.name));
 DataClass.str = obj => JSON.stringify(obj);
 
 /**
@@ -218,15 +218,25 @@ const getDataClass = typeOrItem => {
 	return allTypes[type];
 };
 
-DataClass.register = dclass => {
-	assert(dclass.name);
-	allTypes[dclass.name] = dclass;
+/**
+ * @param dclass {Class} the class
+ * @param name {String} name, because Babel might mangle the class.name property.
+ */
+DataClass.register = (dclass, name) => {
+	if ( ! name) {
+		console.warn("DataClass.register - no name for "+dclass.name+". This is NOT safe as Babel may mangle it.")
+		name = dclass.name;
+	}
+	assert(name);
+	allTypes[name] = dclass;
+	// Store the "proper" text name safe from Babel
+	dclass._name = name;
 
 	// sanity check: no non static methods
 	// NB: f is defined as dclass.f => static, as does dclass.f = inherited __proto__.f
 	const nonStatic = Object.getOwnPropertyNames(dclass.__proto__)
 		.filter(fname => ! dclass.hasOwnProperty(fname) && dclass.__proto__[fname] !== dclass[fname]);
-	assert( ! nonStatic.length, "DataClasses can only have static methods: "+dclass.name+" "+JSON.stringify(nonStatic));		
+	assert( ! nonStatic.length, "DataClasses can only have static methods: "+name+" "+JSON.stringify(nonStatic));		
 };
 
 /**

@@ -11,7 +11,7 @@ import Money from './Money';
 class MoneyItem extends DataClass {
 
 };
-DataClass.register(MoneyItem);
+DataClass.register(MoneyItem, "MoneyItem");
 const This = MoneyItem;
 export default MoneyItem;
 

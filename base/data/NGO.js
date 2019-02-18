@@ -9,7 +9,7 @@ class NGO extends DataClass {
 		Object.assign(this, base);
 	}
 }
-DataClass.register(NGO);
+DataClass.register(NGO, "NGO");
 export default NGO;
 
 NGO.description = (ngo) => NGO.isa(ngo) && ngo.description;
