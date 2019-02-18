@@ -816,7 +816,7 @@ const getInputStatus = path => {
  * @return {!InputStatus[]} The status for this node and all child nodes
  */
 const getInputStatuses = path => {
-	// if (true) return []; // possibly causing a performance issue??
+	// if (true) return []; // possibly causing a performance issue?? On Feb 2019
 	assMatch(path, 'String[]');
 	const sppath = ['misc','inputStatus'].concat(path);
 	const root = DataStore.getValue(sppath);
