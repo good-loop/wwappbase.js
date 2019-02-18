@@ -52,7 +52,7 @@ const This = List;
 export default List;
 
 
-List.hits = list => List.assIsa(list) && list.hits;
+List.hits = list => List.isa(list) && list.hits;
 /**
  * 
  * @param {List} list 
