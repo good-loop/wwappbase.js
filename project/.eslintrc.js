@@ -8,7 +8,7 @@ module.exports = {
 	"rules": {
 		"arrow-body-style": "off",
 		"arrow-parens": "off",
-		"brace-style": "warn",
+		"brace-style": "warn",		
 		"camelcase": "off", // we use camelCase, but we also break it in places, e.g. myFn2_subFn()
 		"class-methods-use-this": "off",
 		"comma-dangle": "off",
@@ -85,6 +85,7 @@ module.exports = {
 		"react/jsx-closing-bracket-location": "warn",
 		"react/jsx-closing-tag-location": "off",
 		"react/jsx-curly-spacing": "warn",
+		"react/jsx-curly-brace-presence": "warn",
 		"react/jsx-first-prop-new-line": "off",
 		"react/jsx-indent-props": ["warn", "tab"],
 		"react/jsx-indent": ["warn", "tab"],

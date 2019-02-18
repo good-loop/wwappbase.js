@@ -56,7 +56,7 @@ const PropControl = (props) => {
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
-	let value = DataStore.getValue(proppath) || dflt; // const? no - we do some edits e.g. undefined -> false below
+	const value = DataStore.getValue(proppath) || dflt; // const? no - we do some edits e.g. undefined -> false below
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
@@ -135,7 +135,7 @@ const PropControl = (props) => {
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
 	if (Misc.KControlTypes.ischeckbox(type)) {
-		return <PropControl2 {...props} />
+		return <PropControl2 value={value} proppath={proppath} {...props} />
 	}
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
@@ -153,7 +153,7 @@ const PropControl = (props) => {
 				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
 			{inline? ' ' : null}
-			<PropControl2 {...props} />
+			<PropControl2 value={value} proppath={proppath} {...props} />
 			{help? <span className="help-block">{help}</span> : null}
 			{error? <span className="help-block">{error}</span> : null}
 		</div>
@@ -166,7 +166,7 @@ const PropControl = (props) => {
  */
 const PropControl2 = (props) => {
 	// unpack ??clean up 
-	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
+	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
@@ -816,7 +816,8 @@ const getInputStatus = path => {
  * @return {!InputStatus[]} The status for this node and all child nodes
  */
 const getInputStatuses = path => {
-	if (true) return []; // possibly causing a performance issue??
+	// if (true) return []; // possibly causing a performance issue??
+	assMatch(path, 'String[]');
 	const sppath = ['misc','inputStatus'].concat(path);
 	const root = DataStore.getValue(sppath);
 	const all = [];
@@ -826,6 +827,7 @@ const getInputStatuses = path => {
 const getInputStatuses2 = (node, all) => {
 	if ( ! _.isObject(node)) return;
 	if (node._status) all.push(node._status);
+	// assumes no loops!
 	Object.values(node).forEach(kid => getInputStatuses2(kid, all));
 };
 
