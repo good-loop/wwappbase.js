@@ -11,7 +11,7 @@
   "dependencies": {
     "babel-core": "^6.26.3",
     "chart.js": "^2.7.3",
-    "data-pivot": "^0.3.1",
+    "data-pivot": "^1.0.2",
     "easy-enums": "^1.1.6",
     "easyi18n": "^1.1.1",
     "fs" : "0.0.1-security",
@@ -29,7 +29,7 @@
     "react-bootstrap": "^0.32.4",
     "react-chartjs2": "^1.2.1",
     "react-dom": "^16.7.0",
-    "react-dropzone": "^4.3.0",
+    "react-dropzone": "^5.1.0",
     "react-markdown": "^4.0.4",
     "react-stripe-checkout": "^2.6.3",
     "react-stripe-elements": "^2.0.3",
@@ -70,6 +70,6 @@
     "flow-bin": "^0.70.0",
     "intl": "^1.2.5",
     "webpack": "^4.29.5",
-    "webpack-cli": "^3.1.0"
+    "webpack-cli": "^3.2.3"
   }
 }
