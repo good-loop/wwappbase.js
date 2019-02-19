@@ -121,7 +121,7 @@ const PropControl = (props) => {
 		}
 	}
 
-	// if it had an error because it was required but not filled, remove the error once it is filled
+	// if it had an error because the input was required but not filled, remove the error once it is filled
 	// TODO: is this correct?
 	if (error) {
 		const is = getInputStatus(proppath);
