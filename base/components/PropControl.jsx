@@ -242,27 +242,11 @@ const PropControl2 = (props) => {
 	};
 
 	if (type === 'arraytext') {
-		// Pretty hacky: Value stored as ["one", "two", "three"] but displayed as "one two three"
-		// Currently used for entering list of unit-variants for publisher
-		const arrayChange = e => {
-			const oldString = DataStore.getValue(proppath) || '';
-			const newString = e.target.value;
+		return <PropControlMultiString {...props} />;
+	}
 
-			// Split into space-separated tokens
-			let newValue = newString.split(' ');
-			// Remove falsy entries, if deleting (ie newString is substring of oldString) but not if adding
-			// allows us to go 'one' (['one']) -> "one " ('one', '') -> "one two" ('one', 'two')
-			if (oldString.indexOf(newString) >= 0) {
-				newValue = newValue.filter(val => val);
-			}
-			
-			DataStore.setValue(proppath, newValue);
-			if (saveFn) saveFn({path});
-			e.preventDefault();
-			e.stopPropagation();
-		};
-		const safeValue = (value || []).join(' ');
-		return <Misc.FormControl type={type} name={prop} value={safeValue} onChange={arrayChange} {...otherStuff} />;
+	if (type === 'keyset') {
+		return <PropControlMultiString {...props} set />;
 	}
 
 	if (type==='textarea') {
@@ -325,7 +309,7 @@ const PropControl2 = (props) => {
 		let className;
 		if (bg === 'transparent') {
 			bg = '';
-			className='stripe-bg';
+			className = 'stripe-bg';
 		}
 
 		return (
@@ -376,31 +360,29 @@ const PropControl2 = (props) => {
 		return <PropControlRadio value={value} {...props} />
 	}
 	if (type === 'select') {
-		let props2 ={onChange, value, modelValueFromInput, ...props};
+		let props2 = {onChange, value, modelValueFromInput, ...props};
 		return <PropControlSelect  {...props2} />
 	}
 	if (type === 'autocomplete') {
-		let acprops ={prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
+		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlAutocomplete {...acprops} />;
 	}
-	// new colour picker
-	// Switched off for now because 
-	// whilst it is prettier & I like the striped bg for unset...
-	// (a) its bigger when we'd like more compact forms,
-	// and (b) it makes html colour codes the entry format - which is not ideal for the general public.
-	// NB: The native colour picker does allow entering and viewing an html code.
-	if (false && type === 'color') {
+
+	// Optional fancy colour picker - dummied out for now.
+	/* 
+	if (type === 'color') {
 		return (
 			<div>
-				<Misc.FormControl type="text" name={prop} value={value} onChange={onChange} {...otherStuff} />
 				<div className="color-container">
 					<div className="color-bg" />
 					<Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />
 					<div className="color-decoration">Click to pick a colour</div>
 				</div>
+				<Misc.FormControl type="text" name={prop} value={value} onChange={onChange} {...otherStuff} />
 			</div>
 		);
 	}
+	*/
 	// normal
 	// NB: type=color should produce a colour picker :)
 	return <Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
@@ -607,6 +589,40 @@ const PropControlMoney = ({prop, value, path, proppath,
 }; // ./£
 
 
+/**
+ * Display a value as 'a b c' but store as ['a', 'b', 'c'] (default) or {a: true, b: true, c: true}.
+ * Used to edit variant.style (as array) and variant.params (as set) in VariantControls. 
+ * @param set {Boolean} Store as a pseudo-set {a: true, b: true, c: true} rather than array.
+ */
+const PropControlMultiString = ({ value, prop, proppath, array, set, saveFn, ...otherStuff}) => {
+	const onChange = e => {
+		const oldValue = DataStore.getValue(proppath) || (set ? {} : []);
+		const oldString = (set ? Object.keys(oldValue) : oldValue).join(' ');
+		const newString = e.target.value;
+		let newValue = newString.split(' ');
+
+		// Remove falsy entries ONLY if change is a deletion.(ie newString is substring of oldString)
+		// Allows user to type eg 'one' (['one']) -> "one " ('one', '') -> "one two" ('one', 'two')
+		// without filter removing the trailing space.
+		if (oldString.indexOf(newString) >= 0) {
+			newValue = newValue.filter(val => val);
+		}
+
+		if (set) {
+			// KeySet rather than ArrayText? Convert ['a', 'b'] to {a: true, b: true} before storing
+			newValue = newValue.reduce((set, key) => { set[key] = true; return set; }, {});
+		}
+		
+		DataStore.setValue(proppath, newValue);
+		if (saveFn) saveFn({path});
+		e.preventDefault();
+		e.stopPropagation();
+	}
+	const safeValue = (set ? Object.keys(value || {}) : (value || [])).join(' ');
+	return <Misc.FormControl name={prop} value={safeValue} onChange={onChange} {...otherStuff} />;
+};
+
+
 const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
 	// NB: parsing incomplete dates causes NaNs
@@ -762,7 +778,7 @@ const FormControl = ({value, type, required, size, className, ...otherProps}) =>
  * List of types eg textarea
  */
 const KControlTypes = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
-							+" yesNo location date year number arraytext address postcode json"
+							+" yesNo location date year number arraytext keyset address postcode json"
 							// some Good-Loop data-classes
 							+" Money XId");
 
