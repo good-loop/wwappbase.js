@@ -239,6 +239,11 @@ ServerIO.getEndpointForType = (type) => {
 	if (type==='Advert') {
 		return '/vert';
 	}
+
+	// HACK Change "advertiser" to "vertiser" to dodge some adblocking
+	if (type==='Advertiser') {
+		return '/vertiser';
+	}
 	
 	return '/'+type.toLowerCase();
 };
