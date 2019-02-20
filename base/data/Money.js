@@ -6,6 +6,7 @@ import {assert, assMatch} from 'sjtest';
 import {asNum} from 'wwutils';
 import DataClass, {getType} from './DataClass';
 import C from '../CBase';
+import Settings from '../Settings';
 
 /** impact utils */
 class Money extends DataClass {
@@ -235,4 +236,37 @@ Money.explain = (money, expln) => {
 	Money.assIsa(money);
 	if (expln) money.explain = expln;
 	return money.explain;
+};
+
+/**
+ * Money span, falsy displays as 0
+ * 
+ * Converts monetary value in to properly formatted string (29049 -> 29,049.00)
+ * 
+ * @param amount {?Money|Number}
+ */
+Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
+	if ( ! amount) amount = 0;
+	// NB: isNumber fails for numeric-string e.g. "1" but isString will catch that, so its OK.
+	if (_.isNumber(amount) || _.isString(amount)) {
+		amount = {value: amount, currency:'GBP'};
+	}
+	let value = amount? amount.value : 0;
+	if (isNaN(value)) value = 0; // avoid ugly NaNs
+	if (maximumFractionDigits===0) { // because if maximumSignificantDigits is also set, these two can conflict
+		value = Math.round(value);
+	}
+	let snum = new Intl.NumberFormat(Settings.locale, 
+		{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
+	).format(value);
+
+	if ( ! minimumFractionDigits) {
+		// remove .0 and .00
+		if (snum.substr(snum.length-2) === '.0') snum = snum.substr(0, snum.length-2);
+		if (snum.substr(snum.length-3) === '.00') snum = snum.substr(0, snum.length-3);
+	}
+	// pad .1 to .10
+	if (snum.match(/\.\d$/)) snum += '0';
+
+	return snum;
 };

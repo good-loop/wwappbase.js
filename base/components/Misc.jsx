@@ -121,28 +121,7 @@ Misc.Col2 = ({children, noContainer}) => {
  * @param amount {?Money|Number}
  */
 Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
-	if ( ! amount) amount = 0;
-	// NB: isNumber fails for numeric-string e.g. "1" but isString will catch that, so its OK.
-	if (_.isNumber(amount) || _.isString(amount)) {
-		amount = {value: amount, currency:'GBP'};
-	}
-	let value = amount? amount.value : 0;
-	if (isNaN(value)) value = 0; // avoid ugly NaNs
-	if (maximumFractionDigits===0) { // because if maximumSignificantDigits is also set, these two can conflict
-		value = Math.round(value);
-	}
-	let snum = new Intl.NumberFormat(Settings.locale, 
-		{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
-	).format(value);
-
-	if ( ! minimumFractionDigits) {
-		// remove .0 and .00
-		if (snum.substr(snum.length-2) === '.0') snum = snum.substr(0, snum.length-2);
-		if (snum.substr(snum.length-3) === '.00') snum = snum.substr(0, snum.length-3);
-	}
-	// pad .1 to .10
-	if (snum.match(/\.\d$/)) snum += '0';
-
+	const snum = Money.prettyString({amount, minimumFractionDigits, maximumFractionDigits, maximumSignificantDigits});
 	const currencyCode = (amount.currency || 'GBP').toUpperCase();
 	return (
 		<span className='money'>
