@@ -65,7 +65,7 @@ class DataClass {
 	 */
 	static isa(obj) {
 		if ( ! _.isObject(obj) || obj.length) return false;
-		console.warn(this, this.name);
+		// console.warn(this, this.name);
 		let typ = this;
 		const sotyp = getType(obj);
 		if ( ! sotyp) return false;
