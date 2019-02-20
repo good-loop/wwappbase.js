@@ -300,7 +300,7 @@ Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
  * }
  * @return {JSX}
  */
-Misc.ImgThumbnail = ({url, style, className, ...props}) => {
+Misc.ImgThumbnail = ({url, style, className = '', ...props}) => {
 	if (!url) return null;
 	// add in base (NB this works with style=null)
 	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain'}, style);

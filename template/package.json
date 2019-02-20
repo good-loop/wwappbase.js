@@ -31,6 +31,7 @@
     "react-dom": "^16.8.2",
     "react-dropzone": "^8.1.0",
     "react-markdown": "^4.0.6",
+    "react-scroll": "^1.7.11",
     "react-stripe-checkout": "^2.6.3",
     "react-stripe-elements": "^2.0.3",
     "redux": "^4.0.1",
@@ -47,7 +48,7 @@
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
-    "babel-loader": "^8.0.5",
+    "babel-loader": "^7.1.5",
     "babel-plugin-transform-async-to-generator": "^6.24.1",
     "babel-plugin-transform-class-properties": "^6.24.1",
     "babel-plugin-transform-flow-strip-types": "^6.22.0",    
