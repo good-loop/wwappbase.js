@@ -258,13 +258,17 @@ const CreateButton = ({type, props, navpage, base, make}) => {
 	</div>);
 };
 
-const ListItems = ({type, navpage, servlet}) => {
+/**
+ * 
+ * @param servlet {?String} e.g. "publisher" normally null and taken from the url
+ */
+const ListItems = ({type, navpage, servlet, status=C.KStatus.ALL_BAR_TRASH}) => {
 	assMatch(type, String);
 	return (
 		<div>
 			<h3 className="text-capitalize">List {type}</h3>
 			<CreateButton type={type} navpage={navpage} />
-			<ListLoad type={type} hasFilter servlet={servlet} status={C.KStatus.ALL_BAR_TRASH} />
+			<ListLoad type={type} hasFilter servlet={servlet} status={status} />
 		</div>
 	);
 };
