@@ -125,12 +125,12 @@ const ListLoad = ({type, status, servlet, navpage,
 }; // ./ListLoad
 //
 
-const onPick = ({event, navpage, id}) => {
+const onPick = ({event, navpage, id, customParams}) => {
 	if (event) {
 		event.stopPropagation();
 		event.preventDefault();
 	}
-	modifyHash([navpage, id]);
+	customParams ? modifyHash([navpage,null],customParams) : modifyHash([navpage,id]);
 };
 
 /**
@@ -138,7 +138,11 @@ const onPick = ({event, navpage, id}) => {
  */
 const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children}) => {
 	const id = getId(item);
-	const itemUrl = modifyHash([servlet, id], null, true);
+	// for the campaign page we want to manipulate the url to modify the vert/vertiser params 
+	// that means both modifying href and onClick definitions
+	let itemUrl = servlet==="campaign" ? modifyHash([servlet,null], {'gl.vertiser':null, 'gl.vert':id}, true) : modifyHash([servlet, id], null, true);
+	let customParams = servlet==="campaign" ? {'gl.vertiser':null, 'gl.vert':id} : null;
+
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 
 	const checkbox = checkboxes ? (
@@ -152,7 +156,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 			{checkbox}
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<a href={itemUrl}
-				onClick={event => onPick({ event, navpage, id })}
+				onClick={event => onPick({ event, navpage, id, customParams })}
 				className={'ListItem btn btn-default status-' + item.status}
 			>
 				{children}
@@ -160,7 +164,6 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 		</div>
 	);
 };
-
 
 /**
  * These can be clicked or control-clicked
@@ -269,5 +272,16 @@ const ListItems = ({type, navpage, servlet}) => {
 	);
 };
 
-export { CreateButton, DefaultListItem, ListItems };
+const ListFilteredItems = ({type, navpage, servlet, q}) => {
+	assMatch(type, String);
+	return (
+		<div>
+			<h3 className="text-capitalize">List {type}</h3>
+			<CreateButton type={type} navpage={navpage} />
+			<ListLoad type={type} hasFilter servlet={servlet} status={C.KStatus.ALL_BAR_TRASH} q={q}/>
+		</div>
+	);
+};
+
+export { CreateButton, DefaultListItem, ListItems, ListFilteredItems };
 export default ListLoad;
