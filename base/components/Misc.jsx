@@ -122,7 +122,7 @@ Misc.Col2 = ({children, noContainer}) => {
  */
 Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
 	const snum = Money.prettyString({amount, minimumFractionDigits, maximumFractionDigits, maximumSignificantDigits});
-	const currencyCode = (amount.currency || 'GBP').toUpperCase();
+	const currencyCode = ((amount || 0).currency || 'GBP').toUpperCase();
 	return (
 		<span className='money'>
 			<span className='currency-symbol'>{Money.CURRENCY[currencyCode]}</span>
