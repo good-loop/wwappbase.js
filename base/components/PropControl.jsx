@@ -236,7 +236,7 @@ const PropControl2 = (props) => {
 		let mv = modelValueFromInput(e.target.value, type, e.type);
 		// console.warn("onChange", e.target.value, mv, e);
 		DataStore.setValue(proppath, mv);
-		if (saveFn) saveFn({path, value:mv});
+		if (saveFn) saveFn({path, prop, value:mv});
 		e.preventDefault();
 		e.stopPropagation();
 	};
@@ -262,7 +262,7 @@ const PropControl2 = (props) => {
 			try {				
 				let vnew = JSON.parse(e.target.value);
 				DataStore.setValue(proppath, vnew);
-				if (saveFn) saveFn({path:path});
+				if (saveFn) saveFn({path:path, prop, svalue});
 			} catch(err) {
 				console.warn(err);
 				// TODO show error feedback
@@ -563,7 +563,7 @@ const PropControlMoney = ({prop, value, path, proppath,
 		value.raw = e.target.value; // Store raw, so we can display blank strings
 		DataStore.setValue(proppath, value, true); // force update 'cos editing the object makes this look like a no-op
 		// console.warn("£", value, proppath);
-		if (saveFn) saveFn({path, value});
+		if (saveFn) saveFn({path, prop, value});
 	};
 	let curr = Money.CURRENCY[value && value.currency] || <span>&pound;</span>;
 	let currency;
@@ -614,7 +614,7 @@ const PropControlMultiString = ({ value, prop, proppath, array, set, saveFn, ...
 		}
 		
 		DataStore.setValue(proppath, newValue);
-		if (saveFn) saveFn({path});
+		if (saveFn) saveFn({path, prop, newValue});
 		e.preventDefault();
 		e.stopPropagation();
 	}
@@ -683,7 +683,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 			const val = e.target? e.target.value : e;
 			let mv = modelValueFromInput(val, type, e.type);
 			DataStore.setValue(proppath, mv);
-			if (saveFn) saveFn({path:path, value:mv});
+			if (saveFn) saveFn({path:path, prop, value:mv});
 			// e.preventDefault();
 			// e.stopPropagation();
 		};
