@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.15.7'
+VERSION='Version=1.16.0'
 
 ###
+# New in 1.16.0: Moneyscript is now a publishable project
 # New in 1.15.7: changed the portal npm command to 'npm run compile'
 # New in 1.15.6: Portal project now is told to webpack via 'npm run build' command
 # New in 1.15.5: Made it so that Adserver publishing now targets one LESS file instead of an entire directory
@@ -151,7 +152,7 @@ fi
 #################
 ### Preamble: Define Arrays and Variables
 #################
-SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','myloop','portal','profiler','sogive','youagain')
+SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','moneyscript','myloop','portal','profiler','sogive','youagain')
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION frontend|backend|everything ?notests\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 #SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
@@ -259,6 +260,32 @@ case $1 in
 		BACKEND_SYNC_LIST=("lib" "winterwell.datalog.jar")
 		WHOLE_SYNC=("config" "src" "src-js" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "lib" "winterwell.datalog.jar")
 		;;
+		moneyscript|MONEYSCRIPT)
+		PROJECT='moneyscript'
+		PRODUCTION_SERVERS=('robinson.soda.sh')
+		TEST_SERVERS=('hugh.soda.sh')
+		PROJECT_LOCATION="/home/$USER/winterwell/code/moneyscript"
+		TARGET_DIRECTORY='/home/winterwell/moneyscript'
+		IMAGE_OPTIMISE='no'
+		# 	IMAGEDIRECTORY="" #Only needed if 'IMAGE_OPTIMISE' is set to 'yes'
+		CONVERT_LESS='yes'
+		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style" #Only needed if 'CONVERT_LESS' is set to 'yes'
+		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style" #Only needed if 'CONVERT_LESS' is set to 'yes'
+		WEBPACK='yes'
+		TEST_JAVASCRIPT='no'
+		# 	JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/" #Only needed if 'TEST_JAVASCRIPT' is set to 'yes', and you must ammend Section 10 to accomodate for how to find and process your JS files
+		# 	COMPILE_UNITS='no'
+		# 	UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
+		RESTART_SERVICE_AFTER_SYNC='yes'
+		SERVICE_NAME='moneyscript'
+		FRONTEND_SYNC_LIST=("config" "src" "test" "web" "package.json" "webpack.config.dev.js" "webpack.config.js")
+		BACKEND_SYNC_LIST=("lib")
+		#	# Use "lib" instead of "tmp-lib" for syncing your JAR files
+		WHOLE_SYNC=("config" "src" "test" "web" "package.json" "webpack.config.dev.js" "webpack.config.js" "lib")
+		# 	PRESERVE=("web-as/uploads")
+		POST_PUBLISHING_TASK='no' # If this is set to 'yes', then you must ammend section 16 in order to specify how to handle the tasks
+		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
+	;;
 	my-loop|MY-LOOP|myloop|MYLOOP)
 		PROJECT='myloop'
 		PRODUCTION_SERVERS=('sandrock.soda.sh' 'gl-es-03.good-loop.com' 'gl-es-04.good-loop.com' 'gl-es-05.good-loop.com')
@@ -683,6 +710,9 @@ function webpack {
 			portal)
 				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
 			;;
+			moneyscript)
+				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
+			;;
 			*)
 				$PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
 			;;
@@ -725,6 +755,9 @@ function convert_less_files {
 			[[ $CSS_OUTPUT_LOCATION = "" ]]; then
 			printf "\nYour specified project $PROJECT , has the parameter 'CONVERT_LESS' set to 'yes', and an input directory IS specified,\nbut no output directory has been specified\nExiting process\n"
 			exit 0
+		elif
+			[ ! -d $CSS_OUTPUT_LOCATION ]; then
+				mkdir -p $CSS_OUTPUT_LOCATION
 		fi
 		case $PROJECT in
 			adserver)
