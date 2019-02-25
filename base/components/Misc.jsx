@@ -498,42 +498,40 @@ Misc.MDText = ({source}) => {
 
 /**
  * BootStrap radio button group
- * Records which radio is currently active in DataStore[path, prop]
- * @param headers Array of possible options
- * @param noDefault If unset, first header will be selected by default.
+ * Expect children to have an "option" property which should match the "selected" attribute
  */
-Misc.RadioGroup = ({path, prop, headers, noDefault}) => {
-	assMatch(path, 'String[]');
-	assMatch(prop, 'String');
-	assMatch(headers, 'String[]');
-
-	const proppath = path.concat(prop);
-	const checkedValue = DataStore.getValue(proppath) || (!noDefault && headers[0]);
+Misc.Tabs = ({path, children}) => {
+	// Option currently selected
+	// Could use state hook for this, but would be inconsistent with the rest of the code base
+	const selected = DataStore.getValue(path) || children[0].props.option;
+	
+	// Options to display
+	const headers = children.reduce((headers, child) => [...headers, child.props.option], []);
+	// Width assigned to each tab heading
 	const colSize = Math.floor(12/headers.length);
 
-	//Place default value in DataStore
-	if(!noDefault && !DataStore.getValue(proppath)) {
-		DataStore.setValue(proppath, headers[0]);
-	}
-
+	// Show component selected, or the first option as a default
 	return (
 		<div>
 			<ul className="nav nav-tabs">
-				{headers.map((h, i) => {
-					return(
-						<li
-							className={checkedValue === h ? "active" : ""}
-							id={h}
-							key={h}
-							onClick={() => {
-								DataStore.setValue(proppath, h);
-							}}
-						>
-							<a data-toggle="tab">{h}</a>
-						</li>
-					)
-				})}
+				{headers.map((h) => {
+						return(
+							<li
+								className={selected === h ? "active" : ""}
+								id={h}
+								key={h}
+								onClick={() => {
+									DataStore.setValue(path, h);
+								}}
+							>
+								<a data-toggle="tab">{h}</a>
+							</li>
+						)
+					})}
 			</ul>
+			<div className="component-body">
+				{ children.find( child => child.props.option === selected ) }
+			</div>
 		</div>
 	);
 };
