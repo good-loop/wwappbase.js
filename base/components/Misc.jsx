@@ -536,4 +536,48 @@ Misc.Tabs = ({path, children}) => {
 	);
 };
 
+// TODO: delete this after February 2019 release
+/**
+ * @deprecated
+ * BootStrap radio button group
+ * Records which radio is currently active in DataStore[path, prop]
+ * @param headers Array of possible options
+ * @param noDefault If unset, first header will be selected by default.
+ */
+Misc.RadioGroup = ({path, prop, headers, noDefault}) => {
+	assMatch(path, 'String[]');
+	assMatch(prop, 'String');
+	assMatch(headers, 'String[]');
+
+	const proppath = path.concat(prop);
+	const checkedValue = DataStore.getValue(proppath) || (!noDefault && headers[0]);
+	const colSize = Math.floor(12/headers.length);
+
+	//Place default value in DataStore
+	if(!noDefault && !DataStore.getValue(proppath)) {
+		DataStore.setValue(proppath, headers[0]);
+	}
+
+	return (
+		<div>
+			<ul className="nav nav-tabs">
+				{headers.map((h, i) => {
+					return(
+						<li
+							className={checkedValue === h ? "active" : ""}
+							id={h}
+							key={h}
+							onClick={() => {
+								DataStore.setValue(proppath, h);
+							}}
+						>
+							<a data-toggle="tab">{h}</a>
+						</li>
+					)
+				})}
+			</ul>
+		</div>
+	);
+};
+
 export default Misc;
