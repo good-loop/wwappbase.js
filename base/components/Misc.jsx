@@ -497,7 +497,6 @@ Misc.MDText = ({source}) => {
 }
 
 /**
- * BootStrap radio button group
  * Expect children to have an "option" property which should match the "selected" attribute
  */
 Misc.Tabs = ({path, children}) => {
