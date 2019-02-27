@@ -206,10 +206,10 @@ const DefaultDelete = ({type,id}) => (
 /**
  * Make a local blank, and set the nav url
  * Does not save (Crud will probably do that once you make an edit)
- * @param {
+ * @param {{
  * 	base: {?Object} use to make the blank.
  * 	make: {?Function} use to make the blank. base -> base
- * }
+ * }}
  */
 const createBlank = ({type, navpage, base, id, make}) => {
 	assert( ! getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) "+type+". Safety hack: Pass in an id param instead");
@@ -287,5 +287,5 @@ const ListFilteredItems = ({type, navpage, servlet, q}) => {
 	);
 };
 
-export { CreateButton, DefaultListItem, ListItems, ListFilteredItems };
+export { CreateButton, DefaultListItem, ListItems, ListFilteredItems, createBlank };
 export default ListLoad;

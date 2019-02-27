@@ -173,9 +173,20 @@ class Store {
 	}
 
 	/**
+	 * @deprecated switch to getDataPath()
 	 * the DataStore path for this item, or null if item is null;
 	 */
-	getPath(status, type, id, domain) { //TODO: refactor this to {named args}
+	getPath(status, type, id, domain) {
+		return getDataPath({status, type, id, domain});
+	}
+
+	/**
+	 * the DataStore path for this item, or null if item is null;
+	 * @param status {C.KStatus}
+	 * @param domain {?String} Only used by Profiler??
+	 * @returns {String[]}
+	 */
+	getDataPath({status, type, id, domain}) {
 		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
 		assert(C.TYPES.has(type), "DataStore.js bad type: "+type);
 		assMatch(id, String, "DataStore.js bad id "+id);
