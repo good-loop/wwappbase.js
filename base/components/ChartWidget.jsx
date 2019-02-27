@@ -35,7 +35,7 @@ class ChartWidget extends React.Component {
 		let {title, dataFromLabel} = this.props;
 		console.log("ChartWidget", {title, dataFromLabel});
 		assert(dataFromLabel);
-		title = title || "Junk Data";
+		// title = title || "Junk Data";
 		let label = "Stuff";
 		let timeFormat = 'MM/DD/YYYY HH:mm';
 		// function newDateString(days) {

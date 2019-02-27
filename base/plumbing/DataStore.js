@@ -420,7 +420,7 @@ class Store {
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
 	 * As a convenience hack, this method will extract `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
-	 * @param messaging {?Boolean} If true, try to use Messaging.js to notify the user of failures.
+	 * @param messaging {?Boolean} If true (the default), try to use Messaging.js to notify the user of failures.
 	 * @returns {PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, messaging=true) { // TODO allow retry after 10 seconds

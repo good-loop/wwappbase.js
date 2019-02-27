@@ -192,9 +192,11 @@ class SimpleTable extends React.Component {
 						<div className={scroller? 'scroller' : ''}>
 							<table className={cn}>
 								<thead>
-									<tr>{visibleColumns.map((col, c) => {
+									<tr>
+										{visibleColumns.map((col, c) => {
 											return <Th table={this} tableSettings={tableSettings} key={c} 
-												column={col} c={c} dataArray={dataArray} headerRender={headerRender} checkboxValues={checkboxValues} showSortButtons />
+												column={col} c={c} dataArray={dataArray} headerRender={headerRender} 
+												checkboxValues={checkboxValues} showSortButtons />
 										})
 										}
 									</tr>
