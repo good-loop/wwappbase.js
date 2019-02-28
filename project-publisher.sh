@@ -713,6 +713,9 @@ function webpack {
 			moneyscript)
 				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
 			;;
+			sogive-app)
+				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
+			;;
 			*)
 				$PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
 			;;
