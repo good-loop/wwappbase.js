@@ -173,14 +173,6 @@ class Store {
 	}
 
 	/**
-	 * @deprecated switch to getDataPath()
-	 * the DataStore path for this item, or null if item is null;
-	 */
-	getPath(status, type, id, domain) {
-		return getDataPath({status, type, id, domain});
-	}
-
-	/**
 	 * the DataStore path for this item, or null if item is null;
 	 * @param status {C.KStatus}
 	 * @param domain {?String} Only used by Profiler??
@@ -196,6 +188,14 @@ class Store {
 		} else {
 			return [s, type, id];
 		}
+	}
+
+	/**
+	 * @deprecated switch to getDataPath()
+	 * the DataStore path for this item, or null if item is null;
+	 */
+	getPath(status, type, id, domain) {
+		return this.getDataPath({status, type, id, domain});
 	}
 
 	/**
