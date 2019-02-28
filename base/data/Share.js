@@ -16,6 +16,7 @@ class Share extends DataClass {
 	}
 
 }
+DataClass.register(Share, "Share");
 const This = Share;
 export default This;
 

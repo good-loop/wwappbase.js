@@ -19,6 +19,7 @@ class Transfer extends DataClass {
 		Object.assign(this, base);
 	}
 }
+DataClass.register(Transfer, "Transfer");
 const This = Transfer;
 export default Transfer;
 
