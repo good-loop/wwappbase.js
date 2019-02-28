@@ -39,6 +39,9 @@ let login = (() => {
 
         yield page.waitForSelector(Selectors['log-in']);
         yield page.click(Selectors['log-in']);
+        // Wait for CSS transition to complete
+        // Caused puppeteer to click on wrong div sometimes
+        yield page.waitFor(400);
 
         if (service === 'email') {
             yield page.waitForSelector(Selectors['log-in-email']);
