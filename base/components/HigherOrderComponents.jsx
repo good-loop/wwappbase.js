@@ -3,7 +3,9 @@ import ServerIO from '../plumbing/ServerIOBase';
 // https://reactjs.org/docs/higher-order-components.html
 // Reusable bits of functionality: simply wrap your component with one of these to extend its functionality
 
+
 /** Logging will not work properly with anonymous functions (they do not have a displayName or name property) */
+
 const withLogsIfVisible = (Component) => (props) => {
 	// Report if this div appeared fully on the user's screen
 	let logsIfVisibleRef = useRef();
