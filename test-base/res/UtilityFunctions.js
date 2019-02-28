@@ -53,12 +53,8 @@ async function takeScreenshot({page, path, name = new Date().toISOString()}) {
  * @param url option param. Will go to the url before attempting to log in
  * @param service how are you loggin in? Can be email, Twitter or Facebook
 */
-async function login({browser, page, username, password, Selectors, service}) {
+async function login({browser, page, username, password, Selectors=CommonSelectors, service='email'}) {
     if(!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
-
-    // support for older tests that did not have these params
-    if( !Selectors ) Selectors = CommonSelectors;
-    if( !service ) service = 'email';
 
     await page.waitForSelector(Selectors['log-in']);
     await page.click(Selectors['log-in']);
@@ -226,7 +222,7 @@ async function soGiveFailIfPointingAtProduction({page}) {
 /**
  * Advert must already be somewhere on the page before this method is called
  * @param { object } page puppeteer test object
- * @param { string } type behaviour needs to be slightly different for type:banner ads
+ * @param { string } Optional: type behaviour needs to be slightly different for type:banner ads
  * @param { string } url location where good-loop adunit is hosted
  */
 async function watchAdvertAndDonate({page, type}) {
