@@ -32,6 +32,11 @@ class ChartWidget extends React.Component {
 	}
 
 	render() {
+		// TODO all-off initially
+		// https://github.com/chartjs/Chart.js/issues/3150
+		// chart.getDatasetMeta(1).hidden=true;
+		// chart.update();
+		
 		let {title, dataFromLabel} = this.props;
 		console.log("ChartWidget", {title, dataFromLabel});
 		assert(dataFromLabel);
