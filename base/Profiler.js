@@ -212,8 +212,9 @@ const submitForm = ({data}) => {
 // data on how many people have reached as.good-loop.com via "as.good-loop.com/gl.socialShareId=${SOCIAL_SHARE_ID}"
 // will be returned along with other Profile stats
  */
-const saveSocialShareId = ({xid, socialShareId, adID, name}) => {
-	let ssids = JSON.stringify([{socialShareId, adID, name}]);
+const saveSocialShareId = ({xid, socialShareId, adid, name}) => {
+	let ssids = JSON.stringify([{socialShareId, adid, name}]);
+	console.warn(ssids);
 	return ServerIO.post(
 		`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
 		{socialShareIds: ssids}
