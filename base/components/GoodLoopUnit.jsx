@@ -105,14 +105,14 @@ class GoodLoopUnit extends React.Component {
     }
 
     componentWillUpdate(nextProps, nextState) {
-        const { CSS: nextCSS, size: nextSize } = nextProps;
-        const { CSS, size } = this.props;
+        const { CSS: nextCSS, size: nextSize, adID: nextadID } = nextProps;
+        const { CSS, size, adID } = this.props;
         const { iframe } = this.state;
         this.props = nextProps;
         this.state = nextState;
 
         // Reload the adunit
-        if ( nextSize !== size ) {
+        if ( nextSize !== size || nextadID !== adID ) {
             const { adunitRef } = this;
 
             // Delete current iframe from DOM
