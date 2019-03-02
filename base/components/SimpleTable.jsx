@@ -42,19 +42,20 @@ const str = printer.str;
  * 	type: Used for providing an editor - see Misc.PropControl* 	
  * 	tooltip: Text to show as help
  * }
- */
-
-/**
- * data: {Item[]} each row an item
+ *
+ * @param data: {Item[]} each row an item
  * 
- * dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
- * So the columns should use accessors 'key' and 'value'
+ * @param dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
+ * So the columns should use accessors 'key' and 'value'.
+ * This is ONLY good for simple 2-column tables OR when used with rowtree.
  * 
- * columns: {Column[]}
+ * @param columns: {Column[]}
  * 
  * addTotalRow: {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
  * 
  * topRow: {Item} - A row Object. Provide an always visible (no filtering) top row, e.g. for totals including extra data.
+ * 
+ * showSortButtons {Boolean} default true
  */
 // NB: use a full component for error-handling
 // Also state (though maybe we should use DataStore)
@@ -94,8 +95,11 @@ class SimpleTable extends React.Component {
 			bottomRow, hasFilter, rowsPerPage, statePath, 
 			// checkboxValues, copied into state for modifying
 			hideEmpty,
-			scroller // if true, use fix col-1 scrollbars
+			scroller, // if true, use fix col-1 scrollbars
+			showSortButtons=true,
+			rowtree
 		} = this.props;
+		const checkboxValues = this.state.checkboxValues;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
@@ -121,6 +125,80 @@ class SimpleTable extends React.Component {
 			tableSettings = {};
 		}
 
+		// filter and sort
+		let {data:fdata,visibleColumns} = this.filter({data, tableSettings, hideEmpty, columns, rowsPerPage});
+		data = fdata;
+
+		let cn = 'table'+(className? ' '+className : '');
+		// HACK build up an array view of the table
+		// TODO refactor to build this first, then generate the html
+		let dataArray = [[]];
+
+		const filterChange = e => {
+			const v = e.target.value;
+			this.setState({filter: v});
+		};
+		// scrolling (credit to Irina): uses wrapper & scroller and css
+
+		return (
+			<div className='SimpleTable'>
+				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
+					value={tableSettings.filter || ''} 
+					onChange={filterChange} 
+					/></div> : null}
+				<div>
+					{checkboxValues? <RemoveAllColumns table={this} /> : null}
+					<div className={scroller? 'wrapper' : ''}>
+						<div className={scroller? 'scroller' : ''}>
+<table className={cn}>
+	<thead>
+		<tr>
+			{visibleColumns.map((col, c) => {
+				return <Th table={this} tableSettings={tableSettings} key={c} 
+					column={col} c={c} dataArray={dataArray} headerRender={headerRender} 
+					checkboxValues={checkboxValues} showSortButtons={showSortButtons} />
+			})
+			}
+		</tr>
+
+		{topRow? <Row className='topRow' item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+		{addTotalRow? 
+			<tr className='totalRow' >
+				<th>{addTotalRow}</th>
+				{visibleColumns.slice(1).map((col, c) => 
+					<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+				}
+			</tr>
+			: null}
+
+	</thead>
+
+	<tbody>
+		{data && ! rowtree? data.map( (d,i) => 
+			<Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />
+			) : null}
+		{dataObject && rowtree? <RowTree rowtree={rowtree} dataObject={dataObject} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}
+
+		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+	</tbody>
+
+	{csv? <tfoot><tr>
+		<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
+	</tr></tfoot>
+		: null}	
+
+</table>
+						</div>
+					</div>	
+					{checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={checkboxValues} table={this} /> : null}
+				</div>
+			</div>			
+		);
+	} // ./ render()
+
+
+
+	filter({data, tableSettings, hideEmpty, columns, rowsPerPage}) {
 		// filter?		
 		// always filter nulls
 		data = data.filter(row => !!row);
@@ -129,7 +207,7 @@ class SimpleTable extends React.Component {
 		}
 		// sort?
 		if (tableSettings.sortBy !== undefined) {
-			// TODO pluck the right column
+			// pluck the right column
 			let column = tableSettings.sortBy;
 			// sort fn
 			let sortFn = column.sortMethod;
@@ -169,69 +247,39 @@ class SimpleTable extends React.Component {
 		if (rowsPerPage) {
 			data = data.slice(0, rowsPerPage);
 		}
-		let cn = 'table'+(className? ' '+className : '');
-		// HACK build up an array view of the table
-		// TODO refactor to build this first, then generate the html
-		let dataArray = [[]];
+		return {data, visibleColumns};
+	} // ./filter
 
-		const filterChange = e => {
-			const v = e.target.value;
-			this.setState({filter: v});
-		};
-		// scrolling (credit to Irina): uses wrapper & scroller and css
 
-		return (
-			<div className='SimpleTable'>
-				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
-					value={tableSettings.filter || ''} 
-					onChange={filterChange} 
-					/></div> : null}
-				<div>
-					{checkboxValues? <RemoveAllColumns table={this} /> : null}
-					<div className={scroller? 'wrapper' : ''}>
-						<div className={scroller? 'scroller' : ''}>
-							<table className={cn}>
-								<thead>
-									<tr>
-										{visibleColumns.map((col, c) => {
-											return <Th table={this} tableSettings={tableSettings} key={c} 
-												column={col} c={c} dataArray={dataArray} headerRender={headerRender} 
-												checkboxValues={checkboxValues} showSortButtons />
-										})
-										}
-									</tr>
-
-									{topRow? <Row className='topRow' item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
-									{addTotalRow? 
-										<tr className='totalRow' >
-											<th>{addTotalRow}</th>
-											{visibleColumns.slice(1).map((col, c) => 
-												<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
-											}
-										</tr>
-										: null}
-
-								</thead>
-
-								<tbody>					
-									{data? data.map( (d,i) => <Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />) : null}
-									{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
-								</tbody>
-
-								{csv? <tfoot><tr>
-									<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
-								</tr></tfoot>
-									: null}	
-
-							</table>
-						</div>
-					</div>	
-					{checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={checkboxValues} table={this} /> : null}
-				</div>
-			</div>			
-		);
-	}
 } // ./SimpleTable
+
+
+
+const RowTree = (stuff) => {
+	// use dataObject
+	let rows = rowTree2(stuff);
+	return rows;
+};
+const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
+	let $rows = [];
+	Object.keys(rowtree).forEach(rowName => {
+		let item = dataObject[rowName];
+		let i = item.index;
+		let $row = <Row depth={depth} key={'r'+i} item={item} row={i} columns={visibleColumns} dataArray={dataArray} />;
+		$rows.push($row);
+		// recurse
+		let rowInfo = rowtree[rowName];
+		if (rowInfo && rowInfo.children) {
+			rowInfo.children.forEach(childnode => {
+				let $childRows = rowTree2({rowtree:childnode, dataObject, visibleColumns, dataArray, depth:depth+1});
+				$rows.push($childRows);
+			});
+		}
+		console.warn("rt2",rowName, rowInfo, "item", item);
+	});
+	return $rows;
+};
+
 
 // TODO onClick={} sortBy
 const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons, checkboxValues}) => {
@@ -286,7 +334,7 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 /**
  * 
  */
-const Row = ({item, row, columns, dataArray, className}) => {
+const Row = ({item, row, columns, dataArray, className, depth}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
 	// if (specialRow) {
@@ -294,7 +342,7 @@ const Row = ({item, row, columns, dataArray, className}) => {
 	// 	// copy columns out, allowing the row item settings to override
 	// 	columns = columns.map(col => Object.assign({}, col, item));
 	// }
-	return (<tr className={className}>
+	return (<tr className={className} depth={depth}>
 		{columns.map(col => <Cell key={JSON.stringify(col)} row={row} column={col} item={item} dataRow={dataRow} />)}
 	</tr>);
 };

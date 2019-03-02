@@ -25,7 +25,8 @@ import List from '../data/List';
  * 
  * 
  * @param status {?String} e.g. "Draft"
- * @param servlet {?String} e.g. "publisher" Normally unset, and taken from the url.
+ * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url. 
+ * Best practice is to set servlet to avoid relying on url behaviour.
  * @param ListItem {?React component} if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
@@ -178,7 +179,8 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 	if ( ! navpage) navpage = servlet;
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
-	const name = nameFn ? nameFn(item, id) : item.name || item.text || id;
+	let name = nameFn ? nameFn(item, id) : item.name || item.text || id;
+	if (name.length > 280) name = name.slice(0,280); 
 	const status = C.KStatus.isPUBLISHED(item.status)? null : item.status;
 	return (
 		<div>
@@ -263,7 +265,8 @@ const CreateButton = ({type, props, navpage, base, make}) => {
 
 /**
  * 
- * @param servlet {?String} e.g. "publisher" normally null and taken from the url
+ * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url. 
+ * Best practice is to set servlet to avoid relying on url behaviour.
  */
 const ListItems = ({type, navpage, servlet, status=C.KStatus.ALL_BAR_TRASH}) => {
 	assMatch(type, String);

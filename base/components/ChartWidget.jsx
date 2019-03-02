@@ -8,6 +8,7 @@ import RC2, {Line} from 'react-chartjs2';
 
 /**
 	@param dataFromLabel e.g. (label)adview -> time -> number
+	@param off {?Boolean} If true, datasets will start "hidden" (but you can switch them on in the legend)
  */
 class ChartWidget extends React.Component {
 	constructor(props) {
@@ -37,7 +38,7 @@ class ChartWidget extends React.Component {
 		// chart.getDatasetMeta(1).hidden=true;
 		// chart.update();
 		
-		let {title, dataFromLabel} = this.props;
+		let {title, dataFromLabel, off} = this.props;
 		console.log("ChartWidget", {title, dataFromLabel});
 		assert(dataFromLabel);
 		// title = title || "Junk Data";
@@ -63,6 +64,8 @@ class ChartWidget extends React.Component {
 			xydata = xydata.filter(xy => xy.y);
 			dataPoints += xydata.length;
 			let dset = makeDataSet(i, keys[i], xydata);
+			// off by default?
+			if (off) dset.hidden = true;
 			// console.warn(dset);
 			datasets.push(dset);
 		}
@@ -104,6 +107,7 @@ class ChartWidget extends React.Component {
 
 /**
  * @param data Array of {x (which can be a Time string), y}
+ * @returns {label, data, etc}
  */
 const makeDataSet = (i, label, xydata) => {	
 	// console.log('makeDataSet', label, xydata);	
