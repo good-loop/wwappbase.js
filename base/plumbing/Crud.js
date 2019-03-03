@@ -19,7 +19,7 @@ import List from '../data/List';
  * @param item {DataItem} can be null, in which case the item is got from DataStore
  * @returns Promise
  */
-ActionMan.crud = (type, id, action, item) => {
+ActionMan.crud = ({type, id, action, item}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
@@ -35,8 +35,13 @@ ActionMan.crud = (type, id, action, item) => {
 		item = {id, "@type": type};
 	}
 	if ( ! getId(item)) {
-		assert(id==='new', id);
+		// item has no ID?! Better fix that
+		console.warn("ActionMan.crud() - item without an ID! - setting id to "+id+". Best practice is to set the id property when creating the object.");
 		item.id = id;
+	}
+	if ( ! getType(item)) {
+		console.warn("ActionMan.crud() - item without a type! - setting type to "+type+". Best practice is to use `new MyClass()` to set type when creating the object.");
+		item['@type'] = type;
 	}
 	// new item? then change the action
 	if (id===C.newId && action==='save') {
@@ -104,8 +109,8 @@ const errorPath = ({type, id, action}) => {
 	return ['transient', type, id, action, 'error'];
 };
 
-ActionMan.saveEdits = (type, pubId, item) => {
-	return ActionMan.crud(type, pubId, 'save', item);
+ActionMan.saveEdits = (type, id, item) => {
+	return ActionMan.crud({type, id, action:'save', item});
 };
 
 /**
@@ -135,7 +140,7 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 	// modify e.g. url
 	if (onChange) onChange(newItem);
 	// save server
-	let p = ActionMan.crud(type, newId, 'save', newItem);
+	let p = ActionMan.crud({type, id:newId, action:'save', item:newItem});
 	return p;
 };
 
@@ -145,7 +150,7 @@ ActionMan.unpublish = (type, id) => {
 	// TODO optimistic list mod
 	// preCrudListMod({type, id, action:'unpublish'});
 	// call the server
-	return ActionMan.crud(type, id, 'unpublish')
+	return ActionMan.crud({type, id, action:'unpublish'})
 		.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
@@ -164,7 +169,7 @@ ActionMan.publishEdits = (type, pubId, item) => {
 	// optimistic list mod
 	preCrudListMod({type, item, action:'publish'});
 	// call the server
-	return ActionMan.crud(type, pubId, 'publish', item)
+	return ActionMan.crud({type, id:pubId, action:'publish', item})
 		.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
@@ -206,8 +211,8 @@ const preCrudListMod = ({type, id, item, action}) => {
 	} // ./action=delete
 };
 
-ActionMan.discardEdits = (type, pubId) => {
-	return ActionMan.crud(type, pubId, C.CRUDACTION.discardEdits);	
+ActionMan.discardEdits = (type, id) => {
+	return ActionMan.crud({type, id, action:C.CRUDACTION.discardEdits});	
 };
 
 /**
@@ -219,7 +224,7 @@ ActionMan.delete = (type, pubId) => {
 	// optimistic list mod
 	preCrudListMod({type, id:pubId, action:'delete'});
 	// ?? put a safety check in here??
-	return ActionMan.crud(type, pubId, 'delete')
+	return ActionMan.crud({type, id:pubId, action:'delete'})
 		.then(e => {
 			console.warn("deleted!", type, pubId, e);
 			// remove the local versions			

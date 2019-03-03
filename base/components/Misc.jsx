@@ -150,7 +150,8 @@ Misc.Time = ({time}) => {
 };
 
 /** eg a Twitter logo 
- TODO transparent/opaque */
+ TODO transparent/opaque 
+ TODO merge with Misc.Icon */
 Misc.Logo = ({service, size, transparent, bgcolor, color}) => {
 	assert(service, 'Misc.Logo');
 	if (service==='twitter' || service==='facebook'|| service==='instagram') {
@@ -169,7 +170,7 @@ Misc.Logo = ({service, size, transparent, bgcolor, color}) => {
 }; // ./Logo
 
 /**
- * Font-Awesome or Glyphicon icons
+ * Font-Awesome or Glyphicon icons. See also Misc.Logo
  */
 Misc.Icon = ({glyph, fa, size, className, ...other}) => {	
 	if (glyph) {

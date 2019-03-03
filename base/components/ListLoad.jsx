@@ -232,6 +232,9 @@ const createBlank = ({type, navpage, base, id, make}) => {
 	const path = getPath(C.KStatus.DRAFT, type, id);
 	DataStore.setValue(path, base);
 	// set the id
+	if ( ! navpage) {
+		navpage = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
+	}
 	onPick({navpage, id});
 	// invalidate lists
 	DataStore.invalidateList(type);
