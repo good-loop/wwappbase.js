@@ -84,7 +84,7 @@ General.CharityPageImpactAndDonate = {
     email: `input[name="donorEmail"]`,
     address: `input[name="donorAddress"]`,
     postcode: `input[name="donorPostcode"]`,
-    "consent-checkbox": `body > div:nth-child(12) > div.fade.donate-modal.in.modal > div > div > div.modal-body > div > div.WizardStage > div.section.donation-amount > div:nth-child(5) > div > label > input[type="checkbox"]`,
+    "consent-checkbox": `body > div:nth-child(13) > div.fade.donate-modal.in.modal > div > div > div.modal-body > div > div.WizardStage > div.section.donation-amount > div:nth-child(5) > div > label > input[type="checkbox"]`,
     "anon-checkbox": `div.WizardStage > div.section.donation-amount > div:nth-child(7) > div > label > input[type="checkbox"]`,
     message: `div.WizardStage > div.section.donation-amount > div > textarea`,
     "include-tip-checkbox": `div.WizardStage > div:nth-child(1) > div.padded-block > div:nth-child(1) > div > label > input[type="checkbox"]`,
