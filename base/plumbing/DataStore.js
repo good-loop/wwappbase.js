@@ -392,8 +392,8 @@ class Store {
 		let itemstate = {data:{}, draft:{}, trash:{}};
 		hits.forEach(item => {
 			try {
-				let type = getType(item);
-				if (!type) {
+				const type = getType(item);
+				if ( ! type) {
 					console.log("skip server object w/o type", item);
 					return;
 				}
@@ -405,6 +405,8 @@ class Store {
 				assert(id, 'DataStore.updateFromServer: no id for', item, 'from', res);
 				// Put the new item in the store, but don't trigger an update until all items are in.
 				this.setValue([statusPath, type, id], item, false);
+				// mark it as clean 'cos the setValue() above might have marked it dirty
+				this.setLocalEditsStatus(type, id, C.STATUS.clean, false);
 			} catch(err) {
 				// swallow and carry on
 				console.error(err);
