@@ -262,7 +262,7 @@ const PropControl2 = (props) => {
 			try {				
 				let vnew = JSON.parse(e.target.value);
 				DataStore.setValue(proppath, vnew);
-				if (saveFn) saveFn({path:path, prop, svalue});
+				if (saveFn) saveFn({path, prop, value:vnew});
 			} catch(err) {
 				console.warn(err);
 				// TODO show error feedback
@@ -614,7 +614,7 @@ const PropControlMultiString = ({ value, prop, proppath, array, set, saveFn, ...
 		}
 		
 		DataStore.setValue(proppath, newValue);
-		if (saveFn) saveFn({path, prop, newValue});
+		if (saveFn) saveFn({path, prop, value:newValue});
 		e.preventDefault();
 		e.stopPropagation();
 	}
