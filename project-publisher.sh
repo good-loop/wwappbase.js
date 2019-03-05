@@ -892,6 +892,7 @@ function sync_project {
 			continue
 		else
 			printf "\nSyncing $item ...\n"
+#			echo "	cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY" 
 			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
 		fi
 	done
