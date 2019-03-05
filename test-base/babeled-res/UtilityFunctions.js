@@ -30,12 +30,8 @@ let takeScreenshot = (() => {
 
 
 let login = (() => {
-    var _ref2 = _asyncToGenerator(function* ({ browser, page, username, password, Selectors, service }) {
+    var _ref2 = _asyncToGenerator(function* ({ browser, page, username, password, Selectors = CommonSelectors, service = 'email' }) {
         if (!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
-
-        // support for older tests that did not have these params
-        if (!Selectors) Selectors = CommonSelectors;
-        if (!service) service = 'email';
 
         yield page.waitForSelector(Selectors['log-in']);
         yield page.click(Selectors['log-in']);
@@ -281,7 +277,7 @@ let soGiveFailIfPointingAtProduction = (() => {
 /**
  * Advert must already be somewhere on the page before this method is called
  * @param { object } page puppeteer test object
- * @param { string } type behaviour needs to be slightly different for type:banner ads
+ * @param { string } Optional: type behaviour needs to be slightly different for type:banner ads
  * @param { string } url location where good-loop adunit is hosted
  */
 let watchAdvertAndDonate = (() => {

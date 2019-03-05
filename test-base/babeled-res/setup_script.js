@@ -14,8 +14,7 @@ const url = require('url');
 const options = {
     headless: true,
     devtools: false,
-    slowMo: 0 // Introduces a delay between puppeteer actions
-};
+    slowMo: 0 };
 /**Setup functions run before each test
  * If you only want something to run once
  * before all tests in file, use beforeAll/afterAll
