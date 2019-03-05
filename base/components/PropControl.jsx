@@ -56,7 +56,9 @@ const PropControl = (props) => {
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
-	const value = DataStore.getValue(proppath) || dflt; // const? no - we do some edits e.g. undefined -> false below
+	let value = DataStore.getValue(proppath);
+	// Use a default? But not to replace false or 0
+	if (value===undefined || value===null || value==='') value = dflt;
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
@@ -201,19 +203,20 @@ const PropControl2 = (props) => {
 	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
 	if (type === 'yesNo') {
 		const onChange = e => {
-			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
-			const val = e && e.target && e.target.value && e.target.value !== 'false';
+			// String yes/no -> boolean
+			const val = e.target.value === 'yes';
 			DataStore.setValue(proppath, val);
-			if (saveFn) saveFn({path, prop, value: val});		
+			if (saveFn) saveFn({path, prop, value: val});
 		};
 
 		// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
-		const noChecked = value !== null && value !== undefined && !value;
+		const noChecked = value===false;
 
+		// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
 		return (
 			<div className='form-group'>
-				<BS.Radio value name={prop} onChange={onChange} checked={value} inline label='Yes' />
-				<BS.Radio value={false} name={prop} onChange={onChange} checked={noChecked} inline label='No' />
+				<BS.Radio value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
+				<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
 			</div>
 		);
 	}
