@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.16.0'
+VERSION='Version=1.16.1'
 
 ###
+# New in 1.16.1: Enabled the sogive-app to update the version.properties file
 # New in 1.16.0: Moneyscript is now a publishable project
 # New in 1.15.7: changed the portal npm command to 'npm run compile'
 # New in 1.15.6: Portal project now is told to webpack via 'npm run build' command
@@ -370,6 +371,7 @@ case $1 in
 		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
+		POST_PUBLISHING_TASK='yes'
 	;;
 	youagain|YOUAGAIN)
 		PROJECT='youagain'
@@ -996,6 +998,9 @@ function run_post_publish_tasks {
 						printf "\n"
 					;;
 				esac
+			;;
+			sogive-app)
+				$PSYNC $PROJECT_LOCATION/config/version.properties $TARGET_DIRECTORY/config/
 			;;
 		esac
 	fi
