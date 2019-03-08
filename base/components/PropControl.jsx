@@ -634,7 +634,7 @@ const PropControlKeySet = ({ value, prop, proppath, array, saveFn, ...otherStuff
 		if (saveFn) saveFn({ path, prop, value: newValue });
 	}
 	
-	const keyElements = Object.keys(value).map(key => (
+	const keyElements = Object.keys(value || {}).map(key => (
 		<span className="key" key={key}>{key}<span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
 	));
 	
