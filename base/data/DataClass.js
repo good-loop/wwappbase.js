@@ -64,7 +64,7 @@ class DataClass {
 	 * check the type!
 	 */
 	static isa(obj) {
-		if ( ! _.isObject(obj) || obj.length) return false;
+		if ( ! _.isObject(obj) || _.isArray(obj)) return false;
 		// console.warn(this, this.name);
 		let typ = this;
 		const sotyp = getType(obj);
@@ -228,6 +228,9 @@ DataClass.register = (dclass, name) => {
 		name = dclass.name;
 	}
 	assert(name);
+	if (allTypes[name]) {
+		console.warn("DataClass.register() Double register for "+name, dclass, allTypes[name]);
+	}
 	allTypes[name] = dclass;
 	// Store the "proper" text name safe from Babel
 	dclass._name = name;
@@ -237,6 +240,10 @@ DataClass.register = (dclass, name) => {
 	const nonStatic = Object.getOwnPropertyNames(dclass.__proto__)
 		.filter(fname => ! dclass.hasOwnProperty(fname) && dclass.__proto__[fname] !== dclass[fname]);
 	assert( ! nonStatic.length, "DataClasses can only have static methods: "+name+" "+JSON.stringify(nonStatic));		
+	// sanity check: forbidden properties
+	// if (dclass.__proto__.length) { false +ives :(
+	// 	console.warn("DataClass.register() "+name+" Avoid using `length` as it can create confusion with arrays");
+	// }
 };
 
 /**

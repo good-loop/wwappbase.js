@@ -31,5 +31,6 @@ class Task extends DataClass {
 	}
 
 };
+DataClass.register(Task, 'Task');
 const This = Task;
 export default Task;
