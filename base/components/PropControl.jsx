@@ -248,11 +248,11 @@ const PropControl2 = (props) => {
 	};
 
 	if (type === 'arraytext') {
-		return <PropControlMultiString {...props} />;
+		return <PropControlArrayText {...props} />;
 	}
 
 	if (type === 'keyset') {
-		return <PropControlMultiString {...props} set />;
+		return <PropControlKeySet {...props} />;
 	}
 
 	if (type==='textarea') {
@@ -596,14 +596,13 @@ const PropControlMoney = ({prop, value, path, proppath,
 
 
 /**
- * Display a value as 'a b c' but store as ['a', 'b', 'c'] (default) or {a: true, b: true, c: true}.
- * Used to edit variant.style (as array) and variant.params (as set) in VariantControls. 
- * @param set {Boolean} Store as a pseudo-set {a: true, b: true, c: true} rather than array.
+ * Display a value as 'a b c' but store as ['a', 'b', 'c']
+ * Used to edit variant.style 
  */
-const PropControlMultiString = ({ value, prop, proppath, array, set, saveFn, ...otherStuff}) => {
+const PropControlArrayText = ({ value, prop, proppath, array, saveFn, ...otherStuff}) => {
 	const onChange = e => {
-		const oldValue = DataStore.getValue(proppath) || (set ? {} : []);
-		const oldString = (set ? Object.keys(oldValue) : oldValue).join(' ');
+		const oldValue = DataStore.getValue(proppath) || [];
+		const oldString = oldValue.join(' ');
 		const newString = e.target.value;
 		let newValue = newString.split(' ');
 
@@ -613,19 +612,39 @@ const PropControlMultiString = ({ value, prop, proppath, array, set, saveFn, ...
 		if (oldString.indexOf(newString) >= 0) {
 			newValue = newValue.filter(val => val);
 		}
-
-		if (set) {
-			// KeySet rather than ArrayText? Convert ['a', 'b'] to {a: true, b: true} before storing
-			newValue = newValue.reduce((set, key) => { set[key] = true; return set; }, {});
-		}
 		
 		DataStore.setValue(proppath, newValue);
 		if (saveFn) saveFn({path, prop, value:newValue});
 		e.preventDefault();
 		e.stopPropagation();
 	}
-	const safeValue = (set ? Object.keys(value || {}) : (value || [])).join(' ');
+	const safeValue = (value || []).join(' ');
 	return <Misc.FormControl name={prop} value={safeValue} onChange={onChange} {...otherStuff} />;
+};
+
+const PropControlKeySet = ({ value, prop, proppath, array, saveFn, ...otherStuff}) => {
+	const addRemoveKey = (key, remove) => {
+		const newValue = { ...value };
+		if (remove) {
+			delete newValue[key];
+		} else {
+			newValue[key] = true;
+		}
+		DataStore.setValue(proppath, newValue);
+		if (saveFn) saveFn({ path, prop, value: newValue });
+	}
+	
+	const keyElements = Object.keys(value).map(key => (
+		<span className="key" key={key}>{key}<span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
+	));
+	
+	let newKey;
+	return (
+		<div className="keyset">
+			<div className="keys">{keyElements}</div>	
+			<input type="form-control" onChange={(event) => newKey = event.target.value} /> <button onClick={() => addRemoveKey(newKey)}>Add</button>
+		</div>
+	);
 };
 
 
@@ -755,7 +774,7 @@ Misc.normalise = s => {
 	s = s.replace(/[\u00A0\u2007\u202F\u200B]/g, ' ');
 	return s;
 };
-	
+
 
 /**
  * This replaces the react-bootstrap version 'cos we saw odd bugs there. 
