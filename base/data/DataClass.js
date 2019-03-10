@@ -232,6 +232,8 @@ DataClass.register = (dclass, name) => {
 		console.warn("DataClass.register() Double register for "+name, dclass, allTypes[name]);
 	}
 	allTypes[name] = dclass;
+	// debug convenience
+	if ( ! window[name]) window[name] = dclass;
 	// Store the "proper" text name safe from Babel
 	dclass._name = name;
 
