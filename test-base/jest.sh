@@ -28,17 +28,13 @@ done
 
 case $SERVICE in
 	adserver|ADSERVER)
-	CONFIG='./config-files/adserver.jest.config.js'
-	;;
+	CONFIG='./config-files/adserver.jest.config.js';;
 	sogive|SOGIVE)
-	CONFIG='./config-files/sogive.jest.config.js'
-	;;
+	CONFIG='./config-files/sogive.jest.config.js';;
 	myloop|MYLOOP)
-	'./config-files/myloop.jest.config.js'
-	;;
+	CONFIG='./config-files/myloop.jest.config.js';;
 	*)
-	exit
-	;;
+	exit;;
 esac
 
 ########
