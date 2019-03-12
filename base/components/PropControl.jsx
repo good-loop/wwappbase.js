@@ -9,11 +9,13 @@ import { Checkbox, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import Misc from './Misc';
 import {join, mapkv, stopEvent} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
+import md5 from 'md5';
+import Autocomplete from 'react-autocomplete';
 
+import Misc from './Misc';
 import DataStore, {getPath} from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 // import ActionMan from '../plumbing/ActionManBase';
@@ -21,10 +23,9 @@ import printer from '../utils/printer';
 import C from '../CBase';
 import BS from './BS';
 import Money from '../data/Money';
-import Autocomplete from 'react-autocomplete';
 // // import I18n from 'easyi18n';
 import {getType, getId, nonce} from '../data/DataClass';
-import md5 from 'md5';
+import {notifyUser} from '../plumbing/Messaging';
 
 /**
  * Input bound to DataStore.
@@ -300,7 +301,8 @@ const PropControl2 = (props) => {
 						let imgurl = response.cargo.url;
 						if(onUpload) onUpload({path, prop, imgurl});
 						DataStore.setValue(path.concat(prop), imgurl);
-					});
+					})
+					.fail( res => res.status == 413 && notifyUser(new Error(res.statusText)));
 			});
 	
 			rejected.forEach(file => {
