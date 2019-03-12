@@ -8,7 +8,6 @@ const insertAdunitCSS = ({iframe, CSS}) => {
     $style.id = 'vert-css';
     $style.innerHTML = CSS;
 
-    console.warn(iframe);
     // (18/02/19) Inserting in to body instead of head is a dumb dumb fix for adunit inserting it's style tag after insertAdunitCSS has already run
     // Means that, if a user makes edits and then reloads the page, they will see the published ad's CSS rather than their local changes.
     // Don't think that there is any event I can listen for, and I did not want to have this function run in the render method.
@@ -57,7 +56,6 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
         // If so, delete it. Use querySelectorAll in case multiple tags were accidentaly inserted
         return () => {
             const $adunitCSS = goodloopframe.querySelectorAll('#vert-css') || [];
-            console.warn("Why are these not removed?", $adunitCSS);
             $adunitCSS.forEach( node => node.parentElement.removeChild(node) );
         }
     }, [CSS, goodloopframe]);
