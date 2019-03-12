@@ -60,7 +60,8 @@ const notifyUser = (msgOrError) => {
 	// set
 	msgs[mid] = msg; 
 	// NB update:false as a hack fix to an infinite loop w render seen june 2018
-	DataStore.setValue(['misc', 'messages-for-user'], msgs, false);
+	// 12/03/19 I have removed above hack as everything seems to work fine without it. Will leave comment in place in case I'm wrong
+	DataStore.setValue(['misc', 'messages-for-user'], msgs);
 };
 
 const Messaging = {
