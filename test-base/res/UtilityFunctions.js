@@ -28,7 +28,7 @@ const disableAnimations = {
 };
 
 // set when calling Jest CLI with --testURL $url
-const APIBASE = window.location;
+const APIBASE = window.location.href;
 
 async function takeScreenshot({page, path, name = new Date().toISOString()}) {
     try {

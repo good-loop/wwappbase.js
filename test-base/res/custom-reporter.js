@@ -33,7 +33,7 @@ class CustomReporter {
             this.writeToLog({
                 testName: runData.fullName,
                 contents,
-                path: `test-results/Logs(failure)`
+                path: `test-results/Logs`
             });
           }
       });
