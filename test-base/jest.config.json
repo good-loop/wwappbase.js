@@ -1,8 +1,0 @@
-{
-  "reporters": [
-    "default",
-    "./test-base/babeled-res/custom-reporter.js"
-  ],
-  "setupTestFrameworkScriptFile": "./test-base/babeled-res/setup_script.js",
-  "verbose": false
-}
