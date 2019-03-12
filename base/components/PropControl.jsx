@@ -10,7 +10,7 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import Misc from './Misc';
-import {join, mapkv} from 'wwutils';
+import {join, mapkv, stopEvent} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 
@@ -626,7 +626,11 @@ const PropControlKeySet = ({ value, prop, proppath, array, saveFn, ...otherStuff
 	const addRemoveKey = (key, remove) => {
 		const newValue = { ...value };
 		if (remove) {
-			delete newValue[key];
+			// delete newValue[key];
+			newValue[key] = false; // send an explicit false because a backend merge would lose a simple remove
+			// TODO this leads to the data being a bit messy, with ambiguous false flags. 
+			// ...But we want to keep update (i.e. merge) behaviour over fresh-index in general.
+			// ...TODO DataStore to maintain a diff, which it can send to the backend.
 		} else {
 			newValue[key] = true;
 		}
@@ -634,15 +638,19 @@ const PropControlKeySet = ({ value, prop, proppath, array, saveFn, ...otherStuff
 		if (saveFn) saveFn({ path, prop, value: newValue });
 	}
 	
-	const keyElements = Object.keys(value || {}).map(key => (
-		<span className="key" key={key}>{key}<span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
+	const keyElements = Object.keys(value || {}).filter(key => value[key]).map(key => (
+		<span className="key" key={key}>{key} <span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
 	));
 	
+	// TODO clear the input after add
 	let newKey;
 	return (
-		<div className="keyset">
+		<div className="keyset form-inline">
 			<div className="keys">{keyElements}</div>	
-			<input type="form-control" onChange={(event) => newKey = event.target.value} /> <button onClick={() => addRemoveKey(newKey)}>Add</button>
+			<form className="form-inline" onSubmit={stopEvent}>
+				<input className='form-control' onChange={(event) => newKey = event.target.value} 
+				/> <button className={'btn '+(value? 'btn-primary' : 'btn-default')} onClick={() => addRemoveKey(newKey)} >Add</button>
+			</form>
 		</div>
 	);
 };
