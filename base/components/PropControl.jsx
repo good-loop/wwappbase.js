@@ -168,7 +168,7 @@ const PropControl = (props) => {
  */
 const PropControl2 = (props) => {
 	// unpack ??clean up 
-	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
+	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, onUpload, ...stuff} = props;
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
@@ -298,6 +298,7 @@ const PropControl2 = (props) => {
 				ServerIO.upload(file, progress, load)
 					.done(response => {
 						let imgurl = response.cargo.url;
+						if(onUpload) onUpload({path, prop, imgurl});
 						DataStore.setValue(path.concat(prop), imgurl);
 					});
 			});
