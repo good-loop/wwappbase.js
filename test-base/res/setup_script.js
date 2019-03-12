@@ -20,7 +20,6 @@ beforeEach(async () => {
     let browserOptions = {...options, headless: process.env.PUPPETEER_RUN_HEADLESS};
     window.__BROWSER_OPTIONS__ = browserOptions;
     //Can't access global from tests
-    console.warn(browserOptions);
     window.__BROWSER__ = await puppeteer.launch(browserOptions);
     //Could set API.ENDPOINT here.
 });
