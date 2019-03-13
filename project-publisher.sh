@@ -1,9 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.16.2'
+VERSION='Version=1.16.3'
 
 ###
-# New in 1.16.2: added 'web-apps' directory to the list of directories to sync during an adserver publish
+# New in 1.16.2-3: added 'web-apps' directory to the list of directories to sync during an adserver publish
 # New in 1.16.1: Enabled the sogive-app to update the version.properties file
 # New in 1.16.0: Moneyscript is now a publishable project
 # New in 1.15.7: changed the portal npm command to 'npm run compile'
@@ -196,7 +196,7 @@ case $1 in
 		SERVICE_NAME=('adservermain')
 		FRONTEND_SYNC_LIST=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
 		BACKEND_SYNC_LIST=("lib")
-		WHOLE_SYNC=("adunit" "server" "src" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "lib")
+		WHOLE_SYNC=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "lib")
 		PRESERVE=("config/log.properties")
 		POST_PUBLISHING_TASK='yes'
 	;;
