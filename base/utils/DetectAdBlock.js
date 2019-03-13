@@ -20,4 +20,4 @@ const DetectAdBlock = ({path}) => {
     document.head.appendChild($script);
 };
 
-module.exports = DetectAdBlock;
+export default DetectAdBlock;

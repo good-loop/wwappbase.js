@@ -19,6 +19,6 @@ const withLogsIfVisible = (Component) => (props) => {
 	return <Component {...props} logsIfVisibleRef={logsIfVisibleRef} />;
 };
 
-module.exports = {
+export {
 	withLogsIfVisible
 };

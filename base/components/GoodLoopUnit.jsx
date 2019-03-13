@@ -138,4 +138,4 @@ class GoodLoopUnit extends React.Component {
     }
 }
 
-module.exports = GoodLoopUnit;
+export default GoodLoopUnit;
