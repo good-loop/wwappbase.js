@@ -9,11 +9,13 @@ import { Checkbox, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import Misc from './Misc';
-import {join, mapkv} from 'wwutils';
+import {join, mapkv, stopEvent} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
+import md5 from 'md5';
+import Autocomplete from 'react-autocomplete';
 
+import Misc from './Misc';
 import DataStore, {getPath} from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 // import ActionMan from '../plumbing/ActionManBase';
@@ -21,10 +23,9 @@ import printer from '../utils/printer';
 import C from '../CBase';
 import BS from './BS';
 import Money from '../data/Money';
-import Autocomplete from 'react-autocomplete';
 // // import I18n from 'easyi18n';
 import {getType, getId, nonce} from '../data/DataClass';
-import md5 from 'md5';
+import {notifyUser} from '../plumbing/Messaging';
 
 /**
  * Input bound to DataStore.
@@ -168,7 +169,7 @@ const PropControl = (props) => {
  */
 const PropControl2 = (props) => {
 	// unpack ??clean up 
-	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
+	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, onUpload, ...stuff} = props;
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
@@ -298,8 +299,10 @@ const PropControl2 = (props) => {
 				ServerIO.upload(file, progress, load)
 					.done(response => {
 						let imgurl = response.cargo.url;
+						if(onUpload) onUpload({path, prop, imgurl});
 						DataStore.setValue(path.concat(prop), imgurl);
-					});
+					})
+					.fail( res => res.status == 413 && notifyUser(new Error(res.statusText)));
 			});
 	
 			rejected.forEach(file => {
@@ -626,7 +629,11 @@ const PropControlKeySet = ({ value, prop, proppath, array, saveFn, ...otherStuff
 	const addRemoveKey = (key, remove) => {
 		const newValue = { ...value };
 		if (remove) {
-			delete newValue[key];
+			// delete newValue[key];
+			newValue[key] = false; // send an explicit false because a backend merge would lose a simple remove
+			// TODO this leads to the data being a bit messy, with ambiguous false flags. 
+			// ...But we want to keep update (i.e. merge) behaviour over fresh-index in general.
+			// ...TODO DataStore to maintain a diff, which it can send to the backend.
 		} else {
 			newValue[key] = true;
 		}
@@ -634,15 +641,19 @@ const PropControlKeySet = ({ value, prop, proppath, array, saveFn, ...otherStuff
 		if (saveFn) saveFn({ path, prop, value: newValue });
 	}
 	
-	const keyElements = Object.keys(value || {}).map(key => (
-		<span className="key" key={key}>{key}<span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
+	const keyElements = Object.keys(value || {}).filter(key => value[key]).map(key => (
+		<span className="key" key={key}>{key} <span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
 	));
 	
+	// TODO clear the input after add
 	let newKey;
 	return (
-		<div className="keyset">
+		<div className="keyset form-inline">
 			<div className="keys">{keyElements}</div>	
-			<input type="form-control" onChange={(event) => newKey = event.target.value} /> <button onClick={() => addRemoveKey(newKey)}>Add</button>
+			<form className="form-inline" onSubmit={stopEvent}>
+				<input className='form-control' onChange={(event) => newKey = event.target.value} 
+				/> <button className={'btn '+(value? 'btn-primary' : 'btn-default')} onClick={() => addRemoveKey(newKey)} >Add</button>
+			</form>
 		</div>
 	);
 };

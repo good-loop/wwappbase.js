@@ -3,12 +3,12 @@
  * where jest is set to read the setup file from
  */
 const puppeteer = require('puppeteer');
-const {takeScreenshot} = require('../babeled-res/UtilityFunctions');
+const {takeScreenshot} = require('../res/UtilityFunctions');
 const fs = require('fs');
 const url = require('url');
 
 const options = {
-    headless: true,
+    headless: false,
     devtools: false,
     slowMo: 0, // Introduces a delay between puppeteer actions
 };
@@ -17,9 +17,10 @@ const options = {
  * before all tests in file, use beforeAll/afterAll
  */
 beforeEach(async () => {
-    window.__BROWSER_OPTIONS__ = options;
+    let browserOptions = {...options, headless: process.env.PUPPETEER_RUN_HEADLESS};
+    window.__BROWSER_OPTIONS__ = browserOptions;
     //Can't access global from tests
-    window.__BROWSER__ = await puppeteer.launch(options);
+    window.__BROWSER__ = await puppeteer.launch(browserOptions);
     //Could set API.ENDPOINT here.
 });
 
@@ -53,9 +54,11 @@ afterEach(async () => {
 
         await takeScreenshot({
             page, 
-            path: `test-results/Screenshots(success)`,
+            path: `test-results/Screenshots`,
             name
         });
     }
-    await window.__BROWSER__.close();
+    if( process.env.PUPPETEER_RUN_HEADLESS ) {
+        await window.__BROWSER__.close();
+    }
 }, 10000);
