@@ -20,7 +20,12 @@ const jsxFromId = {};
  *  path: {?String[]|Boolean} TODO only show for this path (e.g. page + slug)
  * }
  */
-const notifyUser = (msgOrError) => {
+const notifyUser = msgOrError => {
+	// defer the call, so that this can be called within a render, and not upset react with nested updates.
+	_.defer(() => notifyUser2(msgOrError));
+};
+
+const notifyUser2 = (msgOrError) => {
 	let msg;
 	if (_.isError(msgOrError)) {
 		msg = {type:'error', text: msgOrError.message || 'Error'};
