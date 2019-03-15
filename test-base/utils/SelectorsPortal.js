@@ -51,12 +51,26 @@ const PubSignUp = {
     pubPageLink: '#pubsignup > div > div.WizardStage > div:nth-child(1) > div > a',
 };
 
+const AdSignUp = {
+    email: 'input[name="email"]',
+    website: 'input[name="url"]',
+    video: 'input[name="video"]',
+    logo: 'input[name="logo"]',
+    charityOne: 'input[placeholder="Charity A"]',
+    charityTwo: 'input[placeholder="Charity B"]',
+    charityThree: 'input[placeholder="Charity C"]',
+    total: 'input[name="total"]',
+    notes: 'textarea[name="notes"]',
+    submit: 'button.btn.btn-lg.btn-primary'
+};
+
 const Selectors = {
     Advertiser,
     Advert,
     General,
     Main,
-    PubSignUp
+    PubSignUp,
+    AdSignUp
 };
 
 module.exports = Selectors;
