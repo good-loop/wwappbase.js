@@ -1,4 +1,5 @@
 node_modules
 credentials.js
-test-results
+test-results/Logs/*.txt
+test-results/Screenshots/*.png
 babeled-res/*
