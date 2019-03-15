@@ -4,10 +4,10 @@
 ########
 ### Setting values to variables if there are no arguments given when running the script
 ########
-ENDPOINT='http://localportal.good-loop.com'
+ENDPOINT=''
 SERVICE=''
 CONFIG=''
-PUPPETEER_RUN_HEADLESS=true
+PUPPETEER_RUN_HEADLESS=''
 # local/test/''
 TEST_SERVER_TYPE='test' 
 

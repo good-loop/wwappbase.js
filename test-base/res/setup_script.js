@@ -57,7 +57,7 @@ afterEach(async () => {
             name
         });
     }
-    if( process.env.PUPPETEER_RUN_HEADLESS ) {
+    if( !!!process.env.PUPPETEER_RUN_HEADLESS ) {
         await window.__BROWSER__.close();
     }
 }, 10000);
