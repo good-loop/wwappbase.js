@@ -3,6 +3,7 @@ const puppeteer = require('puppeteer');
 const {APIBASE, fillInForm, isPointingAtProduction , login, vertIdByName, vertiserIdByName, watchAdvertAndDonate} = require('../res/UtilityFunctions');
 const {fbUsername, fbPassword, password, username, twitterUsername, twitterPassword} = require('../../../logins/sogive-app/puppeteer.credentials');
 import {CommonSelectors, FacebookSelectors, PortalSelectors, TwitterSelectors} from '../utils/SelectorsMaster';
+import { pathToFileURL } from 'url';
 
 const timestamp = Date.now();
 const vertName = 'advert-'+timestamp;
@@ -56,6 +57,30 @@ test('New user able to complete pub sign up', async() => {
 	await page.click(PortalSelectors.PubSignUp.pubPageLink);
 	await page.waitForSelector('#pubdash');
 }, 30000);
+
+test('Advertiser sign-up form', async() => {
+	const browser = window.__BROWSER__;
+	const page = await browser.newPage();
+
+	await page.goto(`${APIBASE}/#adsignup`);
+	await page.waitForSelector(PortalSelectors.AdSignUp.email);
+	await fillInForm({ 
+		page,
+		Selectors: PortalSelectors.AdSignUp,
+		data:{
+			email: 'human@real.man',
+			website: 'destroyallhumans.org',
+			video: 'https://testas.good-loop.com/vert/buck-480p.webm',
+			logo: 'https://www.deke.com/images/made/assets/uploads/08-final-hal_1600_1097_50.jpg',
+			charityOne: 'Robotic Alms',
+			charityTwo: 'Save the toasters',
+			charityThree: 'The "humans in chains" foundation',
+			total: '1',
+			notes: 'Hello fellow human!',
+		}
+	});
+	await page.click(PortalSelectors.AdSignUp.submit);
+});
 
 test('Log in via Facebook', async() => {
 	const browser = window.__BROWSER__;
