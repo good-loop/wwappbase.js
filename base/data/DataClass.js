@@ -77,6 +77,7 @@ class DataClass {
 
 	static assIsa(obj, msg) {
 		assert(this.isa(obj), (msg||'')+" "+this.name+" expected, but got "+JSON.stringify(obj));
+		return true;
 	}
 
 	/**
