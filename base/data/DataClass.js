@@ -69,7 +69,8 @@ class DataClass {
 		let typ = this;
 		const sotyp = getType(obj);
 		if ( ! sotyp) return false;
-		if (sotyp === typ.name) return true;
+		// NB: the .name test can fail 'cos production Babel renames classes. Also its redundant if register() was called. But just to be safe.
+		if (sotyp === typ._name || sotyp === typ.name) return true;
 		let otyp = getDataClass(sotyp);
 		return isa2(otyp, typ);
 	}
