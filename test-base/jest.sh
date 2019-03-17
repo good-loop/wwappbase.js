@@ -4,10 +4,11 @@
 ########
 ### Setting values to variables if there are no arguments given when running the script
 ########
-ENDPOINT='http://localportal.good-loop.com'
+ENDPOINT=''
 SERVICE=''
 CONFIG=''
-PUPPETEER_RUN_HEADLESS=true
+PUPPETEER_RUN_HEADLESS=''
+JEST_ARGS=''
 # local/test/''
 TEST_SERVER_TYPE='test' 
 
@@ -19,10 +20,11 @@ TEST_SERVER_TYPE='test'
 ### Which set of tests are we running?
 ### Should these be run in a headed or headless browser?
 ########
-while getopts ":s:d" opt; do
+while getopts ":s:j:d" opt; do
 	case $opt in
 		d) PUPPETEER_RUN_HEADLESS=false;;
 		s) SERVICE=$OPTARG;;
+		j) JEST_ARGS=$OPTARG;;
 	esac
 done
 
@@ -84,6 +86,5 @@ if [[ ! -d "$BASE_DIR/test-results" ]]; then
 fi
 
 printf "\nLaunching Jest... \n"
-
 # Config files need to know if we are running on local/test/production
-PUPPETEER_RUN_HEADLESS=$PUPPETEER_RUN_HEADLESS TEST_SERVER_TYPE=$TEST_SERVER_TYPE npm run jest -- --config $CONFIG
+PUPPETEER_RUN_HEADLESS=$PUPPETEER_RUN_HEADLESS TEST_SERVER_TYPE=$TEST_SERVER_TYPE npm run jest -- $JEST_ARGS --config $CONFIG

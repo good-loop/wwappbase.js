@@ -8,7 +8,7 @@ const fs = require('fs');
 const url = require('url');
 
 const options = {
-    headless: false,
+    headless: true,
     devtools: false,
     slowMo: 0, // Introduces a delay between puppeteer actions
 };
@@ -17,11 +17,10 @@ const options = {
  * before all tests in file, use beforeAll/afterAll
  */
 beforeEach(async () => {
-    let browserOptions = {...options, headless: process.env.PUPPETEER_RUN_HEADLESS};
+    let browserOptions = {...options, headless: !!!process.env.PUPPETEER_RUN_HEADLESS};
     window.__BROWSER_OPTIONS__ = browserOptions;
     //Can't access global from tests
     window.__BROWSER__ = await puppeteer.launch(browserOptions);
-    //Could set API.ENDPOINT here.
 });
 
 /**Cleanup after each test is completed
@@ -58,7 +57,7 @@ afterEach(async () => {
             name
         });
     }
-    if( process.env.PUPPETEER_RUN_HEADLESS ) {
+    if( !!!process.env.PUPPETEER_RUN_HEADLESS ) {
         await window.__BROWSER__.close();
     }
 }, 10000);
