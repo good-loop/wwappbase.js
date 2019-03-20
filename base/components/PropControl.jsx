@@ -27,6 +27,38 @@ import Money from '../data/Money';
 import {getType, getId, nonce} from '../data/DataClass';
 import {notifyUser} from '../plumbing/Messaging';
 
+/** 
+ * Wraps input element to be controlled input backed by DataStore rather than state
+ * */
+const withControlledInput = Component => props => {
+	const {prop, path, dflt, saveFn, validator} = props;
+
+	const [error, setError] = React.useState(false);
+
+	assMatch(prop, "String|Number");
+	assMatch(path, Array);
+	let value = DataStore.getValue([...path, prop]);
+	const setValue = event => {
+		DataStore.setValue([...path, prop], event.target.value);
+		if( validator ) setError( validator(event.target.value) );
+		if( saveFn ) saveFn({...props, error, value});
+
+		event.preventDefault();
+		event.stopPropagation();
+	}
+
+	// Use a default? But not to replace false or 0
+	if (value===undefined || value===null || value==='') value = dflt;
+
+	return (
+		<Component {...props} error={error} setValue={setValue} value={value} />
+	);
+};
+
+const ControlledInput = withControlledInput(({value='', setValue}) => <label> Test Field<input type="text" value={value} onChange={setValue} /></label>);
+
+const TestInputComponent = () => <ControlledInput path={['widget', 'test']} prop="doesntmatter" validator={ v => v==='error'} />;
+
 /**
  * Input bound to DataStore.
  * aka Misc.PropControl
@@ -890,7 +922,8 @@ export {
 	InputStatus,
 	setInputStatus,
 	getInputStatus,
-	getInputStatuses
+	getInputStatuses,
+	TestInputComponent
 };
 // should we rename it to Input, or StoreInput, ModelInput or some such??
 export default PropControl;
