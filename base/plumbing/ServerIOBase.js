@@ -27,6 +27,11 @@ ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
 ServerIO.ENDPOINT_TASK = 'https://calstat.winterwell.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.winterwell.com/task';
 
+// ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}media.good-loop.com/upload`;
+// ServerIO.MEDIA_ENDPOINT = `https://testmedia.good-loop.com/upload`;
+// ServerIO.MEDIA_ENDPOINT = `https://media.good-loop.com/upload`;
+// Uncomment to use UploadServlet instead of media.good-loop.com
+ServerIO.MEDIA_ENDPOINT = '/upload.json';
 /** 
  * Call this from ServerIO.js 
  * Safety check - if we deploy test code, it will complain. */
@@ -115,7 +120,7 @@ ServerIO.upload = function(file, progress, load) {
 	const data = new FormData(); // This is a browser native thing: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 	data.append('upload', file);
 
-	return ServerIO.load('/upload.json', {
+	return ServerIO.load(ServerIO.MEDIA_ENDPOINT, {
 		xhr,
 		data,
 		type: 'POST',

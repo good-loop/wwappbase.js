@@ -298,9 +298,10 @@ const PropControl2 = (props) => {
 			accepted.forEach(file => {
 				ServerIO.upload(file, progress, load)
 					.done(response => {
-						let imgurl = response.cargo.url;
-						if(onUpload) onUpload({path, prop, imgurl});
-						DataStore.setValue(path.concat(prop), imgurl);
+						// Different forms for UploadServlet vs MediaUploadServlet
+						let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
+						if(onUpload) onUpload({path, prop, response, url});
+						DataStore.setValue(path.concat(prop), url);
 					})
 					.fail( res => res.status == 413 && notifyUser(new Error(res.statusText)));
 			});
@@ -748,8 +749,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		onSelect={onChange2} 
 		/>);
 }; //./autocomplete
-	
-	
+
 /**
 * Convert inputs (probably text) into the model's format (e.g. numerical)
 * @param eventType "change"|"blur" More aggressive edits should only be done on "blur"
