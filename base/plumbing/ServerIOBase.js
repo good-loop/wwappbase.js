@@ -268,10 +268,10 @@ ServerIO.getEndpointForType = (type) => {
  *
  * {
  * 	// Our parameters
- * 	swallow: true to swallow any messages returned by the server.   
+ * 	swallow: true to swallow any messages returned by the server.
  * 
  * 	// jQuery parameters (partial notes only)
- * 	data: {Object} data to send - this should be a simple key -> primitive-value map.   
+ * 	data: {Object} data to send - this should be a simple key -> primitive-value map.
  * 	xhr: {Function} Used for special requests, e.g. file upload
  * }
  

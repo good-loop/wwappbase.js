@@ -63,8 +63,7 @@ Printer.prototype.prettyNumber = function(x, sigFigs) {
 *
 * Circular-object: {circ} Circular-array: [circ] jQuery: {jQuery}
 *
-* @param {Object}
-*            object The object to convert to a string.
+* @param {Object} object The object to convert to a string.
 * @returns {String} Representation of the supplied object.
 */
 Printer.prototype.str = function (object) {
@@ -132,15 +131,9 @@ Printer.prototype.str = function (object) {
  * Convert user text (eg a tweet) into html. Performs a clean, converts
  * links, and some markdown
  *
- * @param contents -
- *            The text context to be replaced. Can be null/undefined (returns "").
- * @param context -
- *            The message item (gives us the service this message is
- *            from for internal links)
- * @param external -
- *            When set true will write links to the service instead of
- *            internally
- *
+ * @param contents The text context to be replaced. Can be null/undefined (returns "").
+ * @param context The message item (gives us the service this message is from for internal links)
+ * @param external When set true will write links to the service instead of internally
  */
 Printer.prototype.textToHtml = function (contents, context, external) {
 	if ( ! contents) return "";
