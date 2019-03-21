@@ -9,10 +9,9 @@ import { Checkbox, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import {join, mapkv, stopEvent} from 'wwutils';
+import {join, stopEvent} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
-import md5 from 'md5';
 import Autocomplete from 'react-autocomplete';
 
 import Misc from './Misc';
@@ -24,14 +23,17 @@ import C from '../CBase';
 import BS from './BS';
 import Money from '../data/Money';
 // // import I18n from 'easyi18n';
-import {getType, getId, nonce} from '../data/DataClass';
+import {getType, getId} from '../data/DataClass';
 import {notifyUser} from '../plumbing/Messaging';
+import PropControlValidators from '../PropControlValidators';
 
 /** 
  * Wraps input element to be controlled input backed by DataStore rather than state
+ * Believe that this represents the common core of PropControl:
+ * creates input element backed by DataStore, checks for errors
  * */
-const withControlledInput = Component => props => {
-	const {prop, path, dflt, saveFn, validator} = props;
+const ControlledInput = props => {
+	const {prop, path, dflt, render, saveFn, validator} = props;
 
 	const [error, setError] = React.useState(false);
 
@@ -50,14 +52,8 @@ const withControlledInput = Component => props => {
 	// Use a default? But not to replace false or 0
 	if (value===undefined || value===null || value==='') value = dflt;
 
-	return (
-		<Component {...props} error={error} setValue={setValue} value={value} />
-	);
+	return render({...props, error, value, setValue});
 };
-
-const ControlledInput = withControlledInput(({value='', setValue}) => <label> Test Field<input type="text" value={value} onChange={setValue} /></label>);
-
-const TestInputComponent = () => <ControlledInput path={['widget', 'test']} prop="doesntmatter" validator={ v => v==='error'} />;
 
 /**
  * Input bound to DataStore.
@@ -86,85 +82,15 @@ NB: This function provides a label / help / error wrapper -- then passes to Prop
  */
 const PropControl = (props) => {
 	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
-	assMatch(prop, "String|Number");
-	assMatch(path, Array);
-	const proppath = path.concat(prop);
-	let value = DataStore.getValue(proppath);
-	// Use a default? But not to replace false or 0
-	if (value===undefined || value===null || value==='') value = dflt;
 
-	// HACK: catch bad dates and make an error message
-	// TODO generalise this with a validation function
-	if (Misc.KControlTypes.isdate(type) && ! validator) {
-		validator = (v, rawValue) => {
-			if ( ! v) {
-				// raw but no date suggests the server removed it
-				if (rawValue) return 'Please use the date format yyyy-mm-dd';
-				return null;
-			}
-			try {
-				let sdate = "" + new Date(v);
-				if (sdate === 'Invalid Date') {
-					return 'Please use the date format yyyy-mm-dd';
-				}
-			} catch (er) {
-				return 'Please use the date format yyyy-mm-dd';
-			}
-		};
-	} // date
+	if ( Misc.KControlTypes.isdate(type) ) return <ControlledInput validator={PropControlValidators.dateValidator} {...props} render={PropControlDate} />
+
 	// url: https
 	if (stuff.https !== false && (Misc.KControlTypes.isurl(type) || Misc.KControlTypes.isimg(type) || Misc.KControlTypes.isimgUpload(type))
-			&& ! validator)
-	{
-		validator = v => {
-			// TODO detect invalid url
-			if (v && v.substr(0,5) === 'http:') {
-				return "Please use https for secure urls";
-			}
-			return null;
-		};
-	}
-	// Money validator (NB: not 100% same as the backend)
-	if (Misc.KControlTypes.isMoney(type) && ! validator && ! error) {
-		validator = v => {
-			if ( ! v) return null;
-			let nv = Money.value(v);	
-			if ( ! Number.isFinite(nv)) {
-				return "Invalid number "+v.raw;
-			}
-			if (Math.round(nv*100) != nv*100) {
-				return "Fractional pence may cause an error later "+v.raw;
-			}
-			return null;
-		};
-	}
-	// validate!
-	if (validator) {		
-		const rawPath = path.concat(prop+"_raw");
-		const rawValue = DataStore.getValue(rawPath);
-		error = validator(value, rawValue);
-	}
-	// Has an issue been reported?
-	// TODO refactor so validators and callers use setInputStatus
-	if ( ! error) {
-		const is = getInputStatus(proppath);
-		if ( ! is && required && value === undefined) {
-			setInputStatus({path:proppath, status:'error', message:'Missing required input'});
-		}
-		if (is && is.status==='error') {
-			error = is.message || 'Error';
-		}
-	}
+			&& ! validator) return <ControlledInput validator={PropControlValidators.urlValidator} {...props} render={PropControlUrl} />
 
-	// if it had an error because the input was required but not filled, remove the error once it is filled
-	// TODO: is this correct?
-	if (error) {
-		const is = getInputStatus(proppath);
-		if(is && is.status==='error' && required && value) {
-			setInputStatus({path:proppath, status:'ok', message:'ok'});
-			error = undefined;
-		}
-	}
+	// Money validator (NB: not 100% same as the backend)
+	if (Misc.KControlTypes.isMoney(type)) return <ControlledInput validator={PropControlValidators.moneyValidator} {...props} render={PropControlMoney} />
 
 	// Minor TODO lets refactor this so we always do the wrapper, then call a 2nd jsx function for the input (instead of the recursing flag)
 	// label / help? show it and recurse
@@ -172,6 +98,107 @@ const PropControl = (props) => {
 	if (Misc.KControlTypes.ischeckbox(type)) {
 		return <PropControl2 value={value} proppath={proppath} {...props} />
 	}
+
+	if (type === 'arraytext') return <ControlledInput {...props} render={PropControlArrayText} />;
+
+	if (type === 'keyset') return <ControlledInput {...props} render={PropControlKeySet} />;
+
+	if (type==='textarea') return <ControlledInput {...props} render={({value, setValue}) => <textarea className="form-control" name={prop} onChange={setValue} value={value} />} />;
+
+	if (type==='img') {
+		delete props.https;
+		return <ControlledInput {...props} render={(props) => {
+			const {bg, setValue, value} = props;
+			return (
+				<>
+					<Misc.FormControl {...props} type='url' onChange={setValue} />
+					<div className='pull-right' style={{background: bg, padding: bg ? '20px' : '0'}}>
+						<Misc.ImgThumbnail url={value} style={{background:bg}} />
+					</div>
+					<div className='clearfix' />
+				</>
+			);
+		}} />;
+	}
+
+	if (type === 'imgUpload' || type==='videoUpload') return <ControlledInput {...props} render={PropControlUpload} />;
+
+	if (type === 'Money') return <ControlledInput {...props} render={PropControlMoney} />;
+
+	// date
+	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
+	//  && value && ! value.match(/dddd-dd-dd/)
+	if (Misc.KControlTypes.isdate(type)) return <ControlledInput {...props} render={PropControlDate} />;
+
+	if (type === 'radio' || type === 'checkboxes') return <ControlledInput {...props} render={PropControlRadio} />;
+
+	if (type === 'select') return <ControlledInput {...props} render={PropControlSelect} />;
+
+	if (type === 'autocomplete') return <ControlledInput {...props} render={PropControlAutocomplete} />;
+
+	if (type==='url') {
+		delete props.https;
+		return (
+			<ControlledInput {...props} render={ props => {
+				const {prop, setValue, value} = props;
+				return (
+					<>
+						<Misc.FormControl type='url' name={prop} value={value} onChange={setValue} onBlur={setValue} {...props} />
+						<div className='pull-right'><small>{value? <a href={value} target='_blank'>open in a new tab</a> : null}</small></div>
+						<div className='clearfix' />
+					</>
+				);
+			}}
+			/>
+		);
+	}
+
+	if (Misc.KControlTypes.ischeckbox(type)) {
+
+		return (
+			<ControlledInput {...props} render={ props => {
+				const {help, error, label, setValue, tooltip, value} = props;
+				const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : null;
+
+				return (
+					<>
+						<Checkbox checked={value} onChange={setValue} {...props}>{label} {helpIcon}</Checkbox>
+						{help? <span className="help-block">{help}</span> : null}
+						{error? <span className="help-block">{error}</span> : null}
+					</>
+				);
+			}}
+			/>
+		);
+	}
+
+	// if (type === 'yesNo') {
+
+	// 	return <ControlledInput {...props} render={ ({noChecked, prop, value, setValue}) => (
+	// 		<div className='form-group'>
+	// 			<BS.Radio value='yes' name={prop} onChange={event => setValue()} checked={!!value} inline label='Yes' />
+	// 			<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
+	// 		</div>
+	// 	)} />;
+	// 	const onChange = e => {
+	// 		// String yes/no -> boolean
+	// 		const val = e.target.value === 'yes';
+	// 		DataStore.setValue(proppath, val);
+	// 		if (saveFn) saveFn({path, prop, value: val});
+	// 	};
+
+	// 	// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
+	// 	const noChecked = value===false;
+
+	// 	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
+	// 	return (
+	// 		<div className='form-group'>
+	// 			<BS.Radio value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
+	// 			<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
+	// 		</div>
+	// 	);
+	// }
+
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
 	const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
@@ -184,6 +211,15 @@ const PropControl = (props) => {
 						// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 	return (
 		<div className={join('form-group', type, error? 'has-error' : null)}>
+			<ControlledInput {...props} render={ props => {	
+				const {prop, setValue} = props;
+				return <Misc.FormControl {...props} name={prop} onChange={setValue} />;
+			}}
+			/>
+		</div>
+	);
+
+	return (
 			{label || tooltip? 
 				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
@@ -191,7 +227,6 @@ const PropControl = (props) => {
 			<PropControl2 value={value} proppath={proppath} {...props} />
 			{help? <span className="help-block">{help}</span> : null}
 			{error? <span className="help-block">{error}</span> : null}
-		</div>
 	);
 }; // ./PropControl
 
@@ -206,90 +241,12 @@ const PropControl2 = (props) => {
 
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
 	assert( ! type || Misc.KControlTypes.has(type), 'Misc.PropControl: '+type);
-	assert(_.isArray(path), 'Misc.PropControl: not an array:'+path);
-	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path);
-	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
-	// if (item && item !== DataStore.getValue(path)) {
-	// 	console.warn("Misc.PropControl item != DataStore version", "path", path, "item", item);
-	// }
-	if ( ! item) {
-		item = DataStore.getValue(path) || {};
-	}
 
-	// Checkbox?
-	if (Misc.KControlTypes.ischeckbox(type)) {
-		const onChange = e => {
-			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
-			const val = e && e.target && e.target.checked;
-			DataStore.setValue(proppath, val);
-			if (saveFn) saveFn({path, prop, item, value: val});		
-		};
-		if (value===undefined) value = false;
-		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : null;
-		return (<div>
-			<Checkbox checked={value} onChange={onChange} {...otherStuff}>{label} {helpIcon}</Checkbox>
-			{help? <span className="help-block">{help}</span> : null}
-			{error? <span className="help-block">{error}</span> : null}
-		</div>);
-	} // ./checkbox
+	item = item || DataStore.getValue(path) || {};
 
-	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
-	if (type === 'yesNo') {
-		const onChange = e => {
-			// String yes/no -> boolean
-			const val = e.target.value === 'yes';
-			DataStore.setValue(proppath, val);
-			if (saveFn) saveFn({path, prop, value: val});
-		};
-
-		// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
-		const noChecked = value===false;
-
-		// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
-		return (
-			<div className='form-group'>
-				<BS.Radio value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
-				<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
-			</div>
-		);
-	}
-
-	if (value===undefined) value = '';
-
-	// £s
-	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
-	if (type === 'Money') {
-		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
-		return <PropControlMoney {...acprops} />;
-	} // ./£
 	if (type === 'XId') {
 		let service = otherStuff.service || 'WTF'; // FIXME
 		modelValueFromInput = s => Misc.normalise(s)+'@'+service;
-	}
-
-	// text based
-	const onChange = e => {
-		// console.log("event", e, e.type);
-		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-		DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
-		let mv = modelValueFromInput(e.target.value, type, e.type);
-		// console.warn("onChange", e.target.value, mv, e);
-		DataStore.setValue(proppath, mv);
-		if (saveFn) saveFn({path, prop, value:mv});
-		e.preventDefault();
-		e.stopPropagation();
-	};
-
-	if (type === 'arraytext') {
-		return <PropControlArrayText {...props} />;
-	}
-
-	if (type === 'keyset') {
-		return <PropControlKeySet {...props} />;
-	}
-
-	if (type==='textarea') {
-		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
 	}
 	
 	if (type==='json') {
@@ -312,103 +269,6 @@ const PropControl2 = (props) => {
 		return <textarea className="form-control" name={prop} onChange={onJsonChange} {...otherStuff} value={svalue} />;
 	}
 
-	if (type==='img') {
-		delete otherStuff.https;
-		return (<div>
-				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
-			<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} style={{background:bg}} /></div>
-				<div className='clearfix' />
-			</div>);
-	}
-
-	if (type === 'imgUpload' || type==='videoUpload') {
-		delete otherStuff.https;
-		const uploadAccepted = (accepted, rejected) => {
-			const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
-			const load = (event) => console.log('UPLOAD SUCCESS', event);
-	
-			accepted.forEach(file => {
-				ServerIO.upload(file, progress, load)
-					.done(response => {
-						let imgurl = response.cargo.url;
-						if(onUpload) onUpload({path, prop, imgurl});
-						DataStore.setValue(path.concat(prop), imgurl);
-					})
-					.fail( res => res.status == 413 && notifyUser(new Error(res.statusText)));
-			});
-	
-			rejected.forEach(file => {
-				// TODO Inform the user that their file had a Problem
-				console.error("rejected :( "+file);
-			});
-		};
-
-		let acceptedTypes = type==='imgUpload'? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
-		let acceptedTypesDesc = type==='imgUpload'? 'JPG, PNG, or SVG image' : 'video'
-
-		// Catch special background-colour name for img and apply a special background to show img transparency
-		let className;
-		if (bg === 'transparent') {
-			bg = '';
-			className = 'stripe-bg';
-		}
-
-		return (
-			<div>
-				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
-				<div className='pull-left'>
-					<Dropzone
-						className='DropZone'
-						accept={acceptedTypes}
-						style={{}}
-						onDrop={uploadAccepted}
-					>
-						Drop a {acceptedTypesDesc} here
-					</Dropzone>
-				</div>
-				<div className='pull-right'>
-					{type === 'videoUpload' ? (
-						<Misc.VideoThumbnail url={value} />
-					) : (
-						<Misc.ImgThumbnail className={className} style={{background: bg}} url={value} />
-					)}
-				</div>
-				<div className='clearfix' />
-			</div>
-		);
-	} // ./imgUpload
-
-	if (type==='url') {
-		delete otherStuff.https;
-		return (
-			<div>
-				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
-				<div className='pull-right'><small>{value? <a href={value} target='_blank'>open in a new tab</a> : null}</small></div>
-				<div className='clearfix' />
-			</div>
-		);
-	}
-
-	// date
-	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
-	//  && value && ! value.match(/dddd-dd-dd/)
-	if (Misc.KControlTypes.isdate(type)) {
-		const acprops = {prop, item, value, onChange, ...otherStuff};
-		return <PropControlDate {...acprops} />;
-	}
-
-	if (type === 'radio' || type === 'checkboxes') {
-		return <PropControlRadio value={value} {...props} />
-	}
-	if (type === 'select') {
-		let props2 = {onChange, value, modelValueFromInput, ...props};
-		return <PropControlSelect  {...props2} />
-	}
-	if (type === 'autocomplete') {
-		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
-		return <PropControlAutocomplete {...acprops} />;
-	}
-
 	// Optional fancy colour picker - dummied out for now.
 	/* 
 	if (type === 'color') {
@@ -426,8 +286,67 @@ const PropControl2 = (props) => {
 	*/
 	// normal
 	// NB: type=color should produce a colour picker :)
-	return <Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
 }; //./PropControl2
+
+const PropControlUpload = props => {
+	delete props.https;
+	
+	const {bg, prop, setValue, type, value} = props;
+	
+	const uploadAccepted = (accepted, rejected) => {
+		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
+		const load = (event) => console.log('UPLOAD SUCCESS', event);
+
+		accepted.forEach(file => {
+			ServerIO.upload(file, progress, load)
+				.done(response => {
+					let imgurl = response.cargo.url;
+					if(onUpload) onUpload({path, prop, imgurl});
+					DataStore.setValue(path.concat(prop), imgurl);
+				})
+				.fail( res => res.status == 413 && notifyUser(new Error(res.statusText)));
+		});
+
+		rejected.forEach(file => {
+			// TODO Inform the user that their file had a Problem
+			console.error("rejected :( "+file);
+		});
+	};
+
+	let acceptedTypes = type==='imgUpload'? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
+	let acceptedTypesDesc = type==='imgUpload'? 'JPG, PNG, or SVG image' : 'video'
+
+	// Catch special background-colour name for img and apply a special background to show img transparency
+	let className;
+	if (bg === 'transparent') {
+		bg = '';
+		className = 'stripe-bg';
+	}
+
+	return (
+		<>
+			<Misc.FormControl type='url' name={prop} value={value} onChange={setValue} {...props} />
+			<div className='pull-left'>
+				<Dropzone
+					className='DropZone'
+					accept={acceptedTypes}
+					style={{}}
+					onDrop={uploadAccepted}
+				>
+					Drop a {acceptedTypesDesc} here
+				</Dropzone>
+			</div>
+			<div className='pull-right'>
+				{type === 'videoUpload' ? (
+					<Misc.VideoThumbnail url={value} />
+				) : (
+					<Misc.ImgThumbnail className={className} style={{background: bg}} url={value} />
+				)}
+			</div>
+			<div className='clearfix' />
+		</>
+	);
+}
 
 /**
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
