@@ -80,6 +80,11 @@ Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, createText="Cre
 		list = list.concat(blank);
 		DataStore.setValue(path, list);
 	};
+	/** TODO (21/03/19) add some sort of input checking? **/
+	const addItem = item => {
+		list = list.concat(item);
+		DataStore.setValue(path, list);
+	};
 	const remove = i => {
 		// confirm
 		let ok = confirm("Remove - Are you sure?");
@@ -92,7 +97,7 @@ Misc.ListEditor = ({path, ItemEditor, blankFactory, noneMessage, createText="Cre
 			<BS.Well key={'tt'+i}>
 				{list[i] && list[i].name? <h4>{i}. {list[i].name}</h4> : null}
 				<button onClick={e => remove(i)} className='btn btn-danger btn-xs pull-right'><Misc.Icon glyph='trash'/></button>
-				<ItemEditor i={i} item={tt} path={path.concat(i)} {...stuff} />				
+				<ItemEditor i={i} item={tt} path={path.concat(i)} addItem={addItem} list={list} {...stuff} />				
 			</BS.Well>)}
 		{list.length? null : <p>{noneMessage || "None"}</p>}
 		<div><button className='btn btn-default' onClick={addBlank}><Misc.Icon glyph='plus' /> {createText}</button></div>

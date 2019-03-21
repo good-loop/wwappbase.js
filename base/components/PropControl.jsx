@@ -300,8 +300,8 @@ const PropControl2 = (props) => {
 					.done(response => {
 						// Different forms for UploadServlet vs MediaUploadServlet
 						let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
-						if(onUpload) onUpload({path, prop, response, url});
 						DataStore.setValue(path.concat(prop), url);
+						if(onUpload) onUpload({path, prop, response, url});
 					})
 					.fail( res => res.status == 413 && notifyUser(new Error(res.statusText)));
 			});
