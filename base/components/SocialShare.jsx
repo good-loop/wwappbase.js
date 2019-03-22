@@ -42,8 +42,6 @@ const IntentLink = ({service, text, url}) => {
 	);
 };
 
-export default SocialShare;
-
 export {
 	IntentLink
 };
