@@ -71,7 +71,7 @@ class DataClass {
 		if ( ! sotyp) return false;
 		// NB: the .name test can fail 'cos production Babel renames classes. Also its redundant if register() was called. But just to be safe.
 		if (sotyp === typ._name || sotyp === typ.name) return true;
-		let otyp = getDataClass(sotyp);
+		let otyp = getClass(sotyp);
 		return isa2(otyp, typ);
 	}
 
@@ -113,7 +113,9 @@ window.isa2 = isa2; // debug
  * Uses schema.org or gson class to get the type.
  * Or null
  * @param item {?any}
- * @return {?String} e.g. "Money"
+ * @returns {?String} e.g. "Money"
+ * 
+ * See also getClass()
  */
 const getType = function(item) {
 	if ( ! item) return null;
@@ -130,6 +132,7 @@ const getType = function(item) {
 /**
  * Prefers a plain .id but also supports schema.org @id and WW's xid.
  * null returns null
+ * @returns {String}
  */
 const getId = (item) => {
 	if ( ! item) return null;
@@ -210,8 +213,10 @@ DataClass.str = obj => JSON.stringify(obj);
 /**
  * @param typeOrItem {String|Object} If object, getType() is used
  * @returns {?DataClass} the DataClass if defined for this type
+ * 
+ * See also getType()
  */
-const getDataClass = typeOrItem => {
+const getClass = typeOrItem => {
 	if ( ! typeOrItem) return;
 	if (_.isString(typeOrItem)) {
 		return allTypes[typeOrItem];
@@ -258,5 +263,5 @@ const allTypes = {};
 window.allTypes = allTypes
 window.DataClass = DataClass;
 
-export {getType, getId, getStatus, Meta, nonce, getDataClass};	
+export {getType, getId, getStatus, Meta, nonce, getClass};	
 export default DataClass;

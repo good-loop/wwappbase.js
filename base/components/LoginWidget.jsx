@@ -45,6 +45,7 @@ const LoginWidget = ({showDialog, logo, title, services}) => {
 		showDialog = DataStore.getValue(['widget','LoginWidget', 'show']);
 		// NB: the app is shown regardless
 	}
+	if ( ! showDialog) return null;
 	if ( ! services) services = ['twitter', 'facebook'];
 	let verb = DataStore.getValue(VERB_PATH) || 'login';
 

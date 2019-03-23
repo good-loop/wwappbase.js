@@ -20,7 +20,7 @@ import Enum from 'easy-enums';
 import {asNum} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import { relative } from 'path';
-import { getDataClass, getType } from '../data/DataClass';
+import { getClass, getType } from '../data/DataClass';
 
 const str = printer.str;
 
@@ -407,7 +407,7 @@ const defaultCellRender = (v, column) => {
 		return sv;
 	}
 	// e.g. Money has a to-string
-	let dc = getDataClass(getType(v));
+	let dc = getClass(getType(v));
 	if (dc && dc.str) return dc.str(v);
 	// just str it
 	return str(v);

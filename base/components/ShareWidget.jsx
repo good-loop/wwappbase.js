@@ -8,7 +8,7 @@ import PromiseValue from 'promise-value';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
-import {getType, getId, getDataClass} from '../data/DataClass';
+import {getType, getId, getClass} from '../data/DataClass';
 import Roles from '../Roles';
 
 /**
@@ -87,7 +87,7 @@ const ShareWidget = ({item, type, id, thingId, name}) => {
 	if (item) {
 		type = getType(item);
 		id = getId(item);
-		name = getDataClass(type) && getDataClass(type).getName(item);
+		name = getClass(type) && getClass(type).getName(item);
 	}
 	if ( ! type || ! id) {
 		return null;
