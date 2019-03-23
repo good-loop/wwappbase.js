@@ -15,8 +15,8 @@ class SearchQuery {
 	}
 
 	parse() {
-        // HACK just space separate and crude key:value for now!
-        let bits = this.query.split(" ");
+		// HACK just space separate and crude key:value for now!
+		let bits = this.query.split(" ");
 		let bits2 = bits.map(bit => {
 			let kv = bit.match(/^([a-z]+):(.+)/);
 			if (kv) return [kv[1], kv[2]];
@@ -26,7 +26,7 @@ class SearchQuery {
 		 * Return the expression tree, which is a nested array
 		 * E.g. "a OR (b AND near:c)" --> ["OR", "a", ["AND", "b", ["near", "c"]]]
 		 */
-        this.tree = [SearchQuery.AND, ...bits2];
+		this.tree = [SearchQuery.AND, ...bits2];
 	}
 
 	/**

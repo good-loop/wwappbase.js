@@ -26,6 +26,6 @@ export default This;
  * @return {String[]} sharelist filtered by prefix, with item extracted and the prefix removed.
  */
 Share.stripPrefix = (shareList, prefix) => {
-    let slist2 = shareList.filter(s => This.assIsa(s) && s.item.startsWith(prefix));
-    return slist2.map(s => s.item.substr(prefix.length));
+	let slist2 = shareList.filter(s => This.assIsa(s) && s.item.startsWith(prefix));
+	return slist2.map(s => s.item.substr(prefix.length));
 };

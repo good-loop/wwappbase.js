@@ -28,8 +28,6 @@ module.exports = {
 		"jsx-a11y/alt-text": "warn",
 		"jsx-a11y/anchor-is-valid": "warn",
 		"jsx-a11y/click-events-have-key-events": "warn",
-		"jsx-a11y/href-no-hash": "warn",
-		"jsx-a11y/img-has-alt": "warn", // ??rule removed and causing warnings at the top of every file
 		"jsx-a11y/img-redundant-alt": "warn",
 		"jsx-a11y/label-has-associated-control": "off",
 		"jsx-a11y/label-has-for": "warn",
