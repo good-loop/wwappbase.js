@@ -1,4 +1,4 @@
-const PropControlValidators;
+const PropControlValidators = {};
 
 PropControlValidators.dateValidator = (v, rawValue) => {
     if ( ! v) {
