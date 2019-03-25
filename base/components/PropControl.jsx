@@ -33,7 +33,7 @@ import PropControlValidators from '../PropControlValidators';
  * creates input element backed by DataStore, checks for errors
  * */
 const ControlledInput = props => {
-	const {prop, path, dflt, render, saveFn, validator} = props;
+	const { dflt, name, prop, path, render, saveFn, type, validator } = props;
 
 	const [error, setError] = React.useState(false);
 
@@ -49,10 +49,33 @@ const ControlledInput = props => {
 		event.stopPropagation();
 	}
 
+	// DEFAULTS
 	// Use a default? But not to replace false or 0
 	if (value===undefined || value===null || value==='') value = dflt;
 
-	return render({...props, error, value, setValue});
+	const item = props.item || DataStore.getValue(path) || {};
+	const modelValueFromInput = props.modelValueFromInput || standardModelValueFromInput; 
+
+	assert( ! type || Misc.KControlTypes.has(type), 'Misc.PropControl: '+type);
+	//
+
+	// TODO: move to another component?
+	const { help, inline, label, optional, required, tooltip } = props;
+
+	const labelText = label || '';
+	const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
+	const optreq = optional? <small className='text-muted'>optional</small> 
+		: required? <small className={value===undefined? 'text-danger' : null}>*</small> : null;
+
+	return (
+		<>
+			{(label || tooltip) && <label htmlFor={name}>{labelText} {helpIcon} {optreq}</label>}
+			{inline && ' '}
+			{render({...props, item, modelValueFromInput, error, value, setValue})}
+			{help && <span className="help-block">{help}</span>}
+			{error && <span className="help-block">{error}</span>}
+		</>
+	);
 };
 
 /**
@@ -154,7 +177,6 @@ const PropControl = (props) => {
 	}
 
 	if (Misc.KControlTypes.ischeckbox(type)) {
-
 		return (
 			<ControlledInput {...props} render={ props => {
 				const {help, error, label, setValue, tooltip, value} = props;
@@ -172,101 +194,23 @@ const PropControl = (props) => {
 		);
 	}
 
-	// if (type === 'yesNo') {
-
-	// 	return <ControlledInput {...props} render={ ({noChecked, prop, value, setValue}) => (
-	// 		<div className='form-group'>
-	// 			<BS.Radio value='yes' name={prop} onChange={event => setValue()} checked={!!value} inline label='Yes' />
-	// 			<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
-	// 		</div>
-	// 	)} />;
-	// 	const onChange = e => {
-	// 		// String yes/no -> boolean
-	// 		const val = e.target.value === 'yes';
-	// 		DataStore.setValue(proppath, val);
-	// 		if (saveFn) saveFn({path, prop, value: val});
-	// 	};
-
-	// 	// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
-	// 	const noChecked = value===false;
-
-	// 	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
-	// 	return (
-	// 		<div className='form-group'>
-	// 			<BS.Radio value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
-	// 			<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
-	// 		</div>
-	// 	);
-	// }
-
-	// Minor TODO help block id and aria-described-by property in the input
-	const labelText = label || '';
-	const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
-	const optreq = optional? <small className='text-muted'>optional</small> 
-		: required? <small className={value===undefined? 'text-danger' : null}>*</small> : null;
-	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
-	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
-	// let props2 = Object.assign({}, props);
-	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
-						// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
-	return (
-		<div className={join('form-group', type, error? 'has-error' : null)}>
-			<ControlledInput {...props} render={ props => {	
-				const {prop, setValue} = props;
-				return <Misc.FormControl {...props} name={prop} onChange={setValue} />;
-			}}
-			/>
-		</div>
-	);
-
-	return (
-			{label || tooltip? 
-				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
-				: null}
-			{inline? ' ' : null}
-			<PropControl2 value={value} proppath={proppath} {...props} />
-			{help? <span className="help-block">{help}</span> : null}
-			{error? <span className="help-block">{error}</span> : null}
-	);
-}; // ./PropControl
-
-
-/**
- * The main part - the actual input
- */
-const PropControl2 = (props) => {
-	// unpack ??clean up 
-	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, onUpload, ...stuff} = props;
-	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
-
-	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
-	assert( ! type || Misc.KControlTypes.has(type), 'Misc.PropControl: '+type);
-
-	item = item || DataStore.getValue(path) || {};
+	if (type==='json') {
+		return <ControlledInput 
+					{...props}
+					render={ ({prop, value, saveValue}) => 
+						<textarea 
+							className="form-control" 
+							name={prop} 
+							onChange={ event => saveValue(JSON.parse(event.target.value)) } 
+							value={value} 
+						/> 
+					}
+				/>;
+	}
 
 	if (type === 'XId') {
-		let service = otherStuff.service || 'WTF'; // FIXME
-		modelValueFromInput = s => Misc.normalise(s)+'@'+service;
-	}
-	
-	if (type==='json') {
-		let spath = ['transient'].concat(proppath);
-		let svalue = DataStore.getValue(spath) || JSON.stringify(value);
-		const onJsonChange = e => {
-			console.log("event", e.target && e.target.value, e, e.type);
-			DataStore.setValue(spath, e.target.value);
-			try {				
-				let vnew = JSON.parse(e.target.value);
-				DataStore.setValue(proppath, vnew);
-				if (saveFn) saveFn({path, prop, value:vnew});
-			} catch(err) {
-				console.warn(err);
-				// TODO show error feedback
-			}			
-			e.preventDefault();
-			e.stopPropagation();
-		};
-		return <textarea className="form-control" name={prop} onChange={onJsonChange} {...otherStuff} value={svalue} />;
+		let service = props.service || 'WTF'; // FIXME
+		props.modelValueFromInput = s => Misc.normalise(s)+'@'+service;
 	}
 
 	// Optional fancy colour picker - dummied out for now.
@@ -285,8 +229,33 @@ const PropControl2 = (props) => {
 	}
 	*/
 	// normal
-	// NB: type=color should produce a colour picker :)
-}; //./PropControl2
+
+	if (type === 'yesNo') {
+		return <ControlledInput {...props} render={ ({prop, value, setValue}) => (
+			<div className='form-group'>
+				<BS.Radio value='yes' name={prop} onChange={event => setValue(event.target.value === 'yes')} checked={!!value} inline label='Yes' />
+				<BS.Radio value='no' name={prop} onChange={event => setValue(event.target.value === 'yes')} checked={value === false} inline label='No' />
+			</div>
+		)} />;
+	}
+
+	// Minor TODO help block id and aria-described-by property in the input
+
+	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
+	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
+	// let props2 = Object.assign({}, props);
+	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
+						// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
+	return (
+		<div className={join('form-group', type, error && 'has-error')}>
+			<ControlledInput {...props} render={ props => {	
+				const {prop, setValue} = props;
+				return <Misc.FormControl {...props} name={prop} onChange={setValue} />;
+			}}
+			/>
+		</div>
+	);
+}; // ./PropControl
 
 const PropControlUpload = props => {
 	delete props.https;
@@ -351,7 +320,7 @@ const PropControlUpload = props => {
 /**
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  */
-const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => {
+const PropControlSelect = ({value, multiple, prop, setValue, ...otherStuff}) => {
 	// NB: pull off internal attributes so the select is happy with rest
 	const { options, labels, className, dflt, recursing, modelValueFromInput, ...rest} = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
@@ -373,7 +342,7 @@ const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => 
 
 	if (multiple) {
 		// WTF? multi-select is pretty broken in React as of Jan 2019
-		return PropControlMultiSelect({value, prop, onChange, labeller, options, sv, className, modelValueFromInput, ...rest});
+		return PropControlMultiSelect({value, prop, onChange: setValue, labeller, options, sv, className, modelValueFromInput, ...rest});
 	}
 
 	// make the options html
@@ -385,7 +354,7 @@ const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => 
 	let klass = join('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
 	return (
 		<select className={klass} 
-			name={prop} value={sv} onChange={onChange}
+			name={prop} value={sv} onChange={setValue}
 			multiple={multiple}
 			{...rest}
 		>
@@ -398,7 +367,7 @@ const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => 
 /**
  * render multi select as multi checkbox 'cos React (Jan 2019) is awkward about multi-select
  */
-const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromInput, sv, className, type, path, saveFn, ...rest}) => {
+const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromInput, sv, className, type, path, saveValue, ...rest}) => {
 	assert( ! sv || sv.length !== undefined, "value should be an array", sv, prop);
 	// const mvfi = rest.modelValueFromInput;
 	// let modelValueFromInput = (s, type, etype) => {
@@ -418,8 +387,7 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		} else {
 			mvs = vals.filter(v => v != mv);
 		}
-		DataStore.setValue(path.concat(prop), mvs);
-		if (saveFn) saveFn({path, prop, value:mvs});
+		saveValue(mvs);
 	}
 
 	let domOptions = options.map(option => 
@@ -458,13 +426,6 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 			labeller = v => labels[v] || v;
 		}
 	}
-	// make the options html
-	const onChange = e => {
-		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
-		const val = e && e.target && e.target.value;
-		DataStore.setValue(path.concat(prop), val);
-		if (saveFn) saveFn({path, prop, value: val});		
-	};
 
 	const Check = type==='checkboxes'? BS.Checkbox : BS.Radio;
 
@@ -473,9 +434,10 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 			{options.map(option => (			
 				<Check key={"option_"+option} name={prop} value={option} 
 						checked={option == value} 
-						onChange={onChange} {...otherStuff} 
+						onChange={saveValue} {...otherStuff} 
 						label={labeller(option)}
-						inline={inline} />)
+						inline={inline} 
+				/>)
 			)}
 		</div>
 	);	
@@ -841,8 +803,7 @@ export {
 	InputStatus,
 	setInputStatus,
 	getInputStatus,
-	getInputStatuses,
-	TestInputComponent
+	getInputStatuses
 };
 // should we rename it to Input, or StoreInput, ModelInput or some such??
 export default PropControl;
