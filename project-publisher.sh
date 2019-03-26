@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.16.3'
+VERSION='Version=1.17.0'
 
 ###
+# New in 1.17.0: Added the 'Media-Server' Project Publishing Params
 # New in 1.16.2-3: added 'web-apps' directory to the list of directories to sync during an adserver publish
 # New in 1.16.1: Enabled the sogive-app to update the version.properties file
 # New in 1.16.0: Moneyscript is now a publishable project
@@ -154,7 +155,7 @@ fi
 #################
 ### Preamble: Define Arrays and Variables
 #################
-SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','moneyscript','myloop','portal','profiler','sogive','youagain')
+SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','media','moneyscript','myloop','portal','profiler','sogive','youagain')
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION frontend|backend|everything ?notests\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 #SYNC_LIST=()
 PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
@@ -285,6 +286,32 @@ case $1 in
 		#	# Use "lib" instead of "tmp-lib" for syncing your JAR files
 		WHOLE_SYNC=("config" "src" "test" "web" "package.json" "webpack.config.dev.js" "webpack.config.js" "lib")
 		# 	PRESERVE=("web-as/uploads")
+		POST_PUBLISHING_TASK='no' # If this is set to 'yes', then you must ammend section 16 in order to specify how to handle the tasks
+		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
+	;;
+	media|MEDIA)
+		PROJECT='media'
+		PRODUCTION_SERVERS=('media-master-01.good-loop.com')
+		TEST_SERVERS=('hugh.soda.sh')
+		PROJECT_LOCATION="/home/$USER/winterwell/media"
+		TARGET_DIRECTORY='/home/winterwell/media.good-loop.com'
+		IMAGE_OPTIMISE='no'
+		IMAGEDIRECTORY="" #Only needed if 'IMAGE_OPTIMISE' is set to 'yes'
+		CONVERT_LESS='no'
+		LESS_FILES_LOCATION="" #Only needed if 'CONVERT_LESS' is set to 'yes'
+		CSS_OUTPUT_LOCATION="" #Only needed if 'CONVERT_LESS' is set to 'yes'
+		WEBPACK='no'
+		TEST_JAVASCRIPT='no'
+		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/" #Only needed if 'TEST_JAVASCRIPT' is set to 'yes', and you must ammend Section 10 to accomodate for how to find and process your JS files
+		COMPILE_UNITS='no'
+		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
+		RESTART_SERVICE_AFTER_SYNC='yes'
+		SERVICE_NAME='mediaserver'
+		FRONTEND_SYNC_LIST=("config" "src" "web")
+		BACKEND_SYNC_LIST=("lib")
+		# Use "lib" instead of "tmp-lib" for syncing your JAR files
+		WHOLE_SYNC=("config" "lib" "src" "web")
+		PRESERVE=("web/uploads")
 		POST_PUBLISHING_TASK='no' # If this is set to 'yes', then you must ammend section 16 in order to specify how to handle the tasks
 		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
 	;;
