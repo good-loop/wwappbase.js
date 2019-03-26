@@ -33,14 +33,45 @@ e.g.
 	font-style: normal;
 }
 
-.header-font {
-	font-family: "Bebas Neue", bebas, helvetica, sans-serif;
-	text-transform: uppercase;
-} 
-.body-font {
-	font-family: "Montserrat Regular", helvetica, sans-serif;
+// new fonts (updated G-L design from Emilia)
+@font-face {
+	font-family: "Montserrat Extrabold";
+	src: url('/base-fonts/montserrat-extrabold.otf') format('otf');
+	font-weight: normal;
+	font-style: normal;
 }
 
+@font-face {
+	font-family: "Gotham Medium Regular";
+	src: url('/base-fonts/gotham-medium-regular.ttf') format('ttf');
+	font-weight: normal;
+	font-style: normal;
+}
+
+@font-face {
+	font-family: "Tajawal Regular";
+	src: url('/base-fonts/tajawal-regular.ttf') format('ttf');
+	font-weight: normal;
+	font-style: normal;
+}
+
+.header-font {
+	// font-family: "Bebas Neue", bebas, helvetica, sans-serif;
+	// text-transform: uppercase;
+	font-family: "Montserrat Extrabold";
+	text-transform: uppercase;
+	font-size: 30px;
+} 
+.subheader-font {
+	font-family: "Gotham Medium Regular";
+	//text-transform: uppercase;
+	font-size: 30px;
+}
+.body-font {
+	//font-family: "Montserrat Regular", helvetica, sans-serif;
+	font-family: "Tajawal Regular";
+	font-size: 20px;
+}
 body {
 	.body-font();
 }
@@ -48,6 +79,7 @@ body {
 h1,h2,.h1,.h2 {
 	.header-font();	
 }
-/* NB ,h3,h4,h5 look too cramped in Bebas */
 
-// ??
+h3,.h3 {
+	.subheader-font();	
+}
