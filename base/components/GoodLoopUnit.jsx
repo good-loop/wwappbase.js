@@ -21,7 +21,6 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
 
 	// Get reference to iframe div instantiated by React
 	let iframeRef = useRef();
-	useEffect( () => iframeRef.current.focus() );
 
 	// Load/Reload the adunit
 	useEffect( () => {
