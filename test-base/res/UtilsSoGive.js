@@ -6,6 +6,7 @@ const createEvent = async ({page, data}) => {
     await page.goto(`${APIBASE}#event`);
     
     // Set up an event
+    await page.waitForSelector(Event.Main.CreateEvent);
     await page.click(Event.Main.CreateEvent);
     await page.waitForSelector(Event.Main.CreateEditButton);
     await page.click(Event.Main.CreateEditButton);
