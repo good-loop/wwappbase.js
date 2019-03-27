@@ -12,11 +12,12 @@ import Misc from './Misc.jsx';
 import NGO from '../data/NGO';
 
 /** 
+ * There are default display icons for each service, but you can provide children to use instead
  * @param service. Options: 'twitter', 'facebook', 'linkedin'
  * @param Data to be encoded in to href. Of form {message: ''}. Each social media uses different keys
  * TODO: Replace pngs with svgs (preferably inline)
  */
-const IntentLink = ({service, text, url}) => {
+const IntentLink = ({children, service, text, url}) => {
 	service = service.toLowerCase();
 
 	let href;
@@ -37,7 +38,7 @@ const IntentLink = ({service, text, url}) => {
 
 	return (
 		<a className='charity' href={encodeURI(href)} target="_blank" rel="noreferrer">
-			{ icon }
+			{ children || icon }
 		</a>
 	);
 };
