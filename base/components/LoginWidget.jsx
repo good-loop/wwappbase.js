@@ -27,8 +27,8 @@ const VERB_PATH = ['widget','LoginWidget','verb'];
 
 const STATUS_PATH = ['widget', 'LoginWidget', 'status'];
 
-const LoginLink = ({className, verb='Login'}) => {
-	return (<a className={className} href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); } } >
+const LoginLink = ({className, onClick, verb='Login'}) => {
+	return (<a className={className} href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); onClick(e); } } >
 		{verb}
 	</a>);
 	
@@ -82,6 +82,8 @@ LoginWidget.show = () => {
 LoginWidget.hide = () => {
 	DataStore.setValue(['widget','LoginWidget', 'show'], false);
 };
+
+LoginWidget.changeVerb = verb => DataStore.setValue(VERB_PATH, verb);
 
 const canSignIn = {
 	facebook: true,
@@ -282,13 +284,13 @@ const SwitchVerb = ({verb}) => {
 	if (verb === 'register') {
 		return (
 			<div className='switch-verb'>
-				Already have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && DataStore.setValue(VERB_PATH, 'login')} >Login</button>
+				Already have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && LoginWidget.changeVerb('login')} >Login</button>
 			</div>
 		);
 	}
 	return (
 		<div className='switch-verb'>
-			Don&#39;t yet have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && DataStore.setValue(VERB_PATH, 'register')} >Register</button>
+			Don&#39;t yet have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && LoginWidget.changeVerb('register')} >Register</button>
 		</div>
 	);
 };
