@@ -505,7 +505,7 @@ Misc.MDText = ({source}) => {
 /**
  * Expect children to have an "option" property which should match the "selected" attribute
  */
-Misc.Tabs = ({path, children}) => {
+Misc.Tabs = ({children, className='nav nav-tabs', liClassName='', path}) => {
 	// Option currently selected
 	// Could use state hook for this, but would be inconsistent with the rest of the code base
 	const selected = DataStore.getValue(path) || children[0].props.option;
@@ -517,12 +517,12 @@ Misc.Tabs = ({path, children}) => {
 
 	// Show component selected, or the first option as a default
 	return (
-		<div>
-			<ul className="nav nav-tabs">
+		<>
+			<ul className={className}>
 				{headers.map((h) => {
 						return(
 							<li
-								className={selected === h ? "active" : ""}
+								className={liClassName + (selected === h ? " active" : "")}
 								id={h}
 								key={h}
 								onClick={() => {
@@ -537,7 +537,7 @@ Misc.Tabs = ({path, children}) => {
 			<div className="component-body">
 				{ children.find( child => child.props.option === selected ) }
 			</div>
-		</div>
+		</>
 	);
 };
 
