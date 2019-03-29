@@ -517,7 +517,7 @@ Misc.Tabs = ({children, className='nav nav-tabs', liClassName='', path}) => {
 
 	// Show component selected, or the first option as a default
 	return (
-		<>
+		<div>
 			<ul className={className}>
 				{headers.map((h) => {
 						return(
@@ -537,7 +537,7 @@ Misc.Tabs = ({children, className='nav nav-tabs', liClassName='', path}) => {
 			<div className="component-body">
 				{ children.find( child => child.props.option === selected ) }
 			</div>
-		</>
+		</div>
 	);
 };
 
