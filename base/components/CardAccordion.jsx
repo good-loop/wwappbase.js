@@ -16,7 +16,7 @@ import { join } from 'wwutils';
  * @param warning {any} If set, colour the card yellow
  * @param {?String} className - Added to the BS panel classes
  */
-const Card = ({title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, warning, error, ...props}) => {
+const Card = ({title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, titleClassName, warning, error, ...props}) => {
 	let {bgColor} = props;
 	// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.	
 	// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
@@ -34,7 +34,7 @@ const Card = ({title, glyph, icon, children, className, onHeaderClick, collapse,
 		header = (
 			<div className={join('panel-heading', onHeaderClick? 'btn-link' : null)} onClick={onHeaderClick} 
 				title={hoverText} >
-				<h3 className="panel-title subheader-font">
+				<h3 className={join('panel-title', titleClassName)}>
 					{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
 					{title || <span>&nbsp;</span>} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
 				</h3>

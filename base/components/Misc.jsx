@@ -505,7 +505,7 @@ Misc.MDText = ({source}) => {
 /**
  * Expect children to have an "option" property which should match the "selected" attribute
  */
-Misc.Tabs = ({path, children}) => {
+Misc.Tabs = ({children, className='nav nav-tabs', liClassName='', path}) => {
 	// Option currently selected
 	// Could use state hook for this, but would be inconsistent with the rest of the code base
 	const selected = DataStore.getValue(path) || children[0].props.option;
@@ -518,11 +518,11 @@ Misc.Tabs = ({path, children}) => {
 	// Show component selected, or the first option as a default
 	return (
 		<div>
-			<ul className="nav nav-tabs">
+			<ul className={className}>
 				{headers.map((h) => {
 						return(
 							<li
-								className={selected === h ? "active" : ""}
+								className={liClassName + (selected === h ? " active" : "")}
 								id={h}
 								key={h}
 								onClick={() => {
@@ -537,50 +537,6 @@ Misc.Tabs = ({path, children}) => {
 			<div className="component-body">
 				{ children.find( child => child.props.option === selected ) }
 			</div>
-		</div>
-	);
-};
-
-// TODO: delete this after February 2019 release
-/**
- * @deprecated
- * BootStrap radio button group
- * Records which radio is currently active in DataStore[path, prop]
- * @param headers Array of possible options
- * @param noDefault If unset, first header will be selected by default.
- */
-Misc.RadioGroup = ({path, prop, headers, noDefault}) => {
-	assMatch(path, 'String[]');
-	assMatch(prop, 'String');
-	assMatch(headers, 'String[]');
-
-	const proppath = path.concat(prop);
-	const checkedValue = DataStore.getValue(proppath) || (!noDefault && headers[0]);
-	const colSize = Math.floor(12/headers.length);
-
-	//Place default value in DataStore
-	if(!noDefault && !DataStore.getValue(proppath)) {
-		DataStore.setValue(proppath, headers[0]);
-	}
-
-	return (
-		<div>
-			<ul className="nav nav-tabs">
-				{headers.map((h, i) => {
-					return(
-						<li
-							className={checkedValue === h ? "active" : ""}
-							id={h}
-							key={h}
-							onClick={() => {
-								DataStore.setValue(proppath, h);
-							}}
-						>
-							<a data-toggle="tab">{h}</a>
-						</li>
-					)
-				})}
-			</ul>
 		</div>
 	);
 };
