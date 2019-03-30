@@ -244,6 +244,10 @@ DataClass.register = (dclass, name) => {
 	// Store the "proper" text name safe from Babel
 	dclass._name = name;
 
+	// js this binding BS -- doesnt work :(
+	// Just avoid using isa "plain"
+	// dclass.isa = dclass.isa.bind(dclass);
+
 	// sanity check: no non static methods
 	// NB: f is defined as dclass.f => static, as does dclass.f = inherited __proto__.f
 	const nonStatic = Object.getOwnPropertyNames(dclass.__proto__)
