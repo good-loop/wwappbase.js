@@ -61,11 +61,11 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
 
 	let frameStyle = {};
 	if ( size === 'landscape') {
-		frameStyle.height = '360px';
-		frameStyle.width = '640px';
+		frameStyle.height = '56.25vmin';
+		frameStyle.width = '100vmin';
 	} else if ( size === 'portrait' ) {
-		frameStyle.height = '800px';
-		frameStyle.width = '450px';
+		frameStyle.height = '100vmin';
+		frameStyle.width = '56.25vmin';
 	}
 
 	return (
