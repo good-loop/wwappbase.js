@@ -17,27 +17,39 @@ import NGO from '../data/NGO';
  * @param Data to be encoded in to href. Of form {message: ''}. Each social media uses different keys
  * TODO: Replace pngs with svgs (preferably inline)
  */
-const IntentLink = ({children, service, text, url}) => {
+const IntentLink = ({children, service, style, text, url}) => {
 	service = service.toLowerCase();
 
 	let href;
 	let icon;
 	if ( service === 'twitter' ) {
 		href = `https://twitter.com/intent/tweet?text=${text}&tw_p=tweetbutton&url=${url}`;
-		icon = <img alt='Twitter Logo' src='/img/twitter.png' crop="50%" title='Twitter Logo' />;
+		icon = (
+			<div className='intent-link' style={{backgroundColor: '#1b95e0', ...style}}>
+				<img alt='Twitter Logo' src='/img/twitter.png' crop="50%" title='Twitter Logo' />
+			</div>
+		);
 	} else if ( service === 'facebook' ) {
 		href = `http://www.facebook.com/sharer.php?u=${url}&quote=${text}`;
-		icon = <img alt='Facebook Logo' src='/img/facebook.png' crop="50%" title='Facebook Logo' />;
+		icon = (
+			<div className='intent-link' style={{backgroundColor: '#4267b2', ...style}}>
+				<img alt='Facebook Logo' src='/img/facebook.png' crop="50%" title='Facebook Logo' />
+			</div>
+		);
 	} else if ( service === 'linkedin' ) {
 		href = `https://www.linkedin.com/shareArticle?mini=true&title=Our%20ads%20are%20raising%20money%20for%20charity&url=${url}&summary=${text}`;
-		icon = <img alt='LinkedIn Logo' src='/img/linkedin-white.png' crop="50%" title='LinkedIn Logo' />;
+		icon = (
+			<div className='intent-link' style={{backgroundColor: '#0077B5', ...style}}>
+				<img alt='LinkedIn Logo' src='/img/linkedin-white.png' crop="50%" title='LinkedIn Logo' />
+			</div>
+		);
 	} else {
 		console.error('Invalid service param provided to IntentLink component. Valid values are twitter, facebook or linkedin');
 		return;
 	}
 
 	return (
-		<a className='charity' href={encodeURI(href)} target="_blank" rel="noreferrer">
+		<a href={encodeURI(href)} target="_blank" rel="noreferrer" style={{color: '#fff', display: 'inline-block'}} >
 			{ children || icon }
 		</a>
 	);
