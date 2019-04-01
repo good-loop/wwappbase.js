@@ -41,7 +41,7 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
 		iframe.contentDocument.body.appendChild($script);
 		iframe.contentDocument.body.appendChild($container);
 
-		// return () => iframe.contentDocument && iframe.contentDocument.body ? iframe.contentDocument.body = '' : null;
+		return () => iframe.contentDocument && iframe.contentDocument.body ? iframe.contentDocument.body.innerHTML = '' : null;
 	}, [adID, size, iframeRef]);
 
 	// Insert CSS in to the head
