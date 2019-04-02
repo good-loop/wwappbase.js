@@ -52,27 +52,37 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
 		const iframe = iframeRef.current;
 		if( !iframe ) return;
 
-		// TODO: add event listener for changing dimensions?
-		// Mobile device changing orientation may require this
+		const setIframeDimensions = () => {
+			// Set iframe dimensions
+			const goodLoopContainerBoundingRect = iframe.parentElement.getBoundingClientRect();
+			// 16:9
+			if ( size === 'landscape') {
+				const width = goodLoopContainerBoundingRect.width;
+				setFrameStyle({
+					width,
+					height: 0.5625 * width
+				});
+			} 
+			// 9:16
+			else if ( size === 'portrait' ) {
+				const height = goodLoopContainerBoundingRect.height;
+				setFrameStyle({
+					height,
+					width: 0.5625 * height
+				});
+			}
+		};
+		setIframeDimensions();
+		
+		// Recalculate if size changes
+		// NB: This may be called twice on some devices. Not ideal, but doesn't seem too important
+		window.addEventListener('resize', setIframeDimensions);
+		window.addEventListener('orientationchange', setIframeDimensions);		
 
-		// Set iframe dimensions
-		const goodLoopContainerBoundingRect = iframe.parentElement.getBoundingClientRect();
-		// 16:9
-		if ( size === 'landscape') {
-			const width = goodLoopContainerBoundingRect.width;
-			setFrameStyle({
-				width,
-				height: 0.5625 * width
-			});
-		} 
-		// 9:16
-		else if ( size === 'portrait' ) {
-			const height = goodLoopContainerBoundingRect.height;
-			setFrameStyle({
-				height,
-				width: 0.5625 * height
-			});
-		}
+		return () => {
+			window.removeEventListener('resize', setIframeDimensions);
+			window.removeEventListener('orientationchange', setIframeDimensions);
+		};
 	}, [iframeRef, size]);
 
 	// Insert CSS in to the head
