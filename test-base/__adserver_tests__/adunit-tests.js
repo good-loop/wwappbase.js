@@ -23,7 +23,7 @@ const statsToCheck = [//Check that the given keys have been incremented by one a
     // 'click',
     'autoplay',
     'autoplayfail',
-    'startVideo',
+    'startvideo',
     'elapse',
 
     'render', //Turned off due to issues with render2 vs render
@@ -31,7 +31,7 @@ const statsToCheck = [//Check that the given keys have been incremented by one a
     'open',
     'endvideo',
     'minview',
-    'consent-requested',
+    'ctaofferconsent',
     'donation',
     'pick',
     'visible'
@@ -74,14 +74,6 @@ const variants = [
     {
         variant: 'vpaid',
         url: `${ADBASE}/vpaid?gl.vert=${adID}`
-    },
-    {
-        variant: 'vpaid-google',
-        url: `${ADBASE}/old/vpaid-google`
-    },
-    {
-        variant: 'snap',
-        url: `${ADBASE}/old/snap?gl.vert=${adID}`
     },
     {
         variant: 'pre-roll',
