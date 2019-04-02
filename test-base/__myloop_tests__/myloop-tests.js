@@ -72,27 +72,27 @@ test('My Loop radio buttons', async () => {
 /**Ad watching functionality copied from adserver-tests
  * Would we want to make this into a common function?
  */
-test('Does the amount donated by the user increment after watching an advert?', async () => {
-    const browser = await window.__BROWSER__;
-    const page = await browser.newPage();
+// test('Does the amount donated by the user increment after watching an advert?', async () => {
+//     const browser = await window.__BROWSER__;
+//     const page = await browser.newPage();
 
-    await page.goto('https://test.good-loop.com/landscape?gl.vert=URFFCVRT');
-    await page.waitFor(1000);//Allow 'visible' event to register. Doesn't get counted if you start working right away
+//     await page.goto('https://test.good-loop.com/landscape?gl.vert=URFFCVRT');
+//     await page.waitFor(1000);//Allow 'visible' event to register. Doesn't get counted if you start working right away
     
-    const cookie = await page.cookies();
-    const trkID = cookie[0].value; // Should only ever have the good-loop cookie
-    const donationTotalEndpoint = `https://testas.good-loop.com/datafn/donations?q=user%3A${trkID}&app=good-loop&as=fake4%40winterwell.com%40email&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzZXJ2ZXIiOiJiZXN0ZXIiLCJzdWIiOiJmYWtlNEB3aW50ZXJ3ZWxsLmNvbUBlbWFpbCIsImlzcyI6Imdvb2QtbG9vcCIsImlhdCI6MTUzOTI3NDA0NiwianRpIjoibHNpdGJoMTY2NjNlMWZiMmEifQ.Z1jiyx0XjMLRz9Y8ai1vYd8-creN8vSZb1GIEiMrOJf3AOl9mUN6QYHeROpo4OR4AvDdQWpQMgyjeH4yqZ_Jp8sZDh-9kJ2xYlDgLWp9iu8C_3VetjoAf0oiqFDJY9GNw3QL5UBsNDnXPNSAT-vM-I6aSeK1k6HzgBu-6-7ZYNA4eVt4Fe_uwFBdQnHaPckdwRUf3gnNWDl8NjPjzrTHenUNBEDM64RCM4JCSNg7gz4_JpDHby5wjbaeVKH_c9gU_OlQtcMreD4qzD0SdrodJ6HWj3J11zxw7Tlj5QdTOYVhnfLQEZjj0lbWxOt_GB4Tjpt-JMeCPdcuOEXu_6A2tw&withCredentials=true`;
+//     const cookie = await page.cookies();
+//     const trkID = cookie[0].value; // Should only ever have the good-loop cookie
+//     const donationTotalEndpoint = `https://testas.good-loop.com/datafn/donations?q=user%3A${trkID}&app=good-loop&as=fake4%40winterwell.com%40email&jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJzZXJ2ZXIiOiJiZXN0ZXIiLCJzdWIiOiJmYWtlNEB3aW50ZXJ3ZWxsLmNvbUBlbWFpbCIsImlzcyI6Imdvb2QtbG9vcCIsImlhdCI6MTUzOTI3NDA0NiwianRpIjoibHNpdGJoMTY2NjNlMWZiMmEifQ.Z1jiyx0XjMLRz9Y8ai1vYd8-creN8vSZb1GIEiMrOJf3AOl9mUN6QYHeROpo4OR4AvDdQWpQMgyjeH4yqZ_Jp8sZDh-9kJ2xYlDgLWp9iu8C_3VetjoAf0oiqFDJY9GNw3QL5UBsNDnXPNSAT-vM-I6aSeK1k6HzgBu-6-7ZYNA4eVt4Fe_uwFBdQnHaPckdwRUf3gnNWDl8NjPjzrTHenUNBEDM64RCM4JCSNg7gz4_JpDHby5wjbaeVKH_c9gU_OlQtcMreD4qzD0SdrodJ6HWj3J11zxw7Tlj5QdTOYVhnfLQEZjj0lbWxOt_GB4Tjpt-JMeCPdcuOEXu_6A2tw&withCredentials=true`;
 
-    const initialDonationTotal = await fetch({url:donationTotalEndpoint, path: ['data', 'total', 'value']}) || 0;
+//     const initialDonationTotal = await fetch({url:donationTotalEndpoint, path: ['data', 'total', 'value']}) || 0;
 
-	await watchAdvertAndDonate({page});
-    await page.waitFor(5000);//Generally needs a second to register that donation has been made
+// 	await watchAdvertAndDonate({page});
+//     await page.waitFor(5000);//Generally needs a second to register that donation has been made
 
-	let finalDonationTotal = await fetch({url:donationTotalEndpoint, path: ['data', 'total', 'value']});
-    finalDonationTotal = parseFloat(finalDonationTotal);
+// 	let finalDonationTotal = await fetch({url:donationTotalEndpoint, path: ['data', 'total', 'value']});
+//     finalDonationTotal = parseFloat(finalDonationTotal);
 
-    expect(finalDonationTotal).toBeGreaterThan(initialDonationTotal);
-}, 60000);
+//     expect(finalDonationTotal).toBeGreaterThan(initialDonationTotal);
+// }, 60000);
 
 test('Edit Twitter data after logging in', async () => {
 	const browser = await window.__BROWSER__;
@@ -108,7 +108,7 @@ test('Edit Twitter data after logging in', async () => {
 	});
 	// After logging in, there should be a greeting "Hi $NAME".  If it exists, puppeteer can find it.  If not, then fail.
 	await page.waitForSelector(MyLoopSelectors.logged_in_greeting);
-	
+
 	await page.waitForSelector(MyLoopSelectors.edit);
 	await page.click(MyLoopSelectors.edit);
 	// Enter details
