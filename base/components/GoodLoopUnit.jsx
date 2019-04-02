@@ -1,4 +1,4 @@
-import React, {useRef, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
 import { assert } from 'sjtest';
 
@@ -37,12 +37,43 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
 		const $script = document.createElement('script');
 		$script.src = src;
 		$script.async = true;
-
+		
 		iframe.contentDocument.body.appendChild($script);
 		iframe.contentDocument.body.appendChild($container);
 
 		return () => iframe.contentDocument && iframe.contentDocument.body ? iframe.contentDocument.body.innerHTML = '' : null;
 	}, [adID, size, iframeRef]);
+
+	// Calculated styling for iframe containing the adunit
+	const [frameStyle, setFrameStyle] = useState({});
+
+	// Set the frame dimensions
+	useEffect( () => {
+		const iframe = iframeRef.current;
+		if( !iframe ) return;
+
+		// TODO: add event listener for changing dimensions?
+		// Mobile device changing orientation may require this
+
+		// Set iframe dimensions
+		const goodLoopContainerBoundingRect = iframe.parentElement.getBoundingClientRect();
+		// 16:9
+		if ( size === 'landscape') {
+			const width = goodLoopContainerBoundingRect.width;
+			setFrameStyle({
+				width,
+				height: 0.5625 * width
+			});
+		} 
+		// 9:16
+		else if ( size === 'portrait' ) {
+			const height = goodLoopContainerBoundingRect.height;
+			setFrameStyle({
+				height,
+				width: 0.5625 * height
+			});
+		}
+	}, [iframeRef, size]);
 
 	// Insert CSS in to the head
 	// Decided to continue with this rather than loading DRAFT because I have no good way of knowing when back-end will have updated with user's changes. At best will be much slower.
@@ -58,15 +89,6 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
 			$adunitCSS.forEach( node => node.parentElement.removeChild(node) );
 		}
 	}, [CSS, goodloopframe]);
-
-	let frameStyle = {};
-	if ( size === 'landscape') {
-		frameStyle.height = '56.25vmin';
-		frameStyle.width = '100vmin';
-	} else if ( size === 'portrait' ) {
-		frameStyle.height = '100vmin';
-		frameStyle.width = '56.25vmin';
-	}
 
 	return (
 		<div className="goodLoopContainer">
