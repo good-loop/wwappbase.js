@@ -6,6 +6,6 @@ test('Load the campaign page', async () => {
     const page = await browser.newPage();
     
     await page.goto('https://testmy.good-loop.com/#campaign/?gl.vert=Qcnjbpae');
-    await page.waitForSelector('a.charity > img');
+    await page.waitForSelector('.nav-bar');
 
 }, 15000);

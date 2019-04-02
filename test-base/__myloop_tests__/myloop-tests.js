@@ -1,8 +1,7 @@
 const puppeteer = require('puppeteer');
 const $ = require('jquery');
-const fs = require('fs');
-const {AdServerSelectors, CommonSelectors, MyLoopSelectors, TwitterSelectors} = require('../utils/SelectorsMaster');
-const {APIBASE, fillInForm, login, watchAdvertAndDonate} = require('../res/UtilityFunctions');
+const { CommonSelectors, MyLoopSelectors, TwitterSelectors} = require('../utils/SelectorsMaster');
+const {fillInForm, login, watchAdvertAndDonate} = require('../res/UtilityFunctions');
 const {password, username, twitterPassword, twitterUsername} = require('../../../logins/sogive-app/puppeteer.credentials');
 
 
