@@ -108,7 +108,8 @@ test('Edit Twitter data after logging in', async () => {
 	});
 	// After logging in, there should be a greeting "Hi $NAME".  If it exists, puppeteer can find it.  If not, then fail.
 	await page.waitForSelector(MyLoopSelectors.logged_in_greeting);
-
+	
+	await page.waitForSelector(MyLoopSelectors.edit);
 	await page.click(MyLoopSelectors.edit);
 	// Enter details
 	await page.waitForSelector(MyLoopSelectors.name);
