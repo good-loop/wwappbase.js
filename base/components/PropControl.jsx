@@ -205,19 +205,16 @@ const PropControl2 = (props) => {
 	if (type === 'yesNo') {
 		const onChange = e => {
 			// String yes/no -> boolean
-			const val = e.target.value === 'yes';
-			DataStore.setValue(proppath, val);
-			if (saveFn) saveFn({path, prop, value: val});
+			const value = e.target.value;
+			DataStore.setValue(proppath, value);
+			if (saveFn) saveFn({path, prop, value});
 		};
-
-		// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
-		const noChecked = value===false;
 
 		// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
 		return (
 			<div className='form-group'>
-				<BS.Radio value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
-				<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
+				<BS.Radio value='yes' name={prop} onChange={onChange} checked={value === 'yes'} inline label='Yes' />
+				<BS.Radio value='no' name={prop} onChange={onChange} checked={value === 'no'} inline label='No' />
 			</div>
 		);
 	}
