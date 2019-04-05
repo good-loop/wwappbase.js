@@ -95,7 +95,7 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
 		// Has the adunit already inserted a custom CSS tag?
 		// If so, delete it. Use querySelectorAll in case multiple tags were accidentaly inserted
 		return () => {
-			const $adunitCSS = goodloopframe.querySelectorAll('#vert-css') || [];
+			const $adunitCSS = goodloopframe.contentDocument.querySelectorAll('#vert-css') || [];
 			$adunitCSS.forEach( node => node.parentElement.removeChild(node) );
 		}
 	}, [CSS, goodloopframe]);
