@@ -31,10 +31,15 @@ done
 case $SERVICE in
 	adserver|ADSERVER)
 	CONFIG='./config-files/adserver.jest.config.js';;
+	
 	sogive|SOGIVE)
 	CONFIG='./config-files/sogive.jest.config.js';;
+	
 	myloop|MYLOOP)
 	CONFIG='./config-files/myloop.jest.config.js';;
+
+	demo|DEMO|demopage|DEMOPAGE)
+	CONFIG='./config-files/demopage.jest.config.js';;
 	*)
 	exit;;
 esac
