@@ -14,6 +14,8 @@ const insertAdunitCSS = ({iframe, CSS}) => {
 	iframe.contentDocument.body.appendChild($style);
 };
 
+//TODO: modify to allow ad data to be passed in?
+// Would save a data call on Campaign Page
 const GoodLoopUnit = ({ adID, CSS, size }) => {
 	// TODO: investigate this
 	// Looked as though default parameter was ignored if falsy value is provided as argument to GoodLoopUnit
