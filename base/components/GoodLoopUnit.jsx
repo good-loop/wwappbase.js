@@ -14,6 +14,8 @@ const insertAdunitCSS = ({iframe, CSS}) => {
 	iframe.contentDocument.body.appendChild($style);
 };
 
+//TODO: modify to allow ad data to be passed in?
+// Would save a data call on Campaign Page
 const GoodLoopUnit = ({ adID, CSS, size }) => {
 	// TODO: investigate this
 	// Looked as though default parameter was ignored if falsy value is provided as argument to GoodLoopUnit
@@ -89,13 +91,13 @@ const GoodLoopUnit = ({ adID, CSS, size }) => {
 	// Decided to continue with this rather than loading DRAFT because I have no good way of knowing when back-end will have updated with user's changes. At best will be much slower.
 	let goodloopframe = iframeRef.current && iframeRef.current.contentDocument && iframeRef.current.contentDocument.querySelector('.goodloopframe');
 	useEffect( () => {
-		if( !goodloopframe ) return;
+		if( ! (goodloopframe && goodloopframe.contentDocument && goodloopframe.contentDocument.body) ) return;
 
 		insertAdunitCSS({iframe: goodloopframe, CSS});
 		// Has the adunit already inserted a custom CSS tag?
 		// If so, delete it. Use querySelectorAll in case multiple tags were accidentaly inserted
 		return () => {
-			const $adunitCSS = goodloopframe.querySelectorAll('#vert-css') || [];
+			const $adunitCSS = ( goodloopframe.contentDocument && goodloopframe.contentDocument.querySelectorAll('#vert-css') ) || [];
 			$adunitCSS.forEach( node => node.parentElement.removeChild(node) );
 		}
 	}, [CSS, goodloopframe]);
