@@ -23,4 +23,7 @@ BS.Alert = ({color='warning', children}) => {
 BS.Center = ({children}) => <div className='ml-auto mr-auto'>{children}</div>;
 BS.Centre = BS.Center; // UK or US
 
+// TODO manage btn-default vs btn-light / btn-secondary. Any other 3 v 4 differences??
+BS.Button = ({children, className, ...stuff}) => <button className={className} {...stuff}>{children}</button>;
+
 export default BS;
