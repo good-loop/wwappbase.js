@@ -125,7 +125,7 @@ const SocialSignInButton = ({service, verb='sign in'}) => {
 const socialLogin = (service) => {
 	// Special behaviour for My-Loop/Portal
 	// Doing it this way seemed the most maintainable option
-	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack('Social login clicked ' + service, {});
+	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag:'Social login clicked ' + service});
 	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
 	// auth doesnt return a future, so rely on Login's change listener
 	// to close stuff.
@@ -167,7 +167,7 @@ const EmailSignin = ({verb, onLogin}) => {
 	const doItFn = () => {
 		// Special behaviour for My-Loop/Portal
 		// Doing it this way seemed the most maintainable option
-		if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack('Email login attempted', {verb});
+		if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag:'Email login attempted', data:{verb}});
 		
 		if ( ! person) {
 			Login.error = {text: "Please fill in email and password"};
