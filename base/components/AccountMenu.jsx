@@ -40,18 +40,11 @@ const AccountMenu = ({pending, active, account=true, logoutLink='#dashboard'}) =
 					{ user.name || user.xid }&nbsp;
 					<span className="caret" />
 				</a>
-				{ account ? 
-					<ul className="dropdown-menu">
-						<li><a href="#account">Account</a></li> 
-						<li role="separator" className="divider" />
-						<li><a href="#dashboard" onClick={() => doLogout()}>Log out</a></li>
-					</ul>
-				: 
-					<ul className="dropdown-menu">
-						<li><a href={logoutLink} onClick={() => doLogout()}>Log out</a></li>
-					</ul>
-				} 
-					
+				<ul className="dropdown-menu">
+					<li><a href="#account">Account</a></li> 
+					<li role="separator" className="divider" />
+					<li><a href={logoutLink} onClick={() => doLogout()}>Log out</a></li>
+				</ul>
 			</li>
 		</ul>
 	);
