@@ -38,7 +38,7 @@ const getProfile = ({xid, fields, status}) => {
 const getProfilesNow = xids => {
 	assert(_.isArray(xids), "Profiler.js getProfilesNow "+xids);
 	xids = xids.filter(x => !!x); // no nulls
-	const fetcher = xid => DataStore.fetch(['data', 'Person', xid], () => {
+	const fetcher = xid => DataStore.fetch(['data', 'Person', 'xids', xid], () => {
 		return getProfile({xid});
 	});
 	let pvsPeep = xids.map(fetcher);	
@@ -59,7 +59,7 @@ const getProfilesNow = xids => {
 	TODO: change to getClaimsForPerson instead of getClaimsForXId
  */
 const getClaimsForXId = xid => {
-	const claims = DataStore.getValue(['data', 'Person', xid, 'claims']);
+	const claims = DataStore.getValue(['data', 'Person', 'xids', xid, 'claims']);
 
 	if( ! claims ) return;
 
