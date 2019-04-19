@@ -4,12 +4,15 @@
  * Note: use these wrapped by DataStore.fetch
  */
 
-import ServerIO from './plumbing/ServerIOBase';
 import {assert, assMatch, assertMatch} from 'sjtest';
 // add funky methods to the "standard" Person data-class
-import Person from './data/Person';
 import PromiseValue from 'promise-value';
 import {mapkv, encURI, XId} from 'wwutils';
+import Cookies from 'js-cookie';
+
+import Person from './data/Person';
+import ServerIO from './plumbing/ServerIOBase';
+
 assert(Person);
 
 // for debug
@@ -221,6 +224,59 @@ const saveSocialShareId = ({xid, socialShareId, adid, name}) => {
 		);
 };
 
+const fetcher = xid => DataStore.fetch(['data', 'Person', 'xids', xid], () => {
+	assMatch(xid, String, "MyPage.jsx fetcher: xid is not a string "+xid);
+	// Call analyzedata servlet to pull in user data from Twitter
+	// Putting this here means that the DigitalMirror will refresh itself with the data
+	// once the request has finished processing
+	if( XId.service(xid) === 'twitter' ) return Profiler.requestAnalyzeData(xid);
+	return getProfile({xid});
+});
+
+/**
+ * @returns String[] xids
+ */
+const getAllXIds = () => {
+	let all =[]; // String[]
+	// cookie tracker
+	let trkid = Cookies.get("trkid");
+	// const trkIdMatches = document.cookie.match('trkid=([^;]+)');
+	// console.warn("trkIdMatches", trkIdMatches, "cookies", cookies);
+	// const currentTrkId = trkIdMatches && trkIdMatches[1];
+	if (trkid) all.push(trkid);
+	// aliases
+	let axids = null;
+	if (Login.aliases) {
+		axids = Login.aliases.map(a => a.xid);
+		all = all.concat(axids);
+	}
+	// linked IDs?
+	getAllXIds2(all, all);
+	// de dupe
+	all = Array.from(new Set(all));
+	return all;
+};
+/**
+ * @param all {String[]} all XIds -- modify this!
+ * @param agendaXIds {String[]} XIds to investigate
+ */
+const getAllXIds2 = (all, agendaXIds) => {
+	// ...fetch profiles from the agenda
+	let pvsPeep = agendaXIds.map(fetcher);
+	// races the fetches -- so the output can change as more data comes in!
+	// It can be considered done when DataStore holds a profile for each xid
+	pvsPeep.filter(pvp => pvp.value).forEach(pvp => {
+		let peep = pvp.value;
+		let linkedIds = Person.linkedIds(peep);	
+		if ( ! linkedIds) return;
+		// loop test and recurse
+		linkedIds.filter(li => all.indexOf(li) === -1).forEach(li => {
+			all.push(li);
+			getAllXIds2(all, [li]);					
+		});
+	});
+};
+
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
 Person.getProfilesNow = getProfilesNow;
@@ -230,9 +286,11 @@ Person.setConsents = setConsents;
 
 Profiler.requestAnalyzeData = requestAnalyzeData;
 Profiler.saveSocialShareId = saveSocialShareId;
+Profiler.getAllXIds = getAllXIds;
 
 export {
 	saveProfileClaims,
+	getAllXIds,
 	getClaimsForXId,
 	getProfile,
 	getProfilesNow,
