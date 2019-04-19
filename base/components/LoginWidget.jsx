@@ -40,7 +40,7 @@ const LoginLink = ({className, onClick, verb='Login'}) => {
 		See SigninScriptlet
 
 */
-const LoginWidget = ({showDialog, logo, title, services}) => {
+const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='large' transparent={false} />, title, services}) => {
 	if (showDialog === undefined) {
 		showDialog = DataStore.getValue(['widget','LoginWidget', 'show']);
 		// NB: the app is shown regardless
@@ -61,7 +61,7 @@ const LoginWidget = ({showDialog, logo, title, services}) => {
 		<Modal show={showDialog} className="login-modal" onHide={() => LoginWidget.hide()}>
 			<Modal.Header closeButton>
 				<Modal.Title>
-					<Misc.Logo service={logo} size='large' transparent={false} />
+					{logo}
 					{title}					
 				</Modal.Title>
 			</Modal.Header>
