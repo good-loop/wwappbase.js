@@ -384,10 +384,10 @@ ServerIO.addDefaultParams = function(params) {
  * @param tag String used to identify data
  * @param data optional: any additional data you wish to send along with the request
  */
-ServerIO.mixPanelTrack = (tag, data = {}) => {
+ServerIO.mixPanelTrack = ({mixPanelTag, data = {}}) => {
 	// Record request if this has not already been done this session
 	const {mixpanel} = window;
-	const path = C.TRACKPATH.concat(tag);
+	const path = C.TRACKPATH.concat(mixPanelTag);
 	const alreadyTracked = DataStore.getValue(path);
 	const userId = Login.getId();
 
@@ -397,7 +397,7 @@ ServerIO.mixPanelTrack = (tag, data = {}) => {
 
 	if(mixpanel && !alreadyTracked) {
 		try {
-			mixpanel.track(tag, data);
+			mixpanel.track(mixPanelTag, data);
 			DataStore.setValue(path, true, false);
 		} catch(e) {
 			console.warn(e);
@@ -406,7 +406,9 @@ ServerIO.mixPanelTrack = (tag, data = {}) => {
 };
 
 /** Takes React element reference. Calculates if div is visible to user or not */
-ServerIO.logIfVisible = (elementReference, tag) => {
+ServerIO.doIfVisible = props => {
+	const {elementReference, fn} = props;
+	
 	const { top, left, bottom, right } = elementReference.getBoundingClientRect();
 
 	const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
@@ -416,6 +418,6 @@ ServerIO.logIfVisible = (elementReference, tag) => {
 	const isVisible = ( top >=0 && left >= 0 && bottom <= viewportHeight && right <= viewportWidth ); 
 
 	if ( isVisible ) {
-		ServerIO.mixPanelTrack(tag);
+		fn(props);
 	}
 };

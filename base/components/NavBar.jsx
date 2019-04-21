@@ -5,21 +5,7 @@ import C from '../CBase';
 import Roles from '../Roles';
 import DataStore from '../plumbing/DataStore';
 
-/**
- * 
- * @param {?String} currentPage e.g. 'account' Read from window.location via DataStore if unset.
- * @param {?String} homelink Relative url for the home-page. Defaults to "/"
- * @param {String[]} pages
- */
-const NavBar = ({currentPage, pages, children, homelink}) => {
-	if ( ! currentPage) {
-		let path = DataStore.getValue('location', 'path');
-		let currentPage = path && path[0];
-	}
-	// make the page links
-	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
-	return (
-		<nav className="navbar navbar-fixed-top navbar-inverse">
+const DefaultNavBar = ({pageLinks, currentPage, children, homelink}) => (
 			<div className="container">
 				<div className="navbar-header" title="Dashboard">
 					<button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
@@ -40,6 +26,24 @@ const NavBar = ({currentPage, pages, children, homelink}) => {
 					</div>
 				</div>
 			</div>
+);
+
+/**
+ * 
+ * @param {?String} currentPage e.g. 'account' Read from window.location via DataStore if unset.
+ * @param {?String} homelink Relative url for the home-page. Defaults to "/"
+ * @param {String[]} pages
+ */
+const NavBar = ({currentPage, pages, children, homelink, render=DefaultNavBar}) => {
+	if ( ! currentPage) {
+		let path = DataStore.getValue('location', 'path');
+		let currentPage = path && path[0];
+	}
+	// make the page links
+	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
+	return (
+		<nav className="navbar navbar-fixed-top navbar-inverse">
+			{ render({pageLinks, currentPage, children, homelink}) }
 		</nav>
 	);
 };

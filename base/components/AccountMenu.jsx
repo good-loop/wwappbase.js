@@ -22,7 +22,9 @@ logoutLink {string} what page should be loaded after logout ('#dashboard' by def
 TODO use react for the dropdown state - not bootstrap.js
 
 */
-const AccountMenu = ({pending, active, account=true, logoutLink='#dashboard'}) => {
+const AccountMenu = props => {
+	const {pending, isMobile} = props;
+
 	if (pending) return <Misc.Loading />;
 	if ( ! Login.isLoggedIn()) {
 		return (<ul id='top-right-menu' className="nav navbar-nav navbar-right">
@@ -32,29 +34,48 @@ const AccountMenu = ({pending, active, account=true, logoutLink='#dashboard'}) =
 		</ul>);
 	}
 	let user = Login.getUser();
+
 	return (
-		<ul id='top-right-menu' className="nav navbar-nav navbar-right">
-			<li className={'dropdown' + (active? ' active' : '')}>
-				<a className="dropdown-toggle" 
-					data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-					{ user.name || user.xid }&nbsp;
-					<span className="caret" />
-				</a>
-				{ account ? 
-					<ul className="dropdown-menu">
-						<li><a href="#account">Account</a></li> 
-						<li role="separator" className="divider" />
-						<li><a href="#dashboard" onClick={() => doLogout()}>Log out</a></li>
-					</ul>
-				: 
-					<ul className="dropdown-menu">
-						<li><a href={logoutLink} onClick={() => doLogout()}>Log out</a></li>
-					</ul>
-				} 
-					
-			</li>
-		</ul>
+		<>
+			{
+				isMobile
+				? <MobileMenu {...props} user={user} />
+				: <DesktopMenu {...props} user={user} />
+			}
+		</>
 	);
 };
+
+const DesktopMenu = ({active, logoutLink, user}) => (
+	<ul id='top-right-menu' className="nav navbar-nav navbar-right">
+		<li className={'dropdown' + (active? ' active' : '')}>
+			<a className="dropdown-toggle" 
+				data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+				{ user.name || user.xid }&nbsp;
+				<span className="caret" />
+			</a>
+			<ul className="dropdown-menu">
+				<li><a href="#account">Account</a></li> 
+				<li role="separator" className="divider" />
+				<li><a href={logoutLink} onClick={() => doLogout()}>Log out</a></li>
+			</ul>
+		</li>
+	</ul>
+);
+
+// Clicking username to expand does not work well on mobile
+// Just display all options as part of burger-menu
+const MobileMenu = ({active, logoutLink, user}) => (
+	<ul id='top-right-menu' className="nav navbar-nav navbar-right">
+		<li>
+			<a href="#account">
+				{ user.name || user.xid }&nbsp; 
+			</a>
+		</li> 
+		<li>
+			<a href={logoutLink} onClick={() => doLogout()}>Log out</a>
+		</li>
+	</ul>
+);
 
 export default AccountMenu;

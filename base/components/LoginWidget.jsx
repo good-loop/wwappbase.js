@@ -40,7 +40,7 @@ const LoginLink = ({className, onClick, verb='Login'}) => {
 		See SigninScriptlet
 
 */
-const LoginWidget = ({showDialog, logo, title, services}) => {
+const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='large' transparent={false} />, title, services}) => {
 	if (showDialog === undefined) {
 		showDialog = DataStore.getValue(['widget','LoginWidget', 'show']);
 		// NB: the app is shown regardless
@@ -61,7 +61,7 @@ const LoginWidget = ({showDialog, logo, title, services}) => {
 		<Modal show={showDialog} className="login-modal" onHide={() => LoginWidget.hide()}>
 			<Modal.Header closeButton>
 				<Modal.Title>
-					<Misc.Logo service={logo} size='large' transparent={false} />
+					{logo}
 					{title}					
 				</Modal.Title>
 			</Modal.Header>
@@ -125,7 +125,7 @@ const SocialSignInButton = ({service, verb='sign in'}) => {
 const socialLogin = (service) => {
 	// Special behaviour for My-Loop/Portal
 	// Doing it this way seemed the most maintainable option
-	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack('Social login clicked ' + service, {});
+	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag:'Social login clicked ' + service});
 	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
 	// auth doesnt return a future, so rely on Login's change listener
 	// to close stuff.
@@ -167,7 +167,7 @@ const EmailSignin = ({verb, onLogin}) => {
 	const doItFn = () => {
 		// Special behaviour for My-Loop/Portal
 		// Doing it this way seemed the most maintainable option
-		if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack('Email login attempted', {verb});
+		if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag:'Email login attempted', data:{verb}});
 		
 		if ( ! person) {
 			Login.error = {text: "Please fill in email and password"};
