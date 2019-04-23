@@ -34,7 +34,7 @@ const DefaultNavBar = ({pageLinks, currentPage, children, homelink}) => (
  * @param {?String} homelink Relative url for the home-page. Defaults to "/"
  * @param {String[]} pages
  */
-const NavBar = ({currentPage, pages, children, homelink, render=DefaultNavBar}) => {
+const NavBar = ({currentPage, pages, children, homelink, render=DefaultNavBar, style}) => {
 	if ( ! currentPage) {
 		let path = DataStore.getValue('location', 'path');
 		let currentPage = path && path[0];
@@ -42,7 +42,7 @@ const NavBar = ({currentPage, pages, children, homelink, render=DefaultNavBar}) 
 	// make the page links
 	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
 	return (
-		<nav className="navbar navbar-fixed-top navbar-inverse">
+		<nav className="navbar navbar-fixed-top navbar-inverse" style={style}>
 			{ render({pageLinks, currentPage, children, homelink}) }
 		</nav>
 	);
