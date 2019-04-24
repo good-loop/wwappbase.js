@@ -40,7 +40,7 @@ const LoginLink = ({className, onClick, verb='Login'}) => {
 		See SigninScriptlet
 
 */
-const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='large' transparent={false} />, title, services}) => {
+const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='large' transparent={false} />, title, render=LoginWidgetGuts, services}) => {
 	if (showDialog === undefined) {
 		showDialog = DataStore.getValue(['widget','LoginWidget', 'show']);
 		// NB: the app is shown regardless
@@ -66,7 +66,7 @@ const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='
 				</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>
-				<LoginWidgetGuts services={services} />
+				{render({services})}
 			</Modal.Body>
 			<Modal.Footer>
 				<SwitchVerb verb={verb} />
@@ -316,4 +316,4 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 
 
 export default LoginWidget;
-export {LoginLink, LoginWidgetEmbed, SocialSignInButton};
+export {LoginLink, LoginWidgetEmbed, SocialSignInButton, EmailSignin, SocialSignin, VERB_PATH};
