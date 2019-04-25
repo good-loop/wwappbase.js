@@ -41,7 +41,7 @@ const getProfile = ({xid, fields, status}) => {
 const getProfilesNow = xids => {
 	assert(_.isArray(xids), "Profiler.js getProfilesNow "+xids);
 	xids = xids.filter(x => !!x); // no nulls
-	const fetcher = xid => DataStore.fetch(['data', 'Person', 'xids', xid], () => {
+	const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid ], () => {
 		return getProfile({xid});
 	});
 	let pvsPeep = xids.map(fetcher);	
@@ -62,7 +62,7 @@ const getProfilesNow = xids => {
 	TODO: change to getClaimsForPerson instead of getClaimsForXId
  */
 const getClaimsForXId = xid => {
-	const claims = DataStore.getValue(['data', 'Person', 'xids', xid, 'claims']);
+	const claims = DataStore.getValue(['data', 'Person', 'profiles', xid, 'claims']);
 
 	if( ! claims ) return;
 
@@ -131,6 +131,7 @@ const saveProfile = (doc) => {
 	});
 	return pvs;
 };
+window.saveProfile = saveProfile;
 
 /**
  * The underlying consents model is rich (it can carry more options and audit info). 
@@ -139,7 +140,7 @@ const saveProfile = (doc) => {
  * TODO dataspace and fields
  * @returns {String: Boolean} never null, empty = apply sensible defaults
  */
-const getConsents = ({person, dataspace, fields}) => {
+const getConsents = ({person}) => {
 	Person.assIsa(person);
 	// convert list-of-strings into a true/false map
 	let pmap = {};
@@ -158,19 +159,20 @@ const getConsents = ({person, dataspace, fields}) => {
 	return pmap;
 };
 
+/** Puts consents in to form used by back-end */
+const convertConsents = (consents) => mapkv(consents, (k,v) => v === "yes" ? k : "-"+k);
 
 /**
  * @param consents {String: Boolean}
  * 
  * Does NOT save
  */
-const setConsents = ({person, dataspace, consents, fields}) => {
+const setConsents = ({person, consents}) => {
 	Person.assIsa(person);
 	assert( ! _.isArray(consents), "Profiler.js use a map: "+consents);
-	// inverse of getConsents
-	let pstrings = mapkv(consents, (k,v) => {
-		return v === "yes" ? k : "-"+k;
-	});
+
+	let pstrings = convertConsents(consents);
+
 	// Audit trail of whats changed? TODO manage that server-side.
 	person.c = pstrings;
 	return person;
@@ -186,23 +188,6 @@ const requestAnalyzeData = xid => {
 	assMatch(xid, String);
 	// NB: analyze is always for the gl dataspace
 	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
-};
-
-/**
- * Post to the /form endpoint which handles adhoc (not necc trusted) form submissions.
- * 
- * NB: posts use YouAgain's Login.sign() -- see ServerIOBase.
- * 
- * @param data {Object} e.g. {email: "foo@bar"} "notify":email is a special field
- */
-// NB: copy-paste-improve from invest-in-change form.js
-const submitForm = ({data}) => {
-	let url = `${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`;
-	// send back referrer and form-page-url info
-	data.referrer = document.referrer;
-	data.formUrl = ""+window.location
-	let p = ServerIO.post(url, {action: 'post', data});			
-	return p;
 };
 
 /**
@@ -224,7 +209,7 @@ const saveSocialShareId = ({xid, socialShareId, adid, name}) => {
 		);
 };
 
-const fetcher = xid => DataStore.fetch(['data', 'Person', 'xids', xid], () => {
+const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid], () => {
 	assMatch(xid, String, "MyPage.jsx fetcher: xid is not a string "+xid);
 	// Call analyzedata servlet to pull in user data from Twitter
 	// Putting this here means that the DigitalMirror will refresh itself with the data
@@ -289,6 +274,7 @@ Profiler.saveSocialShareId = saveSocialShareId;
 Profiler.getAllXIds = getAllXIds;
 
 export {
+	convertConsents,
 	saveProfileClaims,
 	getAllXIds,
 	getClaimsForXId,
