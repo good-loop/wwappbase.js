@@ -152,7 +152,7 @@ LoginWidget.emailLogin = ({verb, app, email, password, onRegister}) => {
 			DataStore.setValue(['data', C.TYPES.User, 'loggingIn', 'password'], null);
 
 			if(verb === 'register' && onRegister) {
-				onRegister(res);
+				onRegister({...res, email});
 			}
 		} else {
 			// poke React via DataStore (e.g. for Login.error)
