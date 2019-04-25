@@ -134,7 +134,7 @@ const socialLogin = (service) => {
 /**
  * ajax call -- via Login.login() -- to login
  */
-LoginWidget.emailLogin = ({verb, app, email, password}) => {
+LoginWidget.emailLogin = ({verb, app, email, password, onRegister}) => {
 	assMatch(email, String, password, String);
 	let call = verb==='register'?
 		Login.register({email:email, password:password})
@@ -150,6 +150,10 @@ LoginWidget.emailLogin = ({verb, app, email, password}) => {
 			LoginWidget.hide();
 			// Security: wipe the password from DataStore
 			DataStore.setValue(['data', C.TYPES.User, 'loggingIn', 'password'], null);
+
+			if(verb === 'register' && onRegister) {
+				onRegister(res);
+			}
 		} else {
 			// poke React via DataStore (e.g. for Login.error)
 			DataStore.update({});
@@ -159,7 +163,10 @@ LoginWidget.emailLogin = ({verb, app, email, password}) => {
 	});
 };
 
-const EmailSignin = ({verb, onLogin}) => {
+/**
+ * @param onSignIn called after user has successfully registered and been logged in
+ */
+const EmailSignin = ({verb, onLogin, onRegister}) => {
 	// we need a place to stash form info. Maybe appstate.widget.LoginWidget.name etc would be better?
 	const path = ['data', C.TYPES.User, 'loggingIn'];
 	let person = DataStore.getValue(path);	
@@ -189,7 +196,7 @@ const EmailSignin = ({verb, onLogin}) => {
 				});
 			return;
 		}
-		LoginWidget.emailLogin({verb, ...person});
+		LoginWidget.emailLogin({verb, onRegister, ...person});
 	};
 
 	const buttonText = {
