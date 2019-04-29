@@ -17,7 +17,7 @@ const Main = {
 };
 
 const Advertiser = {
-    Create: "#advertiser > div > div > div:nth-child(2) > button",
+    Create: "#advertiser > div > div:nth-child(2) > button",
     'name': "#advertiser > div > div > div.form > div.form-group > input",
     'contact-name': "#advertiser > div > div > div.form > div.well > div:nth-child(3) > input",
     'contact-email': "#advertiser > div > div > div.form > div.well > div.form-group.XId > input",
