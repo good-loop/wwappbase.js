@@ -36,13 +36,13 @@ const AccountMenu = props => {
 	let user = Login.getUser();
 
 	return (
-		<>
+		<React.Fragment>
 			{
 				isMobile
 				? <MobileMenu {...props} user={user} />
 				: <DesktopMenu {...props} user={user} />
 			}
-		</>
+		</React.Fragment>
 	);
 };
 
