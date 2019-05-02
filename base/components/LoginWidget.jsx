@@ -7,8 +7,8 @@ import { XId, uid, stopEvent, toTitleCase} from 'wwutils';
 import Cookies from 'js-cookie';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
-import C from '../../C';
-import ServerIO from '../../plumbing/ServerIO';
+import C from '../CBase';
+import ServerIO from '../plumbing/ServerIOBase';
 // import { Server } from 'net';
 
 // For testing
