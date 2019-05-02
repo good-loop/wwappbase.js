@@ -64,7 +64,7 @@ const getProfilesNow = xids => {
 const getClaimsForXId = xid => {
 	const claims = DataStore.getValue(['data', 'Person', 'profiles', xid, 'claims']);
 
-	if( ! claims ) return;
+	if ( !claims ) return;
 
 	const formattedClaims = claims.reduce( (obj, claim) => {
 		let {k, f, v, c} = claim;
