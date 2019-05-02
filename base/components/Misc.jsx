@@ -14,6 +14,7 @@ import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import printer from '../utils/printer';
+import {LoginLink} from './LoginWidget';
 import C from '../CBase';
 import Money from '../data/Money';
 // import I18n from 'easyi18n';
@@ -540,5 +541,7 @@ Misc.Tabs = ({children, className='nav nav-tabs', liClassName='', path}) => {
 		</div>
 	);
 };
+
+Misc.LoginToSee = ({desc}) => <div>Please login to see {desc||'this'}. <LoginLink className='btn btn-default' /></div>;
 
 export default Misc;
