@@ -434,15 +434,43 @@ class Store {
 	 * As a convenience hack, this method will extract `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * @param messaging {?Boolean} If true (the default), try to use Messaging.js to notify the user of failures.
+	 * @param cachePeriod {?Number} Normally unset. TODO If set, cache the data for this long in milliseconds - then re-fetch.
 	 * @returns {PromiseValue} (see promise-value.js)
 	 */
-	fetch(path, fetchFn, messaging=true) { // TODO allow retry after 10 seconds
-		assert(path && fetchFn, "DataStore.js - missing input",path,fetchFn);
+	fetch(path, fetchFn, messaging=true, cachePeriod) { // TODO allow retry after 10 seconds
+		assert(path && fetchFn, "DataStore.js - missing input",path,fetchFn);		
+		// in the store?
 		let item = this.getValue(path);
 		if (item!==null && item!==undefined) { 
+			// out of date?
+			if (cachePeriod) {
+				const now = new Date();
+				const epath = ['transient', 'fetchDate'].concat(path);
+				let fetchDate = this.getValue(epath);				
+				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - cachePeriod) {
+					// fetch a fresh copy
+					console.log("DataStore", "stale - fetch fresh", path);
+					const pv = fetch2(path, fetchFn, messaging, cachePeriod);
+					// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
+					if (pv.resolved) return pv;
+				}
+			}
 			// Note: falsy or an empty list/object is counted as valid. It will not trigger a fresh load
 			return new PromiseValue(item);
 		}
+		// Fetch it
+		return fetch2(path, fetchFn, messaging, cachePeriod);
+	} // ./fetch()
+
+	/**
+	 * Does the remote fetching work for fetch()
+	 * @param {String[]} path 
+	 * @param {Function} fetchFn 
+	 * @param {?Boolean} messaging 
+	 * @param {?Number} cachePeriod 
+	 * @returns {PromiseValue}
+	 */
+	fetch2(path, fetchFn, messaging=true, cachePeriod) {
 		// only ask once
 		const fpath = ['transient', 'PromiseValue'].concat(path);
 		const prevpv = this.getValue(fpath);
@@ -472,6 +500,11 @@ class Store {
 		const pv = new PromiseValue(promiseWithCargoUnwrap);
 		pv.promise.then(res => {
 			// set the DataStore
+			// cache-period? then store the fetch time
+			if (cachePeriod) {
+				const epath = ['transient', 'fetchDate'].concat(path);
+				this.setValue(epath, new Date(), false);
+			}
 			// This is done after the cargo-unwrap PV has resolved. So any calls to fetch() during render will get a resolved PV
 			// even if res is null.
 			this.setValue(path, res); // this should trigger an update (typically a React render update)
@@ -484,7 +517,7 @@ class Store {
 		});
 		this.setValue(fpath, pv, false);
 		return pv;
-	} // ./fetch()
+	} // ./fetch2()
 
 	/**
 	 * Remove any list(s) stored under ['list', type].
