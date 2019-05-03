@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=1.17.0'
+VERSION='Version=1.17.1'
 
 ###
 # New in 1.17.0: Added the 'Media-Server' Project Publishing Params
@@ -178,7 +178,7 @@ fi
 case $1 in
 	adserver|ADSERVER)
 		PROJECT='adserver'
-		PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh adnode-01.soda.sh)
+		PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh adnode-01.soda.sh adnode-02.soda.sh)
 		TEST_SERVERS=(hugh.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
@@ -291,7 +291,7 @@ case $1 in
 	;;
 	media|MEDIA)
 		PROJECT='media'
-		PRODUCTION_SERVERS=('media-master-01.good-loop.com')
+		PRODUCTION_SERVERS=('medianode-01.good-loop.com')
 		TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/media"
 		TARGET_DIRECTORY='/home/winterwell/media.good-loop.com'
@@ -340,7 +340,7 @@ case $1 in
 	;;
 	portal|PORTAL)
 		PROJECT='portal'
-		PRODUCTION_SERVERS=(heppner.soda.sh)
+		PRODUCTION_SERVERS=('heppner.soda.sh')
 		TEST_SERVERS=(hugh.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
