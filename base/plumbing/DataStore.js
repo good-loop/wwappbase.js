@@ -450,7 +450,7 @@ class Store {
 				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - cachePeriod) {
 					// fetch a fresh copy
 					console.log("DataStore", "stale - fetch fresh", path);
-					const pv = fetch2(path, fetchFn, messaging, cachePeriod);
+					const pv = this.fetch2(path, fetchFn, messaging, cachePeriod);
 					// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
 					if (pv.resolved) return pv;
 				}
@@ -459,7 +459,7 @@ class Store {
 			return new PromiseValue(item);
 		}
 		// Fetch it
-		return fetch2(path, fetchFn, messaging, cachePeriod);
+		return this.fetch2(path, fetchFn, messaging, cachePeriod);
 	} // ./fetch()
 
 	/**
