@@ -307,11 +307,11 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME='mediaserver'
-		FRONTEND_SYNC_LIST=("config" "src" "web")
+		FRONTEND_SYNC_LIST=("config" "src")
 		BACKEND_SYNC_LIST=("lib")
 		# Use "lib" instead of "tmp-lib" for syncing your JAR files
-		WHOLE_SYNC=("config" "lib" "src" "web")
-		PRESERVE=("web/uploads")
+		WHOLE_SYNC=("config" "lib" "src")
+		#PRESERVE=()
 		POST_PUBLISHING_TASK='no' # If this is set to 'yes', then you must ammend section 16 in order to specify how to handle the tasks
 		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
 	;;
