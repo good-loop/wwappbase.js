@@ -398,7 +398,7 @@ const PropControl2 = (props) => {
 /**
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  */
-const PropControlSelect = ({value, multiple, prop, onChange, ...otherStuff}) => {
+const PropControlSelect = ({value, multiple, prop, onChange, saveFn, ...otherStuff}) => {
 	// NB: pull off internal attributes so the select is happy with rest
 	const { options, labels, className, dflt, recursing, modelValueFromInput, ...rest} = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
