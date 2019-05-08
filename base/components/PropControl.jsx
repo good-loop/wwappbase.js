@@ -253,11 +253,15 @@ const PropControl2 = (props) => {
 		return <PropControlKeySet {...props} />;
 	}
 
-	if (type==='textarea') {
+	if (type === 'entryset') {
+		return <PropControlEntrySet {...props} />;
+	}
+
+	if (type === 'textarea') {
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
 	}
 	
-	if (type==='json') {
+	if (type === 'json') {
 		let spath = ['transient'].concat(proppath);
 		let svalue = DataStore.getValue(spath) || JSON.stringify(value);
 		const onJsonChange = e => {
@@ -270,14 +274,14 @@ const PropControl2 = (props) => {
 			} catch(err) {
 				console.warn(err);
 				// TODO show error feedback
-			}			
+			}
 			e.preventDefault();
 			e.stopPropagation();
 		};
 		return <textarea className="form-control" name={prop} onChange={onJsonChange} {...otherStuff} value={svalue} />;
 	}
 
-	if (type==='img') {
+	if (type === 'img') {
 		delete otherStuff.https;
 		return (<div>
 				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
@@ -600,7 +604,7 @@ const PropControlMoney = ({prop, value, path, proppath,
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
  * Used to edit variant.style 
  */
-const PropControlArrayText = ({ value, prop, proppath, array, saveFn, ...otherStuff}) => {
+const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 	const onChange = e => {
 		const oldValue = DataStore.getValue(proppath) || [];
 		const oldString = oldValue.join(' ');
@@ -623,18 +627,15 @@ const PropControlArrayText = ({ value, prop, proppath, array, saveFn, ...otherSt
 	return <Misc.FormControl name={prop} value={safeValue} onChange={onChange} {...otherStuff} />;
 };
 
-const PropControlKeySet = ({ value, prop, proppath, array, saveFn, ...otherStuff}) => {
+
+const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 	const addRemoveKey = (key, remove) => {
 		const newValue = { ...value };
-		if (remove) {
-			// delete newValue[key];
-			newValue[key] = false; // send an explicit false because a backend merge would lose a simple remove
-			// TODO this leads to the data being a bit messy, with ambiguous false flags. 
-			// ...But we want to keep update (i.e. merge) behaviour over fresh-index in general.
-			// ...TODO DataStore to maintain a diff, which it can send to the backend.
-		} else {
-			newValue[key] = true;
-		}
+		// Set false for "remove" instead of deleting because back-end performs a merge on update, which would lose simple key removal
+		// TODO this leads to the data being a bit messy, with ambiguous false flags.
+		// ...But we want to keep update (i.e. merge) behaviour over fresh-index in general.
+		// ...TODO DataStore to maintain a diff, which it can send to the backend.
+		newValue[key] = remove ? false : true;
 		DataStore.setValue(proppath, newValue);
 		if (saveFn) saveFn({ path, prop, value: newValue });
 	}
@@ -643,14 +644,62 @@ const PropControlKeySet = ({ value, prop, proppath, array, saveFn, ...otherStuff
 		<span className="key" key={key}>{key} <span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
 	));
 	
-	// TODO clear the input after add
+	
 	let newKey;
+
+	const onClickAdd = (event) => {
+		addRemoveKey(newKey);
+		// Clear the input(s)
+		event.target.parentNode.childNodes.forEach(child => {
+			if ((child.tagName || '').toLowerCase() === 'input') child.value = '';
+		});
+	};
+
 	return (
 		<div className="keyset form-inline">
 			<div className="keys">{keyElements}</div>	
 			<form className="form-inline" onSubmit={stopEvent}>
 				<input className='form-control' onChange={(event) => newKey = event.target.value} 
-				/> <button className={'btn '+(value? 'btn-primary' : 'btn-default')} onClick={() => addRemoveKey(newKey)} >Add</button>
+				/> <button className={'btn '+(value? 'btn-primary' : 'btn-default')} onClick={onClickAdd} >Add</button>
+			</form>
+		</div>
+	);
+};
+
+
+const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value', ...otherStuff}) => {
+	const addRemoveKey = (key, val, remove) => {
+		const newValue = { ...value };
+		// set false instead of deleting - see rationale/TODO in PropControlKeySet
+		newValue[key] = remove ? false : val;
+		DataStore.setValue(proppath, newValue);
+		if (saveFn) saveFn({ path, prop, value: newValue });
+	}
+	
+	const entryElements = Object.entries(value || {}).filter(([key, val]) => val).map(([key, val]) => (
+		<span className="entry" key={key}>
+			{key}: <PropControl type="text" path={proppath} prop={key} />
+			<span className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</span>
+		</span>
+	));
+	
+	
+	let newKey, newValue;
+
+	const onClickAdd = (event) => {
+		addRemoveKey(newKey, newValue);
+		event.target.parentNode.childNodes.forEach(child => {
+			if ((child.tagName || '').toLowerCase() === 'input') child.value = '';
+		});
+	};
+
+	return (
+		<div className="entryset form-inline">
+			<div className="entries">{entryElements}</div>
+			<form className="form-inline" onSubmit={stopEvent}>
+				<input className='form-control' placeholder={keyName} onChange={(event) => newKey = event.target.value}
+				/> <input className='form-control' placeholder={valueName} onChange={(event) => newValue = event.target.value}
+				/> <button className={'btn '+(value? 'btn-primary' : 'btn-default')} onClick={onClickAdd} >Add</button>
 			</form>
 		</div>
 	);
@@ -811,7 +860,7 @@ const FormControl = ({value, type, required, size, className, ...otherProps}) =>
  * List of types eg textarea
  */
 const KControlTypes = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
-							+" yesNo location date year number arraytext keyset address postcode json"
+							+" yesNo location date year number arraytext keyset entryset address postcode json"
 							// some Good-Loop data-classes
 							+" Money XId");
 
