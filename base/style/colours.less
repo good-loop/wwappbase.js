@@ -1,22 +1,68 @@
 /* define GL colours */
 
 @grey: #666;
-// Switch to #af2009 from colour book?
-@gl-red: #C83312;
-@gl-beige: #F8EDD2;
-@blue: #51808a;
-@lightblue: #75c3d0;
-@lightred: #c97474;
+
+// Extra specific colours in our palette, if you need them. No defined uses.
 @green: #586c28;
 @yellow: #f6cf55;
 
 // New colours from brand-book
-@gl-maroon: #770f00;
+// See https://drive.google.com/drive/folders/0Bz6LfeTw60y3UXlIbVVPRmlpNnc
+@gl-red: #770f00;
+@gl-orange: #af2009;
 @gl-light-blue: #5ca5c0;
 @gl-dark-blue: #3e767f;
 @gl-dark-grey: #928b81;
 @gl-light-grey: #dddad3;
 
+// Foreground and background styles
+// BS defines dark and light (nearly black/white) - see https://getbootstrap.com/docs/4.0/utilities/colors/
+// Add some more colour pairs which can be used as foreground/background combos
+@dark0: #343a40; // BS
+@light0: #f8f9fa; // BS
+@dark1: @gl-dark-blue;
+@light1: @gl-light-grey;
+@dark2: @gl-red;
+@light2: @gl-light-blue;
+
+// NB: identical to BS text-light/dark and bg-light-dark -- but we add a "-0" for ease of use alongside dark/light pairs 1,2
+.text-dark-0 { color:@dark0; }
+.bg-dark-0 { color:@dark0; }
+.text-light-0 { color:@light0; }
+.bg-light-0 { color:@light0; }
+
+.text-dark-1 { color:@dark1; }
+.bg-dark-1 { color:@dark1; }
+.text-light-1 { color:@light1; }
+.bg-light-1 { color:@light1; }
+
+.text-dark-2 { color:@dark2; }
+.bg-dark-2 { color:@dark2; }
+.text-light-2 { color:@light2; }
+.bg-light-2 { color:@light2; }
+// NB: This gives 6 colour pairings - more than enough to colour any map :)
+
+
+/* GL button: white button on red background */
+.btn-gl {
+	&:hover {
+		background-color: @gl-red; 
+		text-decoration: none;
+		color: white;
+		transition: 0.5s;
+	}
+	background-color: white;
+	color: @gl-red;
+	border: 3px solid @gl-red;
+	font-weight: bold;
+}
+
 .color-facebook {color: #3b5998;}
 .color-twitter {color:#4099ff;}
 .color-instagram {color:#e95950;}
+
+// // hack to make grayed out values consistent across website
+// Why? Bootstrap should define this as muted grey. ^DW May 2019
+// .text-muted {
+// 	color: #9c9c9c;
+// }
