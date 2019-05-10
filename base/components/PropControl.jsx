@@ -291,61 +291,7 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'imgUpload' || type==='videoUpload') {
-		delete otherStuff.https;
-		const uploadAccepted = (accepted, rejected) => {
-			const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
-			const load = (event) => console.log('UPLOAD SUCCESS', event);
-	
-			accepted.forEach(file => {
-				ServerIO.upload(file, progress, load)
-					.done(response => {
-						// Different forms for UploadServlet vs MediaUploadServlet
-						let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
-						DataStore.setValue(path.concat(prop), url);
-						if(onUpload) onUpload({path, prop, response, url});
-					})
-					.fail( res => res.status == 413 && notifyUser(new Error(res.statusText)));
-			});
-	
-			rejected.forEach(file => {
-				// TODO Inform the user that their file had a Problem
-				console.error("rejected :( "+file);
-			});
-		};
-
-		let acceptedTypes = type==='imgUpload'? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
-		let acceptedTypesDesc = type==='imgUpload'? 'JPG, PNG, or SVG image' : 'video'
-
-		// Catch special background-colour name for img and apply a special background to show img transparency
-		let className;
-		if (bg === 'transparent') {
-			bg = '';
-			className = 'stripe-bg';
-		}
-
-		return (
-			<div>
-				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
-				<div className='pull-left'>
-					<Dropzone
-						className='DropZone'
-						accept={acceptedTypes}
-						style={{}}
-						onDrop={uploadAccepted}
-					>
-						Drop a {acceptedTypesDesc} here
-					</Dropzone>
-				</div>
-				<div className='pull-right'>
-					{type === 'videoUpload' ? (
-						<Misc.VideoThumbnail url={value} />
-					) : (
-						<Misc.ImgThumbnail className={className} style={{background: bg}} url={value} />
-					)}
-				</div>
-				<div className='clearfix' />
-			</div>
-		);
+		return <PropControlImgUpload {...otherStuff, path, prop, onUpload, type, bg, value, onChange} />;
 	} // ./imgUpload
 
 	if (type==='url') {
@@ -869,6 +815,53 @@ Misc.FormControl = FormControl;
 Misc.KControlTypes = KControlTypes;
 Misc.PropControl = PropControl;
 
+/**
+ * image or video upload. Uses Dropzone
+ */
+const PropControlImgUpload = ({otherStuff, path, prop, onUpload, type, bg, value, onChange}) => {
+	delete otherStuff.https;
+	const uploadAccepted = (accepted, rejected) => {
+		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
+		const load = (event) => console.log('UPLOAD SUCCESS', event);
+		accepted.forEach(file => {
+			ServerIO.upload(file, progress, load)
+				.done(response => {
+					// Different forms for UploadServlet vs MediaUploadServlet
+					let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
+					DataStore.setValue(path.concat(prop), url);
+					if (onUpload)
+						onUpload({ path, prop, response, url });
+				})
+				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
+		});
+		rejected.forEach(file => {
+			// TODO Inform the user that their file had a Problem
+			console.error("rejected :( " + file);
+		});
+	};
+	let acceptedTypes = type === 'imgUpload' ? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
+	let acceptedTypesDesc = type === 'imgUpload' ? 'JPG, PNG, or SVG image' : 'video';
+	// Catch special background-colour name for img and apply a special background to show img transparency
+	let className;
+	if (bg === 'transparent') {
+		bg = '';
+		className = 'stripe-bg';
+	}
+	return (<div>
+		<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
+		<div className='pull-left'>
+			<Dropzone className='DropZone' accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
+				Drop a {acceptedTypesDesc} here
+			</Dropzone>
+		</div>
+		<div className='pull-right'>
+			{type === 'videoUpload' ? (<Misc.VideoThumbnail url={value} />) : (<Misc.ImgThumbnail className={className} style={{ background: bg }} url={value} />)}
+		</div>
+		<div className='clearfix' />
+	</div>);
+}; // ./imgUpload
+
+
 /** INPUT STATUS */
 class InputStatus { // extends JSend
 	// TODO (needs babel config update)
@@ -940,3 +933,4 @@ export {
 };
 // should we rename it to Input, or StoreInput, ModelInput or some such??
 export default PropControl;
+
