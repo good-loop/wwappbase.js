@@ -291,7 +291,7 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'imgUpload' || type==='videoUpload') {
-		return <PropControlImgUpload {...otherStuff, path, prop, onUpload, type, bg, value, onChange} />;
+		return <PropControlImgUpload {...otherStuff} path={path} prop={prop} onUpload={onUpload} type={type} bg={bg} value={value} onChange={onChange} />;
 	} // ./imgUpload
 
 	if (type==='url') {
@@ -818,7 +818,7 @@ Misc.PropControl = PropControl;
 /**
  * image or video upload. Uses Dropzone
  */
-const PropControlImgUpload = ({otherStuff, path, prop, onUpload, type, bg, value, onChange}) => {
+const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, ...otherStuff}) => {
 	delete otherStuff.https;
 	const uploadAccepted = (accepted, rejected) => {
 		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
