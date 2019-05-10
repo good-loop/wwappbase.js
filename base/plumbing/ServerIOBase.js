@@ -27,9 +27,9 @@ ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
 ServerIO.ENDPOINT_TASK = 'https://calstat.winterwell.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.winterwell.com/task';
 
-ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}media.good-loop.com/upload`;
-// ServerIO.MEDIA_ENDPOINT = `https://testmedia.good-loop.com/upload`;
-// ServerIO.MEDIA_ENDPOINT = `https://media.good-loop.com/upload`;
+ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
+// ServerIO.MEDIA_ENDPOINT = `https://testuploads.good-loop.com/`;
+// ServerIO.MEDIA_ENDPOINT = `https://uploads.good-loop.com/`;
 // Uncomment to use UploadServlet instead of media.good-loop.com
 // ServerIO.MEDIA_ENDPOINT = '/upload.json';
 /** 
