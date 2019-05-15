@@ -34,6 +34,12 @@ const LoginLink = ({className, onClick, verb='Login'}) => {
 	
 };
 
+const RegisterLink = ({className, onClick, ...props}) => <LoginLink 
+	className={className} 
+	onClick={() => {props.onClick && props.onClick(); LoginWidget.changeVerb('register');}} 
+	verb='Register' 
+	{...props}
+/>;
 
 /**
 		Login or Signup (one widget)
@@ -323,4 +329,4 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 
 
 export default LoginWidget;
-export {LoginLink, LoginWidgetEmbed, SocialSignInButton, EmailSignin, SocialSignin, VERB_PATH};
+export {LoginLink, LoginWidgetEmbed, RegisterLink, SocialSignInButton, EmailSignin, SocialSignin, VERB_PATH};

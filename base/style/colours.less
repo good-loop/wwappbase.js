@@ -45,16 +45,19 @@
 
 /* GL button: white button on red background */
 .btn-gl {
+	padding: 0.5em 1em;
+
+	background-color: @gl-red; 
+
 	&:hover {
-		background-color: @gl-red; 
-		text-decoration: none;
-		color: white;
-		transition: 0.5s;
+		color: #fff;
+		text-decoration: underline;
 	}
-	background-color: white;
+	background-color: #fff;
 	color: @gl-red;
 	border: 3px solid @gl-red;
 	font-weight: bold;
+	border-radius: 10px;
 }
 
 .color-facebook {color: #3b5998;}
