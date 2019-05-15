@@ -4,7 +4,7 @@ import Login from 'you-again';
 
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
-import {LoginLink} from './LoginWidget';
+import {LoginLink, RegisterLink} from './LoginWidget';
 
 // import {XId,yessy,uid} from '../js/util/orla-utils.js';
 
@@ -28,6 +28,9 @@ const AccountMenu = props => {
 	if (pending) return <Misc.Loading />;
 	if ( ! Login.isLoggedIn()) {
 		return (<ul id='top-right-menu' className="nav navbar-nav navbar-right">
+			<li>			
+				<RegisterLink />
+			</li>
 			<li>
 				<LoginLink />
 			</li>
