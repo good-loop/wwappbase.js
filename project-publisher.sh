@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.17.1'
+VERSION='Version=1.17.2'
 
 ###
+# New in 1.17.2: Added the other media servers to the list
 # New in 1.17.0: Added the 'Media-Server' Project Publishing Params
 # New in 1.16.2-3: added 'web-apps' directory to the list of directories to sync during an adserver publish
 # New in 1.16.1: Enabled the sogive-app to update the version.properties file
@@ -263,7 +264,7 @@ case $1 in
 		BACKEND_SYNC_LIST=("lib" "winterwell.datalog.jar")
 		WHOLE_SYNC=("config" "src" "src-js" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "lib" "winterwell.datalog.jar")
 		;;
-		moneyscript|MONEYSCRIPT)
+	moneyscript|MONEYSCRIPT)
 		PROJECT='moneyscript'
 		PRODUCTION_SERVERS=('robinson.soda.sh')
 		TEST_SERVERS=('hugh.soda.sh')
@@ -291,7 +292,7 @@ case $1 in
 	;;
 	media|MEDIA)
 		PROJECT='media'
-		PRODUCTION_SERVERS=('medianode-01.good-loop.com')
+		PRODUCTION_SERVERS=(medianode-01.good-loop.com medianode-02.good-loop.com medianode-03.good-loop.com)
 		TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/media"
 		TARGET_DIRECTORY='/home/winterwell/media.good-loop.com'
