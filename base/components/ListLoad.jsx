@@ -271,27 +271,16 @@ const CreateButton = ({type, props, navpage, base, make}) => {
  * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url. 
  * Best practice is to set servlet to avoid relying on url behaviour.
  */
-const ListItems = ({type, navpage, servlet, status=C.KStatus.ALL_BAR_TRASH}) => {
+const ListItems = ({type, navpage, servlet, status=C.KStatus.ALL_BAR_TRASH, q}) => {
 	assMatch(type, String);
 	return (
 		<div>
 			<h3 className="text-capitalize">List {type}</h3>
 			<CreateButton type={type} navpage={navpage} />
-			<ListLoad type={type} hasFilter servlet={servlet} status={status} />
+			<ListLoad type={type} hasFilter servlet={servlet} status={status} q={q} />
 		</div>
 	);
 };
 
-const ListFilteredItems = ({type, navpage, servlet, q}) => {
-	assMatch(type, String);
-	return (
-		<div>
-			<h3 className="text-capitalize">List {type}</h3>
-			<CreateButton type={type} navpage={navpage} />
-			<ListLoad type={type} hasFilter servlet={servlet} status={C.KStatus.ALL_BAR_TRASH} q={q}/>
-		</div>
-	);
-};
-
-export { CreateButton, DefaultListItem, ListItems, ListFilteredItems, createBlank };
+export { CreateButton, DefaultListItem, ListItems, createBlank };
 export default ListLoad;
