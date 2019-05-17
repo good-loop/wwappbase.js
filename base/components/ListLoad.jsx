@@ -179,7 +179,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 	if ( ! navpage) navpage = servlet;
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
-	let name = nameFn ? nameFn(item, id) : item.name || item.text || id;
+	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
 	if (name.length > 280) name = name.slice(0,280); 
 	const status = C.KStatus.isPUBLISHED(item.status)? null : item.status;
 	return (
