@@ -434,7 +434,7 @@ class Store {
 	 * As a convenience hack, this method will extract `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * @param messaging {?Boolean} If true (the default), try to use Messaging.js to notify the user of failures.
-	 * @param cachePeriod {?Number} Normally unset. TODO If set, cache the data for this long in milliseconds - then re-fetch.
+	 * @param cachePeriod {?Number} Normally unset. If set, cache the data for this long in milliseconds - then re-fetch.
 	 * @returns {PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, messaging=true, cachePeriod) { // TODO allow retry after 10 seconds
