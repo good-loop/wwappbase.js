@@ -2,6 +2,9 @@
  */
 import React from 'react';
 
+// BE CAREFUL HERE
+// These controls are used in multiple projects, and they have to handle a range of cases.
+
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
 import { Checkbox, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
