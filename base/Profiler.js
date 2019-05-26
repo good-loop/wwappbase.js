@@ -137,7 +137,6 @@ window.saveProfile = saveProfile;
  * The underlying consents model is rich (it can carry more options and audit info). 
  * We mostly want to work with something simple.
  * 
- * TODO dataspace and fields
  * @returns {String: Boolean} never null, empty = apply sensible defaults
  */
 const getConsents = ({person}) => {
@@ -146,21 +145,23 @@ const getConsents = ({person}) => {
 	let pmap = {};
 	let consents = person.c || [];
 	consents.forEach(c => {
-		// TODO custom?
-		// not?
 		if (c[0] === "-") {
 			c = c.substr(1);
-			pmap[c] = 'no';
+			pmap[c] = false;
 		} else {
-			pmap[c] = 'yes';
+			pmap[c] = true;
 		}
 	});
 	// done
 	return pmap;
 };
 
-/** Puts consents in to form used by back-end */
-const convertConsents = (consents) => mapkv(consents, (k,v) => v === "yes" ? k : "-"+k);
+/** Puts consents in to form used by back-end 
+ * @param consents {String: Boolean} 
+ * NB: handles the "yes"/"no" case
+ * @returns {String[]} consents and -consents
+*/
+const convertConsents = (consents) => mapkv(consents, (k,v) => (v===true || v === "yes" || v===1) ? k : "-"+k);
 
 /**
  * @param consents {String: Boolean}

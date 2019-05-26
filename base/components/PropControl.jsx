@@ -545,7 +545,10 @@ const PropControlYesNo = ({path, prop, value, inline, saveFn}) => {
 	// NB: try to spot bad code/values -- beware of truthy/falsy here
 	if (value && ! _.isBoolean(value)) {
 		console.error("PropControlYesNo - value not a proper boolean!", prop, value);
+		// if (value === 'yes') value = true;
+		// else if (value === 'no') value = false;
 	}
+	// handle yes/no -> true/false
 	const onChange = e => {
 		// String yes/no -> boolean
 		let newValue;
