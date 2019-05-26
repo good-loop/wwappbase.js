@@ -169,6 +169,7 @@ const PropControl = (props) => {
  */
 const PropControl2 = (props) => {
 	// unpack ??clean up 
+	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, onUpload, ...stuff} = props;
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 
@@ -203,20 +204,7 @@ const PropControl2 = (props) => {
 
 	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
 	if (type === 'yesNo') {
-		const onChange = e => {
-			// String yes/no -> boolean
-			const value = e.target.value;
-			DataStore.setValue(proppath, value);
-			if (saveFn) saveFn({path, prop, value});
-		};
-
-		// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
-		return (
-			<div className='form-group'>
-				<BS.Radio value='yes' name={prop} onChange={onChange} checked={value === 'yes'} inline label='Yes' />
-				<BS.Radio value='no' name={prop} onChange={onChange} checked={value === 'no'} inline label='No' />
-			</div>
-		);
+		return <PropControlYesNo path={path} prop={prop} value={value} inline={inline} saveFn={saveFn} />
 	}
 
 	if (value===undefined) value = '';
@@ -545,6 +533,38 @@ const PropControlMoney = ({prop, value, path, proppath,
 	</InputGroup>);
 }; // ./£
 
+/**
+ * yes/no radio buttons (kind of like a checkbox)
+ * 
+ * @param value {?Boolean}
+ */
+const PropControlYesNo = ({path, prop, value, inline, saveFn}) => {
+	// NB: try to spot bad code/values -- beware of truthy/falsy here
+	if (value && ! _.isBoolean(value)) {
+		console.error("PropControlYesNo - value not a proper boolean!", prop, value);
+	}
+	const onChange = e => {
+		// String yes/no -> boolean
+		let newValue;
+		if (e.target.value === 'yes') newValue = true;
+		else if (e.target.value === 'no') newValue = false;
+		else newValue = undefined;
+		const proppath = path.concat(prop);
+		DataStore.setValue(proppath, newValue);
+		if (saveFn) saveFn({path, prop, newValue});
+	};
+
+	// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
+	const noChecked = value===false;
+	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
+	return (
+		<div className='form-group'>
+			<BS.Radio value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
+			<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
+		</div>
+	);
+};
+
 
 /**
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
@@ -817,6 +837,7 @@ Misc.PropControl = PropControl;
 
 /**
  * image or video upload. Uses Dropzone
+ * @param onUpload {Function} {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  */
 const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, ...otherStuff}) => {
 	delete otherStuff.https;
@@ -826,11 +847,13 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 		accepted.forEach(file => {
 			ServerIO.upload(file, progress, load)
 				.done(response => {
+					// TODO refactor to clean this up -- we should have one way of doing things.
 					// Different forms for UploadServlet vs MediaUploadServlet
 					let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
 					DataStore.setValue(path.concat(prop), url);
-					if (onUpload)
+					if (onUpload) {
 						onUpload({ path, prop, response, url });
+					}
 				})
 				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
 		});

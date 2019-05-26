@@ -50,7 +50,9 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
  * @param onNext function called when user interacts with "next" button
  * @param onPrev function called when user interacts with "prev" button 
  */
-const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous, sufficient, complete, title, onNext, onPrev, children}) => 
+const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous, 
+	sufficient, complete, 
+	title, onNext, onPrev, children}) => 
 {
 	assert(stageNum !==null && stageNum !== undefined);
 	assMatch(maxStage, Number);
@@ -68,9 +70,10 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous, s
 		// array of elements (or just one)?
 		if (children.filter) children = children.filter(x => !! x);
 		children = React.Children.map(children, (Kid, i) => {
-			// clone with setNavStatus?
-			let sns = Kid.props && Kid.props.setNavStatus;
-			return sns? React.cloneElement(Kid, {setNavStatus}) : Kid;
+			// clone with setNavStatus? (why would we not??)
+			// let sns = Kid.props && Kid.props.setNavStatus;
+			// return sns? 
+			return React.cloneElement(Kid, {setNavStatus}); // : Kid;
 		});
 	}
 	return (<div className='WizardStage'>
