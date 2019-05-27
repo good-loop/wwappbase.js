@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const $ = require('jquery');
 const urlFN = require('url');
-const {AdServerSelectors} = require('../utils/SelectorsMaster');
+const {AdServerSelectors} = require('../utils/MasterSelectors');
 const {APIBASE, watchAdvertAndDonate} = require('../res/UtilityFunctions');
 
 //Note: Chromium is unable to play mp4 encoded videos. Need to make sure that advert being used is set to use a .webm video.

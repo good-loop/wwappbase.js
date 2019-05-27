@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const {APIBASE, login, soGiveFailIfPointingAtProduction} = require('../res/UtilityFunctions');
 const {username, password} = require('../../../logins/sogive-app/puppeteer.credentials');
 const {advanceWizard, donate} = require('../utils/sogive-scripts/donation-form');
-const {CommonSelectors, SoGiveSelectors: {Search, General}} = require('../utils/SelectorsMaster');
+const {CommonSelectors, SoGiveSelectors: {Search, General}} = require('../utils/MasterSelectors');
 
 const Details = {
     'name': 'Human Realman',

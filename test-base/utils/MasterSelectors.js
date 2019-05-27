@@ -1,8 +1,8 @@
-import PortalSelectors from './SelectorsPortal';
-import AdServerSelectors from './SelectorsAdServer';
-import SoGiveSelectors from './SelectorsSoGive';
-import MyLoopSelectors from './SelectorsMyLoop';
-import DemoPageSelectors from './SelectorsDemoPage';
+import PortalSelectors from './PortalSelectors';
+import AdServerSelectors from './AdServerSelectors';
+import SoGiveSelectors from './SoGiveSelectors';
+import MyLoopSelectors from './MyLoopSelectors';
+import DemoPageSelectors from './DemoPageSelectors';
 
 // Selectors that are used across all platfroms are written directly in SelectorsMaster
 const CommonSelectors = {

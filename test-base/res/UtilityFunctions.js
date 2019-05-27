@@ -1,6 +1,6 @@
 const fs = require('fs');
 const $ = require('jquery');
-const {CommonSelectors, AdServerSelectors} = require('../utils/SelectorsMaster');
+const {CommonSelectors, AdServerSelectors} = require('../utils/MasterSelectors');
 
 /**Used to disable all page animations
  * Found that these were making tests less reliable

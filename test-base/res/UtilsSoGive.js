@@ -1,5 +1,5 @@
 const puppeteer = require('puppeteer');
-const {CommonSelectors, SoGiveSelectors: {Event}} = require('../utils/SelectorsMaster');
+const {CommonSelectors, SoGiveSelectors: {Event}} = require('../utils/MasterSelectors');
 const {APIBASE, eventIdFromName, fillInForm} = require('../res/UtilityFunctions');
 
 const createEvent = async ({page, data}) => {    

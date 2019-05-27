@@ -2,7 +2,7 @@
 const puppeteer = require('puppeteer');
 const {APIBASE, login, fillInForm, soGiveFailIfPointingAtProduction} = require('../res/UtilityFunctions');
 const {username, password} = require('../../../logins/sogive-app/puppeteer.credentials');
-const {SoGiveSelectors: {Editor}, CommonSelectors} = require('../utils/SelectorsMaster');
+const {SoGiveSelectors: {Editor}, CommonSelectors} = require('../utils/MasterSelectors');
 const $ = require('jquery');
 
 // the lucky charity to be tested

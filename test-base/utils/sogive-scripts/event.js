@@ -5,7 +5,7 @@ const {
     disableAnimations,
     APIBASE
 } = require('../../res/UtilityFunctions');
-const {SoGiveSelectors, CommonSelectors} = require('../SelectorsMaster');
+const {SoGiveSelectors, CommonSelectors} = require('../MasterSelectors');
 const {Event} = SoGiveSelectors;
 
 async function goto({page, eventId = ''}) {

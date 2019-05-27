@@ -6,7 +6,7 @@ const {
     disableAnimations,
     APIBASE
 } = require('../../res/UtilityFunctions');
-const {SoGiveSelectors: {General}} = require('../SelectorsMaster');
+const {SoGiveSelectors: {General}} = require('../MasterSelectors');
 
 /**Fills in the donation form with details provided
  * @param Amount {amount: 0, hide-amount-checkbox: true}

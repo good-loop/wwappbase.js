@@ -2,7 +2,7 @@
 const puppeteer = require('puppeteer');
 const {APIBASE, fillInForm, isPointingAtProduction , login, vertIdByName, vertiserIdByName, watchAdvertAndDonate} = require('../res/UtilityFunctions');
 const {fbUsername, fbPassword, password, username, twitterUsername, twitterPassword} = require('../../../logins/sogive-app/puppeteer.credentials');
-import {CommonSelectors, FacebookSelectors, PortalSelectors, TwitterSelectors} from '../utils/SelectorsMaster';
+import {CommonSelectors, FacebookSelectors, PortalSelectors, TwitterSelectors} from '../utils/MasterSelectors';
 import { pathToFileURL } from 'url';
 
 const timestamp = Date.now();

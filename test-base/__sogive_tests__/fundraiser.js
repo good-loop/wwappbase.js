@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const {APIBASE, eventIdFromName, fillInForm, fundIdByName, login, soGiveFailIfPointingAtProduction} = require('../res/UtilityFunctions');
 const {username, password} = require('../../../logins/sogive-app/puppeteer.credentials');
 const {createEvent, deleteEvent} = require('../res/UtilsSoGive');
-const {SoGiveSelectors: {Fundraiser, General, Register}} = require('../utils/SelectorsMaster');
+const {SoGiveSelectors: {Fundraiser, General, Register}} = require('../utils/MasterSelectors');
 const {donate} = require('../utils/sogive-scripts/donation-form');
 
 // Default event data

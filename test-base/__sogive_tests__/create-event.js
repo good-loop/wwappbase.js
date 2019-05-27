@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 const {APIBASE, eventIdFromName, login, soGiveFailIfPointingAtProduction, fillInForm} = require('../res/UtilityFunctions');
 const {username, password} = require('../../../logins/sogive-app/puppeteer.credentials');
-const {CommonSelectors, SoGiveSelectors: {Event}} = require('../utils/SelectorsMaster');
+const {CommonSelectors, SoGiveSelectors: {Event}} = require('../utils/MasterSelectors');
 const {createEvent, deleteEvent} = require('../res/UtilsSoGive');
 
 // Default event data

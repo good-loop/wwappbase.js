@@ -1,6 +1,6 @@
 const puppeteer = require('puppeteer');
 const $ = require('jquery');
-const {DemoPageSelectors} = require('../utils/SelectorsMaster');
+const {DemoPageSelectors} = require('../utils/MasterSelectors');
 const {APIBASE, fillInForm, watchAdvertAndDonate} = require('../res/UtilityFunctions');
 
 // Demo page always uses production portal, so don't need to worry about switching for local/test/production
