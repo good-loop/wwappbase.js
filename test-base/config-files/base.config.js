@@ -5,6 +5,6 @@ module.exports = {
     "default",
     path.resolve(__dirname, '../res/custom-reporter.js')
   ],
-  setupFilesAfterEnv:[path.resolve(__dirname, '../res/setup_script.js'),"react-testing-library/cleanup-after-each"],
+  setupFilesAfterEnv:[path.resolve(__dirname, '../res/setup_script.js')],
   verbose: true
 };
