@@ -91,7 +91,9 @@ General.CharityPageImpactAndDonate = {
     tip: `div.WizardStage > div:nth-child(1) > div.padded-block > div.form-group > span > input`,
     "card-number": `div.WizardStage > div:nth-child(1) > div > form > div:nth-child(2) > div > div`,
     "expiry-date": `div.WizardStage > div:nth-child(1) > div > form > div:nth-child(3) > div:nth-child(1) > div`,
-    cvc: `form > div:nth-child(3) > div:nth-child(2) > div`
+    cvc: `form > div:nth-child(3) > div:nth-child(2) > div`,
+
+    giftAidOwnMoney: `input[name="giftAidOwnMoney"]`
 };
 General.Loading = `div.loader-box`;
 

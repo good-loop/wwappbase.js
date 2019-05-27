@@ -108,5 +108,6 @@ async function advanceWizard({page}) {
 }
 
 module.exports = {
+    advanceWizard,
     donate
 };
