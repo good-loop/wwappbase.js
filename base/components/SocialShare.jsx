@@ -51,7 +51,7 @@ const IntentLink = ({children, service, style, text, url}) => {
 	}
 
 	return (
-		<a href={href} target="_blank" rel="noreferrer" style={{color: '#fff', display: 'inline-block'}} >
+		<a href={href} target="_blank" rel="noreferrer" style={{color: '#fff', display: 'inline-block', ...style}} >
 			{ children || icon }
 		</a>
 	);
