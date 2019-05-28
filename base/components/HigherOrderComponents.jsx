@@ -1,7 +1,24 @@
-import React, {useRef, useEffect} from 'react';
+import React, {useRef, useEffect, useState} from 'react';
 import ServerIO from '../plumbing/ServerIOBase'; 
 // https://reactjs.org/docs/higher-order-components.html
 // Reusable bits of functionality: simply wrap your component with one of these to extend its functionality
+
+/** Takes React element reference. Calculates if div is visible to user or not */
+const doIfVisible = props => {
+	const {elementReference, fn} = props;
+	
+	const { top, left, bottom, right } = elementReference.getBoundingClientRect();
+
+	const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+	const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+
+	// True if div is completely visible
+	const isVisible = ( top >=0 && left >= 0 && bottom <= viewportHeight && right <= viewportWidth ); 
+
+	if ( isVisible ) {
+		fn(props);
+	}
+};
 
 /** Logging will not work properly with anonymous functions (they do not have a displayName or name property) */
 const withDoesIfVisible = (Component, fn) => props => {
@@ -11,7 +28,7 @@ const withDoesIfVisible = (Component, fn) => props => {
 		const scrollListener = window.addEventListener(
 			'scroll',
 			// Pass in reference to actual DOM element 
-			() => ServerIO.doIfVisible({
+			() => doIfVisible({
 				elementReference: doesIfVisibleRef.current,
 				fn: () => fn(props), 
 				tag: ( props.mixPanelTag || Component.dispayName || Component.name || 'UnknownComponent') + 'Visible'
@@ -25,33 +42,36 @@ const withDoesIfVisible = (Component, fn) => props => {
 
 const withLogsIfVisible = Component => withDoesIfVisible(Component, ServerIO.mixPanelTrack);
 
-// /**
-//  * Pull in data from back-end, save in local state, pass to Component
-//  * @param processFN optional transformation function to be called on returned data
-//  * Result will be passed to Component
-//  * @param url to pull data from. ServerIO.load will be used
-//  */
-// withFetchesData = Component => props => {
-// 	const {processFN, url}
+// More modern version of HOCs above
+// TODO: refactor instances of withDoesIfVisible to use hook instead
+const useDoesIfVisible = (fn, elementReference) => {
+	const [isVisible, setIsVisible] = useState(false);
 
-// 	[data, setData] = useState({});
+	useEffect(() => {
+		// Initial call incase component is visible without scrolling
+		doIfVisible({elementReference: elementReference.current, fn: () => setIsVisible(true)})
 
-// 	useEffect(() => {
-// 		if( !url ) {
-// 			console.error('Url not provided to ' + Component.displayName + ' which is wrapped by withFetchesData');
-// 			return;
-// 		}
-// 		// Load the data and place in state
-// 		data = ServerIO.load(url);
-// 		processFN && data.then(processFN);
-// 		setData(data);
-// 	}, [processFN, url]);
+		const scrollListener = window.addEventListener(
+			'scroll',
+			// Pass in reference to actual DOM element 
+			() => doIfVisible({
+				elementReference: elementReference.current,
+				fn: () => setIsVisible(true), 
+			})
+		);
+		return () => window.removeEventListener('scroll', scrollListener);
+	}, [elementReference]);
 
-// 	return <Component {...props} data={data} />
-// };
+	// Trigger function when component becomes visible for the first time
+	useEffect( () => {
+		if(isVisible) fn();
+	}, [isVisible])
+};
+
+const useLogsIfVisible = (elementReference) => useDoesIfVisible(ServerIO.mixPanelTrack, elementReference);
 
 export {
-	// withFetchesData,
+	useDoesIfVisible,
 	withDoesIfVisible,
 	withLogsIfVisible
 };

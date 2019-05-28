@@ -2,7 +2,7 @@
  * A counter where the numbers spin up to the actual figure.
  */
 
-import React from 'react';
+import React, {useState, useRef} from 'react';
 import ReactDOM from 'react-dom';
 
 import SJTest, {assert, assMatch} from 'sjtest';
@@ -13,6 +13,7 @@ import DataStore from '../plumbing/DataStore';
 import OnVisible from 'react-on-visible';
 import printer from '../utils/printer';
 import Money from '../data/Money';
+import {useDoesIfVisible} from '../components/HigherOrderComponents';
 
 /**
  * Use a bezier for a slow start/end, fast middle easing
@@ -30,53 +31,38 @@ const bezierSlide = (t) => {
 };
 
 /**
- * @param id {!String} counter id
- * @param n {Number|Money} We add handling for the common case of "its money"
- * @param msecs {?Number}
- * @param onStart {?Function} called with {id}
- * @param onEnd {?Function} called with {id}
+ * 
+ * @param animationLength time in ms taken to reach final number
+ * @param fps frames per second 
+ * @param value final (numerical) value to display
  */
-// Arguably these should be React components.
-// I wonder if there is a nice off-the-shelf widget in npm we could use instead??
-const Counter = ({id, n, onStart, onEnd, msecs=3000}) => {
-	// special-case £s
-	let money;
-	if (Money.isa(n)) {
-		money = n;
-		n = Money.value(amount);
-	} 
+const Counter = ({animationLength=3000, fps=20, value}) => {
+	const [startTime, setStartTime] = useState();
+	const [displayValue, setDisplayValue] = useState(0);
+	const ref = useRef();
 
-	const go = () => {
-		console.warn("Vis!");
-		DataStore.setValue(['widget','Counter',id,'start'], new Date().getTime());
-		if (onStart) onStart({id});
-	};
-	const stop = () => {}; //no-op for now TODO maybe support pause - restart
-	
-	// bezier slide
-	const start = DataStore.getValue(['widget','Counter',id,'start']);
-	let m, t, y;
-	if ( ! start) {
-		m = 0;
-	} else {
-		const dt = new Date().getTime() - start;
-		t = dt/msecs;
-		y = bezierSlide(t);
-		m = y* n;
-		if (t < 1) {
-			setTimeout(() => {DataStore.update();}, 50); // 20fps if we can
-			// TODO if we have a few counters on screen, this could go a bit nuts
-		} else {
-			if (onEnd) onEnd({id});
+	// Start animation when the component enters the viewport
+	useDoesIfVisible(() => {
+		console.warn([startTime, !!startTime]);
+		// Don't want it to restart if the user scrolls after the animation has finished
+		if( !startTime ) {
+			setStartTime(new Date().getTime());
 		}
+	}, ref);
+
+	// Force update if animation time has not elapsed since component became visible
+	const timeRemaining = new Date().getTime() - startTime;
+	if( startTime && ( timeRemaining > 0) ) {
+		// Display fraction of final amount based on "bezier curve"
+		// Aim to show roughly 20 frames per second
+		window.setTimeout(() => setDisplayValue( bezierSlide(timeRemaining / animationLength) * value ), animationLength / fps);
 	}
 
-	return (<><span className='print-only'>{n}</span>
-		<OnVisible className='noprint' onChange={e => e? go() : stop()}>
-			{money? <span className='currency-symbol'>{Money.CURRENCY[money.currency]}</span> : null}
-			{printer.prettyNumber(m)}
-		</OnVisible>
-	</>);
-};
+	return (
+		<div ref={ref}>
+			{printer.prettyNumber(displayValue)}
+		</div>
+	);
+}
 
 export default Counter;
