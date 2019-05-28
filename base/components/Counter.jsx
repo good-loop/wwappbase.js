@@ -36,14 +36,13 @@ const bezierSlide = (t) => {
  * @param fps frames per second 
  * @param value final (numerical) value to display
  */
-const Counter = ({animationLength=3000, fps=20, value}) => {
+const Counter = ({animationLength=3000, currencySymbol='', fps=20, value}) => {
 	const [startTime, setStartTime] = useState();
 	const [displayValue, setDisplayValue] = useState(0);
 	const ref = useRef();
 
 	// Start animation when the component enters the viewport
 	useDoesIfVisible(() => {
-		console.warn([startTime, !!startTime]);
 		// Don't want it to restart if the user scrolls after the animation has finished
 		if( !startTime ) {
 			setStartTime(new Date().getTime());
@@ -60,7 +59,7 @@ const Counter = ({animationLength=3000, fps=20, value}) => {
 
 	return (
 		<div ref={ref}>
-			{printer.prettyNumber(displayValue)}
+			{ currencySymbol + printer.prettyNumber(displayValue)}
 		</div>
 	);
 }
