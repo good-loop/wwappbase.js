@@ -7,8 +7,8 @@ test('Load the campaign page', async () => {
     
     await page.goto(window.location.href + '/#campaign/');
     // Click on first item in list of pages
-    await page.waitForSelector('div.ListLoad.DefaultListLoad > div:nth-child(2)');
-    await page.click('div.ListLoad.DefaultListLoad > div:nth-child(2)');
+    await page.waitForSelector('#campaign > div > div.ListLoad.DefaultListLoad > div:nth-child(2) > a');
+    await page.click('#campaign > div > div.ListLoad.DefaultListLoad > div:nth-child(2) > a');
 
-    await page.waitForSelector('.nav-bar');
-}, 30000);
+    await page.waitForSelector('.CampaignPage');
+}, 15000);
