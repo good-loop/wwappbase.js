@@ -404,20 +404,3 @@ ServerIO.mixPanelTrack = ({mixPanelTag, data = {}}) => {
 		}
 	}
 };
-
-/** Takes React element reference. Calculates if div is visible to user or not */
-ServerIO.doIfVisible = props => {
-	const {elementReference, fn} = props;
-	
-	const { top, left, bottom, right } = elementReference.getBoundingClientRect();
-
-	const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
-	const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-
-	// True if div is completely visible
-	const isVisible = ( top >=0 && left >= 0 && bottom <= viewportHeight && right <= viewportWidth ); 
-
-	if ( isVisible ) {
-		fn(props);
-	}
-};
