@@ -49,6 +49,7 @@ const Counter = ({animationLength=3000, currencySymbol='', fps=20, value}) => {
 		}
 	}, ref);
 
+	// @Mark - It looks like this will update forever. It should stop when done.
 	// Force update if animation time has not elapsed since component became visible
 	const timeRemaining = new Date().getTime() - startTime;
 	if( startTime && ( timeRemaining > 0) ) {

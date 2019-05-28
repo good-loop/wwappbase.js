@@ -1,6 +1,20 @@
 import React, {useRef, useEffect, useState} from 'react';
 import ServerIO from '../plumbing/ServerIOBase'; 
+
+// @deprecated
+// I'm not keen on HOCs. Our house style is to avoid HOC and similar wrapper code patterns.
+// It leads to code plumbing labyrinths, which are hard to maintain.
+//
+// E.g. instead of doIfVisible(), just have an isVisible() function, 
+// and Counter can have a couple of state flags to track its state.
+// NB: using useEffect to add a sroll listener makes sense, but can 
+// be done more clearly in Counter.
+//
+// No need to rewrite this. But avoid this pattern in future.
+// Thanks, Dan
+
 // https://reactjs.org/docs/higher-order-components.html
+// https://reactjs.org/docs/hooks-reference.html
 // Reusable bits of functionality: simply wrap your component with one of these to extend its functionality
 
 /** Takes React element reference. Calculates if div is visible to user or not */
@@ -24,6 +38,7 @@ const doIfVisible = props => {
 const withDoesIfVisible = (Component, fn) => props => {
 	// Report if this div appeared fully on the user's screen
 	let doesIfVisibleRef = useRef();
+	// see https://reactjs.org/docs/hooks-reference.html#useeffect
 	useEffect(() => {
 		const scrollListener = window.addEventListener(
 			'scroll',
@@ -31,15 +46,21 @@ const withDoesIfVisible = (Component, fn) => props => {
 			() => doIfVisible({
 				elementReference: doesIfVisibleRef.current,
 				fn: () => fn(props), 
+				// what is this for??
 				tag: ( props.mixPanelTag || Component.dispayName || Component.name || 'UnknownComponent') + 'Visible'
 			})
 		);
+		// cleanup 
 		return () => window.removeEventListener('scroll', scrollListener);
 	}, [doesIfVisibleRef]);
 
 	return <Component {...props} doesIfVisibleRef={doesIfVisibleRef} />;
 };
 
+
+/**
+ * @deprecated Avoid HOCs -- see note above
+ */
 const withLogsIfVisible = Component => withDoesIfVisible(Component, ServerIO.mixPanelTrack);
 
 // More modern version of HOCs above
