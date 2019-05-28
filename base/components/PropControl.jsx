@@ -541,7 +541,7 @@ const PropControlMoney = ({prop, value, path, proppath,
  * 
  * @param value {?Boolean}
  */
-const PropControlYesNo = ({path, prop, value, inline, saveFn}) => {
+const PropControlYesNo = ({path, prop, value, saveFn}) => {
 	// NB: try to spot bad code/values -- beware of truthy/falsy here
 	if (value && ! _.isBoolean(value)) {
 		console.error("PropControlYesNo - value not a proper boolean!", prop, value);
@@ -555,6 +555,7 @@ const PropControlYesNo = ({path, prop, value, inline, saveFn}) => {
 		if (e.target.value === 'yes') newValue = true;
 		else if (e.target.value === 'no') newValue = false;
 		else newValue = undefined;
+
 		const proppath = path.concat(prop);
 		DataStore.setValue(proppath, newValue);
 		if (saveFn) saveFn({path, prop, newValue});
