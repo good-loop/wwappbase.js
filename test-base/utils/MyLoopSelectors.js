@@ -1,6 +1,6 @@
 const MyLoopSelectors = {
     'log-in':"#top-right-menu",
-    logged_in_greeting:"div.post-login",
+    logged_in_greeting:".dropdown",
     name: 'input[placeholder="Unknown name"]',
     gender: 'select[placeholder="Unknown gender"]',
     location: 'input[placeholder="Unknown location"]',
