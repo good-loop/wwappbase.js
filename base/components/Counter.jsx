@@ -10,7 +10,6 @@ import _ from 'lodash';
 
 import {asNum} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
-import OnVisible from 'react-on-visible';
 import printer from '../utils/printer';
 import Money from '../data/Money';
 import {useDoesIfVisible} from '../components/HigherOrderComponents';
