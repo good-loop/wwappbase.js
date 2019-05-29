@@ -789,13 +789,10 @@ function convert_less_files {
 			[[ $CSS_OUTPUT_LOCATION = "" ]]; then
 			printf "\nYour specified project $PROJECT , has the parameter 'CONVERT_LESS' set to 'yes', and an input directory IS specified,\nbut no output directory has been specified\nExiting process\n"
 			exit 0
-		elif
-			[ ! -d $CSS_OUTPUT_LOCATION ]; then
-				mkdir -p $CSS_OUTPUT_LOCATION
 		fi
 		case $PROJECT in
 			adserver)
-				lessc $LESS_FILES_LOCATION $CSS_OUTPUT_LOCATION
+				$PSSH "cd $PROJECT_LOCATION/adunit && bash buildcss.sh"
 			;;
 			*)
 				if [ ! "$LESS_FILES" ]; then 
