@@ -135,7 +135,16 @@ class Store {
 	 * @param id {!String}
 	 * @returns a "data-item", such as a person or document, or undefined.
 	 */
-	getData(status, type, id) {
+	getData(statusTypeIdObject, type, id) {
+		// HACK to allow old code for getData(status, type, id) to still work - May 2019
+		if (statusTypeIdObject.type) type = statusTypeIdObject.type;
+		else {
+			console.warn("DataStore.getData - old inputs - please upgrade to named {status, type, id}", statusTypeIdObject, type, id);
+		}
+		if (statusTypeIdObject.id) id = statusTypeIdObject.id;
+		let status = statusTypeIdObject.status || statusTypeIdObject;
+		// end hack
+
 		assert(C.KStatus.has(status), "DataStore.getData bad status: "+status);
 		assert(C.TYPES.has(type), "DataStore.getData bad type: "+type);
 		assert(id, "DataStore.getData - No id?! getData "+type);
@@ -148,7 +157,16 @@ class Store {
 	 * @param status {?C.KStatus} If unset, use item.status
 	 * @param item {!Object}
 	 */
-	setData(status, item, update = true) {
+	setData(statusTypeIdObject, item, update=true) {		
+		// HACK to allow old code for setData(status, item, update = true) to still work - May 2019
+		if (statusTypeIdObject.item) item = statusTypeIdObject.item;
+		else {
+			console.warn("DataStore.setData - old inputs - please upgrade to named {status, item, update}", statusTypeIdObject, item);
+		}
+		if (statusTypeIdObject.update) update = statusTypeIdObject.update;
+		let status = statusTypeIdObject.status || statusTypeIdObject;
+		// end hack
+		
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
 		assert(C.TYPES.has(getType(item)), item);
 		if ( ! status) status = getStatus(item);
@@ -195,6 +213,7 @@ class Store {
 	 * the DataStore path for this item, or null if item is null;
 	 */
 	getPath(status, type, id, domain) {
+		console.warn("DataStore.getPath() - switch to getDataPath", status, type, id, domain);
 		return this.getDataPath({status, type, id, domain});
 	}
 
