@@ -364,7 +364,7 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete,
 	let localStatus = DataStore.getLocalEditsStatus(type, id) || C.STATUS.clean;
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
-	let item = DataStore.getData(status, type, id);
+	let item = DataStore.getData({status, type, id});
 	// request a save?
 	if (autoSave && C.STATUS.isdirty(localStatus) && ! isSaving) {
 		Misc.saveDraftFn({type,id});
@@ -387,8 +387,8 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete,
 	const vis = { visibility: (isSaving ? 'visible' : 'hidden') };
 
 	// debug info on DataStore state
-	let pubv = DataStore.getData(C.KStatus.PUBLISHED, type, id);
-	let draftv = DataStore.getData(C.KStatus.DRAFT, type, id);
+	let pubv = DataStore.getData({status:C.KStatus.PUBLISHED, type, id});
+	let draftv = DataStore.getData({status:C.KStatus.DRAFT, type, id});
 	let dsi = pubv? (draftv? (pubv===draftv? "published = draft" : "published & draft") : "published only") 
 					: (draftv? "draft only" : "nothing loaded");
 	// Does a published version exist? (for if we show unpublish)
