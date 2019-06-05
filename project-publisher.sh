@@ -741,6 +741,9 @@ function webpack {
 			portal)
 				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
 			;;
+			myloop)
+				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
+			;;
 			moneyscript)
 				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
 			;;
