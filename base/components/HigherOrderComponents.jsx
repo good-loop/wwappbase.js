@@ -1,16 +1,34 @@
 import React, {useRef, useEffect, useState} from 'react';
 import ServerIO from '../plumbing/ServerIOBase'; 
 
-// @deprecated
-// I'm not keen on HOCs. Our house style is to avoid HOC and similar wrapper code patterns.
-// It leads to code plumbing labyrinths, which are hard to maintain.
+// @deprecated (sorry)
+// This is neat code, but I'm going to ask that we avoid HOCs in general.
+// 
+// I saw the new code in Counter. I guess you've made Counter run smoother by replacing 
+// the npm package with this code?
+// Good work.
+// 
+// And useState() for maintaining the counter's internal state is an improvement on 
+// passing in an id to key into DataStore -- given that the internal state is genuinely 
+// internal (i.e. other parts of code don't need to know).
 //
-// E.g. instead of doIfVisible(), just have an isVisible() function, 
+// Re. HOCs -- Our house style is to avoid HOC and similar wrapper code patterns.
+// Why, when they seem powerful?
+// They can lead to complex code plumbing, which is hard to maintain.
+// Mostly though it's an aesthetic choice.
+// It's a good idea for a code base to consistently use a few simple code patterns. 
+// That consistency helps with maintenance, code reuse, and teamwork.
+// So some patterns we don't use just because we don't use them.
+// Also, the more basic and standard the code, the easier it is for new devs to pick it up.
+// NB: see (and feel free to update 'cos its partly out of date) 
+// https://wiki.good-loop.com/index.php?title=Code_Style_Guidelines
+// 
+// You don't have to rewrite the work you've done. Just please avoid the HOC pattern in future.
+// 
+// E.g. instead of doIfVisible(), just have an isVisible(): ref -> boolean function, 
 // and Counter can have a couple of state flags to track its state.
-// NB: using useEffect to add a sroll listener makes sense, but can 
-// be done more clearly in Counter.
+// Using useEffect to add a scroll listener makes good sense.
 //
-// No need to rewrite this. But avoid this pattern in future.
 // Thanks, Dan
 
 // https://reactjs.org/docs/higher-order-components.html
