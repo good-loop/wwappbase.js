@@ -109,6 +109,9 @@ test('Edit Twitter data after logging in', async () => {
 	// After logging in, there should be a greeting "Hi $NAME".  If it exists, puppeteer can find it.  If not, then fail.
 	await page.waitForSelector(MyLoopSelectors.logged_in_greeting);
 
+	// Go to the account page
+	await page.goto(window.location.href + '/#account/');
+
 	await page.waitForSelector(MyLoopSelectors.edit);
 	await page.click(MyLoopSelectors.edit);
 	// Enter details
@@ -148,7 +151,7 @@ test('Edit Twitter data after logging in', async () => {
 		if( !f.includes('myloop@app') ) return;
 		expect(v).toEqual(fieldValues[k]);
 	});
-}, 30000);
+}, 45000);
 
 /**
  * 
