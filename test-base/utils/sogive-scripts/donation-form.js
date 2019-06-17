@@ -42,6 +42,7 @@ async function donate({
 
     // await page.waitForSelector(General.CharityPageImpactAndDonate.Previous);//This condition never triggers for some reason. Only seems to happen for logged-out donations
     // await page.waitForSelector(`label.radio-inline`);
+
     if(GiftAid) {
         //need to make selectors for fillInForm to work with
         await advanceWizard({page});
@@ -64,6 +65,7 @@ async function donate({
             data: Message,
             Selectors: General.CharityPageImpactAndDonate
         });
+        await advanceWizard({page});    
     }
 
     //For traditional (non-Stripe) page
