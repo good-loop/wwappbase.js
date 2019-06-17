@@ -64,8 +64,8 @@ async function donate({
             data: Message,
             Selectors: General.CharityPageImpactAndDonate
         });
-        await advanceWizard({page});
     }
+    await advanceWizard({page});
 
     //Sometimes Stripe button appears, sometimes not
     // if(!await page.$(General.CharityPageImpactAndDonate.Submit)) {    
