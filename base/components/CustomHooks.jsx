@@ -1,6 +1,7 @@
 import React, {useRef, useEffect, useState} from 'react';
 import ServerIO from '../plumbing/ServerIOBase'; 
 
+// NB: Comments below refer to an earlier version of this code that made use of HOCs rather than hooks.
 // @deprecated (sorry)
 // This is neat code, but I'm going to ask that we avoid HOCs in general.
 // 
@@ -31,10 +32,6 @@ import ServerIO from '../plumbing/ServerIOBase';
 //
 // Thanks, Dan
 
-// https://reactjs.org/docs/higher-order-components.html
-// https://reactjs.org/docs/hooks-reference.html
-// Reusable bits of functionality: simply wrap your component with one of these to extend its functionality
-
 /** Takes React element reference. Calculates if div is visible to user or not */
 const doIfVisible = props => {
 	const {elementReference, fn} = props;
@@ -51,35 +48,6 @@ const doIfVisible = props => {
 		fn(props);
 	}
 };
-
-/** Logging will not work properly with anonymous functions (they do not have a displayName or name property) */
-const withDoesIfVisible = (Component, fn) => props => {
-	// Report if this div appeared fully on the user's screen
-	let doesIfVisibleRef = useRef();
-	// see https://reactjs.org/docs/hooks-reference.html#useeffect
-	useEffect(() => {
-		const scrollListener = window.addEventListener(
-			'scroll',
-			// Pass in reference to actual DOM element 
-			() => doIfVisible({
-				elementReference: doesIfVisibleRef.current,
-				fn: () => fn(props), 
-				// what is this for??
-				tag: ( props.mixPanelTag || Component.dispayName || Component.name || 'UnknownComponent') + 'Visible'
-			})
-		);
-		// cleanup 
-		return () => window.removeEventListener('scroll', scrollListener);
-	}, [doesIfVisibleRef]);
-
-	return <Component {...props} doesIfVisibleRef={doesIfVisibleRef} />;
-};
-
-
-/**
- * @deprecated Avoid HOCs -- see note above
- */
-const withLogsIfVisible = Component => withDoesIfVisible(Component, ServerIO.mixPanelTrack);
 
 // More modern version of HOCs above
 // TODO: refactor instances of withDoesIfVisible to use hook instead
@@ -102,15 +70,14 @@ const useDoesIfVisible = (fn, elementReference) => {
 	}, [elementReference]);
 
 	// Trigger function when component becomes visible for the first time
-	useEffect( () => {
+	useEffect(() => {
 		if(isVisible) fn();
 	}, [isVisible])
 };
 
-const useLogsIfVisible = (elementReference) => useDoesIfVisible(ServerIO.mixPanelTrack, elementReference);
+const useLogsIfVisible = (elementReference, mixPanelTag) => useDoesIfVisible(() => ServerIO.mixPanelTrack({mixPanelTag}), elementReference);
 
 export {
 	useDoesIfVisible,
-	withDoesIfVisible,
-	withLogsIfVisible
+	useLogsIfVisible
 };
