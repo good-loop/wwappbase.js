@@ -63,7 +63,7 @@ test('Create a fundraiser', async() => {
     await page.waitForSelector(Register.Next);
     await page.click(Register.Next);
 
-    await fillInForm({page, data: {charity: "puppet"}, Selectors: Register});
+    await fillInForm({page, data: {charity: "oxfam"}, Selectors: Register});
     await page.waitFor(1500);
     await page.waitForSelector(Register['select-first-charity-checkbox']);
     await page.click(Register['select-first-charity-checkbox']);
@@ -101,7 +101,7 @@ test('Logged-out fundraiser donation', async() => {
     await page.goto(`${APIBASE}#fundraiser/${fundId}`);
     await soGiveFailIfPointingAtProduction({page});
 
-    await donate({page, Amount: {amount: 10}, GiftAid: {}, Details: {email: 'thePuppetMaster@winterwell.com'}, Message: {message:'???'}});
+    await donate({page, Amount: {amount: 10}, Details: {email: 'thePuppetMaster@winterwell.com'}, Message: {message:'???'}});
 }, 30000);
 
 test('Logged-in fundraiser donation', async() => {
@@ -113,7 +113,7 @@ test('Logged-in fundraiser donation', async() => {
     await soGiveFailIfPointingAtProduction({page});
 
     await login({page, username, password});    
-    await donate({page, Amount: {amount: 10}, GiftAid: {}, Details: {email: 'thePuppetMaster@winterwell.com'}, Message: {message:'???'}});
+    await donate({page, Amount: {amount: 10}, Details: {email: 'thePuppetMaster@winterwell.com'}, Message: {message:'???'}});
 }, 30000);
 
 test('Delete fundraiser', async() => {

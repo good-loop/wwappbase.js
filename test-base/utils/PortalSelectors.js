@@ -25,13 +25,13 @@ const Advertiser = {
 };
 
 const Advert = {
-    Create: '#advert > div > div > div:nth-child(2) > button',
+    Create: 'span.glyphicon-plus',
     on: '#advert > div > div:nth-child(2) > div > div:nth-child(4) > div > label',
     name: '#advert input[name="name"]',
     campaign: '#advert input[name="campaign"]',
-    logo: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(1) > div > input',
-    'white-logo': '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(2) > div > input',
-    about: '#advert > div > div:nth-child(2) > div > div > div.CardAccordion > div:nth-child(1) > div.panel-body > div:nth-child(6) > textarea',
+    logo: 'div.imgUpload input[name="logo"]',
+    'white-logo': 'div.imgUpload input[name="logo_white"]',
+    about: 'textarea[name="about"]',
     video: '#advert input[name="url"]',
     videoSeconds: '#advert input[name="videoSeconds"]',
     viewAdverts: '#advertiser > div > div > div:nth-child(2) > a',

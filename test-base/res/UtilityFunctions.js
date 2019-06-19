@@ -222,8 +222,7 @@ async function soGiveFailIfPointingAtProduction({page}) {
 /**
  * Advert must already be somewhere on the page before this method is called
  * @param { object } page puppeteer test object
- * @param { string } Optional: type behaviour needs to be slightly different for type:banner ads
- * @param { string } url location where good-loop adunit is hosted
+ * @param { string } type(optional) behaviour needs to be slightly different for type:banner ads
  */
 async function watchAdvertAndDonate({page, type}) {
     await page.waitFor(1000);//Allow 'visible' event to register. Doesn't get counted if you start working right away

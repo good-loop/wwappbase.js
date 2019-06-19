@@ -80,7 +80,7 @@ test('Advertiser sign-up form', async() => {
 		}
 	});
 	await page.click(PortalSelectors.AdSignUp.submit);
-});
+}, 30000);
 
 test('Log in via Facebook', async() => {
 	const browser = window.__BROWSER__;
@@ -224,8 +224,9 @@ test('Watch advert', async() => {
 	} else {
 		url = 'http://as.good-loop.com/?gl.vert=' + vertId;
 	}
-
-	await watchAdvertAndDonate({page, url});
+	
+	await page.goto(url);
+	await watchAdvertAndDonate({page});
 }, 45000);
 
 //Delete advert

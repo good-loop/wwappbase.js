@@ -42,6 +42,7 @@ async function donate({
 
     // await page.waitForSelector(General.CharityPageImpactAndDonate.Previous);//This condition never triggers for some reason. Only seems to happen for logged-out donations
     // await page.waitForSelector(`label.radio-inline`);
+
     if(GiftAid) {
         //need to make selectors for fillInForm to work with
         await advanceWizard({page});
@@ -64,17 +65,10 @@ async function donate({
             data: Message,
             Selectors: General.CharityPageImpactAndDonate
         });
-        await advanceWizard({page});
+        await advanceWizard({page});    
     }
 
-    //Sometimes Stripe button appears, sometimes not
-    // if(!await page.$(General.CharityPageImpactAndDonate.Submit)) {    
-    //     await page.click(General.CharityPageImpactAndDonate.Stripe);
-    //     //Not possible to use selectors for emergent menu. Need to use coordinates
-        
-    // }
     //For traditional (non-Stripe) page
-    await page.waitForSelector(General.CharityPageImpactAndDonate.TestSubmit);
     if(Payment) {
         await fillInForm({
             page,
@@ -84,6 +78,7 @@ async function donate({
         await page.click(General.CharityPageImpactAndDonate.Submit);
     }
     else{
+        await page.waitForSelector(General.CharityPageImpactAndDonate.TestSubmit);
         await page.click(General.CharityPageImpactAndDonate.TestSubmit);
     }
 

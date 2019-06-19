@@ -12,7 +12,7 @@ import {asNum} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import printer from '../utils/printer';
 import Money from '../data/Money';
-import {useDoesIfVisible} from '../components/HigherOrderComponents';
+import {useDoesIfVisible} from './CustomHooks';
 
 /**
  * Use a bezier for a slow start/end, fast middle easing
