@@ -280,7 +280,7 @@ ServerIO.crud = function(type, item, action) {
 		data: {
 			action,
 			status,
-			type,
+			type, // hm: is this needed?? the stype endpoint should have it
 			item: JSON.stringify(item)
 		}
 	};		
