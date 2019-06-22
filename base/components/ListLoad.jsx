@@ -24,6 +24,8 @@ import List from '../data/List';
  * 	const itemId = path[1];
  * 
  * 
+ * @param q {?String} Optional query e.g. advertiser-id=pepsi
+ * @param sort {?String} Optional sort order, e.g. "start-desc"
  * @param status {?String} e.g. "Draft"
  * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url. 
  * Best practice is to set servlet to avoid relying on url behaviour.
@@ -32,7 +34,8 @@ import List from '../data/List';
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
  */
 const ListLoad = ({type, status, servlet, navpage, 
-	q, // Optional query e.g. advertiser-id
+	q,
+	sort,
 	hasFilter, // if true, offer a text filter This will be added to q
 	ListItem, 
 	checkboxes, canDelete, canCreate, className}) => 
@@ -67,7 +70,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	const _filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
 	const filter = _filter? _filter.toLowerCase() : null;
 	let q2 = q; //join(q, filter); ??pass filter to back-end??
-	let pvItems = ActionMan.list({type, status, q:q2});
+	let pvItems = ActionMan.list({type, status, q:q2, sort});
 	if ( ! pvItems.resolved) {
 		return (
 			<Misc.Loading text={type.toLowerCase() + 's'} />
