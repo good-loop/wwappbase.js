@@ -356,27 +356,23 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 
 /**
  * DataStore path for list
- * @param {?String} q Optional query
+ * @param {?String} q Optional query e.g. "created-desc"
  */
 const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
 
 /**
- * 
+ * @param sort {?String} e.g. "start-desc"
  * @returns PromiseValue<{hits: Object[]}>
  */
 // Namespace anything fetched from a non-default domain
-ActionMan.list = ({type, status, q, domain}) => {
+ActionMan.list = ({type, status, q, sort, domain}) => {
 	
 	assert(C.TYPES.has(type), type);
-	let lpath = [];
-	if (domain) {
-		lpath = ['list', domain, type, status, q || 'all']
-	}
-	else{
-		lpath = ['list', type, status, q || 'all'];
-	}
+	let lpath = ['list'];
+	if (domain) lpath.push(domain);
+	lpath.push(type, status, sort || 'unsorted', q || 'all');
 	return DataStore.fetch(lpath, () => {
-		return ServerIO.list({type, status, q, domain});
+		return ServerIO.list({type, status, q, sort, domain});
 	});
 };
 
@@ -394,7 +390,7 @@ ActionMan.list = ({type, status, q, domain}) => {
  * @returns promise(List) 
  * List has form {hits: Object[], total: Number} -- see List.js
  */
-ServerIO.list = ({type, status, q, domain = ''}) => {
+ServerIO.list = ({type, status, q, sort, domain = ''}) => {
 	assert(C.TYPES.has(type), type);
 	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), status);
@@ -403,7 +399,7 @@ ServerIO.list = ({type, status, q, domain = ''}) => {
 		+ (ServerIO.dataspace? '/'+ServerIO.dataspace : '')
 		+ '/_list.json';
 	let params = {
-		data: {status, q}
+		data: {status, q, sort}
 	};	
 	return ServerIO.load(url, params)
 		.then(res => { 	// sanity check
