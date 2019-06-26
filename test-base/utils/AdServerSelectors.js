@@ -1,5 +1,5 @@
 const TestAs = {
-    FirstCharityIcon: "ul.chooser-list.ready > a:nth-child(1)",
+    FirstCharityIcon: "ul.chooser-list.ready > a",
     Banner: "#banner",
     ClickToPlay: ".gl-play-video",
     TwitterLink: "a[alt='Twitter']",
