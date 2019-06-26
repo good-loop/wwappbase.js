@@ -203,18 +203,23 @@ const preCrudListMod = ({type, id, item, action}) => {
 		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
 			// NB: see listPath for format, which is [list, type, status, domain, query, sort]
 			let domainQuerySortList = DataStore.getValue('list', type, status);
-			if ( ! domainQuerySortList) return;
-			mapkv(domainQuerySortList, (d,qslist) => {
-				mapkv(qslist, (q, slist) => {
-					mapkv(slist, (s, lst) => {
-						if ( ! lst) return;
-						let fnd = List.remove(item, lst);
-						// if (fnd) DataStore.setValue(['list',type,status,k], v);
-					});
-				});
-			});	
+			recursivePruneFromTreeOfLists(item, domainQuerySortList);
 		});
 	} // ./action=delete
+};
+
+/**
+ * @param treeOfLists Must have no cycles!
+ */
+const recursivePruneFromTreeOfLists = (item, treeOfLists) => {
+	if ( ! treeOfLists) return;
+	mapkv(treeOfLists, (k, kid) => {
+		if (List.isa(kid)) {
+			let fnd = List.remove(item, lst);
+			return;
+		}
+		recursivePruneFromTreeOfLists(item, kid);
+	});
 };
 
 ActionMan.discardEdits = (type, id) => {
@@ -365,8 +370,9 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  * @param {?String} sort Optional sort e.g. "created-desc"
  * @returns [list, type, status, domain, query, sort]
  */
-const listPath = ({type,status,q,sort,domain}) 
-	=> ['list', type, status, domain || 'nodomain', q || 'all', sort || 'unsorted'];
+const listPath = ({type,status,q,sort,domain}) => {
+	return ['list', type, status, domain || 'nodomain', q || 'all', sort || 'unsorted'];
+};
 
 /**
  * @param sort {?String} e.g. "start-desc"
