@@ -93,7 +93,8 @@ const variants = [
     },
     {
         variant: 'mpu',
-        url: `${ADBASE}/mpu?gl.vert=${adID}`
+        url: `${ADBASE}/mpu?gl.vert=${adID}`,
+        type: 'banner'
     },
     {
         variant: 'portrait',
@@ -108,12 +109,9 @@ const variants = [
         url: `${ADBASE}/square?gl.vert=${adID}`
     },
     {
-        variant: 'tq-mpu2',
-        url: `${ADBASE}/tq-mpu2?gl.vert=${adID}`
-    },
-    {
         variant: 'vbnr',
-        url: `${ADBASE}/vbnr?gl.vert=${adID}`
+        url: `${ADBASE}/vbnr?gl.vert=${adID}`,
+        type: 'banner'
     },
 ];
 
@@ -233,8 +231,8 @@ function formatAdData({adData}) {
     }, {});
 }
 
+/** Check that datalogger stats have been incremented */
 function check(beforeAdData, afterAdData, variant) {
-    //Check that datalogger stats have been incremented
     statsToCheck.forEach(stat => {
         try {
             expect(afterAdData[stat]).toEqual(++beforeAdData[stat]);//Test will fail if this condition is not met
