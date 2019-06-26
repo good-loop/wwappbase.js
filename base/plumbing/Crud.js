@@ -201,11 +201,17 @@ const preCrudListMod = ({type, id, item, action}) => {
 	if (C.CRUDACTION.isdelete(action)) {		
 		if ( ! item) item = {type, id};
 		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
-			let listForQ = DataStore.getValue('list', type, status);		
-			if ( ! listForQ) return;
-			mapkv(listForQ, (k,v) => {
-				let fnd = List.remove(item, v);
-				if (fnd) DataStore.setValue(['list',type,status,k], v);
+			// NB: see listPath for format, which is [list, type, status, domain, query, sort]
+			let domainQuerySortList = DataStore.getValue('list', type, status);
+			if ( ! domainQuerySortList) return;
+			mapkv(domainQuerySortList, (d,qslist) => {
+				mapkv(qslist, (q, slist) => {
+					mapkv(slist, (s, lst) => {
+						if ( ! lst) return;
+						let fnd = List.remove(item, lst);
+						// if (fnd) DataStore.setValue(['list',type,status,k], v);
+					});
+				});
 			});	
 		});
 	} // ./action=delete
@@ -356,21 +362,20 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 
 /**
  * DataStore path for list
- * @param {?String} q Optional query e.g. "created-desc"
+ * @param {?String} sort Optional sort e.g. "created-desc"
+ * @returns [list, type, status, domain, query, sort]
  */
-const listPath = ({type,status,q}) => ['list', type, status, q || 'all'];
+const listPath = ({type,status,q,sort,domain}) 
+	=> ['list', type, status, domain || 'nodomain', q || 'all', sort || 'unsorted'];
 
 /**
  * @param sort {?String} e.g. "start-desc"
  * @returns PromiseValue<{hits: Object[]}>
  */
 // Namespace anything fetched from a non-default domain
-ActionMan.list = ({type, status, q, sort, domain}) => {
-	
+ActionMan.list = ({type, status, q, sort, domain}) => {	
 	assert(C.TYPES.has(type), type);
-	let lpath = ['list'];
-	if (domain) lpath.push(domain);
-	lpath.push(type, status, sort || 'unsorted', q || 'all');
+	const lpath = listPath({type,status,q,sort,domain});
 	return DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q, sort, domain});
 	});

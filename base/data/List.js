@@ -87,6 +87,7 @@ List.add = (item, list, index) => {
  */
 List.remove = (item, list) => {
 	assert(item && list, "List.js NPE");
+	assert(list.hits, "No hits? Not a 'List'!", list);
 	const idi = getId(item) || nonce();
 	let h2 = list.hits.filter(h => h !== item && getId(h) !== idi);
 	const r = h2.length < list.hits.length;
