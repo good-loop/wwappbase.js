@@ -215,7 +215,7 @@ const recursivePruneFromTreeOfLists = (item, treeOfLists) => {
 	if ( ! treeOfLists) return;
 	mapkv(treeOfLists, (k, kid) => {
 		if (List.isa(kid)) {
-			let fnd = List.remove(item, lst);
+			let fnd = List.remove(item, kid);
 			return;
 		}
 		recursivePruneFromTreeOfLists(item, kid);
