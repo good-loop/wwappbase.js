@@ -8,7 +8,11 @@ import DataClass, {getType} from './DataClass';
 import C from '../CBase';
 import Settings from '../Settings';
 
-/** impact utils */
+/** 
+ * 
+ * e.g. new Money({currency:GBP, value:10}) = £10
+ * 
+*/
 class Money extends DataClass {
 	/** {Number} 1/100 of a penny, so £1 = 10,000 */
 	value100p;
