@@ -13,7 +13,10 @@ import ServerIO from '../plumbing/ServerIOBase';
 
 // For testing
 if ( (""+window.location).indexOf('login=local') !== -1) {	
-	Login.ENDPOINT = 'https://localyouagain.good-loop.com/youagain.json';
+	Login.ENDPOINT = 'http://localyouagain.good-loop.com/youagain.json';
+	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
+} else if ( (""+window.location).indexOf('login=test') !== -1) {	
+	Login.ENDPOINT = 'https://test.youagain.good-loop.com/youagain.json';
 	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
 }
 
