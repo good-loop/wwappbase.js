@@ -127,9 +127,10 @@ class Store {
 	} // ./update
 
 	/**
-	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.
-	 * type, id
+	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.	 
+	 * 
 	 * Warning: This does NOT load data from the server.
+	 * @param statusTypeIdObject -- backwards compatible update to named params
 	 * @param status {!C.KStatus}
 	 * @param type {!C.TYPES}
 	 * @param id {!String}
