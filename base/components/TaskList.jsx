@@ -142,7 +142,7 @@ const TaskList = ({}) => {
 
 /**
  * @param parent {Task}
- * 
+ * @param items {?List} If provided, optimistic add to this. Useful for filtered lists.
  */
 const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {		
 	if ( ! Login.isLoggedIn()) {
@@ -236,5 +236,6 @@ const TaskEditorDialog = () => {
 
 export default TaskList;
 export {
-	setTaskTags
+	setTaskTags,
+	QuickTaskMaker
 }
