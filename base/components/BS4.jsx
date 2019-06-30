@@ -53,4 +53,6 @@ BS.Button = ({children, className, ...stuff}) => <button className={className} {
  */
 BS.Col = ({width, sm, md, lg, xl, children}) => <div className={classes({prefix:"col", sep:'-', "":width, sm, md, lg, xl, dflt:"col"})}>{children}</div>;
 
+BS.Nav = ({children, className}) => <nav className={'nav '+className}>{children}</nav>;
+
 export default BS;

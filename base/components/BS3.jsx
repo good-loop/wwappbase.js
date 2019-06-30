@@ -93,6 +93,7 @@ BS.Col = ({width, sm, md, lg, xl, children}) => <div className={classes({prefix:
 
 BS.Icon = ({name}) => <span className={'glyphicon glyphicon-'+name} aria-hidden="true" />;
 
+BS.Nav = ({children, className}) => <nav className={'navbar '+className}>{children}</nav>;
 
 export default BS;
 

@@ -4,28 +4,29 @@ import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import Roles from '../Roles';
 import DataStore from '../plumbing/DataStore';
+import BS from './BS';
 
 const DefaultNavBar = ({pageLinks, currentPage, children, homelink}) => (
-			<div className="container">
-				<div className="navbar-header" title="Dashboard">
-					<button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-						<span className="sr-only">Toggle navigation</span>
-						<span className="icon-bar" /><span className="icon-bar" /><span className="icon-bar" />
-					</button>
-					<a className="navbar-brand" href={homelink || '/'}>
-						<img alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
-					</a>
-				</div>
-				<div id="navbar" className="navbar-collapse collapse">
-					<ul className="nav navbar-nav">
-						{pageLinks}
-					</ul>
-					{children}
-					<div>
-						<AccountMenu active={currentPage === 'account'} />
-					</div>
-				</div>
+	<div className="container">
+		<div className="navbar-header" title="Dashboard">
+			<button type="button" className="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+				<span className="sr-only">Toggle navigation</span>
+				<span className="icon-bar" /><span className="icon-bar" /><span className="icon-bar" />
+			</button>
+			<a className="navbar-brand" href={homelink || '/'}>
+				<img alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+			</a>
+		</div>
+		<div id="navbar" className="navbar-collapse collapse">
+			<ul className="nav navbar-nav">
+				{pageLinks}
+			</ul>
+			{children}
+			<div>
+				<AccountMenu active={currentPage === 'account'} />
 			</div>
+		</div>
+	</div>
 );
 
 /**
@@ -44,9 +45,9 @@ const NavBar = ({render=DefaultNavBar, ...props}) => {
 	// make the page links
 	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
 	return (
-		<nav className="navbar navbar-fixed-top navbar-inverse" style={style}>
+		<BS.Nav className="navbar-fixed-top navbar-inverse" style={style}>
 			{ render({...props, pageLinks}) }
-		</nav>
+		</BS.Nav>
 	);
 };
 // ./NavBar
