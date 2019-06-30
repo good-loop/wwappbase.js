@@ -2,7 +2,7 @@
  * Bootstrap 3.
  */
 import React from 'react';
-import BS from './BS';
+import BS, {classes} from './BS';
 // https://getbootstrap.com/docs/3.3/css/#forms
 
 /**
@@ -85,7 +85,14 @@ BS.Centre = BS.Center; // UK or US
  */
 BS.Well = ({children}) => <div className='well'>{children}</div>;
 
-BS.Col = ({sm, md, children}) => <div className={'col-md-'+md}>{children}</div>;
+/**
+ * TODO does dflt col work in BS3??
+ * @param width {Number[1,12]} Use width for cross-size width. Use sm,md,lg,xl for size-specific widths
+ */
+BS.Col = ({width, sm, md, lg, xl, children}) => <div className={classes({prefix:"col", sep:'-', "":width, sm, md, lg, xl, dflt:"col"})}>{children}</div>;
+
+BS.Icon = ({name}) => <span className={'glyphicon glyphicon-'+name} aria-hidden="true" />;
+
 
 export default BS;
 

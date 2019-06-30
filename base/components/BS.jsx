@@ -9,3 +9,23 @@
  */
 const BS = {};
 export default BS;
+
+
+/**
+ * Prune nulls and join with prefixclass space
+ */
+const classes = ({prefix, sep="", dflt, ...props}) => {
+	let c = "";
+	let keys = Object.keys(props);
+	for(let i=0; i<keys.length; i++) {
+		const v = props[keys[i]];
+		if ( ! v) continue;
+		c += (i===0?"":" ")+prefix+sep+keys[i]+sep+v;
+	}
+	if ( ! c) return dflt;
+	return c;
+};
+
+export {
+	classes
+}

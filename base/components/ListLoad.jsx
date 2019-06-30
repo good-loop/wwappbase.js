@@ -14,6 +14,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import {getType, getId, nonce} from '../data/DataClass';
 import List from '../data/List';
+import BS from './BS';
 
 /**
  * Provide a list of items of a given type.
@@ -46,7 +47,8 @@ const ListLoad = ({type, status, servlet, navpage,
 		status = C.KStatus.ALL_BAR_TRASH;
 	}
 	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
-	// widget settings
+	// widget settings TODO migrate to useState so we can have multiple overlapping ListLoads
+	// const [foo, setFoo] = useState({});
 	const widgetPath = ['widget','ListLoad',type,status];
 	
 	// selected item id from url
@@ -70,7 +72,10 @@ const ListLoad = ({type, status, servlet, navpage,
 	const _filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
 	const filter = _filter? _filter.toLowerCase() : null;
 	let q2 = q; //join(q, filter); ??pass filter to back-end??
+	
+	// Load via ActionMan
 	let pvItems = ActionMan.list({type, status, q:q2, sort});
+
 	if ( ! pvItems.resolved) {
 		return (
 			<Misc.Loading text={type.toLowerCase() + 's'} />
@@ -163,7 +168,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 				onClick={event => onPick({ event, navpage, id, customParams })}
 				className={'ListItem btn btn-default status-' + item.status}
 			>
-				{children}
+				<div>{children}</div>
 			</a>
 		</div>
 	);
@@ -203,7 +208,7 @@ const DefaultDelete = ({type,id}) => (
 	<button className='btn btn-xs btn-default pull-right' 
 		onClick={e => confirm("Delete this "+type+"?")? ActionMan.delete(type, id) : null} 
 		title='Delete'>
-		<Misc.Icon glyph='trash' />
+		<BS.Icon name='trash' />
 	</button>
 );
 
@@ -264,7 +269,7 @@ const CreateButton = ({type, props, navpage, base, make}) => {
 	return (<div className={props? 'well' : ''}>
 		{props? props.map(prop => <Misc.PropControl key={prop} label={prop} prop={prop} path={cpath} inline />) : null}
 		<button className='btn btn-default' onClick={() => createBlank({type,navpage,base,id,make})}>
-			<Misc.Icon glyph='plus' /> Create
+			<BS.Icon name='plus' /> Create
 		</button>		
 	</div>);
 };

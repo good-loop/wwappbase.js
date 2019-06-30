@@ -173,6 +173,8 @@ Misc.Logo = ({service, size, transparent, bgcolor, color}) => {
 }; // ./Logo
 
 /**
+ * @deprecated Largely replaced by BS.Icon
+ * 
  * Font-Awesome or Glyphicon icons. See also Misc.Logo
  */
 Misc.Icon = ({glyph, fa, size, className, ...other}) => {	
