@@ -27,7 +27,7 @@ BS.Alert = ({color='warning', children}) => {
  */
 BS.Icon = ({name, size, className, ...other}) => {
 	// Use Font-Awesome??
-	return (<i className={'fa fa-'+fa + (size? ' fa-'+size : '') + (className? ' '+className : '') } 
+	return (<i className={'fa fa-'+name + (size? ' fa-'+size : '') + (className? ' '+className : '') } 
 				aria-hidden="true" {...other} />);
 };
 /**

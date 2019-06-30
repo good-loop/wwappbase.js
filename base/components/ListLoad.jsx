@@ -26,6 +26,7 @@ import BS from './BS';
  * 
  * 
  * @param q {?String} Optional query e.g. advertiser-id=pepsi
+ * Note: that filter can add to this
  * @param sort {?String} Optional sort order, e.g. "start-desc"
  * @param status {?String} e.g. "Draft"
  * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url. 
@@ -71,16 +72,12 @@ const ListLoad = ({type, status, servlet, navpage,
 	// NB: case-insentive filtering
 	const _filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
 	const filter = _filter? _filter.toLowerCase() : null;
-	let q2 = q; //join(q, filter); ??pass filter to back-end??
+	let q2 = join(q, filter); // pass filter to back-end
 	
-	// Load via ActionMan
+	// Load via ActionMan -- both filtered and un-filtered
 	let pvItems = ActionMan.list({type, status, q:q2, sort});
+	let pvItemsAll = ActionMan.list({type, status, q, sort});
 
-	if ( ! pvItems.resolved) {
-		return (
-			<Misc.Loading text={type.toLowerCase() + 's'} />
-		);
-	}	
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
 	}	
@@ -88,13 +85,16 @@ const ListLoad = ({type, status, servlet, navpage,
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let items = [];
 	let itemForId = {};
-	let hits = pvItems.value && pvItems.value.hits;
+	let hits = pvItems.resolved? pvItems.value && pvItems.value.hits : pvItemsAll.value && pvItemsAll.value.hits;
 	if (hits) {
+		const fastFilter =  ! pvItems.resolved;
 		hits.forEach(item => {
-			// HACK fast filter via stringify
-			let sitem = JSON.stringify(item).toLowerCase();
-			if (filter && sitem.indexOf(filter) === -1) {
-				return; // filtered out
+			// fast filter via stringify
+			if (fastFilter) {
+				let sitem = JSON.stringify(item).toLowerCase();
+				if (filter && sitem.indexOf(filter) === -1) {
+					return; // filtered out
+				}
 			}
 			// dupe?
 			let id = getId(item) || sitem;
@@ -112,7 +112,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{items.length === 0 ? 'No results found' : null}
 		{canCreate? <CreateButton type={type} /> : null}
-		{hasFilter? <div className='filter form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' type='search' path={widgetPath} prop='filter'/></div> : null}
+		{hasFilter? <div className='filter form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' type='search' path={widgetPath} prop='filter'/></div> : null}		
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i} 
 				item={item} 
@@ -130,6 +130,7 @@ const ListLoad = ({type, status, servlet, navpage,
 				/>
 			</ListItemWrapper>
 		))}
+		{pvItems.resolved? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
 	</div>);
 }; // ./ListLoad
 //
