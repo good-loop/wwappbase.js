@@ -19,8 +19,6 @@ const doIfVisible = props => {
 	}
 };
 
-// More modern version of HOCs above
-// TODO: refactor instances of withDoesIfVisible to use hook instead
 const useDoesIfVisible = (fn, elementReference) => {
 	const [isVisible, setIsVisible] = useState(false);
 
