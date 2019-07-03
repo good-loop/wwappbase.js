@@ -90,8 +90,9 @@ const ListLoad = ({type, status, servlet, navpage,
 		const fastFilter =  ! pvItems.resolved;
 		hits.forEach(item => {
 			// fast filter via stringify
+			let sitem;
 			if (fastFilter) {
-				let sitem = JSON.stringify(item).toLowerCase();
+				sitem = JSON.stringify(item).toLowerCase();
 				if (filter && sitem.indexOf(filter) === -1) {
 					return; // filtered out
 				}
