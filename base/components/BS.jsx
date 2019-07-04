@@ -18,13 +18,18 @@ const classes = ({prefix, sep="", dflt, ...props}) => {
 	let c = "";
 	let keys = Object.keys(props);
 	for(let i=0; i<keys.length; i++) {
-		const v = props[keys[i]];
+		const k = keys[i];
+		const v = props[k];
 		if ( ! v) continue;
-		c += (i===0?"":" ")+prefix+sep+keys[i]+sep+v;
+		c += (i===0?"":" ")+prefix+sep+k+sep+v;
 	}
 	if ( ! c) return dflt;
 	return c;
 };
+
+/**
+ * NB: Some elements are identical - they are defined in BS3
+ */
 
 export {
 	classes

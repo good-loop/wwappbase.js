@@ -74,6 +74,8 @@ BS.Alert = ({color='warning', children}) => {
 	return <div role='alert' className={'alert alert-'+color}>{children}</div>
 };
 
+BS.Icon = ({name}) => <span className={'glyphicon glyphicon-'+name} aria-hidden="true" />;
+
 /**
  * Utility for centering blocks
  */
@@ -85,13 +87,14 @@ BS.Centre = BS.Center; // UK or US
  */
 BS.Well = ({children}) => <div className='well'>{children}</div>;
 
+BS.Row = ({children}) => <div className='row'>{children}</div>;
+
 /**
  * TODO does dflt col work in BS3??
  * @param width {Number[1,12]} Use width for cross-size width. Use sm,md,lg,xl for size-specific widths
  */
 BS.Col = ({width, sm, md, lg, xl, children}) => <div className={classes({prefix:"col", sep:'-', "":width, sm, md, lg, xl, dflt:"col"})}>{children}</div>;
 
-BS.Icon = ({name}) => <span className={'glyphicon glyphicon-'+name} aria-hidden="true" />;
 
 BS.Nav = ({children, className}) => <nav className={'navbar '+className}>{children}</nav>;
 
