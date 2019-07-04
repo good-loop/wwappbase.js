@@ -36,7 +36,7 @@ const DefaultNavBar = ({pageLinks, currentPage, children, homelink}) => (
  * @param {String[]} pages
  */
 const NavBar = ({render=DefaultNavBar, ...props}) => {
-	const {currentPage, pages, style} = props;
+	const {currentPage, pages} = props;
 
 	if ( ! currentPage) {
 		let path = DataStore.getValue('location', 'path');
@@ -45,7 +45,7 @@ const NavBar = ({render=DefaultNavBar, ...props}) => {
 	// make the page links
 	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
 	return (
-		<BS.Nav className="navbar-fixed-top navbar-inverse" style={style}>
+		<BS.Nav className="navbar-fixed-top navbar-inverse">
 			{ render({...props, pageLinks}) }
 		</BS.Nav>
 	);
