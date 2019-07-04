@@ -748,7 +748,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 			if ( ! e.target.value) return;
 			if ( ! _.isFunction(options)) return;
 			let optionsOutput = options(e.target.value);
-			let pvo = PromiseValue(optionsOutput);
+			let pvo = new PromiseValue(optionsOutput);
 			pvo.promise.then(oo => {
 				DataStore.setValue(widgetPath, oo);
 				// also save the info in data
