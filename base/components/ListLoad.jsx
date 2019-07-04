@@ -90,7 +90,7 @@ const ListLoad = ({type, status, servlet, navpage,
 		const fastFilter =  ! pvItems.resolved;
 		hits.forEach(item => {
 			// fast filter via stringify
-			let sitem;
+			let sitem = null;
 			if (fastFilter) {
 				sitem = JSON.stringify(item).toLowerCase();
 				if (filter && sitem.indexOf(filter) === -1) {
@@ -98,7 +98,7 @@ const ListLoad = ({type, status, servlet, navpage,
 				}
 			}
 			// dupe?
-			let id = getId(item) || sitem;
+			let id = getId(item) || sitem || JSON.stringify(item).toLowerCase();
 			if (itemForId[id]) {
 				return; // skip dupe
 			}
