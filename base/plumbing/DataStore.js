@@ -159,6 +159,7 @@ class Store {
 	 * @param item {!Object}
 	 */
 	setData(statusTypeIdObject, item, update=true) {		
+		assert(statusTypeIdObject, "setData - no path input?! "+statusTypeIdObject, item);
 		// HACK to allow old code for setData(status, item, update = true) to still work - May 2019
 		if (statusTypeIdObject.item) item = statusTypeIdObject.item;
 		else {
