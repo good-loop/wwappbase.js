@@ -339,7 +339,7 @@ ActionMan.getDataItem = ({type, id, status, domain, swallow, ...other}) => {
 	assMatch(id, String);
 	assert(C.KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
 	// TODO Decide if getPath should take object argument
-	let path = DataStore.getPath(status, type, id, domain);
+	let path = DataStore.getDataPath({status, type, id, domain});
 	return DataStore.fetch(path, () => {
 		return ServerIO.getDataItem({type, id, status, domain, swallow, ...other});
 	}, ! swallow);
