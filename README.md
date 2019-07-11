@@ -8,3 +8,4 @@ project:
 
 template:
     copy and edit these files.
+	??for some reason these files don't work if sym-linked??
