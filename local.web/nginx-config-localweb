@@ -1,0 +1,16 @@
+# copy this to nginx sites-available, also modify etc/hosts
+server {
+	listen   80; ## listen for ipv4; this line is default and implied
+
+	root /home/daniel/winterwell/localweb;
+	index index.html;
+
+	server_name local.web;
+
+	location / {
+			try_files $uri $uri/ @backend;
+			add_header 'Access-Control-Allow-Origin' "$http_origin";
+			add_header 'Access-Control-Allow-Credentials' 'true';
+	}
+
+}
