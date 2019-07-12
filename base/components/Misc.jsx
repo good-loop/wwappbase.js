@@ -302,14 +302,16 @@ Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
  * 
  * @param {
  * 	url: {?String} The image url. If falsy, return null
- * 	style: {?Object}
+ * 	style: {?Object} Use to override default 100px width & height
+ * 	background: {?String} convenience for style={{background}}, since that's commonly needed for handling transparency
  * }
  * @return {JSX}
  */
-Misc.ImgThumbnail = ({url, style, className = '', ...props}) => {
+Misc.ImgThumbnail = ({url, background, style, className = '', ...props}) => {
 	if (!url) return null;
 	// add in base (NB this works with style=null)
 	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain'}, style);
+	if (background) style.background = background;
 	return <img className={`img-thumbnail ${className}`} style={style} alt='thumbnail' src={url} />;
 };
 
