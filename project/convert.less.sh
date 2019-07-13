@@ -15,19 +15,24 @@ OUTDIR=$WEB/style
 TOPLESS[0]=$PROJECTPATH/src/style/main.less;
 TOPLESS[1]=$PROJECTPATH/src/style/print.less;
 
-# run through files
-for file in "${TOPLESS[@]}"; do
-		if [ -e "$file" ]; then
-			echo -e "converting $file"
-			F=`basename $file`
-			echo lessc "$file" "$OUTDIR/${F%.less}.css"
-			lessc "$file" "$OUTDIR/${F%.less}.css"
-		else
-			echo "less file not found: $file"				
-		fi
-done
+# Function definition: run through all specified LESS files
+convert_less() {
+	for file in "${TOPLESS[@]}"; do
+			if [ -e "$file" ]; then
+				echo -e "Converting $file..."
+				F=`basename $file`
+				echo lessc "$file" "$OUTDIR/${F%.less}.css"
+				lessc "$file" "$OUTDIR/${F%.less}.css"
+			else
+				echo "less file not found: $file"				
+			fi
+	done
+}
 
-# watch?
+# Run once
+convert_less
+
+# Watch?
 if [[ $WATCH == 'watch' ]]; then
 	if [ "$GOTINOTIFYTOOLS" = "" ]; then
     	echo "In order to watch and continuously convert less files, you will first need to install inotify-tools on this system"
@@ -38,15 +43,7 @@ if [[ $WATCH == 'watch' ]]; then
 	while true
 	do
 		inotifywait -r -e modify,attrib,close_write,move,create,delete $WEB/style && \
-		for file in "${TOPLESS[@]}"; do
-			if [ -e "$file" ]; then
-				echo -e "converting $file"
-				F=`basename $file`
-				lessc "$file" "$OUTDIR/${F%.less}.css"
-			else
-				echo "less file not found: $file"
-			fi
-		done
+		convert_less
 	done
 	fi
 fi

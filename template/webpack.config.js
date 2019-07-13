@@ -3,7 +3,7 @@ const path = require('path');
 
 
 const baseConfig = {
-	entry: ['babel-polyfill', './src/js/app.jsx'],
+	entry: ['@babel/polyfill', './src/js/app.jsx'],
 	output: {
 		path: path.resolve(__dirname, './web/build/js/'),
 		// filename: is left undefined and filled in by makeConfig
@@ -20,8 +20,14 @@ const baseConfig = {
 				loader: 'babel-loader',
 				exclude: /node_modules/,
 				options: {
-					presets: ['es2015', 'react', 'env', 'flow'],
-					plugins: ['transform-object-rest-spread', 'transform-class-properties', 'transform-class-properties', 'transform-react-jsx']
+					presets: [
+						['@babel/preset-env', { targets: { ie: "11" }, loose: true }]
+					],
+					plugins: [
+						'@babel/plugin-proposal-class-properties',
+						'@babel/plugin-transform-react-jsx',
+						'transform-node-env-inline'
+					]
 				}
 			}
 		],
@@ -57,8 +63,12 @@ const makeConfig = ({ filename, mode }) => {
 	return config;
 };
 
-// Output bundle files for production and dev/debug
-module.exports = [
-	makeConfig({filename: 'bundle.js', mode: 'production' }),
+const configs = [
 	makeConfig({filename: 'bundle-debug.js', mode: 'development' }),
 ];
+if (process.env.NO_PROD !== 'true') {
+	configs.push(makeConfig({filename: 'bundle.js', mode: 'production' }));
+}
+
+// Output bundle files for production and dev/debug
+module.exports = configs;
