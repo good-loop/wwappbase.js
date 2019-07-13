@@ -276,7 +276,7 @@ const PropControl2 = (props) => {
 		delete otherStuff.https;
 		return (<div>
 				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
-			<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} style={{background:bg}} /></div>
+			<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} background={bg} /></div>
 				<div className='clearfix' />
 			</div>);
 	}
@@ -885,7 +885,7 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 			</Dropzone>
 		</div>
 		<div className='pull-right'>
-			{type === 'videoUpload' ? (<Misc.VideoThumbnail url={value} />) : (<Misc.ImgThumbnail className={className} style={{ background: bg }} url={value} />)}
+			{type === 'videoUpload' ? (<Misc.VideoThumbnail url={value} />) : (<Misc.ImgThumbnail className={className} background={bg} url={value} />)}
 		</div>
 		<div className='clearfix' />
 	</div>);
