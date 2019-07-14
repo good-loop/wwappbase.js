@@ -50,25 +50,6 @@ BS.Center = ({children}) => <div className='ml-auto mr-auto'>{children}</div>;
 BS.Button = ({children, className, ...stuff}) => <button className={className} {...stuff}>{children}</button>;
 
 
-BS.Modal = ({children, show, className, onHide}) => {
-	return (<div class="modal" tabindex="-1" role="dialog">
-  				<div class="modal-dialog" role="document">
-    				<div class="modal-content">
-					{children}
-					</div>
-				</div>
-	</div>);
-};
-BS.Modal.Header = ({logo, title, children}) => {
-
-};
-BS.Modal.Body = ({children}) => {
-
-};
-BS.Modal.Footer = ({children}) => {
-
-};
-
 /**
  * @link https://getbootstrap.com/docs/4.3/components/navbar
  * 

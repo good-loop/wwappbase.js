@@ -1,7 +1,7 @@
 import React from 'react';
 import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
-import {Modal} from 'react-bootstrap'; // TODO from BS
+// import {Modal} from 'react-bootstrap'; // TODO from BS
 import BS from './BS';
 import { XId, uid, stopEvent, toTitleCase} from 'wwutils';
 import Cookies from 'js-cookie';
@@ -47,6 +47,7 @@ const RegisterLink = ({className, onClick, ...props}) => <LoginLink
 /**
 		Login or Signup (one widget)
 		See SigninScriptlet
+		@param render {?JSX} default: LoginWidgetGuts
 
 */
 const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='large' transparent={false} />, title, render=LoginWidgetGuts, services}) => {
@@ -66,6 +67,7 @@ const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='
 		reset: 'Reset Password'
 	}[verb];
 
+	let Modal = BS.Modal;
 	return (
 		<Modal show={showDialog} className="login-modal" onHide={() => LoginWidget.hide()}>
 			<Modal.Header closeButton>

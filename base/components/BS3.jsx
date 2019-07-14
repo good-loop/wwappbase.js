@@ -91,6 +91,53 @@ BS.Row = ({children}) => <div className='row'>{children}</div>;
  */
 BS.Col = ({width, sm, md, lg, xl, children}) => <div className={classes({prefix:"col", sep:'-', "":width, sm, md, lg, xl, dflt:"col"})}>{children}</div>;
 
+/**
+ * @param show {Boolean} The caller must manage show / closed via this + onHide()
+ */
+BS.Modal = ({children, show, className, onHide}) => {
+	const cs = join("modal fade", show?'show':null);
+
+	// Add onHide to children
+	if (children) {
+		// NB: with one child is not an array
+		if ( ! _.isArray(children)) children = [children];		
+		// filter null, undefined
+		children = children.filter(x => !! x);
+		children = React.Children.map(children, (Kid, i) => {
+			// clone with onHide
+			return React.cloneElement(Kid, {onHide});
+		});
+	}
+
+	// TODO listen for Esc -- add/remove a handler with useEffect
+
+	return (<div><div className={cs} style={{display: show?'block':'none'}} tabIndex="-1" role="dialog" onClick={e => onHide(e)}>
+  				<div className="modal-dialog" role="document">
+    				<div className="modal-content">
+					{children}
+					</div>
+				</div>
+	</div>
+	<div className={join("modal-backdrop fade", show?'show':null)}></div>
+	</div>);
+};
+BS.Modal.Header = ({logo, title, children, onHide}) => {
+	return (<div className="modal-header">
+		{title? <BS.Modal.Title title={title} /> : null}
+		{children}
+		<button type="button" className="close" aria-label="Close" onClick={e => onHide(e)}><span aria-hidden="true">&times;</span></button>
+      </div>);
+};
+BS.Modal.Title = ({logo, title, children}) => {
+	return <h5 className="modal-title">{logo} {title} {children}</h5>
+};
+BS.Modal.Body = ({children}) => {
+	return <div className='modal-body'>{children}</div>;
+};
+BS.Modal.Footer = ({children}) => {
+	return <div className='modal-footer'>{children}</div>;
+};
+
 
 /**
  * @param placement {?String} e.g. "fixed-top"
