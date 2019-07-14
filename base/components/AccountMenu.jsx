@@ -23,11 +23,12 @@ TODO use react for the dropdown state - not bootstrap.js
 
 */
 const AccountMenu = props => {
-	const {pending, isMobile} = props;
-
-	if (pending) return <Misc.Loading />;
+	const isMobile = window.innerWidth <= 767;
 	if ( ! Login.isLoggedIn()) {
-		return (<ul id='top-right-menu' className="nav navbar-nav navbar-right">
+
+	// TODO see navbar dropdown
+
+	return (<ul id='top-right-menu' className="nav navbar-nav navbar-right">
 			<li>			
 				<RegisterLink />
 			</li>
@@ -66,8 +67,9 @@ const DesktopMenu = ({active, logoutLink, user}) => (
 	</ul>
 );
 
-// Clicking username to expand does not work well on mobile
-// Just display all options as part of burger-menu
+/** Clicking username to expand does not work well on mobile
+// Just display all options as part of burger-menu 
+*/
 const MobileMenu = ({active, logoutLink, user}) => (
 	<ul id='top-right-menu' className="nav navbar-nav navbar-right">
 		<li>

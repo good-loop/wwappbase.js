@@ -5,6 +5,7 @@ import React from 'react';
 import BS, {join, classes} from './BS';
 // https://getbootstrap.com/docs/3.3/css/#forms
 
+BS.version = 3;
 
 // NB: the `!! checked` is to avoid React complaining about a change from uncontrolled to controlled.
 BS.Checkbox = ({name, checked, value, label, onChange, inline}) => {

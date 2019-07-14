@@ -3,6 +3,8 @@ import BS, {join, classes} from './BS';
 // for now at least, we build on BS3, overwriting the changed parts
 import BS3 from './BS3';
 
+BS.version = 4;
+
 // use <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
 
 // https://getbootstrap.com/docs/4.1/components/forms/#checkboxes-and-radios
