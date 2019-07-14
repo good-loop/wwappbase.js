@@ -67,22 +67,23 @@ const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='
 		reset: 'Reset Password'
 	}[verb];
 
+	// BS.Modal still has some glitches. But react-bootstrap modal plain fails for BS v4
 	let Modal34 = BS.version===4? BS.Modal : Modal;
 	return (
-		<Modal show={showDialog} className="login-modal" onHide={() => LoginWidget.hide()}>
-			<Modal.Header closeButton>
-				<Modal.Title>
+		<Modal34 show={showDialog} className="login-modal" onHide={() => LoginWidget.hide()}>
+			<Modal34.Header closeButton>
+				<Modal34.Title>
 					{logo}
 					{title}					
-				</Modal.Title>
-			</Modal.Header>
-			<Modal.Body>
+				</Modal34.Title>
+			</Modal34.Header>
+			<Modal34.Body>
 				{render({services})}
-			</Modal.Body>
-			<Modal.Footer>
+			</Modal34.Body>
+			<Modal34.Footer>
 				<SwitchVerb verb={verb} />
-			</Modal.Footer>
-		</Modal>
+			</Modal34.Footer>
+		</Modal34>
 	);
 }; // ./LoginWidget
 
