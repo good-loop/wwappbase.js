@@ -4,4 +4,4 @@ npm-debug.log
 *.jar
 test/calstat-test-app/node_modules/*
 project/web/build
-test-base/babeled-res/*
+test-base/babeled-res/*web/build
