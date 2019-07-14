@@ -2,13 +2,9 @@
  * Bootstrap 3.
  */
 import React from 'react';
-import BS, {classes} from './BS';
+import BS, {join, classes} from './BS';
 // https://getbootstrap.com/docs/3.3/css/#forms
 
-/**
- * Convenience for doing base-css-class + optional-extra-css-class
- */
-const join = (...strings) => strings.filter(s => s).join(" ");
 
 // NB: the `!! checked` is to avoid React complaining about a change from uncontrolled to controlled.
 BS.Checkbox = ({name, checked, value, label, onChange, inline}) => {
@@ -96,7 +92,12 @@ BS.Row = ({children}) => <div className='row'>{children}</div>;
 BS.Col = ({width, sm, md, lg, xl, children}) => <div className={classes({prefix:"col", sep:'-', "":width, sm, md, lg, xl, dflt:"col"})}>{children}</div>;
 
 
-BS.Nav = ({children, className}) => <nav className={'navbar '+className}>{children}</nav>;
+/**
+ * @param placement {?String} e.g. "fixed-top"
+ */
+BS.Nav = ({children, className, placement="fixed-top", color="dark"}) => {
+	return <nav className={join('navbar', placement? 'navbar-'+placement : null, color==='dark' || color==='inverse'? 'navbar-inverse' : null, className)}>{children}</nav>;
+};
 
 export default BS;
 

@@ -1,7 +1,7 @@
 {
   "name": "G-L_Project_NPM_Skeleton",
-  "version": "0.0.4",
-  "description": "Charity app",
+  "version": "0.0.5",
+  "description": "My app",
   "author": "Daniel Winterstein",
   "repository": {
     "url": "https://github.com/winterstein/sogive-app",
@@ -9,6 +9,7 @@
   },
   "license": "MIT",
   "dependencies": {
+	"bootstrap": "^3.4.1",
     "chart.js": "^2.8.0",
     "data-pivot": "^1.0.2",
     "easy-enums": "^1.1.6",
@@ -49,6 +50,8 @@
     "@babel/preset-env": "^7.3.4",
     "babel-loader": "^8.0.5",
     "babel-plugin-transform-node-env-inline": "^0.4.3",
+	"css-loader": "^3.0.0",
+	"style-loader": "^0.23.1",
     "eslint": "^5.15.1",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.16.0",

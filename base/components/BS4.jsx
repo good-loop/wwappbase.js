@@ -1,5 +1,5 @@
 import React from 'react';
-import BS, {classes} from './BS';
+import BS, {join, classes} from './BS';
 // for now at least, we build on BS3, overwriting the changed parts
 import BS3 from './BS3';
 
@@ -49,6 +49,34 @@ BS.Center = ({children}) => <div className='ml-auto mr-auto'>{children}</div>;
 // TODO manage btn-default vs btn-light / btn-secondary. Any other 3 v 4 differences??
 BS.Button = ({children, className, ...stuff}) => <button className={className} {...stuff}>{children}</button>;
 
-BS.Nav = ({children, className}) => <nav className={'nav '+className}>{children}</nav>;
+
+BS.Modal = ({children, show, className, onHide}) => {
+	return (<div class="modal" tabindex="-1" role="dialog">
+  				<div class="modal-dialog" role="document">
+    				<div class="modal-content">
+					{children}
+					</div>
+				</div>
+	</div>);
+};
+BS.Modal.Header = ({logo, title, children}) => {
+
+};
+BS.Modal.Body = ({children}) => {
+
+};
+BS.Modal.Footer = ({children}) => {
+
+};
+
+/**
+ * @link https://getbootstrap.com/docs/4.3/components/navbar
+ * 
+ * @param placement {?String} e.g. "fixed-top"
+ * @param color {?String} e.g. "dark"
+ */
+BS.Nav = ({children, className, placement="fixed-top", color="dark"}) => {
+	return <nav className={join('navbar', 'navbar-expand-md', placement, color? 'navbar-'+color : null, color? 'bg-'+color : null, className)}>{children}</nav>;
+};
 
 export default BS;

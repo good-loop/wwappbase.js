@@ -5,14 +5,10 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 		<meta http-equiv="x-ua-compatible" content="ie=edge">
 
-		<title>SoGive</title>
+		<title>My App</title>
 		<link rel="shortcut icon" href="/favicon.png" />
 
-		<link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" />
 		<link href="//maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" />
-		<link href="https://fonts.googleapis.com/css?family=Nunito+Sans" rel="stylesheet" />
-
-		<!--<link href="/lib/bootstrap.min.css" rel="stylesheet" />-->
 
 		<link rel="stylesheet" type="text/css" href="/style/main.css">
 		<link rel="stylesheet" type="text/css" href="/style/print.css" media="print">
@@ -49,9 +45,6 @@
 		</footer>
 
 		<!-- Scripts -->
-		<script src="//code.jquery.com/jquery-3.1.0.min.js"></script>
-		<script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-		<!-- script src="https://cdnjs.cloudflare.com/ajax/libs/less.js/2.7.1/less.min.js"></script -->
 		<script type="text/javascript" async src="https://platform.twitter.com/widgets.js"></script>
 		<script>
 			window.fbAsyncInit = function() {
@@ -72,9 +65,24 @@
 			}(document, 'script', 'facebook-jssdk'));
 		</script>
 		
-		<!-- everything else comes via webpack -->
-		<script src='/build/js/bundle.js'></script>		
-
+		<!-- everything comes via webpack -->
+		<script>
+			// Insert bundle[-debug].js - but allow dynamic test/production build switch.
+			// Default to debug build on test and local servers.
+			var isDebug = window.location.hostname.match(/^local/) || window.location.hostname.match(/^test/);
+			
+			// Has the user specified debug/production build with a URL param?
+			var debugParam = window.location.search.match(/debug=(\w+)/i);
+			if (debugParam && debugParam[1]) {
+				// Require an exact match to change from default
+				if (debugParam[1] === 'false') isDebug = false;
+				else if (debugParam[1] === 'true') isDebug = true;
+			}
+			
+			var filename = isDebug ? 'bundle-debug.js' : 'bundle.js';
+			document.write('<script src="/build/js/' + filename + '"/><\/script>');
+		</script>
+		
 <script async src='//as.good-loop.com/pxl.js'></script>
 <img src='//lg.good-loop.com/pxl' 
 	style='position:absolute;bottom:0px;left:0px;width:1;height:1;'/>

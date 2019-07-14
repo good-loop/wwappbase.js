@@ -10,6 +10,10 @@
 const BS = {};
 export default BS;
 
+/**
+ * Convenience for doing base-css-class + optional-extra-css-class
+ */
+const join = (...strings) => strings.filter(s => s).join(" ");
 
 /**
  * Prune nulls and join with prefixclass space
@@ -32,5 +36,6 @@ const classes = ({prefix, sep="", dflt, ...props}) => {
  */
 
 export {
+	join,
 	classes
 }

@@ -29,6 +29,10 @@ const baseConfig = {
 						'transform-node-env-inline'
 					]
 				}
+			},
+			{
+				test: /\.css$/,
+				loader: 'style-loader!css-loader'
 			}
 		],
 	},

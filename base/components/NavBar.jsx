@@ -6,6 +6,9 @@ import Roles from '../Roles';
 import DataStore from '../plumbing/DataStore';
 import BS from './BS';
 
+/**
+ * rendered within BS.Nav
+ */
 const DefaultNavBar = ({pageLinks, currentPage, children, homelink}) => (
 	<div className="container">
 		<div className="navbar-header" title="Dashboard">
@@ -45,7 +48,7 @@ const NavBar = ({render=DefaultNavBar, ...props}) => {
 	// make the page links
 	let pageLinks = pages.map( p => <NavLink currentPage={currentPage} targetPage={p} key={'li_'+p} /> );
 	return (
-		<BS.Nav className="navbar-fixed-top navbar-inverse">
+		<BS.Nav top className="navbar-inverse">
 			{ render({...props, pageLinks}) }
 		</BS.Nav>
 	);
