@@ -22,11 +22,16 @@ const doIfVisible = props => {
 const useDoesIfVisible = (fn, elementReference) => {
 	const [isVisible, setIsVisible] = useState(false);
 
+	let scrollListener;
+
+	// TODO: Is currently a bug where listener will attempt to track element that no longer exists
+	// as the user has switched page
+	// Happens because below hook is not being called on component unmount
 	useEffect(() => {
 		// Initial call incase component is visible without scrolling
 		doIfVisible({elementReference: elementReference.current, fn: () => setIsVisible(true)})
 
-		const scrollListener = window.addEventListener(
+		scrollListener = window.addEventListener(
 			'scroll',
 			// Pass in reference to actual DOM element 
 			() => doIfVisible({
@@ -40,12 +45,31 @@ const useDoesIfVisible = (fn, elementReference) => {
 	// Trigger function when component becomes visible for the first time
 	useEffect(() => {
 		if(isVisible) fn();
-	}, [isVisible])
+	}, [isVisible]);
+
 };
 
 const useLogsIfVisible = (elementReference, mixPanelTag) => useDoesIfVisible(() => ServerIO.mixPanelTrack({mixPanelTag}), elementReference);
 
+const useDoOnResize = ({resizeFn}) => {
+	useEffect(() => {
+		// Call on first render
+		resizeFn();
+
+		// Recalculate if size changes
+		// NB: This may be called twice on some devices. Not ideal, but doesn't seem too important
+		window.addEventListener('resize', resizeFn);
+		window.addEventListener('orientationchange', resizeFn);		
+
+		return () => {
+			window.removeEventListener('resize', resizeFn);
+			window.removeEventListener('orientationchange', resizeFn);
+		};
+	}, []);
+};
+
 export {
 	useDoesIfVisible,
-	useLogsIfVisible
+	useLogsIfVisible,
+	useDoOnResize
 };
