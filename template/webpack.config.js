@@ -1,7 +1,13 @@
+/*
+	NB The webpack.config.js files in my-loop, adserver and wwappbase.js are identical but cannot be symlinked!
+	If it's a symlink, NPM will resolve paths (including module names) relative to the symlink source - and
+	complain that it can't find webpack, because it's not installed in /wwappbase.js/templates/node_modules
+	Keep this copy in sync with the others - if the same file can't be used for all three, there should be a good reason.
+ */
 const webpack = require('webpack');
 const path = require('path');
 
-let webDir = process.env.OUTPUT_WEB_DIR || 'web';
+const webDir = process.env.OUTPUT_WEB_DIR || 'web';
 
 const baseConfig = {
 	entry: ['@babel/polyfill', './src/js/app.jsx'],
