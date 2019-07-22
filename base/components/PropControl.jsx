@@ -650,12 +650,11 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 	}
 	
 	const entryElements = Object.entries(value || {}).filter(([key, val]) => val).map(([key, val]) => (
-		<span className="entry" key={key}>
+		<div className="entry" key={key}>
 			{key}: <PropControl type="text" path={proppath} prop={key} />
 			<span className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</span>
-		</span>
+		</div>
 	));
-	
 	
 	let newKey, newValue;
 
