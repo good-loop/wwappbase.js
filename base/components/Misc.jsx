@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 
 import BS from './BS';
 import {assert, assMatch} from 'sjtest';
@@ -435,42 +435,45 @@ Misc.SavePublishDiscard = ({type, id, hidden, cannotPublish, cannotDelete,
 };
 /**
  * 
+ * @param path {?String[]} path to the form-data to submit.
  * @param {Boolean} once If set, this button can only be clicked once.
  * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
  * @param onSuccess {JSX} TODO rename this! shown after a successful submit. This is not a function to call!
  */
-Misc.SubmitButton = ({path, url, responsePath, once, className='btn btn-primary', onSuccess, children}) => {
+Misc.SubmitButton = ({formData, path, url, responsePath, once, className='btn btn-primary', onSuccess, children}) => {
 	assMatch(url, String);
-	assMatch(path, 'String[]');
-	const tpath = ['transient','SubmitButton'].concat(path);
-
-	let formData = DataStore.getValue(path);
+	// assMatch(path, 'String[]');
+	// track the submit request
+	const [submitStatus, setSubmitStatus] = useState();
+	// const tpath = ['transient','SubmitButton'].concat(path);	
+	if ( ! formData && path) formData = DataStore.getValue(path);
 	// DataStore.setValue(tpath, C.STATUS.loading);
 	const params = {
 		data: formData
 	};
 	const doSubmit = e => {
-		DataStore.setValue(tpath, C.STATUS.saving);
+		setSubmitStatus(C.STATUS.saving);
+		// DataStore.setValue(tpath, C.STATUS.saving);
 		ServerIO.load(url, params)
 			.then(res => {
-				DataStore.setValue(tpath, C.STATUS.clean);
+				setSubmitStatus(C.STATUS.clean); // DataStore.setValue(tpath, 
 				if (responsePath) {
 					const resdata = JSend.data(res);
 					DataStore.setValue(responsePath, resdata);
 				}
 			}, err => {
-				DataStore.setValue(tpath, C.STATUS.dirty);
+				setSubmitStatus(C.STATUS.dirty); // DataStore.setValue(tpath, 
 			});
 	};
 	
-	let localStatus = DataStore.getValue(tpath);
+	// let localStatus = DataStore.getValue(tpath);
 	// show the success message instead?
-	if (onSuccess && C.STATUS.isclean(localStatus)) {
+	if (onSuccess && C.STATUS.isclean(submitStatus)) {
 		return onSuccess;
 	}
-	let isSaving = C.STATUS.issaving(localStatus);	
+	let isSaving = C.STATUS.issaving(submitStatus);	
 	const vis ={visibility: isSaving? 'visible' : 'hidden'};
-	let disabled = isSaving || (once && localStatus);
+	let disabled = isSaving || (once && submitStatus);
 	let title ='Submit the form';
 	if (disabled) title = isSaving? "saving..." : "Submitted :) To avoid errors, you cannot re-submit this form";	
 	return (<button onClick={doSubmit} 
