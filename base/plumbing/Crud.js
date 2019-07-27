@@ -140,7 +140,7 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 	// modify e.g. url
 	if (onChange) onChange(newItem);
 	// save server
-	let p = ActionMan.crud({type, id:newId, action:'save', item:newItem});
+	let p = ActionMan.crud({type, id:newId, action:'copy', item:newItem});
 	return p;
 };
 
