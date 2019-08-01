@@ -4,40 +4,40 @@
 
 .SimpleTable {
 
-    .wrapper {
-        position: relative;
+	.wrapper {
+		position: relative;
 
-        .scroller {
-            margin-left: @sticky-col-width;
-            overflow-x: scroll;
-            overflow-y: visible;
+		.scroller {
+			margin-left: @sticky-col-width;
+			overflow-x: scroll;
+			overflow-y: visible;
 			width: calc(~"100% - 260px"); 
 			/* NB: the version of less we currently use (2.7), can't do calc nicely -- see https://stackoverflow.com/questions/11972084/less-aggressive-compilation-with-css3-calc */
-            
-            table {
-                border-collapse: separate;
-                border-spacing: 0;
-            
-                thead th {
-                    text-align: left;
-                    white-space: nowrap;
-                }
-            
-                tr td:first-child {
-                    left: 0;
-                    position: absolute;
-                    top: auto;
-                    width: @sticky-col-width;
-                }
-                
-                tr th:first-child {
-                    left: 0;
-                    position: absolute;
-                    top: auto;
-                    width: @sticky-col-width;
-                }
-            } // ./table
-        } // ./scroller
+			
+			table {
+				border-collapse: separate;
+				border-spacing: 0;
+			
+				thead th {
+					text-align: left;
+					white-space: nowrap;
+				}
+			
+				tr td:first-child {
+					left: 0;
+					position: absolute;
+					top: auto;
+					width: @sticky-col-width;
+				}
+				
+				tr th:first-child {
+					left: 0;
+					position: absolute;
+					top: auto;
+					width: @sticky-col-width;
+				}
+			} // ./table
+		} // ./scroller
 	 } // ./wrapper
 	 
 	// For a caller-provided total row
