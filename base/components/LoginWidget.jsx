@@ -117,22 +117,19 @@ const SocialSignin = ({verb, services}) => {
 	);
 };
 
-
-
-const SocialSignInButton = ({children, service, verb = 'sign in'}) => {
+const SocialSignInButton = ({className = "btn btn-default signin", children, service, verb = 'sign in'}) => {
 	if (!canSignIn[service]) return null;
+	if (!children) children = <><Misc.Logo size='small' service={service} color={false} square={false} /> {toTitleCase(verb)} with {toTitleCase(service)}</>;
 	// TODO this will prep FB on mouseover -- But what about mobile or fast clickers?
 	// TODO You Again should catch failure, and switch to a click through approach.
 	const onMouseOver = service === 'facebook' ? () => Login.prepFB(C.app.facebookAppId) : null;
 
-	let className = 'btn btn-default signin';
 	if ({facebook: 1, twitter: 1, instagram: 1}[service]) className += (' white bg-' + service);
 
 	return (
 		<div className='form-group'>
 			<button onClick={() => socialLogin(service)} className={className} onMouseOver={onMouseOver}>
-				{children || <Misc.Logo size='small' service={service} color={false} square={false} />}&nbsp;
-				<span>{toTitleCase(verb)} with {toTitleCase(service)}</span>
+				{children}
 			</button>
 		</div>
 	);
