@@ -117,7 +117,7 @@ const SocialSignin = ({verb, services}) => {
 	);
 };
 
-const SocialSignInButton = ({className = "btn btn-default signin", children, service, verb = 'sign in'}) => {
+const SocialSignInButton = ({className = "btn btn-default signin", children, service, verb = 'sign in', size}) => {
 	if (!canSignIn[service]) return null;
 	if (!children) children = <><Misc.Logo size='small' service={service} color={false} square={false} /> {toTitleCase(verb)} with {toTitleCase(service)}</>;
 	// TODO this will prep FB on mouseover -- But what about mobile or fast clickers?
@@ -125,6 +125,7 @@ const SocialSignInButton = ({className = "btn btn-default signin", children, ser
 	const onMouseOver = service === 'facebook' ? () => Login.prepFB(C.app.facebookAppId) : null;
 
 	if ({facebook: 1, twitter: 1, instagram: 1}[service]) className += (' white bg-' + service);
+	if (size) className += (' btn-' + size);
 
 	return (
 		<div className='form-group'>
