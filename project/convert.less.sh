@@ -10,10 +10,11 @@ echo "PROJECT: $PROJECT"
 PROJECTPATH=$DIR
 WEB=$PROJECTPATH/web
 OUTDIR=$WEB/style
+LESSDIR=$PROJECTPATH/src/style
 
 # the TOPLESS files are the top level files referenced in index.html
-TOPLESS[0]=$PROJECTPATH/src/style/main.less;
-TOPLESS[1]=$PROJECTPATH/src/style/print.less;
+TOPLESS[0]=$LESSDIR/main.less;
+TOPLESS[1]=$LESSDIR/print.less;
 
 # Function definition: run through all specified LESS files
 convert_less() {
@@ -24,7 +25,7 @@ convert_less() {
 				echo lessc "$file" "$OUTDIR/${F%.less}.css"
 				lessc "$file" "$OUTDIR/${F%.less}.css"
 			else
-				echo "less file not found: $file"				
+				echo "less file not found: $file"
 			fi
 	done
 }
@@ -35,14 +36,14 @@ convert_less
 # Watch?
 if [[ $WATCH == 'watch' ]]; then
 	if [ "$GOTINOTIFYTOOLS" = "" ]; then
-    	echo "In order to watch and continuously convert less files, you will first need to install inotify-tools on this system"
-    	echo ""
-    	echo "run sudo apt-get install inotify-tools in order to install"
-    	exit 0
+		echo "In order to watch and continuously convert less files, you will first need to install inotify-tools on this system"
+		echo ""
+		echo "run sudo apt-get install inotify-tools in order to install"
+		exit 0
 	else
 	while true
 	do
-		inotifywait -r -e modify,attrib,close_write,move,create,delete $WEB/style && \
+		inotifywait -r -e modify,attrib,close_write,move,create,delete $LESSDIR && \
 		convert_less
 	done
 	fi
