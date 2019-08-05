@@ -3,15 +3,7 @@
  */
 
 import React, {useState, useRef} from 'react';
-import ReactDOM from 'react-dom';
-
-import SJTest, {assert, assMatch} from 'sjtest';
-import _ from 'lodash';
-
-import {asNum} from 'wwutils';
-import DataStore from '../plumbing/DataStore';
 import printer from '../utils/printer';
-import Money from '../data/Money';
 import {useDoesIfVisible} from './CustomHooks';
 
 /**
@@ -36,6 +28,8 @@ const bezierSlide = (x = 0) => {
 };
 
 /**
+ * NB The useState version of setState() doesn't merge partial state objects onto the old state
+ * ...so we grab the state object AND the members we need, and call setState({ ...state, { new partial state } })
  * @param {Number} value Final value to display
  * @param {Number} initial Value to start counting from
  * @param {Number} animationLength Time (msec) to reach final number
@@ -43,24 +37,26 @@ const bezierSlide = (x = 0) => {
  * @param {String} currencySymbol Won't break the system if 
  */
 const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true}) => {
-	const [startTime, setStartTime] = useState();
-	const [displayValue, setDisplayValue] = useState(0);
+	const [state, setState] = useState({displayValue: initial, done: false});
+	const {startTime, displayValue, done} = state;
 	const ref = useRef();
 
 	// Start animation the FIRST time the component enters the viewport
 	useDoesIfVisible(() => {
-		if (!startTime) setStartTime(new Date().getTime());
+		if (!startTime) setState({...state, startTime: new Date().getTime()});
 	}, ref);
 
-	// Force update if animation time has not elapsed since component became visible
-	const elapsed = new Date().getTime() - startTime;
-	if (startTime && (elapsed < animationLength)) {
+	// Is the component visible & not yet done animating?
+	if (startTime && !done) {
+		const elapsed = new Date().getTime() - startTime;
 		// Display fraction of final amount based on "bezier curve"
 		// Aim to show roughly 20 frames per second
 		window.setTimeout(() => {
 			const displayVal = initial + (bezierSlide(elapsed / animationLength) * (value - initial));
-			setDisplayValue(displayVal);
+			setState({...state, displayValue: displayVal});
 		}, animationLength / fps);
+		// Have we passed the end of the animation duration? Don't update again after this.
+		if (elapsed >= animationLength) setState({...state, done: true});
 	}
 
 	const disp = pretty ? printer.prettyNumber(displayValue) : Math.floor(displayValue);

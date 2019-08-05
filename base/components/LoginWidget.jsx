@@ -107,9 +107,15 @@ const SocialSignin = ({verb, services}) => {
 	if (verb === 'reset') return null;
 	if (!services) return null;
 
+	const buttons = services.map(service => (
+		<div className="form-group">
+			<SocialSignInButton service={service} verb={verb} key={service} />
+		</div>
+	));
+
 	return (
 		<div className="social-signin">
-			{ services.map(service => <SocialSignInButton service={service} verb={verb} key={service} />)}
+			{buttons}
 			<p><small>We will never share your data or post to social media without your consent.
 				You can read our <a href={C.app.privacyPolicy || 'https://sogive.org/privacy-policy.html'} target="_new">privacy policy</a> for more information.
 			</small></p>
@@ -128,11 +134,9 @@ const SocialSignInButton = ({className = "btn btn-default signin", children, ser
 	if (size) className += (' btn-' + size);
 
 	return (
-		<div className='form-group'>
-			<button onClick={() => socialLogin(service)} className={className} onMouseOver={onMouseOver}>
-				{children}
-			</button>
-		</div>
+		<button onClick={() => socialLogin(service)} className={className} onMouseOver={onMouseOver}>
+			{children}
+		</button>
 	);
 };
 

@@ -33,12 +33,12 @@ http://tobiasahlin.com/spinkit/
 */
 Misc.Loading = ({text}) => (
 	<div className='loader-box' style={{textAlign: 'center'}}>
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" style={{margin: 'auto', display:'block', height: '120px', width: '120px'}}>
-				<g style={{fill: 'none', strokeWidth: '20' }}>
-						<path style={{stroke: '#f6ecd1'}} d="M 60 10 a 50 50 0 0 0 -50 50" />
-						<path style={{stroke: '#507e88'}} d="M 10 60 a 50 50 0 0 0 50 50" />
-						<path style={{stroke: '#656565'}} d="M 60 110 a 50 50 0 0 0 50 -50" />
-						<path style={{stroke: '#c73413'}} d="M 110 60 a 50 50 0 0 0 -50 -50" />
+			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style={{margin: 'auto', display:'block', height: '120px', width: '120px'}}>
+				<g style={{stroke: 'none'}}>
+						<path style={{fill: '#f6ecd1'}} d="M 50 0 a 50 50 0 0 0 -50 50 L 10 50 a 40 40 0 0 1 40 -40 Z" />
+						<path style={{fill: '#507e88'}} d="M 0 50 a 50 50 0 0 0 50 50 L 50 90 a 40 40 0 0 1 -40 -40 Z" />
+						<path style={{fill: '#656565'}} d="M 50 100 a 50 50 0 0 0 50 -50 L 90 50 a 40 40 0 0 1 -40 40 Z" />
+						<path style={{fill: '#c73413'}} d="M 100 50 a 50 50 0 0 0 -50 -50 L 50 10 a 40 40 0 0 1 40 40 Z" />
 				</g>
 				<animateTransform attributeName="transform" attributeType="XML" from="0" to="360" dur="2s" type="rotate" repeatCount="indefinite" />
 			</svg>

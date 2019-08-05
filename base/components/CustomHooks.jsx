@@ -6,15 +6,15 @@ import ServerIO from '../plumbing/ServerIOBase';
 const doIfVisible = props => {
 	const {elementReference, fn} = props;
 	
-	const { top, left, bottom, right } = elementReference.getBoundingClientRect();
+	const {top, left, bottom, right} = elementReference.getBoundingClientRect();
 
 	const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 	const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
 
 	// True if div is completely visible
-	const isVisible = ( top >=0 && left >= 0 && bottom <= viewportHeight && right <= viewportWidth ); 
+	const isVisible = top >= 0 && left >= 0 && bottom <= viewportHeight && right <= viewportWidth;
 
-	if ( isVisible ) {
+	if (isVisible) {
 		fn(props);
 	}
 };

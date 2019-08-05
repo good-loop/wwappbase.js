@@ -28,8 +28,9 @@ const AccountMenu = props => {
 
 	// TODO see navbar dropdown
 
-	return (<ul id='top-right-menu' className="nav navbar-nav navbar-right">
-			<li>			
+	return (
+	<ul id='top-right-menu' className="nav navbar-nav navbar-right">
+			<li>
 				<RegisterLink />
 			</li>
 			<li>
@@ -59,7 +60,7 @@ const DesktopMenu = ({active, logoutLink, user}) => (
 				<span className="caret" />
 			</a>
 			<ul className="dropdown-menu">
-				<li><a href="#account">Account</a></li> 
+				<li><a href="#account">Account</a></li>
 				<li role="separator" className="divider" />
 				<li><a href={logoutLink} onClick={() => doLogout()}>Log out</a></li>
 			</ul>
