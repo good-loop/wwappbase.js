@@ -210,7 +210,9 @@ const sogiveid = id => {
 		'tommys': 'tommy-s',
 		'trussell_trust': 'the-trussell-trust',
 		'war_child': 'war-child-uk',
+		'water-aid': 'wateraid',
 		'woodland_trust': 'woodland-trust',
+		'woodland':'woodland-trust',
 		'wwf': 'wwf-uk'
 	}[id];
 

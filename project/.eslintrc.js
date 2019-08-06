@@ -7,6 +7,7 @@ module.exports = {
 	],
 	"rules": {
 		"arrow-body-style": "off",
+		"no-empty-pattern": "warn",
 		"arrow-parens": "off",
 		"brace-style": "warn",		
 		"camelcase": "off", // we use camelCase, but we also break it in places, e.g. myFn2_subFn()

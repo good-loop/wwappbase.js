@@ -12,4 +12,4 @@ class NGO extends DataClass {
 DataClass.register(NGO, "NGO");
 export default NGO;
 
-NGO.description = (ngo) => NGO.isa(ngo) && ngo.description;
+NGO.description = (ngo) => ngo.description;
