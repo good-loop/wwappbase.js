@@ -7,7 +7,7 @@ import $ from 'jquery';
 import SJTest from 'sjtest';
 import {assert, assMatch} from 'sjtest';
 import C from '../../C.js';
-import {encURI, join} from 'wwutils';
+import {encURI} from 'wwutils';
 
 import Login from 'you-again';
 
@@ -149,6 +149,7 @@ ServerIO.search = function(type, filter) {
 	return ServerIO.load(url, params);
 };
 
+
 /**
  * Contains some hacks: 
  * NGO (charity) -> SoGive (except for SoGive)
@@ -165,8 +166,8 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	}
 	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);
-	// but the (some optional so filter) bits together	
-	let url = [ServerIO.APIBASE, domain, servlet. ServerIO.dataspace].filter(x => x).join("/") + "/" + encURI(id)+'.json' + (status? '?status='+status : '');
+	let url = domain + servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json'
+		+ (status? '?status='+status : '');	
 	return url;
 };
 
@@ -226,6 +227,7 @@ const sogiveid = id => {
 /**
  * type -> servlet url
  * This can call different micro-services, e.g. SoGive for charity data.
+ * @returns e.g. "/thingy"
  */
 ServerIO.getEndpointForType = (type) => {
 	// Future: refactor to be pluggable (but this is simpler and clearer for now)
