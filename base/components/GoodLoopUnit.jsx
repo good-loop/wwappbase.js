@@ -1,110 +1,112 @@
-import React, {useRef, useEffect, useState} from 'react';
+import React, {useRef, useCallback, useEffect, useState} from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
-import { assert } from 'sjtest';
 
-const insertAdunitCSS = ({iframe, CSS}) => {
-	const $style = document.createElement('style');
-	$style.type = 'text/css';
-	$style.id = 'vert-css';
-	$style.innerHTML = CSS;
 
-	// (18/02/19) Inserting in to body instead of head is a dumb dumb fix for adunit inserting it's style tag after insertAdunitCSS has already run
-	// Means that, if a user makes edits and then reloads the page, they will see the published ad's CSS rather than their local changes.
-	// Don't think that there is any event I can listen for, and I did not want to have this function run in the render method.
-	iframe.contentDocument.body.appendChild($style);
+const appendEl = (doc, {tag, ...attrs}) => {
+	if (!doc || !doc.createElement || !tag) return;
+	const el = doc.createElement(tag);
+	Object.entries(attrs).forEach(([key, val]) => {
+		el[key] = val;
+	});
+	doc.body.appendChild(el);
+}
+
+
+/**
+	* Insert custom CSS into the adunit's iframe
+	* Why do this when the adunit already manages its own CSS?
+	* Because it's MUCH faster and more reliable than reloading the ad when iterating design in the portal.
+	*/
+const insertAdunitCss = ({frame, css}) => {
+	if (!css || !frame) return; // don't worry if frame doesn't have a doc, appendEl is safe for that
+	// Remove any pre-existing vert-css
+	removeAdunitCss({frame});
+
+	// Note from Mark 18 Feb 2019: We insert CSS into body instead of head to guarantee it appears later in the
+	// document than the #vert-css tag inserted by the adunit - so it takes precedence & overrides as expected.
+	appendEl(frame.contentDocument, {tag: 'style', type: 'text/css', id: 'vert-css', class: 'override', innerHTML: css});
+
+	// On unmount: remove the CSS override we inserted but not the original if somehow present
+	return () => removeAdunitCss({frame, selector: '#vert-css.override'});
 };
 
-//TODO: modify to allow ad data to be passed in?
-// Would save a data call on Campaign Page
-const GoodLoopUnit = ({ adID, CSS, size }) => {
-	// TODO: investigate this
-	// Looked as though default parameter was ignored if falsy value is provided as argument to GoodLoopUnit
-	size = size || 'landscape';
 
-	// Get reference to iframe div instantiated by React
-	let iframeRef = useRef();
+/** Remove custom CSS from the adunit's frame */
+const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
+	// this might be called after the iframe has already been destroyed!
+	if (!frame || !frame.contentDocument || !frame.contenDocument.body) return;
+	const cssEls = frame.contenDocument.querySelectorAll(selector) || [];
+	cssEls.forEach(node => node.parentElement.removeChild(node));
+}
 
-	// Load/Reload the adunit
-	useEffect( () => {
-		const iframe = iframeRef.current;
-		if( !iframe ) return;
 
-		// Load specific ad if given, random ad if not
-		let src = ServerIO.AS_ENDPOINT + '/unit.js?gl.status=DRAFT&gl.size=' + size + '&';
-		if ( adID ) src += ('gl.vert=' + adID + '&');
+const insertUnit = ({frame, unitJson, vertId, status, size}) => {
+	if (!frame) return;
+	const doc = frame.contentDocument;
+	const docBody = doc && doc.body;
 
-		const $container = document.createElement('div');
-		$container.className = 'goodloopad'; 
+	// Insert preloaded unit.json, if we have it
+	if (unitJson) appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
 
-		const $script = document.createElement('script');
-		$script.src = src;
-		$script.async = true;
-		
-		iframe.contentDocument.body.appendChild($script);
-		iframe.contentDocument.body.appendChild($container);
+	// Insert the element the unit goes in
+	appendEl(doc, {tag: 'div', className:'goodloopad'});
 
-		return () => iframe.contentDocument && iframe.contentDocument.body ? iframe.contentDocument.body.innerHTML = '' : null;
-	}, [adID, size, iframeRef]);
+	// Insert unit.js
+	let params = []
+	if (status) params.push(`gl.status=${status}`); // show published version unless otherwise specified
+	if (size) params.push(`gl.size=${size}`); // If size isn't specified, the unit will pick a player-type to fit the container
+	if (vertId) params.push(`gl.vert=${vertId}`); // If adID isn't specified, we'll get a random ad.
+	const src = `${ServerIO.AS_ENDPOINT}/unit.js${params.length ? '?' + params.join('&') : ''}`;
+	appendEl(doc, {tag: 'script', src, async: true});
 
-	// Calculated styling for iframe containing the adunit
-	const [frameStyle, setFrameStyle] = useState({});
+	// On unmount: empty out iframe's document
+	return () => { docBody ? docBody.innerHTML = '' : null; };
+};
 
-	// Set the frame dimensions
-	useEffect( () => {
-		const iframe = iframeRef.current;
-		if( !iframe ) return;
 
-		const setIframeDimensions = () => {
-			// Set iframe dimensions
-			const goodLoopContainerBoundingRect = iframe.parentElement.getBoundingClientRect();
-			// 16:9
-			if ( size === 'landscape') {
-				const width = goodLoopContainerBoundingRect.width;
-				setFrameStyle({
-					width,
-					height: 0.5625 * width
-				});
-			} 
-			// 9:16
-			else if ( size === 'portrait' ) {
-				const height = goodLoopContainerBoundingRect.height;
-				setFrameStyle({
-					height,
-					width: 0.5625 * height
-				});
-			}
-		};
-		setIframeDimensions();
-		
-		// Recalculate if size changes
-		// NB: This may be called twice on some devices. Not ideal, but doesn't seem too important
-		window.addEventListener('resize', setIframeDimensions);
-		window.addEventListener('orientationchange', setIframeDimensions);		
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson}) => {
+	const [state, setState] = useState({});
+	const {container, iframe} = state;
 
-		return () => {
-			window.removeEventListener('resize', setIframeDimensions);
-			window.removeEventListener('orientationchange', setIframeDimensions);
-		};
-	}, [iframeRef, size]);
-
-	// Insert CSS in to the head
-	// Decided to continue with this rather than loading DRAFT because I have no good way of knowing when back-end will have updated with user's changes. At best will be much slower.
-	let goodloopframe = iframeRef.current && iframeRef.current.contentDocument && iframeRef.current.contentDocument.querySelector('.goodloopframe');
-	useEffect( () => {
-		if( ! (goodloopframe && goodloopframe.contentDocument && goodloopframe.contentDocument.body) ) return;
-
-		insertAdunitCSS({iframe: goodloopframe, CSS});
-		// Has the adunit already inserted a custom CSS tag?
-		// If so, delete it. Use querySelectorAll in case multiple tags were accidentaly inserted
-		return () => {
-			const $adunitCSS = ( goodloopframe.contentDocument && goodloopframe.contentDocument.querySelectorAll('#vert-css') ) || [];
-			$adunitCSS.forEach( node => node.parentElement.removeChild(node) );
+	// Record the container and iframe when they're put in the DOM
+	const receiveRef = ((name, node) => {
+		if (node && node !== state[name]) {
+			// Make element available in this function and provoke a redraw
+			setState({...state, [name]: node});
 		}
-	}, [CSS, goodloopframe]);
+	});
+
+	const frameDoc = iframe && iframe.contentDocument;
+	const goodloopframe = frameDoc && frameDoc.querySelector('.goodloopframe');
+
+	// Redo CSS when CSS or adunit frame changes
+	useEffect(() => insertAdunitCss({frame: goodloopframe, css}), [css, goodloopframe]);
+
+	// Load/Reload the adunit when vert-ID, unit size, or iframe container changes
+	useEffect(() => insertUnit({frame: iframe, unitJson, vertId, status, size}), [iframe, unitJson, vertId, size, status]);
+
+	// Set up listeners to redraw this component on window resize or rotate
+	useEffect(() => {
+		window.addEventListener('resize', setState);
+		window.addEventListener('orientationchange', setState);
+
+		return () => {
+			window.removeEventListener('resize', setState);
+			window.removeEventListener('orientationchange', setState);
+		};
+	}, []);
+
+	const dims = {}; // Calculate dimensions every render because it's cheap and KISS
+	if (container) {
+		const { width, height } = container.getBoundingClientRect();
+		// 16:9 --> 100% width, proportional height; 9:16 --> 100% height, proportional width
+		if (size === 'landscape') dims.height = `${width * 0.5625}px`; // 0.5625 = 9/16
+		else if (size === 'portrait') dims.width = `${height * 0.5625}px`;
+	}
 
 	return (
-		<div className="goodLoopContainer">
-			<iframe ref={iframeRef} frameBorder={0} scrolling='auto' style={frameStyle} />
+		<div className="goodLoopContainer" style={dims} ref={(node) => receiveRef('container', node)}>
+			<iframe frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} ref={(node) => receiveRef('iframe', node)} />
 		</div>
 	);
 };
