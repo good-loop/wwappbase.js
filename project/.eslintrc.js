@@ -97,7 +97,7 @@ module.exports = {
 		"react/jsx-wrap-multilines": "off",
 		"react/no-array-index-key": "off",
 		"react/no-array-index-key": "warn",
-		"react/no-multi-comp": "warn",
+		"react/no-multi-comp": "off",
 		"react/no-unescaped-entities": "warn",
 		"react/no-unused-state": "warn",
 		"react/prefer-stateless-function": "warn",
