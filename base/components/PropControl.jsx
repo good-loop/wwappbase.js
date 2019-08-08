@@ -876,6 +876,9 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 		bg = '';
 		className = 'stripe-bg';
 	}
+
+	// WARNING: the <Dropzone > code below does not work with recent versions of Dropzone! v4.3.0 has been tested and works.
+
 	return (<div>
 		<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
 		<div className='pull-left'>
