@@ -1,4 +1,4 @@
-import React, {useRef, useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
 
 
@@ -65,8 +65,9 @@ const insertUnit = ({frame, unitJson, vertId, status, size}) => {
 
 
 const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson}) => {
+	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [state, setState] = useState({});
-	const {container, iframe} = state;
+	const {container, frame} = state;
 
 	// Record the container and iframe when they're put in the DOM
 	const receiveRef = ((name, node) => {
@@ -76,14 +77,14 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson}) => {
 		}
 	});
 
-	const frameDoc = iframe && iframe.contentDocument;
+	const frameDoc = frame && frame.contentDocument;
 	const goodloopframe = frameDoc && frameDoc.querySelector('.goodloopframe');
 
 	// Redo CSS when CSS or adunit frame changes
 	useEffect(() => insertAdunitCss({frame: goodloopframe, css}), [css, goodloopframe]);
 
 	// Load/Reload the adunit when vert-ID, unit size, or iframe container changes
-	useEffect(() => insertUnit({frame: iframe, unitJson, vertId, status, size}), [iframe, unitJson, vertId, size, status]);
+	useEffect(() => insertUnit({frame, unitJson, vertId, status, size}), [frame, unitJson, vertId, size, status]);
 
 	// Set up listeners to redraw this component on window resize or rotate
 	useEffect(() => {
@@ -96,7 +97,8 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson}) => {
 		};
 	}, []);
 
-	const dims = {}; // Calculate dimensions every render because it's cheap and KISS
+	// Calculate dimensions every render because it's cheap and KISS
+	const dims = {};
 	if (container) {
 		const { width, height } = container.getBoundingClientRect();
 		// 16:9 --> 100% width, proportional height; 9:16 --> 100% height, proportional width
@@ -106,7 +108,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson}) => {
 
 	return (
 		<div className="goodLoopContainer" style={dims} ref={(node) => receiveRef('container', node)}>
-			<iframe frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} ref={(node) => receiveRef('iframe', node)} />
+			<iframe frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} ref={(node) => receiveRef('frame', node)} />
 		</div>
 	);
 };

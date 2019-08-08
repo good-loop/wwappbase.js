@@ -44,23 +44,27 @@
 }
 
 img.logo {
-	width: 48px;
-	height: 48px;
+	width: 4em;
+	height: 4em;
+}
+img.logo-xsmall {
+	width: 1em;
+	height: 1em;
 }
 img.logo-small {
-	width: 16px;
-	height: 16px;
+	width: 2em;
+	height: 2em;
 }
 img.logo-large {
-	width: 64px;
-	height: 64px;
+	width: 6em;
+	height: 6em;
 }
 img.logo-xlarge {
-	width: 128px;
-	height: 128px;
+	width: 8em;
+	height: 8em;
 }
 img {
-	&.logo, &.logo-small, &.logo-large, &.logo-xlarge {
+	&.logo, &.logo-xsmall, &.logo-small, &.logo-large, &.logo-xlarge {
 		object-fit: contain; // allow square container but keep proportions
 	}
 }
