@@ -153,8 +153,8 @@ Misc.Time = ({time}) => {
  */
 Misc.Logo = ({service, size, color = true, square = true}) => {
 	assert(service, 'Misc.Logo');
-	// We can handle these services with FontAwesome icons
-	if ({twitter: 1, facebook: 1, instagram: 1}[service]) {
+	// Social media - We can handle these services with FontAwesome icons
+	if ('twitter facebook instagram'.indexOf(service) !== -1) {
 		const className = color ? 'color-' + service : null;
 		const fa = service + (square ? '-square' : '');
 		const faSize = { small: '2x', xsmall: null }[size] || '4x'; // default to huge size but allow normal or large
@@ -173,15 +173,15 @@ Misc.Logo = ({service, size, color = true, square = true}) => {
 
 
 /**
- * @deprecated Largely replaced by BS.Icon
- * 
  * Font-Awesome or Glyphicon icons. See also Misc.Logo
  */
 Misc.Icon = ({glyph, fa, size, className, ...rest}) => {
 	const Tag = glyph ? 'span' : 'i';
 	const classes = glyph ? (['glyphicon glyphicon-' + glyph]) : (['fa fa-' + fa]);
 
-	if (size) classes.push('fa-' + size);
+	if (size) {
+		classes.push('fa-' + size);
+	}
 	if (className) classes.push(className);
 	
 	return <Tag className={classes.join(' ')} aria-hidden="true" {...rest} />;

@@ -30,13 +30,19 @@ const VERB_PATH = ['widget','LoginWidget','verb'];
 
 const STATUS_PATH = ['widget', 'LoginWidget', 'status'];
 
-const LoginLink = ({className, onClick, style, verb='Login'}) => {
-	return (<a className={className} href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); onClick && onClick(e); } } style={style} >
-		{verb}
+/**
+ * Note: verb is @deprecated in favour of children
+ */
+const LoginLink = ({className, onClick, style, verb, children}) => {
+	if ( ! verb && ! children) verb = 'Login'; // default text
+	return (<a className={className} href={window.location} 
+		onClick={ e => { e.preventDefault(); e.stopPropagation(); LoginWidget.show(); onClick && onClick(e); } } style={style} >
+		{verb}{children}
 	</a>);
 	
 };
 
+// ??why does this have a special onClick??
 const RegisterLink = ({className, onClick, ...props}) => <LoginLink 
 	className={className} 
 	onClick={() => {props.onClick && props.onClick(); LoginWidget.changeVerb('register');}} 
