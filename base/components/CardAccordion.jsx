@@ -6,6 +6,7 @@ import { join } from 'wwutils';
 
 /**
  * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
+ * This also provides some robustness via try-catch error handling.
  * 
  * You can wrap these cards -- if you do, pass down misc parameters to enable the CardAccordion wiring to work. e.g.
  * <Foo {...stuff}> => <Misc.Card {...stuff}>
@@ -16,45 +17,59 @@ import { join } from 'wwutils';
  * @param warning {any} If set, colour the card yellow
  * @param {?String} className - Added to the BS panel classes
  */
-const Card = ({title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, titleClassName, warning, error, ...props}) => {
-	// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.	
-	// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
-	if ( ! children) {
-		return null; 
+
+class Card extends React.Component {
+	/**
+	 * Use a component to limit errors to within a card
+	 */
+	componentDidCatch(error, info) {
+		this.setState({error, info});
+		console.error(error, info); 
+		if (window.onerror) window.onerror("Card caught error", null, null, null, error);
 	}
-	let header = null;
-	if (title || titleChildren) {
-		// if ( ! onHeaderClick) {
-		// 	console.log("No onHeaderClick for "+className+" "+title);
-		// }
-		let hoverText = null;
-		if (error && _.isString(error)) hoverText = error;
-		else if (warning && _.isString(warning)) hoverText = warning;
-		header = (
-			<div className={join('panel-heading', onHeaderClick? 'btn-link' : null)} onClick={onHeaderClick} 
-				title={hoverText} >
-				<h3 className={join('panel-title', titleClassName)}>
-					{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
-					{title || <span>&nbsp;</span>} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
-				</h3>
-				{ titleChildren }
+
+	render() {
+		let {title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, titleClassName, warning, error, ...props} = this.props;
+		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.	
+		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
+		if ( ! children) {
+			return null; 
+		}
+		let header = null;
+		if (title || titleChildren) {
+			// if ( ! onHeaderClick) {
+			// 	console.log("No onHeaderClick for "+className+" "+title);
+			// }
+			let hoverText = null;
+			if (error && _.isString(error)) hoverText = error;
+			else if (warning && _.isString(warning)) hoverText = warning;
+			header = (
+				<div className={join('panel-heading', onHeaderClick? 'btn-link' : null)} onClick={onHeaderClick} 
+					title={hoverText} >
+					<h3 className={join('panel-title', titleClassName)}>
+						{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
+						{title || <span>&nbsp;</span>} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
+					</h3>
+					{ titleChildren }
+				</div>
+			);
+		}
+
+		let panelType = "panel-default"
+		if (error) panelType = "panel-danger";
+		else if (warning) panelType = "panel-warning";
+
+		return (
+			<div className={join("Card panel", panelType, className)}>
+				{header}
+				<div className={'panel-body' + (collapse? ' collapse' : '') }>
+						{collapse? null : children}
+					</div>
 			</div>
 		);
-	}
+	};
+}; // ./Card
 
-	let panelType = "panel-default"
-	if (error) panelType = "panel-danger";
-	else if (warning) panelType = "panel-warning";
-
-	return (
-		<div className={join("Card panel", panelType, className)}>
-			{header}
-			<div className={'panel-body' + (collapse? ' collapse' : '') }>
-					{collapse? null : children}
-				</div>
-		</div>
-	);
-};
 
 /**
  * 
