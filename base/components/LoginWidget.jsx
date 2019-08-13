@@ -129,9 +129,10 @@ const SocialSignin = ({verb, services}) => {
 	);
 };
 
-const SocialSignInButton = ({className = "btn btn-default signin", children, service, verb = 'sign in', size}) => {
+const SocialSignInButton = ({className = "btn btn-default btn-lg signin", children, service, verb = 'sign in', size}) => {
 	if (!canSignIn[service]) return null;
-	if (!children) children = <><Misc.Logo size='small' service={service} color={false} square={false} /> {toTitleCase(verb)} with {toTitleCase(service)}</>;
+	if (!children) children = <><Misc.Logo size='xsmall' service={service} color={false} square={false} /> {toTitleCase(verb)} with {toTitleCase(service)}</>;
+	
 	// TODO this will prep FB on mouseover -- But what about mobile or fast clickers?
 	// TODO You Again should catch failure, and switch to a click through approach.
 	const onMouseOver = service === 'facebook' ? () => Login.prepFB(C.app.facebookAppId) : null;
@@ -251,7 +252,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 			</div>}
 			{verb==='reset' && DataStore.getValue('widget', 'LoginWidget', 'reset-requested')? <div className="alert alert-info">A password reset email has been sent out.</div> : null}
 			<div className="form-group">
-				<button type="submit" className="btn btn-primary form-control" disabled={C.STATUS.isloading(status)}>
+				<button type="submit" className="btn btn-lg btn-primary" disabled={C.STATUS.isloading(status)}>
 					{ buttonText }
 				</button>
 			</div>
@@ -270,7 +271,7 @@ const ResetLink = ({verb}) => {
 		DataStore.setValue(VERB_PATH, 'reset');
 	};
 	return (
-		<div className='pull-right'>
+		<div className='pull-left'>
 			<small>
 				<a onClick={toReset}>Forgotten password?</a>
 			</small>
@@ -316,13 +317,13 @@ const SwitchVerb = ({verb}) => {
 	if (verb === 'register') {
 		return (
 			<div className='switch-verb'>
-				Already have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && LoginWidget.changeVerb('login')} >Login</button>
+				Already have an account? <button className='btn btn-lg btn-primary' onClick={e => stopEvent(e) && LoginWidget.changeVerb('login')} >Login</button>
 			</div>
 		);
 	}
 	return (
 		<div className='switch-verb'>
-			Don&#39;t yet have an account? <button className='btn btn-primary' onClick={e => stopEvent(e) && LoginWidget.changeVerb('register')} >Register</button>
+			Don&#39;t yet have an account? <button className='btn btn-lg btn-primary' onClick={e => stopEvent(e) && LoginWidget.changeVerb('register')} >Register</button>
 		</div>
 	);
 };

@@ -157,7 +157,7 @@ Misc.Logo = ({service, size, color = true, square = true}) => {
 	if ('twitter facebook instagram'.indexOf(service) !== -1) {
 		const className = color ? 'color-' + service : null;
 		const fa = service + (square ? '-square' : '');
-		const faSize = { small: '2x', xsmall: null }[size] || '4x'; // default to huge size but allow normal or large
+		const faSize = (size === 'xsmall') ? null : (size === 'small') ? '2x' : '4x'; // default to xlarge size, allow normal or large
 		return <Misc.Icon className={className} fa={fa} size={faSize} />
 	};
 	
