@@ -22,14 +22,14 @@ logoutLink {string} what page should be loaded after logout ('#dashboard' by def
 TODO use react for the dropdown state - not bootstrap.js
 */
 
-const AccountMenu = props => {
+const AccountMenu = (props) => {
 	const isMobile = window.innerWidth <= 767;
-	
+	const {noRegister} = (props || {});
 	// TODO see navbar dropdown
 	if (!Login.isLoggedIn()) {
 		return (
 			<ul id='top-right-menu' className="nav navbar-nav navbar-right">
-				{props.noRegister ? '' : <li><RegisterLink /></li>}
+				{noRegister ? '' : <li><RegisterLink /></li>}
 				<li><LoginLink /></li>
 			</ul>
 		);
