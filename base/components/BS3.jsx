@@ -7,35 +7,23 @@ import BS, {join, classes} from './BS';
 
 BS.version = 3;
 
-// NB: the `!! checked` is to avoid React complaining about a change from uncontrolled to controlled.
-BS.Checkbox = ({name, checked, value, label, onChange, inline}) => {
-	const input = <input type="checkbox" name={name} value={value} onChange={onChange} checked={ !! checked} />;
-	if (inline) {
-		// no wrapping div - c.f. https://getbootstrap.com/docs/3.3/css/#checkboxes-and-radios
-		return (<label className='checkbox-inline'>{input} {label}</label>);
-	} else {
-		// wrapping div
-		return (<div className="checkbox"><label>{input} {label}</label></div>);
-	}
-};
+/** A checkbox input */
+BS.Checkbox = (props) => binaryInput({type: 'checkbox', ...props});
 
-/**
- * A radio input
- */
-BS.Radio = ({name, checked, value, label, onChange, inline}) => inline?
-	(
-		<label className={inline? 'radio-inline' : null}>
-			<input type="radio" name={name} value={value} onChange={onChange} checked={checked} />
-			{label}
-		</label>
+/** A radio input */
+BS.Radio = (props) => binaryInput({type: 'radio', ...props});
+
+/** Common code for checkbox and binary */
+const binaryInput = ({type, name, checked, value, label, onChange, inline}) => {
+	// Double-invert checked to coerce it from undefined to false so React doesn't complain about changing from uncontrolled to controlled input
+	const input = <input type={type} name={name} value={value} onChange={onChange} checked={!!checked} />;
+	// No wrapping div for inline - c.f. https://getbootstrap.com/docs/3.3/css/#checkboxes-and-radios
+	return inline ? (
+		<label className={`${type}-inline`}> {input} {label} </label>
 	) : (
-		<div className="radio">
-			<label className={inline? 'radio-inline' : null}>
-				<input type="radio" name={name} value={value} onChange={onChange} checked={checked} />
-				{label}
-			</label>
-		</div>
+		<div className={type}><label> {input} {label} </label></div>
 	);
+};
 
 
 // TODO for LoginWidget
@@ -79,6 +67,7 @@ BS.Icon = ({name}) => <span className={'glyphicon glyphicon-'+name} aria-hidden=
 BS.Center = ({children}) => <div className='text-center'>{children}</div>;
 BS.Centre = BS.Center; // UK or US
 
+
 /**
  * a bordered well (becomes a type of Card in BS4)
  */
@@ -90,18 +79,19 @@ BS.Row = ({children}) => <div className='row'>{children}</div>;
  * TODO does dflt col work in BS3??
  * @param width {Number[1,12]} Use width for cross-size width. Use sm,md,lg,xl for size-specific widths
  */
-BS.Col = ({width, sm, md, lg, xl, children}) => <div className={classes({prefix:"col", sep:'-', "":width, sm, md, lg, xl, dflt:"col"})}>{children}</div>;
+BS.Col = ({width, sm, md, lg, xl, children}) => <div className={classes({prefix: 'col', sep: '-', '': width, sm, md, lg, xl, dflt: 'col'})}>{children}</div>;
+
 
 /**
  * @param show {Boolean} The caller must manage show / closed via this + onHide()
  */
 BS.Modal = ({children, show, className, onHide}) => {
-	const cs = join("modal fade", show?'show':null);
+	const cs = join('modal fade', show ? 'show' : null);
 
 	// Add onHide to children
 	if (children) {
 		// NB: with one child is not an array
-		if ( ! _.isArray(children)) children = [children];		
+		if ( ! _.isArray(children)) children = [children];
 		// filter null, undefined
 		children = children.filter(x => !! x);
 		children = React.Children.map(children, (Kid, i) => {
@@ -112,39 +102,46 @@ BS.Modal = ({children, show, className, onHide}) => {
 
 	// TODO listen for Esc -- add/remove a handler with useEffect
 
-	return (<div><div className={cs} style={{display: show?'block':'none'}} tabIndex="-1" role="dialog" onClick={e => onHide(e)}>
-  				<div className="modal-dialog" role="document">
-    				<div className="modal-content">
-					{children}
+	return (
+		<div>
+			<div className={cs} style={{display: show?'block':'none'}} tabIndex="-1" role="dialog" onClick={e => onHide(e)}>
+				<div className="modal-dialog" role="document">
+					<div className="modal-content">
+						{children}
 					</div>
 				</div>
-	</div>
-	<div className={join("modal-backdrop fade", show?'show':null)}></div>
-	</div>);
+			</div>
+			<div className={join("modal-backdrop fade", show?'show':null)}></div>
+		</div>
+	);
 };
+
 BS.Modal.Header = ({logo, title, children, onHide}) => {
-	return (<div className="modal-header">
-		{title? <BS.Modal.Title title={title} /> : null}
-		{children}
-		<button type="button" className="close" aria-label="Close" onClick={e => onHide(e)}><span aria-hidden="true">&times;</span></button>
-      </div>);
+	return (
+		<div className="modal-header">
+			{title? <BS.Modal.Title title={title} /> : null}
+			{children}
+			<button type="button" className="close" aria-label="Close" onClick={e => onHide(e)}>
+				<span aria-hidden="true">&times;</span>
+			</button>
+		</div>
+	);
 };
-BS.Modal.Title = ({logo, title, children}) => {
-	return <h5 className="modal-title">{logo} {title} {children}</h5>
-};
-BS.Modal.Body = ({children}) => {
-	return <div className='modal-body'>{children}</div>;
-};
-BS.Modal.Footer = ({children}) => {
-	return <div className='modal-footer'>{children}</div>;
-};
+
+BS.Modal.Title = ({logo, title, children}) => <h5 className="modal-title">{logo} {title} {children}</h5>;
+
+BS.Modal.Body = ({children}) => <div className='modal-body'>{children}</div>;
+
+BS.Modal.Footer = ({children}) => <div className='modal-footer'>{children}</div>;
 
 
 /**
  * @param placement {?String} e.g. "fixed-top"
  */
-BS.Nav = ({children, className, placement="fixed-top", color="dark"}) => {
-	return <nav className={join('navbar', placement? 'navbar-'+placement : null, color==='dark' || color==='inverse'? 'navbar-inverse' : null, className)}>{children}</nav>;
+BS.Nav = ({children, className, placement = 'fixed-top', color = 'dark'}) => {
+	const classes = ['navbar', placement ? `navbar-${placement}` : null, {dark: 1, inverse: 1}[color] ? 'navbar-inverse' : null, className];
+
+	return <nav className={join(classes)}> {children} </nav>;
 };
 
 export default BS;

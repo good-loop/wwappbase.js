@@ -13,22 +13,19 @@ export default BS;
 /**
  * Convenience for doing base-css-class + optional-extra-css-class
  */
-const join = (...strings) => strings.filter(s => s).join(" ");
+const join = (...strings) => strings.filter(s => s).join(' ');
 
 /**
- * Prune nulls and join with prefixclass space
+ * Turns eg { prefix: 'col', sep: '-', lg: 2, md: 1 } into 'col-lg-2 col-md-1'
+ * Useful for Bootstrap context-sensitive sizing - used by Col in BS3.jsx
  */
-const classes = ({prefix, sep="", dflt, ...props}) => {
-	let c = "";
-	let keys = Object.keys(props);
-	for(let i=0; i<keys.length; i++) {
-		const k = keys[i];
-		const v = props[k];
-		if ( ! v) continue;
-		c += (i===0?"":" ")+prefix+sep+k+sep+v;
-	}
-	if ( ! c) return dflt;
-	return c;
+const classes = ({ prefix, sep = '', dflt, ...props }) => {
+	if (!props) return dflt;
+	let entries = Object.entries(props);
+	
+	return entries.reduce((acc, [key, val], i) => (
+		acc + (i > 0 ? ' ' : '' + prefix + sep + key + sep + val)
+	), '') || dflt;
 };
 
 /**
