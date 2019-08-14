@@ -129,7 +129,7 @@ const SocialSignin = ({verb, services}) => {
 	);
 };
 
-const SocialSignInButton = ({className = "btn btn-default btn-lg signin", children, service, verb = 'sign in', size}) => {
+const SocialSignInButton = ({className = "btn btn-default signin", children, service, verb = 'sign in', size}) => {
 	if (!canSignIn[service]) return null;
 	if (!children) children = <><Misc.Logo size='xsmall' service={service} color={false} square={false} /> {toTitleCase(verb)} with {toTitleCase(service)}</>;
 	
