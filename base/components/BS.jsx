@@ -15,7 +15,7 @@ export default BS;
  * The call to flat() means you can pass an arg list or an array OR multiple arrays
  * ...but not more than 1 layer deep without changing it to flat(2) etc
  */
-const join = (...strings) => strings.flat().filter(s => !!s).join(' ');
+const join = (...strings) => strings.filter(s => !!s).join(' ');
 
 /**
  * Turns eg { prefix: 'col', sep: '-', lg: 2, md: 1 } into 'col-lg-2 col-md-1'

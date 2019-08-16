@@ -60,7 +60,7 @@ BS.Button = ({children, className, ...stuff}) => <button className={className} {
  */
 BS.Nav = ({children, className, placement="fixed-top", color="dark"}) => {
 	const classes = ['navbar', 'navbar-expand-md', placement, color ? `navbar-${color} bg-${color}` : null, className];
-	return <nav className={join(classes)}>{children}</nav>;
+	return <nav className={join(...classes)}>{children}</nav>;
 };
 
 export default BS;

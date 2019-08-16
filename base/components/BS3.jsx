@@ -140,7 +140,7 @@ BS.Modal.Footer = ({children}) => <div className='modal-footer'>{children}</div>
  */
 BS.Nav = ({children, className, placement = 'fixed-top', color = 'dark'}) => {
 	const classes = ['navbar', placement ? `navbar-${placement}` : null, {dark: 1, inverse: 1}[color] ? 'navbar-inverse' : null, className];
-	return <nav className={join(classes)}> {children} </nav>;
+	return <nav className={join(...classes)}> {children} </nav>;
 };
 
 export default BS;
