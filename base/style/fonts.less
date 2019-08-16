@@ -37,6 +37,7 @@ e.g.
 
 // See https://drive.google.com/drive/folders/0Bz6LfeTw60y3UXlIbVVPRmlpNnc
 // new fonts (updated G-L design from Emilia)
+/*
 @font-face {
 	font-family: "Montserrat Extrabold";
 	src: url('/base-fonts/montserrat-extrabold.woff2') format('woff2'),
@@ -76,23 +77,31 @@ e.g.
 	font-weight: normal;
 	font-style: normal;
 }
+*/
+
+// Something messed up the hinting in our use of Tajawal above and made it look extremely weird on Windows.
+// Instead of spending more time fooling around - let's just pull directly from Google Fonts.
+@import url('https://fonts.googleapis.com/css?family=Montserrat:600,800|Tajawal&display=swap');
 
 .header-font {
-	font-family: "Montserrat Extrabold", helvetica, sans-serif;
+	font-family: "Montserrat", sans-serif;
+	font-weight: 800;
 	text-transform: uppercase;
 } 
 .sub-header-font {
-	font-family: "Montserrat Semibold", sans-serif;	
+	font-family: "Montserrat", sans-serif;
+	font-weight: 600;
 }
 .body-font {
-	font-family: "Tajawal Regular", helvetica, serif;
+	font-family: "Tajawal", sans-serif;
+	font-weight: 400;
 }
 
 body {
 	.body-font();
 }
 
-h1,h2,.h1,.h2 {
+h1, h2, .h1, .h2 {
 	.header-font();	
 }
 /* NB ,h3,h4,h5 look too cramped in Bebas */
