@@ -96,6 +96,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson}) => {
 	const receiveContainer = useCallback(node => setContainer(node), []);
 
 	const frameDoc = frame && frame.contentDocument;
+	const frameReady = frameDoc && frameDoc.readyState === 'complete'; // Needed for Chrome as onload doesn't fire on about:blank frames
 	const goodloopframe = frameDoc && frameDoc.querySelector('.goodloopframe');
 
 	// Redo CSS when CSS or adunit frame changes
@@ -103,8 +104,8 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson}) => {
 
 	// Load/Reload the adunit when vert-ID, unit size, or iframe container changes
 	useEffect(() => {
-		if (frameLoaded) insertUnit({frame, unitJson, vertId, status, size});
-	}, [frameLoaded, frame, unitJson, vertId, size, status]);
+		if (frameLoaded || frameReady) insertUnit({frame, unitJson, vertId, status, size});
+	}, [frameLoaded, frameReady, frame, unitJson, vertId, size, status]);
 
 	// Set up listeners to redraw this component on window resize or rotate
 	useEffect(() => {
