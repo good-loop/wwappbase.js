@@ -269,13 +269,14 @@ const startStatusForAction = (action) => {
  */
 const serverStatusForAction = (action) => {
 	switch(action) {
-		case C.CRUDACTION.save: 
-		case C.CRUDACTION.discardEdits: 
+		case C.CRUDACTION.copy:
+		case C.CRUDACTION.save:
+		case C.CRUDACTION.discardEdits:
 		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
-		case C.CRUDACTION.publish: 
+		case C.CRUDACTION.publish:
 			return C.KStatus.PUBLISHED;
-		case C.CRUDACTION.unpublish: 
+		case C.CRUDACTION.unpublish:
 			return C.KStatus.DRAFT;
 	}
 	throw new Error("TODO serverStatusForAction "+action);
