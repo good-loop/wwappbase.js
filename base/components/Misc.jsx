@@ -113,6 +113,11 @@ Misc.Col2 = ({children, noContainer}) => {
  * @param amount {?Money|Number}
  */
 Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits = 2, maximumSignificantDigits}) => {
+	if (_.isString(amount)) {
+		console.warn("Misc.Money - Please use numbers NOT strings: ", amount);
+		// sanitise string and parse to number
+		amount = parseFloat(amount.replace(/[£$,]/g,''));
+	}
 	const snum = Money.prettyString({amount, minimumFractionDigits, maximumFractionDigits, maximumSignificantDigits});
 	const currencyCode = ((amount || 0).currency || 'GBP').toUpperCase();
 	return (
