@@ -43,7 +43,7 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 }
 
 
-const insertUnit = ({frame, unitJson, vertId, status, size}) => {
+const insertUnit = ({frame, unitJson, vertId, status, size, play}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -59,6 +59,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size}) => {
 	if (status) params.push(`gl.status=${status}`); // show published version unless otherwise specified
 	if (size) params.push(`gl.size=${size}`); // If size isn't specified, the unit will pick a player-type to fit the container
 	if (vertId) params.push(`gl.vert=${vertId}`); // If adID isn't specified, we'll get a random ad.
+	if (play) params.push(`gl.play=${play}`)
 	const src = `${ServerIO.AS_ENDPOINT}/unit.js${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
 
@@ -69,7 +70,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size}) => {
 };
 
 
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible'}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [frameLoaded, setFrameLoaded] = useState(false);
