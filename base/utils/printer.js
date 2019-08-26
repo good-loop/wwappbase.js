@@ -67,13 +67,14 @@ Printer.prototype.prettyNumber = function(x, sigFigs) {
 * @returns {String} Representation of the supplied object.
 */
 Printer.prototype.str = function (object) {
-		if (typeof(object)==='string') return object;
-		try {
-			return JSON.stringify(object);
-		} catch (error) {
-			return JSON.stringify(escapeCircularReferences(object));
-		}
-	};
+	if (typeof(object)==='string') return object;
+	if (typeof(object)==='number') return this.prettyNumber(object);
+	try {
+		return JSON.stringify(object);
+	} catch (error) {
+		return JSON.stringify(escapeCircularReferences(object));
+	}
+};
 
 	function escapeCircularReferences(object, cache) {
 		var escapedObject;
@@ -271,3 +272,5 @@ const printer = new Printer();
 if (typeof module !== 'undefined') {
 	module.exports = printer;
 }	
+// for debug
+if ( ! window.printer) window.printer = printer;

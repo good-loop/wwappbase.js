@@ -3,6 +3,7 @@ import React from 'react';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import { join } from 'wwutils';
+import BS from './BS';
 
 /**
  * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
@@ -12,6 +13,9 @@ import { join } from 'wwutils';
  * <Foo {...stuff}> => <Misc.Card {...stuff}>
  * 
  * @param {String|JSX} title - will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.
+ * 
+ * TODO What is the use-case for titleChildren, titleClassName?? Deprecated??
+ * 
  * @param titleChildren jsx elements to put in the header (can be used with/without title)
  * @param {any} error - If set, colour the card red
  * @param warning {any} If set, colour the card yellow
@@ -44,28 +48,29 @@ class Card extends React.Component {
 			if (error && _.isString(error)) hoverText = error;
 			else if (warning && _.isString(warning)) hoverText = warning;
 			header = (
-				<div className={join('panel-heading', onHeaderClick? 'btn-link' : null)} onClick={onHeaderClick} 
+				<div className={onHeaderClick? 'btn-link' : null} onClick={onHeaderClick} 
 					title={hoverText} >
-					<h3 className={join('panel-title', titleClassName)}>
+					<span className={titleClassName}>
 						{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
 						{title || <span>&nbsp;</span>} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
-					</h3>
+					</span>
 					{ titleChildren }
 				</div>
 			);
 		}
 
+		// TODO use BS.Card -- but how to do collapse??
 		let panelType = "panel-default"
 		if (error) panelType = "panel-danger";
 		else if (warning) panelType = "panel-warning";
+		let color = null;
+		if (error) color = "danger";
+		else if (warning) color = "warning";
 
 		return (
-			<div className={join("Card panel", panelType, className)}>
-				{header}
-				<div className={'panel-body' + (collapse? ' collapse' : '') }>
-						{collapse? null : children}
-					</div>
-			</div>
+			<BS.Card color={color} className={className} title={header}>
+				{collapse? null : children}
+			</BS.Card>
 		);
 	};
 }; // ./Card
@@ -89,30 +94,33 @@ const CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
 	// TODO manage state
 	const wcpath = ['widget', widgetName || 'CardAccordion'];
 	const openPath = wcpath.concat('open');
-	let open = DataStore.getValue(openPath);
+	let opens = DataStore.getValue(openPath); // type boolean[]
 	// Check if there's a predefined initial open state for each child
-	if ( ! open) {
+	if ( ! opens) {
 		let explicitOpen = false;
-		open = React.Children.map(children, (Kid, i) => {
+		opens = React.Children.map(children, (Kid, i) => {
+			if ( ! Kid.props) {
+				return false; // huh? seen Aug 2019 on Calstat
+			}
 			if (Kid.props.defaultOpen !== undefined) explicitOpen = true;
-			return !!Kid.props.defaultOpen;
+			return !! Kid.props.defaultOpen;
 		});
-		if (!explicitOpen) open = [true]; // default to first kid open
+		if ( ! explicitOpen) opens = [true]; // default to first kid open
 	}
 	if ( ! children) {
 		return (<div className='CardAccordion' />);
 	}
-	assert(_.isArray(open), "Misc.jsx - CardAccordion - open not an array", open);
+	assert(_.isArray(opens), "Misc.jsx - CardAccordion - open not an array", opens);
 	// TODO keyword filter
 	const kids = React.Children.map(children, (Kid, i) => {
-		let collapse = ! open[i];
+		let collapse = ! opens[i];
 		let onHeaderClick = e => {
 			if ( ! multiple) {
 				// close any others
-				open = [];
+				opens = [];
 			}
-			open[i] = collapse;
-			DataStore.setValue(openPath, open);
+			opens[i] = collapse;
+			DataStore.setValue(openPath, opens);
 		};
 		// clone with click
 		return React.cloneElement(Kid, {collapse, onHeaderClick: onHeaderClick});

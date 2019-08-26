@@ -28,6 +28,21 @@ BS.Alert = ({color='warning', children}) => {
 };
 
 /**
+ * A card with a card-body, and optional image-cap, title and sub-title
+ * See https://getbootstrap.com/docs/4.3/components/card/
+ */
+BS.Card = ({className, color, imgTop, title, subtitle, children}) => {
+	return (<div className={join("card", color? 'border-'+color : null, className)} >
+  	{imgTop? <img src={imgTop} className="card-img-top" /> : null}
+  	<div className="card-body">
+    {title? <h5 className="card-title">{title}</h5> : null}
+	 {subtitle? <h6 className="card-subtitle text-muted">{subtitle}</h6> : null}
+    {children}
+  </div>
+</div>);
+};
+
+/**
  * BS3 shipped with Glyphicons. But they turned evil, so BS4 ships without.
  */
 BS.Icon = ({name, size, className, ...other}) => {

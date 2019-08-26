@@ -26,6 +26,18 @@ const binaryInput = ({type, name, checked, value, label, onChange, inline}) => {
 };
 
 
+/**
+ * Polyfill for BS4's Card type using Panel
+ * See https://getbootstrap.com/docs/4.3/components/card/ vs https://getbootstrap.com/docs/3.4/components/#panels
+ */
+BS.Card = ({className, color, imgTop, title, subtitle, children}) => {
+	return (<div className={join("panel panel-"+(color||'default'), className)} >
+	{imgTop? <img src={imgTop} class="card-img-top" /> : null}
+	{title? <div className='panel-heading'><h5 className="panel-title">{title}</h5>{subtitle? <h6 className="card-subtitle text-muted">{subtitle}</h6> : null}</div> : null}
+	{children? <div className="panel-body">{children}</div> : null}
+</div>);
+};
+
 // TODO for LoginWidget
 BS.Modal = ({show, onHide, className, children}) => {
 	if ( !show ) return null;
