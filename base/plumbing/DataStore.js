@@ -452,14 +452,15 @@ class Store {
 	 * @param path {String[]}
 	 * @param fetchFn {Function} () -> Promise/value, which will be wrapped using promise-value.
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
-	 * As a convenience hack, this method will extract `cargo` from fetchFn's return, so it can be used
+	 * As a convenience hack, this method will use `JSend` to extract `data` or `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
+	 * If unset, the call will return an inprogress PV, but will not do a fresh fetch.
 	 * @param messaging {?Boolean} If true (the default), try to use Messaging.js to notify the user of failures.
 	 * @param cachePeriod {?Number} Normally unset. If set, cache the data for this long in milliseconds - then re-fetch.
-	 * @returns {PromiseValue} (see promise-value.js)
+	 * @returns {!PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, messaging=true, cachePeriod) { // TODO allow retry after 10 seconds
-		assert(path && fetchFn, "DataStore.js - missing input",path,fetchFn);		
+		assert(path, "DataStore.js - missing input",path);		
 		// in the store?
 		let item = this.getValue(path);
 		if (item!==null && item!==undefined) { 
@@ -486,16 +487,19 @@ class Store {
 	/**
 	 * Does the remote fetching work for fetch()
 	 * @param {String[]} path 
-	 * @param {Function} fetchFn 
+	 * @param {Function} fetchFn If unset (which is unusual), return in-progress or a failed PV
 	 * @param {?Boolean} messaging 
 	 * @param {?Number} cachePeriod 
-	 * @returns {PromiseValue}
+	 * @returns {!PromiseValue}
 	 */
 	fetch2(path, fetchFn, messaging=true, cachePeriod) {
 		// only ask once
 		const fpath = ['transient', 'PromiseValue'].concat(path);
 		const prevpv = this.getValue(fpath);
 		if (prevpv) return prevpv;	
+		if ( ! fetchFn) {
+			return new PromiseValue(null); // nothing in-progress, so return a reject PV
+		}
 		let promiseOrValue = fetchFn();
 		assert(promiseOrValue!==undefined, "fetchFn passed to DataStore.fetch() should return a promise or a value. Got: undefined. Missing return statement?");
 		// Use PV to standardise the output from fetchFn()

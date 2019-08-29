@@ -197,6 +197,11 @@ const PropControl2 = (props) => {
 			if (saveFn) saveFn({path, prop, item, value: val});		
 		};
 		if (value===undefined) value = false;
+		// make sure we don't have "false"
+		if (_.isString(value)) {
+			if (value==='true') value = true;
+			else if (value==='false') value = false;
+		}
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : null;
 		return (<div>
 			<Checkbox checked={value} onChange={onChange} {...otherStuff}>{label} {helpIcon}</Checkbox>

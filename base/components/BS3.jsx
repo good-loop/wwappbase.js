@@ -88,6 +88,7 @@ BS.Well = ({children}) => <div className='well'>{children}</div>;
 BS.Row = ({children}) => <div className='row'>{children}</div>;
 
 /**
+ * e.g. <BS.Col width={3} />
  * TODO does dflt col work in BS3??
  * @param width {Number[1,12]} Use width for cross-size width. Use sm,md,lg,xl for size-specific widths
  */
