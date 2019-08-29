@@ -24,7 +24,7 @@ const join = (...strings) => strings.filter(s => !!s).join(' ');
 const classes = ({ prefix, sep = '', dflt, ...props }) => {
 	if (!props) return dflt;
 	let entries = Object.entries(props);
-	let cs = entries.map(kv => kv[1]? [prefix, kv[0], kv[1]].join(sep) : null);
+	let cs = entries.map(kv => kv[1]? [prefix, kv[0], kv[1]].filter(s => !!s).join(sep) : null);
 	cs = cs.filter(k => k);
 	return cs.length? cs.join(" ") : dflt;
 };
