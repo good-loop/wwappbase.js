@@ -34,13 +34,15 @@ import BS from './BS';
  * @param ListItem {?React component} if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
+ * @param notALink {?boolean} If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).
  */
 const ListLoad = ({type, status, servlet, navpage, 
 	q,
 	sort,
 	hasFilter, // if true, offer a text filter This will be added to q
 	ListItem, 
-	checkboxes, canDelete, canCreate, className}) => 
+	checkboxes, canDelete, canCreate, className,
+	notALink}) => 
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
@@ -122,6 +124,7 @@ const ListLoad = ({type, status, servlet, navpage,
 				canDelete={canDelete} 
 				servlet={servlet}
 				navpage={navpage}
+				notALink={notALink}
 			>
 				<ListItem 
 					type={type} 
@@ -147,7 +150,7 @@ const onPick = ({event, navpage, id, customParams}) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children}) => {
+const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink}) => {
 	const id = getId(item);
 	// for the campaign page we want to manipulate the url to modify the vert/vertiser params 
 	// that means both modifying href and onClick definitions
@@ -162,16 +165,20 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 		</div>
 	) : null;
 
+	// use a or div?
+	// ??Is there a nicer way to do this?
+	const A = ({children, ...stuff}) => notALink? <div {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
+
 	return (
 		<div className='ListItemWrapper clearfix'>
 			{checkbox}
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
-			<a href={itemUrl}
+			<A href={itemUrl}
 				onClick={event => onPick({ event, navpage, id, customParams })}
 				className={'ListItem btn btn-default status-' + item.status}
 			>
 				<div>{children}</div>
-			</a>
+			</A>
 		</div>
 	);
 };
