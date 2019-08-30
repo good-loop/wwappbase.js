@@ -24,8 +24,8 @@ ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for
 
 // HACK our special micro-services
 ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
-ServerIO.ENDPOINT_TASK = 'https://calstat.winterwell.com/task';
-// ServerIO.ENDPOINT_TASK = 'http://localcalstat.winterwell.com/task';
+ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
+// ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
 
 ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = `https://testuploads.good-loop.com/`;
