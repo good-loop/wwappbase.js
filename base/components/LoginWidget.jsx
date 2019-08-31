@@ -51,12 +51,12 @@ const RegisterLink = ({className, onClick, ...props}) => <LoginLink
 />;
 
 /**
-		Login or Signup (one widget)
-		See SigninScriptlet
-		@param render {?JSX} default: LoginWidgetGuts
-
+	Login or Signup (one widget)
+	See SigninScriptlet
+	@param render {?JSX} default: LoginWidgetGuts
+	@param logo {?String} image url. If unset, guess via app.service
 */
-const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='large' transparent={false} />, title, render=LoginWidgetGuts, services}) => {
+const LoginWidget = ({showDialog, logo, title, render=LoginWidgetGuts, services}) => {
 	if (showDialog === undefined) {
 		showDialog = DataStore.getValue(['widget','LoginWidget', 'show']);
 		// NB: the app is shown regardless
@@ -79,7 +79,7 @@ const LoginWidget = ({showDialog, logo=<Misc.Logo service={C.app.service} size='
 		<Modal34 show={showDialog} className="login-modal" onHide={() => LoginWidget.hide()}>
 			<Modal34.Header closeButton>
 				<Modal34.Title>
-					{logo}
+					<Misc.Logo service={C.app.service} url={logo} size='large' transparent={false} />	
 					{title}					
 				</Modal34.Title>
 			</Modal34.Header>
@@ -114,7 +114,7 @@ const SocialSignin = ({verb, services}) => {
 	if (!services) return null;
 
 	const buttons = services.map(service => (
-		<div className="form-group">
+		<div key={service} className="form-group">
 			<SocialSignInButton service={service} verb={verb} key={service} />
 		</div>
 	));

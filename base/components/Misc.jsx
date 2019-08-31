@@ -153,13 +153,15 @@ Misc.Time = ({time}) => {
  * A Logo for a known web service - eg Twitter, Facebook, Instagram, "this app"
  * TODO transparent/opaque (??? -RM)
  * TODO merge with Misc.Icon
+ * @param {String} service e.g. "twitter"
+ * @param {?String} url Can be used instead of `service` to provide an img link
  * @param {Boolean} color True: Use the service's brand colour as foreground colour
  * @param {Boolean} square True: Put the logo inside a rounded square
  */
-Misc.Logo = ({service, size, color = true, square = true}) => {
-	assert(service, 'Misc.Logo');
+Misc.Logo = ({service, url, size, color = true, square = true}) => {
+	assert(service || url, 'Misc.Logo');
 	// Social media - We can handle these services with FontAwesome icons
-	if ('twitter facebook instagram'.indexOf(service) !== -1) {
+	if (service && 'twitter facebook instagram'.indexOf(service) !== -1) {
 		const className = color ? 'color-' + service : null;
 		const fa = service + (square ? '-square' : '');
 		const faSize = (size === 'xsmall') ? null : (size === 'small') ? '2x' : '4x'; // default to xlarge size, allow normal or large
@@ -167,7 +169,7 @@ Misc.Logo = ({service, size, color = true, square = true}) => {
 	};
 	
 	// The rest we have to use images for (Instagram's mesh gradient can't be done in SVG)
-	let file = '/img/' + service + '-logo.svg';
+	let file = url || '/img/' + service + '-logo.svg';
 	if (service === 'instagram') file = '/img/instagram-logo.png';
 	else if (service === C.app.service) file = C.app.logo;
 
