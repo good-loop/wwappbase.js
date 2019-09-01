@@ -6,6 +6,7 @@ module.exports = {
 		"import"
 	],
 	"rules": {
+		"jsx-a11y/tabindex-no-positive": "off",
 		"arrow-body-style": "off",
 		"no-empty-pattern": "warn",
 		"arrow-parens": "off",
