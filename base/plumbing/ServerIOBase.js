@@ -353,7 +353,7 @@ ServerIO.load = function(url, params) {
 			throw response;
 		});
 	return defrd;
-};
+}; // ./load()
 
 /**
  * Just load() with method:POST
