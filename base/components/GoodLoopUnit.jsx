@@ -89,8 +89,8 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 
 	// Load/Reload the adunit when vert-ID, unit size, or iframe container changes
 	useEffect(() => {
-		if (frameLoaded || frameReady) insertUnit({frame, unitJson, vertId, status, size});
-	}, [frameLoaded, frameReady, frame, unitJson, vertId, size, status]);
+		if (frameLoaded || frameReady) insertUnit({frame, unitJson, vertId, status, size, play});
+	}, [frameLoaded, frameReady, frame, unitJson, vertId, size, status, play]);
 
 	// Set up listeners to redraw this component on window resize or rotate
 	useEffect(() => {
