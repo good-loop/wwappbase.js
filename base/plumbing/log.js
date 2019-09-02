@@ -24,6 +24,17 @@ const post = ServerIO.load;
  * @deprecated Better to put the img tag directly in the page's html if you can.
  */
 const track = () => {
+	// No exact duplicates
+	try {
+		const dupeKey = "track:" + window.location;
+		if (noDupes[dupeKey]) {
+			return null;
+		}
+		noDupes[dupeKey] = true;
+	} catch(err) { // paranoia
+		console.warn(err);
+	}
+	// check the doc for tracking pixels ?? what about more specific tracking?
 	if (document.querySelector(`img[src^="${LBURL()}/pxl"]`)) return;
 
 	const img = document.createElement('img');
@@ -69,7 +80,7 @@ const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
 		delete eventParams.count;
 		delete eventParams.gby;
 	}
-	if ( ! site) site = window.location;
+	if ( ! site) site = ""+window.location;
 
 	const data = {
 		d: dataspace,
@@ -100,7 +111,7 @@ const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
 	console.log("datalog", dataspace, eventTag, eventParams);
 
 	// Pull eventTag out of request cargo and make a URL paramater so it's easily seen when debugging
-	return post(`${LBURL()}/lg?t=${eventTag}`, data);
+	return post(`${LBURL()}/lg?t=${eventTag}`, {data});
 };
 
 
