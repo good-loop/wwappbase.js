@@ -78,8 +78,17 @@ ServerIO.checkBase = () => {
 
 /**
  * Log servlet for ajax logging of client-side errors. Default "/log"
+ *
+ * This is NOT datalog! ??merge this with datalog?
  */
 ServerIO.LOGENDPOINT = '/log';
+
+/**
+ * DataLog (lg.good-loop.com) index to use. e.g. "gl" for Good-Loop"
+ */
+ServerIO.LGDATASPACE = 'gl';
+
+
 
 // Error Logging - but only the first error
 window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {

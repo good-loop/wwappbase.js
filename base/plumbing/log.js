@@ -1,6 +1,7 @@
 // NB: simplified and modularised copy of adunit's log.js
 
 import ServerIO from './ServerIOBase';
+import { assMatch } from 'sjtest';
 
 /** datalog.js: the log-to-server calls
  * 
@@ -12,16 +13,21 @@ import ServerIO from './ServerIOBase';
 
 const noDupes = {};
 const nonce = Math.random();
-const LBURL = ServerIO.DATALOG_ENDPOINT;
+
+// NB: chop down to the server (ie remove the /data servlet)
+// NB: function to allow for race issues on ServerIO.DATALOG_ENDPOINT
+const LBURL = () => (ServerIO.DATALOG_ENDPOINT || 'https://lg.good-loop.com').replace(/\/\w*$/,"");
+
+const post = ServerIO.load;
 
 /**
  * @deprecated Better to put the img tag directly in the page's html if you can.
  */
 const track = () => {
-	if (document.querySelector(`img[src^="${LBURL}/pxl"]`)) return;
+	if (document.querySelector(`img[src^="${LBURL()}/pxl"]`)) return;
 
 	const img = document.createElement('img');
-	img.src = LBURL + '/pxl?nonce=' + nonce;
+	img.src = LBURL() + '/pxl?nonce=' + nonce;
 	const style = {
 		'z-index': -1,
 		position: 'absolute',
@@ -40,10 +46,18 @@ const track = () => {
 
 /**
  * This will not post an exact duplicate (but any change is enough to qualify for a fresh post)
+ * @param dataspace {?String} If unset, use ServerIO.
  * @param eventTag {!String} e.g. minview. This will be lowercased. Parameters can be case sensitive, but event tags are not.
  * @return 
  */
 const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
+	if ( ! dataspace) dataspace = ServerIO.LGDATASPACE;
+	if ( ! dataspace) {
+		console.error("DataLog", "Please set ServerIO.LGDATASPACE! For now, DataLog skips "+eventTag);
+		return;
+	}
+	assMatch(dataspace, String, "log.js No dataspace:"+dataspace+" evt:"+eventTag);
+	assMatch(eventTag, String, "log.js dataspace:"+dataspace+" No evt:"+eventTag);
 	eventTag = eventTag.toLowerCase();
 
 	// Pull "count" and "gby" out of eventParams if present (promoting them to Real Params)
@@ -86,7 +100,7 @@ const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
 	console.log("datalog", dataspace, eventTag, eventParams);
 
 	// Pull eventTag out of request cargo and make a URL paramater so it's easily seen when debugging
-	return post(`${LBURL}/lg?t=${eventTag}`, data);
+	return post(`${LBURL()}/lg?t=${eventTag}`, data);
 };
 
 
@@ -98,16 +112,14 @@ const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
  * @returns {?Promise}
  */
 const lg = (eventTag, eventParams) => {
-	if ( ! ServerIO.LOGDATASPACE) {
-		console.error("datalog", "No ServerIO.LOGDATASPACE set for logging. Skipping "+eventTag, eventParams);
-	}
 	// safety check inputs
 	// TODO A more descriptive slot-ID than "preact"?
 	if (typeof(eventTag) !== 'string') {
 		lgError(`Bad lg() inputs! eventTag: ${eventTag} glslot: ${'preact'}`);
 	}
 
-	const logPromise = lgBase(ServerIO.LOGDATASPACE, eventTag, eventParams, true);
+	let dataspace = null; // use the default
+	const logPromise = lgBase(dataspace, eventTag, eventParams, true);
 	if ( ! logPromise) {
 		return null; // Tried to log a dupe
 	}
