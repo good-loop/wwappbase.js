@@ -153,8 +153,8 @@ const getId = (item) => {
 DataClass.id = getId;
 
 /**
- * @returns DRAFT / PUBLISHED
- * null returns null
+ * @param item {?DataItem} null returns null
+ * @returns {C.KStatus} DRAFT / PUBLISHED
  */
 const getStatus = (item) => {
 	if ( ! item) return null;
