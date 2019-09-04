@@ -48,71 +48,75 @@ const variants = [
     },
     {
         variant: 'billboard',
-        url: `${ADBASE}/billboard?gl.vert=${adID}`,
+        url: `${ADBASE}/banner/billboard?gl.vert=${adID}`,
         type: 'banner'
     },
     {
         variant: 'vertical',
-        url: `${ADBASE}/old/vertical?gl.vert=${adID}`,
+        url: `${ADBASE}/banner/vbnr?gl.vert=${adID}`,
         type: 'banner'
     },
     {
         variant: 'leaderboard',
-        url: `${ADBASE}/leaderboard?gl.vert=${adID}`,
+        url: `${ADBASE}/banner/leaderboard?gl.vert=${adID}`,
         type: 'banner'
     },
     {
         variant: 'footer',
-        url: `${ADBASE}/footer?gl.vert=${adID}`,
+        url: `${ADBASE}/banner/footer?gl.vert=${adID}`,
         type: 'banner'
-    },
-    {
-        variant: 'rectangle',
-        url: `${ADBASE}/old/rectangle?gl.vert=${adID}`,
-        type: 'banner'
-    },
-    {
-        variant: 'vpaid',
-        url: `${ADBASE}/vpaid?gl.vert=${adID}`
-    },
-    {
-        variant: 'pre-roll',
-        url: `${ADBASE}/old/pre-roll?gl.vert=${adID}`
-    },
-    {
-        variant: 'mpu2',
-        url: `${ADBASE}/mpu2?gl.vert=${adID}`
-    },
-    {
-        variant: 'in-read',
-        url: `${ADBASE}/old/in-read?gl.vert=${adID}`
-    },
-    {
-        variant: 'landscape',
-        url: `${ADBASE}/landscape?gl.vert=${adID}`
     },
     {
         variant: 'mpu',
-        url: `${ADBASE}/mpu?gl.vert=${adID}`,
+        url: `${ADBASE}/banner/mpu?gl.vert=${adID}`,
         type: 'banner'
     },
     {
-        variant: 'portrait',
-        url: `${ADBASE}/portrait?gl.vert=${adID}`
+        variant: 'vpaid-portrait',
+        url: `${ADBASE}/vpaid/portrait?gl.vert=${adID}`
     },
     {
-        variant: 'single',
-        url: `${ADBASE}/single?gl.vert=${adID}`
+        variant: 'vpaid-landscape',
+        url: `${ADBASE}/vpaid/lanscape?gl.vert=${adID}`
     },
+    //{
+    //     variant: 'pre-roll',
+    //     url: `${ADBASE}/old/pre-roll?gl.vert=${adID}`
+    // },
     {
-        variant: 'square',
-        url: `${ADBASE}/square?gl.vert=${adID}`
+        variant: 'mpu2',
+        url: `${ADBASE}/banner/mpu2?gl.vert=${adID}`
     },
-    {
-        variant: 'vbnr',
-        url: `${ADBASE}/vbnr?gl.vert=${adID}`,
-        type: 'banner'
-    },
+    // {
+    //     variant: 'in-read',
+    //     url: `${ADBASE}/old/in-read?gl.vert=${adID}`
+    // },
+    // {
+    //     variant: 'landscape',
+    //     url: `${ADBASE}/landscape?gl.vert=${adID}`
+    // },
+    // {
+    //     variant: 'mpu',
+    //     url: `${ADBASE}/mpu?gl.vert=${adID}`,
+    //     type: 'banner'
+    // },
+    // {
+    //     variant: 'portrait',
+    //     url: `${ADBASE}/portrait?gl.vert=${adID}`
+    // },
+    // {
+    //     variant: 'single',
+    //     url: `${ADBASE}/single?gl.vert=${adID}`
+    // },
+    // {
+    //     variant: 'square',
+    //     url: `${ADBASE}/square?gl.vert=${adID}`
+    // },
+    // {
+    //     variant: 'vbnr',
+    //     url: `${ADBASE}/vbnr?gl.vert=${adID}`,
+    //     type: 'banner'
+    // },
 ];
 
 console.warn('Adunit tests will generally take ~300 seconds to complete');
