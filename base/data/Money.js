@@ -125,6 +125,16 @@ const v100p = m => {
 Money.str = obj => (Money.CURRENCY[obj.currency]||'') + Money.value(obj);
 
 /**
+ * e.g. £1 = £1 != $1 != £1.50
+ */
+Money.eq = (a, b) => {
+	if (a===b) return true;
+	return a && b
+		&& v100p(a) === v100p(b)
+		&& (a.currency === b.currency || ! a.currency || ! b.currency);
+};
+
+/**
  * currency code to everyday symbol
  */
 Money.CURRENCY = {
@@ -149,7 +159,7 @@ const assCurrencyEq = (a, b, msg) => {
 	const m = "Money.js assCurrencyEq "+(msg||'')+" a:"+JSON.stringify(a)+"  b:"+JSON.stringify(b);
 	Money.assIsa(a, m);
 	Money.assIsa(b, m);
-	// allow no-currency to padd
+	// allow no-currency to pad
 	if ( ! a.currency || ! b.currency) {
 		return true;
 	}
