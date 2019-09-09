@@ -37,8 +37,8 @@ const insertAdunitCss = ({frame, css}) => {
 /** Remove custom CSS from the adunit's frame */
 const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 	// this might be called after the iframe has already been destroyed!
-	if (!frame || !frame.contentDocument || !frame.contenDocument.body) return;
-	const cssEls = frame.contenDocument.querySelectorAll(selector) || [];
+	if (!frame || !frame.contentDocument || !frame.contentDocument.body) return;
+	const cssEls = frame.contentDocument.querySelectorAll(selector) || [];
 	cssEls.forEach(node => node.parentElement.removeChild(node));
 }
 
@@ -48,11 +48,16 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
 
+	// No scroll bars!
+	docBody.style = 'overflow: hidden;';
+
 	// Insert preloaded unit.json, if we have it
 	if (unitJson) appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
 
 	// Insert the element the unit goes in
-	appendEl(doc, {tag: 'div', className:'goodloopad'});
+	// Keep it simple: Tell the unit it's already isolated in an iframe and doesn't need to create another.
+	appendEl(doc, {tag: 'div', className:'goodloopad-frameless'});
+	
 
 	// Insert unit.js
 	let params = []
@@ -89,13 +94,18 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	// It's used as a key on the iframe to break identity so it's replaced instead of updated.
 	const unitKey = vertId + size + status + play + endCard;
 
-	// Redo CSS when CSS or adunit frame changes
-	useEffect(() => insertAdunitCss({frame: goodloopframe, css}), [css, goodloopframe]);
-
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
-		if (frameLoaded || frameReady) insertUnit({frame, unitJson, vertId, status, size, play, endCard});
+		if (frameLoaded || frameReady) {
+			insertUnit({frame, unitJson, vertId, status, size, play, endCard});
+			insertAdunitCss({frame, css});
+		} 
 	}, [frameLoaded, frameReady, unitKey]);
+
+	// Redo CSS when CSS or adunit frame changes
+	useEffect(() => {
+		insertAdunitCss({frame, css});
+	}, [frame, css]);
 
 	// Set up listeners to redraw this component on window resize or rotate
 	useEffect(() => {
