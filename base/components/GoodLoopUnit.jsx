@@ -85,13 +85,17 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	const frameReady = frameDoc && frameDoc.readyState === 'complete'; // Needed for Chrome as onload doesn't fire on about:blank frames
 	const goodloopframe = frameDoc && frameDoc.querySelector('.goodloopframe');
 
+	// This string is meaningless in itself, but when it changes we need to recreate the iframe & reinsert JS.
+	// It's used as a key on the iframe to break identity so it's replaced instead of updated.
+	const unitKey = vertId + size + status + play + endCard;
+
 	// Redo CSS when CSS or adunit frame changes
 	useEffect(() => insertAdunitCss({frame: goodloopframe, css}), [css, goodloopframe]);
 
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
 		if (frameLoaded || frameReady) insertUnit({frame, unitJson, vertId, status, size, play, endCard});
-	}, [frameLoaded, frameReady, frame, unitJson, vertId, size, status, play, endCard]);
+	}, [frameLoaded, frameReady, unitKey]);
 
 	// Set up listeners to redraw this component on window resize or rotate
 	useEffect(() => {
@@ -113,9 +117,10 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 		else if (size === 'portrait') dims.width = `${height * 0.5625}px`;
 	}
 
+	
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
-			<iframe frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
+			<iframe key={endCard} frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
 		</div>
 	);
 };
