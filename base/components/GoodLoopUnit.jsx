@@ -43,7 +43,7 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 }
 
 
-const insertUnit = ({frame, unitJson, vertId, status, size, play}) => {
+const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -60,6 +60,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play}) => {
 	if (size) params.push(`gl.size=${size}`); // If size isn't specified, the unit will pick a player-type to fit the container
 	if (vertId) params.push(`gl.vert=${vertId}`); // If adID isn't specified, we'll get a random ad.
 	if (play) params.push(`gl.play=${play}`)
+	if (endCard) params.push(`gl.variant=tq`);
 	const src = `${ServerIO.AS_ENDPOINT}/unit.js${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
 
@@ -70,7 +71,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play}) => {
 };
 
 
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible'}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [frameLoaded, setFrameLoaded] = useState(false);
@@ -87,10 +88,10 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	// Redo CSS when CSS or adunit frame changes
 	useEffect(() => insertAdunitCss({frame: goodloopframe, css}), [css, goodloopframe]);
 
-	// Load/Reload the adunit when vert-ID, unit size, or iframe container changes
+	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
-		if (frameLoaded || frameReady) insertUnit({frame, unitJson, vertId, status, size, play});
-	}, [frameLoaded, frameReady, frame, unitJson, vertId, size, status, play]);
+		if (frameLoaded || frameReady) insertUnit({frame, unitJson, vertId, status, size, play, endCard});
+	}, [frameLoaded, frameReady, frame, unitJson, vertId, size, status, play, endCard]);
 
 	// Set up listeners to redraw this component on window resize or rotate
 	useEffect(() => {
