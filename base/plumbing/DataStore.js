@@ -215,7 +215,7 @@ class Store {
 	 * the DataStore path for this item, or null if item is null;
 	 */
 	getPath(status, type, id, domain) {
-		console.warn("DataStore.getPath() - switch to getDataPath", status, type, id, domain);
+		console.warn("DataStore.getPath() - Please switch to getDataPath({status, type, id, domain})", status, type, id, domain);
 		return this.getDataPath({status, type, id, domain});
 	}
 

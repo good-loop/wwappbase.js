@@ -239,8 +239,8 @@ ActionMan.delete = (type, pubId) => {
 		.then(e => {
 			console.warn("deleted!", type, pubId, e);
 			// remove the local versions			
-			DataStore.setValue(getPath(C.KStatus.PUBLISHED, type, pubId), null);
-			DataStore.setValue(getPath(C.KStatus.DRAFT, type, pubId), null);
+			DataStore.setValue(getDataPath({status: C.KStatus.PUBLISHED, type, id: pubId}), null);
+			DataStore.setValue(getDataPath({status: C.KStatus.DRAFT, type, id: pubId}), null);
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return e;
