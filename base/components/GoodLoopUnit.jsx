@@ -37,22 +37,27 @@ const insertAdunitCss = ({frame, css}) => {
 /** Remove custom CSS from the adunit's frame */
 const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 	// this might be called after the iframe has already been destroyed!
-	if (!frame || !frame.contentDocument || !frame.contenDocument.body) return;
-	const cssEls = frame.contenDocument.querySelectorAll(selector) || [];
+	if (!frame || !frame.contentDocument || !frame.contentDocument.body) return;
+	const cssEls = frame.contentDocument.querySelectorAll(selector) || [];
 	cssEls.forEach(node => node.parentElement.removeChild(node));
 }
 
 
-const insertUnit = ({frame, unitJson, vertId, status, size, play}) => {
+const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
+
+	// No scroll bars!
+	docBody.style = 'overflow: hidden;';
 
 	// Insert preloaded unit.json, if we have it
 	if (unitJson) appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
 
 	// Insert the element the unit goes in
-	appendEl(doc, {tag: 'div', className:'goodloopad'});
+	// Keep it simple: Tell the unit it's already isolated in an iframe and doesn't need to create another.
+	appendEl(doc, {tag: 'div', className:'goodloopad-frameless'});
+	
 
 	// Insert unit.js
 	let params = []
@@ -60,6 +65,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play}) => {
 	if (size) params.push(`gl.size=${size}`); // If size isn't specified, the unit will pick a player-type to fit the container
 	if (vertId) params.push(`gl.vert=${vertId}`); // If adID isn't specified, we'll get a random ad.
 	if (play) params.push(`gl.play=${play}`)
+	if (endCard) params.push(`gl.variant=tq`);
 	const src = `${ServerIO.AS_ENDPOINT}/unit.js${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
 
@@ -70,7 +76,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play}) => {
 };
 
 
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible'}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [frameLoaded, setFrameLoaded] = useState(false);
@@ -84,13 +90,22 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	const frameReady = frameDoc && frameDoc.readyState === 'complete'; // Needed for Chrome as onload doesn't fire on about:blank frames
 	const goodloopframe = frameDoc && frameDoc.querySelector('.goodloopframe');
 
-	// Redo CSS when CSS or adunit frame changes
-	useEffect(() => insertAdunitCss({frame: goodloopframe, css}), [css, goodloopframe]);
+	// This string is meaningless in itself, but when it changes we need to recreate the iframe & reinsert JS.
+	// It's used as a key on the iframe to break identity so it's replaced instead of updated.
+	const unitKey = vertId + size + status + play + endCard;
 
-	// Load/Reload the adunit when vert-ID, unit size, or iframe container changes
+	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
-		if (frameLoaded || frameReady) insertUnit({frame, unitJson, vertId, status, size, play});
-	}, [frameLoaded, frameReady, frame, unitJson, vertId, size, status, play]);
+		if (frameLoaded || frameReady) {
+			insertUnit({frame, unitJson, vertId, status, size, play, endCard});
+			insertAdunitCss({frame, css});
+		} 
+	}, [frameLoaded, frameReady, unitKey]);
+
+	// Redo CSS when CSS or adunit frame changes
+	useEffect(() => {
+		insertAdunitCss({frame, css});
+	}, [frame, css]);
 
 	// Set up listeners to redraw this component on window resize or rotate
 	useEffect(() => {
@@ -112,9 +127,10 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 		else if (size === 'portrait') dims.width = `${height * 0.5625}px`;
 	}
 
+	
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
-			<iframe frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
+			<iframe key={endCard} frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
 		</div>
 	);
 };
