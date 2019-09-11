@@ -8,6 +8,7 @@ module.exports = {
 	"rules": {
 		"jsx-a11y/tabindex-no-positive": "off",
 		"arrow-body-style": "off",
+		"block-spacing": "warn",
 		"no-empty-pattern": "warn",
 		"arrow-parens": "off",
 		"brace-style": "warn",		

@@ -1,4 +1,6 @@
-// Styling for the Good-Loop Portal app
+// Common Styling for Good-Loop web-apps
+// Please only put genuinely shared things into the shared css. Thank you
+
 @import "colours.less";
 @import "fonts.less";
 
@@ -28,7 +30,7 @@
 .navbar-brand {
 	padding: 3px;
 	img { 
-		height: 100%; // ...and nothing to constrain logo height
+		height: 32px; //100%; // ...and nothing to constrain logo height
 	}
 }
 
@@ -43,6 +45,7 @@
 	margin-bottom: 0px;
 }
 
+// FIXME Why are these rules here? What code (if any) uses them? TODO move them to a more specific place.
 img.logo {
 	width: 4em;
 	height: 4em;

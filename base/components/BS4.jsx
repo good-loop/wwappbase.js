@@ -63,8 +63,14 @@ BS.iconMap = {
 BS.Center = ({children}) => <div className='ml-auto mr-auto'>{children}</div>;
 
 
-// TODO manage btn-default vs btn-light / btn-secondary. Any other 3 v 4 differences??
-BS.Button = ({children, className, ...stuff}) => <button className={className} {...stuff}>{children}</button>;
+/**
+ * size {?string} sm | lg
+ * default = outline-dark
+ */
+BS.Button = ({size, color='outline-dark', children, className, ...stuff}) => {
+	if (color==='default') color = 'outline-dark'; // BS3->4 conversion
+	return <button className={join('btn',color? 'btn-'+color:null, size?'btn-'+size:null, className)} {...stuff}>{children}</button>;
+}
 
 
 /**

@@ -147,6 +147,12 @@ BS.Modal.Body = ({children}) => <div className='modal-body'>{children}</div>;
 
 BS.Modal.Footer = ({children}) => <div className='modal-footer'>{children}</div>;
 
+/**
+ * size = lg|sm
+ */
+BS.Button = ({size, color='default', children, className, ...stuff}) => {
+	return <button className={join('btn',color? 'btn-'+color:null, size?'btn-'+size:null, className)} {...stuff}>{children}</button>;
+}
 
 /**
  * @param placement {?String} e.g. "fixed-top"
