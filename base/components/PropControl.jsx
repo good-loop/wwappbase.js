@@ -106,6 +106,7 @@ const PropControl = (props) => {
 			if (Math.round(nv*100) != nv*100) {
 				return "Fractional pence may cause an error later "+v.raw;
 			}
+			if (v.error) return ""+v.error;
 			return null;
 		};
 	}
@@ -493,6 +494,10 @@ const numFromAnything = v => {
 	return parseFloat(v);
 };
 
+
+/**
+ * See also: Money.js
+ */
 const PropControlMoney = ({prop, value, path, proppath, 
 									item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff}) => {
 		// special case, as this is an object.
@@ -509,14 +514,10 @@ const PropControlMoney = ({prop, value, path, proppath,
 	//Money.assIsa(value); // type can be blank
 	// handle edits
 	const onMoneyChange = e => {
-		// TODO move more of this into Money.js as Money.setValue()
-		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined		
-		let newVal = numFromAnything(e.target.value);
-		value = Money.setValue(value, newVal);
-		value.raw = e.target.value; // Store raw, so we can display blank strings
-		DataStore.setValue(proppath, value, true); // force update 'cos editing the object makes this look like a no-op
-		// console.warn("£", value, proppath);
-		if (saveFn) saveFn({path, prop, value});
+		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
+		const newM = e.target.value===''? null : new Money(e.target.value);		
+		DataStore.setValue(proppath, newM);
+		if (saveFn) saveFn({path, prop, newM});
 	};
 	let curr = Money.CURRENCY[value && value.currency] || <span>&pound;</span>;
 	let currency;

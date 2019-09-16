@@ -93,6 +93,12 @@ class DataClass {
 		return obj.name;
 	}	
 
+	toString() {
+		const klass = getClass(this);
+		if (klass && klass.str) return klass.str(this);
+		return "["+getType(this)+" "+(getId(this)||"")+"]";
+	}
+
 } // ./DataClass
 
 

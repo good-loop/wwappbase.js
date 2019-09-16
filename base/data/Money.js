@@ -7,6 +7,7 @@ import {asNum} from 'wwutils';
 import DataClass, {getType} from './DataClass';
 import C from '../CBase';
 import Settings from '../Settings';
+import Enum from 'easy-enums';
 
 /** 
  * 
@@ -14,11 +15,28 @@ import Settings from '../Settings';
  * 
 */
 class Money extends DataClass {
-	/** {Number} 1/100 of a penny, so £1 = 10,000 */
+
+	/** @type {Number} 1/100 of a penny, so £1 = 10,000 */
 	value100p;
+
+	/** @type {?String} raw string version - used during input to support incomplete input */
+	raw;	
+
+	/** @type {!String} */
 	currency = 'GBP'; // default
 
+	/**
+	 * @param {?Money|String|Number} base 
+	 */
 	constructor(base) {
+		// allow `new Money("£10")`
+		if (typeof(base)==='string') {
+			base = {raw: base};
+			if (base.raw[0]==='$') base.currency = 'USD'; // HACK! A look up from CURRENCY would be better
+		} else if (typeof(base)==='number') {
+			base = {value: base};
+		}
+		// normal new
 		super(base);
 		Object.assign(this, base);
 		this['@type'] = 'Money';
@@ -38,6 +56,7 @@ class Money extends DataClass {
 		if (obj.currency) return true;
 		return false;
 	}
+
 } // ./Money
 DataClass.register(Money, "Money");
 
@@ -102,6 +121,9 @@ const v100p = m => {
 	if (m.raw) {
 		try {
 			let v = asNum(m.raw);
+			if (v===null || v===undefined) {
+				m.error = new Error("Cannot parse: "+m.raw);
+			}							
 			m.value = v;
 			m.value100p = v? v*10000 : 0;
 		} catch(err) {
@@ -135,8 +157,9 @@ Money.eq = (a, b) => {
 };
 
 /**
- * currency code to everyday symbol
+ * @deprecated (dont use externally) currency code to everyday symbol
  */
+// could we use an enum instead??
 Money.CURRENCY = {
 	GBP: "£",
 	USD: "$"
