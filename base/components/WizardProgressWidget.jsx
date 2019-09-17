@@ -44,9 +44,10 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
  *
  * NB: these are used by the surrounding widgets - progress & next/prev buttons
  * 
- * Also for convenient lazy setting of sufficient/complete, a function is passed
- * to all children:
+ * Also for convenient lazy setting of sufficient/complete, a function can be passed
+ * to children:
  * setNavStatus {sufficient, complete}
+ * To get this, the child must have a boolean setNavStatus flag, which gets replaced.
  * @param onNext function called when user interacts with "next" button
  * @param onPrev function called when user interacts with "prev" button 
  */
@@ -70,10 +71,13 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 		// array of elements (or just one)?
 		if (children.filter) children = children.filter(x => !! x);
 		children = React.Children.map(children, (Kid, i) => {
-			// clone with setNavStatus? (why would we not??)
-			// let sns = Kid.props && Kid.props.setNavStatus;
-			// return sns? 
-			return React.cloneElement(Kid, {setNavStatus}); // : Kid;
+			// clone with setNavStatus?
+			// But not on DOM elements cos it upsets React.
+			// So only if they gave the setNavStatus flag.
+			let sns = Kid.props && Kid.props.setNavStatus;
+			if ( ! sns) return Kid;
+			assert(sns===true, "WizardProgressWidget: setNavStatus must be boolean (it is replaced with a function): "+sns);
+			return React.cloneElement(Kid, {setNavStatus});
 		});
 	}
 	return (<div className='WizardStage'>

@@ -149,6 +149,7 @@ BS.Modal.Footer = ({children}) => <div className='modal-footer'>{children}</div>
 
 /**
  * size = lg|sm
+ * Use `onClick` to pass in a click handler.
  */
 BS.Button = ({size, color='default', children, className, ...stuff}) => {
 	return <button className={join('btn',color? 'btn-'+color:null, size?'btn-'+size:null, className)} {...stuff}>{children}</button>;

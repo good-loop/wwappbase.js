@@ -195,6 +195,8 @@ class Store {
 	/**
 	 * the DataStore path for this item, or null if item is null;
 	 * @param status {C.KStatus}
+	 * @param type {!C.TYPES}
+	 * @param id {!String}
 	 * @param domain {?String} Only used by Profiler??
 	 * @returns {String[]}
 	 */
