@@ -322,7 +322,7 @@ ServerIO.getDataItem = function({type, id, status, domain, swallow, ...other}) {
 		console.warn("Crud.js - ServerIO.getDataItem: no status - this is unwise! Editor pages should specify DRAFT. type: "+type+" id: "+id);
 	}
 	assMatch(id, String);
-	const params = {data: {status, ...other}, swallow};
+	const params = {data: other, swallow};
 	let url = ServerIO.getUrlForItem({type, id, domain, status});
 	return ServerIO.load(url, params);
 };

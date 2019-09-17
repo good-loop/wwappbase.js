@@ -2,6 +2,10 @@
 import {assMatch} from 'sjtest';
 
 /**
+ * Manipulate search query strings like a boss.
+ * e.g.
+ * `new SearchQuery("apples OR oranges").setProp("lang", "en")`
+ * 
  * See DataLog for the original of this!
  * 
  * TODO we'll want more search capabilities as we go on
@@ -41,9 +45,9 @@ class SearchQuery {
 	}
 
 	/**
-	 * 
-	 * @param {*} propName 
-	 * @param {*} propValue 
+	 * Set a top-level prop, e.g. vert:foo
+	 * @param {String} propName 
+	 * @param {String} propValue 
 	 * @returns a NEW SearchQuery
 	 */
 	setProp(propName, propValue) {
@@ -57,6 +61,23 @@ class SearchQuery {
 		let qpropValue = propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"';
 		newq += " "+propName+":"+qpropValue;
 		return new SearchQuery(newq.trim());
+	}
+
+	/**
+	 * Merge two queries with OR
+	 * @param {?String|SearchQuery} sq 
+	 */
+	or(sq) {		
+		if ( ! sq) return this;
+		if (typeof(sq)==='string') sq = new SearchQuery(sq);		
+		if ( ! this.query) return sq;
+		// CRUDE but it should work -- at least for simple cases
+		let newq = this.query+" "+SearchQuery.OR+" "+sq.query;
+		return new SearchQuery(newq);
+	}
+
+	toString() {
+		return this.query;
 	}
 
 } // ./SearchQuery
