@@ -25,6 +25,9 @@ const TestPage = () => {
 			<h1>Test Page</h1>
 			<p>Insert a test widget below</p>
 
+			<PropControl label='Money' prop='green' path={path} type='Money' />
+			<pre>{""+widget.green} = {JSON.stringify(widget.green)}</pre>
+
 			<PropControl label='Yes No' prop='yn' path={path} type='yesNo' />
 			<pre>{JSON.stringify(widget.yn)}</pre>
 

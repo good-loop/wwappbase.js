@@ -69,7 +69,7 @@ module.exports = {
 		"one-var-declaration-per-line": "off",
 		"one-var": "warn",
 		"operator-assignment": "warn",
-		"operator-linebreak": "warn",
+		"operator-linebreak": "off",
 		"padded-blocks": "warn",
 		"prefer-arrow-callback": "off",
 		"prefer-const": "off",
