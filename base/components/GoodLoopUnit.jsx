@@ -3,7 +3,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 
 
 const appendEl = (doc, {tag, ...attrs}) => {
-	if (!doc || !doc.createElement || !tag) return;
+	if ( ! doc || ! doc.createElement || ! tag) return;
 	const el = doc.createElement(tag);
 	Object.entries(attrs).forEach(([key, val]) => {
 		el[key] = val;
