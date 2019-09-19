@@ -47,18 +47,23 @@ ActionMan.crud = ({type, id, action, item}) => {
 	if (id===C.newId && action==='save') {
 		action = 'new';
 	}
+
+	// TODO optimistic local edits
+	// crud2_optimisticLocalEdit()
+
 	// mark the widget as saving
 	DataStore.setLocalEditsStatus(type, id, C.STATUS.saving);
 	const status = serverStatusForAction(action);
+	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
+	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+
 	// call the server
 	return ServerIO.crud(type, item, action)
-		.then(res => {
+		.then(res => {			
 			// update
 			let hits = DataStore.updateFromServer(res, status)
 			if (action==='publish') { // } && DataStore.getData(C.KStatus.DRAFT, type, id)) {
-				// also update the draft version
-				const pubpath = DataStore.getPathForItem(status, item);
-				const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+				// also update the draft version								
 				let pubItem = DataStore.getValue(pubpath);
 				// copy it
 				let draftItem = _.cloneDeep(pubItem);
@@ -66,13 +71,15 @@ ActionMan.crud = ({type, id, action, item}) => {
 			}
 			if (action==='unpublish') {
 				// remove from DataStore
-				const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
 				DataStore.setValue(pubpath, null);
 			}
 			// success :)
 			const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
 			if (action==='delete') {
-				DataStore.setUrlValue(navtype, null);				
+				DataStore.setValue(pubpath, null);
+				DataStore.setValue(draftpath, null);
+				// ??what if we were deleting a different Item than the focal one??
+				DataStore.setUrlValue(navtype, null);								
 			} else if (id===C.newId) {
 				// id change!
 				// updateFromServer should have stored the new item
