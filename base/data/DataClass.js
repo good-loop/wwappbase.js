@@ -6,6 +6,11 @@ import {assert, assMatch} from 'sjtest';
 import {endsWith} from 'wwutils';
 
 /*
+
+DataClass helps avoid the serialisation / deserialisation pain when working with classes and json.
+It does this by using static methods, which take the object as their first input.
+This gives you an object-oriented coding style (including inheritance) -- which can work with plain-old-js-objects.
+
  * Coding Style??
  * 
  * ??Would it be better to use class MyType extends DataClass??

@@ -317,6 +317,13 @@ const PropControl2 = (props) => {
 		let props2 = {onChange, value, modelValueFromInput, ...props};
 		return <PropControlSelect  {...props2} />
 	}
+	// HACK just a few countries
+	if (type==='country') {
+		let props2 = {onChange, value, ...props};
+		props2.options=[null, 'GB', 'US'];
+		props2.labels=['', 'United Kingdom (UK)', 'United States of America (USA)'];
+		return <PropControlSelect  {...props2} />
+	}
 	if (type === 'autocomplete') {
 		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlAutocomplete {...acprops} />;
@@ -342,12 +349,15 @@ const PropControl2 = (props) => {
 	return <Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
 }; //./PropControl2
 
+
 /**
+ * @param options {any[]}
+ * @param labels {?String[]|Function|Object}
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  */
-const PropControlSelect = ({value, multiple, prop, onChange, saveFn, ...otherStuff}) => {
+const PropControlSelect = ({options, labels, value, multiple, prop, onChange, saveFn, ...otherStuff}) => {
 	// NB: pull off internal attributes so the select is happy with rest
-	const { options, labels, className, dflt, recursing, modelValueFromInput, ...rest} = otherStuff;
+	const {className, dflt, recursing, modelValueFromInput, ...rest} = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
 	assert(options.map, 'Misc.PropControl: options not an array '+options);
 	// Make an option -> nice label function
@@ -373,7 +383,7 @@ const PropControlSelect = ({value, multiple, prop, onChange, saveFn, ...otherStu
 	// make the options html
 	// NB: react doesnt like the selected attribute ?? but we need it for multiple??	
 	let domOptions = options.map(option => 
-		<option key={"option_"+option} value={option} >{labeller(option)}</option>);	
+		<option key={"option_"+JSON.stringify(option)} value={option} >{labeller(option)}</option>);	
 	/* text-muted is for my-loop mirror card 
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
 	let klass = join('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
@@ -497,9 +507,11 @@ const numFromAnything = v => {
 
 /**
  * See also: Money.js
+ * @param currency {?String}
+ * 
  */
-const PropControlMoney = ({prop, value, path, proppath, 
-									item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff}) => {
+const PropControlMoney = ({prop, value, currency, path, proppath, 
+									item, bg, dflt, saveFn, modelValueFromInput, onChange, ...otherStuff}) => {
 		// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
 	// Convert null and numbers into MA objects
@@ -518,26 +530,28 @@ const PropControlMoney = ({prop, value, path, proppath,
 		const newM = e.target.value===''? null : new Money(e.target.value);		
 		DataStore.setValue(proppath, newM);
 		if (saveFn) saveFn({path, prop, newM});
+		// call onChange after we do the standard updates TODO make this universal
+		if (onChange) onChange(e);
 	};
-	let curr = Money.CURRENCY[value && value.currency] || <span>&pound;</span>;
-	let currency;
+	let curr = Money.CURRENCY[currency || (value && value.currency)] || <span>&pound;</span>;
+	let $currency;
 	let changeCurrency = otherStuff.changeCurrency !== false;
 	if (changeCurrency) {
 		// TODO other currencies
-		currency = (
+		$currency = (
 			<DropdownButton disabled={otherStuff.disabled} title={curr} componentClass={InputGroup.Button} id={'input-dropdown-addon-'+JSON.stringify(proppath)}>
 				<MenuItem key="1">{curr}</MenuItem>
 			</DropdownButton>
 		);
 	} else {
-		currency = <InputGroup.Addon>{curr}</InputGroup.Addon>;
+		$currency = <InputGroup.Addon>{curr}</InputGroup.Addon>;
 	}
 	delete otherStuff.changeCurrency;
 	assert(v === 0 || v || v==='', [v, value]);
 	// make sure all characters are visible
 	let minWidth = ((""+v).length / 1.5)+"em";
 	return (<InputGroup>
-		{currency}
+		{$currency}
 		<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{minWidth}}/>
 	</InputGroup>);
 }; // ./£
@@ -836,9 +850,10 @@ const FormControl = ({value, type, required, size, className, ...otherProps}) =>
 
 /**
  * List of types eg textarea
+ * TODO allow other jsx files to add to this - for more modular code.
  */
 const KControlTypes = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
-							+" yesNo location date year number arraytext keyset entryset address postcode json"
+							+" yesNo location date year number arraytext keyset entryset address postcode json country"
 							// some Good-Loop data-classes
 							+" Money XId");
 
