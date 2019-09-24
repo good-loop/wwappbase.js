@@ -16,6 +16,9 @@ import Enum from 'easy-enums';
 */
 class Money extends DataClass {
 
+	/** @type {?String} An optional name for this money */
+	name;
+
 	/** @type {Number} 1/100 of a penny, so £1 = 10,000 */
 	value100p;
 

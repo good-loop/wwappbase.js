@@ -512,13 +512,13 @@ const numFromAnything = v => {
 /**
  * See also: Money.js
  * @param currency {?String}
- * 
+ * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
  */
-const PropControlMoney = ({prop, value, currency, path, proppath, 
+const PropControlMoney = ({prop, name, value, currency, path, proppath, 
 									item, bg, dflt, saveFn, modelValueFromInput, onChange, ...otherStuff}) => {
 		// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
-	// Convert null and numbers into MA objects
+	// Convert null and numbers into Money objects
 	if ( ! value || _.isString(value) || _.isNumber(value)) {
 		value = new Money({value});
 	}
@@ -531,7 +531,8 @@ const PropControlMoney = ({prop, value, currency, path, proppath,
 	// handle edits
 	const onMoneyChange = e => {
 		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
-		const newM = e.target.value===''? null : new Money(e.target.value);		
+		const newM = e.target.value===''? null : new Money(e.target.value);
+		if (name && newM) newM.name = name; // preserve named Money items
 		DataStore.setValue(proppath, newM);
 		if (saveFn) saveFn({path, prop, newM});
 		// call onChange after we do the standard updates TODO make this universal
