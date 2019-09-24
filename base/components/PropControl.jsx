@@ -204,11 +204,13 @@ const PropControl2 = (props) => {
 			else if (value==='false') value = false;
 		}
 		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : null;
-		return (<div>
-			<Checkbox checked={value} onChange={onChange} {...otherStuff}>{label} {helpIcon}</Checkbox>
-			{help? <span className="help-block">{help}</span> : null}
-			{error? <span className="help-block">{error}</span> : null}
-		</div>);
+		return (
+			<div>
+				<Checkbox checked={value} onChange={onChange} {...otherStuff}>{label} {helpIcon}</Checkbox>
+				{help? <span className="help-block">{help}</span> : null}
+				{error? <span className="help-block">{error}</span> : null}
+			</div>
+		);
 	} // ./checkbox
 
 	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
@@ -233,11 +235,13 @@ const PropControl2 = (props) => {
 	const onChange = e => {
 		// console.log("event", e, e.type);
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-		DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
+		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
 		let mv = modelValueFromInput(e.target.value, type, e.type);
 		// console.warn("onChange", e.target.value, mv, e);
 		DataStore.setValue(proppath, mv);
-		if (saveFn) saveFn({path, prop, value:mv});
+		if (saveFn) saveFn({path, prop, value: mv});
+		// Enable piggybacking custom onChange functionality
+		if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
 		e.preventDefault();
 		e.stopPropagation();
 	};
@@ -315,7 +319,7 @@ const PropControl2 = (props) => {
 	}
 	if (type === 'select') {
 		let props2 = {onChange, value, modelValueFromInput, ...props};
-		return <PropControlSelect  {...props2} />
+		return <PropControlSelect {...props2} />
 	}
 	// HACK just a few countries
 	if (type==='country') {
@@ -898,20 +902,26 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 		className = 'stripe-bg';
 	}
 
-	// WARNING: the <Dropzone > code below does not work with recent versions of Dropzone! v4.3.0 has been tested and works.
+	// WARNING: the <Dropzone> code below does not work with recent versions of Dropzone! v4.3.0 has been tested and works.
 
-	return (<div>
-		<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
-		<div className='pull-left'>
-			<Dropzone className='DropZone' accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
-				Drop a {acceptedTypesDesc} here
-			</Dropzone>
+	return (
+		<div>
+			<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
+			<div className='pull-left'>
+				<Dropzone className='DropZone' accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
+					Drop a {acceptedTypesDesc} here
+				</Dropzone>
+			</div>
+			<div className='pull-right'>
+				{type === 'videoUpload' ? (
+					<Misc.VideoThumbnail url={value} />
+				) : (
+					<Misc.ImgThumbnail className={className} background={bg} url={value} />
+				)}
+			</div>
+			<div className='clearfix' />
 		</div>
-		<div className='pull-right'>
-			{type === 'videoUpload' ? (<Misc.VideoThumbnail url={value} />) : (<Misc.ImgThumbnail className={className} background={bg} url={value} />)}
-		</div>
-		<div className='clearfix' />
-	</div>);
+	);
 }; // ./imgUpload
 
 
