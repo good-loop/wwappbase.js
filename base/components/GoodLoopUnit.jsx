@@ -1,7 +1,9 @@
 import React, {useEffect, useState, useCallback } from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
 
-
+/**
+ * TODO doc
+ */
 const appendEl = (doc, {tag, ...attrs}) => {
 	if ( ! doc || ! doc.createElement || ! tag) return;
 	const el = doc.createElement(tag);
@@ -75,7 +77,13 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
 	};
 };
 
-
+/**
+ * TODO doc
+ * ??How does this interact with the server vs on-client datastore??
+ * ??what is endCard?? is it boolean?
+ * ??what happens when inputs are missing?
+ * 
+ */
 const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();

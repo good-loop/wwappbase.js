@@ -30,7 +30,7 @@ ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = `https://testuploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = `https://uploads.good-loop.com/`;
-// Uncomment to use UploadServlet instead of media.good-loop.com
+// Copy into ServerIO.js use UploadServlet instead of media.good-loop.com
 // ServerIO.MEDIA_ENDPOINT = '/upload.json';
 /** 
  * Call this from ServerIO.js 
