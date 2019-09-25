@@ -80,9 +80,13 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
 /**
  * TODO doc
  * ??How does this interact with the server vs on-client datastore??
- * ??what is endCard?? is it boolean?
- * ??what happens when inputs are missing?
- * 
+ * @param {String} vertId ID of advert to show. Will allow server to pick if omitted.
+ * @param {String} css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
+ * @param {String} size Defaults to "landscape".
+ * @param {String} status Defaults to PUBLISHED if omitted.
+ * @param {String} unitJson Optional: String with contents of a unit.json serve. Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
+ * @param {String} play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
+ * @param {String} endCard Set truthy to display end-card without running through advert.
  */
 const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
@@ -138,7 +142,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
-			<iframe key={endCard} frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
+			<iframe key={unitKey} frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
 		</div>
 	);
 };

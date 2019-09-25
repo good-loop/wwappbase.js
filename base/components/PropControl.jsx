@@ -471,7 +471,7 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 		const val = e && e.target && e.target.value;
 		DataStore.setValue(path.concat(prop), val);
-		if (saveFn) saveFn({path, prop, value: val});		
+		if (saveFn) saveFn({path, prop, value: val});
 	};
 
 	const Check = type==='checkboxes'? BS.Checkbox : BS.Radio;
