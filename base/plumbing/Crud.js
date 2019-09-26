@@ -410,9 +410,9 @@ ActionMan.list = ({type, status, q, sort, domain}) => {
  * List has form {hits: Object[], total: Number} -- see List.js
  */
 ServerIO.list = ({type, status, q, sort, domain = ''}) => {
-	assert(C.TYPES.has(type), type);
+	assert(C.TYPES.has(type), 'Crud.js - ServerIO.list - bad type:' +type);
 	let servlet = ServerIO.getEndpointForType(type);
-	assert(C.KStatus.has(status), status);
+	assert(C.KStatus.has(status), 'Crud.js - ServerIO.list - bad status: '+status);
 	// NB '/_list' used to be '/list' until July 2018
 	let url = domain + servlet 
 		+ (ServerIO.dataspace? '/'+ServerIO.dataspace : '')

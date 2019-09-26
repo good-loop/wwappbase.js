@@ -23,15 +23,17 @@
 }
 
 .avoid-navbar {
-	margin-top:60px;
+	margin-top: 60px;
 }
 
 // BS default has too much padding on the navbar logo
 .navbar-brand {
 	padding: 3px;
+	// We set our own navbar height and it might change...
+	// ...so constrain image height to a safe proportion of that
 	img { 
-		min-height: 32px;
-		max-height: 64px; // safest to constrain logo height
+		min-height: 50%;
+		max-height: 100%;
 	}
 }
 

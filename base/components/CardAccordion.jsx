@@ -9,8 +9,9 @@ import BS from './BS';
  * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
  * This also provides some robustness via try-catch error handling.
  * 
- * You can wrap these cards -- if you do, pass down misc parameters to enable the CardAccordion wiring to work. e.g.
+ * You can wrap these cards -- if you do, you MUST pass down misc parameters to enable the CardAccordion wiring to work. e.g.
  * <Foo {...stuff}> => <Misc.Card {...stuff}>
+ * Note: If you see a card missing collapse controls -- this is probably the issue.
  * 
  * @param {String|JSX} title - will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.
  * 
@@ -79,6 +80,7 @@ class Card extends React.Component {
 /**
  * 
  * @param {?String} widgetName - Best practice is to give the widget a name.
+ * @param {?Boolean} multiple - If true, allow multiple cards to stay open.
  * @param {Misc.Card[]} children
  *    children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
  */
