@@ -29,8 +29,9 @@ import BS from './BS';
  * Note: that filter can add to this
  * @param sort {?String} Optional sort order, e.g. "start-desc"
  * @param status {?String} e.g. "Draft"
- * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url. 
- * Best practice is to set servlet to avoid relying on url behaviour.
+ * @param servlet {?String} @deprecated - use navpage instead
+ * @param navpage {?String} e.g. "publisher" If unset, a default is taken from the url. 
+ * Best practice is to set navpage to avoid relying on url behaviour. 
  * @param ListItem {?React component} if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
@@ -60,6 +61,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	// if (id) return null;
 
 	if ( ! servlet) servlet = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
+	else console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");
 	if ( ! navpage) navpage = servlet;
 	if ( ! servlet) {
 		console.warn("ListLoad - no servlet? type="+type);
@@ -152,6 +154,8 @@ const onPick = ({event, navpage, id, customParams}) => {
  */
 const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink}) => {
 	const id = getId(item);
+
+	// TODO refactor this Portal specific code out of here.
 	// for the campaign page we want to manipulate the url to modify the vert/vertiser params 
 	// that means both modifying href and onClick definitions
 	let itemUrl = servlet==="campaign" ? modifyHash([servlet,null], {'gl.vertiser':null, 'gl.vert':id}, true) : modifyHash([servlet, id], null, true);
