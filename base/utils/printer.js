@@ -41,6 +41,10 @@ Printer.URL_REGEX = /https?\:\/\/[0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*(:(0-9)*‌​)
 Printer.prototype.toNSigFigs = function(x, n) {
 	if (x==0) return "0";
 	assert(n > 0, "Printer.js - toNSigFigs: n is not greater than 0");
+	if ( ! Intl) {
+		console.warn("toNSigFigs - No Intl?!"); // Seen repeatedly. Sep 2019. possibly Sanjay's phone?
+		return ""+x;
+	}
 	let snum = new Intl.NumberFormat('en-GB', {maximumSignificantDigits: n}).format(x);
 	return snum;
 };
@@ -52,8 +56,7 @@ Printer.prototype.toNSigFigs = function(x, n) {
 Printer.prototype.prettyNumber = function(x, sigFigs) {
 	if (x===undefined || x===null) return '';
 	if ( ! sigFigs) sigFigs = 3;
-	let snum = new Intl.NumberFormat('en-GB', {maximumSignificantDigits: sigFigs}).format(x);
-	return snum;
+	return this.toNSigFigs(x, sigFigs);
 };
 
 /**
@@ -76,57 +79,58 @@ Printer.prototype.str = function (object) {
 	}
 };
 
-	function escapeCircularReferences(object, cache) {
-		var escapedObject;
 
-		if (!cache) {
-			cache = [];
-		}
+function escapeCircularReferences(object, cache) {
+	var escapedObject;
 
-		if (object instanceof jQuery) {
-			return '{jQuery}';
-		} else if (_.isObject(object)) {
-			if (cache.indexOf(object) > -1) {
-				return '{circ}';
-			}
-
-			cache.push(object);
-
-			escapedObject = {};
-
-			for (var key in object) {
-				if (object.hasOwnProperty(key)) {
-					var value = escapeCircularReferences(object[key], cache);
-
-					if (value !== undefined) {
-						escapedObject[key] = value;
-					}
-				}
-			}
-		} else if (_.isArray(object)) {
-			if (cache.indexOf(object) > -1) {
-				return '[circ]';
-			}
-
-			cache.push(object);
-
-			escapedObject = [];
-
-			for (var i = 0, j = object.length; i < j; i++) {
-				var value = escapeCircularReferences(object[i], cache);
-
-				if (value) {
-					escapedObject.push(value);
-				} else {
-					escapedObject.push(null);
-				}
-			}
-		} else {
-			escapedObject = object;
-		}
-
-		return escapedObject;
+	if (!cache) {
+		cache = [];
 	}
+
+	if (object instanceof jQuery) {
+		return '{jQuery}';
+	} else if (_.isObject(object)) {
+		if (cache.indexOf(object) > -1) {
+			return '{circ}';
+		}
+
+		cache.push(object);
+
+		escapedObject = {};
+
+		for (var key in object) {
+			if (object.hasOwnProperty(key)) {
+				var value = escapeCircularReferences(object[key], cache);
+
+				if (value !== undefined) {
+					escapedObject[key] = value;
+				}
+			}
+		}
+	} else if (_.isArray(object)) {
+		if (cache.indexOf(object) > -1) {
+			return '[circ]';
+		}
+
+		cache.push(object);
+
+		escapedObject = [];
+
+		for (var i = 0, j = object.length; i < j; i++) {
+			var value = escapeCircularReferences(object[i], cache);
+
+			if (value) {
+				escapedObject.push(value);
+			} else {
+				escapedObject.push(null);
+			}
+		}
+	} else {
+		escapedObject = object;
+	}
+
+	return escapedObject;
+}
 
 /**
  * Convert user text (eg a tweet) into html. Performs a clean, converts
