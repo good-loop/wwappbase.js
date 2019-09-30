@@ -458,7 +458,9 @@ class Store {
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * If unset, the call will return an inprogress PV, but will not do a fresh fetch.
 	 * @param messaging {?Boolean} If true (the default), try to use Messaging.js to notify the user of failures.
-	 * @param cachePeriod {?Number} Normally unset. If set, cache the data for this long in milliseconds - then re-fetch.
+	 * @param cachePeriod {?Number} milliseconds. Normally unset. If set, cache the data for this long - then re-fetch. 
+	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience. 
+	 * 	NB: Cache info is stored in `appstate.transient.fetchDate...`
 	 * @returns {!PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, messaging=true, cachePeriod) { // TODO allow retry after 10 seconds

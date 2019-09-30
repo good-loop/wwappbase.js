@@ -3,8 +3,6 @@ import DataStore from './plumbing/DataStore';
 import {assMatch, assert} from 'sjtest';
 import PromiseValue from 'promise-value';
 
-// TODO switch from storing can:x to role:x with app-defined cans
-
 /**
  * @returns {PromiseValue<String[]>}
  */
@@ -31,7 +29,8 @@ const getRoles = () => {
 				roles = Array.from(new Set(roles)); // de dupe
 				return roles;
 			});
-		}
+		},
+		60000 // cache for a minute
 	);
 	return shared;
 };
@@ -44,7 +43,7 @@ const getRoles = () => {
  */
 const addRole = (uxid, role) => {
 	assert(uxid.indexOf('@') !== -1, "Roles.js - addRole no user-xid");
-	assert(role, "Roles.js - addRole no role!");
+	assert(cans4role[role], "Roles.js - addRole() unknown role: "+role);
 	return Login.shareThing("role:"+role, uxid);
 };
 
@@ -60,6 +59,7 @@ const addRole = (uxid, role) => {
  * 	else { waiting on ajax }	
  * ```
  * 
+ * @param {!String} capability
  * @returns {PromiseValue<Boolean>}
  */
 const iCan = (capability) => {
@@ -85,6 +85,10 @@ const iCan = (capability) => {
 
 const cans4role = {};
 
+/**
+ * @param {!String} role - e.g. "editor"
+ * @param {!String[]} cans
+ */
 const defineRole = (role, cans) => {
 	assMatch(role, String);
 	assMatch(cans, "String[]");
@@ -107,6 +111,7 @@ const Roles = {
 	getRoles,
 	isDev
 };
+window.Roles = Roles; // debug hack
 
 export default Roles;
 export {

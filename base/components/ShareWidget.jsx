@@ -218,6 +218,7 @@ const AccessDenied = ({thingId}) => {
 		<div>Sorry - you don't have access to this content.
 			{thingId? <div><code>Content id: {thingId}</code></div> : null}
 			{Login.isLoggedIn()? <div><code>Your id: {Login.getId()}</code></div> : null}
+			{getRoles().value && getRoles().value.join? <div><code>Your roles: {getRoles().value.join(", ")}</code></div> : null}
 		</div>
 	</Misc.Card>);
 };
