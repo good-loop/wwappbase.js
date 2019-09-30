@@ -1,6 +1,6 @@
 import Login from 'you-again';
 import DataStore from './plumbing/DataStore';
-import {assMatch} from 'sjtest';
+import {assMatch, assert} from 'sjtest';
 import PromiseValue from 'promise-value';
 
 // TODO switch from storing can:x to role:x with app-defined cans
@@ -34,6 +34,18 @@ const getRoles = () => {
 		}
 	);
 	return shared;
+};
+
+/**
+ * 
+ * @param {!XId} uxid 
+ * @param {!String} role 
+ * @returns {Promise}
+ */
+const addRole = (uxid, role) => {
+	assert(uxid.indexOf('@') !== -1, "Roles.js - addRole no user-xid");
+	assert(role, "Roles.js - addRole no role!");
+	return Login.shareThing("role:"+role, uxid);
 };
 
 /**
@@ -101,5 +113,6 @@ export {
 	defineRole,
 	iCan,
 	getRoles,
-	isDev
+	isDev,
+	addRole
 }
