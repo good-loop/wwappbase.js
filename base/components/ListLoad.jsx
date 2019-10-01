@@ -24,10 +24,10 @@ import BS from './BS';
  * 	const path = DataStore.getValue(['location','path']);
  * 	const itemId = path[1];
  * 
- * 
- * @param q {?String} Optional query e.g. advertiser-id=pepsi
+ * @param {C.TYPES} type
+ * @param {?String} q - Optional query e.g. advertiser-id=pepsi
  * Note: that filter can add to this
- * @param sort {?String} Optional sort order, e.g. "start-desc"
+ * @param {?String} sort -  Optional sort order, e.g. "start-desc"
  * @param status {?String} e.g. "Draft"
  * @param servlet {?String} @deprecated - use navpage instead
  * @param navpage {?String} e.g. "publisher" If unset, a default is taken from the url. 
@@ -35,7 +35,7 @@ import BS from './BS';
  * @param ListItem {?React component} if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
- * @param notALink {?boolean} If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).
+ * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).
  */
 const ListLoad = ({type, status, servlet, navpage, 
 	q,
@@ -179,7 +179,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<A href={itemUrl}
 				onClick={event => onPick({ event, navpage, id, customParams })}
-				className={'ListItem btn btn-default status-' + item.status}
+				className={'ListItem btn btn-'+(BS.version===3?'default':'outline-secondary')+' status-' + item.status}
 			>
 				<div>{children}</div>
 			</A>

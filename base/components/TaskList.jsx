@@ -108,10 +108,7 @@ const TaskList = ({}) => {
 	let q = tags.map(t => "tags:"+t).join(" AND ")
 		// assigned.map(t => "assigned:"+t).join(" ")
 
-	const status = C.KStatus.ALL_BAR_TRASH;
-	// HACK refactor into ListLoad or List.js
-	
-	let pvItems = ActionMan.list({type, status, q:q});
+	const status = C.KStatus.ALL_BAR_TRASH;	
 
 	// button mode?
 	if ( ! widget.show) {
@@ -127,7 +124,7 @@ const TaskList = ({}) => {
 				<QuickTaskMaker tags={tags} items={pvItems.value} />
 				<div>&nbsp;</div>
 				<ListLoad
-					hasFilter={pvItems.value && pvItems.value.total > 5}
+					hasFilter={true}
 					q={q}
 					type={type}
 					status={status}
