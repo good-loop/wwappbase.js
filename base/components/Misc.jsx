@@ -270,7 +270,7 @@ const oh = (n) => n<10? '0'+n : n;
 Misc.LongDate = ({date}) => {
 	if ( ! date) return null;
 	if (_.isString(date)) date = new Date(date);
-	return <time datetime={date.toISOString()}>{`${weekdays[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`}</time>;
+	return <time datetime={date.toISOString()}>{weekdays[date.getDay()]} {date.getDate()} {months[date.getMonth()]} {date.getFullYear()}</time>;
 };
 
 
