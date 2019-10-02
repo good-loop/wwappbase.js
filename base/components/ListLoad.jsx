@@ -28,9 +28,9 @@ import BS from './BS';
  * @param {?String} q - Optional query e.g. advertiser-id=pepsi
  * Note: that filter can add to this
  * @param {?String} sort -  Optional sort order, e.g. "start-desc"
- * @param status {?String} e.g. "Draft"
- * @param servlet {?String} @deprecated - use navpage instead
- * @param navpage {?String} e.g. "publisher" If unset, a default is taken from the url. 
+ * @param {?String} status - e.g. "Draft"
+ * @param {?String} servlet - @deprecated - use navpage instead
+ * @param {?String} navpage - e.g. "publisher" If unset, a default is taken from the url. 
  * Best practice is to set navpage to avoid relying on url behaviour. 
  * @param ListItem {?React component} if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item
@@ -60,15 +60,18 @@ const ListLoad = ({type, status, servlet, navpage,
 	// let id = path[1];
 	// if (id) return null;
 
-	if ( ! servlet) servlet = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
-	else console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");
-	if ( ! navpage) navpage = servlet;
+	if (servlet && ! navpage) {
+		console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");	
+	}
+	if ( ! navpage) navpage = servlet || DataStore.getValue('location', 'path')[0]; //type.toLowerCase();	
+	if ( ! servlet) servlet = navpage;
 	if ( ! servlet) {
 		console.warn("ListLoad - no servlet? type="+type);
 		return null;
 	}
 	assMatch(servlet, String);
 	assMatch(navpage, String);
+	assert(navpage && navpage[0] !== '#', "ListLoad.jsx - navpage should be a 'word' ["+navpage+"]");
 	// store the lists in a separate bit of appstate
 	// from data. 
 	// Downside: new events dont get auto-added to lists
