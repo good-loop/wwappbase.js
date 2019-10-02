@@ -268,18 +268,27 @@ const shortMonths = months.map(month => month.substr(0, 3));
 const oh = (n) => n<10? '0'+n : n;
 
 Misc.LongDate = ({date}) => {
+	if ( ! date) return null;
 	if (_.isString(date)) date = new Date(date);
-	return <span>{`${weekdays[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`}</span>;
+	return <time datetime={date.toISOString()}>{`${weekdays[date.getDay()]} ${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`}</time>;
 };
 
 
 /**
+ * @deprecated use dateTimeTag
  * Human-readable, unambiguous date+time string which doesn't depend on toLocaleString support
+ * ??wrap in <time>??
  */
 Misc.dateTimeString = (d) => (
 	`${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()} ${oh(d.getHours())}:${oh(d.getMinutes())}`
 );
 
+/**
+ * Human-readable, unambiguous date+time string which doesn't depend on toLocaleString support
+ */
+Misc.dateTimeTag = (d) => d?
+	<time datetime={d.toISOString()}>{d.getDate()} {shortMonths[d.getMonth()]} {d.getFullYear()} {oh(d.getHours())}:{oh(d.getMinutes())}</time>
+	: null;
 
 Misc.AvatarImg = ({peep, ...props}) => {
 	if ( ! peep) return null;
