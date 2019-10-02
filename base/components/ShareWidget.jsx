@@ -214,6 +214,7 @@ const canDo = (type, id, rw) => {
 const canWrite = (type, id) => canDo(type, id, 'write');
 
 const AccessDenied = ({thingId}) => {
+	if ( ! getRoles().resolved) return <Misc.Loading text='Checking roles and access...' />;
 	return (<Misc.Card title='Access Denied :('>
 		<div>Sorry - you don't have access to this content.
 			{thingId? <div><code>Content id: {thingId}</code></div> : null}
