@@ -9,7 +9,7 @@ import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
 import {getType, getId, getClass} from '../data/DataClass';
-import Roles from '../Roles';
+import Roles, {getRoles} from '../Roles';
 
 /**
  * a Share This button
