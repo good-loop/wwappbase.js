@@ -28,7 +28,7 @@ test('New user able to complete pub sign up', async() => {
 
 	await page.waitForSelector(PortalSelectors.PubSignUp.next);
 	await page.click(PortalSelectors.PubSignUp.next);
-   
+
 	// claim website
 	await page.waitForSelector(PortalSelectors.PubSignUp.linkToWebsite);
 	await page.click(PortalSelectors.PubSignUp.linkToWebsite);
@@ -37,12 +37,12 @@ test('New user able to complete pub sign up', async() => {
 	await page.click(PortalSelectors.PubSignUp.claimSite);
 	await page.waitForSelector(PortalSelectors.PubSignUp.next);
 	await page.click(PortalSelectors.PubSignUp.next);
-   
+
 	// skip instructions
 	await page.waitForSelector(PortalSelectors.PubSignUp.wordPressInstructions);
 	await page.waitForSelector(PortalSelectors.PubSignUp.next);
 	await page.click(PortalSelectors.PubSignUp.next);
-   
+
 	// enter test page
 	await page.waitForSelector(PortalSelectors.PubSignUp.linkToWebsite);
 	await page.click(PortalSelectors.PubSignUp.linkToWebsite);
@@ -57,6 +57,7 @@ test('New user able to complete pub sign up', async() => {
 	await page.click(PortalSelectors.PubSignUp.pubPageLink);
 	await page.waitForSelector('#pubdash');
 }, 30000);
+
 
 test('Advertiser sign-up form', async() => {
 	const browser = window.__BROWSER__;
