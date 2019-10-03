@@ -34,8 +34,8 @@ const TaskListItem = ({item}) => {
 	return (
 		<div>
 			<div className='pull-left'>
-				<Misc.PropControl path={path} 
-					prop='closed' type='checkbox' 				
+				<Misc.PropControl path={path}
+					prop='closed' type='checkbox'
 					saveFn={() => Misc.publishDraftFn({type:'Task', id:item.id})}
 				/>
 			</div>
@@ -45,7 +45,7 @@ const TaskListItem = ({item}) => {
 			{item.url && item.url !== ''+window.location? <div><small><a href={item.url}>{item.url}</a></small></div> : null}
 			<button className='btn btn-xs' onClick={e => {
 				DataStore.setValue(taskEditorDialogPath.concat('task'), item);
-				DataStore.setValue(taskEditorDialogPath.concat('show'), true);			
+				DataStore.setValue(taskEditorDialogPath.concat('show'), true);
 			}}>edit</button>
 
 			{item.children? item.children.map(kid => <TaskListItem key={kid.id} item={kid} />) : null}
@@ -108,7 +108,9 @@ const TaskList = ({}) => {
 	let q = tags.map(t => "tags:"+t).join(" AND ")
 		// assigned.map(t => "assigned:"+t).join(" ")
 
-	const status = C.KStatus.ALL_BAR_TRASH;	
+	const status = C.KStatus.ALL_BAR_TRASH;
+	
+	const pvItems = ActionMan.list({type, status, q});
 
 	// button mode?
 	if ( ! widget.show) {
