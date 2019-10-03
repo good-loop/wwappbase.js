@@ -253,7 +253,7 @@ const createBlank = ({type, navpage, base, id, make}) => {
 	id = getId(base);
 	if ( ! getType(base)) base['@type'] = type;
 	// poke a new blank into DataStore
-	const path = getPath(C.KStatus.DRAFT, type, id);
+	const path = DataStore.getDataPath({status:C.KStatus.DRAFT, type, id});
 	DataStore.setValue(path, base);
 	// set the id
 	if ( ! navpage) {

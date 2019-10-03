@@ -101,6 +101,12 @@ ActionMan.crud = ({type, id, action, item}) => {
 			// HACK remove the stacktrace which our servers put in for debug
 			msg = msg.replace(/<details>[\s\S]*<\/details>/, "").trim();
 			notifyUser(new Error(action+" failed: "+msg));
+			// If it is a 401 - check the login status
+			if (err.status && err.status===401) {
+				Login.verify().catch(err2 => {
+					notifyUser(new Error("Your login failed - Perhaps your session has expired. Please try logging in again. If that doesn't help, please contact support."));
+				});
+			}
 			// mark the object as dirty
 			DataStore.setLocalEditsStatus(type, id, C.STATUS.dirty);
 			// and log an error relating to it

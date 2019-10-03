@@ -42,8 +42,9 @@ class Store {
 		this.parseUrlVars(window.location);
 		// and listen to changes
 		window.addEventListener('hashchange', e => {
-			// console.warn("hash change - update DataStore", window.location);
-			this.parseUrlVars(window.location);
+			// NB: avoid a loopy call triggered from setUrlValue()
+			if (this.updating) return true;			
+			this.parseUrlVars(window.location);			
 			return true;
 		});
 	}
