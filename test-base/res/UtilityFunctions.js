@@ -56,23 +56,23 @@ async function takeScreenshot({page, path, name = new Date().toISOString()}) {
 async function login({browser, page, username, password, Selectors=CommonSelectors, service='email'}) {
 	if(!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
 
-	await page.waitForSelector(Selectors['log-in']);
-	await page.click(Selectors['log-in']);
+	await page.waitForSelector(Selectors.logIn);
+	await page.click(Selectors.logIn);
 	// Wait for CSS transition to complete
 	// Caused puppeteer to click on wrong div sometimes
 	await page.waitFor(400);
 
 	if (service === 'email') {
-		await page.waitForSelector(Selectors['log-in-email']);
-		await page.waitForSelector(Selectors['log-in-password']);
+		await page.waitForSelector(Selectors.logInEmail);
+		await page.waitForSelector(Selectors.logInPassword);
 	
-		await page.click(Selectors['log-in-email']);
-		await page.keyboard.type(username);  
-		await page.click(Selectors['log-in-password']);
-		await page.keyboard.type(password); 
+		await page.click(Selectors.logInEmail);
+		await page.keyboard.type(username);
+		await page.click(Selectors.logInPassword);
+		await page.keyboard.type(password);
 		await page.keyboard.press('Enter');
 		
-		await page.waitForSelector(Selectors['log-in-email'], {hidden: true});
+		await page.waitForSelector(Selectors.logInEmail, {hidden: true});
 	}
 
 	if (service === 'twitter') {

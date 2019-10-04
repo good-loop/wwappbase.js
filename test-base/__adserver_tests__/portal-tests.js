@@ -88,8 +88,8 @@ test('Log in via Facebook', async() => {
 	const page = await browser.newPage();
 
 	await page.goto('' + APIBASE);
-	await page.waitForSelector(CommonSelectors['log-in']);
-	await page.click(CommonSelectors['log-in']);
+	await page.waitForSelector(CommonSelectors.logIn);
+	await page.click(CommonSelectors.logIn);
 
 	await login({
 		browser,
@@ -130,7 +130,7 @@ test('Create an advertiser', async() => {
 
 	await failIfPointingAtProduction({page});
 
-	await page.waitFor(PortalSelectors.General.Environmnet["log-in"]); // wait for Misc.Loading to go away
+	await page.waitFor(PortalSelectors.General.Environment.logIn); // wait for Misc.Loading to go away
 	await login({page, username, password});
 	// hack to get around portal bug (27/07/18) where
 	// permission to use CRUD buttons is not immediately given
@@ -163,7 +163,7 @@ test('Create an advert', async() => {
 
 	await failIfPointingAtProduction({page});
 
-	await page.waitFor(CommonSelectors["log-in"]); // wait for Misc.Loading to go away
+	await page.waitFor(CommonSelectors.logIn); // wait for Misc.Loading to go away
 	await login({page, username, password});
 	await page.reload();
 
@@ -240,7 +240,7 @@ test('Delete advert', async() => {
 
 	await failIfPointingAtProduction({page});
 
-	await page.waitFor(CommonSelectors["log-in"]); // wait for Misc.Loading to go away
+	await page.waitFor(CommonSelectors.logIn); // wait for Misc.Loading to go away
 	await login({page, username, password});
 	await page.reload();
 
@@ -258,7 +258,7 @@ test('Delete advertiser', async() => {
 
 	await failIfPointingAtProduction({page});
 
-	await page.waitFor(CommonSelectors["log-in"]); // wait for Misc.Loading to go away
+	await page.waitFor(CommonSelectors.logIn); // wait for Misc.Loading to go away
 	await login({page, username, password});
 	await page.reload();
 

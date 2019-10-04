@@ -41,14 +41,13 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 			{verb}{children}
 		</a>
 	);
-	
 };
 
 // ??why does this have a special onClick??
-const RegisterLink = ({className, onClick, ...props}) => <LoginLink 
-	className={className} 
-	onClick={() => {props.onClick && props.onClick(); LoginWidget.changeVerb('register');}} 
-	verb='Register' 
+const RegisterLink = ({className, onClick, ...props}) => <LoginLink
+	className={className}
+	onClick={() => {props.onClick && props.onClick(); LoginWidget.changeVerb('register');}}
+	verb='Register'
 	{...props}
 />;
 

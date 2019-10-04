@@ -6,9 +6,9 @@ import DemoPageSelectors from './DemoPageSelectors';
 
 // Selectors that are used across all platfroms are written directly in SelectorsMaster
 const CommonSelectors = {
-	'log-in': '.login-link',
-	'log-in-email': '#loginByEmail input[name="email"]',
-	'log-in-password': '#loginByEmail input[name="password"]',
+	logIn: '.login-link',
+	logInEmail: '#loginByEmail input[name="email"]',
+	logInPassword: '#loginByEmail input[name="password"]',
 	Save: '.SavePublishDiscard button[name="save"]',
 	SaveAs: '.SavePublishDiscard button[name="save-as"]',
 	Publish: '.SavePublishDiscard button[name="publish"]',
