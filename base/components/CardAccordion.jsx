@@ -34,6 +34,8 @@ class Card extends React.Component {
 	}
 
 	render() {
+		// HACK expose this card to its innards via a global
+		Card.current = this;
 		let {title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, titleClassName, warning, error, ...props} = this.props;
 		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.	
 		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
