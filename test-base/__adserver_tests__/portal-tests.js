@@ -104,10 +104,10 @@ test('Log in via Facebook', async() => {
 }, 30000);
 
 test('Log in via Twitter', async() => {
-    const browser = window.__BROWSER__;
-    const page = await browser.newPage();
+	const browser = window.__BROWSER__;
+	const page = await browser.newPage();
 
-    await page.goto('' + APIBASE);
+	await page.goto('' + APIBASE);
 	await login({
 		page, 
 		username: twitterUsername, 
@@ -117,8 +117,8 @@ test('Log in via Twitter', async() => {
 	});
 
 	// test for success
-    await page.goto('' + APIBASE);
-    await verifyLoginSuccess(page);
+	await page.goto('' + APIBASE);
+	await verifyLoginSuccess(page);
 }, 30000);
 
 // Create advertiser

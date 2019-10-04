@@ -382,14 +382,14 @@ Misc.publishDraftFn = _.debounce(
  */
 Misc.SavePublishDiscard = ({
 	type, id, hidden, cannotPublish, cannotDelete,
-	publishTooltipText='Your account cannot publish this.',
+	publishTooltipText = 'Your account cannot publish this.',
 	autoPublish, autoSave = true,
 	saveAs, unpublish
 }) => {
 	// No anon edits
-	if ( ! Login.isLoggedIn()) {
+	if (!Login.isLoggedIn()) {
 		if (hidden) return null;
-		return (<div className='SavePublishDiscard'><i>Login to save or publish edits</i></div>);
+		return <div className='SavePublishDiscard'><i>Login to save or publish edits</i></div>;
 	}
 
 	assert(C.TYPES.has(type), 'Misc.SavePublishDiscard');
@@ -438,36 +438,42 @@ Misc.SavePublishDiscard = ({
 	// merge discard / unpublish / delete into one button with a dropdown of options??
 	// merge save / saveAs into one button with a dropdown of options?
 
-	return (<div className='SavePublishDiscard' title={item && item.status}>
-		<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
-		<button className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
-			Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-		</button>
-		{saveAs? <span>&nbsp;</span> : null}
-		{saveAs? <button className='btn btn-default' disabled={isSaving} title='Copy and save with a new ID'
-				onClick={() => ActionMan.saveAs({type, id, onChange: _.isFunction(saveAs)? saveAs : null})} >
-				<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</button> : null}
-		&nbsp;
-		<button className='btn btn-primary' disabled={disablePublish} title={publishTooltip} onClick={() => ActionMan.publishEdits(type, id)}>
-			Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-		</button>
-		&nbsp;
-		<button className='btn btn-warning' disabled={isSaving || noEdits} 
-			onClick={() => ActionMan.discardEdits(type, id)}>
-			Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-		</button>
-		{unpublish && pubExists? <span>&nbsp;</span> : null}
-		{unpublish && pubExists? <button className='btn btn-warning' disabled={isSaving || noEdits} 
-				title='Move from published to draft'
-				onClick={() => ActionMan.unpublish(type, id)} >
-				Un-Publish <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</button> : null}
-		&nbsp;
-		<button className='btn btn-danger' disabled={disableDelete} onClick={() => ActionMan.delete(type, id)} >
-			Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />
-		</button>
-	</div>);
+	return (
+		<div className='SavePublishDiscard' title={item && item.status}>
+			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
+			<button name="save" className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
+				Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
+			</button>
+			{saveAs? <span>&nbsp;</span> : null}
+			{saveAs? <button name="save-as" className='btn btn-default' disabled={isSaving} title='Copy and save with a new ID'
+					onClick={() => ActionMan.saveAs({type, id, onChange: _.isFunction(saveAs)? saveAs : null})} >
+					<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
+				</button> : null}
+			&nbsp;
+			<button name="publish" className='btn btn-primary' disabled={disablePublish} title={publishTooltip}
+				onClick={() => ActionMan.publishEdits(type, id)}>
+				Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
+			</button>
+			&nbsp;
+			<button name="discard" className='btn btn-warning' disabled={isSaving || noEdits} 
+				onClick={() => ActionMan.discardEdits(type, id)}>
+				Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
+			</button>
+			{unpublish && pubExists ? <span>&nbsp;</span> : null}
+			{unpublish && pubExists ? (
+				<button name="unpublish" className='btn btn-warning' disabled={isSaving || noEdits} 
+					title='Move from published to draft'
+					onClick={() => ActionMan.unpublish(type, id)} >
+					Un-Publish <span className="glyphicon glyphicon-cd spinning" style={vis} />
+				</button>
+			) : null}
+			&nbsp;
+			<button name="delete" className='btn btn-danger' disabled={disableDelete}
+				onClick={() => ActionMan.delete(type, id)} >
+				Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />
+			</button>
+		</div>
+	);
 };
 
 

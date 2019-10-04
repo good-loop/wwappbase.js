@@ -25,8 +25,8 @@ async function gotoResult({page, selectorOrInteger = 1}) {
 }
 
 async function gotoEditEvent({page, eventId}) {
-    page.goto(`${APIBASE}#editEvent/${eventId}`);   
-    await page.waitForSelector(CommonSelectors.Delete);     
+    page.goto(`${APIBASE}#editEvent/${eventId}`);
+    await page.waitForSelector(CommonSelectors.Delete);
 }
 
 async function registerForEvent({

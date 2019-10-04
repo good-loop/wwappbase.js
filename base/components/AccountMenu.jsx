@@ -29,8 +29,8 @@ const AccountMenu = (props) => {
 	if (!Login.isLoggedIn()) {
 		return (
 			<ul id='top-right-menu' className="nav navbar-nav navbar-right">
-				{noRegister ? '' : <li><RegisterLink /></li>}
-				<li><LoginLink /></li>
+				{noRegister ? '' : <li id="register-link"><RegisterLink /></li>}
+				<li className="login-link"><LoginLink /></li>
 			</ul>
 		);
 	}
