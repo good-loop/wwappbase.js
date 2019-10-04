@@ -21,6 +21,7 @@ import BS from './BS';
  * @param {any} error - If set, colour the card red
  * @param warning {any} If set, colour the card yellow
  * @param {?String} className - Added to the BS panel classes
+ * @param {?Boolean} collapse - If true, the children are not rendered.
  */
 
 class Card extends React.Component {
