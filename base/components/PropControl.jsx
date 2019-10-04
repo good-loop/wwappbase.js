@@ -12,6 +12,7 @@ import { Checkbox, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
+import JSend from '../data/JSend';
 import {join, mapkv, stopEvent} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
@@ -34,15 +35,15 @@ import {notifyUser} from '../plumbing/Messaging';
  * Input bound to DataStore.
  * aka Misc.PropControl
  * 
- * @param saveFn {Function} {path, prop, value} 
+ * @param {Function} saveFn inputs: {path, prop, value} 
  * This gets called at the end of onChange.
  * You are advised to wrap this with e.g. _.debounce(myfn, 500).
  * NB: we cant debounce here, cos it'd be a different debounce fn each time.
  * Save utils: 
  * `Misc.saveDraftFn` and `Misc.savePublishFn`, 
  * or instead of saveFn, place a Misc.SavePublishDiscard on the page.
- * @param label {?String}
- * @param path {String[]} The DataStore path to item, e.g. [data, NGO, id]
+ * @param {?String} label 
+ * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id]
  * @param item The item being edited. Can be null, and it will be fetched by path.
  * @param prop The field being edited 
  * @param dflt {?Object} default value Beware! This may not get saved if the user never interacts.
@@ -932,9 +933,8 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 
 
 /** INPUT STATUS */
-class InputStatus { // extends JSend
-	// TODO (needs babel config update)
-	// path;
+class InputStatus extends JSend {
+	
 }
 /**
  * e.g. "url: warning: use https for security"

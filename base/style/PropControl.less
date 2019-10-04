@@ -49,6 +49,20 @@
 	}
 }
 
+/**
+This mimics Bootstrap's form-control on-focus.
+You can apply it to, well, anything.
+*/
+.focus {
+	border-radius: 4px;
+	border: 1px solid #ccc;
+	border-color: #66afe9;
+	outline: 0;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+	box-shadow: inset 0 1px 1px rgba(0,0,0,.075), 0 0 8px rgba(102,175,233,.6);
+	margin: -1px; //counteract the border, so adding this class does not affect page layout
+}
+
 // Let's make the colour picker (a) obvious in function and (b) pretty
 // Dan: This is prettier & I like the striped bg for unset
 // -- but its also bigger (and our forms are too big)
