@@ -88,15 +88,16 @@ class Card extends React.Component {
  * @param {?Boolean} multiple - If true, allow multiple cards to stay open.
  * @param {Misc.Card[]} children
  *    children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
+ * @param {?Boolean} defaultOpen - Should all cards start open or closed? This is more normally set at the Card level.
  */
-const CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
+const CardAccordion = ({widgetName, children, multiple, start, defaultOpen}) => {	
 	// NB: accordion with one child is not an array
 	if ( ! _.isArray(children)) {
 		children = [children];
 	}
+	if (defaultOpen && ! multiple) console.warn("CardAccordion.jsx - defaultOpen=true without multiple=true is odd.");
 	// filter null, undefined
 	children = children.filter(x => !! x);
-	showFilter = false; // TODO a keyword filter for big settings pages
 	// NB: React-BS provides Accordion, but it does not work with modular panel code. So sod that.
 	// TODO manage state
 	const wcpath = ['widget', widgetName || 'CardAccordion'];
@@ -104,21 +105,25 @@ const CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
 	let opens = DataStore.getValue(openPath); // type boolean[]
 	// Check if there's a predefined initial open state for each child
 	if ( ! opens) {
-		let explicitOpen = false;
-		opens = React.Children.map(children, (Kid, i) => {
-			if ( ! Kid.props) {
-				return false; // huh? seen Aug 2019 on Calstat
-			}
-			if (Kid.props.defaultOpen !== undefined) explicitOpen = true;
-			return !! Kid.props.defaultOpen;
-		});
-		if ( ! explicitOpen) opens = [true]; // default to first kid open
+		if (defaultOpen !== undefined) {
+			// start with all open (or closed)
+			opens = children.concat().fill(defaultOpen);
+		} else {
+			let explicitOpen = false;
+			opens = React.Children.map(children, (Kid, i) => {
+				if ( ! Kid.props) {
+					return false; // huh? seen Aug 2019 on Calstat
+				}
+				if (Kid.props.defaultOpen !== undefined) explicitOpen = true;
+				return !! Kid.props.defaultOpen;
+			});
+			if ( ! explicitOpen) opens = [true]; // default to first kid open
+		}
 	}
 	if ( ! children) {
 		return (<div className='CardAccordion' />);
 	}
-	assert(_.isArray(opens), "Misc.jsx - CardAccordion - open not an array", opens);
-	// TODO keyword filter
+	assert(_.isArray(opens), "Misc.jsx - CardAccordion - open not an array", opens);	
 	const kids = React.Children.map(children, (Kid, i) => {
 		let collapse = ! opens[i];
 		let onHeaderClick = e => {
@@ -134,9 +139,6 @@ const CardAccordion = ({widgetName, children, multiple, start, showFilter}) => {
 	});
 	return (
 		<div className='CardAccordion'>
-			{ showFilter ? (
-				<div className='form-inline'><Misc.PropControl path={wcpath} prop='filter' label='Filter' inline /></div>
-				) : null }
 			{kids}
 		</div>
 	);

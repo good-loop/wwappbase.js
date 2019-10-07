@@ -47,7 +47,7 @@ import {notifyUser} from '../plumbing/Messaging';
  * @param item The item being edited. Can be null, and it will be fetched by path.
  * @param prop The field being edited 
  * @param dflt {?Object} default value Beware! This may not get saved if the user never interacts.
- * @param modelValueFromInput {?Function} See standardModelValueFromInput
+ * @param {?Function} modelValueFromInput - inputs: (value, type, eventType) See standardModelValueFromInput.
  * @param required {?Boolean} If set, this field should be filled in before a form submit. 
 * 		TODO mark that somehow
 * @param validator {?(value, rawValue) => String} Generate an error message if invalid
@@ -67,7 +67,7 @@ const PropControl = (props) => {
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
-	if (Misc.KControlTypes.isdate(type) && ! validator) {
+	if (Misc.KControlType.isdate(type) && ! validator) {
 		validator = (v, rawValue) => {
 			if ( ! v) {
 				// raw but no date suggests the server removed it
@@ -85,7 +85,7 @@ const PropControl = (props) => {
 		};
 	} // date
 	// url: https
-	if (stuff.https !== false && (Misc.KControlTypes.isurl(type) || Misc.KControlTypes.isimg(type) || Misc.KControlTypes.isimgUpload(type))
+	if (stuff.https !== false && (Misc.KControlType.isurl(type) || Misc.KControlType.isimg(type) || Misc.KControlType.isimgUpload(type))
 			&& ! validator)
 	{
 		validator = v => {
@@ -97,7 +97,7 @@ const PropControl = (props) => {
 		};
 	}
 	// Money validator (NB: not 100% same as the backend)
-	if (Misc.KControlTypes.isMoney(type) && ! validator && ! error) {
+	if (Misc.KControlType.isMoney(type) && ! validator && ! error) {
 		validator = v => {
 			if ( ! v) return null;
 			let nv = Money.value(v);	
@@ -142,7 +142,7 @@ const PropControl = (props) => {
 	// Minor TODO lets refactor this so we always do the wrapper, then call a 2nd jsx function for the input (instead of the recursing flag)
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
-	if (Misc.KControlTypes.ischeckbox(type)) {
+	if (Misc.KControlType.ischeckbox(type)) {
 		return <PropControl2 value={value} proppath={proppath} {...props} />
 	}
 	// Minor TODO help block id and aria-described-by property in the input
@@ -179,7 +179,7 @@ const PropControl2 = (props) => {
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
-	assert( ! type || Misc.KControlTypes.has(type), 'Misc.PropControl: '+type);
+	assert( ! type || Misc.KControlType.has(type), 'Misc.PropControl: '+type);
 	assert(_.isArray(path), 'Misc.PropControl: not an array:'+path);
 	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path);
 	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
@@ -191,7 +191,7 @@ const PropControl2 = (props) => {
 	}
 
 	// Checkbox?
-	if (Misc.KControlTypes.ischeckbox(type)) {
+	if (Misc.KControlType.ischeckbox(type)) {
 		const onChange = e => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.checked;
@@ -310,7 +310,7 @@ const PropControl2 = (props) => {
 	// date
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
-	if (Misc.KControlTypes.isdate(type)) {
+	if (Misc.KControlType.isdate(type)) {
 		const acprops = {prop, item, value, onChange, ...otherStuff};
 		return <PropControlDate {...acprops} />;
 	}
@@ -801,7 +801,9 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 
 /**
 * Convert inputs (probably text) into the model's format (e.g. numerical)
-* @param eventType "change"|"blur" More aggressive edits should only be done on "blur"
+* @param {?primitive} inputValue - The html value, often a String
+* @param {KControlType} type - The PropControl type, e.g. "text" or "date"
+* @param {String} eventType "change"|"blur" More aggressive edits should only be done on "blur"
 * @returns the model value/object to be stored in DataStore
 */
 const standardModelValueFromInput = (inputValue, type, eventType) => {
@@ -826,6 +828,9 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 	return inputValue;
 };
 
+/**
+ * Normalise unicode characters which have ascii equivalents (e.g. curly quotes), to avoid many annoying issues.
+ */
 Misc.normalise = s => {
 	if ( ! s) return s;
 	s = s.replace(/['`’‘’ʼ]/g, "'");
@@ -863,14 +868,15 @@ const FormControl = ({value, type, required, size, className, ...otherProps}) =>
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-const KControlTypes = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
+const KControlType = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
 							+" yesNo location date year number arraytext keyset entryset address postcode json country"
 							// some Good-Loop data-classes
 							+" Money XId");
 
+// for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
 
 Misc.FormControl = FormControl;
-Misc.KControlTypes = KControlTypes;
+Misc.KControlType = KControlType;
 Misc.PropControl = PropControl;
 
 /**
@@ -993,7 +999,7 @@ const getInputStatuses2 = (node, all) => {
 
 export {
 	FormControl,
-	KControlTypes,
+	KControlType,
 
 	InputStatus,
 	setInputStatus,
