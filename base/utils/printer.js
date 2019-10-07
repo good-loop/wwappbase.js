@@ -41,21 +41,21 @@ Printer.URL_REGEX = /https?\:\/\/[0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*(:(0-9)*‌​)
 Printer.prototype.toNSigFigs = function(x, n) {
 	if (x==0) return "0";
 	assert(n > 0, "Printer.js - toNSigFigs: n is not greater than 0");
-	if ( ! Intl) {
-		console.warn("toNSigFigs - No Intl?!"); // Seen repeatedly. Sep 2019. possibly Sanjay's phone?
-		return ""+x;
+	try {
+		let snum = new Intl.NumberFormat('en-GB', {maximumSignificantDigits: n}).format(x);
+		return snum;
+	} catch(er) {
+		console.warn("toNSigFigs "+er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
+		return ""+x;	
 	}
-	let snum = new Intl.NumberFormat('en-GB', {maximumSignificantDigits: n}).format(x);
-	return snum;
 };
 
 /**
  * @param {?Number} x The number to format. If null/undefined, return ''.
  * Convenience for new Intl.NumberFormat().format() directly
  */
-Printer.prototype.prettyNumber = function(x, sigFigs) {
+Printer.prototype.prettyNumber = function(x, sigFigs=3) {
 	if (x===undefined || x===null) return '';
-	if ( ! sigFigs) sigFigs = 3;
 	return this.toNSigFigs(x, sigFigs);
 };
 
