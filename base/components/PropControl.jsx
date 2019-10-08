@@ -104,8 +104,8 @@ const PropControl = (props) => {
 			if ( ! Number.isFinite(nv)) {
 				return "Invalid number "+v.raw;
 			}
-			if (Math.round(nv*100) != nv*100) {
-				return "Fractional pence may cause an error later "+v.raw;
+			if ( ! (nv*100).toFixed(2).endsWith(".00")) {
+				return "Fractional pence may cause an error later";
 			}
 			if (v.error) return ""+v.error;
 			return null;
