@@ -157,6 +157,7 @@ Misc.Time = ({time}) => {
  * @param {?String} url Can be used instead of `service` to provide an img link
  * @param {Boolean} color True: Use the service's brand colour as foreground colour
  * @param {Boolean} square True: Put the logo inside a rounded square
+ * @param {String} size - e.g. lg (33% bigger) or '2x', '3x' etc
  */
 Misc.Logo = ({service, url, size, color = true, square = true}) => {
 	assert(service || url, 'Misc.Logo');
