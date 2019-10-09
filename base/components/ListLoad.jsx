@@ -12,7 +12,7 @@ import PropControl from './PropControl';
 import DataStore, { getPath } from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
-import {getType, getId, nonce} from '../data/DataClass';
+import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
 import List from '../data/List';
 import BS from './BS';
 
@@ -233,13 +233,15 @@ const DefaultDelete = ({type,id}) => (
  * Make a local blank, and set the nav url
  * Does not save (Crud will probably do that once you make an edit)
  * @param {{
- * 	base: {?Object} use to make the blank.
+ * 	type: C.TYPES
+ * 	base: Object - use to make the blank.
  * 	make: {?Function} use to make the blank. base -> base
  * }}
  */
 const createBlank = ({type, navpage, base, id, make}) => {
 	assert( ! getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) "+type+". Safety hack: Pass in an id param instead");
 	// Call the make?
+	if ( ! make) make = getClass(type)
 	if (make) {
 		base = make(base);
 	}

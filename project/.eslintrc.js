@@ -70,6 +70,7 @@ module.exports = {
 		"one-var": "warn",
 		"operator-assignment": "warn",
 		"operator-linebreak": "off",
+		"jsx-a11y/anchor-has-content": "warn", // what about in-page name-only anchors?
 		"padded-blocks": "warn",
 		"prefer-arrow-callback": "off",
 		"prefer-const": "off",
