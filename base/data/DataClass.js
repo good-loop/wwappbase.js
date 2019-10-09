@@ -53,16 +53,19 @@ class DataClass {
 	constructor(base) {
 		super(base);
 		Object.assign(this, base);
+		delete this.status;
 	}
 	```
 	 * 
 	* WARNING: IF your class defines any property values, then
-	 * these take precedence over anything this base constructor does.
-	 * So data could easily be lost!
+	 * these take precedence over anything this super constructor does.
+	 * So data from `base` could easily be lost!
 	 */
 	constructor(base) {
-		Object.assign(this, base);
-		this['@type'] = this.constructor._name || this.constructor.name;		
+		Object.assign(this, base); // Better done in subclass!
+		this['@type'] = this.constructor._name || this.constructor.name;	
+		// Avoid e.g. copying a Published object and setting the status to Published
+		delete this.status; // Better done in subclass!
 	}
 
 	/**
@@ -235,6 +238,7 @@ const getClass = typeOrItem => {
 	let type = getType(typeOrItem);
 	return allTypes[type];
 };
+DataClass.class = getClass;
 
 /**
  * @param dclass {Class} the class

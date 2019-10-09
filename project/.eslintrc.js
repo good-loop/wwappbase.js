@@ -6,6 +6,7 @@ module.exports = {
 		"import"
 	],
 	"rules": {
+		"constructor-super": "warn", // DataClass has use-cases for not calling super
 		"jsx-a11y/tabindex-no-positive": "off",
 		"arrow-body-style": "off",
 		"block-spacing": "warn",

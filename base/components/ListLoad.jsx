@@ -234,29 +234,36 @@ const DefaultDelete = ({type,id}) => (
  * Does not save (Crud will probably do that once you make an edit)
  * @param {{
  * 	type: C.TYPES
- * 	base: Object - use to make the blank.
- * 	make: {?Function} use to make the blank. base -> base
+ * 	base: Object - use to make the blank. This will be copied.
+ * 	make: {?Function} use to make the blank. base -> item. If unset, look for a DataClass for type, and use `new` constructor.
  * }}
  */
 const createBlank = ({type, navpage, base, id, make}) => {
 	assert( ! getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) "+type+". Safety hack: Pass in an id param instead");
-	// Call the make?
-	if ( ! make) make = getClass(type)
+	// Call the make?	
+	let newItem;
 	if (make) {
-		base = make(base);
+		newItem = make(base);
+	} else {
+		const klass = getClass(type);
+		if (klass) {
+			const cons = klass.bind({}); // NB: need the bind otherwise `this` is undefined
+			cons._name = klass.constructor._name || klass.constructor.name;	// NB: dont forget the DataClass type	
+			newItem = cons(base); // equivalent to `new Thing(base)` -- probably the normal way to do things
+		}
 	}
-	if ( ! base) base = {};
+	if ( ! newItem) newItem = Object.assign({}, base);
 	// specify the id?
-	if (id) base.id = id;
+	if (id) newItem.id = id;
 	// make an id? (make() might have done it)
-	if ( ! getId(base)) {
-		base.id = nonce(8);
+	if ( ! getId(newItem)) {
+		newItem.id = nonce(8);
 	}
-	id = getId(base);
-	if ( ! getType(base)) base['@type'] = type;
+	id = getId(newItem);
+	if ( ! getType(newItem)) newItem['@type'] = type;
 	// poke a new blank into DataStore
 	const path = DataStore.getDataPath({status:C.KStatus.DRAFT, type, id});
-	DataStore.setValue(path, base);
+	DataStore.setValue(path, newItem);
 	// set the id
 	if ( ! navpage) {
 		navpage = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
