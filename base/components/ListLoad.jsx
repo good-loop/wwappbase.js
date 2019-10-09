@@ -247,9 +247,9 @@ const createBlank = ({type, navpage, base, id, make}) => {
 	} else {
 		const klass = getClass(type);
 		if (klass) {
-			const cons = klass.bind({}); // NB: need the bind otherwise `this` is undefined
-			cons._name = klass.constructor._name || klass.constructor.name;	// NB: dont forget the DataClass type	
+			const cons = klass.bind({}); // NB: need the bind otherwise `this` is undefined			
 			newItem = cons(base); // equivalent to `new Thing(base)` -- probably the normal way to do things
+			if (klass._name) newItem['@type'] = klass._name;	// NB: dont forget the DataClass type, which is lost by the bind 
 		}
 	}
 	if ( ! newItem) newItem = Object.assign({}, base);
