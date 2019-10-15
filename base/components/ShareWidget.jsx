@@ -8,7 +8,7 @@ import PromiseValue from 'promise-value';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
-import {getType, getId, getClass} from '../data/DataClass';
+import DataClass, {getType, getId, getClass} from '../data/DataClass';
 import Roles, {getRoles} from '../Roles';
 
 /**
@@ -30,14 +30,19 @@ const ShareLink = ({item, type, id, thingId}) => {
 	</a>);
 };
 
-const shareThing = ({thingId, withXId}) => {
+/**
+ * 
+ * @param {!String} shareId - From shareThingId() 
+ */
+const shareThing = ({shareId, withXId}) => {
+	assMatch(shareId, String);
 	// call the server
-	Login.shareThing(thingId, withXId);
+	Login.shareThing(shareId, withXId);
 	// optimistically update the local list
-	const spath = ['misc','shares', thingId];
+	const spath = ['misc','shares', shareId];
 	let shares = DataStore.getValue(spath) || [];
 	shares = shares.concat({
-		item: thingId,
+		item: shareId,
 		by: Login.getId(),
 		_to: withXId 
 	});
@@ -75,15 +80,13 @@ const sendEmailNotification = (url, emailData) => {
 
 /**
  * A dialog for adding and managing shares
- * {
- * 	thingId: {!String} id for the share
- * 	name: {?String} optional name for the thing
- * }
+ * 
+ * @param {DataClass} item - The item to be shared
+ * @param {?String}	name - optional name for the thing
  * 
  * Note: This does NOT include the share button -- see ShareLink for that
 */
-const ShareWidget = ({item, type, id, thingId, name}) => {
-	assert( ! thingId, "old code - switch to item, or type+id");
+const ShareWidget = ({item, type, id, name}) => {
 	if (item) {
 		type = getType(item);
 		id = getId(item);
@@ -92,17 +95,17 @@ const ShareWidget = ({item, type, id, thingId, name}) => {
 	if ( ! type || ! id) {
 		return null;
 	}
-	thingId = shareThingId(type, id);
-	const basePath = ['widget', 'ShareWidget', thingId];
+	const shareId = shareThingId(type, id);
+	const basePath = ['widget', 'ShareWidget', shareId];
 	let data = DataStore.getValue(basePath) || DataStore.setValue(basePath, {form: {}}, false);
 	const {warning, show, form} = data;	
 	const formPath = basePath.concat('form');
-	if ( ! name) name = thingId;
+	if ( ! name) name = shareId;
 	let title = "Share "+name;
 	let { email: withXId, enableNotification } = form;
 	if (withXId) withXId += '@email';
-	let sharesPV = DataStore.fetch(['misc','shares', thingId], () => {
-		let req = Login.getShareList(thingId);
+	let sharesPV = DataStore.fetch(['misc','shares', shareId], () => {
+		let req = Login.getShareList(shareId);
 		return req;
 	});
 	let validEmailBool = C.emailRegex.test(DataStore.getValue(formPath.concat('email')));
@@ -129,7 +132,7 @@ const ShareWidget = ({item, type, id, thingId, name}) => {
 							onClick={()=>{
 								const {form} = DataStore.getValue(basePath) || {};
 
-								shareThing({thingId, withXId});
+								shareThing({shareId, withXId});
 								sendEmailNotification('/testEmail', {...form, senderId: Login.getId()});
 								}}>
 							Submit
@@ -178,6 +181,9 @@ const SharedWith = ({share}) => {
 const shareThingId = (type, id) => {
 	assert(C.TYPES.has(type), "ShareWidget.jsx shareThingId: "+type+" not in "+C.TYPES);
 	assMatch(id, String);
+	if (id.startsWith(type+":")) {
+		console.error("shareThingId() nested id?! "+id+" type: "+type);
+	}
 	return type+":"+id;
 };
 
@@ -224,6 +230,10 @@ const AccessDenied = ({thingId}) => {
 	</Misc.Card>);
 };
 
+/**
+ * 
+ * @param {String} id - The app item ID.
+ */
 const ClaimButton = ({type, id}) => {
 	const sid = shareThingId(type, id);
 	const plist = DataStore.fetch(['misc','shares', sid, 'list'], () => Login.getShareList(sid));
