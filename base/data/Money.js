@@ -169,6 +169,15 @@ Money.CURRENCY = {
 };
 
 /**
+ * Convenience for getting the symbol for a Money object
+ * @param {?Money} money
+ * @returns {?String} e.g. "£" -- which you may need to html encode
+ */
+Money.currencySymbol = money => {
+	return money && Money.CURRENCY[money.currency];
+};
+
+/**
  * @deprecated -- use new Money()
  * @param base e.g. £1 is {currency:'GBP', value:1}
  * WARNING - only pass in one definition of value, or you may get odd behaviour!
