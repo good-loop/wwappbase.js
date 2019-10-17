@@ -140,7 +140,7 @@ const SocialSignInButton = ({className = "btn btn-default signin", children, ser
 
 	className += ' ' + service
 
-	if ({facebook: 1, twitter: 1, instagram: 1}[service]) className += (' white bg-' + service);
+	if ({facebook: 1, twitter: 1, instagram: 1}[service]) className += (' border border-white white bg-' + service);
 	if (size) className += (' btn-' + size);
 
 	return (
