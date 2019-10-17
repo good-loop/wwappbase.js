@@ -27,6 +27,9 @@ ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
 
+// TODO clean up other definitions inc PORTAL_DOMAIN
+ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
+
 ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = `https://testuploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = `https://uploads.good-loop.com/`;
@@ -158,6 +161,41 @@ ServerIO.search = function(type, filter) {
 	return ServerIO.load(url, params);
 };
 
+/**
+ * @deprecated Use getDonationsData or getAllSpend for preference
+ * 
+ * @param {{dataspace:String, q:?String}} filters 
+ * @param {*} breakdowns TODO
+ * @param {?String} name Just for debugging - makes it easy to spot in the network tab
+ */
+ServerIO.getDataLogData = ({filters, interval='1 month', breakdowns=['time'], name}) => {
+	if ( ! filters.dataspace) console.warn("No dataspace?!", filters);
+	filters.breakdown=breakdowns; // server w w/o s??
+	filters.interval = interval;
+	// let specs = Object.assign({}, filters);
+	let endpoint = ServerIO.DATALOG_ENDPOINT;
+	const params = {data: filters};
+	return ServerIO.load(endpoint+(name? '?name='+encURI(name) : ''), params);
+};
+
+/**
+ * NB: Copy-pasta from Portal ServerIO.js
+ * 
+ * @param q {String} e.g. pub:myblog
+ * @returns Promise {
+ * 	by_cid: {String: Money}
+ * 	total: {Money},
+ * 	stats: {}
+ * }
+ * @param {?String} name Just for debugging - makes it easy to spot in the network tab 
+ */
+ServerIO.getDonationsData = ({q, start, end, name}) => {
+	let url = ServerIO.PORTAL_ENDPOINT+'/datafn/donations';
+	const params = {
+		data: {name, q, start, end}
+	};
+	return ServerIO.load(url, params);
+};
 
 /**
  * Contains some hacks: 

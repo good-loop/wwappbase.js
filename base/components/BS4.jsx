@@ -80,7 +80,7 @@ BS.Button = ({size, color='outline-dark', children, className, ...stuff}) => {
  * @param color {?String} e.g. "dark"
  */
 BS.Nav = ({children, className, placement="fixed-top", color="dark"}) => {
-	const classes = ['navbar', 'navbar-expand-md', placement, color ? `navbar-${color} bg-${color}` : null, className];
+	const classes = ['navbar', 'navbar-expand-md', 'p-0', placement, color ? `navbar-${color} bg-${color}` : null, className];
 	return <nav className={join(...classes)}>{children}</nav>;
 };
 
