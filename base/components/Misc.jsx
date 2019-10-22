@@ -4,7 +4,7 @@ import BS from './BS';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import { setHash, XId, addScript} from 'wwutils';
+import { setHash, XId, addScript, join} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 
