@@ -84,8 +84,8 @@ const LoginWidget = ({showDialog, logo, title, render=LoginWidgetGuts, services}
 		>
 			<Modal34.Header closeButton>
 				<Modal34.Title>
-					<Misc.Logo service={C.app.service} url={logo} size='large' transparent={false} />	
-					{title}					
+					<Misc.Logo service={C.app.service} url={logo} transparent={false} />
+					&nbsp; {title}					
 				</Modal34.Title>
 			</Modal34.Header>
 			<Modal34.Body>
