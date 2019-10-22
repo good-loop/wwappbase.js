@@ -2,11 +2,14 @@
  * A counter where the numbers spin up to the actual figure.
  */
 
+ // TODO support for more precise than 3 sig figs
+
 /* Possible TODO use react-spring for smoother, less expensive animations?? Should be default tool?? */
 
 import React, {useState, useRef} from 'react';
 import printer from '../utils/printer';
 import {useDoesIfVisible} from './CustomHooks';
+import Money from '../data/Money';
 
 /**
  * Use a bezier for a slow start/end, fast middle easing
@@ -36,9 +39,14 @@ const bezierSlide = (x = 0) => {
  * @param {Number} initial Value to start counting from
  * @param {Number} animationLength Time (msec) to reach final number
  * @param {Number} fps frames per second
- * @param {String} currencySymbol Won't break the system if 
+ * @param {String} currencySymbol 
+ * @param {Money} amount - Convenient way to set value + currencySymbol
  */
-const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true}) => {
+const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', amount, pretty = true}) => {
+	if (amount) {
+		value = Money.value(amount);
+		currencySymbol = Money.currencySymbol(amount);
+	}
 	const [state, setState] = useState({displayValue: initial, done: false});
 	const {startTime, displayValue, done} = state;
 	const ref = useRef();
