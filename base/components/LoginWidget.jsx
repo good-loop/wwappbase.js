@@ -77,7 +77,11 @@ const LoginWidget = ({showDialog, logo, title, render=LoginWidgetGuts, services}
 	// BS.Modal still has some glitches. But react-bootstrap modal plain fails for BS v4
 	let Modal34 = BS.version===4? BS.Modal : Modal;
 	return (
-		<Modal34 show={showDialog} className="login-modal" onHide={() => LoginWidget.hide()}>
+		<Modal34 
+			show={showDialog} 
+			className="login-modal" 
+			onHide={() => LoginWidget.hide()}
+		>
 			<Modal34.Header closeButton>
 				<Modal34.Title>
 					<Misc.Logo service={C.app.service} url={logo} size='large' transparent={false} />	

@@ -41,11 +41,12 @@ BS.Card = ({className, color, imgTop, title, subtitle, children}) => {
 // TODO for LoginWidget
 BS.Modal = ({show, onHide, className, children}) => {
 	if ( !show ) return null;
+	const stopPropagation = e => e.stopPropagation(); console.log('clicked!')
 	return (<div>
 		<div className={join('modal fade in', className)} 
 			style={{display:'block'}}
 			tabIndex="-1" role="dialog">
-			<div className="modal-dialog" role="document">
+			<div className="modal-dialog" role="document" onClick={stopPropagation}>
 				<div className="modal-content">			 
 					{children}
 			</div></div>
@@ -118,7 +119,7 @@ BS.Modal = ({children, show, className, onHide}) => {
 	return (
 		<div>
 			<div className={cs} style={{display: show?'block':'none'}} tabIndex="-1" role="dialog" onClick={e => onHide(e)}>
-				<div className="modal-dialog" role="document">
+				<div className="modal-dialog" role="document" onClick={e => e.stopPropagation()}>
 					<div className="modal-content">
 						{children}
 					</div>
