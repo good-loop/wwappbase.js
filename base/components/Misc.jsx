@@ -159,11 +159,11 @@ Misc.Time = ({time}) => {
  * @param {Boolean} square True: Put the logo inside a rounded square
  * @param {String} size - e.g. lg (33% bigger) or '2x', '3x' etc
  */
-Misc.Logo = ({service, url, size, color = true, square = true}) => {
+Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 	assert(service || url, 'Misc.Logo');
 	// Social media - We can handle these services with FontAwesome icons
 	if (service && 'twitter facebook instagram'.indexOf(service) !== -1) {
-		const className = color ? 'color-' + service : null;
+		const className = join(className, color? 'color-' + service : null);
 		const fa = service + (square ? '-square' : '');
 		const faSize = (size === 'xsmall') ? null : (size === 'small') ? '2x' : '4x'; // default to xlarge size, allow normal or large
 		return <Misc.Icon className={className} fa={fa} size={faSize} />
@@ -184,6 +184,7 @@ Misc.Logo = ({service, url, size, color = true, square = true}) => {
  * Font-Awesome or Glyphicon icons. See also Misc.Logo
  */
 Misc.Icon = ({glyph, fa, size, className, ...rest}) => {
+	// FontAwesome favours <i>
 	const Tag = glyph ? 'span' : 'i';
 	const classes = glyph ? (['glyphicon glyphicon-' + glyph]) : (['fa fa-' + fa]);
 
