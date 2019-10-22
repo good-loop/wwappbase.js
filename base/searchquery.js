@@ -66,6 +66,7 @@ class SearchQuery {
 	/**
 	 * Merge two queries with OR
 	 * @param {?String|SearchQuery} sq 
+	 * @returns a NEW SearchQuery
 	 */
 	or(sq) {		
 		if ( ! sq) return this;

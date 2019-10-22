@@ -168,13 +168,15 @@ ServerIO.search = function(type, filter) {
  * @param {?String[]} breakdowns - e.g. ['campaign'] will result in by_campaign results.
  * NB: the server parameter is `breakdown` (no -s). minor todo refactor to standardise
  * @param breakdown - OLD! must use `breakdowns` instead!
+ * @param {?String|Date} start More reliable than interval??
  * @param {?String} name Just for debugging - makes it easy to spot in the network tab
  */
-ServerIO.getDataLogData = ({filters, interval='1 month', breakdowns=['time'], breakdown, name}) => {
+ServerIO.getDataLogData = ({filters, start, interval='1 month', breakdowns=['time'], breakdown, name}) => {
 	assert( ! breakdown, "getDataLogData - Refactor to breakdowns (+s)");
 	if ( ! filters.dataspace) console.warn("No dataspace?!", filters);
 	filters.breakdown = breakdowns; // NB: the server doesnt want an -s
 	filters.interval = interval;
+	if (start) filters.start = start;
 	let endpoint = ServerIO.DATALOG_ENDPOINT;
 	const params = {data: filters};
 	return ServerIO.load(endpoint+(name? '?name='+encURI(name) : ''), params);
