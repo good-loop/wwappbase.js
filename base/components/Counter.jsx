@@ -2,6 +2,8 @@
  * A counter where the numbers spin up to the actual figure.
  */
 
+/* Possible TODO use react-spring for smoother, less expensive animations?? Should be default tool?? */
+
 import React, {useState, useRef} from 'react';
 import printer from '../utils/printer';
 import {useDoesIfVisible} from './CustomHooks';
