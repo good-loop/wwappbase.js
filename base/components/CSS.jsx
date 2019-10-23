@@ -24,8 +24,12 @@ import React, {useState, useRef} from 'react';
 // 	addUninstallAction({ action: () => (insertionPoint && insertionPoint.removeChild(styleNode)) });
 // };
 
+/**
+ * 
+ * @param {String} css
+ */
 const CSS = ({css}) => {
-	return <style>{css}</style>;
+	return css? null : <style>{css}</style>;
 };
 
 export default CSS;
