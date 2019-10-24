@@ -161,26 +161,30 @@ ServerIO.search = function(type, filter) {
 	return ServerIO.load(url, params);
 };
 
+
 /**
  * @deprecated Use getDonationsData or getAllSpend for preference
  * 
  * @param {{dataspace:String, q:?String}} filters 
  * @param {?String[]} breakdowns - e.g. ['campaign'] will result in by_campaign results.
- * NB: the server parameter is `breakdown` (no -s). minor todo refactor to standardise
- * @param breakdown - OLD! must use `breakdowns` instead!
- * @param {?String|Date} start More reliable than interval??
+ * NB: the server parameter is currently `breakdown` (no -s).
+ * Eventually we want to standardise on `breakdowns` as it's more intuitive for an array type,
+ * but making the change server-side is expected to be very involved.
+ * @param {?String|Date} start Date/time of oldest results (natural eg '1 month ago' OK)
+ * @param {?String|Date} end Date/time of oldest results
  * @param {?String} name Just for debugging - makes it easy to spot in the network tab
  */
-ServerIO.getDataLogData = ({filters, start, interval='1 month', breakdowns=['time'], breakdown, name}) => {
-	assert( ! breakdown, "getDataLogData - Refactor to breakdowns (+s)");
-	if ( ! filters.dataspace) console.warn("No dataspace?!", filters);
+ServerIO.getDataLogData = ({filters, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
+	if (!filters.dataspace) console.warn("No dataspace?!", filters);
 	filters.breakdown = breakdowns; // NB: the server doesnt want an -s
-	filters.interval = interval;
-	if (start) filters.start = start;
+	filters.start = start;
+	filters.end = end;
 	let endpoint = ServerIO.DATALOG_ENDPOINT;
 	const params = {data: filters};
-	return ServerIO.load(endpoint+(name? '?name='+encURI(name) : ''), params);
+	const url = endpoint + (name ? `?name=${encURI(name)}` : '');
+	return ServerIO.load(url, params);
 };
+
 
 /**
  * NB: Copy-pasta from Portal ServerIO.js
