@@ -357,10 +357,11 @@ const PropControl2 = (props) => {
 
 /**
  * @param options {any[]}
- * @param labels {?String[]|Function|Object}
+ * @param labels {?String[]|Function|Object} Map options to nice strings
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
+ * @param {?Boolean} canUnset If true, always offer an unset choice.
  */
-const PropControlSelect = ({options, labels, value, multiple, prop, onChange, saveFn, ...otherStuff}) => {
+const PropControlSelect = ({options, labels, value, multiple, prop, onChange, saveFn, canUnset, ...otherStuff}) => {
 	// NB: pull off internal attributes so the select is happy with rest
 	const {className, dflt, recursing, modelValueFromInput, ...rest} = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
@@ -398,7 +399,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 			multiple={multiple}
 			{...rest}
 		>
-			{sv? null : <option></option>}
+			{sv && ! canUnset? null : <option></option>}
 			{domOptions}
 		</select>
 	);
