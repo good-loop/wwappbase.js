@@ -186,7 +186,8 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 Misc.Icon = ({glyph, fa, size, className, ...rest}) => {
 	// FontAwesome favours <i>
 	const Tag = glyph ? 'span' : 'i';
-	const classes = glyph ? (['glyphicon glyphicon-' + glyph]) : (['fa fa-' + fa]);
+	const classes = glyph ? (['glyphicon glyphicon-' + glyph]) : (['fa fab fa-' + fa]);
+	// fa vs fab -- it seems fa is FA v4 and fab is FA v5?? Bug seen Oct 2019 if using only fa with FAv5
 
 	if (size) {
 		classes.push('fa-' + size);
