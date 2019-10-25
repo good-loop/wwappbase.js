@@ -452,14 +452,14 @@ class Store {
 	 * NB: an advantage of this is that the server can return partial data (e.g. search results)
 	 * without over-writing the fuller data.
 	 * 
-	 * @param path {String[]}
-	 * @param fetchFn {Function} () -> Promise/value, which will be wrapped using promise-value.
+	 * @param {String[]} path 
+	 * @param {Function} fetchFn () -> Promise/value, which will be wrapped using promise-value.
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
 	 * As a convenience hack, this method will use `JSend` to extract `data` or `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * If unset, the call will return an inprogress PV, but will not do a fresh fetch.
-	 * @param messaging {?Boolean} If true (the default), try to use Messaging.js to notify the user of failures.
-	 * @param cachePeriod {?Number} milliseconds. Normally unset. If set, cache the data for this long - then re-fetch. 
+	 * @param {?Boolean} messaging If true (the default), try to use Messaging.js to notify the user of failures.
+	 * @param {?Number} cachePeriod milliseconds. Normally unset. If set, cache the data for this long - then re-fetch. 
 	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience. 
 	 * 	NB: Cache info is stored in `appstate.transient.fetchDate...`
 	 * @returns {!PromiseValue} (see promise-value.js)

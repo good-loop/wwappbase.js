@@ -196,11 +196,11 @@ const canRead = (type, id) => canDo(type, id, 'read');
 
 const canDo = (type, id, rw) => {
 	let sid = shareThingId(type, id);
-	return DataStore.fetch(['misc','shares', id, 'canDo', rw], () => 
+	return DataStore.fetch(['misc','shares', sid, 'canDo', rw], () => 
 		{
 			return Login.checkShare(sid)
 				.then(res => {
-					let yes = res.cargo && res.cargo[rw];
+					let yes = !! (res.cargo && res.cargo[rw]); // force boolean not falsy, as undefined causes DataStore.fetch to repeat
 					if (yes) return yes;
 					// superuser powers? NB: this does need Roles to be pre-loaded by some other call for it to work.					
 					if (C.CAN.sudo) {
@@ -209,7 +209,10 @@ const canDo = (type, id, rw) => {
 					}
 					return yes;
 				});
-		}
+		}, 
+		undefined,
+		// allow for permissions to change e.g. "Let me share that with you..."
+		30*1000 // 30 seconds
 	);	 // ./fetch
 };
 
