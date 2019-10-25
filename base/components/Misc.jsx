@@ -269,10 +269,32 @@ const shortMonths = months.map(month => month.substr(0, 3));
 
 const oh = (n) => n<10? '0'+n : n;
 
-Misc.LongDate = ({date}) => {
-	if ( ! date) return null;
+Misc.LongDate = ({date, noWeekday}) => {
+	if (!date) return null;
 	if (_.isString(date)) date = new Date(date);
-	return <time dateTime={date.toISOString()}>{weekdays[date.getDay()]} {date.getDate()} {months[date.getMonth()]} {date.getFullYear()}</time>;
+	const weekday = noWeekday ? '' : weekdays[date.getDay()];
+	return <time dateTime={date.toISOString()}>{weekday + ' '}{date.getDate()} {months[date.getMonth()]} {date.getFullYear()}</time>;
+};
+
+/**
+ * Print a date with more specificity the closer it is to the present. Omits year for dates in the current year.
+ * TODO Generalise to future dates, allow a different reference point to "now"
+ * TODO Either fine tuning (eg can probably omit day-of-month ~90 days out) or options
+ */
+Misc.RoughDate = ({date}) => {
+	if (!date) return null;
+	if (_.isString(date)) date = new Date(date);
+	const now = new Date();
+	 // No, we don't care about leap seconds etc. 86400 seconds per day is fine.
+	const thisYear = now.getFullYear() === date.getFullYear();
+	const daysSince = (now.getTime() - date.getTime()) / 86400000;
+
+	const time = daysSince > 2 ? null : (oh(date.getHours()) + ':' + oh(date.getMinutes())); // yesterday/today? show time
+	const day = thisYear ? date.getDate() : null; // just month+year if last year or older
+	const month = months[date.getMonth()]; // always show month
+	const year = thisYear ? null : date.getFullYear(); // no year if it's the same
+
+	return <time dateTime={date.toISOString()}>{[time, day, month, year].filter(a => a).join(' ')}</time>;
 };
 
 
