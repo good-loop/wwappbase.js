@@ -166,7 +166,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 		const className = join(className, color? 'color-' + service : null);
 		const fa = service + (square ? '-square' : '');
 		const faSize = (size === 'xsmall') ? null : (size === 'small') ? '2x' : '4x'; // default to xlarge size, allow normal or large
-		return <Misc.Icon className={className} fa={fa} size={faSize} />
+		return <Misc.Icon className={className} fa={fa} prefix={Misc.FontAwesome===5?'fab':null} size={faSize} />
 	};
 	
 	// The rest we have to use images for (Instagram's mesh gradient can't be done in SVG)
@@ -182,12 +182,13 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 
 /**
  * Font-Awesome or Glyphicon icons. See also Misc.Logo
+ * @param {String} fa Font Awesome icon name, e.g. "twitter" or "star"
+ * @param {String} prefix Font Awesome v5 prefix e.g. "fab" for brands
  */
-Misc.Icon = ({glyph, fa, size, className, ...rest}) => {
+Misc.Icon = ({glyph, fa, size, className, prefix="fa", ...rest}) => {
 	// FontAwesome favours <i>
 	const Tag = glyph ? 'span' : 'i';
-	const classes = glyph ? (['glyphicon glyphicon-' + glyph]) : (['fa fab fa-' + fa]);
-	// fa vs fab -- it seems fa is FA v4 and fab is FA v5?? Bug seen Oct 2019 if using only fa with FAv5
+	const classes = glyph ? ['glyphicon glyphicon-' + glyph] : [prefix, 'fa-' + fa];
 
 	if (size) {
 		classes.push('fa-' + size);
