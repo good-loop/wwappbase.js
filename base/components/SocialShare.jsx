@@ -16,12 +16,12 @@ import NGO from '../data/NGO';
  * 
  * There are default display icons for each service, but you can provide children to use instead
  * @param service. Options: 'twitter', 'facebook', 'linkedin'
- * @param url {!String} url for the thing being shared
+ * @param {!String} url for the thing being shared
  * @param Data to be encoded in to href. Of form {message: ''}. Each social media uses different keys
  * TODO: Replace pngs with svgs (preferably inline)
  * @param children {?JSX} optionally specify the contents. If unset, default images are used.
  */
-const IntentLink = ({children, service, style, text, url}) => {
+const IntentLink = ({children, service, style={}, text, url}) => {
 	service = service.toLowerCase();
 
 	url = encodeURIComponent(url);

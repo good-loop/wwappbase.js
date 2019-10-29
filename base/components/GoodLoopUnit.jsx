@@ -51,7 +51,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
 	const docBody = doc && doc.body;
 
 	// No scroll bars!
-	docBody.style = 'overflow: hidden;';
+	if (docBody) docBody.style = 'overflow: hidden;'; // NB: the if is paranoia - NPE hunt Oct 2019
 
 	// Insert preloaded unit.json, if we have it
 	if (unitJson) appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
