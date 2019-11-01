@@ -186,11 +186,7 @@ class Store {
 		if ( ! item) {
 			return null;
 		}
-		// if ( ! C.TYPES.has(getType(item))) return null;
-		// if ( ! getId(item)) return null;
-		// const s = this.nodeForStatus(status);
-		// return [s, getType(item), getId(item)];
-		return getPath(status, getType(item), getId(item));
+		return this.getDataPath({status, type:getType(item), id:getId(item)});
 	}
 
 	/**

@@ -27,7 +27,7 @@ ActionMan.crud = ({type, id, action, item}) => {
 	assert(C.CRUDACTION.has(action), "unrecognised action "+action+" for type "+type);
 	if ( ! item) { 
 		let status = startStatusForAction(action);
-		item = DataStore.getData(status, type, id);
+		item = DataStore.getData({status, type, id});
 	}
 	if ( ! item) {
 		// No item? fine for action=delete. Make a transient dummy here

@@ -56,6 +56,8 @@ const str = printer.str;
  * topRow: {Item} - A row Object. Provide an always visible (no filtering) top row, e.g. for totals including extra data.
  * 
  * showSortButtons {Boolean} default true
+ * 
+ * @param {?Boolean} hideEmpty - If true, hide empty columns
  */
 // NB: use a full component for error-handling
 // Also state (though maybe we should use DataStore)
