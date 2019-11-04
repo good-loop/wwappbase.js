@@ -340,7 +340,7 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 	return (
 		<div className="login-guts container-fluid">
 			<div className="login-divs row">
-				<div className="login-email col-sm-6">
+				<div className="login-email col-sm-6 pb-2">
 					<EmailSignin
 						verb={verb}
 						onLogin={onLogin}
