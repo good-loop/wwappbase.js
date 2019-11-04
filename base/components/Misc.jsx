@@ -166,7 +166,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 		const className = join(className, color? 'color-' + service : null);
 		const fa = service + (square ? '-square' : '');
 		const faSize = (size === 'xsmall') ? null : (size === 'small') ? '2x' : '4x'; // default to xlarge size, allow normal or large
-		return <Misc.Icon className={className} fa={fa} prefix={Misc.FontAwesome===5?'fab':null} size={faSize} />
+		return <Misc.Icon className={className} fa={fa} prefix={Misc.FontAwesome===5?'fab':"fa"} size={faSize} />
 	};
 	
 	// The rest we have to use images for (Instagram's mesh gradient can't be done in SVG)
