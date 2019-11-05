@@ -108,11 +108,11 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
-		if (frameLoaded || frameReady) {
+		if ((frameLoaded || frameReady) && frameDoc) {
 			insertUnit({frame, unitJson, vertId, status, size, play, endCard});
 			insertAdunitCss({frame, css});
 		} 
-	}, [frameLoaded, frameReady, unitKey]);
+	}, [frameLoaded, frameReady, frameDoc, unitKey]);
 
 	// Redo CSS when CSS or adunit frame changes
 	useEffect(() => {
