@@ -43,7 +43,8 @@ import {notifyUser} from '../plumbing/Messaging';
  * `Misc.saveDraftFn` and `Misc.savePublishFn`, 
  * or instead of saveFn, place a Misc.SavePublishDiscard on the page.
  * @param {?String} label 
- * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id]
+ * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
+ * 	Defaulkt: ['location','params'] which codes for the url
  * @param item The item being edited. Can be null, and it will be fetched by path.
  * @param prop The field being edited 
  * @param dflt {?Object} default value Beware! This may not get saved if the user never interacts.
@@ -57,7 +58,7 @@ import {notifyUser} from '../plumbing/Messaging';
 NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
-	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
+	let {type="text", optional, required, path=['location','params'], prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);
