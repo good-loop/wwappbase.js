@@ -17,9 +17,10 @@ import {LoginLink} from './LoginWidget';
 import {setTaskTags} from './TaskList';
 
 const BasicAccountPage = () => {
-	if ( ! Login.isLoggedIn()) {
+	if (!Login.isLoggedIn()) {
 		return <div><h1>My Account: Please login</h1><LoginLink title='Login' /></div>;
 	}
+	
 	setTaskTags();
 	return (
 		<div className=''>

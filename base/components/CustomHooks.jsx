@@ -5,6 +5,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 /** Takes React element reference. Calculates if div is visible to user or not */
 const doIfVisible = props => {
 	const {elementReference, fn} = props;
+	if (!elementReference) return; // race conditions (?) can make reference undefined
 	
 	const {top, left, bottom, right} = elementReference.getBoundingClientRect();
 
