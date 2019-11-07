@@ -44,15 +44,18 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
  *
  * NB: these are used by the surrounding widgets - progress & next/prev buttons
  * 
- * Also for convenient lazy setting of sufficient/complete, a function can be passed
- * to children:
- * setNavStatus {sufficient, complete}
+ * Also for convenient lazy setting of sufficient/complete, a function is passed to children:
+ * setNavStatus({sufficient, complete})
+ * 
+ * @param {?Boolean} sufficient default=true
+ * @param {?Boolean} complete default=false
+ * 
  * To get this, the child must have a boolean setNavStatus flag, which gets replaced.
  * @param onNext function called when user interacts with "next" button
  * @param onPrev function called when user interacts with "prev" button 
  */
 const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous, 
-	sufficient, complete, 
+	sufficient=true, complete=false, 
 	title, onNext, onPrev, children}) => 
 {
 	assert(stageNum !==null && stageNum !== undefined);
@@ -183,11 +186,14 @@ const WizardNavButtons = ({stagePath, maxStage, navStatus, onNext, onPrev}) => {
 	// read from WizardStage props if set, or setNavStatus
 	// navStatus;
 	if (complete) sufficient = true;
-	let msg = sufficient===false? 'Please fill in more of the form' : null;
+	let msg = ! sufficient? 'Please fill in more of the form' : null;
 	return (<div className='nav-buttons clearfix'>
-		{previous===false? null : <PrevButton stagePath={stagePath} onPrev={onPrev} /> }
-		{next===false? null : <NextButton stagePath={stagePath} maxStage={maxStage}
-			disabled={sufficient===false} complete={complete} title={msg} onNext={onNext} /> }
+		{previous===false? null : 
+			<PrevButton stagePath={stagePath} onPrev={onPrev} /> 
+		}
+		{next===false? null : 
+			<NextButton stagePath={stagePath} maxStage={maxStage} disabled={ ! sufficient} complete={complete} title={msg} onNext={onNext} /> 
+		}
 	</div>);
 };
 
