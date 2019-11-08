@@ -174,8 +174,8 @@ ServerIO.search = function(type, filter) {
  * @param {?String|Date} end Date/time of oldest results
  * @param {?String} name Just for debugging - makes it easy to spot in the network tab
  */
-ServerIO.getDataLogData = ({filters, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
-	if (!filters.dataspace) console.warn("No dataspace?!", filters);
+ServerIO.getDataLogData = ({filters={}, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
+	if ( ! filters.dataspace) console.warn("No dataspace?!", filters);
 	filters.breakdown = breakdowns; // NB: the server doesnt want an -s
 	filters.start = start;
 	filters.end = end;
