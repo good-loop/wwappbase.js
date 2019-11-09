@@ -74,7 +74,7 @@ const claimItem = ({type, id}) => {
 
 const doShareThing = ({shareId, withXId}) => {
 	// call the server
-	Login.shareThing(shareId, withXId);
+	let p = Login.shareThing(shareId, withXId);
 	// optimistically update the local list
 	const spath = pathToListHits(shareId);
 	let shares = DataStore.getValue(spath) || [];
@@ -84,6 +84,7 @@ const doShareThing = ({shareId, withXId}) => {
 		_to: withXId 
 	});
 	DataStore.setValue(spath, shares);
+	return p;
 }
 
 /**
@@ -149,7 +150,8 @@ const Shares = {
 	canRead, canWrite,
 	getShareListPV,
 	doShareThing,
-	claimItem
+	claimItem,
+	doDeleteShare
 };
 window.Shares = Shares; // debug hack
 
@@ -160,5 +162,6 @@ export {
 	canRead, canWrite,
 	getShareListPV,
 	doShareThing,
-	claimItem
+	claimItem, 
+	doDeleteShare
 }
