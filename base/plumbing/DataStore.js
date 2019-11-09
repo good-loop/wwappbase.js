@@ -36,7 +36,9 @@ class Store {
 			location:{}, 
 			/** browser environment */
 			env:{},
-			misc:{}
+			misc:{},
+			/** YouAgain share info */
+			shares:{}
 		};
 		// init url vars
 		this.parseUrlVars(window.location);

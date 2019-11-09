@@ -10,6 +10,7 @@ import Misc from './Misc';
 import C from '../CBase';
 import DataClass, {getType, getId, getClass} from '../data/DataClass';
 import Roles, {getRoles} from '../Roles';
+import Shares, {Share, canRead, canWrite, shareThingId} from '../Shares';
 
 /**
  * a Share This button
@@ -36,17 +37,7 @@ const ShareLink = ({item, type, id, thingId}) => {
  */
 const shareThing = ({shareId, withXId}) => {
 	assMatch(shareId, String);
-	// call the server
-	Login.shareThing(shareId, withXId);
-	// optimistically update the local list
-	const spath = ['misc','shares', shareId];
-	let shares = DataStore.getValue(spath) || [];
-	shares = shares.concat({
-		item: shareId,
-		by: Login.getId(),
-		_to: withXId 
-	});
-	DataStore.setValue(spath, shares);
+	Shares.doShareThing({shareId, withXId});
 	// clear the form
 	DataStore.setValue(['widget', 'ShareWidget', 'add'], {});
 };
@@ -60,12 +51,7 @@ const deleteShare = ({share}) => {
 	// call the server
 	const thingId = share.item;
 	assMatch(thingId, String);
-	Login.deleteShare(thingId, share._to);
-	// optimistically update the local list
-	const spath = ['misc','shares', thingId];
-	let shares = DataStore.getValue(spath) || [];
-	shares = shares.filter(s => s !== share);
-	DataStore.setValue(spath, shares);
+	Shares.doDeleteShare(share);
 };
 
 //Collate data from form and shares paths, then send this data off to the server
@@ -104,10 +90,7 @@ const ShareWidget = ({item, type, id, name}) => {
 	let title = "Share "+name;
 	let { email: withXId, enableNotification } = form;
 	if (withXId) withXId += '@email';
-	let sharesPV = DataStore.fetch(['misc','shares', shareId], () => {
-		let req = Login.getShareList(shareId);
-		return req;
-	});
+	let sharesPV = Shares.getShareListPV(shareId);
 	let validEmailBool = C.emailRegex.test(DataStore.getValue(formPath.concat('email')));
 	// TODO share by url on/off
 	// TODO share message email for new sharers
@@ -152,14 +135,15 @@ const ShareWidget = ({item, type, id, name}) => {
 
 const ListShares = ({list}) => {
 	if ( ! list) return <Misc.Loading text='Loading current shares' />;
-	console.warn('ListShares', list);
+	// console.warn('ListShares', list);
 	if ( ! list.length) return <div className='ListShares'>Not shared.</div>;
 	return (<div className='ListShares'>
-		{list.map(s => <SharedWith key={JSON.stringify(s)} share={s} />)}
+		{list.map(s => <SharedWithRow key={JSON.stringify(s)} share={s} />)}
 	</div>);
 };
 
-const SharedWith = ({share}) => {
+const SharedWithRow = ({share}) => {
+	assert(share, "SharedWithRow");
 	return (
 		<div className='clearfix'>		
 			<p className='pull-left'>{share._to}</p>
@@ -171,56 +155,6 @@ const SharedWith = ({share}) => {
 			</button>
 	</div>);
 };
-
-/**
- * Namespaces data item IDs for sharing
- * @param {!String} type e.g. Publisher
- * @param {!String} id the item's ID
- * @returns {String} the thingId to be used with Login.share functions
- */
-const shareThingId = (type, id) => {
-	assert(C.TYPES.has(type), "ShareWidget.jsx shareThingId: "+type+" not in "+C.TYPES);
-	assMatch(id, String);
-	if (id.startsWith(type+":")) {
-		console.error("shareThingId() nested id?! "+id+" type: "+type);
-	}
-	return type+":"+id;
-};
-
-
-/**
- * 
- * @returns {PromiseValue<Boolean>} .value resolves to true if they can read
- */
-const canRead = (type, id) => canDo(type, id, 'read');
-
-const canDo = (type, id, rw) => {
-	let sid = shareThingId(type, id);
-	return DataStore.fetch(['misc','shares', sid, 'canDo', rw], () => 
-		{
-			return Login.checkShare(sid)
-				.then(res => {
-					let yes = !! (res.cargo && res.cargo[rw]); // force boolean not falsy, as undefined causes DataStore.fetch to repeat
-					if (yes) return yes;
-					// superuser powers? NB: this does need Roles to be pre-loaded by some other call for it to work.					
-					if (C.CAN.sudo) {
-						// sudo?
-						yes = Roles.iCan(C.CAN.sudo).value;
-					}
-					return yes;
-				});
-		}, 
-		undefined,
-		// allow for permissions to change e.g. "Let me share that with you..."
-		30*1000 // 30 seconds
-	);	 // ./fetch
-};
-
-/**
- * 
- * @returns {PromiseValue<Boolean>} .value resolves to true if they can read
- */
-const canWrite = (type, id) => canDo(type, id, 'write');
 
 const AccessDenied = ({thingId}) => {
 	if ( ! getRoles().resolved) return <Misc.Loading text='Checking roles and access...' />;
@@ -239,7 +173,7 @@ const AccessDenied = ({thingId}) => {
  */
 const ClaimButton = ({type, id}) => {
 	const sid = shareThingId(type, id);
-	const plist = DataStore.fetch(['misc','shares', sid, 'list'], () => Login.getShareList(sid));
+	const plist = Shares.getShareListPV(sid);
 	if ( ! plist.resolved) {
 		return <Misc.Loading text='Loading access details' />;
 	}
@@ -251,10 +185,7 @@ const ClaimButton = ({type, id}) => {
 		<div>
 			This {type} has not been claimed yet. If you are the owner or manager, please claim it. 
 			<div>
-				<button className='btn btn-default' onClick={() => {
-					Login.claim(shareThingId(type, id))
-					.then(DataStore.update);}}
-				>
+				<button className='btn btn-default' onClick={() => Shares.claimItem({type, id})} >
 					Claim {id}
 				</button>
 			</div>
