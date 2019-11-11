@@ -165,7 +165,9 @@ ServerIO.search = function(type, filter) {
 /**
  * @deprecated Use getDonationsData or getAllSpend for preference
  * 
- * @param {{dataspace:String, q:?String}} filters 
+ * @param {String} q
+ * @param {String} dataspace
+ * @param {{dataspace:String, q:?String}} filters deprecated
  * @param {?String[]} breakdowns - e.g. ['campaign'] will result in by_campaign results.
  * NB: the server parameter is currently `breakdown` (no -s).
  * Eventually we want to standardise on `breakdowns` as it's more intuitive for an array type,
@@ -174,7 +176,10 @@ ServerIO.search = function(type, filter) {
  * @param {?String|Date} end Date/time of oldest results
  * @param {?String} name Just for debugging - makes it easy to spot in the network tab
  */
-ServerIO.getDataLogData = ({filters={}, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
+ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
+	// HACK old calling convention
+	if (filters.dataspace) console.warn("ServerIOBase.js getDataLogData() Old calling pattern - please switch to q, dataspace as top-level", filters);
+	if (q) filters.q = q; if (dataspace) filters.dataspace = dataspace;
 	if ( ! filters.dataspace) console.warn("No dataspace?!", filters);
 	filters.breakdown = breakdowns; // NB: the server doesnt want an -s
 	filters.start = start;
