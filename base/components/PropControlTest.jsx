@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import PropControl, { FormControl } from '../base/components/PropControl';
-import Misc from '../base/components/Misc';
-import C from '../C';
-import DataStore from '../base/plumbing/DataStore';
-import { WINDOW_RESIZED } from '../../adunit/src/constants/actionTypes';
+import PropControl, { FormControl } from './PropControl';
+import Misc from './Misc';
+// import C from '../C';
+import DataStore from '../plumbing/DataStore';
+// import { WINDOW_RESIZED } from '../../adunit/src/constants/actionTypes';
 
 /** All of your favourite PropControl components in one place.
  *  The purpose of this page is to allow testers to gauge the current state of PropControl without having to look at every page in the portal.

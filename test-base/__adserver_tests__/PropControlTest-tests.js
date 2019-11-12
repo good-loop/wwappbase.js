@@ -3,33 +3,43 @@ const $ = require('jquery');
 const {APIBASE, fillInForm, isPointingAtProduction , login, vertIdByName, vertiserIdByName, watchAdvertAndDonate} = require('../res/UtilityFunctions');
 const {fbUsername, fbPassword, password, username, twitterUsername, twitterPassword} = require('../../../logins/sogive-app/puppeteer.credentials');
 import {CommonSelectors, FacebookSelectors, PortalSelectors, TwitterSelectors} from '../utils/MasterSelectors';
-import { pathToFileURL } from 'url';
 
 //    o<| : o ) --|--<
 
-describe('PropControlTest tests', () => {    
-    test('Can open PropControlTest', async () => {
-        const browser = window.__BROWSER__;
-        const page = await browser.newPage();
+describe('PropControlTest tests', () => {
+
+    let browser;
+    let page;
+    let dataStore;
+
+    beforeAll(async () => { // Launch Chromium instance and open a new page before tests start
+        browser = await puppeteer.launch();
+        page = await browser.newPage();
+    })
+
+    afterAll(async () => { // Close the browser when we're finished
+        browser.close();
+    })
+
+    const updateDataStore = async () => {
+        dataStore = JSON.parse(await page.evaluate(() => JSON.stringify(window.DataStore.appstate.widget.propcontroltest) )) ;
+    }
+
+    test('Can open PropControlTest and login', async () => {
         console.log(`${APIBASE}#propControlTest`);
         await page.goto(`http://localportal.good-loop.com/#propControlTest`);
 
         expect(page.title()).resolves.toMatch('Good-Loop Portal');
-    }, 99999)
-
-    test('Can filter props through text input', async () => {
-        const browser = window.__BROWSER__;
-        const page = await browser.newPage();
-        await page.goto(`http://localportal.good-loop.com/#propControlTest`);
 
         await page.waitFor(PortalSelectors.General.Environment.logIn); // wait for Misc.Loading to go away
         await login({page, username, password});
         await page.reload(); // Reload to see content
-        
+    }, 99999)
+
+    test('Can filter props through text input', async () => {        
         // wait for filter then type string with delay per key
         await page.waitForSelector('.form-control');
         await page.type('[name=filter]', 'money', {delay: 5})
-        await page.reload(); // Reload to make sure Components are updated after we apply the filter
 
         await page.waitForSelector('.card-item');
 
@@ -40,40 +50,26 @@ describe('PropControlTest tests', () => {
     }, 99999)
 
     test('Simple text field communicates correctly with DataStore', async () => {
-        const browser = window.__BROWSER__;
-        const page = await browser.newPage();
         await page.goto(`http://localportal.good-loop.com/#propControlTest`);
-
-        await page.waitFor(PortalSelectors.General.Environment.logIn); // wait for Misc.Loading to go away
-        await login({page, username, password});
-        await page.reload();
 
         await page.waitForSelector('.form-control[name=text]');
         await page.type('[name=text]', 'testing...', {delay: 10});
 
         await page.waitForSelector('.card-item');
-        const dataStoreText = JSON.parse(await page.evaluate(() => JSON.stringify(window.DataStore.appstate.widget.propcontroltest.text) )) ;
+        await updateDataStore();
 
-        await expect(dataStoreText).toBe('testing...');
+        await expect(dataStore.text).toBe('testing...');
     }, 99999)
 
     test('Number prop only accepts, well... ints', async () => {
-        const browser = window.__BROWSER__;
-        const page = await browser.newPage();
-        await page.goto(`http://localportal.good-loop.com/#propControlTest`);
-
-        await page.waitFor(PortalSelectors.General.Environment.logIn); // wait for Misc.Loading to go away
-        await login({page, username, password});
-        await page.reload();
-
         // Testing valid input first
         await page.waitForSelector('.form-control[name=prop]');
         await page.type('[name=prop]', '21', {delay: 10});
 
         await page.waitForSelector('.card-item');
-        let dataStoreNumber = JSON.parse(await page.evaluate(() => JSON.stringify(window.DataStore.appstate.widget.propcontroltest.prop) )) ;
+        await updateDataStore();
 
-        await expect(dataStoreNumber).toBe(21);
+        await expect(dataStore.prop).toBe(21);
 
         // Invalid Input
         // Triple click on input box to select content and then overwrite it, simulating proper user interaction
@@ -81,31 +77,117 @@ describe('PropControlTest tests', () => {
         await propField.click({ clickCount: 3 });
         await page.type('[name=prop]', 'string', {delay: 10});
 
+        await updateDataStore();
+
         // Since we wrote an invalid value the Store stores an empty string instead of the previous int
-        dataStoreNumber = JSON.parse(await page.evaluate(() => JSON.stringify(window.DataStore.appstate.widget.propcontroltest.prop) )) ;
-        await expect(dataStoreNumber).toBe('');
+        await expect(dataStore.prop).toBe('');
     }, 99999)
 
     test('yesNo radial displays properly and registers right interaction', async () => {
-        const browser = window.__BROWSER__;
-        const page = await browser.newPage();
-        await page.goto(`http://localportal.good-loop.com/#propControlTest`);
-
-        await page.waitFor(PortalSelectors.General.Environment.logIn); // wait for Misc.Loading to go away
-        await login({page, username, password});
-        await page.reload();
-
         // When clicking an option, it should be registered in DataStore. If you click the other, it gets overwritten.
         await page.click('[value=yes]');
-
-        let dataStoreNumber = JSON.parse(await page.evaluate(() => JSON.stringify(window.DataStore.appstate.widget.propcontroltest.yesNo) )) ;
-        await expect(dataStoreNumber).toBe(true);
+        await updateDataStore();
+        await expect(dataStore.yesNo).toBe(true);
 
         await page.click('[value=no]');
-
-        dataStoreNumber = JSON.parse(await page.evaluate(() => JSON.stringify(window.DataStore.appstate.widget.propcontroltest.yesNo) )) ;
-        await expect(dataStoreNumber).toBe(false);
+        await updateDataStore();
+        await expect(dataStore.yesNo).toBe(false);
     }, 99999)
+
+    test('Img prop works properly', async () => {
+        const secureUrl = 'https://pm1.narvii.com/6608/578e75fe75648a325d321d87b16c9da5b74fe93c_hq.jpg';
+        const insecureUrl = 'http://pm1.narvii.com/6892/d5a790203215bf4b8f65c00e0ef1e22dbdcf33dbr1-256-256v2_uhq.jpg';
+        const invalidUrl = 'thisIsGibberish...';
+
+        // Test using a secure url
+        await page.type('[name=img]', secureUrl);
+        let thumbnail = await page.$eval('img.img-thumbnail[src]', img => img.getAttribute('src'));
+        await expect(thumbnail).toBe(secureUrl);
+
+        // Test using insecure url
+        await page.click('[name=img]', { clickCount: 3 });
+        await page.type('[name=img]', insecureUrl);
+        thumbnail = await page.$eval('img.img-thumbnail[src]', img => img.getAttribute('src'));
+        await expect(thumbnail).toBe(insecureUrl);
+
+        // Prop should display warning about insecure url
+        const secureWarning = await page.$eval('.img .help-block', e => e.innerHTML );
+        await expect(secureWarning).toBe('Please use https for secure urls');
+    })
+
+    test('Url prop offers open link/warns about secure link', async () => {
+        const secureUrl = 'https://blah.fakedomain/';
+        const insecureUrl = 'http://blah.fakedomain/';
+
+        await page.type('[name=url]', secureUrl);
+        const link = await page.$eval('.url a', e => e.href);
+
+        await expect(link).toBe(secureUrl);
+
+        await page.click('[name=url]', { clickCount: 3 });
+        await page.type('[name=url]', insecureUrl);
+        const warning = await page.$eval('.url .help-block', e => e.innerHTML);
+
+        await expect(warning).toBe('Please use https for secure urls');
+    })
+
+    test('Date prop should process input correctly', async () => {
+        const validDate = '2354-04-22';
+        const invalidDate = 'totalgibberish';
+        let output;
+
+        await page.type('[name=date]', validDate);
+        output = await page.$eval('.date .pull-right i', e => e.innerHTML);
+        await expect(output).toBe('22 Apr 2354');
+
+        await page.type('[name=date]', invalidDate);
+        output = await page.$eval('.date .pull-right i', e => e.innerHTML);
+        await expect(output).toBe('Invalid Date');
+
+        const helpMessage = await page.$eval('.date .help-block', e => e.innerHTML);
+        await expect(helpMessage).toBe('Please use the date format yyyy-mm-dd')
+    })
+
+    test('Select displays/stores correctly', async () => {
+        await page.select('[name=select]', 'apple')
+        await updateDataStore();
+
+        await expect(dataStore.select).toBe('apple');
+
+        await page.select('[name=select]', 'pear')
+        await updateDataStore();
+
+        await expect(dataStore.select).toBe('pear');
+    })
+
+    test('Year accepts/stores only numbers; null otherwise', async () => {
+        const validYear = '2014';
+        const invalidYear = 'invalidyear';
+
+        await page.type('[name=year]', validYear);
+        await updateDataStore();
+        await expect(dataStore.year).toBe(2014);
+
+        await page.click('[name=year]', { clickCount: 3 });
+        await page.type('[name=year]', invalidYear);
+        await updateDataStore();
+        await expect(dataStore.year).toBe(null);
+    })
+
+    // TODO: Replace hardcoded values and update PropControlTest in order to better test different choices.
+    test('Radio (passing function for labels) displays/stores correctly', async () => {
+        await page.click('[name=radio-function]');
+        await updateDataStore();
+
+        let expected = await page.$eval('[name=radio-function]', e => e.value);
+        await expect(dataStore['radio-function']).toBe(expected);
+
+        await page.click('[name=radio-map]');
+        await updateDataStore();
+
+        expected = await page.$eval('[name=radio-map]', e => e.value);
+        await expect(dataStore['radio-map']).toBe('a');
+    })
 })
 
 ///////////////////////////////////////////////////////////////////////////////
