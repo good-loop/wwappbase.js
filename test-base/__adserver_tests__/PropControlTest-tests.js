@@ -95,8 +95,8 @@ describe('PropControlTest tests', () => {
     }, 99999)
 
     test('Img prop works properly', async () => {
-        const secureUrl = 'https://pm1.narvii.com/6608/578e75fe75648a325d321d87b16c9da5b74fe93c_hq.jpg';
-        const insecureUrl = 'http://pm1.narvii.com/6892/d5a790203215bf4b8f65c00e0ef1e22dbdcf33dbr1-256-256v2_uhq.jpg';
+        const secureUrl = 'https://cdn2.iconfinder.com/data/icons/drugs-15/48/37-128.png';
+        const insecureUrl = 'http://cdn2.iconfinder.com/data/icons/drugs-15/48/37-128.png';
         const invalidUrl = 'thisIsGibberish...';
 
         // Test using a secure url
@@ -187,6 +187,49 @@ describe('PropControlTest tests', () => {
 
         expected = await page.$eval('[name=radio-map]', e => e.value);
         await expect(dataStore['radio-map']).toBe('a');
+    })
+
+    test('Checkbox performs as expected', async () => {
+        await expect(dataStore.checkbox).toBe(undefined);
+
+        await page.click('[type=checkbox]');
+        await updateDataStore();
+
+        await expect(dataStore.checkbox).toBe(true);
+
+        await page.click('[type=checkbox]');
+        await updateDataStore();
+
+        await expect(dataStore.checkbox).toBe(false);
+    })
+
+    test('Arraytext performs as expected', async() => {
+        const testString = 'This is a string with spaces';
+        const stringArr = testString.split(' ');
+        
+        await page.type('[name=arraytext]', testString);
+        await updateDataStore();
+
+        // If we compare content the arrs should be equal. Notice that other comparisons will result in a failure.
+        await expect(dataStore.arraytext).toEqual(stringArr);
+    })
+
+    test('Entryset performs as expected', async () => {
+        const key = 'key1';
+        const value = 'value1';
+        await page.type('[placeholder=key]', key);
+        await page.type('[placeholder=value]', value);
+        await page.click('.entryset button');
+        await updateDataStore();
+
+        await page.waitForSelector(`[value=${value}]`); // If this tag gets generated, prop is storing and displaying sets as intended.
+
+        // Make sure user can remove sets by clicking on the delete button.
+        // If the .entried div is empty, then we have succeeded.
+        await page.click('.remove-entry');
+
+        const entriesArr = Array.from(await page.$eval('.entries', e => e.children));
+        await expect(entriesArr.length).toBeFalsy();
     })
 })
 
