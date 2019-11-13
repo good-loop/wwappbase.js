@@ -231,6 +231,34 @@ describe('PropControlTest tests', () => {
         const entriesArr = Array.from(await page.$eval('.entries', e => e.children));
         await expect(entriesArr.length).toBeFalsy();
     })
+
+    test('Money saves data correctly based on valid input', async () => {
+        const input = '23.41';
+
+        await page.type('[name=money]', input);
+        await updateDataStore();
+
+        await expect(dataStore.money['@type']).toBe('Money');
+        await expect(dataStore.money.value100p).toBe(234100);
+        await expect(dataStore.money.currency).toBe('GBP');
+    })
+
+    test('Money prop handles invalid input correctly', async () => {
+        const stringInput = 'two';
+        const decimalInput = '12.34';
+
+        await page.click('[name=money]', { clickCount: 3 });
+        await page.type('[name=money]', stringInput);
+        
+        // Displays correct error message to user
+        const errorMessage = await page.$eval('.Money .help-block', e => e.innerHTML);
+        await expect(errorMessage).toMatch(`Error: Cannot parse: ${stringInput}`);
+
+        // Does not save input to DataStore
+        await updateDataStore();
+        await expect(dataStore.money.value).toBe(null);
+        await expect(dataStore.money.value100p).toBe(0);
+    })
 })
 
 ///////////////////////////////////////////////////////////////////////////////
