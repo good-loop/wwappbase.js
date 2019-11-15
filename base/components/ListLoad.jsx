@@ -279,18 +279,19 @@ const createBlank = ({type, navpage, base, id, make}) => {
  * 	type: !String
  * 	navpage: ?String - defaults to the curent page from url
  * }}
- * @param props {?String[]} extra props
+ * @param {?String} id - Optional id for the new item (otherwise nonce or a prop might be used)
+ * @param props {?String[]} extra props ??how is this used??
  */
-const CreateButton = ({type, props, navpage, base, make}) => {
+const CreateButton = ({type, props, navpage, base, id, make}) => {
 	assert(type);
-	assert( ! base || ! base.id, "ListLoad - dont pass in ids (defence against object reuse bugs) "+type);
+	assert( ! base || ! base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) "+type+". You can use top-level `id` instead.");
 	if ( ! navpage) navpage = DataStore.getValue('location', 'path')[0];	
 	// merge any form props into the base
 	const cpath = ['widget','CreateButton'];	
 	base = Object.assign({}, base, DataStore.getValue(cpath));
 	// was an ID passed in by editor props?
-	let id = base.id;
-	delete base.id;
+	if ( ! id) id = base.id; // usually null
+	delete base.id; // NB: this is a copy - the original base is not affected.
 	return (<div className={props? 'well' : ''}>
 		{props? props.map(prop => <Misc.PropControl key={prop} label={prop} prop={prop} path={cpath} inline />) : null}
 		<button className='btn btn-default' onClick={() => createBlank({type,navpage,base,id,make})}>

@@ -15,6 +15,11 @@ export default NGO;
 NGO.description = (ngo) => ngo.description;
 
 /**
+ * @returns {?Number} [0-17] -- see NGO.UNSDGS
+ */
+NGO.unsdg = ngo => ngo && ngo.unsdg;
+
+/**
  * UN goals -- 1 indexed! 
  * (0 is a dummy - use this for things that don't fit)
  * See 
@@ -38,3 +43,75 @@ NGO.UNSDGs = [
 	"Life On Land",
 	"Peace, Justice, and Strong Institutions",
 	"Partnerships for the Goals"];
+
+
+/**
+ * {String: String[]} Category: Causes
+ * Loosely based on https://www.charitynavigator.org/index.cfm?bay=content.view&cpid=34
+ */
+NGO.CATEGORY = {
+	"Animals":[
+		"Animal Rights, Welfare, and Services", "Wildlife Conservation", "Zoos and Aquariums"
+	],
+	"Arts, Culture, Humanities":[
+		"Libraries, Historical Societies and Landmark Preservation",
+		"Museums",
+		"Performing Arts",
+		"Public Broadcasting and Media"
+	], 
+	"Community Development":[
+		// United Ways
+		// Jewish Federations
+		"Community Foundations",
+		"Housing and Neighborhood Development"], 
+	"Education":[
+		"Early Childhood",
+		"Youth Education",
+		"Adult Education",
+		"Special Education",
+		"Education Policy and Reform",
+		"Scholarship and Financial Support"],
+	"Environment":[
+		"Environmental Protection and Conservation",
+		"Climate Action", // Not a CN cause
+		"Botanical Gardens, Parks, and Nature Centers"
+	],
+	"Health":[
+		// "Diseases, Disorders, and Disciplines" overlaps too much with research & treatment
+		"Patient and Family Support",
+		"Treatment and Prevention",
+		"Health and Wellbeing", // Not a CN cause
+		"Sex Education and STD Prevention", // Not a CN cause
+		"Mental Health", // Not a CN cause
+		"Medical Research"],
+	"Human and Civil Rights": [
+		"Human Rights", // Not a CN cause
+		"Gender Equality", // Not a CN cause
+		"LGBTQ Rights", // Not a CN cause
+		"Anti-Racism" // Not a CN cause
+	],
+	"Human Services":[
+		"Children's and Family Services",
+		"Youth Development", // split the CN cause of Youth Dev + Shelter into two
+		"Shelter and Crisis Services",
+		"Food Banks and Food Distribution",
+		// "Multipurpose Human Service Organizations",
+		"Tackling Homelessness",
+		"Social Services"
+	],
+	"International":[
+		"International Development",
+		"International Peace",
+		"Humanitarian Relief Supplies"
+	],
+	"Research and Public Policy":[
+		"Science & Technology Research (non-medical)",
+		"Social and Public Policy Research"
+	],
+	"Religion":[
+		"Local Faith Groups", // Not a CN cause
+		"Religious Activities",
+		"Religious Media and Broadcasting"
+	]
+};
+		
