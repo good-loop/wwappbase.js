@@ -382,7 +382,7 @@ case $1 in
 	sogive|SOGIVE|sogive-app|SOGIVE-APP)
 		PROJECT='sogive-app'
 		PRODUCTION_SERVERS=(heppner.soda.sh)
-		TEST_SERVERS=(hugh.soda.sh)
+		TEST_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/sogive-app"
 		TARGET_DIRECTORY='/home/winterwell/sogive-app'
 		IMAGE_OPTIMISE='no'
