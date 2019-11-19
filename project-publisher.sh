@@ -109,7 +109,7 @@ VERSION='Version=1.17.2'
 # 	UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
 # 	RESTART_SERVICE_AFTER_SYNC='yes'
 # 	SERVICE_NAME='adservermain'
-#	FRONTEND_SYNC_LIST=("adunit" "config" "server" "src" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+#	FRONTEND_SYNC_LIST=("adunit" "config" "server" "src" "web-iframe" "web-as" "web-snap" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js")
 #	BACKEND_SYNC_LIST=("lib")
 #	# Use "lib" instead of "tmp-lib" for syncing your JAR files
 # 	WHOLE_SYNC=($FRONTEND_SYNC_LIST $BACKEND_SYNC_LIST)
@@ -196,9 +196,9 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
-		FRONTEND_SYNC_LIST=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" )
 		BACKEND_SYNC_LIST=("lib")
-		WHOLE_SYNC=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" ".babelrc" "lib")
+		WHOLE_SYNC=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" "lib")
 		PRESERVE=("config/log.properties")
 		POST_PUBLISHING_TASK='yes'
 	;;
@@ -239,9 +239,9 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('egbot')
-		FRONTEND_SYNC_LIST=("config" "doc" "src" "test" "web" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("config" "doc" "src" "test" "web" "package.json" "webpack.config.js")
 		BACKEND_SYNC_LIST=("data" "data-collection" "lib" "input.txt")
-		WHOLE_SYNC=("config" "doc" "src" "test" "web" "package.json" "webpack.config.js" ".babelrc" "data" "data-collection" "lib" "input.txt")
+		WHOLE_SYNC=("config" "doc" "src" "test" "web" "package.json" "webpack.config.js" "data" "data-collection" "lib" "input.txt")
 		# Use "lib" instead of "tmp-lib" for syncing your JAR files
 		#PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
@@ -335,8 +335,8 @@ case $1 in
 		UNITS_LOCATION=""
 		RESTART_SERVICE_AFTER_SYNC='no'
 		SERVICE_NAME=('')
-		FRONTEND_SYNC_LIST=("config" "src" "web" "package.json" "webpack.config.js" ".babelrc")
-		WHOLE_SYNC=("config" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("config" "src" "web" "package.json" "webpack.config.js")
+		WHOLE_SYNC=("config" "src" "web" "package.json" "webpack.config.js")
 		AUTOMATED_TESTING='no'
 	;;
 	portal|PORTAL)
@@ -355,9 +355,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('portalmain')
-		FRONTEND_SYNC_LIST=("adunit" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("adunit" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js")
 		BACKEND_SYNC_LIST=("lib")
-		WHOLE_SYNC=("adunit" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" ".babelrc" "lib")
+		WHOLE_SYNC=("adunit" "server" "web" "web-portal" "src" "web-portal" "package.json" "webpack.config.js" "lib")
 		PRESERVE=("web-as/uploads")
 		AUTOMATED_TESTING='yes'
 		POST_PUBLISHING_TASK='yes'
@@ -395,9 +395,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('sogiveapp')
-		FRONTEND_SYNC_LIST=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc")
+		FRONTEND_SYNC_LIST=("server" "src" "web" "package.json" "webpack.config.js")
 		BACKEND_SYNC_LIST=("data" "lib")
-		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" ".babelrc" "data" "lib")
+		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" "data" "lib")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
 		POST_PUBLISHING_TASK='yes'
