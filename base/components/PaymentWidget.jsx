@@ -59,11 +59,14 @@ const STRIPE_MINIMUM_AMOUNTS = {
  * 	Called once the user has provided payment details, and we've got a token back from Stripe. 
  * 	This should then call the server e.g. by publishing a donation - to take the actual payment.
  * 	The token string is either a Stripe authorisation token, or one of the fixed special values (e.g. credit_token).
- * 	
+ * @param {?Boolean} testOption true/false to show/hide the pretend-I-paid option. Defaults to true on test or local.
  */
-const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, error}) => {
+const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, error, testOption}) => {
 	if ( ! amount) {
 		return null; // no amount, no payment
+	}
+	if (testOption===undefined) {
+		testOption = ! C.isProduction();
 	}
 	Money.assIsa(amount, "PaymentWidget.jsx");
 	assMatch(onToken, Function, "PaymentWidget.jsx");
@@ -123,7 +126,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 
 			{error? <div className='alert alert-danger'>{error}</div> : null} 
 
-			{ ! C.isProduction() ? (
+			{testOption? (
 				<small className='clear'>
 					Test card no: 4000008260000000 (use any CVC and any future expiry date). 
 					Stolen test card no: 4000000000009979.
