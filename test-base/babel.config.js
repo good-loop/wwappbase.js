@@ -10,7 +10,8 @@ const config = {
     "@babel/plugin-transform-runtime",
     "@babel/plugin-syntax-dynamic-import",
     "@babel/plugin-proposal-object-rest-spread",
-    "@babel/plugin-transform-async-to-generator"
+    "@babel/plugin-transform-async-to-generator",
+    "@babel/plugin-proposal-class-properties"
   ]
 };
 
