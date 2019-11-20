@@ -13,7 +13,7 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
-import {join, mapkv, stopEvent} from 'wwutils';
+import {join, mapkv, stopEvent, toTitleCase} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import md5 from 'md5';
@@ -228,10 +228,6 @@ const PropControl2 = (props) => {
 		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlMoney {...acprops} />;
 	} // ./£
-	if (type === 'XId') {
-		let service = otherStuff.service || 'WTF'; // FIXME
-		modelValueFromInput = s => Misc.normalise(s)+'@'+service;
-	}
 
 	// text based
 	const onChange = e => {
@@ -247,6 +243,18 @@ const PropControl2 = (props) => {
 		e.preventDefault();
 		e.stopPropagation();
 	};
+
+	if (type === 'XId') {
+		let service = otherStuff.service || 'WTF'; // FIXME // Does this actually need fixing? Is there any sensible default?
+		const displayValue = value.replace('@' + service, ''); // Strip @service wart for display
+		modelValueFromInput = s => Misc.normalise(s)+'@'+service;
+		return (
+			<div className="input-group">
+				<span className="input-group-addon">{toTitleCase(service)}</span>
+				<Misc.FormControl type='text' name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
+			</div>
+		);
+	}
 
 	if (type === 'arraytext') {
 		return <PropControlArrayText {...props} />;
