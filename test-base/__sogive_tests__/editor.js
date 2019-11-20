@@ -9,24 +9,59 @@ const $ = require('jquery');
 const lamb = "urras-eaglais-na-h-aoidhe";
 const timeStamp = new Date().toISOString();
 
-test('Edit and publish field', async () => {
-    const browser = window.__BROWSER__;
-    const page = await browser.newPage();
+let browser;
+let page;
 
-    await page.goto(APIBASE + `/#edit?charityId=${lamb}`);
+describe('Edit organisation tests', () => {
 
-    await soGiveFailIfPointingAtProduction({page});
+    beforeAll(async () => {
+        browser = await puppeteer.launch({ headless: false });
+        page = await browser.newPage();
+    })
 
-    await login({page, username, password});
-    await page.waitFor(Editor.story);
-    await fillInForm({page, Selectors: Editor, data: {story: timeStamp}});
-    await page.click(CommonSelectors.Publish);
-}, 20000);
+    afterAll(async () => {
+        browser.close();
+    })
 
-test('Check with back-end that field has been updated', async () => {
-    const data = await $.ajax(`/charity/${lamb}.json`);
+    test('Edit and publish field', async () => {
+        await page.goto('http://local.sogive.org');
 
-    if(data.cargo.stories !== timeStamp) {
-        throw new Error("SoGive editor does not appear to have updated correctly");
-    }
-}, 20000);
+        await page.$('.login-link');
+        await page.click('.login-link');
+        
+        await page.click('[name=email]');
+        await page.type('[name=email]', username);
+        await page.click('[name=password]');
+        await page.type('[name=password]', password);
+
+        await page.keyboard.press('Enter');
+
+        await page.goto(`http://local.sogive.org/#edit?charityId=${lamb}`);
+
+        // await soGiveFailIfPointingAtProduction({page});
+
+        await page.waitForSelector('[name=summaryDescription]');
+        await page.type('[name=summaryDescription]', '.');
+        await page.click(CommonSelectors.Publish);
+        await page.goto(`http://local.sogive.org/#charity?charityId=urras-eaglais-na-h-aoidhe`);
+
+        await page.waitForSelector('.description-short');
+    }, 20000);
+
+    test('Reset edits', async () => {
+        await page.goto(`http://local.sogive.org/#edit?charityId=${lamb}`);
+        await page.waitForSelector('[name=summaryDescription]');
+        await page.click('[name=summaryDescription]', { clickCount: 3 });
+
+        await page.keyboard.press('Backspace');
+        await page.waitFor(1000)
+        await page.click('[name=save]');
+        await page.waitFor(200);
+        await page.click('[name=publish]');
+
+        await page.click('.panel-body a');
+        await page.waitFor(2000);
+    })
+})
+
+
