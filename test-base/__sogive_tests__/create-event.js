@@ -47,7 +47,8 @@ describe("Create event tests", () => {
     // Journey: User visits site, clicks on log in, types in their credentials, press Enter.
     // Result: They are now logged in
     test('Login to the site', async () => {
-        await page.goto('http://local.sogive.org');
+		await page.goto(APIBASE);
+		await soGiveFailIfPointingAtProduction({ page });
 
         await page.$('.login-link');
         await page.click('.login-link');
@@ -63,8 +64,8 @@ describe("Create event tests", () => {
     // Jorney: User goes to 'Event' tab. Clicks on create event, fills in some fields when prompted, publishes the changes.
     // Result: New event is published and listed
 	test("Create an event", async () => {
-		await page.goto(`http://local.sogive.org#event`);
-		await soGiveFailIfPointingAtProduction({page});
+        await page.goto(APIBASE+'#event');
+		await soGiveFailIfPointingAtProduction({ page });
 
         // Clicks on the create button. 
         await page.waitForSelector('.glyphicon');
@@ -91,7 +92,7 @@ describe("Create event tests", () => {
         id = idString;
 
         // Reload to avoid any buggy behaviour
-        await page.goto(`http://local.sogive.org#event`);
+        await page.goto(APIBASE+`#event`);
         await page.waitFor(500);
         await page.reload();
 	}, 45000);
@@ -100,7 +101,9 @@ describe("Create event tests", () => {
     // Result: Event deleted and removed from the list.
     test('Delete event created', async() => {
         // Go to the event
-        await page.goto(`http://local.sogive.org#event/${id}`);
+        // await page.goto(`http://local.sogive.org#event/${id}`);
+        await page.goto(APIBASE+`#event/${id}`);
+		await soGiveFailIfPointingAtProduction({ page });
 
         // Click on the 'Edit' link on the top right
         await page.waitForSelector('.pull-right');
@@ -113,13 +116,12 @@ describe("Create event tests", () => {
         // Wait and reload to be safe
         await page.waitFor(4000);
         await page.reload();
-        await page.goto(`http://local.sogive.org#event`);
+        await page.goto(APIBASE+`#event`);
 
         // Make sure event has been removed
         const nameIsPresent = await page.evaluate(() => {
             return document.querySelector('body').innerText.includes("supercalifragilisticexpialidocious");
         })
-
         await expect(nameIsPresent).toBe(false);
         await page.waitFor(500); 
     }, 45000);  

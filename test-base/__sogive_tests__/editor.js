@@ -15,7 +15,7 @@ let page;
 describe('Edit organisation tests', () => {
 
     beforeAll(async () => {
-        browser = await puppeteer.launch({ headless: false });
+        browser = await puppeteer.launch({ headless: false});
         page = await browser.newPage();
     })
 
@@ -24,7 +24,8 @@ describe('Edit organisation tests', () => {
     })
 
     test('Edit and publish field', async () => {
-        await page.goto('http://local.sogive.org');
+		await page.goto(APIBASE);
+		await soGiveFailIfPointingAtProduction({ page });
 
         await page.$('.login-link');
         await page.click('.login-link');
@@ -36,32 +37,40 @@ describe('Edit organisation tests', () => {
 
         await page.keyboard.press('Enter');
 
-        await page.goto(`http://local.sogive.org/#edit?charityId=${lamb}`);
+        await page.goto(`${APIBASE}#edit?charityId=${lamb}`);
 
-        // await soGiveFailIfPointingAtProduction({page});
+        await soGiveFailIfPointingAtProduction({page});
 
-        await page.waitForSelector('[name=summaryDescription]');
-        await page.type('[name=summaryDescription]', '.');
-        await page.click(CommonSelectors.Publish);
-        await page.goto(`http://local.sogive.org/#charity?charityId=urras-eaglais-na-h-aoidhe`);
-
-        await page.waitForSelector('.description-short');
-    }, 20000);
-
-    test('Reset edits', async () => {
-        await page.goto(`http://local.sogive.org/#edit?charityId=${lamb}`);
         await page.waitForSelector('[name=summaryDescription]');
         await page.click('[name=summaryDescription]', { clickCount: 3 });
+        await page.type('[name=summaryDescription]', '...');
+        await page.click(CommonSelectors.Publish);
+        await page.goto(`${APIBASE}#charity?charityId=urras-eaglais-na-h-aoidhe`);
 
+        await page.waitForSelector('.description-short');
+
+        const profileShortDescription = await page.$eval('.donation-output p', e => e.innerText);
+        await expect(profileShortDescription).toBe('...');
+    }, 20000);
+
+    // TODO: BUG: sogive editor does not save empty fields, so we'll replace it with a '.'
+    test('Reset edits', async () => {
+        await page.goto(`${APIBASE}#edit?charityId=${lamb}`);
+        await page.waitForSelector('[name=summaryDescription]');
+        await page.click('[name=summaryDescription]', { clickCount: 3 });
         await page.keyboard.press('Backspace');
-        await page.waitFor(1000)
+        await page.type('[name=summaryDescription]', '.');
         await page.click('[name=save]');
-        await page.waitFor(200);
-        await page.click('[name=publish]');
-
-        await page.click('.panel-body a');
         await page.waitFor(2000);
-    })
+        await page.click('[name=publish]');
+        await page.waitFor(2000);
+
+        await page.goto(`${APIBASE}#charity?charityId=urras-eaglais-na-h-aoidhe`);
+        await page.waitForSelector('.donation-output');
+
+        const profileShortDescription = await page.$eval('.donation-output p', e => e.innerText);
+        await expect(profileShortDescription).toBe('.'); 
+    }, 30000);
 })
 
 
