@@ -1,139 +1,252 @@
-const puppeteer = require('puppeteer');
-const {APIBASE, eventIdFromName, fillInForm, fundIdByName, login, soGiveFailIfPointingAtProduction} = require('../res/UtilityFunctions');
-const {username, password} = require('../../../logins/sogive-app/puppeteer.credentials');
-const {createEvent, deleteEvent} = require('../res/UtilsSoGive');
-const {SoGiveSelectors: {Fundraiser, General, Register}} = require('../utils/MasterSelectors');
-const {donate} = require('../utils/sogive-scripts/donation-form');
+const puppeteer = require("puppeteer");
+const {
+	APIBASE,
+	eventIdFromName,
+	fillInForm,
+	fundIdByName,
+	login,
+	soGiveFailIfPointingAtProduction
+} = require("../res/UtilityFunctions");
+const {
+	username,
+	password
+} = require("../../../logins/sogive-app/puppeteer.credentials");
+const { createEvent, deleteEvent } = require("../res/UtilsSoGive");
+const {
+	SoGiveSelectors: { Fundraiser, General, Register }
+} = require("../utils/MasterSelectors");
+const { donate } = require("../utils/sogive-scripts/donation-form");
 
 // Default event data
 const eventData = {
-    name: Date.now(),
-    description: "Resistance is futile",
-    "web-page": 'https://developers.google.com/web/tools/puppeteer/',
-    "matched-funding": 10,
-    sponsor: "Locutus of Borg",
+	name: Date.now(),
+	description: "Resistance is futile",
+	"web-page": "https://developers.google.com/web/tools/puppeteer/",
+	"matched-funding": 10,
+	sponsor: "Locutus of Borg",
 
-    backdrop: 'https://i.pinimg.com/originals/a4/42/b9/a442b9891265ec69c78187a030b0753b.jpg',
+	backdrop:
+		"https://i.pinimg.com/originals/a4/42/b9/a442b9891265ec69c78187a030b0753b.jpg",
 
-    ticketName: 'Assimile',
-    stock: 1000,
-    price: 0
+	ticketName: "Assimile",
+	stock: 1000,
+	price: 0
 };
 
 const fundraiserData = {
-    payment: {
-
-    },
-    EditFundraiser: {
-        name: eventData.name,
-        description: "I really hope so"
-    }
+	payment: {},
+	EditFundraiser: {
+		name: eventData.name,
+		description: "I really hope so"
+	}
 };
 
-test('Create a fundraiser', async() => {
-    const browser = window.__BROWSER__;
-    const page = await browser.newPage();
+// Use existing event to test fundraiser. We test event creation separately.
+const eventId = 'TurHe2nW';
+let fundraiserEditLink; // Link to fundraiser edit page, from where we delete it.
+let fundraiserId;
 
-    await page.goto(`${APIBASE}#event`);
-    
-    await soGiveFailIfPointingAtProduction({page});
-    await login({page, username, password});  
-    await createEvent({page, data: eventData});
+const fundraiserIdClip = async () => {
+	return await fundraiserEditLink.split('/').pop();
+}
 
-    const eventId = await eventIdFromName({page, eventName: eventData.name});
-    await page.goto(`${APIBASE}#register/${eventId}`);
+let browser;
+let page;
 
-    // Register for the event
-    await page.waitForSelector(Register.EmptyBasket);
-    await page.click(Register.EmptyBasket);
+describe("Fundraiser tests", () => {
 
-    await page.waitFor(4500);
-    await page.waitForSelector(Register.Add);
-    await page.click(Register.Add);
+    beforeAll(async () => {
+        browser = await  puppeteer.launch({ headless: false });
+        page = await browser.newPage();
+    });
 
-    await page.waitFor(1500);
-    await page.waitForSelector(Register.Next);
-    await page.click(Register.Next);
-    // Will fail if user is not already logged in
-    await page.waitFor(1500);
-    await page.waitForSelector(Register.Next);    
-    await page.click(Register.Next);
-    
-    await page.waitFor(1500);
-    await page.waitForSelector(Register.Next);
-    await page.click(Register.Next);
+    afterAll(async () => {
+        browser.close();
+    })
 
-    await fillInForm({page, data: {charity: "oxfam"}, Selectors: Register});
-    await page.waitFor(1500);
-    await page.waitForSelector(Register['select-first-charity-checkbox']);
-    await page.click(Register['select-first-charity-checkbox']);
+	test("Create a fundraiser", async () => {
+		await page.goto(`${APIBASE}#event`);
 
-    await page.waitForSelector(Register.Next);
-    await page.click(Register.Next);
+		// Safety check and login.
+		await soGiveFailIfPointingAtProduction({ page });
+		await login({ page, username, password });
 
-    //Checkout
-    //Special case to deal with button being different where event ticket price is set to £0
-    if (await page.$(Register.FreeTicketSubmit) !== null) {
-        await page.click(Register.FreeTicketSubmit);
-    }    
-    else{
-        await fillInForm({page, data: fundraiserData.payment, Selectors: General.CharityPageImpactAndDonate});
-        await page.click(Register.TestSubmit);
-    }
+		// Go to event page and click on Register event
+		await page.goto(APIBASE + `#event/${eventId}`);
+		await page.waitForSelector('.btn');
+		await page.click('.btn');
 
-    // Setting up the actual fundraiser
-    await page.waitForSelector(Register.SetupFundraiser);
-    await page.click(Register.SetupFundraiser);
-    await page.waitForSelector(`#editFundraiser > div > div.padded-block > div:nth-child(5) > div > div.pull-left > div`);
-    await fillInForm({page, data: fundraiserData.EditFundraiser, Selectors: Fundraiser.EditFundraiser});
-    await page.click(General.CRUD.Publish);
-    await page.waitForSelector(`${General.CRUD.Publish}[disabled]`, {hidden: true});
+		// Emtpy the basket and add a ticket
+		await page.waitForSelector(Register.EmptyBasket);
+		await page.click(Register.EmptyBasket);
 
-    // HACK: give ES a second to add event created above
-    await page.waitFor(3000);
-}, 45000);
+		await page.waitFor(3000);
+		await page.waitForSelector('.add-first-ticket');
+		await page.click('.add-first-ticket');
 
-test('Logged-out fundraiser donation', async() => {
-    const browser = window.__BROWSER__;
-    const page = await browser.newPage();
+		await page.waitFor(1000);
+		await page.waitForSelector(Register.Next);
+		await page.click(Register.Next);
+		// Will fail if user is not already logged in
+		await page.waitForSelector(Register.Next);
+		await page.click(Register.Next);
 
-    const fundId = await fundIdByName({fundName: eventData.name});
-    await page.goto(`${APIBASE}#fundraiser/${fundId}`);
-    await soGiveFailIfPointingAtProduction({page});
+		await page.waitFor(1500);
+		await page.waitForSelector(Register.Next);
+		await page.click(Register.Next);
 
-    await donate({page, Amount: {amount: 10}, Details: {email: 'thePuppetMaster@winterwell.com'}, Message: {message:'???'}});
-}, 30000);
+		await page.waitForSelector('[name=charityId]');
+		await page.type('[name=charityId]', 'oxfam');
+		await page.waitFor(3000);
 
-test('Logged-in fundraiser donation', async() => {
-    const browser = window.__BROWSER__;
-    const page = await browser.newPage();
+		await page.waitForSelector(Register.Next);
+		await page.click(Register.Next);
 
-    const fundId = await fundIdByName({fundName: eventData.name});
-    await page.goto(`${APIBASE}#fundraiser/${fundId}`);
-    await soGiveFailIfPointingAtProduction({page});
+		//Checkout
+		//Special case to deal with button being different where event ticket price is set to £0
+		if ((await page.$(Register.FreeTicketSubmit)) !== null) {
+			await page.click(Register.FreeTicketSubmit);
+		} else {
+			await fillInForm({
+				page,
+				data: fundraiserData.payment,
+				Selectors: General.CharityPageImpactAndDonate
+			});
+			await page.click(Register.TestSubmit);
+		}
 
-    await login({page, username, password});    
-    await donate({page, Amount: {amount: 10}, Details: {email: 'thePuppetMaster@winterwell.com'}, Message: {message:'???'}});
-}, 30000);
+		// Setting up the actual fundraiser
+		await page.waitForSelector(Register.SetupFundraiser);
+		await page.click(Register.SetupFundraiser);
+		await page.waitForSelector(
+			`#editFundraiser > div > div.padded-block > div:nth-child(5) > div > div.pull-left > div`
+		);
+		fundraiserEditLink = await page.url();
+		fundraiserId = await fundraiserIdClip();
+		console.log(fundraiserId);
+		await fillInForm({
+			page,
+			data: fundraiserData.EditFundraiser,
+			Selectors: Fundraiser.EditFundraiser
+		});
+		await page.click(General.CRUD.Publish);
+		await page.waitForSelector(`${General.CRUD.Publish}[disabled]`, {
+			hidden: true
+		});
 
-test('Delete fundraiser', async() => {
-    const page = await window.__BROWSER__.newPage();
+		// HACK: give ES a second to add event created above
+		await page.waitFor(3000);
+	}, 45000);
 
-    const fundId = await fundIdByName({fundName: eventData.name});
-    await page.goto(`${APIBASE}#editFundraiser/${fundId}`);
-    await soGiveFailIfPointingAtProduction({page});
-    await login({page, username, password});
+	test("Logged-in fundraiser donation", async () => {
+		await page.goto(`${APIBASE}#fundraiser/${fundraiserId}`);
+		await page.reload();
 
-    await page.waitForSelector(General.CRUD.Delete);
-    await page.click(General.CRUD.Delete);
-}, 15000);
+		await soGiveFailIfPointingAtProduction({ page });
 
-test('Delete event', async() => {
-    const page = await window.__BROWSER__.newPage();
+		// Click on Donate button
+		await page.waitForSelector('.btn');
+		await page.click('.btn');
 
-    await page.goto(`${APIBASE}#event`);
-    await soGiveFailIfPointingAtProduction({page});
+		// Pick one time donation, select amount and move on
+		await page.waitForSelector('[name=amount]');
+		await page.click('[value=OFF]');
+		await page.type('[name=amount]', '10');
+		await page.click('body > div:nth-child(27) > div.fade.donate-modal.in.modal > div > div > div.modal-body > div > div.WizardStage > div.nav-buttons.clearfix > button');
+		await page.waitFor(2000);
 
-    await login({page, username, password});
-    await deleteEvent({page, eventName: eventData.name});
-}, 30000);
+		// Click 'yes' on all radio options
+		const radioButtons = await page.$$eval('[type=radio]', radios => {
+			radios.map(radio => {
+				if (radio.value==='yes') radio.click();
+			});
+		});
+
+		await page.waitFor(2000);
+		await page.click('.pull-right');
+
+		await page.waitForSelector('[name=donorEmail]');
+		await page.type('[name=donorEmail]', 'test@email.fake');
+		await page.click('.pull-right');
+
+		await page.waitForSelector('[name=message]');
+		await page.type('[name=message]', 'Test message!');
+		await page.click('.pull-right');
+
+		// Click on the donation simulation button
+		await page.waitForSelector('small button');
+		await page.click('small button');
+
+		// If donations succesfull we should have a thank you message displayed.
+		await page.waitForSelector('.text-center > h3');
+		const thankYouMessage = await page.$eval('.text-center > h3', e => e.innerText);
+		await expect(thankYouMessage).toBe('Thank You!');
+	}, 30000);
+
+	test("Logged-out fundraiser donation", async () => {
+		// await page.goto(`${APIBASE}#fundraiser/aundiks.TurHe2nW.01ff18`);
+		await page.goto(APIBASE);
+
+		// Log out
+		await page.waitForSelector('#top-right-menu');
+		await page.click('#top-right-menu');
+		await page.waitForSelector('#top-right-menu > li > ul > li:nth-child(3) > a');
+		await page.click('#top-right-menu > li > ul > li:nth-child(3) > a');
+		await page.reload();
+
+		await page.goto(`${APIBASE}#fundraiser/${fundraiserId}`);
+		await soGiveFailIfPointingAtProduction({ page });
+
+		// Wait for donate button
+		await page.waitForSelector('.btn');
+		await page.click('.btn');
+
+		// Pick one time donation, select amount and move on
+		await page.waitForSelector('[name=amount]');
+		await page.click('[value=OFF]');
+		await page.type('[name=amount]', '10');
+		await page.click('body > div:nth-child(27) > div.fade.donate-modal.in.modal > div > div > div.modal-body > div > div.WizardStage > div.nav-buttons.clearfix > button');
+		await page.waitFor(2000);
+
+		// Click 'yes' on all radio options
+		const radioButtons = await page.$$eval('[type=radio]', radios => {
+			radios.map(radio => {
+				if (radio.value==='yes') radio.click();
+			});
+		});
+
+		// Onwards!
+		await page.waitFor(2000);
+		await page.click('.pull-right');
+
+		await page.waitForSelector('[name=donorEmail]');
+		await page.type('[name=donorEmail]', 'test@email.fake');
+		await page.click('.pull-right');
+
+		await page.waitForSelector('[name=message]');
+		await page.type('[name=message]', 'Test message!');
+		await page.click('.pull-right');
+
+		// Click on the donation simulation button
+		await page.waitForSelector('small button');
+		await page.click('small button');
+
+		// If donations succesfull we should have a thank you message displayed.
+		await page.waitForSelector('.text-center > h3');
+		const thankYouMessage = await page.$eval('.text-center > h3', e => e.innerText);
+		await expect(thankYouMessage).toBe('Thank You!');
+	}, 30000);
+
+	test("Delete fundraiser", async () => {
+		await page.goto(APIBASE);
+
+		await soGiveFailIfPointingAtProduction({ page });
+		await login({ page, username, password });
+		
+		// await login({ page, username, password });
+		await page.goto(fundraiserEditLink);
+
+		await page.waitForSelector(General.CRUD.Delete);
+		await page.click(General.CRUD.Delete);
+	}, 99000);
+});
