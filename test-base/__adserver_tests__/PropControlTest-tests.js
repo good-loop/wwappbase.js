@@ -27,7 +27,7 @@ describe('PropControlTest tests', () => {
 
     test('Can open PropControlTest and login', async () => {
         console.log(`${APIBASE}#propControlTest`);
-        await page.goto(`http://localportal.good-loop.com/#propControlTest`);
+        await page.goto(APIBASE + `#propControlTest`);
 
         expect(page.title()).resolves.toMatch('Good-Loop Portal');
 
@@ -50,7 +50,7 @@ describe('PropControlTest tests', () => {
     }, 99999)
 
     test('Simple text field communicates correctly with DataStore', async () => {
-        await page.goto(`http://localportal.good-loop.com/#propControlTest`);
+        await page.goto(APIBASE + `#propControlTest`);
 
         await page.waitForSelector('.form-control[name=text]');
         await page.type('[name=text]', 'testing...', {delay: 10});
@@ -232,33 +232,29 @@ describe('PropControlTest tests', () => {
         await expect(entriesArr.length).toBeFalsy();
     })
 
-    test('Money saves data correctly based on valid input', async () => {
+    test('Money saves data correctly based on input', async () => {
         const input = '23.41';
 
         await page.type('[name=money]', input);
         await updateDataStore();
 
         await expect(dataStore.money['@type']).toBe('Money');
+        await expect(dataStore.money.currency).toEqual('GBP');
+        await expect(dataStore.money.value).toEqual(23.41);
         await expect(dataStore.money.value100p).toBe(234100);
-        await expect(dataStore.money.currency).toBe('GBP');
     })
 
-    test('Money prop handles invalid input correctly', async () => {
-        const stringInput = 'two';
-        const decimalInput = '12.34';
+    // test('Money prop handles invalid input correctly', async () => {
+    //     const invalidInput = 'invalidInputString';
 
-        await page.click('[name=money]', { clickCount: 3 });
-        await page.type('[name=money]', stringInput);
-        
-        // Displays correct error message to user
-        const errorMessage = await page.$eval('.Money .help-block', e => e.innerHTML);
-        await expect(errorMessage).toMatch(`Error: Cannot parse: ${stringInput}`);
+    //     await page.click('[name=money]', { clickCount: 3 });
+    //     await page.type('[name=money]', invalidInput);
+    //     await updateDataStore();
 
-        // Does not save input to DataStore
-        await updateDataStore();
-        await expect(dataStore.money.value).toBe(null);
-        await expect(dataStore.money.value100p).toBe(0);
-    })
+    //     await expect(dataStore.money.error).toBe(true);
+    //     const errorMessage = await page.$eval('.Money .help-block', e => e.innerHTML);
+    //     await expect(errorMessage).toBe(`Error: Cannot parse: ${invalidInput}`);
+    // })
 })
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -36,7 +36,7 @@ describe("Create event tests", () => {
     let id = '';
 
     beforeAll(async () => {
-        browser = await puppeteer.launch({headless: false});
+        browser = await puppeteer.launch();
         page = await browser.newPage();
     })
 

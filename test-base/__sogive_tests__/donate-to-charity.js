@@ -30,7 +30,7 @@ let page;
 
 describe("Charity donation tests", () => {
 	beforeAll(async () => {
-		browser = await puppeteer.launch({ headless: false });
+		browser = await puppeteer.launch();
 		page = await browser.newPage();
 	});
 
@@ -59,7 +59,7 @@ describe("Charity donation tests", () => {
 			GiftAid: {},
 			Details
 		});
-	}, 20000);
+	}, 90000);
 
 	test("Logged-in charity donation", async () => {
 		await page.goto(APIBASE + "#search?q=");
@@ -85,5 +85,5 @@ describe("Charity donation tests", () => {
 			GiftAid: {},
 			Details
 		});
-	}, 20000);
+	}, 90000);
 });
