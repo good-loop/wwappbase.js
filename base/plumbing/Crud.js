@@ -328,6 +328,7 @@ ServerIO.discardEdits = function(type, item) {
 
 /**
  * get an item from the backend -- does not save it into DataStore
+ * @param {?Boolean} swallow
  */
 ServerIO.getDataItem = function({type, id, status, domain, swallow, ...other}) {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO - bad type: '+type);
