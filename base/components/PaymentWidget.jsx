@@ -208,13 +208,17 @@ class StripeThingsClass extends Component {
 		// Within the context of `Elements`, this call to createToken knows which Element to
 		// tokenize, since there's only one in this group.
 		let tokenInfo = {
-			name: this.props.username,
-			email: this.state.email,
+			// name: this.props.username,
 			type: "card"
+		};
+		let ownerInfo = {
+			name: this.props.username,
+			email: this.state.email
 		};
 		// get the token or reusable source from stripe
 		// see https://stripe.com/docs/sources/cards
-		this.props.stripe.createSource(tokenInfo)		// Token(tokenInfo)		
+		// TODO update to https://stripe.com/docs/payments/payment-intents
+		this.props.stripe.createSource(tokenInfo, ownerInfo)		// Token(tokenInfo)		
 			// then call custom processing (e.g. publish donation)
 			.then(({token, source, error, ...data}) => {
 				if (source) {
