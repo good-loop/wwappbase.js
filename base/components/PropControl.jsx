@@ -58,7 +58,11 @@ import {notifyUser} from '../plumbing/Messaging';
 NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
-	let {type="text", optional, required, path=['location','params'], prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
+	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
+	if ( ! path) {	// default to using path = the url
+		path = ['location','params'];
+		props = Object.assign({path}, props); 
+	}
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
 	const proppath = path.concat(prop);

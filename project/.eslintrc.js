@@ -87,7 +87,7 @@ module.exports = {
 		"react/jsx-boolean-value": "warn",
 		"react/jsx-closing-bracket-location": "warn",
 		"react/jsx-closing-tag-location": "off",
-		"react/jsx-curly-spacing": "warn",
+		"react/jsx-curly-spacing": "off",
 		"react/jsx-curly-brace-presence": "warn",
 		"react/jsx-first-prop-new-line": "off",
 		"react/jsx-indent-props": ["warn", "tab"],

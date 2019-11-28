@@ -58,6 +58,7 @@ const str = printer.str;
  * showSortButtons {Boolean} default true
  * 
  * @param {?Boolean} hideEmpty - If true, hide empty columns
+ * @param {?Number} rowsPerPage - Cap the number of rows shown. This cap is applied after filtering and sorting
  */
 // NB: use a full component for error-handling
 // Also state (though maybe we should use DataStore)
@@ -99,7 +100,8 @@ class SimpleTable extends React.Component {
 			hideEmpty,
 			scroller, // if true, use fix col-1 scrollbars
 			showSortButtons=true,
-			rowtree
+			rowtree,
+			page=0
 		} = this.props;
 		const checkboxValues = this.state.checkboxValues;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
@@ -128,8 +130,14 @@ class SimpleTable extends React.Component {
 		}
 
 		// filter and sort
-		let {data:fdata,visibleColumns} = this.filter({data, tableSettings, hideEmpty, columns, rowsPerPage});
+		let {data:fdata,visibleColumns} = this.rowFilter({data, tableSettings, hideEmpty, columns, rowsPerPage});
 		data = fdata;
+		// clip max rows now?
+		let numPages = 1;
+		if (rowsPerPage) {
+			numPages = Math.ceil(data.length / rowsPerPage);
+			// NB: clipping is done later 'cos if we're doing a csv download, which should include all data
+		}	
 
 		let cn = 'table'+(className? ' '+className : '');
 		// HACK build up an array view of the table
@@ -176,19 +184,12 @@ class SimpleTable extends React.Component {
 	</thead>
 
 	<tbody>
-		{data && ! rowtree? data.map( (d,i) => 
-			<Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} />
-			) : null}
+		{data && ! rowtree? <Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}		
 		{dataObject && rowtree? <RowTree rowtree={rowtree} dataObject={dataObject} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}
 
 		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 	</tbody>
-
-	{csv? <tfoot><tr>
-		<td colSpan={visibleColumns.length}><div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div></td>
-	</tr></tfoot>
-		: null}	
-
+	<TableFoot csv={csv} tableName={tableName} dataArray={dataArray} numPages={numPages} page={page} colSpan={visibleColumns.length} />
 </table>
 						</div>
 					</div>	
@@ -200,7 +201,7 @@ class SimpleTable extends React.Component {
 
 
 
-	filter({data, tableSettings, hideEmpty, columns, rowsPerPage}) {
+	rowFilter({data, tableSettings, hideEmpty, columns, rowsPerPage, page=0}) {
 		// filter?		
 		// always filter nulls
 		data = data.filter(row => !!row);
@@ -245,16 +246,33 @@ class SimpleTable extends React.Component {
 				return false;
 			});
 		}
-		// max rows?
-		if (rowsPerPage) {
-			data = data.slice(0, rowsPerPage);
-		}
+		// NB maxRows is done later to support csv-download being all data
 		return {data, visibleColumns};
 	} // ./filter
 
 
 } // ./SimpleTable
 
+
+/**
+ * The meat of the table! (normally)
+ * @param {Object[]} data 
+ */
+const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
+	// clip?
+	let min = rowsPerPage? page*rowsPerPage : 0;
+	let max = rowsPerPage? (page+1)*rowsPerPage : Infinity;
+	if ( ! csv) { // need to process them all for csv download. otherwise clip early
+		let pageData = data.slice(min, max);			
+		data = pageData;
+	}
+	// build the rows
+	let $rows = data.map( (d,i) => 
+		<Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} 
+			hidden={csv && (i<min || i>=max)} />
+	);
+	return $rows;
+};
 
 
 const RowTree = (stuff) => {
@@ -334,18 +352,16 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 };
 
 /**
- * 
+ * A table row!
+ * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
  */
-const Row = ({item, row, columns, dataArray, className, depth}) => {
+const Row = ({item, row, columns, dataArray, className, depth, hidden}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
-	// if (specialRow) {
-		// Use-case: e.g. for total rows to have different rendering BUT wed need per col settings
-	// 	// copy columns out, allowing the row item settings to override
-	// 	columns = columns.map(col => Object.assign({}, col, item));
-	// }
-	return (<tr className={className} depth={depth}>
-		{columns.map(col => <Cell key={JSON.stringify(col)} row={row} column={col} item={item} dataRow={dataRow} />)}
+	const $cells = columns.map(col => <Cell key={JSON.stringify(col)} row={row} column={col} item={item} dataRow={dataRow} />);
+	const rstyle = hidden? {display:'none'} : null; // NB: we still have to render hidden rows, to get the data-processing side-effects
+	return (<tr className={className} depth={depth} style={rstyle}>
+		{$cells}
 	</tr>);
 };
 
@@ -495,6 +511,19 @@ const Editor = ({row, column, value, item}) => {
 	/>);
 }; // ./Editor
 const CellFormat = new Enum("percent"); // What does a spreadsheet normally offer??
+
+
+const TableFoot = ({csv, tableName, dataArray, numPages, colSpan, page=0}) => {
+	if ( ! csv && numPages < 2) {
+		return null;
+	}
+	return (<tfoot><tr>
+		<td colSpan={colSpan}>
+			{numPages > 1? <div className='pull-left'>Page {page+1} of {numPages}</div> : null}
+			{csv? <div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div> : null}
+		</td>
+	</tr></tfoot>);
+};
 
 const CSVDownload = ({tableName, columns, data, dataArray}) => {
 	// assert(_.isArray(jsonArray), jsonArray);
