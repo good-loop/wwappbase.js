@@ -181,8 +181,8 @@ const PropControl2 = (props) => {
 
 	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
 	assert( ! type || Misc.KControlType.has(type), 'Misc.PropControl: '+type);
-	assert(_.isArray(path), 'Misc.PropControl: not an array:'+path);
-	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path);
+	assert(path && _.isArray(path), 'Misc.PropControl: not an array:'+path+" prop:"+prop);
+	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path+" prop:"+prop);
 	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
 	// if (item && item !== DataStore.getValue(path)) {
 	// 	console.warn("Misc.PropControl item != DataStore version", "path", path, "item", item);
