@@ -251,7 +251,7 @@ const PropControl2 = (props) => {
 		return (
 			<div className="input-group">
 				<span className="input-group-addon">{toTitleCase(service)}</span>
-				<Misc.FormControl type='text' name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
+				<FormControl type='text' name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
 			</div>
 		);
 	}
@@ -295,7 +295,7 @@ const PropControl2 = (props) => {
 	if (type === 'img') {
 		delete otherStuff.https;
 		return (<div>
-				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
+				<FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
 			<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} background={bg} /></div>
 				<div className='clearfix' />
 			</div>);
@@ -309,7 +309,7 @@ const PropControl2 = (props) => {
 		delete otherStuff.https;
 		return (
 			<div>
-				<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
+				<FormControl type='url' name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
 				<div className='pull-right'><small>{value? <a href={value} target='_blank'>open in a new tab</a> : null}</small></div>
 				<div className='clearfix' />
 			</div>
@@ -360,7 +360,7 @@ const PropControl2 = (props) => {
 	*/
 	// normal
 	// NB: type=color should produce a colour picker :)
-	return <Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
+	return <FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
 }; //./PropControl2
 
 
@@ -633,7 +633,7 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
 		e.stopPropagation();
 	}
 	const safeValue = (value || []).join(' ');
-	return <Misc.FormControl name={prop} value={safeValue} onChange={onChange} {...otherStuff} />;
+	return <FormControl name={prop} value={safeValue} onChange={onChange} {...otherStuff} />;
 };
 
 
@@ -744,7 +744,7 @@ const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 	// Encourage ISO8601 format
 	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is '+Misc.isoDate(new Date());
 	return (<div>
-		<Misc.FormControl type='text' name={prop} value={value} onChange={onChangeWithRaw} {...otherStuff} />
+		<FormControl type='text' name={prop} value={value} onChange={onChangeWithRaw} {...otherStuff} />
 		<div className='pull-right'><i>{datePreview}</i></div>
 		<div className='clearfix' />
 	</div>);	
@@ -851,11 +851,12 @@ Misc.normalise = s => {
 };
 
 
+
 /**
  * This replaces the react-bootstrap version 'cos we saw odd bugs there. 
  * Plus since we're providing state handling, we don't need a full component.
  */
-const FormControl = ({value, type, required, size, className, ...otherProps}) => {
+const FormControl = ({value, type, required, size, className, prepend, ...otherProps}) => {
 	if (value===null || value===undefined) value = '';
 
 	if (type === 'color' && !value) { 
@@ -871,6 +872,13 @@ const FormControl = ({value, type, required, size, className, ...otherProps}) =>
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
 	delete otherProps.labels;
+	const input = <input className={klass} type={type} value={value} {...otherProps} />;
+	if (prepend) {
+		return (<div class="input-group">
+			<div class="input-group-prepend"><span class="input-group-text">{prepend}</span></div>
+			{input}
+		</div>);
+	}
 	return <input className={klass} type={type} value={value} {...otherProps} />;
 };
 
@@ -929,7 +937,7 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 
 	return (
 		<div>
-			<Misc.FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
+			<FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
 			<div className='pull-left'>
 				<Dropzone className='DropZone' accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
 					Drop a {acceptedTypesDesc} here
