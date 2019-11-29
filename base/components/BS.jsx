@@ -11,6 +11,11 @@ const BS = {};
 export default BS;
 
 /**
+ * 3 or 4
+ */
+BS.version;
+
+/**
  * Convenience for doing base-css-class + optional-extra-css-class
  * The call to flat() means you can pass an arg list or an array OR multiple arrays
  * ...but not more than 1 layer deep without changing it to flat(2) etc

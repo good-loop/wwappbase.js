@@ -876,10 +876,11 @@ const FormControl = ({value, type, required, size, className, prepend, ...otherP
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
 	delete otherProps.labels;
+	// Minor TODO refactor into <BS.Input /> ?? or does reactstrap have something nice here??
 	const input = <input className={klass} type={type} value={value} {...otherProps} />;
 	if (prepend) {
-		return (<div class="input-group">
-			<div class="input-group-prepend"><span class="input-group-text">{prepend}</span></div>
+		return (<div className="input-group">
+			<div className={BS.version===3? "input-group-addon" : "input-group-prepend"}><span className="input-group-text">{prepend}</span></div>
 			{input}
 		</div>);
 	}
