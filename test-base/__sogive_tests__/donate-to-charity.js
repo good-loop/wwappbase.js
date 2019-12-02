@@ -25,17 +25,21 @@ const Details = {
 	"consent-checkbox": true
 };
 
+const argvs = process.argv;
+const devtools = argvs.join(',').includes('debug') || false;
+
 let browser;
 let page;
 
 describe("Charity donation tests", () => {
-	beforeAll(async () => {
-		browser = await puppeteer.launch();
+
+	beforeEach(async () => {
+		browser = await puppeteer.launch({ headless: !devtools, devtools: devtools });
 		page = await browser.newPage();
 	});
 
-	afterAll(async () => {
-		browser.close();
+	afterEach(async () => {
+		await browser.close();
 	});
 
 	test("Logged-out charity donation", async () => {
@@ -74,8 +78,8 @@ describe("Charity donation tests", () => {
 		// Click on first link in search results
 		// await page.waitForSelector(Search.Main.FirstResult);
 		// await page.click(Search.Main.FirstResult);
-        await page.waitForSelector('#search > div > div:nth-child(2) > div > div.results-list > div:nth-child(2) > a.logo.col-md-2.col-xs-4');
-        await page.click('#search > div > div:nth-child(2) > div > div.results-list > div:nth-child(2) > a.logo.col-md-2.col-xs-4');
+		await page.waitForSelector('#search > div > div:nth-child(2) > div > div.results-list > div:nth-child(2) > a.logo.col-md-2.col-xs-4');
+		await page.click('#search > div > div:nth-child(2) > div > div.results-list > div:nth-child(2) > a.logo.col-md-2.col-xs-4');
 
 		await donate({
 			page,

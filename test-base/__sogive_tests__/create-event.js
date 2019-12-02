@@ -28,6 +28,9 @@ const eventData = {
 		"https://i.pinimg.com/originals/a4/42/b9/a442b9891265ec69c78187a030b0753b.jpg"
 };
 
+const argvs = process.argv;
+const devtools = argvs.join(',').includes('debug') || false;
+
 let browser;
 let page;
 
@@ -35,14 +38,15 @@ describe("Create event tests", () => {
     const longName = "supercalifragilisticexpialidocious";
     let id = '';
 
-    beforeAll(async () => {
-        browser = await puppeteer.launch();
+    beforeEach(async () => {
+        browser = await puppeteer.launch({ headless: !devtools, devtools: devtools });
         page = await browser.newPage();
-    })
+    });
 
-    afterAll(async () => {
-        browser.close();
-    })
+    afterEach(async () => {
+        await page.close();
+        await browser.close();
+    });
 
     // Journey: User visits site, clicks on log in, types in their credentials, press Enter.
     // Result: They are now logged in
@@ -55,17 +59,29 @@ describe("Create event tests", () => {
         
         await page.click('[name=email]');
         await page.type('[name=email]', username);
+        await page.evaluate(() => {debugger;});
         await page.click('[name=password]');
         await page.type('[name=password]', password);
 
         await page.keyboard.press('Enter');
-    }, 99999)
+    }, 99999);
 
     // Jorney: User goes to 'Event' tab. Clicks on create event, fills in some fields when prompted, publishes the changes.
     // Result: New event is published and listed
 	test("Create an event", async () => {
+        await page.goto(APIBASE);
+        await soGiveFailIfPointingAtProduction({ page });
+
+        await page.$('.login-link');
+        await page.click('.login-link');
+        
+        await page.click('[name=email]');
+        await page.type('[name=email]', username);
+        await page.click('[name=password]');
+        await page.type('[name=password]', password);
+        await page.keyboard.press('Enter');
+
         await page.goto(APIBASE+'#event');
-		await soGiveFailIfPointingAtProduction({ page });
 
         // Clicks on the create button. 
         await page.waitForSelector('.glyphicon');
@@ -103,7 +119,15 @@ describe("Create event tests", () => {
         // Go to the event
         // await page.goto(`http://local.sogive.org#event/${id}`);
         await page.goto(APIBASE+`#event/${id}`);
-		await soGiveFailIfPointingAtProduction({ page });
+        await soGiveFailIfPointingAtProduction({ page });
+        await page.$('.login-link');
+        await page.click('.login-link');
+        
+        await page.click('[name=email]');
+        await page.type('[name=email]', username);
+        await page.click('[name=password]');
+        await page.type('[name=password]', password);
+        await page.keyboard.press('Enter');
 
         // Click on the 'Edit' link on the top right
         await page.waitForSelector('.pull-right');

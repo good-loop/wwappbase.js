@@ -55,14 +55,22 @@ let page;
 
 describe("Fundraiser tests", () => {
 
-    beforeAll(async () => {
-        browser = await  puppeteer.launch({ headless: false });
-        page = await browser.newPage();
-    });
+    // beforeAll(async () => {
+    //     browser = await  puppeteer.launch({headless: false});
+	// });
+	
+	beforeEach(async () => {
+		browser = await  puppeteer.launch({headless: false});
+		page = await browser.newPage();
+	})
 
-    afterAll(async () => {
-        browser.close();
-    })
+	afterEach(async () => {
+		await browser.close();
+	})
+
+    // afterAll(async () => {
+    //     browser.close();
+    // })
 
 	test("Create a fundraiser", async () => {
 		await page.goto(`${APIBASE}#event`);
@@ -143,6 +151,7 @@ describe("Fundraiser tests", () => {
 		await page.reload();
 
 		await soGiveFailIfPointingAtProduction({ page });
+		await login({ page, username, password });
 
 		// Click on Donate button
 		await page.waitForSelector('.btn');
@@ -152,7 +161,8 @@ describe("Fundraiser tests", () => {
 		await page.waitForSelector('[name=amount]');
 		await page.click('[value=OFF]');
 		await page.type('[name=amount]', '10');
-		await page.click('body > div:nth-child(27) > div.fade.donate-modal.in.modal > div > div > div.modal-body > div > div.WizardStage > div.nav-buttons.clearfix > button');
+		await page.waitFor(5000);
+		await page.click('.btn.btn-primary.btn-lg.pull-right');
 		await page.waitFor(2000);
 
 		// Click 'yes' on all radio options
@@ -188,11 +198,11 @@ describe("Fundraiser tests", () => {
 		await page.goto(APIBASE);
 
 		// Log out
-		await page.waitForSelector('#top-right-menu');
-		await page.click('#top-right-menu');
-		await page.waitForSelector('#top-right-menu > li > ul > li:nth-child(3) > a');
-		await page.click('#top-right-menu > li > ul > li:nth-child(3) > a');
-		await page.reload();
+		// await page.waitForSelector('#top-right-menu');
+		// await page.click('#top-right-menu');
+		// await page.waitForSelector('#top-right-menu > li > ul > li:nth-child(3) > a');
+		// await page.click('#top-right-menu > li > ul > li:nth-child(3) > a');
+		// await page.reload();
 
 		await page.goto(`${APIBASE}#fundraiser/${fundraiserId}`);
 		await soGiveFailIfPointingAtProduction({ page });
@@ -205,7 +215,7 @@ describe("Fundraiser tests", () => {
 		await page.waitForSelector('[name=amount]');
 		await page.click('[value=OFF]');
 		await page.type('[name=amount]', '10');
-		await page.click('body > div:nth-child(27) > div.fade.donate-modal.in.modal > div > div > div.modal-body > div > div.WizardStage > div.nav-buttons.clearfix > button');
+		await page.click('.btn.btn-primary.btn-lg.pull-right');
 		await page.waitFor(2000);
 
 		// Click 'yes' on all radio options
@@ -241,9 +251,8 @@ describe("Fundraiser tests", () => {
 		await page.goto(APIBASE);
 
 		await soGiveFailIfPointingAtProduction({ page });
-		await login({ page, username, password });
 		
-		// await login({ page, username, password });
+		await login({ page, username, password });
 		await page.goto(fundraiserEditLink);
 
 		await page.waitForSelector(General.CRUD.Delete);
