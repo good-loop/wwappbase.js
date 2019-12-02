@@ -1,3 +1,4 @@
+
 /** global test */
 const puppeteer = require("puppeteer");
 const {
@@ -23,32 +24,34 @@ import {
 	PortalSelectors,
 	TwitterSelectors
 } from "../utils/MasterSelectors";
-import { pathToFileURL } from "url";
 
 const timestamp = Date.now();
 const vertName = "advert-" + timestamp;
 let vertId;
+
+const argvs = process.argv;
+const devtools = argvs.join(',').includes('debug') || false;
 
 let browser;
 let page;
 
 describe("Portal tests", () => {
 
-	beforeAll(async () => {
-		browser = await puppeteer.launch();
+	beforeEach(async () => {
+		browser = await puppeteer.launch({ headless: false, devtools: devtools, slowMo: 0 });
 		page = await browser.newPage();
 	})
 
-	afterAll(async () => {
+	afterEach(async () => {
 		await browser.close();
 	})
 
 	test("New user able to complete pub sign up", async () => {
 		const website = `${timestamp}.viking`;
-		console.log(`${APIBASE}#pubsignup`);
+
 		await page.goto(APIBASE + `#pubsignup`);
 
-		// await failIfPointingAtProduction({ page });
+		await failIfPointingAtProduction({ page });
 
 		// register new account
 		await page.waitForSelector(PortalSelectors.PubSignUp.email);
@@ -89,65 +92,54 @@ describe("Portal tests", () => {
 		await page.waitForSelector(PortalSelectors.PubSignUp.pubPageLink);
 		await page.click(PortalSelectors.PubSignUp.pubPageLink);
 		await page.waitForSelector("#pubdash");
-
-		// Portal Logout. TODO: Extract for reuse.
-		await page.click('.dropdown');
-		await page.waitForSelector('#top-right-menu > li > ul > li:nth-child(3) > a');
-		await page.click('#top-right-menu > li > ul > li:nth-child(3) > a');
-		await page.waitForSelector('.login-link');
 	}, 30000);
 
-	// test("Advertiser sign-up form", async () => {
-	// 	await page.goto(`http://localportal.good-loop.com/#adsignup`);
-	// 	await page.waitForSelector(PortalSelectors.AdSignUp.email);
-	// 	await fillInForm({
-	// 		page,
-	// 		Selectors: PortalSelectors.AdSignUp,
-	// 		data: {
-	// 			email: "human@real.man",
-	// 			website: "destroyallhumans.org",
-	// 			video: "https://testas.good-loop.com/vert/buck-480p.webm",
-	// 			logo:
-	// 				"https://www.deke.com/images/made/assets/uploads/08-final-hal_1600_1097_50.jpg",
-	// 			charityOne: "Robotic Alms",
-	// 			charityTwo: "Save the toasters",
-	// 			charityThree: 'The "humans in chains" foundation',
-	// 			total: "1",
-	// 			notes: "Hello fellow human!"
-	// 		}
-	// 	});
-	// 	await page.click(PortalSelectors.AdSignUp.submit);
-	// }, 30000);
+	test("Advertiser sign-up form", async () => {
+		await page.goto(`http://localportal.good-loop.com/#adsignup`);
+		await page.waitForSelector(PortalSelectors.AdSignUp.email);
+		await fillInForm({
+			page,
+			Selectors: PortalSelectors.AdSignUp,
+			data: {
+				email: "human@real.man",
+				website: "destroyallhumans.org",
+				video: "https://testas.good-loop.com/vert/buck-480p.webm",
+				logo:
+					"https://www.deke.com/images/made/assets/uploads/08-final-hal_1600_1097_50.jpg",
+				charityOne: "Robotic Alms",
+				charityTwo: "Save the toasters",
+				charityThree: 'The "humans in chains" foundation',
+				total: "1",
+				notes: "Hello fellow human!"
+			}
+		});
+		await page.click(PortalSelectors.AdSignUp.submit);
+	}, 30000);
 
-	// test("Log in via Facebook", async () => {
-	// 	// const browser = window.__BROWSER__;
-	// 	// const page = await browser.newPage();
-	// 	await page.goto("" + APIBASE);
+	test("Log in via Facebook", async () => {
 
-	// 	await page.waitForSelector(CommonSelectors.logIn);
-	// 	await page.click(CommonSelectors.logIn);
-	// 	await page.waitFor(1000);
+		// NOTE: For some reason Puppeteer refuses to interact with Facebook's login popup
+		// so instead we login in their website directly before going back to portal and login using facebook.
+		// Since testing Facebook's code is outside the scope of these tests this solution is satisfactory.
+		await page.goto("" + 'https://www.facebook.com');
 
-	// 	await page.click('button.facebook');
-	// 	await page.waitFor(2000);
+		await page.waitForSelector('[name=email]');
+		await page.type('[name=email]', fbUsername);
+		await page.type('[name=pass]', fbPassword);
+		await page.click('[data-testid=royal_login_button]');
+		await page.waitFor(5000);
 
-	// 	await login({
-	// 		browser,
-	// 		page,
-	// 		username: fbUsername,
-	// 		password: fbPassword,
-	// 		Selectors: Object.assign(CommonSelectors, FacebookSelectors),
-	// 		service: "facebook"
-	// 	});
+		await page.goto(APIBASE);
 
-	// 	await verifyLoginSuccess(page);
+		await page.waitForSelector(CommonSelectors.logIn);
+		await page.click(CommonSelectors.logIn);
+		await page.waitFor(1000);
 
-	// 	// Portal Logout. TODO: Extract for reuse.
-	// 	await page.click('.dropdown');
-	// 	await page.waitForSelector('#top-right-menu > li > ul > li:nth-child(3) > a');
-	// 	await page.click('#top-right-menu > li > ul > li:nth-child(3) > a');
-	// 	await page.waitForSelector('.login-link');
-	// }, 30000);
+		await page.click('button.facebook');
+		await page.waitFor(1000);
+
+		await verifyLoginSuccess(page);
+	}, 30000);
 
 	test("Log in via Twitter", async () => {
 		await page.goto("" + APIBASE);
@@ -170,46 +162,61 @@ describe("Portal tests", () => {
 		await page.click('.dropdown');
 		await page.waitForSelector('#top-right-menu > li > ul > li:nth-child(3) > a');
 		await page.click('#top-right-menu > li > ul > li:nth-child(3) > a');
-	}, 30000);
+	}, 99999);
 
 	// Create advertiser
-	test("Create an advertiser", async () => {
-		await page.goto(APIBASE + `#advertiser`);
+	// test("Create an advertiser", async () => {
+	// 	await page.goto(APIBASE);
 
-		await failIfPointingAtProduction({ page });
+	// 	await page.waitForSelector('.switch-verb a');
+	// 	await page.click('.switch-verb a');
+	// 	await page.waitFor(100);
+	// 	await page.type('[name=email]', username);
+	// 	await page.type('[name=password]', password);
+	// 	await page.click('.btn-primary');
 
-		await page.waitFor(PortalSelectors.General.Environment.logIn); // wait for Misc.Loading to go away
-		await login({ page, username, password });
-		await page.reload();
+	// 	await page.goto(APIBASE + `#advertiser`);
 
-		await page.waitFor(PortalSelectors.Advertiser.Create);
-		await page.click(PortalSelectors.Advertiser.Create);
-		await fillInForm({
-			page,
-			Selectors: PortalSelectors.Advertiser,
-			data: {
-				name: timestamp,
-				"contact-email": "fire@brim.stone",
-				"contact-name": "Hades",
-				"contact-title": "Lord of the underworld"
-			}
-		});
-		await page.waitFor(2000);
-		await page.click(CommonSelectors.Publish);
-		await page.waitFor(1000); //Give ES a second to update
-	}, 45000);
+	// 	await failIfPointingAtProduction({ page });
+
+	// 	await page.waitFor(PortalSelectors.Advertiser.Create);
+	// 	await page.click(PortalSelectors.Advertiser.Create);
+	// 	await fillInForm({
+	// 		page,
+	// 		Selectors: PortalSelectors.Advertiser,
+	// 		data: {
+	// 			name: timestamp,
+	// 			"contact-email": "fire@brim.stone",
+	// 			"contact-name": "Hades",
+	// 			"contact-title": "Lord of the underworld"
+	// 		}
+	// 	});
+	// 	await page.waitFor(2000);
+	// 	await page.click(CommonSelectors.Publish);
+	// 	await page.waitFor(1000); //Give ES a second to update
+	// }, 45000);
 
 	// // Create advert
 	test("Create an advert", async () => {
 		// const vertiserId = await vertiserIdByName({ vertiserName: timestamp });
 		const vertiserId = 'wtVdPVvW';
-		await page.reload();
+		await page.goto(APIBASE);
+		
+		await page.waitForSelector('.switch-verb a');
+		await page.click('.switch-verb a');
+		await page.waitFor(100);
+		await page.type('[name=email]', username);
+		await page.type('[name=password]', password);
+		await page.click('.btn-primary');
+
 		await failIfPointingAtProduction({ page });
 
 		await page.goto(APIBASE+`#advert?vertiser=${vertiserId}`);
 
 		await page.waitFor(PortalSelectors.Advert.Create);
 		await page.click(PortalSelectors.Advert.Create);
+
+		await page.waitFor(6000);
 
 		await fillInForm({
 			page,
@@ -259,6 +266,16 @@ describe("Portal tests", () => {
 	test("Watch advert", async () => {
 		// const vertId = await vertIdByName({ vertName });
 
+		await page.goto(APIBASE);
+		await page.waitFor(2000);
+
+		await page.waitForSelector('.switch-verb a');
+		await page.click('.switch-verb a');
+		await page.waitFor(100);
+		await page.type('[name=email]', username);
+		await page.type('[name=password]', password);
+		await page.click('.btn-primary');
+
 		let url;
 
 		if (("" + APIBASE).includes("localportal")) {
@@ -276,35 +293,51 @@ describe("Portal tests", () => {
 	// //Delete advert
 	test("Delete advert", async () => {
 		const vertId = await vertIdByName({ vertName });
+		await page.goto(APIBASE);
+
+		await page.waitForSelector('.switch-verb a');
+		await page.click('.switch-verb a');
+		await page.waitFor(100);
+		await page.type('[name=email]', username);
+		await page.type('[name=password]', password);
+		await page.click('.btn-primary');
 
 		await page.goto(`${APIBASE}#advert/${vertId}`);
 
 		await failIfPointingAtProduction({ page });
-
-		// await page.waitFor(CommonSelectors.logIn); // wait for Misc.Loading to go away
-		// await login({ page, username, password });
-		// await page.reload();
 
 		await page.waitFor(CommonSelectors.Delete);
 		await page.click(CommonSelectors.Delete);
 	}, 30000);
 
 	// Delete advertiser
-	test("Delete advertiser", async () => {
+	// test("Delete advertiser", async () => {
 
-		const vertiserId = await vertiserIdByName({ vertiserName: timestamp });
+	// 	await page.goto(APIBASE);
 
-		await page.goto(`${APIBASE}#advertiser/${vertiserId}`);
+	// 	await page.waitForSelector('.switch-verb a');
+	// 	await page.click('.switch-verb a');
+	// 	await page.waitFor(100);
+	// 	await page.type('[name=email]', username);
+	// 	await page.type('[name=password]', password);
+	// 	await page.click('.btn-primary');
 
-		await failIfPointingAtProduction({ page });
+	// 	const vertiserId = await vertiserIdByName({ vertiserName: timestamp });
 
-		// await page.waitFor(CommonSelectors.logIn); // wait for Misc.Loading to go away
-		// await login({ page, username, password });
-		// await page.reload();
+	// 	await page.goto(`${APIBASE}#advertiser/${vertiserId}`);
 
-		await page.waitFor(CommonSelectors.Delete);
-		await page.click(CommonSelectors.Delete);
-	}, 30000);
+	// 	await failIfPointingAtProduction({ page });
+
+	// 	// await page.waitFor(CommonSelectors.logIn); // wait for Misc.Loading to go away
+	// 	// await login({ page, username, password });
+	// 	// await page.reload();
+
+	// 	await page.waitFor(CommonSelectors.Delete);
+	// 	await page.click(CommonSelectors.Delete);
+	// }, 30000);
+
+
+
 
 	// /** Safety measure to stop weird test data being written to production */
 	const failIfPointingAtProduction = async ({ page }) => {
@@ -322,4 +355,6 @@ describe("Portal tests", () => {
 		// User can Logout.
 		await page.waitForSelector('#top-right-menu > li > ul > li:nth-child(3) > a');
 	};
+
+
 });
