@@ -46,7 +46,7 @@ C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED 
 
 C.STATUS = new Enum('loading clean dirty saving');
 
-C.CRUDACTION = new Enum('new save copy publish unpublish discardEdits delete');
+C.CRUDACTION = new Enum('new getornew save copy publish unpublish discardEdits delete');
 
 /**
  * Make "standard" DataStore nodes from C.TYPES

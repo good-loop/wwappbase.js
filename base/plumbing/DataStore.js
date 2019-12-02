@@ -507,6 +507,7 @@ class Store {
 		assert(promiseOrValue!==undefined, "fetchFn passed to DataStore.fetch() should return a promise or a value. Got: undefined. Missing return statement?");
 		// Use PV to standardise the output from fetchFn()
 		let pvPromiseOrValue = new PromiseValue(promiseOrValue);
+		// pvPromiseOrValue.name = "pvPromiseOrValue_"+JSON.stringify(path); // DEBUG HACK
 		// process the result async
 		let promiseWithCargoUnwrap = pvPromiseOrValue.promise.then(res => {
 			if ( ! res) return res;
@@ -526,6 +527,7 @@ class Store {
 		});
 		// wrap this promise as a PV
 		const pv = new PromiseValue(promiseWithCargoUnwrap);
+		// pv.name = "pv_"+JSON.stringify(path); // DEBUG HACK
 		pv.promise.then(res => {
 			// set the DataStore
 			// cache-period? then store the fetch time
@@ -541,6 +543,8 @@ class Store {
 			return res;
 		}).catch(res => {
 			// keep the fpath promise to avoid repeated ajax calls??
+			// update e.g. React
+			this.update();
 			throw res;
 		});
 		this.setValue(fpath, pv, false);

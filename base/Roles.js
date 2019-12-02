@@ -60,7 +60,7 @@ const addRole = (uxid, role) => {
  * ```
  * 
  * @param {!String} capability
- * @returns {PromiseValue<Boolean>}
+ * @returns {PromiseValue<Boolean>} Promise-Value
  */
 const iCan = (capability) => {
 	assMatch(capability, String);

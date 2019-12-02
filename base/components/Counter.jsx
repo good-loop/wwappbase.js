@@ -4,7 +4,7 @@
 
  // TODO support for more precise than 3 sig figs
 
-/* Possible TODO use react-spring for smoother, less expensive animations?? Should be default tool?? */
+/* Possible TODO MAYBE! use react-spring for smoother, less expensive animations?? Should be default tool?? */
 
 import React, {useState, useRef} from 'react';
 import printer from '../utils/printer';

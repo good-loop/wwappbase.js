@@ -328,6 +328,7 @@ ServerIO.discardEdits = function(type, item) {
 
 /**
  * get an item from the backend -- does not save it into DataStore
+ * @param {?Boolean} swallow
  */
 ServerIO.getDataItem = function({type, id, status, domain, swallow, ...other}) {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO - bad type: '+type);
@@ -344,13 +345,15 @@ ServerIO.getDataItem = function({type, id, status, domain, swallow, ...other}) {
 /**
  * get an item from DataStore, or call the backend if not there (and save it into DataStore)
  * @param type {!String} From C.TYPES
- * @param status {!String} From C.KStatus. If in doubt: use PUBLISHED for display, and DRAFT for editors.
+ * @param status {?String} From C.KStatus. If in doubt: use PUBLISHED for display, and DRAFT for editors. 
+ * 	Default: look for a status= parameter in thre url, or use published.
  * @returns PromiseValue
  */
 ActionMan.getDataItem = ({type, id, status, domain, swallow, ...other}) => {
 	assert(id!=='unset', "ActionMan.getDataItem() "+type+" id:unset?!");
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
+	if ( ! status) status = DataStore.getUrlValue('status') || C.KStatus.PUBLISHED;
 	assert(C.KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
 	// TODO Decide if getPath should take object argument
 	let path = DataStore.getDataPath({status, type, id, domain});
