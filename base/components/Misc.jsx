@@ -30,9 +30,17 @@ const Misc = {};
 E.g. "Loading your settings...""
 See https://www.w3schools.com/howto/howto_css_loader.asp
 http://tobiasahlin.com/spinkit/
+
+@param {?PromiseValue} pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
 */
-Misc.Loading = ({text}) => (
-	<div className='loader-box' style={{textAlign: 'center'}}>
+Misc.Loading = ({text, pv}) => {
+	// handle ajax error?
+	if (pv && pv.error) {
+		let emsg = _.isString(pv.error)? pv.error : join(pvCharity.error.status, pvCharity.error.statusText);
+		let edetails = join(pvCharity.error.statusText, pvCharity.error.responseText);
+		return <BS.Alert><h4>Sorry - there was a problem. {emsg}</h4><div className='details'><small>{edetails}</small></div></BS.Alert>;
+	}
+	return (<div className='loader-box' style={{textAlign: 'center'}}>
 			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style={{margin: 'auto', display:'block', height: '120px', width: '120px'}}>
 				<g style={{stroke: 'none'}}>
 						<path style={{fill: '#f6ecd1'}} d="M 50 0 a 50 50 0 0 0 -50 50 L 10 50 a 40 40 0 0 1 40 -40 Z" />
@@ -43,8 +51,8 @@ Misc.Loading = ({text}) => (
 				<animateTransform attributeName="transform" attributeType="XML" from="0" to="360" dur="2s" type="rotate" repeatCount="indefinite" />
 			</svg>
 			{text === undefined? 'Loading...' : text}
-	</div>
-);
+	</div>)
+};
 
 
 /** Used by Misc.ListEditor below */

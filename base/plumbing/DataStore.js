@@ -543,6 +543,8 @@ class Store {
 			return res;
 		}).catch(res => {
 			// keep the fpath promise to avoid repeated ajax calls??
+			// update e.g. React
+			this.update();
 			throw res;
 		});
 		this.setValue(fpath, pv, false);
