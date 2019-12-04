@@ -1,0 +1,235 @@
+@import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
+
+.format-picker .picker-button {
+	padding: 1em 2em;
+	&:hover {
+		text-decoration: none;
+	}
+
+	.picker-button {
+		font-size: 1.2em;
+	}
+}
+
+.device-picker svg {
+	max-width: 60px;
+	max-height: 3.5em;
+	margin: 1em;
+	width: 100%;
+	&#desktop {
+		max-width: 6em; // Desktop (laptop) svg is slightly larger that the others
+	}
+	@media (max-width: 350px) { // Reduces margin on super small screens
+		margin: .5em;
+	}
+}
+
+.picker-button {
+	display: inline-block;
+	font-family: 'Montserrat', sans-serif;
+
+	// The red animated underline - it always exists at zero width
+	
+	&:after {
+		content: "";
+		display: block;
+		position: absolute;
+		bottom: 0;
+		height: 2px;
+
+		background: @gl-red;
+		transition: width 0.3s ease 0s, left 0.3s ease 0s;
+
+		width: 0;
+		left: 50%;
+	}
+
+	// Highlight the button for the page we're on
+	&.current {
+		color: @gl-red !important;
+		font-weight: bold;
+		text-decoration: underline;
+		// &:after {
+		// 	width: 100%;
+		// 	left: 0;
+		// }
+	}
+
+	// Make it clear this won't do anything useful
+	&.disabled {
+		color: gray;
+		pointer-events: none;
+	}
+
+	// Animate in the underline on hover, if button is clickable
+	&:not(.current):not(.disabled) {
+		&:hover:after {
+			width: 100%;
+			left: 0;
+		}
+	}
+}
+
+.format-picker, .device-picker {
+	a {
+		text-transform: uppercase;
+		display: inline-block;
+		color: black;
+		position: relative;
+	}
+}
+
+.alert {
+	max-width: 600px;
+	margin: 0 auto;
+	margin-bottom: 1em;
+}
+
+.demo-div-container {
+	width: 100%!important;
+}
+
+.red-bg, .half-bg {
+	position: relative;
+	&:before, &:after {
+		content: '';
+		display: block;
+		height: 100%;
+		width: 50vw;
+		position: absolute;
+		top: 0;
+		z-index: -1;
+	}
+
+	&:before {
+		right: 50%;
+	}
+
+	&:after {
+		left: 50%;
+	}
+}
+
+.red-bg {
+	&:before, &:after {
+		background-color: @gl-red;
+	}
+}
+
+.half-bg {
+	&:before, &:after {
+		background-image: linear-gradient(to bottom, white 50%, @gl-red 50%);
+	}
+}
+
+.device-container {
+	// Let text-center handle horizontal positioning - we DON'T want this fullwidth.
+	// Size will be determined by the width or height set on frame-img below, and the image's own aspect
+	display: inline-block;
+	position: relative; // allow children to use this as sizing/position reference
+
+	.device-screen-bg {
+		position: absolute;
+		z-index: 0;
+		background-color: #fff;
+	}
+
+	.ad-container {
+		position: absolute;
+		z-index: 1;
+	}
+
+	// Image for the social format. This will be removed once we add the porper social demo
+	.social-mockup {
+		width: 101%;
+		margin-left: -1%;
+	}
+
+	.frame-img {
+		position: relative;
+		pointer-events: none;
+		z-index: 2
+	}
+
+	&.landscape {
+		width: 100%;// Take width of BS container
+		.device-screen-bg {
+			left: 3%;
+			top: 6%;
+			width: 94%;
+			height: 87%;
+		}
+		.ad-container {
+			left: 7%;
+			top: 7%;
+			width: 86%;
+		}
+		.frame-img {
+			width: 100%; // height comes from image aspect
+		}
+	}
+
+	&.desktop {
+		width: 100%;// Take width of BS container
+		.device-screen-bg {
+			display: none;
+		}
+		.ad-container {
+			width: 64%;
+			left: 19%;
+			top: 18%;
+		}
+		.frame-img {
+			width: 100%; // height comes from image aspect
+			z-index: 0; // not transparent (yet)
+		}
+	}
+
+	&.portrait {
+		height: 80vh;// Fit inside browser window
+		.device-screen-bg {
+			left: 6%;
+			top: 3%;
+			width: 88%;
+			height: 94%;
+			border-radius: 5vh;
+		}
+		.ad-container {
+			left: 7%;
+			top: 7%;
+			width: 86%;
+		}
+		.frame-img {
+			height: 100%; // width comes from image aspect
+		}
+	}
+}
+
+.ad-sizer {
+	position: relative;
+	overflow: hidden; /* prevent margin collapse with aspectifier */
+}
+
+.ad-sizer .goodloopad, .ad-sizer iframe {
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.ad-sizer .vpaid-container {
+	width: 100%;
+	height: 100%;
+}
+
+.ad-sizer.landscape .aspectifier {
+	margin-top: 56.25%
+}
+
+.ad-sizer.portrait .aspectifier {
+	margin-top: 177.77%
+}
+
+.ad-sizer.square .aspectifier {
+	margin-top: 100%
+}
