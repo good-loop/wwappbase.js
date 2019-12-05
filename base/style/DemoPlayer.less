@@ -15,22 +15,22 @@
 .device-picker svg {
 	max-width: 60px;
 	max-height: 3.5em;
-	margin: 1em;
+	margin: 0 auto;
 	width: 100%;
 	&#desktop {
 		max-width: 6em; // Desktop (laptop) svg is slightly larger that the others
 	}
-	@media (max-width: 350px) { // Reduces margin on super small screens
-		margin: .5em;
-	}
 }
 
 .picker-button {
+	height: 5em;
 	display: inline-block;
 	font-family: 'Montserrat', sans-serif;
+	background-color: #fff;
+	border: none;
+	color: black;
 
-	// The red animated underline - it always exists at zero width
-	
+	// The red animated underline - it always exists at zero width	
 	&:after {
 		content: "";
 		display: block;
@@ -58,10 +58,19 @@
 
 	// Make it clear this won't do anything useful
 	&.disabled {
-		color: gray;
-		pointer-events: none;
+		color: gray!important;
+		pointer-events: none!important;
+	}
+	
+	&:hover {
+		color: white!important;
+		background-color: #770f00;
+		border: none!important;
 	}
 
+	&:focus {
+		box-shadow: none!important;
+	}
 	// Animate in the underline on hover, if button is clickable
 	&:not(.current):not(.disabled) {
 		&:hover:after {
@@ -91,6 +100,7 @@
 }
 
 .red-bg, .half-bg {
+	width: 100%;
 	position: relative;
 	&:before, &:after {
 		content: '';

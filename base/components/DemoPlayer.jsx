@@ -1,5 +1,5 @@
-import React, { useState, Component } from "react";
-import { Row, Col } from "reactstrap";
+import React, { useState, useEffect, Component, createRef, memo } from "react";
+import { Row, Col, Button } from "reactstrap";
 import { landscapeSvg, desktopSvg, portraitSvg } from "./DemoSvg";
 
 const deviceSvgs = {
@@ -17,7 +17,7 @@ const descriptions = {
 /** Simulated device screen images */
 const frameImages = {
 	landscape: 'https://media.good-loop.com/uploads/standard/iphone-frame-16-9-padded-notch.svg',
-	desktop: 'https://media.good-loop.com/uploads/standard/laptop-transparent-background.png',
+	desktop: 'https://media.good-loop.com/uploads/standard/laptop-websiteholder-text.png',
 	portrait: 'https://media.good-loop.com/uploads/standard/iphone-frame-16-9-padded-notch-portrait.svg',
 };
 
@@ -38,62 +38,79 @@ const DemoPlayer = ({ vertId, production }) => {
 		device: "desktop"
 	});
 
-	const handleFormatPickerClick = e => setState({ ...state, format: e.target.getAttribute('format')});
+	const handleFormatPickerClick = e => {
+		// If social format is picked, default to portrait device.
+		if (e.target.getAttribute('format') === 'social') {
+			setState({ ...state, device: 'portrait', format: 'social' });
+		}
+		else setState({ ...state, format: e.target.getAttribute('format')});
+	}
 	const handleDevicePickerClick = e => setState({ ...state, device: e.target.getAttribute('device')});
 
 	const ad = state.format === 'social' ? (
 		<div>Social mockup here</div>
 	) : (
 		<GoodLoopAd 
-			vertId="test_wide_multiple" 
-			size={sizes[state.format][state.device]} 
-			nonce={`${state.format}${state.device}${"test_wide_multiple"}`}
-			production={production} />
+			vertId={vertId}
+			size={sizes[state.format][state.device]}
+			nonce={`${state.format}${state.device}${vertId}`}
+			production={production}
+		/>
 	)
 
 	const currentButtonHighlighter = button => {
+		if (button !== 'social' && button !== 'video') {
+			if (state.format === 'social' && button !== 'portrait') {
+				return 'disabled';
+			}
+		}
 		if (button === state.device || button === state.format) {
 			return 'current';
-		}
+		} else return '';
 	}
 
 	return (
 		<Row className="demo-section flex-column">
-			<Row className="format-picker text-center justify-content-center p-5">
-				<a
+			<Row className="format-picker text-center justify-content-center pt-5">
+				<Button outline color="secondary"
 					format="social"
 					className={`picker-button ${currentButtonHighlighter('social')}`}
-					onClick={handleFormatPickerClick} >
+					onClick={handleFormatPickerClick}
+				>
 					Social
-				</a>
-				<a
+				</Button>
+				<Button outline color="secondary"
 					format="video"
 					className={`picker-button ${currentButtonHighlighter('video')}`}
-					onClick={handleFormatPickerClick}>
+					onClick={handleFormatPickerClick}
+				>
 					Video
-				</a>
+				</Button>
 			</Row>
 
 			<Row className="device-picker justify-content-center pb-4 flex-row">
 				<Col xs="auto" md="auto" className="text-center flex-row">
-					<a
+					<Button outline color="secondary"
 						device="landscape"
 						className={`picker-button ${currentButtonHighlighter('landscape')}`}
-						onClick={handleDevicePickerClick}>
+						onClick={handleDevicePickerClick}
+					>
 						{deviceSvgs["landscape"]}
-					</a>
-					<a
+					</Button>
+					<Button outline color="secondary"
 						device="desktop"
 						className={`picker-button ${currentButtonHighlighter('desktop')}`}
-						onClick={handleDevicePickerClick}>
-						{deviceSvgs["desktop"]}
-					</a>
-					<a
+						onClick={handleDevicePickerClick}
+					>
+						{deviceSvgs["desktop"]}	
+					</Button>
+					<Button outline color="secondary"
 						device="portrait"
 						className={`picker-button ${currentButtonHighlighter('portrait')}`}
-						onClick={handleDevicePickerClick}>
+						onClick={handleDevicePickerClick}
+					>
 						{deviceSvgs["portrait"]}
-					</a>
+					</Button>
 				</Col>
 			</Row>
 
@@ -116,27 +133,35 @@ const DemoPlayer = ({ vertId, production }) => {
 	);
 };
 
-class GoodLoopAd extends Component {
-	shouldComponentUpdate(nextProps) {
-		return nextProps.nonce !== this.props.nonce;
+
+const GoodLoopAd = memo(({ vertId, size, nonce, production }) => {
+	let prefix = '';
+	if (window.location.hostname.match(/^local/)) prefix = 'local';
+	if (window.location.hostname.match(/^test/)) prefix = 'test';
+	if (production) prefix = '';
+
+	const glUnitUrl = `//${prefix}as.good-loop.com/unit.js`;
+	const fullUnitUrl = glUnitUrl + (vertId ? `?gl.vert=${vertId}&gl.debug=true` : '' );
+
+	let adContainer = createRef();
+
+	const createScript = () => {
+		let script = document.createElement('script');
+		script.setAttribute('src', fullUnitUrl);
+		script.setAttribute('key', `${nonce}-script`);
+		return script;
 	}
 
-	render() {
-		let prefix = '';
-		if (window.location.hostname.match(/^local/)) prefix = 'local';
-		if (window.location.hostname.match(/^test/)) prefix = 'test';
+	useEffect(() => {
+		adContainer.current.append(createScript());
+	}, [nonce]);
 
-		const glUnitUrl = `//${prefix}as.good-loop.com/unit.js`;
-		const fullUnitUrl = glUnitUrl + (this.props.vertId ? `?gl.vert=${this.props.vertId}` : '' );
-
-		return (
-			<div className={`ad-sizer ${this.props.size}`}>
-				<div className="aspectifier" />
-				<div className="goodloopad" data-format={this.props.size} data-mobile-format={this.props.size} key={this.props.nonce + '-container'} />
-				<script src={fullUnitUrl} key={this.props.nonce + '-script'} />
-			</div>
-		)
-	}
-}
+	return (
+		<div className={`ad-sizer ${size}`} ref={adContainer} >
+			<div className="aspectifier" />
+			<div className="goodloopad" data-format={size} data-mobile-format={size} key={nonce + '-container'} />
+		</div>
+	)
+});
 
 export default DemoPlayer;
