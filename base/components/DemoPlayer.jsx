@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Component, createRef, memo } from "react";
+import React, { useState, useEffect, createRef, memo } from "react";
 import { Row, Col, Button } from "reactstrap";
 import { landscapeSvg, desktopSvg, portraitSvg } from "./DemoSvg";
 
@@ -48,7 +48,7 @@ const DemoPlayer = ({ vertId, production }) => {
 	const handleDevicePickerClick = e => setState({ ...state, device: e.target.getAttribute('device')});
 
 	const ad = state.format === 'social' ? (
-		<div>Social mockup here</div>
+		<SocialAd />
 	) : (
 		<GoodLoopAd 
 			vertId={vertId}
@@ -144,6 +144,7 @@ const GoodLoopAd = memo(({ vertId, size, nonce, production }) => {
 	const fullUnitUrl = glUnitUrl + (vertId ? `?gl.vert=${vertId}&gl.debug=true` : '' );
 
 	let adContainer = createRef();
+	let script;
 
 	const createScript = () => {
 		let script = document.createElement('script');
@@ -163,5 +164,29 @@ const GoodLoopAd = memo(({ vertId, size, nonce, production }) => {
 		</div>
 	)
 });
+
+const SocialAd = () => {
+	const [showAd, setShowAd] = useState(false);
+
+	const production = true;
+	let prefix = '';
+	if (window.location.hostname.match(/^local/)) prefix = 'local';
+	if (window.location.hostname.match(/^test/)) prefix = 'test';
+	if (production) prefix = '';
+
+	const size = 'portrait';
+	const nonce = 'blah';
+	const vertId = 'CeuNVbtW';
+
+	const handleTrigger = () => setShowAd(true);
+
+	return (
+		<div className={`ad-sizer`}>
+			<div style={{ width: '100%', height: '18em', backgroundColor: 'pink' }} onClick={handleTrigger} />
+			<div className="aspectifier" />
+			{ showAd ? <GoodLoopAd vertId={vertId} size={size} nonce={nonce} production /> : '' }
+		</div> 
+	)
+}
 
 export default DemoPlayer;
