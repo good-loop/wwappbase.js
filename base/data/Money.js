@@ -91,6 +91,15 @@ Money.value = ma => {
 };
 
 /**
+ * @param {?Money} m
+ * @returns {Boolean} true if value is set (including 0)
+ */
+Money.hasValue = m => {
+	if ( ! m) return false;
+	return m.value || m.value === 0 || m.v100p || m.v100p === 0;
+};
+
+/**
  * 
  * @param {!Money} m 
  * @param {!Number|falsy} newVal Can be null or '' for unset -- which will produce a value of 0
