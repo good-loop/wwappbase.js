@@ -180,7 +180,7 @@ case $1 in
 	adserver|ADSERVER)
 		PROJECT='adserver'
 		PRODUCTION_SERVERS=(gl-es-01.soda.sh gl-es-02.soda.sh adnode-01.soda.sh adnode-02.soda.sh)
-		TEST_SERVERS=(simmons.soda.sh)
+		TEST_SERVERS=(hugh.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
 		TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
@@ -204,8 +204,8 @@ case $1 in
 	;;
 	calstat|CALSTAT)
 		PROJECT='calstat'
-		PRODUCTION_SERVERS=(simmons.soda.sh)
-		TEST_SERVERS=(simmons.soda.sh)
+		PRODUCTION_SERVERS=(hugh.soda.sh)
+		TEST_SERVERS=(hugh.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/calstat"
 		TARGET_DIRECTORY='/home/winterwell/calstat'
 		IMAGE_OPTIMISE='no'
@@ -249,7 +249,7 @@ case $1 in
 	lg|LG|datalog|DATALOG|datalogger|DATALOGGER)
 		PROJECT='datalogger'
 		PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
-		TEST_SERVERS=(simmons.soda.sh)
+		TEST_SERVERS=(hugh.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
 		TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
@@ -293,7 +293,7 @@ case $1 in
 	media|MEDIA)
 		PROJECT='media'
 		PRODUCTION_SERVERS=(medianode-01.good-loop.com medianode-02.good-loop.com medianode-03.good-loop.com)
-		TEST_SERVERS=('simmons.soda.sh')
+		TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/media"
 		TARGET_DIRECTORY='/home/winterwell/media.good-loop.com'
 		IMAGE_OPTIMISE='no'
@@ -319,7 +319,7 @@ case $1 in
 	my-loop|MY-LOOP|myloop|MYLOOP)
 		PROJECT='myloop'
 		PRODUCTION_SERVERS=('sandrock.soda.sh' 'gl-es-03.good-loop.com' 'gl-es-04.good-loop.com' 'gl-es-05.good-loop.com')
-		TEST_SERVERS=('simmons.soda.sh' 'gl-es-03.good-loop.com' 'gl-es-04.good-loop.com' 'gl-es-05.good-loop.com')
+		TEST_SERVERS=('hugh.soda.sh' 'gl-es-03.good-loop.com' 'gl-es-04.good-loop.com' 'gl-es-05.good-loop.com')
 		PROJECT_LOCATION="/home/$USER/winterwell/my-loop"
 		TARGET_DIRECTORY='/home/winterwell/my.good-loop.com'
 		IMAGE_OPTIMISE='yes'
@@ -342,7 +342,7 @@ case $1 in
 	portal|PORTAL)
 		PROJECT='portal'
 		PRODUCTION_SERVERS=('heppner.soda.sh')
-		TEST_SERVERS=(simmons.soda.sh)
+		TEST_SERVERS=(hugh.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
 		TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
@@ -365,7 +365,7 @@ case $1 in
 	profiler|PROFILER)
 		PROJECT='profiler'
 		PRODUCTION_SERVERS=('gl-es-03.good-loop.com')
-		TEST_SERVERS=('simmons.soda.sh')
+		TEST_SERVERS=('hugh.soda.sh')
 		PROJECT_LOCATION="/home/$USER/winterwell/code/profiler"
 		TARGET_DIRECTORY='/home/winterwell/profiler'
 		IMAGE_OPTIMISE='no'
@@ -382,7 +382,7 @@ case $1 in
 	sogive|SOGIVE|sogive-app|SOGIVE-APP)
 		PROJECT='sogive-app'
 		PRODUCTION_SERVERS=(heppner.soda.sh)
-		TEST_SERVERS=(simmons.soda.sh)
+		TEST_SERVERS=(hugh.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/sogive-app"
 		TARGET_DIRECTORY='/home/winterwell/sogive-app'
 		IMAGE_OPTIMISE='no'
