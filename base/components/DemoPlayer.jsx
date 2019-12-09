@@ -1,4 +1,4 @@
-import React, { useState, useEffect, createRef, memo } from "react";
+import React, { useState, useRef, useCallback, useEffect, createRef, memo } from "react";
 import { Row, Col, Button } from "reactstrap";
 import { landscapeSvg, desktopSvg, portraitSvg } from "./DemoSvg";
 
@@ -48,7 +48,10 @@ const DemoPlayer = ({ vertId, production }) => {
 	const handleDevicePickerClick = e => setState({ ...state, device: e.target.getAttribute('device')});
 
 	const ad = state.format === 'social' ? (
-		<SocialAd />
+		<SocialAd 
+			vertId={vertId}
+			nonce={`${state.format}${state.device}${vertId}`}
+		/>
 	) : (
 		<GoodLoopAd 
 			vertId={vertId}
@@ -134,7 +137,7 @@ const DemoPlayer = ({ vertId, production }) => {
 };
 
 
-const GoodLoopAd = memo(({ vertId, size, nonce, production }) => {
+const GoodLoopAd = memo(({ vertId, size, nonce, production, social }) => {
 	let prefix = '';
 	if (window.location.hostname.match(/^local/)) prefix = 'local';
 	if (window.location.hostname.match(/^test/)) prefix = 'test';
@@ -158,35 +161,29 @@ const GoodLoopAd = memo(({ vertId, size, nonce, production }) => {
 	}, [nonce]);
 
 	return (
-		<div className={`ad-sizer ${size}`} ref={adContainer} >
+		<div className={`ad-sizer ${size} ${social ? 'slide-in' : ''}`} ref={adContainer} >
 			<div className="aspectifier" />
 			<div className="goodloopad" data-format={size} data-mobile-format={size} key={nonce + '-container'} />
 		</div>
 	)
 });
 
-const SocialAd = () => {
-	const [showAd, setShowAd] = useState(false);
-
-	const production = true;
-	let prefix = '';
-	if (window.location.hostname.match(/^local/)) prefix = 'local';
-	if (window.location.hostname.match(/^test/)) prefix = 'test';
-	if (production) prefix = '';
-
+const SocialAd = ({vertId, nonce}) => {
+	const [showAd, setShowAd] = useState(0);
 	const size = 'portrait';
-	const nonce = 'blah';
-	const vertId = 'CeuNVbtW';
-
-	const handleTrigger = () => setShowAd(true);
 
 	return (
-		<div className={`ad-sizer`}>
-			<div style={{ width: '100%', height: '18em', backgroundColor: 'pink' }} onClick={handleTrigger} />
+		<div className="ad-sizer portrait" >
 			<div className="aspectifier" />
-			{ showAd ? <GoodLoopAd vertId={vertId} size={size} nonce={nonce} production /> : '' }
-		</div> 
-	)
-}
+			<div className="fake-feed" >
+				FAKE SOCIAL FEED
+				<div className="show-ad" onClick={() => setShowAd(true)}>trigger ad</div>
+			</div>
+			<div className={`social-ad ${showAd ? 'show' : ''}`}>
+				{ showAd ? <GoodLoopAd vertId={vertId} size={size} nonce={nonce} production social /> : '' }
+			</div>
+		</div>
+	);
+};
 
 export default DemoPlayer;
