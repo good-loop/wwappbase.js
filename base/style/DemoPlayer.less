@@ -17,6 +17,7 @@
 	max-height: 3.5em;
 	margin: 0 auto;
 	width: 100%;
+	pointer-events: none; // Passes click to parent button
 	&#desktop {
 		max-width: 6em; // Desktop (laptop) svg is slightly larger that the others
 	}
@@ -164,6 +165,7 @@
 
 	&.landscape {
 		width: 100%;// Take width of BS container
+		max-width: 800px;
 		.device-screen-bg {
 			left: 3%;
 			top: 6%;

@@ -97,8 +97,9 @@ const DemoPlayer = ({ vertId, production }) => {
 						device="landscape"
 						className={`picker-button ${currentButtonHighlighter('landscape')}`}
 						onClick={handleDevicePickerClick}
+						style={{background}}
 					>
-						{deviceSvgs["landscape"]}
+						{deviceSvgs["landscape"]} 
 					</Button>
 					<Button outline color="secondary"
 						device="desktop"
