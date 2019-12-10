@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css?family=Open+Sans&display=swap');
 @import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
 
-.format-picker .picker-button {
-	padding: 1em 2em;
-	&:hover {
-		text-decoration: none;
-	}
+.format-picker button {
+	padding-top: 1em;
+	margin: 1em 1em;
+	font-size: 1.2em;
+}
 
-	.picker-button {
-		font-size: 1.2em;
-	}
+.device-picker button {
+	padding: 0 1em;
+	max-width: 8em;
 }
 
 .device-picker svg {
@@ -24,69 +24,71 @@
 }
 
 .picker-button {
-	height: 5em;
-	display: inline-block;
+	color: #000;
+	text-transform: uppercase;
+	text-decoration: none;
+	letter-spacing: 0.15em;
 	font-family: 'Montserrat', sans-serif;
-	background-color: #fff;
+
 	border: none;
-	color: black;
+	display: inline-block;
+	position: relative;
+	outline: none!important;
+	background-color: #fff;
 
-	// The red animated underline - it always exists at zero width	
-	&:after {
-		content: "";
-		display: block;
-		position: absolute;
-		bottom: 0;
-		height: 2px;
-
-		background: @gl-red;
-		transition: width 0.3s ease 0s, left 0.3s ease 0s;
-
-		width: 0;
-		left: 50%;
+	// Standardises device picker buttons' height (SVG ones)
+	&:not(.format-picker) {
+		height: 5em;
 	}
 
-	// Highlight the button for the page we're on
-	&.current {
-		color: @gl-red !important;
-		font-weight: bold;
-		text-decoration: underline;
-		// &:after {
-		// 	width: 100%;
-		// 	left: 0;
-		// }
-	}
-
-	// Make it clear this won't do anything useful
+		// Make it clear this won't do anything useful
 	&.disabled {
-		color: gray!important;
+		color: lightgray!important;
 		pointer-events: none!important;
 	}
-	
-	&:hover {
-		color: white!important;
-		background-color: #770f00;
-		border: none!important;
+
+	// This creates the red underline under each button. It's got width of zero
+	// and will grow to width 100% when hovered.
+	&:after {
+		background: none repeat scroll 0 0 transparent;
+		bottom: 0;
+		content: "";
+		display: block;
+		height: 2px;
+		left: 50%;
+		position: absolute;
+		background: #830000;
+		transition: width 0.3s ease 0s, left 0.3s ease 0s;
+		width: 0;
 	}
 
-	&:focus {
-		box-shadow: none!important;
+	&:hover {
+		// Override boostrap bt hover styles
+		background-color: transparent!important;
+		&:not(.current) { // 
+			color: #000!important;
+		}
 	}
-	// Animate in the underline on hover, if button is clickable
-	&:not(.current):not(.disabled) {
-		&:hover:after {
+
+	&:hover:after { 
+		width: 100%; 
+		left: 0; 
+	}
+
+	&.current {
+		color: #830000;
+		font-weight: 800;
+		&:after {
 			width: 100%;
 			left: 0;
 		}
 	}
-}
 
-.format-picker, .device-picker {
-	a {
-		text-transform: uppercase;
-		display: inline-block;
-		color: black;
-		position: relative;
+	// Shadow to pop out available svg buttons
+	&:not(.disabled) {
+		svg {
+			filter: drop-shadow( 2px 2px 2px grey);
+		}
 	}
 }
 
@@ -259,11 +261,12 @@
 
 // Off-set ad to slide it in when mounted.
 .social-ad {
-	background-color: lightblue;
-	transform: translateX(100%);
-	transition: transform 0.1s ease-in;
+	background-color: black;
+	transform: translateY(100%);
+	transition-delay: 100ms;
+	transition: transform 0.4s ease-in;
 }
 
 .social-ad.show {
-	transform: translateX(0);
+	transform: translateY(0);
 }

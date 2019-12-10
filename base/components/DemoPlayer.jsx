@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect, createRef, memo } from "react";
-import { Row, Col, Button } from "reactstrap";
+import { Row, Col, Button, UncontrolledAlert } from "reactstrap";
 import { landscapeSvg, desktopSvg, portraitSvg } from "./DemoSvg";
 
 const deviceSvgs = {
@@ -32,7 +32,7 @@ const sizes = {
 	}
 };
 
-const DemoPlayer = ({ vertId, production }) => {
+const DemoPlayer = ({ vertId, production, noSocial, adBlockerDetected }) => {
 	const [state, setState] = useState({
 		format: "video",
 		device: "desktop"
@@ -74,47 +74,48 @@ const DemoPlayer = ({ vertId, production }) => {
 
 	return (
 		<Row className="demo-section flex-column">
+			{ noSocial ? '' :
 			<Row className="format-picker text-center justify-content-center pt-5">
-				<Button outline color="secondary"
+				<button outline color="secondary"
 					format="social"
 					className={`picker-button ${currentButtonHighlighter('social')}`}
 					onClick={handleFormatPickerClick}
 				>
 					Social
-				</Button>
-				<Button outline color="secondary"
+				</button>
+				<button outline color="secondary"
 					format="video"
 					className={`picker-button ${currentButtonHighlighter('video')}`}
 					onClick={handleFormatPickerClick}
 				>
 					Video
-				</Button>
+				</button>
 			</Row>
+			}
 
 			<Row className="device-picker justify-content-center pb-4 flex-row">
 				<Col xs="auto" md="auto" className="text-center flex-row">
-					<Button outline color="secondary"
+					<button outline color="secondary"
 						device="landscape"
 						className={`picker-button ${currentButtonHighlighter('landscape')}`}
 						onClick={handleDevicePickerClick}
-						style={{background}}
 					>
 						{deviceSvgs["landscape"]} 
-					</Button>
-					<Button outline color="secondary"
+					</button>
+					<button outline color="secondary"
 						device="desktop"
 						className={`picker-button ${currentButtonHighlighter('desktop')}`}
 						onClick={handleDevicePickerClick}
 					>
 						{deviceSvgs["desktop"]}	
-					</Button>
-					<Button outline color="secondary"
+					</button>
+					<button outline color="secondary"
 						device="portrait"
 						className={`picker-button ${currentButtonHighlighter('portrait')}`}
 						onClick={handleDevicePickerClick}
 					>
 						{deviceSvgs["portrait"]}
-					</Button>
+					</button>
 				</Col>
 			</Row>
 
@@ -123,6 +124,13 @@ const DemoPlayer = ({ vertId, production }) => {
 					{descriptions[state.format]}
 				</Col>
 			</Row>
+
+			{ adBlockerDetected ? 
+				<UncontrolledAlert color="warning" role="alert">
+					Adblocker detected. Some of our adverts might not play properly!
+				</UncontrolledAlert>
+				: ''
+			}
 
 			<Row className="half-bg">
 				<Col xs="12" className="text-center">
@@ -172,16 +180,26 @@ const GoodLoopAd = memo(({ vertId, size, nonce, production, social }) => {
 const SocialAd = ({vertId, nonce}) => {
 	const [showAd, setShowAd] = useState(0);
 	const size = 'portrait';
+	// Hardcoded TOMS Josh EN Male advert. We will show this only on the DemoPage.
+	vertId = '0PVrD1kX';
 
 	return (
 		<div className="ad-sizer portrait" >
 			<div className="aspectifier" />
 			<div className="fake-feed" >
-				FAKE SOCIAL FEED
+				<video 
+					onMouseDown={() => setShowAd(true) }
+					width="100%"
+					autoPlay
+					muted 
+					loop 
+					src="https://media.good-loop.com/uploads/standard/toms_snapchat_ad.mp4" 
+				/>
 				<div className="show-ad" onClick={() => setShowAd(true)}>trigger ad</div>
 			</div>
 			<div className={`social-ad ${showAd ? 'show' : ''}`}>
 				{ showAd ? <GoodLoopAd vertId={vertId} size={size} nonce={nonce} production social /> : '' }
+				{/* showAd ?  : '' */}
 			</div>
 		</div>
 	);
