@@ -51,7 +51,9 @@ NGO.UNSDGs = [
  */
 NGO.CATEGORY = {
 	"Animals":[
-		"Animal Rights, Welfare, and Services", "Wildlife Conservation", "Zoos and Aquariums"
+		"Animal Rights, Welfare, and Services", 
+		"Wildlife Conservation", 
+		"Zoos and Aquariums"
 	],
 	"Arts, Culture, Humanities":[
 		"Libraries, Historical Societies and Landmark Preservation",

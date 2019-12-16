@@ -369,7 +369,7 @@ const PropControl2 = (props) => {
 
 
 /**
- * @param options {any[]}
+ * @param options {any[]} Will be de-duped.
  * @param labels {?String[]|Function|Object} Map options to nice strings
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  * @param {?Boolean} canUnset If true, always offer an unset choice.
@@ -379,6 +379,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 	const {className, dflt, recursing, modelValueFromInput, ...rest} = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
 	assert(options.map, 'Misc.PropControl: options not an array '+options);
+	options = _.uniq(options);
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
 	let labeller = v => v;
