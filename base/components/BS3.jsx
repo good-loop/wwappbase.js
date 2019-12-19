@@ -68,11 +68,12 @@ BS.Row = ({children}) => <div className='row'>{children}</div>;
 
 /**
  * e.g. <BS.Col width={3} />
- * TODO does dflt col work in BS3??
+ * "does dflt col work in BS3??"
+ * Column widths propagate up to bigger screens so in BS3 you use col-xs-* for default size -- Roscoe
  * @param width {Number[1,12]} Use width for cross-size width. Use sm,md,lg,xl for size-specific widths
  */
 BS.Col = ({width, sm, md, lg, xl, children}) => (
-	<div className={classes({prefix: 'col', sep: '-', '': width, sm, md, lg, xl, dflt: 'col'})}>
+	<div className={classes({prefix: 'col', sep: '-', xs: width, sm, md, lg, xl, dflt: 'col'})}>
 		{children}
 	</div>
 );
@@ -130,9 +131,9 @@ BS.Modal.Footer = ({children}) => <div className="modal-footer">{children}</div>
  * size = lg|sm
  * Use `onClick` to pass in a click handler.
  */
-BS.Button = ({size, color='default', children, className, ...stuff}) => {
-	return <button className={join('btn',color? 'btn-'+color:null, size?'btn-'+size:null, className)} {...stuff}>{children}</button>;
-}
+BS.Button = ({size, color = 'default', children, className, ...stuff}) => (
+	<button className={join('btn', color && `btn-${color}`, size && `btn-${size}`, className)} {...stuff}>{children}</button>
+);
 
 /**
  * @param placement {?String} e.g. "fixed-top"

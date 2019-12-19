@@ -33,11 +33,12 @@ C.newId = 'new';
  * hack: local, test, or ''
  */
 C.SERVER_TYPE = ''; // production
-if (window.location.host.indexOf("test")===0) C.SERVER_TYPE = 'test';
-else if (window.location.host.indexOf("local")===0) C.SERVER_TYPE = 'local';
+if (window.location.host.startsWith('test')) C.SERVER_TYPE = 'test';
+else if (window.location.host.startsWith('local')) C.SERVER_TYPE = 'local';
 // local servers dont have https
-C.HTTPS = C.SERVER_TYPE==='local'? 'http' : 'https';
-C.isProduction = () => C.SERVER_TYPE!=='local' && C.SERVER_TYPE!=='test';
+C.HTTPS = (C.SERVER_TYPE === 'local') ? 'http' : 'https';
+const prod = C.SERVER_TYPE !== 'local' && C.SERVER_TYPE !== 'test';
+C.isProduction = () => prod;
 
 /**
  * NB: PUBLISHED -> MODIFIED on edit is set by the server (see AppUtils.java doSaveEdit(), or trace usage of KStatus.MODIFIED)
@@ -55,13 +56,13 @@ C.setupDataStore = () => {
 	let basics = {
 		data: {},
 		draft: {},
-		widget: {},		
+		widget: {},
 		list: {},
 		misc: {},
 		/** about the local environment */
 		env: {},
 		/** status of server requests, for displaying 'loading' spinners 
-	 	* Normally: transient.$item_id.status
+		* Normally: transient.$item_id.status
 		*/
 		transient: {}
 	};

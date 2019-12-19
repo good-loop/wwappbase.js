@@ -31,31 +31,33 @@ BS.Alert = ({color='warning', children}) => {
  * A card with a card-body, and optional image-cap, title and sub-title
  * See https://getbootstrap.com/docs/4.3/components/card/
  */
-BS.Card = ({className, color, imgTop, title, subtitle, children}) => {
-	return (<div className={join("card", color? 'border-'+color : null, className)} >
-  	{imgTop? <img src={imgTop} className="card-img-top" /> : null}
-  	<div className="card-body">
-    {title? <h5 className="card-title">{title}</h5> : null}
-	 {subtitle? <h6 className="card-subtitle text-muted">{subtitle}</h6> : null}
-    {children}
-  </div>
-</div>);
-};
+BS.Card = ({className, color, imgTop, title, subtitle, children}) => (
+	<div className={join("card", color? 'border-'+color : null, className)}>
+		{imgTop ? <img src={imgTop} className="card-img-top" /> : null}
+		<div className="card-body">
+			{title ? <h5 className="card-title">{title}</h5> : null}
+			{subtitle ? <h6 className="card-subtitle text-muted">{subtitle}</h6> : null}
+			{children}
+		</div>
+	</div>
+);
+
 
 /**
  * BS3 shipped with Glyphicons. But they turned evil, so BS4 ships without.
  */
-BS.Icon = ({name, size, className, ...other}) => {
-	// Use Font-Awesome??
-	return (<i className={'fa fa-'+name + (size? ' fa-'+size : '') + (className? ' '+className : '') } 
-				aria-hidden="true" {...other} />);
-};
+// Use Font-Awesome??
+BS.Icon = ({name, size, className, ...other}) => (
+	<i className={'fa fa-'+name + (size? ' fa-'+size : '') + (className? ' '+className : '') }
+		aria-hidden="true" {...other}
+	/>
+);
+
+
 /**
  * Map from old glyphicon names to new names
  */
-BS.iconMap = {
-
-};
+BS.iconMap = {};
 
 /**
  * Utility for centering blocks
@@ -67,9 +69,13 @@ BS.Center = ({children}) => <div className='ml-auto mr-auto'>{children}</div>;
  * size {?string} sm | lg
  * default = outline-dark
  */
-BS.Button = ({size, color='outline-dark', children, className, ...stuff}) => {
-	if (color==='default') color = 'outline-dark'; // BS3->4 conversion
-	return <button className={join('btn',color? 'btn-'+color:null, size?'btn-'+size:null, className)} {...stuff}>{children}</button>;
+BS.Button = ({size, color = 'outline-dark', children, className, ...stuff}) => {
+	if (color === 'default') color = 'outline-dark'; // BS3->4 conversion
+	return (
+		<button className={join([className, 'btn', color && `btn-${color}`, size && `btn-${size}`])} {...stuff}>
+			{children}
+		</button>
+	);
 }
 
 
@@ -80,8 +86,8 @@ BS.Button = ({size, color='outline-dark', children, className, ...stuff}) => {
  * @param color {?String} e.g. "dark"
  */
 BS.Nav = ({children, className, placement="fixed-top", color="dark"}) => {
-	const classes = ['navbar', 'navbar-expand-md', 'p-0', placement, color ? `navbar-${color} bg-${color}` : null, className];
-	return <nav className={join(...classes)}>{children}</nav>;
+	const classes = ['navbar', 'navbar-expand-md', 'p-0', placement, color && `navbar-${color} bg-${color}`, className];
+	return <nav className={join(classes)}>{children}</nav>;
 };
 
 export default BS;

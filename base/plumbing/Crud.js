@@ -405,12 +405,12 @@ ActionMan.list = ({type, status, q, sort, domain}) => {
 };
 
 /*
- {
-	 vert: {
-		 ...adverts
-	 }
-	 portal.good-loop.com: {verty}
- }
+{
+	vert: {
+		...adverts
+	}
+	portal.good-loop.com: {verty}
+}
 */
 
 /**

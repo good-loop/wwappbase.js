@@ -1,13 +1,13 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import SJTest, {assert} from 'sjtest';
+import SJTest from 'sjtest';
 
-import printer from '../utils/printer.js';
+import C from '../CBase.js';
+
 // Plumbing
 import DataStore from '../plumbing/DataStore';
-import C from '../CBase.js';
 import Messaging from '../plumbing/Messaging';
+
 
 /**
  * To add a message: see Messaging.js
@@ -15,13 +15,23 @@ import Messaging from '../plumbing/Messaging';
  * This displays messages
  */
 const MessageBar = () => {
-	let messages = Object.values(DataStore.getValue('misc', 'messages-for-user') || {});	
-	// filter by page path?
-	messages = messages.filter(m => m.path? SJTest.match(m.path, DataStore.getValue('location','path')) : true);
+	// Retrieve messages & filter those intended for a particular page
+	let messages = Object.values(DataStore.getValue('misc', 'messages-for-user') || {})
+		.filter(m => m.path ? SJTest.match(m.path, DataStore.getValue('location', 'path')) : true);
+	
+	if (messages && messages.length) {
+		// We're likely to get lots of messages on local and test.
+		// Put them off to the side so we don't need to clear them away every pageload
+		// (We want messages to be difficult to avoid/ignore on production)
+		const classes = C.isProduction() ? 'MessageBar container' : 'MessageBar container side';
+		return (
+			<div className={classes}>
+				{messages.map((msg, index) => <MessageBarItem key={'mi'+index} message={msg} />)}
+			</div>
+		);
+	}
 
-	if ( ! messages || messages.length===0) return <div></div>;
-	const messageUI = messages.map( (m, mi) => <MessageBarItem key={'mi'+mi} message={m} /> );
-	return (<div className='MessageBar container'>{messageUI}</div>);
+	return <div />;
 }; // ./Messagebar
 
 

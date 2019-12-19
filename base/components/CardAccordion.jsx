@@ -35,7 +35,6 @@ class Card extends React.Component {
 	}
 
 	render() {
-		
 		// ??HACK expose this card to its innards via a global
 		// Card.current = this;
 

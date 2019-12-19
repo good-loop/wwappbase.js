@@ -92,7 +92,7 @@ const cans4role = {};
 const defineRole = (role, cans) => {
 	assMatch(role, String);
 	assMatch(cans, "String[]");
-	cans4role[role] = cans;	
+	cans4role[role] = cans;
 };
 
 /**

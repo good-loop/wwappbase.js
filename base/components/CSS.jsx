@@ -29,7 +29,7 @@ import React, {useState, useRef} from 'react';
  * @param {String} css
  */
 const CSS = ({css}) => {
-	return css? null : <style>{css}</style>;
+	return (css && css.length) ? null : <style>{css}</style>;
 };
 
 export default CSS;

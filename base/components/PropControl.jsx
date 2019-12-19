@@ -31,6 +31,63 @@ import Money from '../data/Money';
 import {getType, getId, nonce} from '../data/DataClass';
 import {notifyUser} from '../plumbing/Messaging';
 
+
+// Wrapped so the two outer functions can provide an interface consistent with the other validators
+const urlValidatorGuts = (val, secure) => {
+	// no URL is not an error!
+	if (!val) return null;
+	// Protocol-relative URLs are fine!
+	if (val.startsWith('//')) val = 'https:' + val;
+
+	let urlObject;
+	try {
+		urlObject = new URL(val);
+	} catch(e) {
+		return 'This is not a valid URL';
+	}
+
+	if (secure && urlObject.protocol === 'https:') return 'Please use https for secure urls';
+
+	return null;
+};
+/** Default validator for URL values */
+const urlValidator = val => urlValidatorGuts(val);
+/** Default validator for secure URL values */
+const urlValidatorSecure = val => urlValidatorGuts(val, true);
+
+/** Default validator for money values */
+const moneyValidator = val => {
+	if (!val) return null;
+	let nVal = Money.value(val);
+
+	if (!Number.isFinite(nVal)) {
+		return "Invalid number: " + val.raw;
+	}
+	if (!(nVal*100).toFixed(2).endsWith(".00")) {
+		return "Fractional pence may cause an error later";
+	}
+	if (val.error) return "" + val.error;
+	return null;
+};
+
+/** Default validator for date values */
+const dateValidator = (val, rawValue) => {
+	if (!val) {
+		// raw but no date suggests the server removed it
+		if (rawValue) return 'Please use the date format yyyy-mm-dd';
+		return null;
+	}
+	try {
+		let sdate = '' + new Date(val);
+		if (sdate === 'Invalid Date') {
+			return 'Please use the date format yyyy-mm-dd';
+		}
+	} catch (er) {
+		return 'Please use the date format yyyy-mm-dd';
+	}
+};
+
+
 /**
  * Input bound to DataStore.
  * aka Misc.PropControl
@@ -44,18 +101,18 @@ import {notifyUser} from '../plumbing/Messaging';
  * or instead of saveFn, place a Misc.SavePublishDiscard on the page.
  * @param {?String} label 
  * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
- * 	Defaulkt: ['location','params'] which codes for the url
+ * 	Default: ['location','params'] which codes for the url
  * @param item The item being edited. Can be null, and it will be fetched by path.
  * @param prop The field being edited 
  * @param dflt {?Object} default value Beware! This may not get saved if the user never interacts.
  * @param {?Function} modelValueFromInput - inputs: (value, type, eventType) See standardModelValueFromInput.
  * @param required {?Boolean} If set, this field should be filled in before a form submit. 
-* 		TODO mark that somehow
-* @param validator {?(value, rawValue) => String} Generate an error message if invalid
-* @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
-* @param https {?Boolean} if true, urls must use https not http (recommended)
-
-NB: This function provides a label / help / error wrapper -- then passes to PropControl2
+ * 	TODO mark that somehow
+ * @param validator {?(value, rawValue) => String} Generate an error message if invalid
+ * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
+ * @param https {?Boolean} if true, urls must use https not http (recommended)
+ *
+ * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
 	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
@@ -68,68 +125,36 @@ const PropControl = (props) => {
 	const proppath = path.concat(prop);
 	let value = DataStore.getValue(proppath);
 	// Use a default? But not to replace false or 0
-	if (value===undefined || value===null || value==='') value = dflt;
+	if (value === undefined || value === null || value === '') value = dflt;
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
-	if (Misc.KControlType.isdate(type) && ! validator) {
-		validator = (v, rawValue) => {
-			if ( ! v) {
-				// raw but no date suggests the server removed it
-				if (rawValue) return 'Please use the date format yyyy-mm-dd';
-				return null;
-			}
-			try {
-				let sdate = "" + new Date(v);
-				if (sdate === 'Invalid Date') {
-					return 'Please use the date format yyyy-mm-dd';
-				}
-			} catch (er) {
-				return 'Please use the date format yyyy-mm-dd';
-			}
-		};
-	} // date
-	// url: https
-	if (stuff.https !== false && (Misc.KControlType.isurl(type) || Misc.KControlType.isimg(type) || Misc.KControlType.isimgUpload(type))
-			&& ! validator)
-	{
-		validator = v => {
-			// TODO detect invalid url
-			if (v && v.substr(0,5) === 'http:') {
-				return "Please use https for secure urls";
-			}
-			return null;
-		};
+	if (Misc.KControlType.isdate(type) && !validator) validator = dateValidator;
+
+	// Default validator: URL
+	const isUrlInput = (Misc.KControlType.isurl(type) || Misc.KControlType.isimg(type) || Misc.KControlType.isimgUpload(type));
+	if (isUrlInput && !validator) {
+		validator = stuff.https ? urlValidatorSecure : urlValidator;
 	}
-	// Money validator (NB: not 100% same as the backend)
-	if (Misc.KControlType.isMoney(type) && ! validator && ! error) {
-		validator = v => {
-			if ( ! v) return null;
-			let nv = Money.value(v);	
-			if ( ! Number.isFinite(nv)) {
-				return "Invalid number "+v.raw;
-			}
-			if ( ! (nv*100).toFixed(2).endsWith(".00")) {
-				return "Fractional pence may cause an error later";
-			}
-			if (v.error) return ""+v.error;
-			return null;
-		};
-	}
+
+	// Default validator: Money (NB: not 100% same as the backend)
+	if (Misc.KControlType.isMoney(type) && !validator && !error) validator = moneyValidator;
+
 	// validate!
-	if (validator) {		
+	if (validator) {
 		const rawPath = path.concat(prop+"_raw");
 		const rawValue = DataStore.getValue(rawPath);
 		error = validator(value, rawValue);
 	}
+
 	// Has an issue been reported?
 	// TODO refactor so validators and callers use setInputStatus
-	if ( ! error) {
+	if (!error) {
 		const is = getInputStatus(proppath);
-		if ( ! is && required && value === undefined) {
-			setInputStatus({path:proppath, status:'error', message:'Missing required input'});
+		if (!is && required && value === undefined) {
+			setInputStatus({path: proppath, status: 'error', message: 'Missing required input'});
 		}
-		if (is && is.status==='error') {
+		if (is && is.status === 'error') {
 			error = is.message || 'Error';
 		}
 	}
@@ -138,8 +163,8 @@ const PropControl = (props) => {
 	// TODO: is this correct?
 	if (error) {
 		const is = getInputStatus(proppath);
-		if(is && is.status==='error' && required && value) {
-			setInputStatus({path:proppath, status:'ok', message:'ok'});
+		if (is && is.status === 'error' && required && value) {
+			setInputStatus({path: proppath, status: 'ok', message: 'ok'});
 			error = undefined;
 		}
 	}
@@ -150,6 +175,7 @@ const PropControl = (props) => {
 	if (Misc.KControlType.ischeckbox(type)) {
 		return <PropControl2 value={value} proppath={proppath} {...props} />
 	}
+
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
 	const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
@@ -159,13 +185,13 @@ const PropControl = (props) => {
 	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	// let props2 = Object.assign({}, props);
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
-						// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
+	// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
 	return (
 		<div className={join('form-group', type, error? 'has-error' : null)}>
 			{label || tooltip? 
 				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
-			{inline? ' ' : null}
+			{inline ? ' ' : null}
 			<PropControl2 value={value} proppath={proppath} {...props} />
 			{help? <span className="help-block">{help}</span> : null}
 			{error? <span className="help-block">{error}</span> : null}
@@ -400,9 +426,14 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 	}
 
 	// make the options html
-	// NB: react doesnt like the selected attribute ?? but we need it for multiple??	
-	let domOptions = options.map(option => 
-		<option key={"option_"+JSON.stringify(option)} value={option} >{labeller(option)}</option>);	
+	// NB: react doesnt like the selected attribute ?? but we need it for multiple??
+	let domOptions = options.map((option, index) => {
+		// The big IAB Taxonomy dropdown has some dupe names which are used as options
+		// - so permit a keys list, separate from the option strings, to differentiate them
+		const thisKey = 'option_' + ((otherStuff.keys && otherStuff.keys[index]) || JSON.stringify(option));
+		return <option key={thisKey} value={option} >{labeller(option)}</option>;
+	});
+	
 	/* text-muted is for my-loop mirror card 
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
 	let klass = join('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
@@ -765,10 +796,11 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 	item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff}) => {
 		// a place to store the working state of this widget
 		let widgetPath = ['widget', 'autocomplete'].concat(path);
-		if ( ! getItemValue) getItemValue = s => s;
-		if ( ! renderItem) renderItem = a => printer.str(a);
-		const type='autocomplete';
+		if (!getItemValue) getItemValue = s => s;
+		if (!renderItem) renderItem = a => printer.str(a);
+		const type = 'autocomplete';
 		const items = _.isArray(options)? options : DataStore.getValue(widgetPath) || [];
+
 		// NB: typing sends e = an event, clicking an autocomplete sends e = a value
 		const onChange2 = (e, optItem) => {
 			// console.log("event", e, e.type, optItem);
@@ -782,35 +814,38 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 			// e.preventDefault();
 			// e.stopPropagation();
 		};
+
 		const onChange = (e, optItem) => {
 			onChange2(e, optItem);
-			if ( ! e.target.value) return;
-			if ( ! _.isFunction(options)) return;
+			if (!e.target.value) return;
+			if (!_.isFunction(options)) return;
 			let optionsOutput = options(e.target.value);
 			let pvo = new PromiseValue(optionsOutput);
 			pvo.promise.then(oo => {
 				DataStore.setValue(widgetPath, oo);
 				// also save the info in data
 				// NB: assumes we use status:published for auto-complete
-				oo.forEach(opt => {					
+				oo.forEach(opt => {
 					if (getType(opt) && getId(opt)) {
 						const optPath = DataStore.getDataPath({status:C.KStatus.PUBLISHED, type:getType(opt), id:getId(opt)});
 						DataStore.setValue(optPath, opt);
 					}
 				});
 			});
-			// NB: no action on fail - the user just doesn't get autocomplete		
+			// NB: no action on fail - the user just doesn't get autocomplete
 		};
 		
-	return (<Autocomplete 
-		inputProps={{className: otherStuff.className || 'form-control'}}
-		getItemValue={getItemValue}
-		items={items}
-		renderItem={renderItem}
-		value={value}
-		onChange={onChange}
-		onSelect={onChange2} 
-		/>);
+	return (
+		<Autocomplete 
+			inputProps={{className: otherStuff.className || 'form-control'}}
+			getItemValue={getItemValue}
+			items={items}
+			renderItem={renderItem}
+			value={value}
+			onChange={onChange}
+			onSelect={onChange2} 
+		/>
+	);
 }; //./autocomplete
 
 /**
