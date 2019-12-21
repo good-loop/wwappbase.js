@@ -1,3 +1,4 @@
+
 /**
  * Allow for Bootstrap 3 or Bootstrap 4 -- depending on what MainDiv imports
  * 
@@ -16,11 +17,30 @@ export default BS;
 BS.version;
 
 /**
- * Convenience for doing base-css-class + optional-extra-css-class
- * The call to flat() means you can pass an arg list or an array OR multiple arrays
- * ...but not more than 1 layer deep without changing it to flat(2) etc
+ * Convenience for spacing base-css-class + optional-extra-css-class.
+ * Skips falsy.
+ * Recursive, so you can pass an arg list or an array OR multiple arrays.
+ * @returns {!string}
  */
-const join = (...strings) => strings.filter(s => !!s).join(' ');
+const space = (...strings) => {	
+	let js = '';
+	if ( ! strings) return js;
+	strings.forEach(s => {
+		if ( ! s) return;
+		if (s.forEach && typeof(s) !== 'string') {
+			// recurse
+			s = space(...s);
+			if ( ! s) return;
+		}
+		js += ' '+s;
+	});
+	return js;
+};
+
+/**
+ * @deprecated Use `space` for clarity
+ */
+const join = space;
 
 /**
  * Turns eg { prefix: 'col', sep: '-', lg: 2, md: 1 } into 'col-lg-2 col-md-1'
@@ -37,8 +57,8 @@ const classes = ({ prefix, sep = '', dflt, ...props }) => {
 /**
  * NB: Some elements are identical - they are defined in BS3
  */
-
 export {
+	space,
 	join,
 	classes
 }

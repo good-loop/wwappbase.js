@@ -2,7 +2,7 @@
  * Bootstrap 3.
  */
 import React from 'react';
-import BS, {join, classes} from './BS';
+import BS, {space, classes} from './BS';
 // https://getbootstrap.com/docs/3.3/css/#forms
 
 const stopPropagation = e => e.stopPropagation();
@@ -34,7 +34,7 @@ BS.Radio = (props) => <BinaryInput type="radio" {...props} />;
  * See https://getbootstrap.com/docs/4.3/components/card/ vs https://getbootstrap.com/docs/3.4/components/#panels
  */
 BS.Card = ({className, color, imgTop, title, subtitle, children}) => {
-	return (<div className={join("panel panel-"+(color||'default'), className)} >
+	return (<div className={space("panel panel-"+(color||'default'), className)} >
 	{imgTop ? <img src={imgTop} class="card-img-top" /> : null}
 	{title ? <div className='panel-heading'><h5 className="panel-title">{title}</h5>
 		{subtitle ? <h6 className="card-subtitle text-muted">{subtitle}</h6> : null}
@@ -79,7 +79,7 @@ BS.Col = ({width, sm, md, lg, xl, children}) => (
 );
 
 
-/**
+/**s4
  * @param show {Boolean} The caller must manage show / closed via this + onHide()
  */
 BS.Modal = ({children, show, className, onHide}) => {
@@ -96,14 +96,14 @@ BS.Modal = ({children, show, className, onHide}) => {
 	// TODO listen for Esc -- add/remove a handler with useEffect
 
 	return <>
-		<div className={join('modal fade', showClass, className)} style={style} tabIndex="-1" role="dialog" onClick={onHide}>
+		<div className={space('modal fade', showClass, className)} style={style} tabIndex="-1" role="dialog" onClick={onHide}>
 			<div className="modal-dialog" role="document" onClick={stopPropagation}>
 				<div className="modal-content">
 					{children}
 				</div>
 			</div>
 		</div>
-		<div className={join("modal-backdrop fade", showClass)}></div>
+		<div className={space("modal-backdrop fade", showClass)}></div>
 	</>;
 };
 
@@ -132,7 +132,7 @@ BS.Modal.Footer = ({children}) => <div className="modal-footer">{children}</div>
  * Use `onClick` to pass in a click handler.
  */
 BS.Button = ({size, color = 'default', children, className, ...stuff}) => (
-	<button className={join('btn', color && `btn-${color}`, size && `btn-${size}`, className)} {...stuff}>{children}</button>
+	<button className={space('btn', color && `btn-${color}`, size && `btn-${size}`, className)} {...stuff}>{children}</button>
 );
 
 /**
@@ -140,7 +140,7 @@ BS.Button = ({size, color = 'default', children, className, ...stuff}) => (
  */
 BS.Nav = ({children, className, placement = 'fixed-top', color = 'dark'}) => {
 	const classes = ['navbar', placement ? `navbar-${placement}` : null, {dark: 1, inverse: 1}[color] ? 'navbar-inverse' : null, className];
-	return <nav className={join(...classes)}> {children} </nav>;
+	return <nav className={space(...classes)}> {children} </nav>;
 };
 
 export default BS;

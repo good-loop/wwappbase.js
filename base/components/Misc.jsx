@@ -475,19 +475,19 @@ Misc.SavePublishDiscard = ({
 	return (
 		<div className='SavePublishDiscard' title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
-			<button name="save" className='btn btn-default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
+			<BS.Button name="save" color='default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
 				Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</button>
+			</BS.Button>
 			{saveAs? <span>&nbsp;</span> : null}
 			{saveAs? <button name="save-as" className='btn btn-default' disabled={isSaving} title='Copy and save with a new ID'
 					onClick={() => ActionMan.saveAs({type, id, onChange: _.isFunction(saveAs)? saveAs : null})} >
 					<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
 				</button> : null}
 			&nbsp;
-			<button name="publish" className='btn btn-primary' disabled={disablePublish} title={publishTooltip}
+			<BS.Button name="publish" color='primary' disabled={disablePublish} title={publishTooltip}
 				onClick={() => ActionMan.publishEdits(type, id)}>
 				Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</button>
+			</BS.Button>
 			&nbsp;
 			<button name="discard" className='btn btn-warning' disabled={isSaving || noEdits} 
 				onClick={() => ActionMan.discardEdits(type, id)}>

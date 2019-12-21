@@ -311,7 +311,7 @@ const ListItems = ({type, navpage, servlet, status=C.KStatus.ALL_BAR_TRASH, q}) 
 		<div>
 			<h3 className="text-capitalize">List {type}</h3>
 			<CreateButton type={type} navpage={navpage} />
-			<ListLoad type={type} hasFilter servlet={servlet} status={status} q={q} />
+			<ListLoad type={type} hasFilter navpage={servlet} status={status} q={q} />
 		</div>
 	);
 };
