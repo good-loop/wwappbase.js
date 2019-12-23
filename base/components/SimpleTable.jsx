@@ -273,7 +273,7 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 
 /**
  * 
- * @param {string tree} rowtree Describes the row hierarchy -- does not contain item data.. Use withj dataobject
+ * @param {!string tree} rowtree Describes the row hierarchy -- does not contain item data.. Use withj dataobject
  */
 const RowTree = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
 	// use dataObject
@@ -282,14 +282,11 @@ const RowTree = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
 	return $rows;
 };
 const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth, $rows}) => {
-	assert(rowtree, "No rowtree?!")	
 	const rkeys = _.isArray(rowtree)? rowtree : Object.keys(rowtree);
-	console.warn("rkeys", rkeys);
 	rkeys.forEach(rowName => {
 		assMatch(rowName, String);
 		let item = dataObject[rowName];
 		if ( ! item) {
-			console.warn("No Item?! ", rowName, "do", dataObject);
 			return;
 		}
 		let i = item.index || $rows.length;
@@ -298,10 +295,8 @@ const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth, $rows}
 		// recurse
 		let rowInfo = rowtree[rowName];
 		if (rowInfo) {
-			console.warn("...recurse", rowInfo);
 			rowTree2({rowtree:rowInfo, dataObject, visibleColumns, dataArray, depth:depth+1, $rows});			
 		}
-		console.warn("rt2",rowName, rowInfo, "item", item);
 	});
 };
 

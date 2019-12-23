@@ -381,6 +381,7 @@ class Store {
 
 	/**
 	* Set focus.type Largely @deprecated by url-values (which give deep-linking)
+	* @param {!C.TYPES} type
 	 * @param {?String} id
 	 */
 	setFocus(type, id) {
