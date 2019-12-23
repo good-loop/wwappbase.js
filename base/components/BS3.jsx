@@ -143,5 +143,14 @@ BS.Nav = ({children, className, placement = 'fixed-top', color = 'dark'}) => {
 	return <nav className={space(...classes)}> {children} </nav>;
 };
 
+/**
+ * @param children e.g. <a class="nav-link" href="#">Link</a>
+ */
+BS.NavTabs = ({children}) => {
+	if ( ! children) children = [];
+	return <ul className='nav nav-tabs'>{children.map((kid, i) => <li key={i} className='nav-item'>{kid}</li>)}</ul>;
+};
+
+
 export default BS;
 

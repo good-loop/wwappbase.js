@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 
-import BS from './BS';
+import BS, { space } from './BS';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
@@ -478,34 +478,36 @@ Misc.SavePublishDiscard = ({
 			<BS.Button name="save" color='default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
 				Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</BS.Button>
-			{saveAs? <span>&nbsp;</span> : null}
-			{saveAs? <button name="save-as" className='btn btn-default' disabled={isSaving} title='Copy and save with a new ID'
+			{saveAs? <><span>&nbsp;</span>
+				<BS.Button name="save-as" color='default' disabled={isSaving} 
+					title='Copy and save with a new ID'
 					onClick={() => ActionMan.saveAs({type, id, onChange: _.isFunction(saveAs)? saveAs : null})} >
 					<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
-				</button> : null}
+				</BS.Button></>
+			: null}
 			&nbsp;
 			<BS.Button name="publish" color='primary' disabled={disablePublish} title={publishTooltip}
 				onClick={() => ActionMan.publishEdits(type, id)}>
 				Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</BS.Button>
 			&nbsp;
-			<button name="discard" className='btn btn-warning' disabled={isSaving || noEdits} 
+			<BS.Button name="discard" color='warning' disabled={isSaving || noEdits} 
 				onClick={() => ActionMan.discardEdits(type, id)}>
 				Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</button>
+			</BS.Button>
 			{unpublish && pubExists ? <span>&nbsp;</span> : null}
 			{unpublish && pubExists ? (
-				<button name="unpublish" className='btn btn-warning' disabled={isSaving || noEdits} 
+				<BS.Button name="unpublish" color='warning' disabled={isSaving || noEdits} 
 					title='Move from published to draft'
 					onClick={() => ActionMan.unpublish(type, id)} >
 					Un-Publish <span className="glyphicon glyphicon-cd spinning" style={vis} />
-				</button>
+				</BS.Button>
 			) : null}
 			&nbsp;
-			<button name="delete" className='btn btn-danger' disabled={disableDelete}
+			<BS.Button name="delete" color='danger' disabled={disableDelete}
 				onClick={() => ActionMan.delete(type, id)} >
 				Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</button>
+			</BS.Button>
 		</div>
 	);
 };
@@ -592,7 +594,8 @@ Misc.MDText = ({source}) => {
 /**
  * Expect children to have an "option" property which should match the "selected" attribute
  */
-Misc.Tabs = ({children, className='nav nav-tabs', liClassName='', path}) => {
+Misc.Tabs = ({children, path}) => {
+	// TODO replace path with useState here
 	// Option currently selected
 	// Could use state hook for this, but would be inconsistent with the rest of the code base
 	const selected = DataStore.getValue(path) || children[0].props.option;
@@ -604,22 +607,20 @@ Misc.Tabs = ({children, className='nav nav-tabs', liClassName='', path}) => {
 
 	// Show component selected, or the first option as a default
 	const headerElements = headers.map(h => {
-		const thisClassName = liClassName + (selected === h ? ' active' : '');
 		const onClick = () => DataStore.setValue(path, h);
 		return (
-			<li className={thisClassName} id={h} key={h} onClick={onClick}>
-				<a data-toggle="tab">{h}</a>
-			</li>
+			<a className={space('nav-link', selected===h? 'active' : '')} id={h} key={h} onClick={onClick}>
+				{h}
+			</a>
 		);
 	});
-
+	// https://getbootstrap.com/docs/4.4/components/navs/#javascript-behavior
+	// NB: In BS, tab-content and tab-pane are used to manage show/hide -- which we do here in jsx instead
 	return (
 		<div>
-			<ul className={className}>
-				{headerElements}
-			</ul>
-			<div className="component-body">
-				{ children.find(child => child.props.option === selected) }
+			<BS.NavTabs>{headerElements}</BS.NavTabs>
+			<div>
+				{children.find(child => child.props.option === selected) || "Missing tab: "+selected }
 			</div>
 		</div>
 	);

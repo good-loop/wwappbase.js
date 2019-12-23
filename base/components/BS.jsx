@@ -36,6 +36,7 @@ const space = (...strings) => {
 	});
 	return js;
 };
+window.space = space;
 
 /**
  * @deprecated Use `space` for clarity

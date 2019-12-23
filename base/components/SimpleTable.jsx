@@ -17,10 +17,12 @@ import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import {asNum} from 'wwutils';
+import {asNum, join} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import { relative } from 'path';
 import { getClass, getType } from '../data/DataClass';
+import BS from './BS';
+import ErrorBoundary from './ErrorBoundary';
 
 const str = printer.str;
 
@@ -43,7 +45,9 @@ const str = printer.str;
  * 	tooltip: Text to show as help
  * }
  *
- * @param data: {Item[]} each row an item
+ * @param data: {Item[]} each row an item. item.style will set row tr styling
+ * 
+ * @param rowtree: {}
  * 
  * @param dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
  * So the columns should use accessors 'key' and 'value'.
@@ -59,6 +63,7 @@ const str = printer.str;
  * 
  * @param {?Boolean} hideEmpty - If true, hide empty columns
  * @param {?Number} rowsPerPage - Cap the number of rows shown. This cap is applied after filtering and sorting
+ * @param {?Boolean} csv If true, offer csv download
  */
 // NB: use a full component for error-handling
 // Also state (though maybe we should use DataStore)
@@ -66,28 +71,19 @@ class SimpleTable extends React.Component {
 
 	constructor(props) {
 		super(props);
-		
-		if(props.checkboxValues === true && props.columns) {//Enable checkboxes by passing "checkboxValues" to SimpleTable. React interprets this as {checkboxValues : true}
+
+		// Enable checkboxes by passing "checkboxValues" to SimpleTable
+		if(props.checkboxValues && props.columns) {
+			// doc type??
 			const checkboxValues = props.columns.reduce((obj, e) => {
 				const colHead = e.Header || e.accessor || str(e);
 				obj[colHead] = true;  
 				return obj;
-			}, {});
-			this.state = {checkboxValues};
+			}, {});			
+			this.setState({checkboxValues});
 		}
 	}
 
-	componentWillMount() {
-		this.setState({		
-		});
-	}
-
-	componentDidCatch(error, info) {
-		// TODO Display fallback UI
-		this.setState({error, info});
-		console.error(error, info); 
-		if (window.onerror) window.onerror("SimpleTable caught error", null, null, null, error);
-	}
 
 	render() {
 		let {
@@ -103,7 +99,8 @@ class SimpleTable extends React.Component {
 			rowtree,
 			page=0
 		} = this.props;
-		const checkboxValues = this.state.checkboxValues;
+
+		const checkboxValues = this.state && this.state.checkboxValues;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		if (dataObject) {
@@ -228,7 +225,7 @@ class SimpleTable extends React.Component {
 		//Can't edit the actual columns object as that would make it impossible to reenable a column
 		//Display only columns that haven't been disabled
 		let visibleColumns = columns;
-		const checkboxValues = this.state.checkboxValues;
+		const checkboxValues = this.state && this.state.checkboxValues;
 		if(_.isObject(checkboxValues) && !_.isEmpty(checkboxValues)) {
 			visibleColumns = columns.filter(c => {
 				const headerKeyString = c.Header || c.accessor || str(c);
@@ -274,30 +271,38 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 	return $rows;
 };
 
-
-const RowTree = (stuff) => {
+/**
+ * 
+ * @param {string tree} rowtree Describes the row hierarchy -- does not contain item data.. Use withj dataobject
+ */
+const RowTree = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
 	// use dataObject
-	let rows = rowTree2(stuff);
-	return rows;
-};
-const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
 	let $rows = [];
-	Object.keys(rowtree).forEach(rowName => {
+	rowTree2({rowtree, dataObject, visibleColumns, dataArray, depth, $rows});
+	return $rows;
+};
+const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth, $rows}) => {
+	assert(rowtree, "No rowtree?!")	
+	const rkeys = _.isArray(rowtree)? rowtree : Object.keys(rowtree);
+	console.warn("rkeys", rkeys);
+	rkeys.forEach(rowName => {
+		assMatch(rowName, String);
 		let item = dataObject[rowName];
-		let i = item.index;
+		if ( ! item) {
+			console.warn("No Item?! ", rowName, "do", dataObject);
+			return;
+		}
+		let i = item.index || $rows.length;
 		let $row = <Row depth={depth} key={'r'+i} item={item} row={i} columns={visibleColumns} dataArray={dataArray} />;
 		$rows.push($row);
 		// recurse
 		let rowInfo = rowtree[rowName];
-		if (rowInfo && rowInfo.children) {
-			rowInfo.children.forEach(childnode => {
-				let $childRows = rowTree2({rowtree:childnode, dataObject, visibleColumns, dataArray, depth:depth+1});
-				$rows.push($childRows);
-			});
+		if (rowInfo) {
+			console.warn("...recurse", rowInfo);
+			rowTree2({rowtree:rowInfo, dataObject, visibleColumns, dataArray, depth:depth+1, $rows});			
 		}
 		console.warn("rt2",rowName, rowInfo, "item", item);
 	});
-	return $rows;
 };
 
 
@@ -353,14 +358,16 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 
 /**
  * A table row!
+ * @param {!Number} row Can be -1 for specail rows ??0 or 1 indexed??
  * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
+ * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
 const Row = ({item, row, columns, dataArray, className, depth, hidden}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
 	const $cells = columns.map(col => <Cell key={JSON.stringify(col)} row={row} column={col} item={item} dataRow={dataRow} />);
-	const rstyle = hidden? {display:'none'} : null; // NB: we still have to render hidden rows, to get the data-processing side-effects
-	return (<tr className={className} depth={depth} style={rstyle}>
+	const rstyle = Object.assign({}, hidden? {display:'none'} : null, item.style); // NB: we still have to render hidden rows, to get the data-processing side-effects
+	return (<tr className={join(className, "depth"+depth)} depth={depth} style={rstyle}>
 		{$cells}
 	</tr>);
 };

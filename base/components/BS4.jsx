@@ -69,13 +69,13 @@ BS.Center = ({children}) => <div className='ml-auto mr-auto'>{children}</div>;
  * size {?string} sm | lg
  * default = outline-dark
  */
-BS.Button = ({size, color = 'outline-dark', children, className, ...stuff}) => {
+BS.Button = ({size, color = 'outline-dark', bg, children, className, ...stuff}) => {
 	if (color === 'default') {
 		color = 'outline-dark'; // BS3->4 conversion
-		// TODO white BG
+		bg = 'bg-light';
 	}
 	return (
-		<button className={space([className, 'btn', color && `btn-${color}`, size && `btn-${size}`])} {...stuff}>
+		<button className={space([className, bg, 'btn', color && `btn-${color}`, size && `btn-${size}`])} {...stuff}>
 			{children}
 		</button>
 	);
@@ -91,6 +91,14 @@ BS.Button = ({size, color = 'outline-dark', children, className, ...stuff}) => {
 BS.Nav = ({children, className, placement="fixed-top", color="dark"}) => {
 	const classes = ['navbar', 'navbar-expand-md', 'p-0', placement, color && `navbar-${color} bg-${color}`, className];
 	return <nav className={space(classes)}>{children}</nav>;
+};
+
+/**
+ * @param children e.g. <a class="nav-link" href="#">Link</a>
+ */
+BS.NavTabs = ({children}) => {
+	if ( ! children) children = [];
+	return <ul className='nav nav-tabs'>{children.map((kid, i) => <li key={i} className='nav-item'>{kid}</li>)}</ul>;
 };
 
 export default BS;

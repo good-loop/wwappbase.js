@@ -40,6 +40,24 @@
 		} // ./scroller
 	 } // ./wrapper
 	 
+	 tr.depth1 {
+		 font-size: 85%;
+		 td:first-child::before {
+			content:' - ';
+		}		 
+	 }
+	 tr.depth2 {
+		font-size: 75%;
+		td:first-child::before {
+			content:' - - ';
+		}
+	}
+	tr.depth3, tr.depth4, tr.depth5, tr.depth6 {
+		font-size: 65%;
+		td:first-child::before {
+			content:' - - - ';
+		}
+	}
 	// For a caller-provided total row
 	.topRow {
 		font-weight: bold;
