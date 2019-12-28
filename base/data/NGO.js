@@ -46,39 +46,41 @@ NGO.UNSDGs = [
 
 
 /**
+ * Top-level category names are "canonical" strings (lowercase, no punctuation or stop words), which we can use as database keys.
+ * 
  * {String: String[]} Category: Causes
  * Loosely based on https://www.charitynavigator.org/index.cfm?bay=content.view&cpid=34
  */
 NGO.CATEGORY = {
-	"Animals":[
+	"animals":[	// not environment - see below
 		"Animal Rights, Welfare, and Services", 
 		"Wildlife Conservation", 
 		"Zoos and Aquariums"
 	],
-	"Arts, Culture, Humanities":[
+	"arts culture humanities":[
 		"Libraries, Historical Societies and Landmark Preservation",
 		"Museums",
 		"Performing Arts",
 		"Public Broadcasting and Media"
 	], 
-	"Community Development":[
+	"community development":[
 		// United Ways
 		// Jewish Federations
 		"Community Foundations",
 		"Housing and Neighborhood Development"], 
-	"Education":[
+	"education":[
 		"Early Childhood",
 		"Youth Education",
 		"Adult Education",
 		"Special Education",
 		"Education Policy and Reform",
 		"Scholarship and Financial Support"],
-	"Environment":[
+	"environment":[
 		"Environmental Protection and Conservation",
 		"Climate Action", // Not a CN cause
 		"Botanical Gardens, Parks, and Nature Centers"
 	],
-	"Health":[
+	"health":[
 		// "Diseases, Disorders, and Disciplines" overlaps too much with research & treatment
 		"Patient and Family Support",
 		"Treatment and Prevention",
@@ -86,13 +88,13 @@ NGO.CATEGORY = {
 		"Sex Education and STD Prevention", // Not a CN cause
 		"Mental Health", // Not a CN cause
 		"Medical Research"],
-	"Human and Civil Rights": [
+	"civil rights": [
 		"Human Rights", // Not a CN cause
 		"Gender Equality", // Not a CN cause
 		"LGBTQ Rights", // Not a CN cause
 		"Anti-Racism" // Not a CN cause
 	],
-	"Human Services":[
+	"human services":[
 		"Children's and Family Services",
 		"Youth Development", // split the CN cause of Youth Dev + Shelter into two
 		"Shelter and Crisis Services",
@@ -101,16 +103,16 @@ NGO.CATEGORY = {
 		"Tackling Homelessness",
 		"Social Services"
 	],
-	"International":[
+	"international":[
 		"International Development",
 		"International Peace",
 		"Humanitarian Relief Supplies"
 	],
-	"Research and Public Policy":[
+	"research":[
 		"Science & Technology Research (non-medical)",
 		"Social and Public Policy Research"
 	],
-	"Religion":[
+	"religion":[
 		"Local Faith Groups", // Not a CN cause
 		"Religious Activities",
 		"Religious Media and Broadcasting"
