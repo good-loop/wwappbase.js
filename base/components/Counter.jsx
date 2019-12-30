@@ -6,7 +6,7 @@
 
 /* Possible TODO MAYBE! use react-spring for smoother, less expensive animations?? Should be default tool?? */
 
-import React, {useState, useRef} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import printer from '../utils/printer';
 import {useDoesIfVisible} from './CustomHooks';
 import Money from '../data/Money';
@@ -42,7 +42,7 @@ const bezierSlide = (x = 0) => {
  * @param {String} currencySymbol 
  * @param {Money} amount - Convenient way to set value + currencySymbol
  */
-const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', amount, pretty = true}) => {
+const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', amount, pretty = true, sigFigs = 3 }) => {
 	if (amount) {
 		value = Money.value(amount);
 		currencySymbol = Money.currencySymbol(amount);
@@ -69,8 +69,9 @@ const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currency
 		if (elapsed >= animationLength) setState({...state, done: true});
 	}
 
+	console.log(sigFigs)
 	const disp = pretty ? printer.prettyNumber(displayValue) : Math.floor(displayValue);
-	return <span ref={ref}>{currencySymbol + printer.prettyNumber(displayValue)}</span>;
+	return <span ref={ref}>{currencySymbol + printer.prettyNumber(displayValue, sigFigs)}</span>;
 }
 
 export default Counter;
