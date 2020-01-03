@@ -64,6 +64,7 @@ const str = printer.str;
  * @param {?Boolean} hideEmpty - If true, hide empty columns
  * @param {?Number} rowsPerPage - Cap the number of rows shown. This cap is applied after filtering and sorting
  * @param {?Boolean} csv If true, offer csv download
+ * @param {?String} tableName Used to name the csv download
  */
 // NB: use a full component for error-handling
 // Also state (though maybe we should use DataStore)
