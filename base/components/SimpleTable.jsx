@@ -20,33 +20,39 @@ import Enum from 'easy-enums';
 import {asNum, join} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import { relative } from 'path';
-import { getClass, getType } from '../data/DataClass';
+import DataClass, { getClass, getType } from '../data/DataClass';
 import BS from './BS';
 import ErrorBoundary from './ErrorBoundary';
 
 const str = printer.str;
 
-class Column {
-	/** @type {?String|Function} */
+class Column extends DataClass {
+	/** @type {?String|Function} Extract the column value from an item. If a string, this is the property name. */
 	accessor;
 	/** @type {?Function} (value, column) -> jsx */
 	Cell;
 	/** @type {?String} */
-	Header
+	Header;
 	/** @type {?Boolean} */
-	editable
+	editable;
 	/** @type {?Function} ({item,...}) -> {} */
-  saveFn
+  saveFn;
   /** @type {?Function} */
-	sortMethod
+	sortMethod;
 	/** @type {?Function} */
-	sortAccessor
+	sortAccessor;
 	/** @type {?String} Used for providing an editor - see Misc.PropControl */
-	type
+	type;
 	/** @type {?String} Text to show as help */
-	tooltip
+	tooltip;
 	/** @type {Object} custom css styling */
-	style
+	style;
+
+	constructor(base) {
+		super(base);
+		Object.assign(this, base);
+		delete this.status;
+	}
 };
 
 // class ErrorBoundary extends React.Component {
