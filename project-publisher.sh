@@ -770,6 +770,7 @@ function stop_proc {
 	fi
 }
 
+# Start the (probably Java) service, which is defined ??where??
 function start_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
 		for service in ${SERVICE_NAME[@]}; do

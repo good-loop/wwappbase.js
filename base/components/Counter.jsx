@@ -69,7 +69,6 @@ const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currency
 		if (elapsed >= animationLength) setState({...state, done: true});
 	}
 
-	console.log(sigFigs)
 	const disp = pretty ? printer.prettyNumber(displayValue) : Math.floor(displayValue);
 	return <span ref={ref}>{currencySymbol + printer.prettyNumber(displayValue, sigFigs)}</span>;
 }

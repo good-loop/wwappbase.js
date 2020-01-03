@@ -26,25 +26,33 @@ import ErrorBoundary from './ErrorBoundary';
 
 const str = printer.str;
 
+class Column {
+	/** @type {?String|Function} */
+	accessor;
+	/** @type {?Function} (value, column) -> jsx */
+	Cell;
+	/** @type {?String} */
+	Header
+	/** @type {?Boolean} */
+	editable
+	/** @type {?Function} ({item,...}) -> {} */
+  saveFn
+  /** @type {?Function} */
+	sortMethod
+	/** @type {?Function} */
+	sortAccessor
+	/** @type {?String} Used for providing an editor - see Misc.PropControl */
+	type
+	/** @type {?String} Text to show as help */
+	tooltip
+	/** @type {Object} custom css styling */
+	style
+};
+
 // class ErrorBoundary extends React.Component {
 // https://reactjs.org/docs/error-boundaries.html
 
 /**
- * Column definitions:
- * Can be just a string!
- * Object format (all properties are optional)
- * {
- * 	accessor: string|function
- * 	Cell: function: value, column -> jsx
- * 	Header: string
- * 	editable: boolean
-* 		saveFn: ({item,...}) -> {}
- * 	sortMethod: function
- * 	sortAccessor: function
- * 	type: Used for providing an editor - see Misc.PropControl* 	
- * 	tooltip: Text to show as help
- * }
- *
  * @param data: {Item[]} each row an item. item.style will set row tr styling
  * 
  * @param rowtree: {}
@@ -53,7 +61,7 @@ const str = printer.str;
  * So the columns should use accessors 'key' and 'value'.
  * This is ONLY good for simple 2-column tables OR when used with rowtree.
  * 
- * @param columns: {Column[]}
+ * @param columns: {Column[]|String[]} Can mix String and Column
  * 
  * addTotalRow: {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
  * 
@@ -452,7 +460,7 @@ const Cell = ({item, row, column, dataRow}) => {
 		// HACK for the csv
 		dataRow.push(defaultCellRender(v, column)); // TODO use custom render - but what about html/jsx?
 		const cellGuts = render(v, column);
-		return <td>{cellGuts}</td>;
+		return <td style={column.style}>{cellGuts}</td>;
 	} catch(err) {
 		// be robust
 		console.error(err);
@@ -587,4 +595,4 @@ const RemoveAllColumns = ({table}) => {
 };
 
 export default SimpleTable;
-export {CellFormat};
+export {CellFormat, Column};
