@@ -299,6 +299,9 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'textarea') {
+		// TODO if (otherStuff.size==='dynamic') {
+		// 	otherStuff.rows = rowCnt+3;
+		// }
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
 	}
 	
