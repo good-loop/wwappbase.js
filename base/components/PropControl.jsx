@@ -30,6 +30,7 @@ import Money from '../data/Money';
 // // import I18n from 'easyi18n';
 import {getType, getId, nonce} from '../data/DataClass';
 import {notifyUser} from '../plumbing/Messaging';
+import MDText from './MDText';
 
 
 // Wrapped so the two outer functions can provide an interface consistent with the other validators
@@ -209,7 +210,13 @@ const PropControl2 = (props) => {
 	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, onUpload, ...stuff} = props;
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 
-	if ( ! modelValueFromInput) modelValueFromInput = standardModelValueFromInput;
+	if ( ! modelValueFromInput) {
+		if (type==='html') {
+			modelValueFromInput = (_v, type, eventType, target) => standardModelValueFromInput((target && target.innerHTML) || null, type, eventType);
+		} else {
+			modelValueFromInput = standardModelValueFromInput;
+		}
+	}
 	assert( ! type || Misc.KControlType.has(type), 'Misc.PropControl: '+type);
 	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: '+path+" prop:"+prop);
 	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path+" prop:"+prop);
@@ -264,7 +271,7 @@ const PropControl2 = (props) => {
 		// console.log("event", e, e.type);
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
-		let mv = modelValueFromInput(e.target.value, type, e.type);
+		let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 		// console.warn("onChange", e.target.value, mv, e);
 		DataStore.setValue(proppath, mv);
 		if (saveFn) saveFn({path, prop, value: mv});
@@ -299,10 +306,20 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'textarea') {
-		// TODO if (otherStuff.size==='dynamic') {
-		// 	otherStuff.rows = rowCnt+3;
-		// }
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
+	}
+	if (type === 'html') {
+		// NB: relies on a special-case innerHTML version of modelValueFromInput, set above
+		let __html = value;
+		// TODO onKeyDown={captureTab}
+		return <div contentEditable className="form-control" name={prop} 			
+			onChange={onChange} 
+			onInput={onChange}
+			onBlur={onChange}
+			{...otherStuff} 
+			style={{height:'auto'}}
+			dangerouslySetInnerHTML={{__html}}>
+			</div>;		
 	}
 	
 	if (type === 'json') {
@@ -396,6 +413,16 @@ const PropControl2 = (props) => {
 	return <FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
 }; //./PropControl2
 
+
+// /**
+//  * TODO
+//  * @param {Event} e 
+//  */
+// let captureTab = e => {
+// 	console.warn(e, e.keyCode, e.keyCode===9);
+// 	if (e.keyCode !== 9) return;
+// 	e.preventDefault();
+// };
 
 /**
  * @param options {any[]} Will be de-duped.
@@ -930,7 +957,7 @@ const FormControl = ({value, type, required, size, className, prepend, ...otherP
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-const KControlType = new Enum("img imgUpload videoUpload textarea text search select radio checkboxes autocomplete password email url color checkbox"
+const KControlType = new Enum("img imgUpload videoUpload textarea html text search select radio checkboxes autocomplete password email url color checkbox"
 							+" yesNo location date year number arraytext keyset entryset address postcode json country"
 							// some Good-Loop data-classes
 							+" Money XId");
@@ -1066,7 +1093,8 @@ export {
 	InputStatus,
 	setInputStatus,
 	getInputStatus,
-	getInputStatuses
+	getInputStatuses,
+	standardModelValueFromInput
 };
 // should we rename it to Input, or StoreInput, ModelInput or some such??
 export default PropControl;

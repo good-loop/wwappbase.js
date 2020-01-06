@@ -448,6 +448,7 @@ const defaultCellRender = (v, column) => {
 	return str(v);
 };
 
+
 const Cell = ({item, row, column, dataRow}) => {
 	const citem = item;
 	try {
