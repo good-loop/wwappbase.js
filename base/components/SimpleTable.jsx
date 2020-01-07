@@ -276,8 +276,10 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 	}
 	// HACK: rowtree? add a collapse column
 	if (rowtree) {
-		const Cell = (v, col, {rowtree}) => Tree.children(rowtree)? 
-			<button onClick={e => {rowtree.collapsed = ! rowtree.collapsed; console.warn(rowtree, JSON.stringify(rowtree)); DataStore.update();}}>{rowtree.collapsed? '+' : '-'}</button>
+		const Cell = (v, col, {rowtree}) => Tree.children(rowtree).length? 
+			<button className='btn btn-xs' 
+				onClick={e => {rowtree.collapsed = ! rowtree.collapsed; console.warn(rowtree, JSON.stringify(rowtree)); DataStore.update();}}
+			>{rowtree.collapsed? '+' : '-'}</button>
 			 : null;
 		const uiCol = new Column({ui:true, Header:'+-', Cell});
 		visibleColumns = [uiCol].concat(visibleColumns);
