@@ -64,15 +64,8 @@ class Column extends DataClass {
 
 /**
  * @param data: {Item[]} each row an item. item.style will set row tr styling
-<<<<<<< HEAD
  *  * 
  * @param dataObject Deprecated! a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
-=======
- * 
- * @param {Tree} rowtree
- * 
- * @param dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
->>>>>>> 2deed3b0de86d9e94060c1d2ad6f583151e21247
  * So the columns should use accessors 'key' and 'value'.
  * This is ONLY good for simple 2-column tables!
  * 
@@ -212,13 +205,7 @@ class SimpleTable extends React.Component {
 	</thead>
 
 	<tbody>
-<<<<<<< HEAD
-		{data? <Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}		
-=======
-		{data && ! rowtree? <Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}		
-		{rowtree? <RowTree rowtree={rowtree} dataObject={dataObject} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}
->>>>>>> 2deed3b0de86d9e94060c1d2ad6f583151e21247
-
+		<Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} />
 		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 	</tbody>
 	<TableFoot csv={csv} tableName={tableName} dataArray={dataArray} numPages={numPages} page={page} colSpan={visibleColumns.length} />
@@ -303,6 +290,7 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
  * @param {Object[]} data 
  */
 const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
+	if ( ! data) return null;
 	// clip?
 	let min = rowsPerPage? page*rowsPerPage : 0;
 	let max = rowsPerPage? (page+1)*rowsPerPage : Infinity;
@@ -318,50 +306,6 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 	return $rows;
 };
 
-<<<<<<< HEAD
-=======
-/**
- * 
- * @param {!Tree<String>} rowtree Describes the row hierarchy -- does not contain item data.. Use withj dataobject
- */
-const RowTree = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
-	Tree.assIsa(rowtree);
-	// use dataObject	
-	let $rows = rowTree2({rowtree, dataObject, visibleColumns, dataArray, depth});
-	return $rows;
-};
-const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth}) => {	
-	Tree.assIsa(rowtree);
-	const rowName = Tree.x(rowtree);
-	const rowKids = Tree.children(rowtree);
-	const $rows = [];
-	if (rowName) { // NB: the root node might well be a dummy that isnt rendered itself
-		assMatch(rowName, String);
-		let item = dataObject[rowName];
-		if (item) {			
-			let i = item.index || $rows.length;
-			// render row
-			let $row = <Row 
-				rowtree={rowtree} depth={depth} key={'r'+i} 
-				item={item} row={i} 
-				columns={visibleColumns} dataArray={dataArray} 
-				/>;
-			$rows.push($row);
-			// if we recurse, the level is 1 deeper
-			depth++;
-		}
-	}
-	// recurse		
-	let collapsed = rowtree.collapsed;
-	if ( ! collapsed) {
-		let $childRows = rowKids.map(kid => rowTree2({rowtree:kid, dataObject, visibleColumns, dataArray, depth}));
-		$rows.push($childRows);
-	}
-	return $rows;
-};
-
-
->>>>>>> 2deed3b0de86d9e94060c1d2ad6f583151e21247
 // TODO onClick={} sortBy
 const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons, checkboxValues}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
