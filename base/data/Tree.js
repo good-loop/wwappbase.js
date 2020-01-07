@@ -1,5 +1,5 @@
 /**
- * A simple tree datatype
+ * A simple tree datatype. Matches Tree.java
  */
 import {assert, assMatch} from 'sjtest';
 import {asNum} from 'wwutils';
@@ -10,30 +10,33 @@ import Enum from 'easy-enums';
 
 /** 
  * 
- * e.g. new Tree({name:"root", children:[new Tree({name:"Leaf"})] })
+ * e.g. new Tree({x:"root", children:[new Tree({x:"Leaf"})] })
  * 
 */
 class Tree extends DataClass {
 	/** @type {?Tree[]} */
 	children;
 	/** @type {Object} */
-	name;
+	x;
 
 	constructor(base) {
 		super(base);
 		Object.assign(this, base);
+		// guard against easy errors
+		assert(typeof(base) !== "string", "Tree.js - bad input, {x} expected");
+		assert(typeof(base) !== "number", "Tree.js - wrong input {x} expected");
 	}
 }
 DataClass.register(Tree, "Tree");
 
 /**
- * @returns {!Tree[]} Can be empty
+ * @returns {!Tree[]} Can be empty, never null
  */
 Tree.children = node => node.children || [];
 
 /**
  * The main value stored on this node
  */
-Tree.name = node => node.name;
+Tree.x = node => node.x;
 
 export default Tree;
