@@ -20,9 +20,11 @@ import Enum from 'easy-enums';
 import {asNum, join} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import { relative } from 'path';
-import DataClass, { getClass, getType } from '../data/DataClass';
+import DataClass, { getClass, getType, nonce } from '../data/DataClass';
 import BS from './BS';
 import ErrorBoundary from './ErrorBoundary';
+import { useState } from 'react';
+import Tree from '../data/Tree';
 
 const str = printer.str;
 
@@ -47,6 +49,8 @@ class Column extends DataClass {
 	tooltip;
 	/** @type {Object} custom css styling */
 	style;
+	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
+	ui;
 
 	constructor(base) {
 		super(base);
@@ -60,8 +64,15 @@ class Column extends DataClass {
 
 /**
  * @param data: {Item[]} each row an item. item.style will set row tr styling
+<<<<<<< HEAD
  *  * 
  * @param dataObject Deprecated! a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
+=======
+ * 
+ * @param {Tree} rowtree
+ * 
+ * @param dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
+>>>>>>> 2deed3b0de86d9e94060c1d2ad6f583151e21247
  * So the columns should use accessors 'key' and 'value'.
  * This is ONLY good for simple 2-column tables!
  * 
@@ -123,7 +134,7 @@ class SimpleTable extends React.Component {
 		assert( ! data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);
 		const originalData = data;
 
-		// Table settings are stored in widget state by default. But can also be linked to a DataStore via statePath
+		// Table settings are stored in widget state by default. @deprecated But can also be linked to a DataStore via statePath
 		let tableSettings = this.state;
 		if (statePath) {
 			tableSettings = DataStore.getValue(statePath);
@@ -135,11 +146,19 @@ class SimpleTable extends React.Component {
 			};
 		}
 		if ( ! tableSettings) {
-			tableSettings = {};
+			tableSettings = {nonce:nonce()};
+			_.defer(() => this.setState(tableSettings));
+		}
+
+		// Merge rowtree prop with stored widget state, to preserve e.g. collapsed setting
+		if (rowtree) {
+			rowtree = _.merge(tableSettings.rowtree, rowtree);
+			console.log("merged rowtree", rowtree, "nonce", tableSettings.nonce, "Old",tableSettings.rowtree);
+			tableSettings.rowtree = rowtree;
 		}
 
 		// filter and sort
-		let {data:fdata,visibleColumns} = this.rowFilter({data, tableSettings, hideEmpty, columns, rowsPerPage});
+		let {data:fdata,visibleColumns} = rowFilter({data, rowtree, columns, tableSettings, hideEmpty, checkboxValues, rowsPerPage});
 		data = fdata;
 		// clip max rows now?
 		let numPages = 1;
@@ -193,7 +212,12 @@ class SimpleTable extends React.Component {
 	</thead>
 
 	<tbody>
+<<<<<<< HEAD
 		{data? <Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}		
+=======
+		{data && ! rowtree? <Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}		
+		{rowtree? <RowTree rowtree={rowtree} dataObject={dataObject} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}
+>>>>>>> 2deed3b0de86d9e94060c1d2ad6f583151e21247
 
 		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 	</tbody>
@@ -207,59 +231,71 @@ class SimpleTable extends React.Component {
 		);
 	} // ./ render()
 
-
-
-	rowFilter({data, tableSettings, hideEmpty, columns, rowsPerPage, page=0}) {
-		// filter?		
-		// always filter nulls
-		data = data.filter(row => !!row);
-		if (tableSettings.filter) {
-			data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
-		}
-		// sort?
-		if (tableSettings.sortBy !== undefined) {
-			// pluck the right column
-			let column = tableSettings.sortBy;
-			// sort fn
-			let sortFn = column.sortMethod;
-			if ( ! sortFn) {
-				let getter = sortGetter(column);
-				sortFn = (a,b) => defaultSortMethodForGetter(a,b,getter);
-			}
-			// sort!
-			data = data.sort(sortFn);
-			if (tableSettings.sortByReverse) {
-				data = data.reverse();
-			}
-		} // sort
-		//Only show columns that have checkbox: true.
-		//Can't edit the actual columns object as that would make it impossible to reenable a column
-		//Display only columns that haven't been disabled
-		let visibleColumns = columns;
-		const checkboxValues = this.state && this.state.checkboxValues;
-		if(_.isObject(checkboxValues) && !_.isEmpty(checkboxValues)) {
-			visibleColumns = columns.filter(c => {
-				const headerKeyString = c.Header || c.accessor || str(c);
-				return checkboxValues[headerKeyString];
-			});
-		}
-		// hide columns with no data
-		if (hideEmpty) {
-			visibleColumns = visibleColumns.filter(c => {
-				const getter = sortGetter(c);
-				for(let di=0; di<data.length; di++) {
-					let vi = getter(data[di]);
-					if (vi) return true;
-				}
-				return false;
-			});
-		}
-		// NB maxRows is done later to support csv-download being all data
-		return {data, visibleColumns};
-	} // ./filter
-
-
 } // ./SimpleTable
+
+
+/**
+ * Filter columns, rows, and data + sort
+ * @returns {data, visibleColumns: COlumn[]}
+ */
+const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxValues, rowsPerPage, page=0}) => {
+	// filter?		
+	// always filter nulls
+	data = data.filter(row => !!row);
+	if (tableSettings.filter) {
+		data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
+	}
+	// sort?
+	if (tableSettings.sortBy !== undefined) {
+		// pluck the sorting column
+		let column = tableSettings.sortBy;
+		// sort fn
+		let sortFn = column.sortMethod;
+		if ( ! sortFn) {
+			let getter = sortGetter(column);
+			sortFn = (a,b) => defaultSortMethodForGetter(a,b,getter);
+		}
+		// sort!
+		data = data.sort(sortFn);
+		if (tableSettings.sortByReverse) {
+			data = data.reverse();
+		}
+	} // sort
+	//Only show columns that have checkbox: true.
+	//Can't edit the actual columns object as that would make it impossible to reenable a column
+	//Display only columns that haven't been disabled
+	let visibleColumns = columns;
+	if(_.isObject(checkboxValues) && !_.isEmpty(checkboxValues)) {
+		visibleColumns = columns.filter(c => {
+			const headerKeyString = c.Header || c.accessor || str(c);
+			return checkboxValues[headerKeyString];
+		});
+	}
+	// hide columns with no data
+	if (hideEmpty) {
+		visibleColumns = visibleColumns.filter(c => {
+			const getter = sortGetter(c);
+			for(let di=0; di<data.length; di++) {
+				let vi = getter(data[di]);
+				if (vi) return true;
+			}
+			return false;
+		});
+	}
+	// HACK: rowtree? add a collapse column
+	if (rowtree) {
+		const Cell = (v, col, {rowtree}) => Tree.children(rowtree).length? 
+			<button className='btn btn-xs' 
+				onClick={e => {rowtree.collapsed = ! rowtree.collapsed; console.warn(rowtree, JSON.stringify(rowtree)); DataStore.update();}}
+			>{rowtree.collapsed? '+' : '-'}</button>
+			 : null;
+		const uiCol = new Column({ui:true, Header:'+-', Cell});
+		visibleColumns = [uiCol].concat(visibleColumns);
+	}
+	// NB maxRows is done later to support csv-download being all data
+	return {data, visibleColumns};
+} // ./filter
+
 
 
 /**
@@ -282,6 +318,50 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 	return $rows;
 };
 
+<<<<<<< HEAD
+=======
+/**
+ * 
+ * @param {!Tree<String>} rowtree Describes the row hierarchy -- does not contain item data.. Use withj dataobject
+ */
+const RowTree = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
+	Tree.assIsa(rowtree);
+	// use dataObject	
+	let $rows = rowTree2({rowtree, dataObject, visibleColumns, dataArray, depth});
+	return $rows;
+};
+const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth}) => {	
+	Tree.assIsa(rowtree);
+	const rowName = Tree.x(rowtree);
+	const rowKids = Tree.children(rowtree);
+	const $rows = [];
+	if (rowName) { // NB: the root node might well be a dummy that isnt rendered itself
+		assMatch(rowName, String);
+		let item = dataObject[rowName];
+		if (item) {			
+			let i = item.index || $rows.length;
+			// render row
+			let $row = <Row 
+				rowtree={rowtree} depth={depth} key={'r'+i} 
+				item={item} row={i} 
+				columns={visibleColumns} dataArray={dataArray} 
+				/>;
+			$rows.push($row);
+			// if we recurse, the level is 1 deeper
+			depth++;
+		}
+	}
+	// recurse		
+	let collapsed = rowtree.collapsed;
+	if ( ! collapsed) {
+		let $childRows = rowKids.map(kid => rowTree2({rowtree:kid, dataObject, visibleColumns, dataArray, depth}));
+		$rows.push($childRows);
+	}
+	return $rows;
+};
+
+
+>>>>>>> 2deed3b0de86d9e94060c1d2ad6f583151e21247
 // TODO onClick={} sortBy
 const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons, checkboxValues}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
@@ -338,12 +418,12 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
  * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, row, columns, dataArray, className, depth, hidden}) => {
+const Row = ({item, row, rowtree, columns, dataArray, className, depth, hidden}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
-	const $cells = columns.map(col => <Cell key={JSON.stringify(col)} row={row} column={col} item={item} dataRow={dataRow} />);
+	const $cells = columns.map(col => <Cell key={JSON.stringify(col)} row={row} rowtree={rowtree} column={col} item={item} dataRow={dataRow} />);
 	const rstyle = Object.assign({}, hidden? {display:'none'} : null, item.style); // NB: we still have to render hidden rows, to get the data-processing side-effects
-	return (<tr className={join(className, "depth"+depth)} depth={depth} style={rstyle}>
+	return (<tr className={join(className, "row"+row, "depth"+depth)} depth={depth} style={rstyle}>		
 		{$cells}
 	</tr>);
 };
@@ -414,7 +494,12 @@ const defaultCellRender = (v, column) => {
 	return str(v);
 };
 
-const Cell = ({item, row, column, dataRow}) => {
+/**
+ * 
+ * @param {Column} column
+ * @param {?Tree} rowtree
+ */
+const Cell = ({item, row, column, rowtree, dataRow}) => {
 	const citem = item;
 	try {
 		const v = getValue({item, row, column});
@@ -430,8 +515,10 @@ const Cell = ({item, row, column, dataRow}) => {
 		}
 
 		// HACK for the csv
-		dataRow.push(defaultCellRender(v, column)); // TODO use custom render - but what about html/jsx?
-		const cellGuts = render(v, column);
+		if ( ! column.ui) {
+			dataRow.push(defaultCellRender(v, column)); // TODO use custom render - but what about html/jsx?
+		}
+		const cellGuts = render(v, column, {item, row, rowtree});
 		return <td style={column.style}>{cellGuts}</td>;
 	} catch(err) {
 		// be robust
