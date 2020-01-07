@@ -23,6 +23,8 @@ import { relative } from 'path';
 import DataClass, { getClass, getType } from '../data/DataClass';
 import BS from './BS';
 import ErrorBoundary from './ErrorBoundary';
+import { useState } from 'react';
+import Tree from '../data/Tree';
 
 const str = printer.str;
 
@@ -61,7 +63,7 @@ class Column extends DataClass {
 /**
  * @param data: {Item[]} each row an item. item.style will set row tr styling
  * 
- * @param rowtree: {}
+ * @param {Tree} rowtree
  * 
  * @param dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
  * So the columns should use accessors 'key' and 'value'.
@@ -288,31 +290,39 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 
 /**
  * 
- * @param {!string tree} rowtree Describes the row hierarchy -- does not contain item data.. Use withj dataobject
+ * @param {!Tree<String>} rowtree Describes the row hierarchy -- does not contain item data.. Use withj dataobject
  */
 const RowTree = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
-	// use dataObject
-	let $rows = [];
-	rowTree2({rowtree, dataObject, visibleColumns, dataArray, depth, $rows});
+	Tree.assIsa(rowtree);
+	// use dataObject	
+	let $rows = rowTree2({rowtree, dataObject, visibleColumns, dataArray, depth});
 	return $rows;
 };
-const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth, $rows}) => {
-	const rkeys = _.isArray(rowtree)? rowtree : Object.keys(rowtree);
-	rkeys.forEach(rowName => {
+const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth}) => {	
+	Tree.assIsa(rowtree);
+	let rowName = Tree.name(rowtree);
+	let rowKids = Tree.children(rowtree);
+	let $rows = [];
+	if (rowName) {
 		assMatch(rowName, String);
 		let item = dataObject[rowName];
-		if ( ! item) {
-			return;
+		if (item) {			
+			let i = item.index || $rows.length;
+			// HACK collapse button
+			const collapsed = false;			
+			// render row
+			let $row = <Row 
+				depth={depth} key={'r'+i} item={item} row={i} columns={visibleColumns} dataArray={dataArray} 
+				/>;
+			$rows.push($row);
 		}
-		let i = item.index || $rows.length;
-		let $row = <Row depth={depth} key={'r'+i} item={item} row={i} columns={visibleColumns} dataArray={dataArray} />;
-		$rows.push($row);
-		// recurse
-		let rowInfo = rowtree[rowName];
-		if (rowInfo) {
-			rowTree2({rowtree:rowInfo, dataObject, visibleColumns, dataArray, depth:depth+1, $rows});			
-		}
-	});
+	}
+	// recurse		
+	if (rowKids.length && ! collapsed) {
+		let $childRows = rowTree2({rowtree:rowInfo, dataObject, visibleColumns, dataArray, depth:depth+1});
+		if ($childRows) $rows.push($childRows);
+	}
+	return $rows;
 };
 
 
@@ -448,7 +458,10 @@ const defaultCellRender = (v, column) => {
 	return str(v);
 };
 
-
+/**
+ * 
+ * @param {Column} column
+ */
 const Cell = ({item, row, column, dataRow}) => {
 	const citem = item;
 	try {
