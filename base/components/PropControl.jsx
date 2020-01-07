@@ -47,7 +47,7 @@ const urlValidatorGuts = (val, secure) => {
 		return 'This is not a valid URL';
 	}
 
-	if (secure && urlObject.protocol === 'https:') return 'Please use https for secure urls';
+	if (secure && urlObject.protocol !== 'https:') return 'Please use https for secure urls';
 
 	return null;
 };
