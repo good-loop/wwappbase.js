@@ -385,10 +385,15 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 /**
  * DataStore path for list
  * @param {?String} sort Optional sort e.g. "created-desc"
- * @returns [list, type, status, domain, query, sort]
+ * @returns [list, type, status, domain, query, prefix, sort]
  */
-const listPath = ({type,status,q,sort,domain}) => {
-	return ['list', type, status, domain || 'nodomain', q || 'all', sort || 'unsorted'];
+const listPath = ({type,status,q,prefix,sort,domain}) => {
+	// NB: we want fixed length paths, to avoid stored results overlapping with paths fragments.
+	return ['list', type, status, 
+		domain || 'nodomain', 
+		q || 'all', 
+		prefix || 'unfiltered', 
+		sort || 'unsorted'];
 };
 
 /**
@@ -396,11 +401,11 @@ const listPath = ({type,status,q,sort,domain}) => {
  * @returns PromiseValue<{hits: Object[]}>
  */
 // Namespace anything fetched from a non-default domain
-ActionMan.list = ({type, status, q, sort, domain}) => {	
+ActionMan.list = ({type, status, q, prefix, sort, domain}) => {	
 	assert(C.TYPES.has(type), type);
-	const lpath = listPath({type,status,q,sort,domain});
+	const lpath = listPath({type,status,q,prefix,sort,domain});
 	return DataStore.fetch(lpath, () => {
-		return ServerIO.list({type, status, q, sort, domain});
+		return ServerIO.list({type, status, q, prefix, sort, domain});
 	});
 };
 
@@ -418,7 +423,7 @@ ActionMan.list = ({type, status, q, sort, domain}) => {
  * @returns promise(List) 
  * List has form {hits: Object[], total: Number} -- see List.js
  */
-ServerIO.list = ({type, status, q, sort, domain = ''}) => {
+ServerIO.list = ({type, status, q, prefix, sort, domain = ''}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO.list - bad type:' +type);
 	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), 'Crud.js - ServerIO.list - bad status: '+status);
@@ -427,7 +432,7 @@ ServerIO.list = ({type, status, q, sort, domain = ''}) => {
 		+ (ServerIO.dataspace? '/'+ServerIO.dataspace : '')
 		+ '/_list.json';
 	let params = {
-		data: {status, q, sort}
+		data: {status, q, prefix, sort}
 	};	
 	return ServerIO.load(url, params)
 		.then(res => { 	// sanity check

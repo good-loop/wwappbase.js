@@ -28,6 +28,7 @@ import BS from './BS';
  * @param {?String} q - Optional query e.g. advertiser-id=pepsi
  * Note: that filter can add to this
  * @param {?String} sort -  Optional sort order, e.g. "start-desc"
+ * @param {?Boolean} hasFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?String} status - e.g. "Draft"
  * @param {?String} servlet - @deprecated - use navpage instead
  * @param {?String} navpage - e.g. "publisher" If unset, a default is taken from the url. 
@@ -40,7 +41,7 @@ import BS from './BS';
 const ListLoad = ({type, status, servlet, navpage, 
 	q,
 	sort,
-	hasFilter, // if true, offer a text filter This will be added to q
+	hasFilter,
 	ListItem, 
 	checkboxes, canDelete, canCreate, className,
 	notALink}) => 
@@ -82,7 +83,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	let q2 = join(q, filter); // pass filter to back-end
 	
 	// Load via ActionMan -- both filtered and un-filtered
-	let pvItems = ActionMan.list({type, status, q:q2, sort});
+	let pvItems = ActionMan.list({type, status, q, prefix:filter, sort});
 	let pvItemsAll = ActionMan.list({type, status, q, sort});
 
 	if ( ! ListItem) {
@@ -117,10 +118,10 @@ const ListLoad = ({type, status, servlet, navpage,
 		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
 	}
 
-	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
-		{items.length === 0 ? 'No results found' : null}
+	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >		
 		{canCreate? <CreateButton type={type} /> : null}
 		{hasFilter? <div className='filter form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' type='search' path={widgetPath} prop='filter'/></div> : null}		
+		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i} 
 				item={item} 
