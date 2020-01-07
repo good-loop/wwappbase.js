@@ -60,12 +60,10 @@ class Column extends DataClass {
 
 /**
  * @param data: {Item[]} each row an item. item.style will set row tr styling
- * 
- * @param rowtree: {}
- * 
- * @param dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
+ *  * 
+ * @param dataObject Deprecated! a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
  * So the columns should use accessors 'key' and 'value'.
- * This is ONLY good for simple 2-column tables OR when used with rowtree.
+ * This is ONLY good for simple 2-column tables!
  * 
  * @param columns: {Column[]|String[]} Can mix String and Column
  * 
@@ -111,7 +109,6 @@ class SimpleTable extends React.Component {
 			hideEmpty,
 			scroller, // if true, use fix col-1 scrollbars
 			showSortButtons=true,
-			rowtree,
 			page=0
 		} = this.props;
 
@@ -196,8 +193,7 @@ class SimpleTable extends React.Component {
 	</thead>
 
 	<tbody>
-		{data && ! rowtree? <Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}		
-		{dataObject && rowtree? <RowTree rowtree={rowtree} dataObject={dataObject} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}
+		{data? <Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} /> : null}		
 
 		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 	</tbody>
@@ -285,36 +281,6 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 	);
 	return $rows;
 };
-
-/**
- * 
- * @param {!string tree} rowtree Describes the row hierarchy -- does not contain item data.. Use withj dataobject
- */
-const RowTree = ({rowtree, dataObject, visibleColumns, dataArray, depth=0}) => {
-	// use dataObject
-	let $rows = [];
-	rowTree2({rowtree, dataObject, visibleColumns, dataArray, depth, $rows});
-	return $rows;
-};
-const rowTree2 = ({rowtree, dataObject, visibleColumns, dataArray, depth, $rows}) => {
-	const rkeys = _.isArray(rowtree)? rowtree : Object.keys(rowtree);
-	rkeys.forEach(rowName => {
-		assMatch(rowName, String);
-		let item = dataObject[rowName];
-		if ( ! item) {
-			return;
-		}
-		let i = item.index || $rows.length;
-		let $row = <Row depth={depth} key={'r'+i} item={item} row={i} columns={visibleColumns} dataArray={dataArray} />;
-		$rows.push($row);
-		// recurse
-		let rowInfo = rowtree[rowName];
-		if (rowInfo) {
-			rowTree2({rowtree:rowInfo, dataObject, visibleColumns, dataArray, depth:depth+1, $rows});			
-		}
-	});
-};
-
 
 // TODO onClick={} sortBy
 const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons, checkboxValues}) => {
