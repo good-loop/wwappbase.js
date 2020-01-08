@@ -14,13 +14,14 @@ class Task extends DataClass {
 	id;
 	oxid;
 	url;
+	created;
 
 	constructor(base) {
 		const item = {
 			id: nonce(),
 			oxid: Login.getId(),
 			url: ""+window.location, // The whole url! Which could pick up misc cookies accidentally (cookie crumbs)
-			// created: new Date(),
+			created: new Date().getTime(),
 			...base // Base comes after defaults so it overrides
 		};
 		// HACK no url on the tasks server itself

@@ -34,7 +34,7 @@ const space = (...strings) => {
 		}
 		js += ' '+s;
 	});
-	return js;
+	return js.trim();
 };
 window.space = space;
 

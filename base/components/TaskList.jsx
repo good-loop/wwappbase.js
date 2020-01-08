@@ -182,9 +182,9 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 	};
 	const ttext = DataStore.getValue(qpath.concat('text'));
 	return (
-		<form className={join('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)} onSubmit={quickTask}>
-			<Misc.PropControl type='text' path={qpath} prop='text' 
-				placeholder={parent? 'Reply' : 'Make a new task'} /> 
+		<form key={'f'} className={join('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)} onSubmit={quickTask}>
+			<PropControl type='text' path={qpath} prop='text' 
+				placeholder={parent? 'Reply / Comment' : 'Make a new task'} /> 
 			&nbsp;
 			<button className='btn btn-primary' disabled={ ! ttext} type='submit'>Add</button>			
 		</form>);

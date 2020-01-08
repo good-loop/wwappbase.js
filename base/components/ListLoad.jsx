@@ -38,6 +38,7 @@ import BS from './BS';
  * 	ListItem only has to describe/present the item
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
  * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).
+ * @param {?String} itemClassName - If set, overrides the standard ListItem btn css classes
  */
 const ListLoad = ({type, status, servlet, navpage, 
 	q,
@@ -45,7 +46,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	filter, hasFilter,
 	ListItem, 
 	checkboxes, canDelete, canCreate, className,
-	notALink}) => 
+	notALink, itemClassName}) => 
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
@@ -128,7 +129,7 @@ const ListLoad = ({type, status, servlet, navpage,
 
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
 		{items.map( (item, i) => (
-			<ListItemWrapper key={getId(item) || i} 
+			<ListItemWrapper key={getId(item) || i}
 				item={item} 
 				type={type} 
 				checkboxes={checkboxes} 
@@ -136,8 +137,9 @@ const ListLoad = ({type, status, servlet, navpage,
 				servlet={servlet}
 				navpage={navpage}
 				notALink={notALink}
+				itemClassName={itemClassName}
 			>
-				<ListItem 
+				<ListItem key={'li'+(getId(item) || i)}
 					type={type} 
 					servlet={servlet} 
 					navpage={navpage} 
@@ -161,7 +163,7 @@ const onPick = ({event, navpage, id, customParams}) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink}) => {
+const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName}) => {
 	const id = getId(item);
 
 	// TODO refactor this Portal specific code out of here.
@@ -179,22 +181,23 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	) : null;
 
 	// use a or div?
-	// ??Is there a nicer way to do this?
-	const A = ({children, ...stuff}) => notALink? <div {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
+	// ??Is there a nicer way to do this?	
 
 	return (
 		<div className='ListItemWrapper clearfix'>
 			{checkbox}
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
-			<A href={itemUrl}
+			<A href={itemUrl} key={'A'+id} id={id} notALink={notALink}
 				onClick={event => onPick({ event, navpage, id, customParams })}
-				className={'ListItem btn btn-'+(BS.version===3?'default':'outline-secondary')+' status-' + item.status}
+				className={itemClassName || ('ListItem btn btn-'+(BS.version===3?'default':'outline-secondary')+' status-' + item.status)}
 			>
-				<div>{children}</div>
+				<div key={'Adiv'+id}>{children}</div>
 			</A>
 		</div>
 	);
 };
+
+const A = ({notALink, id, children, ...stuff}) => notALink? <div key={'Ad'+id} {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
 
 /**
  * These can be clicked or control-clicked
