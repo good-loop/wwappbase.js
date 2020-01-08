@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.17.3'
+VERSION='Version=1.17.4'
 
 ###
+# New in 1.17.4: renamed the sogiveapp service to sogive
 # New in 1.17.3: Removed calstat ical-count.js
 # New in 1.17.2: Added the other media servers to the list
 # New in 1.17.0: Added the 'Media-Server' Project Publishing Params
@@ -395,7 +396,7 @@ case $1 in
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME=('sogiveapp')
+		SERVICE_NAME=('sogive')
 		FRONTEND_SYNC_LIST=("server" "src" "web" "package.json" "webpack.config.js")
 		BACKEND_SYNC_LIST=("data" "lib")
 		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" "data" "lib")
