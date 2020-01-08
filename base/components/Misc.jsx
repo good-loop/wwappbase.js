@@ -293,7 +293,7 @@ Misc.LongDate = ({date, noWeekday}) => {
  */
 Misc.RoughDate = ({date}) => {
 	if (!date) return null;
-	if (_.isString(date)) date = new Date(date);
+	if (_.isString(date) || _.isNumber(date)) date = new Date(date);
 	const now = new Date();
 	 // No, we don't care about leap seconds etc. 86400 seconds per day is fine.
 	const thisYear = now.getFullYear() === date.getFullYear();

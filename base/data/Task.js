@@ -16,6 +16,11 @@ class Task extends DataClass {
 	url;
 	created;
 
+	/**
+	 * @type {Task[]}
+	 */
+	children;
+
 	constructor(base) {
 		const item = {
 			id: nonce(),
@@ -26,13 +31,13 @@ class Task extends DataClass {
 		};
 		// HACK no url on the tasks server itself
 		if (item.url.includes(TASKS_SERVER)) delete item.url;
-		// parent-child? TODO would parent-holds child be better??
-		if (item.parent) {
-			Task.assIsa(item.parent, "Task.js make()");
-		}
 		// TODO @you and #tag
-		super(item);
+		super(item);		
 		Object.assign(this, item);
+		// parent-child
+		if (item.parent) {
+			Task.setParent(this, item.parent);
+		}
 	}
 
 };
@@ -41,6 +46,22 @@ const This = Task;
 export default Task;
 
 const STAGE_CLOSED = 'closed';
+
+/**
+ * Set links in both objects.
+ */
+Task.setParent = (child, parent) => {
+	Task.assIsa(child, "Task.js child not a Task");
+	Task.assIsa(parent, "Task.js parent not a Task");
+	let kids = parent.children || [];
+	// guard against dupes
+	if ( ! kids.find(k => k.id===child.id)) {
+		parent.children = kids.concat(child);
+	}
+	// avoid circular ref, which breaks json
+	delete child.parent;
+	child.parentId = parent.id;
+};
 
 /**
  * It's done! close the task
