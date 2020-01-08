@@ -28,6 +28,7 @@ import BS from './BS';
  * @param {?String} q - Optional query e.g. advertiser-id=pepsi
  * Note: that filter can add to this
  * @param {?String} sort -  Optional sort order, e.g. "start-desc"
+ * @param {?String} filter - Set a filter. Do NOT use this and hasFilter
  * @param {?Boolean} hasFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?String} status - e.g. "Draft"
  * @param {?String} servlet - @deprecated - use navpage instead
@@ -41,7 +42,7 @@ import BS from './BS';
 const ListLoad = ({type, status, servlet, navpage, 
 	q,
 	sort,
-	hasFilter,
+	filter, hasFilter,
 	ListItem, 
 	checkboxes, canDelete, canCreate, className,
 	notALink}) => 
@@ -78,9 +79,11 @@ const ListLoad = ({type, status, servlet, navpage,
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
 	// NB: case-insentive filtering
-	const _filter = hasFilter? DataStore.getValue(widgetPath.concat('filter')) : null;
-	const filter = _filter? _filter.toLowerCase() : null;
-	let q2 = join(q, filter); // pass filter to back-end
+	if (hasFilter) {
+		assert( ! filter, "ListLoad.jsx - Do NOT use filter and hasFilter props");
+		filter = DataStore.getValue(widgetPath.concat('filter'));
+	}	
+	if (filter) filter = filter.toLowerCase(); // normalise
 	
 	// Load via ActionMan -- both filtered and un-filtered
 	let pvItems = ActionMan.list({type, status, q, prefix:filter, sort});
@@ -120,7 +123,9 @@ const ListLoad = ({type, status, servlet, navpage,
 
 	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >		
 		{canCreate? <CreateButton type={type} /> : null}
-		{hasFilter? <div className='filter form-inline'>&nbsp;<label>Filter</label>&nbsp;<PropControl size='sm' type='search' path={widgetPath} prop='filter'/></div> : null}		
+		
+		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}		
+
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i} 

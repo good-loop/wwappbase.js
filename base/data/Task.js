@@ -34,3 +34,20 @@ class Task extends DataClass {
 DataClass.register(Task, 'Task');
 const This = Task;
 export default Task;
+
+const STAGE_CLOSED = 'closed';
+
+/**
+ * It's done! close the task
+ */
+Task.close = task => {
+	task.closed = true;
+	task.stage = STAGE_CLOSED;
+	return task;
+};
+
+Task.open = task => {
+	task.closed = false;
+	task.stage = "open";
+	return task;
+};

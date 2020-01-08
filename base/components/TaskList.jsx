@@ -24,6 +24,8 @@ const taskEditorDialogPath = ['widget','TaskEditorDialog'];
 /**
  * The core "show a task on the side" widget
  * 
+ * TODO replace check box with green tick
+ * 
  * ??swallow clicks??
  */
 const TaskListItem = ({item}) => {
@@ -70,9 +72,13 @@ const TaskListButton = ({bpath, value, list}) => {
  * Recommended: tags = type e.g. Advert, item.id 
  * @param tags {!String[]} Can contain nulls (ignored)
  */
-const setTaskTags = (...tags) => {		
-	tags = tags.filter(t => t);	
-	assMatch(tags, 'String[]', "TaskList.jsx setTaskTags()"); //fails for [] :( TODO fix assMatch
+const setTaskTags = (...tags) => {
+	if (tags.length===1 && _.isArray(tags[0])) {
+		tags = tags[0];
+		console.warn("TaskList.jsx - Wrapped array passed in - Please unwrap if using an array for input into setTaskTags(). Use no-args for no-tags.");
+	}
+	tags = tags.filter(t => t);
+	if (tags.length) assMatch(tags, 'String[]', "TaskList.jsx setTaskTags()"); //fails for [] :( TODO fix assMatch
 	let oldTags = DataStore.getValue(['widget', 'TaskList', 'tags']);
 	if (JSON.stringify(tags) === JSON.stringify(oldTags)) {
 		// no-op

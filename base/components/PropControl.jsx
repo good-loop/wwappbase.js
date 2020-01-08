@@ -2,6 +2,8 @@
  */
 import React from 'react';
 
+// TODO Maybe add support for user-set-this, to separate user-cleared-blanks from initial-blanks
+
 // BE CAREFUL HERE
 // These controls are used in multiple projects, and they have to handle a range of cases.
 
@@ -254,7 +256,7 @@ const PropControl2 = (props) => {
 
 	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
 	if (type === 'yesNo') {
-		return <PropControlYesNo path={path} prop={prop} value={value} inline={inline} saveFn={saveFn} />
+		return <PropControlYesNo path={path} prop={prop} value={value} inline={inline} saveFn={saveFn} className={props.className} />
 	}
 
 	if (value===undefined) value = '';
@@ -643,7 +645,7 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
  * 
  * @param value {?Boolean}
  */
-const PropControlYesNo = ({path, prop, value, saveFn}) => {
+const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 	// NB: try to spot bad code/values -- beware of truthy/falsy here
 	if (value && ! _.isBoolean(value)) {
 		console.error("PropControlYesNo - value not a proper boolean!", prop, value);
@@ -667,10 +669,11 @@ const PropControlYesNo = ({path, prop, value, saveFn}) => {
 	const noChecked = value===false;
 	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
 	return (
-		<div className='form-group'>
+		<>&nbsp;<div className={join('form-group form-inline',className)}>
 			<BS.Radio value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
+			&nbsp;
 			<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
-		</div>
+		</div></>
 	);
 };
 
