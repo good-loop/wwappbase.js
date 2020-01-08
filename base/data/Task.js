@@ -6,6 +6,8 @@ import {assert, assMatch} from 'sjtest';
 import DataClass, {getType, nonce} from './DataClass';
 import C from '../CBase';
 
+const TASKS_SERVER = "calstat.good-loop.com";
+
 /** impact utils */
 class Task extends DataClass {
 
@@ -21,6 +23,8 @@ class Task extends DataClass {
 			// created: new Date(),
 			...base // Base comes after defaults so it overrides
 		};
+		// HACK no url on the tasks server itself
+		if (item.url.includes(TASKS_SERVER)) delete item.url;
 		// parent-child? TODO would parent-holds child be better??
 		if (item.parent) {
 			Task.assIsa(item.parent, "Task.js make()");
