@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.17.2'
+VERSION='Version=1.17.3'
 
 ###
+# New in 1.17.3: Removed calstat ical-count.js
 # New in 1.17.2: Added the other media servers to the list
 # New in 1.17.0: Added the 'Media-Server' Project Publishing Params
 # New in 1.16.2-3: added 'web-apps' directory to the list of directories to sync during an adserver publish
@@ -217,9 +218,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('calstat')
-		FRONTEND_SYNC_LIST=("config" "src" "web" "ical-count.js" "package.json" "webpack.config.js")
+		FRONTEND_SYNC_LIST=("config" "src" "web" "package.json" "webpack.config.js")
 		BACKEND_SYNC_LIST=("lib")
-		WHOLE_SYNC=("config" "src" "web" "ical-count.js" "package.json" "webpack.config.js" "lib")
+		WHOLE_SYNC=("config" "src" "web" "package.json" "webpack.config.js" "lib")
 	;;
 	egbot|EGBOT)
 		PROJECT='egbot'
