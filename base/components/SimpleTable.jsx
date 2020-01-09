@@ -113,7 +113,8 @@ class SimpleTable extends React.Component {
 			hideEmpty,
 			scroller, // if true, use fix col-1 scrollbars
 			showSortButtons=true,
-			page=0
+			page=0,
+			rowtree
 		} = this.props;
 
 		const checkboxValues = this.state && this.state.checkboxValues;
@@ -573,7 +574,8 @@ const DeselectedCheckboxes = ({columns, checkboxValues, table}) => {
 				if(checkboxValues[headerKeyString] === false) {
 					return (
 						<div key={'deselectedColumn'+headerKeyString} className='deselectedColumn' style={{display: 'inline-block', cursor: 'pointer', margin: '15px'}}
-							 onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}>
+							onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}
+						>
 							<Misc.Icon glyph='plus' />
 							{headerKeyString}
 						</div>
