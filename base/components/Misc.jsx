@@ -472,6 +472,11 @@ Misc.SavePublishDiscard = ({
 	// merge discard / unpublish / delete into one button with a dropdown of options??
 	// merge save / saveAs into one button with a dropdown of options?
 
+	const confirmSaveAs = () => {
+		const confirmed = window.confirm('Save changes onto a new advert?');
+		if (confirmed) ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null });
+	}
+
 	return (
 		<div className='SavePublishDiscard' title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
@@ -481,7 +486,7 @@ Misc.SavePublishDiscard = ({
 			{saveAs? <><span>&nbsp;</span>
 				<BS.Button name="save-as" color='default' disabled={isSaving} 
 					title='Copy and save with a new ID'
-					onClick={() => ActionMan.saveAs({type, id, onChange: _.isFunction(saveAs)? saveAs : null})} >
+					onClick={confirmSaveAs} >
 					<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
 				</BS.Button></>
 			: null}
