@@ -5,26 +5,33 @@ NOT included by default (yet) */
 
 h1, .h1 {
 	color: @gl-red;
-	text-align: center;	
+	text-align: center;
 	width:100%;
 }
-//	side lines for h1
-.sideline {
+
+// Using flex to allow the sidelines to fill remaining space but not overflow
+h1:not(.subtitle), .h1:not(.subtitle) {
+	display: flex;
+	display: -webkit-flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+}
+
+// side lines for h1
+.sideline() {
 	background: #333;
-	content: " ";
-	display: inline-block;
+	content: "";
+	display: block;
 	height: 1px;
-	width: 20%;
-	zoom: 1;
-	margin-left: 20px;
-	margin-right: 20px;
-	vertical-align: middle;
+	margin: 0 1em; // horizontal separation from text & edges
+	flex-grow: 1;
+	min-width: 5%; // make room to always show
 }
-h1:not(.subtitle)::before {
-	.sideline();
-}
-h1:not(.subtitle)::after {
-	.sideline();
+h1:not(.subtitle) {
+	&:before, &:after {
+		.sideline();
+	}
 }
 
 h1.subtitle {
