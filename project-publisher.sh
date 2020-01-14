@@ -250,7 +250,7 @@ case $1 in
 		;;
 	lg|LG|datalog|DATALOG|datalogger|DATALOGGER)
 		PROJECT='datalogger'
-		PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
+		PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh datalognode-01.good-loop.com)
 		TEST_SERVERS=(hugh.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
