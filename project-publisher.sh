@@ -1,8 +1,9 @@
 #!/bin/bash
 
-VERSION='Version=1.17.4'
+VERSION='Version=1.17.5'
 
 ###
+# New in 1.17.5: changed the dir where sogive automated tests are called from
 # New in 1.17.4: renamed the sogiveapp service to sogive
 # New in 1.17.3: Removed calstat ical-count.js
 # New in 1.17.2: Added the other media servers to the list
@@ -943,7 +944,7 @@ function run_automated_tests {
 		printf "\nRunning Automated Tests for $PROJECTNAME on the $2 site"
 		case $PROJECT in
 			sogive-app)
-				cd $PROJECT_LOCATION/puppeteer-tests
+				cd $PROJECT_LOCATION
 				bash run-tests.sh $TYPE_OF_PUBLISH
 			;;
 			portal)
