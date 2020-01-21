@@ -74,18 +74,40 @@ class DataClass {
 	static isa(obj) {
 		if ( ! _.isObject(obj) || _.isArray(obj)) return false;
 		// console.warn(this, this.name);
-		let typ = this;
+		const typ = this;
 		const sotyp = getType(obj);
 		if ( ! sotyp) return false;
 		// NB: the .name test can fail 'cos production Babel renames classes. Also its redundant if register() was called. But just to be safe.
 		if (sotyp === typ._name || sotyp === typ.name) return true;
-		let otyp = getClass(sotyp);
+		const otyp = getClass(sotyp);
 		return isa2(otyp, typ);
 	}
 
+	/**
+	 * @param {!DataClass} obj 
+	 * @param {?string} msg 
+	 * @returns {boolean} true
+	 */
 	static assIsa(obj, msg) {
 		assert(this.isa(obj), (msg||'')+" "+this.name+" expected, but got "+JSON.stringify(obj));
 		return true;
+	}
+
+	/**
+	 * Like assIsa(), but only throws an error if the type is set and wrong. So duck-typing is fine.
+	 * Use-case: a cautious type check. Prefer assIsa() when possible.
+	 * 
+	 * @param {!Object} obj 
+	 * @param {?string} msg 
+	 */
+	static checkIsa(obj, msg) {
+		if (this.isa(obj)) return true;
+		const typ = this;
+		const sotyp = getType(obj);
+		if (sotyp && this._name && sotyp !== this._name) {
+			throw new Error("Wrong class: "+(msg||'')+" "+this._name+" expected, but got "+sotyp+" from "+JSON.stringify(obj));
+		}
+		return null; // dunno
 	}
 
 	/**
@@ -100,6 +122,28 @@ class DataClass {
 	static getName(obj) {
 		return obj.name;
 	}	
+
+	/**
+	 * Initialise a list to []. Remove any falsy values (updating item if there were any).
+	 * NB: handles a bug seen in SoGive, Jan 2020
+	 * @param {!Object} item 
+	 * @param {!string} fieldName 
+	 * @returns {!Object[]} item.fieldName, can be empty, never null
+	 */
+	static safeList(item, fieldName)	{
+		let list = item[fieldName];
+		if ( ! list) {
+			item[fieldName] = [];
+			return item[fieldName];
+		}
+		// remove any nulls / falsy (bug seen in SoGive Jan 2020)
+		if (list.findIndex(x => ! x) !== -1) {
+			list = list.filter(x => x);
+			item[fieldName] = list;
+		}
+		return list;
+	}
+
 
 	toString() {
 		const klass = getClass(this);
