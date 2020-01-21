@@ -945,7 +945,7 @@ function run_automated_tests {
 		case $PROJECT in
 			sogive-app)
 				cd $PROJECT_LOCATION
-				bash run-tests.sh $TYPE_OF_PUBLISH
+				npm run test $TYPE_OF_PUBLISH
 			;;
 			portal)
 				cd $PROJECT_LOCATION/puppeteer-tests
