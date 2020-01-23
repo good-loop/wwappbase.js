@@ -1,93 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=1.17.5'
-
-###
-# New in 1.17.5: changed the dir where sogive automated tests are called from
-# New in 1.17.4: renamed the sogiveapp service to sogive
-# New in 1.17.3: Removed calstat ical-count.js
-# New in 1.17.2: Added the other media servers to the list
-# New in 1.17.0: Added the 'Media-Server' Project Publishing Params
-# New in 1.16.2-3: added 'web-apps' directory to the list of directories to sync during an adserver publish
-# New in 1.16.1: Enabled the sogive-app to update the version.properties file
-# New in 1.16.0: Moneyscript is now a publishable project
-# New in 1.15.7: changed the portal npm command to 'npm run compile'
-# New in 1.15.6: Portal project now is told to webpack via 'npm run build' command
-# New in 1.15.5: Made it so that Adserver publishing now targets one LESS file instead of an entire directory
-#					Also, the syncing process will now ignore any directory called 'node_modules'.
-# New in 1.15.4: Moved the task of starting the project-process lower in the order of operations
-# New in 1.15.3: If publishing adserver [frontend|everything] then webpacking of the preact bundles takes place
-# New in 1.15.2: Made webpacking the last step in publishing, so as to not overwrite a bundle.js with a locally generated one.
-# New in 1.15.1: Fixed a loop-break if a fourth argument is not given. Fixed a post-publishing task for adserver publishes
-# New in 1.15.0: Added ability to specify publishing of the frontend/backend/everything
-# New in 1.14.0: LESS conversion now happening for preact adunits.
-# New in 1.13.8: I feel the need for speed: Option to compile less less. Option to not run puppeteer tests.
-# New in 1.13.7: Trying to preserve log.properties on adservers
-# New in 1.13.6: Solving needs for Preact
-# New in 1.13.5: Adding new adserver to the production cluster
-# New in 1.13.4: Allows for syncing the preact-unit directory, and adding NPM and webpacking for the preact-unit
-# New in 1.13.3: Ensuring that the directory 'web-iframe' is sync'ed to heppner on a production adserver publish task
-# New in 1.13.2: Fixed the location of the less files for sogive
-# New in 1.13.1: Ensuring that there are no zombie JARs that are synced to a server during a publish
-# New in 1.13.0: Allowing for remaps of the $PROJECT_LOCATION variable if the project is being published by TeamCity
-# New in 1.12.1: Fixed the minify_css function
-# New in 1.12.0: Added new function: 'minify_css'.  made my-loop images optimised.
-# New in 1.11.2: Added a line which copies a properties file, allowing gl-es-01 to run the BAOSE service
-# New in 1.11.1: Switched the target of the BAOSE microservice from gl-es-03 to gl-es-01
-# New in 1.11.0: New Project Param, 'POST_PUBLISHING_TASK' can be set and defined
-# New in 1.10.0: Created the ability to stop and start more than one service per each project.
-# New in 1.9.14: Ensured that variants get sync'ed to the production portal
-# New in 1.9.13: Fixed a 'duh' error of putting in a FQDN instead of an abriged one
-# New in 1.9.12: Made gl-es-03 the production profiler server, and hugh the test server
-# New in 1.9.11: Patched in Roscoe's changes needed to compile new JS units
-# New in 1.9.10: I realised that my.good-loop.com AND testmy.good-loop.com must have the same CDN for image-serving.
-# New in 1.9.9 : Added sandrock to the my-loop production servers.  the lg cluster will be used as a CDN. Sandrock will serve all non-image assets
-# New in 1.9.8 : My-Loop's production servers are gl-es-03, gl-es-04, gl-es-05
-# New in 1.9.7 : Made the correct '.properties' file get renamed for the correct target server during sogive publishing
-# New in 1.9.6 : double brackets for some bash's
-# New in 1.9.5 : Added 'web-iframe' directory to the list of sync'ed items during an adserver publish process.
-# New in 1.9.4 : fixed a typo
-# New in 1.9.3 : Configured the sogiveapp syncing of the config (.properties) files so that the production server always gets the correct
-#					file synced to it and renamed to an appropriate name.
-# New in 1.9.2 : Added 'egbot' to the list of supported projects. This is a superficial change to this script.
-# New in 1.9.1 : Added the ability to specify "experiment" as a second argument for the datalog project.
-# New in 1.9.0 : Added the ability to specify "experiment" as a second argument for adserver and portal projects.
-# New in 1.8.1 : Added "lib" dir to sync for the egbot project.
-# New in 1.8.0 : Added "egbot" as a project that can be published.
-# New in 1.7.0 : Added 'Calstat' as a project that can be published.  Alphabetised available projects so that they are more easily found
-#					and edited by a human.
-# New in 1.6.0 : Changed the Automated-Testing project-name matching to a case->esac loop. And added automated testing for the portal project.
-# New in 1.5.6 : Added names 'lg' and 'LG' as aliases for the datalogger publish.
-# New in 1.5.5 : Amended the list of needed items for a successful youagain server sync
-# New in 1.5.4 : Added 'hugh.soda.sh' as a test server for the youagain project/product
-# New in 1.5.3 : Fixed the way in which dboptions.properties files are sync'ed to targets, and renamed properly
-# New in 1.5.2 : Fixed the 'LESS_FILES_LOCATION' directory for the portal publishing process.
-# New in 1.5.1 : Added the directories 'web' and 'web-portal' to the portal syncing process.
-# New in 1.5.0 : Added new variable "CSS_OUTPUT_LOCATION" which lets individual project specify where converted LESS files should be put before syncing.
-# New in 1.4.14 : Found and fixed a bad output path where the all.css file was being created when compiling adunits.
-# New in 1.4.13 : Preserved a youagain config file
-# New in 1.4.12 : Added more items to sync for the profiler project
-# New in 1.4.11 : Added webpacking to the publishing process of the profiler project
-# New in 1.4.10 : Changed the checking of 'config-files-to-sync' from 'if' loops to 'case' checks.  Added syncing of properties files
-#					when the portal is being published.  As new portal functions require emails to be sent.
-# New in 1.4.9 : Fixed the preservation functions so that they actually work as intended.  Trust me, it was harder than it sounds.
-# New in 1.4.8 : Added two new functions which allow for the preservation of files/directories throughout publishing tasks. This is useful
-#				For projects which have an 'upload' feature, allowing users to upload files to be used in the frontend.
-# New in 1.3.8 : Added a safety feature which cleans out the tmp-lib directory after a publish. This makes it so that there are not leftover
-#				JAR files living and lurking in tmp-lib, and this means that each publish is performed cleanly and all JARs that are sync'ed
-#				Have been deemed necessary by the Java side of the publishing process.				
-# New in 1.2.8 : Fixed a check for a directory syntax
-# New in 1.2.7 : Changed the way in which JARs are moved from tmp-lib to a 'lib' directory.  Old style was destructive, new style is addative
-###
-
-#####
-## Versioning number/serialisation schema:
-##
-## First Digit = Major rewrite/overhaul/feature added. The script will be super distinguished against previous versions
-## Second Digit = New Project Added to Script // New Syncing/Processing Parameter added
-## Third Digit = Minor Edit -- Spelling mistakes, pretty-printing progress to terminal, fixing extra backslashes, New help text, fixing small bugs, etc.
-#####
-
+VERSION='Version=2.0.0'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -130,23 +43,8 @@ if [[ $(which npm) = "" ]]; then
 	exit 1
 fi
 
-if [[ $(which babel) = "" ]]; then
-	printf "\nYou must install babel globally before you can use this tool\nInstall with 'sudo npm install -g babel-cli'"
-	exit 1
-fi
-
-if [[ $(which babili) = "" ]]; then
-	printf "\nYou must install babili globally before you can use this tool\nInstall with 'sudo npm install -g babili'"
-	exit 1
-fi
-
 if [[ $(which jshint) = "" ]]; then
 	printf "\nIn order to test the JS files before Babeling, you must have JShint installed on your machine\nInstall jshint with 'sudo npm install -g jshint'"
-	exit 1
-fi
-
-if [[ $(which parallel-ssh) = "" ]]; then
-	printf "\nIn order to use this publishing script, you will need Parallel-SSH installed on your machine\ninstall Parallel-SSH with 'sudo apt-get install pssh'"
 	exit 1
 fi
 
@@ -162,10 +60,113 @@ fi
 SUPPORTED_PROJECTS=('adserver','calstat','datalogger','egbot','media','moneyscript','myloop','portal','profiler','sogive','youagain')
 USAGE=$(printf "\n./project-publisher.sh PROJECTNAME TEST/PRODUCTION frontend|backend|everything ?notests\n\nAvailable Projects\n\n\t$SUPPORTED_PROJECTS\n")
 #SYNC_LIST=()
-PSYNC='parallel-rsync -h /tmp/target.list.txt --user=winterwell --recursive -x -L -x -P -x -h -x --delete-before'
-PSSH='parallel-ssh -t 100000000 -h /tmp/target.list.txt --user=winterwell'
 DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 
+# Batch SSH = bssh
+function bssh {
+	for server in ${TARGETS[@]}; do
+		ssh $server $1
+	done
+}
+
+
+# Define function to handle rsync error codes and error counts
+RSYNC_ERROR_COUNT='0'
+function handle_rsync_exit_code {
+    RETVAL=$?
+    case $RETVAL in
+        0)
+        printf "\n\tSuccessfully synced $sync_item to $server\n"
+        ;;
+        1)
+        printf "\n\tRsync reported a Syntax or Usage error when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        2)
+        printf "\n\tRsync reports that there is a Protocol incompatibility when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        3)
+        printf "\n\tRsync reports that there were errors while selecting either the input or output files/dir when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        4)
+        printf "\n\tRsync reports that the requested action was not supported when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        5)
+        printf "\n\tRsync encountered an error starting the client-server protocol when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        6)
+        printf "\n\tDaemon unable to append to log-file when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        10)
+        printf "\n\tRsync reports that there was an error in socket I/O when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        11)
+        printf "\n\tRsync reports that there was an error in the file's I/O when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        12)
+        printf "\n\tRsync had an error in the protocol data stream when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        13)
+        printf "\n\tRsync had and error with program diagnostics when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        14)
+        printf "\n\tRsync had an error in IPC code when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        20)
+        printf "\n\tRsync received SIGUSR1 or SIGINT  -- probably from you, or a root user when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        21)
+        printf "\n\tRsync received some error returned by waitpid() when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        22)
+        printf "\n\tRsync encountered an error allocating core memory buffers when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        23)
+        printf "\n\tRsync only could perform a partial transfer because of an unknown error when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        24)
+        printf "\n\tRsync could only partially transfer some files because the source files/dir changed during transfer when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        30)
+        printf "\n\tRsync timed-out in data send/receive when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        35)
+        printf "\n\tRsync timed-out waiting for the daemon to connect when trying to sync $sync_item to $server\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+        ;;
+        255)
+        printf "\n\tRsync threw out a 255 error, which usually means that you do not have automatic SSH access to $server without the need for human intervention,\n\t\tPlease manually SSH into $server and ensure that you can do so without any problem\n"
+        RSYNC_ERROR_COUNT=$((RSYNC_ERROR_COUNT+1))
+    esac
+}
+
+
+# Batch Rsync = brsync
+function brsync {
+	for sync_item in ${SYNC_LIST[@]}; do
+		for server in ${TARGETS[@]}; do
+			rsync -rhP --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ &
+		done
+	wait
+	handle_rsync_exit_code
+	done
+}
 
 ##################
 ### Preamble: Check that this script is executed correctly
@@ -528,18 +529,16 @@ case $4 in
 esac
 
 #####################
-### Section 04: Create the list of target servers, and create the list of excluded items that should be preserved
+### Section 04: Create the list of items that should be preserved
 #####################
-function create_target_list {
-	if [[ -f /tmp/target.list.txt ]]; then
-		rm /tmp/target.list.txt
+function create_preserved_items_list {
+	if [[ -f /tmp/preserved.list.txt ]]; then
+		rm /tmp/preserved.list.txt
 	fi
-	printf '%s\n' ${TARGETS[@]} >> /tmp/target.list.txt
-
-	if [[ -f /tmp/exclude.list.txt ]]; then
-		rm /tmp/exclude.list.txt
+	if [[ ${#PRESERVE[@]} -ne 0 ]]; then
+		printf "\nCreating list of items to preserve\n"
+		printf '%s\n' ${PRESERVE[@]} >> /tmp/preserved.list.txt
 	fi
-	printf '%s\n' ${PRESERVE[@]} >> /tmp/exclude.list.txt
 }
 
 
@@ -738,23 +737,23 @@ function image_optimisation {
 function webpack {
 	if [[ $WEBPACK = yes ]]; then
 		printf "\nGetting NPM Dependencies ..."
-		$PSSH "cd $TARGET_DIRECTORY && npm i"
+		bssh "cd $TARGET_DIRECTORY && npm i"
 		printf "\nWebpacking ..."
 		case $PROJECT in
 			portal)
-				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
+				bssh "cd $TARGET_DIRECTORY && npm run compile"
 			;;
 			myloop)
-				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
+				bssh "cd $TARGET_DIRECTORY && npm run compile"
 			;;
 			moneyscript)
-				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
+				bssh "cd $TARGET_DIRECTORY && npm run compile"
 			;;
 			sogive-app)
-				$PSSH "cd $TARGET_DIRECTORY && npm run compile"
+				bssh "cd $TARGET_DIRECTORY && npm run compile"
 			;;
 			*)
-				$PSSH "cd $TARGET_DIRECTORY && webpack --progress -p"
+				bssh "cd $TARGET_DIRECTORY && webpack --progress -p"
 			;;
 		esac
 	fi
@@ -768,17 +767,17 @@ function stop_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
 		for service in ${SERVICE_NAME[@]}; do
 			printf "\nStopping $SERVICE_NAME on $TARGETS\n"
-			$PSSH "sudo service $SERVICE_NAME stop"
+			bssh "sudo service $SERVICE_NAME stop"
 		done
 	fi
 }
 
-# Start the (probably Java) service, which is defined ??where??
+# Start the $SERVICE_NAME
 function start_proc {
 	if [[ $RESTART_SERVICE_AFTER_SYNC = 'yes' ]]; then
 		for service in ${SERVICE_NAME[@]}; do
 			printf "\nStarting $SERVICE_NAME on $TARGETS\n"
-			$PSSH "sudo service $SERVICE_NAME start"
+			bssh "sudo service $SERVICE_NAME start"
 		done
 	fi
 }
@@ -799,7 +798,7 @@ function convert_less_files {
 		fi
 		case $PROJECT in
 			adserver)
-				$PSSH "cd $PROJECT_LOCATION/adunit && bash buildcss.sh"
+				bssh "cd $PROJECT_LOCATION/adunit && bash buildcss.sh"
 			;;
 			*)
 				if [ ! "$LESS_FILES" ]; then 
@@ -844,10 +843,13 @@ function sync_configs {
 			$GIT_SHORTHAND reset --hard FETCH_HEAD
 			for config in $(find /home/$USER/winterwell/logins/good-loop/adserver/ -iname "*"); do
 				printf "\nsyncing file : $config\n"
-				$PSYNC $config $TARGET_DIRECTORY/config/
+				for server in ${TARGETS[@]}; do
+					rsync $config winterwell@$server:$TARGET_DIRECTORY/config/ &
+				wait
+				done
 			done
 			printf "\nRenaming dboptions.properties file for specific servers\n"
-#			$PSSH "mv $TARGET_DIRECTORY/config/$HOSTNAME.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
+#			bssh "mv $TARGET_DIRECTORY/config/$HOSTNAME.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
 			for server in ${TARGETS[@]}; do
 				ssh winterwell@$server "mv $TARGET_DIRECTORY/config/$server.dboptions.properties $TARGET_DIRECTORY/config/dboptions.properties"
 			done
@@ -860,16 +862,18 @@ function sync_configs {
 			printf "\nSyncing Config Files ...\n"
 			for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
 				printf "\nSyncing $config file ...\n"
-				$PSYNC $config $TARGET_DIRECTORY/config/
+				for server in ${TARGETS[@]}; do
+					rsync $config winterwell@$server:/$TARGET_DIRECTORY/config/
+				done
 			done
 			case $TYPE_OF_PUBLISH in
 			production)
 				printf "\nRenaming production config file\n"
-				$PSSH 'mv /home/winterwell/sogive-app/config/production.sogive.properties /home/winterwell/sogive-app/config/sogive.properties'
+				bssh 'mv /home/winterwell/sogive-app/config/production.sogive.properties /home/winterwell/sogive-app/config/sogive.properties'
 			;;
 			test)
 				printf "\nRenaming production config file\n"
-				$PSSH 'mv /home/winterwell/sogive-app/config/test.sogive.properties /home/winterwell/sogive-app/config/sogive.properties'
+				bssh 'mv /home/winterwell/sogive-app/config/test.sogive.properties /home/winterwell/sogive-app/config/sogive.properties'
 			;;
 			esac
 		;;
@@ -920,17 +924,12 @@ function sync_project {
 	for item in ${SYNC_LIST[@]}; do
 		if [[ $item = 'lib' ]]; then
 			move_items_to_lib
-			printf "\nSyncing JAR Files ...\n"
-			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
 		elif
 			[[ $item = 'node_modules' ]]; then
 			continue
-		else
-			printf "\nSyncing $item ...\n"
-#			echo "	cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY" 
-			cd $PROJECT_LOCATION && $PSYNC $item $TARGET_DIRECTORY
 		fi
 	done
+	cd $PROJECT_LOCATION && brsync
 }
 
 
@@ -973,15 +972,15 @@ function clean_tmp_lib {
 function preserve_items {
 	for item in ${PRESERVE[@]}; do
 		printf "\nPreserving $item\n"
-		$PSSH "if [[ -d /tmp/$item ]]; then continue; else mkdir -p /tmp/$item; fi"
-		$PSSH "cd $TARGET_DIRECTORY && rsync -rRhP $item /tmp"
+		bssh "if [[ -d /tmp/$item ]]; then continue; else mkdir -p /tmp/$item; fi"
+		bssh "cd $TARGET_DIRECTORY && rsync -rRhP $item /tmp"
 	done
 }
 
 function restore_preserved {
 	for item in ${PRESERVE[@]}; do
 		printf "\nRestoring $item\n"
-		$PSSH "cd /tmp && rsync -rRhP $item $TARGET_DIRECTORY/"
+		bssh "cd /tmp && rsync -rRhP $item $TARGET_DIRECTORY/"
 	done
 }
 
@@ -997,7 +996,7 @@ function run_post_publish_tasks {
 			portal)
 				case $TYPE_OF_PUBLISH in
 					test)
-						$PSSH "sudo service baose restart"
+						bssh "sudo service baose restart"
 					;;
 					production)
 						rsync $PROJECT_LOCATION/lib/* winterwell@gl-es-01.soda.sh:/home/winterwell/as.good-loop.com/lib/
@@ -1005,7 +1004,7 @@ function run_post_publish_tasks {
 						ssh winterwell@gl-es-03.soda.sh "sudo service baose restart"
 					;;
 					experiment)
-						$PSSH "sudo service baose restart"
+						bssh "sudo service baose restart"
 					;;
 				esac
 			;;
@@ -1013,19 +1012,19 @@ function run_post_publish_tasks {
 				case $SPECIFIC_PUBLISH_GOAL in
 					frontend)
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
+						bssh "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
+						bssh "cd $TARGET_DIRECTORY/adunit && npm run build"
 						printf "\n\tConverting LESS for the Ad Unit\n"
-						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
+						bssh "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
 					everything)
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && npm i"
+						bssh "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						$PSSH "cd $TARGET_DIRECTORY/adunit && npm run build"
+						bssh "cd $TARGET_DIRECTORY/adunit && npm run build"
 						printf "\n\tConverting LESS for the Ad Unit\n"
-						$PSSH "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
+						bssh "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
 					backend)
 						printf "\n"
@@ -1033,7 +1032,9 @@ function run_post_publish_tasks {
 				esac
 			;;
 			sogive-app)
-				$PSYNC $PROJECT_LOCATION/config/version.properties $TARGET_DIRECTORY/config/
+				for server in ${TARGETS[@]}; do
+					rsync $PROJECT_LOCATION/config/version.properties winterwell@$server:$TARGET_DIRECTORY/config/
+				done
 			;;
 		esac
 	fi
@@ -1053,8 +1054,7 @@ function minify_css {
 ##########################################
 ### Section 19: Performing the Actual Publish
 ##########################################
-printf "\nCreating Target List\n"
-create_target_list
+create_preserved_items_list
 stop_proc
 preserve_items
 case $SPECIFIC_PUBLISH_GOAL in

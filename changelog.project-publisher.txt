@@ -1,0 +1,85 @@
+#####
+## Versioning number/serialisation schema:
+##
+## First Digit = Major rewrite/overhaul/feature added. The script will be super distinguished against previous versions
+## Second Digit = New Project Added to Script // New Syncing/Processing Parameter added
+## Third Digit = Minor Edit -- Spelling mistakes, pretty-printing progress to terminal, fixing extra backslashes, New help text, fixing small bugs, etc.
+#####
+
+###
+# New in 1.17.5: changed the dir where sogive automated tests are called from
+# New in 1.17.4: renamed the sogiveapp service to sogive
+# New in 1.17.3: Removed calstat ical-count.js
+# New in 1.17.2: Added the other media servers to the list
+# New in 1.17.0: Added the 'Media-Server' Project Publishing Params
+# New in 1.16.2-3: added 'web-apps' directory to the list of directories to sync during an adserver publish
+# New in 1.16.1: Enabled the sogive-app to update the version.properties file
+# New in 1.16.0: Moneyscript is now a publishable project
+# New in 1.15.7: changed the portal npm command to 'npm run compile'
+# New in 1.15.6: Portal project now is told to webpack via 'npm run build' command
+# New in 1.15.5: Made it so that Adserver publishing now targets one LESS file instead of an entire directory
+#					Also, the syncing process will now ignore any directory called 'node_modules'.
+# New in 1.15.4: Moved the task of starting the project-process lower in the order of operations
+# New in 1.15.3: If publishing adserver [frontend|everything] then webpacking of the preact bundles takes place
+# New in 1.15.2: Made webpacking the last step in publishing, so as to not overwrite a bundle.js with a locally generated one.
+# New in 1.15.1: Fixed a loop-break if a fourth argument is not given. Fixed a post-publishing task for adserver publishes
+# New in 1.15.0: Added ability to specify publishing of the frontend/backend/everything
+# New in 1.14.0: LESS conversion now happening for preact adunits.
+# New in 1.13.8: I feel the need for speed: Option to compile less less. Option to not run puppeteer tests.
+# New in 1.13.7: Trying to preserve log.properties on adservers
+# New in 1.13.6: Solving needs for Preact
+# New in 1.13.5: Adding new adserver to the production cluster
+# New in 1.13.4: Allows for syncing the preact-unit directory, and adding NPM and webpacking for the preact-unit
+# New in 1.13.3: Ensuring that the directory 'web-iframe' is sync'ed to heppner on a production adserver publish task
+# New in 1.13.2: Fixed the location of the less files for sogive
+# New in 1.13.1: Ensuring that there are no zombie JARs that are synced to a server during a publish
+# New in 1.13.0: Allowing for remaps of the $PROJECT_LOCATION variable if the project is being published by TeamCity
+# New in 1.12.1: Fixed the minify_css function
+# New in 1.12.0: Added new function: 'minify_css'.  made my-loop images optimised.
+# New in 1.11.2: Added a line which copies a properties file, allowing gl-es-01 to run the BAOSE service
+# New in 1.11.1: Switched the target of the BAOSE microservice from gl-es-03 to gl-es-01
+# New in 1.11.0: New Project Param, 'POST_PUBLISHING_TASK' can be set and defined
+# New in 1.10.0: Created the ability to stop and start more than one service per each project.
+# New in 1.9.14: Ensured that variants get sync'ed to the production portal
+# New in 1.9.13: Fixed a 'duh' error of putting in a FQDN instead of an abriged one
+# New in 1.9.12: Made gl-es-03 the production profiler server, and hugh the test server
+# New in 1.9.11: Patched in Roscoe's changes needed to compile new JS units
+# New in 1.9.10: I realised that my.good-loop.com AND testmy.good-loop.com must have the same CDN for image-serving.
+# New in 1.9.9 : Added sandrock to the my-loop production servers.  the lg cluster will be used as a CDN. Sandrock will serve all non-image assets
+# New in 1.9.8 : My-Loop's production servers are gl-es-03, gl-es-04, gl-es-05
+# New in 1.9.7 : Made the correct '.properties' file get renamed for the correct target server during sogive publishing
+# New in 1.9.6 : double brackets for some bash's
+# New in 1.9.5 : Added 'web-iframe' directory to the list of sync'ed items during an adserver publish process.
+# New in 1.9.4 : fixed a typo
+# New in 1.9.3 : Configured the sogiveapp syncing of the config (.properties) files so that the production server always gets the correct
+#					file synced to it and renamed to an appropriate name.
+# New in 1.9.2 : Added 'egbot' to the list of supported projects. This is a superficial change to this script.
+# New in 1.9.1 : Added the ability to specify "experiment" as a second argument for the datalog project.
+# New in 1.9.0 : Added the ability to specify "experiment" as a second argument for adserver and portal projects.
+# New in 1.8.1 : Added "lib" dir to sync for the egbot project.
+# New in 1.8.0 : Added "egbot" as a project that can be published.
+# New in 1.7.0 : Added 'Calstat' as a project that can be published.  Alphabetised available projects so that they are more easily found
+#					and edited by a human.
+# New in 1.6.0 : Changed the Automated-Testing project-name matching to a case->esac loop. And added automated testing for the portal project.
+# New in 1.5.6 : Added names 'lg' and 'LG' as aliases for the datalogger publish.
+# New in 1.5.5 : Amended the list of needed items for a successful youagain server sync
+# New in 1.5.4 : Added 'hugh.soda.sh' as a test server for the youagain project/product
+# New in 1.5.3 : Fixed the way in which dboptions.properties files are sync'ed to targets, and renamed properly
+# New in 1.5.2 : Fixed the 'LESS_FILES_LOCATION' directory for the portal publishing process.
+# New in 1.5.1 : Added the directories 'web' and 'web-portal' to the portal syncing process.
+# New in 1.5.0 : Added new variable "CSS_OUTPUT_LOCATION" which lets individual project specify where converted LESS files should be put before syncing.
+# New in 1.4.14 : Found and fixed a bad output path where the all.css file was being created when compiling adunits.
+# New in 1.4.13 : Preserved a youagain config file
+# New in 1.4.12 : Added more items to sync for the profiler project
+# New in 1.4.11 : Added webpacking to the publishing process of the profiler project
+# New in 1.4.10 : Changed the checking of 'config-files-to-sync' from 'if' loops to 'case' checks.  Added syncing of properties files
+#					when the portal is being published.  As new portal functions require emails to be sent.
+# New in 1.4.9 : Fixed the preservation functions so that they actually work as intended.  Trust me, it was harder than it sounds.
+# New in 1.4.8 : Added two new functions which allow for the preservation of files/directories throughout publishing tasks. This is useful
+#				For projects which have an 'upload' feature, allowing users to upload files to be used in the frontend.
+# New in 1.3.8 : Added a safety feature which cleans out the tmp-lib directory after a publish. This makes it so that there are not leftover
+#				JAR files living and lurking in tmp-lib, and this means that each publish is performed cleanly and all JARs that are sync'ed
+#				Have been deemed necessary by the Java side of the publishing process.				
+# New in 1.2.8 : Fixed a check for a directory syntax
+# New in 1.2.7 : Changed the way in which JARs are moved from tmp-lib to a 'lib' directory.  Old style was destructive, new style is addative
+###
