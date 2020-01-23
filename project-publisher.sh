@@ -65,7 +65,7 @@ DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 # Batch SSH = bssh
 function bssh {
 	for server in ${TARGETS[@]}; do
-		ssh $server $1
+		ssh winterwell@$server $1
 	done
 }
 
