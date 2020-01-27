@@ -358,6 +358,24 @@ class Store {
 		return this.setValue(['transient', type, id, DataStore.DATA_MODIFIED_PROPERTY], status, update);
 	}
 
+	/**
+	 * @returns {boolean} true if this path has been modified by a user-edit to a PropControl
+	 */
+	isModified(path) {
+		const mpath = ['widget', 'modified'].concat(path);
+		return this.getValue(mpath);
+	}
+
+	/**
+	 * Has a path in DataStore been modified by the user? This is auto-set by PropControl -- NOT by DataStore.
+	 * So if you use this with non-PropControl edits -- you must call it yourself.
+	 * @param {?boolean} flag Defaults to true
+	 * @see #setLocalEditsStatus() which is for ajax state
+	 */
+	setModified(path, flag=true) {
+		this.setValue(['widget', 'modified'].concat(path), flag, false);
+	}
+
 
 	/**
 	* Set widget.thing.show
@@ -595,6 +613,12 @@ DataStore.update({
 	transient: {},
 	data: {},
 	draft: {},
+	/**
+	 * Use this for widget state info which the outside app can inspect.
+	 * For purely internal state, use React's `useState()` instead.
+	 * 
+	 * E.g. see PropControl's modified flag
+	 */
 	widget: {},
 	/**
 	 * list should be: type -> list-id (e.g. 'all' or 'q=foo') -> {hits: refs[], total: Number}
