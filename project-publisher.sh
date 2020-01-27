@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.0.1'
+VERSION='Version=2.0.2'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -161,7 +161,7 @@ function handle_rsync_exit_code {
 function brsync {
 	for sync_item in ${SYNC_LIST[@]}; do
 		for server in ${TARGETS[@]}; do
-			rsync -rhP --exclude 'node_modules' --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ &
+			rsync -rhPL --exclude 'node_modules' --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ &
 		done
 	wait
 	handle_rsync_exit_code
