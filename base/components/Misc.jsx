@@ -64,7 +64,7 @@ const DefaultItemEditor = ({item, path}) => <div>{JSON.stringify(item)}</div>;
  * @param ItemEditor {Function} {item, path: to item i, i, ...stuff} -> jsx
  * @param blankFactory {?Function} path -> blank
  */
-Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMessage, createText = "Create", ...stuff}) => {
+Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMessage, createText = "Create", className="list-editor", ...stuff}) => {
 	let list = DataStore.getValue(path) || [];
 	assert(_.isArray(list), "ListEditor " + path, list);
 
@@ -82,7 +82,7 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 	};
 
 	const itemElements = list.map((item, index) => (
-		<BS.Well key={'item' + index}>
+		<BS.Well className="item-editor" key={'item' + index}>
 			{item.name ? <h4>{index}. {item.name}</h4> : null}
 			<button onClick={e => remove(index)} className='btn btn-danger btn-xs pull-right'><Misc.Icon glyph='trash'/></button>
 			<ItemEditor i={index} item={item} path={path.concat(index)} list={list} {...stuff} />
@@ -90,7 +90,7 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 	));
 
 	return (
-		<div>
+		<div className={className}>
 			{itemElements}
 			{list.length? null : <p>{noneMessage || "None"}</p>}
 			<div>
@@ -477,6 +477,14 @@ Misc.SavePublishDiscard = ({
 		if (confirmed) ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null });
 	}
 
+	const deleteAndRedirect = () => {
+		ActionMan.delete(type, id);
+		const urlRemovedId = window.location.href.split('/');
+		urlRemovedId.pop();
+		window.location.href = urlRemovedId.join('');
+		window.alert('Item deleted successfully!');
+	}
+
 	return (
 		<div className='SavePublishDiscard' title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
@@ -510,7 +518,7 @@ Misc.SavePublishDiscard = ({
 			) : null}
 			&nbsp;
 			<BS.Button name="delete" color='danger' disabled={disableDelete}
-				onClick={() => ActionMan.delete(type, id)} >
+				onClick={deleteAndRedirect} >
 				Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</BS.Button>
 		</div>

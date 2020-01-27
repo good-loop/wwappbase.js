@@ -22,7 +22,7 @@ BS.version;
  * Recursive, so you can pass an arg list or an array OR multiple arrays.
  * @returns {!string}
  */
-const space = (...strings) => {	
+const space = (...strings) => {
 	let js = '';
 	if ( ! strings) return js;
 	strings.forEach(s => {

@@ -303,9 +303,9 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 	delete base.id; // NB: this is a copy - the original base is not affected.
 	return (<div className={props? 'well' : ''}>
 		{props? props.map(prop => <Misc.PropControl key={prop} label={prop} prop={prop} path={cpath} inline />) : null}
-		<button className='btn btn-default' onClick={() => createBlank({type,navpage,base,id,make})}>
-			<BS.Icon name='plus' /> Create
-		</button>		
+		<button className="btn btn-default" name="create-item" onClick={() => createBlank({type,navpage,base,id,make})}>
+			<BS.Icon name="plus" /> Create
+		</button>
 	</div>);
 };
 

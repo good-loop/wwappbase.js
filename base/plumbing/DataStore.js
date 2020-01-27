@@ -464,7 +464,7 @@ class Store {
 	 * @returns {!PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, messaging=true, cachePeriod) { // TODO allow retry after 10 seconds
-		assert(path, "DataStore.js - missing input",path);		
+		assert(path, "DataStore.js - missing input",path);
 		// in the store?
 		let item = this.getValue(path);
 		if (item!==null && item!==undefined) { 

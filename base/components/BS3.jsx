@@ -62,9 +62,9 @@ BS.Centre = BS.Center; // UK or US
 /**
  * a bordered well (becomes a type of Card in BS4)
  */
-BS.Well = ({children}) => <div className='well'>{children}</div>;
+BS.Well = ({children, className, ...props}) => <div className={space('well', className)} {...props}>{children}</div>;
 
-BS.Row = ({children}) => <div className='row'>{children}</div>;
+BS.Row = ({children, className, ...props}) => <div className={space('row', className)} {...props}>{children}</div>;
 
 /**
  * e.g. <BS.Col width={3} />
