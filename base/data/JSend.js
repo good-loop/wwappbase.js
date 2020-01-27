@@ -81,7 +81,7 @@ JSend.success = jobj => {
 		return false;
 	}
 
-	console.warn("JSend: status unknown", jobj);
+	console.warn("JSend: status unknown. Response is probably not JSend format: ", jobj);
 	return null;
 };
 

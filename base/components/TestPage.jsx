@@ -17,8 +17,9 @@ import PropControl from './PropControl';
 import MDText from './MDText';
 
 const TestPage = () => {
-	let path = ['widget', 'TestPage'];
+	let path = ['misc', 'TestPage'];
 	let widget = DataStore.getValue(path) || {};
+	const ism = DataStore.isModified(path.concat('green'));
 
 	return (
 		<div className='TestPage'>
@@ -27,6 +28,7 @@ const TestPage = () => {
 
 			<PropControl label='Money' prop='green' path={path} type='Money' />
 			<pre>{""+widget.green} = {JSON.stringify(widget.green)}</pre>
+			<pre>modified = {JSON.stringify(ism)}</pre>
 
 			<PropControl label='Yes No' prop='yn' path={path} type='yesNo' />
 			<pre>{JSON.stringify(widget.yn)}</pre>

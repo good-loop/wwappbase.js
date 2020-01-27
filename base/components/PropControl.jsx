@@ -1,6 +1,6 @@
 /** PropControl provides inputs linked to DataStore.
  */
-import React from 'react';
+import React, { useState } from 'react';
 
 // TODO Maybe add support for user-set-this, to separate user-cleared-blanks from initial-blanks
 
@@ -34,6 +34,15 @@ import {getType, getId, nonce} from '../data/DataClass';
 import {notifyUser} from '../plumbing/Messaging';
 import MDText from './MDText';
 
+/**
+ * Set the value and the modified flag in DataStore
+ * @param {!String[]} proppath 
+ * @param value 
+ */
+const DSsetValue = (proppath, value) => {
+	DataStore.setModified(proppath);
+	DataStore.setValue(proppath, value);	
+};
 
 // Wrapped so the two outer functions can provide an interface consistent with the other validators
 const urlValidatorGuts = (val, secure) => {
@@ -90,6 +99,11 @@ const dateValidator = (val, rawValue) => {
 	}
 };
 
+/**
+ * @param {!String[]} fullpath
+ * @returns {!String[]} path
+ */
+const isModifiedPath = fullpath => ['widget','modified'].concat(fullpath);
 
 /**
  * Input bound to DataStore.
@@ -102,6 +116,8 @@ const dateValidator = (val, rawValue) => {
  * Save utils: 
  * `Misc.saveDraftFn` and `Misc.savePublishFn`, 
  * or instead of saveFn, place a Misc.SavePublishDiscard on the page.
+ *
+ * Note: You can also use this for 
  * @param {?String} label 
  * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
  * 	Default: ['location','params'] which codes for the url
@@ -207,6 +223,8 @@ const PropControl = (props) => {
  * The main part - the actual input
  */
 const PropControl2 = (props) => {
+	// track if the user edits, so we can preserve user-set-null/default vs initial-null/default
+	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up 
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, onUpload, ...stuff} = props;
@@ -235,7 +253,7 @@ const PropControl2 = (props) => {
 		const onChange = e => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.checked;
-			DataStore.setValue(proppath, val);
+			DSsetValue(proppath, val);
 			if (saveFn) saveFn({path, prop, item, value: val});		
 		};
 		if (value===undefined) value = false;
@@ -275,7 +293,7 @@ const PropControl2 = (props) => {
 		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
 		let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 		// console.warn("onChange", e.target.value, mv, e);
-		DataStore.setValue(proppath, mv);
+		DSsetValue(proppath, mv);
 		if (saveFn) saveFn({path, prop, value: mv});
 		// Enable piggybacking custom onChange functionality
 		if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
@@ -332,7 +350,7 @@ const PropControl2 = (props) => {
 			DataStore.setValue(spath, e.target.value);
 			try {				
 				let vnew = JSON.parse(e.target.value);
-				DataStore.setValue(proppath, vnew);
+				DSsetValue(proppath, vnew);
 				if (saveFn) saveFn({path, prop, value:vnew});
 			} catch(err) {
 				console.warn(err);
@@ -505,7 +523,8 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		} else {
 			mvs = vals.filter(v => v != mv);
 		}
-		DataStore.setValue(path.concat(prop), mvs);
+		const proppath = path.concat(prop);
+		DSsetValue(proppath, mvs);
 		if (saveFn) saveFn({path, prop, value:mvs});
 	}
 
@@ -549,7 +568,7 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 	const onChange = e => {
 		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 		const val = e && e.target && e.target.value;
-		DataStore.setValue(path.concat(prop), val);
+		DSsetValue(path.concat(prop), val);
 		if (saveFn) saveFn({path, prop, value: val});
 	};
 
@@ -612,7 +631,7 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
 		const newM = e.target.value===''? null : new Money(e.target.value);
 		if (name && newM) newM.name = name; // preserve named Money items
-		DataStore.setValue(proppath, newM);
+		DSsetValue(proppath, newM);
 		if (saveFn) saveFn({path, prop, newM});
 		// call onChange after we do the standard updates TODO make this universal
 		if (onChange) onChange(e);
@@ -659,9 +678,8 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 		if (e.target.value === 'yes') newValue = true;
 		else if (e.target.value === 'no') newValue = false;
 		else newValue = undefined;
-
-		const proppath = path.concat(prop);
-		DataStore.setValue(proppath, newValue);
+		
+		DSsetValue(path.concat(prop), newValue);
 		if (saveFn) saveFn({path, prop, newValue});
 	};
 
@@ -696,7 +714,7 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
 			newValue = newValue.filter(val => val);
 		}
 		
-		DataStore.setValue(proppath, newValue);
+		DSsetValue(proppath, newValue);
 		if (saveFn) saveFn({path, prop, value:newValue});
 		e.preventDefault();
 		e.stopPropagation();
@@ -706,6 +724,9 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
 };
 
 
+/**
+ * What is this?? use-case eg??
+ */
 const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 	const addRemoveKey = (key, remove) => {
 		const newValue = { ...value };
@@ -714,7 +735,7 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 		// ...But we want to keep update (i.e. merge) behaviour over fresh-index in general.
 		// ...TODO DataStore to maintain a diff, which it can send to the backend.
 		newValue[key] = remove ? false : true;
-		DataStore.setValue(proppath, newValue);
+		DSsetValue(proppath, newValue);
 		if (saveFn) saveFn({ path, prop, value: newValue });
 	}
 	
@@ -745,6 +766,9 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 };
 
 
+/**
+ * What is this?? use-case eg??
+ */
 const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value', ...otherStuff}) => {
 	const addRemoveKey = (key, val, remove) => {
 		const newValue = { ...value };
@@ -843,7 +867,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 			// typing sneds an event, clicking an autocomplete sends a value
 			const val = e.target? e.target.value : e;
 			let mv = modelValueFromInput(val, type, e.type);
-			DataStore.setValue(proppath, mv);
+			DSsetValue(proppath, mv);
 			if (saveFn) saveFn({path:path, prop, value:mv});
 			// e.preventDefault();
 			// e.stopPropagation();
@@ -986,7 +1010,7 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 					// TODO refactor to clean this up -- we should have one way of doing things.
 					// Different forms for UploadServlet vs MediaUploadServlet
 					let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
-					DataStore.setValue(path.concat(prop), url);
+					DSsetValue(path.concat(prop), url);
 					if (onUpload) {
 						onUpload({ path, prop, response, url });
 					}
