@@ -359,6 +359,7 @@ class Store {
 	}
 
 	/**
+	 * @param {!String[]} path - the full path to the value being edited
 	 * @returns {boolean} true if this path has been modified by a user-edit to a PropControl
 	 */
 	isModified(path) {
@@ -369,10 +370,15 @@ class Store {
 	/**
 	 * Has a path in DataStore been modified by the user? This is auto-set by PropControl -- NOT by DataStore.
 	 * So if you use this with non-PropControl edits -- you must call it yourself.
+	 * 
+	 * Use-case: for business-logic that sets default values, so it can tell whether or not the user has made an edit.
+	 * 
+	 * @param {!String[]} path - the full path to the value being edited
 	 * @param {?boolean} flag Defaults to true
 	 * @see #setLocalEditsStatus() which is for ajax state
 	 */
 	setModified(path, flag=true) {
+		// NB: dont trigger a render for this emi-internal state edit
 		this.setValue(['widget', 'modified'].concat(path), flag, false);
 	}
 
