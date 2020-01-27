@@ -7,6 +7,7 @@
 #####
 
 ###
+# New in 2.0.1 : parallel-rsync and parallel-ssh have been replaced with bash functions and background processing.
 # New in 1.17.5: changed the dir where sogive automated tests are called from
 # New in 1.17.4: renamed the sogiveapp service to sogive
 # New in 1.17.3: Removed calstat ical-count.js
