@@ -4,7 +4,7 @@ import BS, { space } from './BS';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import { setHash, XId, addScript, join} from 'wwutils';
+import { setHash, XId, addScript, join, modifyHash} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 
@@ -483,6 +483,8 @@ Misc.SavePublishDiscard = ({
 	const deleteAndRedirect = () => {
 		ActionMan.delete(type, id);
 		// ?? This looks risky! What if a paraneter contains a "/" Or if we want to keep some parameters??
+		// TODO be more explicit about what we're doing to the url.
+		// TODO probably best to use modifyHash() -- I think it protects against some browser oddities (not sure what though)
 		const urlRemovedId = window.location.href.split('/');
 		urlRemovedId.pop();
 		window.location.href = urlRemovedId.join('');
