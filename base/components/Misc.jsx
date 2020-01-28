@@ -477,8 +477,12 @@ Misc.SavePublishDiscard = ({
 		if (confirmed) ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null });
 	}
 
+	/**
+	 * Assume: the url looks like mydomain.com/blah/#blah/hopefully-the-id?forgettable-stuff
+	 */
 	const deleteAndRedirect = () => {
 		ActionMan.delete(type, id);
+		// ?? This looks risky! What if a paraneter contains a "/" Or if we want to keep some parameters??
 		const urlRemovedId = window.location.href.split('/');
 		urlRemovedId.pop();
 		window.location.href = urlRemovedId.join('');
