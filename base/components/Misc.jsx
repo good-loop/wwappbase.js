@@ -494,13 +494,13 @@ Misc.SavePublishDiscard = ({
 			<BS.Button name="save" color='default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
 				Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</BS.Button>
-			{saveAs? <><span>&nbsp;</span>
+			{saveAs ? <>&nbsp;
 				<BS.Button name="save-as" color='default' disabled={isSaving} 
 					title='Copy and save with a new ID'
 					onClick={confirmSaveAs} >
 					<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
-				</BS.Button></>
-			: null}
+				</BS.Button>
+			</> : null}
 			&nbsp;
 			<BS.Button name="publish" color='primary' disabled={disablePublish} title={publishTooltip}
 				onClick={() => ActionMan.publishEdits(type, id)}>
@@ -511,14 +511,13 @@ Misc.SavePublishDiscard = ({
 				onClick={() => ActionMan.discardEdits(type, id)}>
 				Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</BS.Button>
-			{unpublish && pubExists ? <span>&nbsp;</span> : null}
-			{unpublish && pubExists ? (
+			{unpublish && pubExists ? <>&nbsp;
 				<BS.Button name="unpublish" color='warning' disabled={isSaving || noEdits} 
 					title='Move from published to draft'
 					onClick={() => ActionMan.unpublish(type, id)} >
 					Un-Publish <span className="glyphicon glyphicon-cd spinning" style={vis} />
 				</BS.Button>
-			) : null}
+			</> : null}
 			&nbsp;
 			<BS.Button name="delete" color='danger' disabled={disableDelete}
 				onClick={deleteAndRedirect} >

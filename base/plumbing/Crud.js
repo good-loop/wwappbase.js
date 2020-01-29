@@ -435,7 +435,7 @@ ServerIO.list = ({type, status, q, prefix, sort, domain = ''}) => {
 		data: {status, q, prefix, sort}
 	};	
 	return ServerIO.load(url, params)
-		.then(res => { 	// sanity check
+		.then(res => { // sanity check
 			if (JSend.success(res)) {
 				List.assIsa(JSend.data(res), "Not a List "+url);
 			}
@@ -444,7 +444,7 @@ ServerIO.list = ({type, status, q, prefix, sort, domain = ''}) => {
 };
 
 
-const CRUD = {	
+const CRUD = {
 };
 export default CRUD;
 export {

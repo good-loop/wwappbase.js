@@ -42,7 +42,7 @@ const MessageBarItem = ({message}) => {
 	let text = message.text;
 	// HACK remove the stacktrace which our servers put in for debug
 	text = text.replace(/<details>[\s\S]*<\/details>/, "").trim();
-	const alertType = message.type==="error"? "alert alert-danger" : "alert alert-warning";
+	const alertType = message.type === "error" ? "alert alert-danger" : "alert alert-warning";
 	return (
 		<div className={alertType}>
 			{text}

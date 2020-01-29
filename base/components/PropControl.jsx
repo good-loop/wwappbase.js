@@ -948,7 +948,6 @@ Misc.normalise = s => {
 };
 
 
-
 /**
  * This replaces the react-bootstrap version 'cos we saw odd bugs there. 
  * Plus since we're providing state handling, we don't need a full component.

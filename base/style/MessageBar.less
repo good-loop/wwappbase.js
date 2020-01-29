@@ -7,6 +7,13 @@
 
 .MessageBar .alert {
 	overflow-x: scroll;
+	max-height: 25em; // keep tall messages at manageable size
+	position: relative; // reference for close button position
+	.close {
+		position: absolute;
+		top: 0.5em;
+		right: 0.5em;
+	}
 }
 
 // Test and local: put it in the corner out of the way.

@@ -1,16 +1,23 @@
 import React, {useEffect, useState, useCallback } from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
 
+
 /**
- * TODO doc
+ * @param {HTMLDocument} doc The document to put the new element in
+ * @param {String} tag The <tag> to create
+ * @param {?} attrs Other attributes to apply to the element we create
+ * @param {Boolean} prepend True to insert the new element at the start of the document
  */
-const appendEl = (doc, {tag, ...attrs}) => {
-	if ( ! doc || ! doc.createElement || ! tag) return;
+const appendEl = (doc, {tag, ...attrs}, prepend) => {
+	if (!doc || !doc.createElement || !tag) return; // Can't make an element without a doc and a tag
+
+	// Create the element and assign all properties
 	const el = doc.createElement(tag);
 	Object.entries(attrs).forEach(([key, val]) => {
 		el[key] = val;
 	});
-	doc.body.appendChild(el);
+
+	prepend ? doc.body.prepend(el) : doc.body.appendChild(el);
 	return el; // just in case we want it
 }
 
@@ -21,18 +28,14 @@ const appendEl = (doc, {tag, ...attrs}) => {
 	* Because it's MUCH faster and more reliable than reloading the ad when iterating design in the portal.
 	*/
 const insertAdunitCss = ({frame, css}) => {
-	if (!css || !frame) return; // don't worry if frame doesn't have a doc, appendEl is safe for that
+	if (!frame) return; // don't worry if frame doesn't have a doc, appendEl is safe for that
 	// Remove any pre-existing vert-css
 	removeAdunitCss({frame});
+	if (!css) return; // No CSS supplied? Remove any that exists and we're done
 
 	// Note from Mark 18 Feb 2019: We insert CSS into body instead of head to guarantee it appears later in the
 	// document than the #vert-css tag inserted by the adunit - so it takes precedence & overrides as expected.
 	appendEl(frame.contentDocument, {tag: 'style', type: 'text/css', id: 'vert-css', class: 'override', innerHTML: css});
-
-	// On unmount: remove the CSS override we inserted but not the original if somehow present
-	return () => {
-		removeAdunitCss({frame, selector: '#vert-css.override'})
-	};
 };
 
 
@@ -45,7 +48,7 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 }
 
 
-const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
+const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, debug}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -56,9 +59,9 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
 	// Insert preloaded unit.json, if we have it
 	if (unitJson) appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
 
-	// Insert the element the unit goes in
+	// Insert the element the unit goes in at the top of the document
 	// Keep it simple: Tell the unit it's already isolated in an iframe and doesn't need to create another.
-	appendEl(doc, {tag: 'div', className:'goodloopad-frameless'});
+	appendEl(doc, {tag: 'div', className:'goodloopad-frameless'}, true);
 	
 
 	// Insert unit.js
@@ -68,12 +71,13 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
 	if (vertId) params.push(`gl.vert=${vertId}`); // If adID isn't specified, we'll get a random ad.
 	if (play) params.push(`gl.play=${play}`)
 	if (endCard) params.push(`gl.variant=tq`);
-	const src = `${ServerIO.AS_ENDPOINT}/unit.js${params.length ? '?' + params.join('&') : ''}`;
+	if (debug) params.push(`gl.debug=true`);
+	const src = `${ServerIO.AS_ENDPOINT}/unit-debug.js${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
 
 	// On unmount: empty out iframe's document
 	return () => {
-		docBody ? docBody.innerHTML = '' : null;
+		doc ? doc.documentElement.innerHTML = '' : null;
 	};
 };
 
@@ -88,7 +92,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard}) => {
  * @param {String} play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
  * @param {String} endCard Set truthy to display end-card without running through advert.
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, debug}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [frameLoaded, setFrameLoaded] = useState(false);
@@ -109,8 +113,9 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
 		if ((frameLoaded || frameReady) && frameDoc) {
-			insertUnit({frame, unitJson, vertId, status, size, play, endCard});
+			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, debug});
 			insertAdunitCss({frame, css});
+			return cleanup;
 		} 
 	}, [frameLoaded, frameReady, frameDoc, unitKey]);
 
