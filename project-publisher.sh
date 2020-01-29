@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.0.2'
+VERSION='Version=2.1.0'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -520,17 +520,22 @@ esac
 SYNC_FILES=()
 SYNC_DIRS=()
 function sort_files_and_dirs {
+	CURR_LOCATION=$PWD
+	cd $PROJECT_LOCATION
 	printf "\n\tSorting list of items to be synced ...\n"
 	for item in ${SYNC_LIST[@]}; do
-		if test -f $item; then
-			SYNC_FILES+=($item)
-		else
-			SYNC_DIRS+=($item)
+		if [ -f $item ]; then
+			SYNC_FILES+=("$item")
+		elif [ -d $item ]; then
+			SYNC_DIRS+=("$item")
 		fi
 	done
-	printf "\n\tList of Files to sync:\n\t\t${SYNC_FILES[@]}\n"
-	printf "\n\tList of Directories to sync:\n\t\t${SYNC_DIRS[@]}\n"
+	printf "\n\tList of Files to sync:\n"
+    printf '%s\n' "${SYNC_FILES[@]}"
+	printf "\n\tList of Directories to sync:\n"
+    printf '%s\n' "${SYNC_DIRS[@]}"
 	printf "\n\tSync items sorted\n"
+	cd $CURR_LOCATION
 }
 
 #####################
