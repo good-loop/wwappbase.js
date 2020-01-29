@@ -4,7 +4,7 @@ import BS, { space } from './BS';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import { setHash, XId, addScript, join} from 'wwutils';
+import { setHash, XId, addScript, join, modifyHash} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 
@@ -477,9 +477,14 @@ Misc.SavePublishDiscard = ({
 		if (confirmed) ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null });
 	}
 
+	/**
+	 * Inform user delete action was succesful, and redirect to home preserving search params.
+	 */
 	const deleteAndRedirect = () => {
 		ActionMan.delete(type, id);
-		window.location.href = '/';
+		// To be extra safe we'll redirect back to the origin, preserving any params already present
+		const currentUrl = new URL(window.location);
+		window.location.href = (currentUrl.origin + '/' + currentUrl.search)
 		window.alert('Item deleted successfully!');
 	}
 
