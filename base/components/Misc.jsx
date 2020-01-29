@@ -479,9 +479,7 @@ Misc.SavePublishDiscard = ({
 
 	const deleteAndRedirect = () => {
 		ActionMan.delete(type, id);
-		const urlRemovedId = window.location.href.split('/');
-		urlRemovedId.pop();
-		window.location.href = urlRemovedId.join('');
+		window.location.href = '/';
 		window.alert('Item deleted successfully!');
 	}
 
