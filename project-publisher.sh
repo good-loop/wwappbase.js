@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.1.0'
+VERSION='Version=2.1.1'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -65,7 +65,8 @@ DO_NOT_SYNC_LIST='/tmp/do_not_sync_list.txt'
 # Batch SSH = bssh
 function bssh {
 	for server in ${TARGETS[@]}; do
-		ssh winterwell@$server $1
+		ssh winterwell@$server $1 &
+	wait
 	done
 }
 
@@ -753,7 +754,9 @@ function image_optimisation {
 	fi
 }
 
-
+################
+### REVISE PLEASE : 2020-01-29
+################
 ##################################
 ### Section 06: Define the Webpack Function
 ##################################
@@ -852,7 +855,9 @@ function move_items_to_lib {
 	cp $PROJECT_LOCATION/tmp-lib/* $PROJECT_LOCATION/lib/
 }
 
-
+################
+### REVISE PLEASE : sync file each target and report success/failure, then continue in the loop
+################
 #########################################
 ### Section 10: Sync the Config Files
 #########################################
@@ -964,11 +969,13 @@ function run_automated_tests {
 		case $PROJECT in
 			sogive-app)
 				cd $PROJECT_LOCATION
-				bash run-tests.sh $TYPE_OF_PUBLISH
+				/usr/local/bin/npm i
+				/usr/bin/node runtest.js
 			;;
 			portal)
-				cd $PROJECT_LOCATION/puppeteer-tests
-				bash run-tests.sh $TYPE_OF_PUBLISH
+				cd $PROJECT_LOCATION
+				/usr/local/bin/npm i
+				/usr/bin/node runtest.js
 			;;
 		esac
 	fi
@@ -993,14 +1000,14 @@ function preserve_items {
 	for item in ${PRESERVE[@]}; do
 		printf "\nPreserving $item\n"
 		bssh "if [[ -d /tmp/$item ]]; then continue; else mkdir -p /tmp/$item; fi"
-		bssh "cd $TARGET_DIRECTORY && rsync -rRhP $item /tmp"
+		bssh "cd $TARGET_DIRECTORY && cp -r $item /tmp"
 	done
 }
 
 function restore_preserved {
 	for item in ${PRESERVE[@]}; do
 		printf "\nRestoring $item\n"
-		bssh "cd /tmp && rsync -rRhP $item $TARGET_DIRECTORY/"
+		bssh "cd /tmp && cp -r $item $TARGET_DIRECTORY/"
 	done
 }
 

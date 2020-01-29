@@ -7,6 +7,7 @@
 #####
 
 ###
+# New in 2.1.1 : revised automated testing calls, made notes for where to make improvements for faster file syncing
 # New in 2.1.0 : Adding polish to the way in which files are batch synced and the way that processes are done in batches
 # New in 2.0.2 : added rsync switch to allow the syncing of symlinked directories/files
 # New in 2.0.1 : parallel-rsync and parallel-ssh have been replaced with bash functions and background processing.
