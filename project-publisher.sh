@@ -161,7 +161,7 @@ function handle_rsync_exit_code {
 function brsync {
 	for sync_item in ${SYNC_LIST[@]}; do
 		for server in ${TARGETS[@]}; do
-			rsync -rhPL --exclude 'node_modules' --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ &
+			rsync -rhPL --exclude 'node_modules' --exclude "*.java" --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ &
 		done
 	wait
 	handle_rsync_exit_code
@@ -264,9 +264,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('lg')
-		FRONTEND_SYNC_LIST=("config" "src" "src-js" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js")
+		FRONTEND_SYNC_LIST=("config" "src" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js")
 		BACKEND_SYNC_LIST=("lib" "winterwell.datalog.jar")
-		WHOLE_SYNC=("config" "src" "src-js" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "lib" "winterwell.datalog.jar")
+		WHOLE_SYNC=("config" "src" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "lib" "winterwell.datalog.jar")
 		;;
 	moneyscript|MONEYSCRIPT)
 		PROJECT='moneyscript'
@@ -514,6 +514,24 @@ case $3 in
 	;;
 esac
 
+#####################
+### Section 03.5: Sort Files and Dirs
+#####################
+SYNC_FILES=()
+SYNC_DIRS=()
+function sort_files_and_dirs {
+	printf "\n\tSorting list of items to be synced ...\n"
+	for item in ${SYNC_LIST[@]}; do
+		if test -f $item; then
+			SYNC_FILES+=($item)
+		else
+			SYNC_DIRS+=($item)
+		fi
+	done
+	printf "\n\tList of Files to sync:\n\t\t${SYNC_FILES[@]}\n"
+	printf "\n\tList of Directories to sync:\n\t\t${SYNC_DIRS[@]}\n"
+	printf "\n\tSync items sorted\n"
+}
 
 #####################
 ### Section 04: Allow skipping of automated testing
