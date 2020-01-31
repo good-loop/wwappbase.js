@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.1.1'
+VERSION='Version=2.2.0'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -74,8 +74,7 @@ function bssh {
 # Define function to handle rsync error codes and error counts
 RSYNC_ERROR_COUNT='0'
 function handle_rsync_exit_code {
-    RETVAL=$?
-    case $RETVAL in
+    case ${PIPESTATUS[0]} in
         0)
         printf "\n\tSuccessfully synced $sync_item to $server\n"
         ;;
@@ -162,12 +161,21 @@ function handle_rsync_exit_code {
 function brsync {
 	for sync_item in ${SYNC_LIST[@]}; do
 		for server in ${TARGETS[@]}; do
-			rsync -rhPL --exclude 'node_modules' --exclude "*.java" --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ &
+			printf "\nSyncing $sync_item to $server\n"
+			rsync -rL --exclude 'node_modules' --exclude "*.java" --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ | handle_rsync_exit_code >> /tmp/$SYNC_LOG_OUTPUT &
 		done
 	wait
-	handle_rsync_exit_code
 	done
 }
+
+# Analyze the results of the brsync process and print a summary of errors if necessary:
+function analyze_sync_results {
+	if [[ $RSYNC_ERROR_COUNT -ne 0 ]]; then
+    	printf "\nThere were some errors during the syncing process:\n"
+    	cat $SYNC_LOG_OUTPUT | grep -iv "success"
+	fi
+}
+
 
 ##################
 ### Preamble: Check that this script is executed correctly
@@ -175,6 +183,16 @@ function brsync {
 if [[ $1 = '' ]]; then
 		printf "$USAGE"
 	exit 0
+fi
+
+
+##################
+### Preamble : clear out old sync log
+##################
+SYNC_LOG_OUTPUT='/tmp/sync_log_output.txt'
+if [ -f $SYNC_LOG_OUTPUT ]; then
+    rm $SYNC_LOG_OUTPUT
+    touch $SYNC_LOG_OUTPUT
 fi
 
 
@@ -1120,4 +1138,5 @@ printf "\nPublishing Process has completed\n"
 run_post_publish_tasks
 start_proc
 clean_tmp_lib
+analyze_sync_results
 run_automated_tests

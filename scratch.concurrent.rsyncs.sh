@@ -135,10 +135,22 @@ function handle_rsync_exit_code {
 ###################
 ###### Experimental batched rsync for having pretty output
 ###################
+SYNC_LOG_OUTPUT='/tmp/sync_log_output.txt'
+if [ -f $SYNC_LOG_OUTPUT ]; then
+    rm $SYNC_LOG_OUTPUT
+    touch $SYNC_LOG_OUTPUT
+fi
+
 for sync_item in ${WHOLE_SYNC[@]}; do
 	for server in ${TARGET_SERVERS[@]}; do
 		printf "\nSyncing $sync_item to $server\n"
-		rsync $sync_item winterwell@$server:$TARGET_DIRECTORY/ | handle_rsync_exit_code &
+		rsync $sync_item winterwell@$server:$TARGET_DIRECTORY/ | handle_rsync_exit_code >> /tmp/$SYNC_LOG_OUTPUT &
 	done
 wait
 done
+
+# Need a function / shim to capture the output of success/failure of the rsync process and then spit out a summary
+if [[ $RSYNC_ERROR_COUNT -ne 0 ]]; then
+    printf "\nThere were some errors during the syncing process:\n"
+    cat $SYNC_LOG_OUTPUT | grep -iv "success"
+fi
