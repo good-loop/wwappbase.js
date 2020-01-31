@@ -539,6 +539,7 @@ function sort_files_and_dirs {
 	cd $CURR_LOCATION
 }
 
+
 #####################
 ### Section 04: Allow skipping of automated testing
 #####################
@@ -856,7 +857,7 @@ function move_items_to_lib {
 }
 
 ################
-### REVISE PLEASE : sync file each target and report success/failure, then continue in the loop
+### REVISE PLEASE : sync file to each target, then report success/failure, then continue in the loop
 ################
 #########################################
 ### Section 10: Sync the Config Files
@@ -891,8 +892,9 @@ function sync_configs {
 			for config in $(find /home/$USER/winterwell/logins/sogive-app/ -iname "*.properties"); do
 				printf "\nSyncing $config file ...\n"
 				for server in ${TARGETS[@]}; do
-					rsync $config winterwell@$server:/$TARGET_DIRECTORY/config/
+					rsync $config winterwell@$server:/$TARGET_DIRECTORY/config/ &
 				done
+			wait
 			done
 			case $TYPE_OF_PUBLISH in
 			production)
