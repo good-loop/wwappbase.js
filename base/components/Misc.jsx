@@ -474,7 +474,8 @@ Misc.SavePublishDiscard = ({
 
 	const confirmSaveAs = () => {
 		const confirmed = window.confirm('Save changes onto a new advert?');
-		if (confirmed) ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null });
+		const customVertiser = DataStore.getValue(['misc', 'targetVertiserId']);
+		if (confirmed) ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null, customVertiser });
 	}
 
 	/**
