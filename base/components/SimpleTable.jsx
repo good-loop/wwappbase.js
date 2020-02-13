@@ -96,7 +96,7 @@ class SimpleTable extends React.Component {
 				const colHead = e.Header || e.accessor || str(e);
 				obj[colHead] = true;  
 				return obj;
-			}, {});			
+			}, {});
 			this.setState({checkboxValues});
 		}
 	}
@@ -108,7 +108,7 @@ class SimpleTable extends React.Component {
 			headerRender, className, csv, 
 			addTotalRow,
 			topRow, 
-			bottomRow, hasFilter, rowsPerPage, statePath, 
+			bottomRow, hasFilter, rowsPerPage, statePath,
 			// checkboxValues, copied into state for modifying
 			hideEmpty,
 			scroller, // if true, use fix col-1 scrollbars
@@ -139,7 +139,7 @@ class SimpleTable extends React.Component {
 				DataStore.setValue(statePath, ts);
 			};
 		}
-		if ( ! tableSettings) {
+		if (!tableSettings) {
 			tableSettings = {nonce:nonce()};
 			_.defer(() => this.setState(tableSettings));
 		}
@@ -159,7 +159,7 @@ class SimpleTable extends React.Component {
 		if (rowsPerPage) {
 			numPages = Math.ceil(data.length / rowsPerPage);
 			// NB: clipping is done later 'cos if we're doing a csv download, which should include all data
-		}	
+		}
 
 		let cn = 'table'+(className? ' '+className : '');
 		// HACK build up an array view of the table
@@ -422,6 +422,9 @@ const defaultCellRender = (v, column) => {
 			// 2 sig figs
 			return printer.prettyNumber(100*v, 2)+"%";
 		}
+		if (CellFormat.isstring(column.format)) {
+			return v;
+		}
 	}
 	// number or numeric string
 	let nv = asNum(v);
@@ -499,7 +502,7 @@ const Editor = ({row, column, value, item}) => {
 			// we edit draft
 			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 			// make sure we have a draft
-			if ( ! DataStore.getValue(path)) {				
+			if ( ! DataStore.getValue(path)) {
 				DataStore.setValue(path, item, false);
 			}
 		} catch(err) {
@@ -525,7 +528,7 @@ const Editor = ({row, column, value, item}) => {
 		saveFn={column.saveFn} 
 	/>);
 }; // ./Editor
-const CellFormat = new Enum("percent"); // What does a spreadsheet normally offer??
+const CellFormat = new Enum("percent string"); // What does a spreadsheet normally offer??
 
 
 const TableFoot = ({csv, tableName, dataArray, numPages, colSpan, page=0}) => {
