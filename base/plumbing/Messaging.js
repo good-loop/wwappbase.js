@@ -9,6 +9,7 @@ import DataStore from './DataStore';
 import printer from '../utils/printer';
 
 const jsxFromId = {};
+const filters = [];
 
 /**
  * {
@@ -38,6 +39,14 @@ const notifyUser2 = (msgOrError) => {
 	msg.id = mid;
 	if (msg.path===true) {
 		msg.path = DataStore.getValue(['location','path']);
+	}
+
+	// Filter the message (default: no filters, allow all)
+	// If any filter returns false, don't post the message
+	const allow = filters.reduce((acc, filterFn) => (acc && filterFn(msg)), true);
+	if (!allow) {
+		console.log('Messaging.js - message filtered out', msg);
+		return;
 	}
 	
 	let msgs = DataStore.getValue('misc', 'messages-for-user') || {};
@@ -69,9 +78,21 @@ const notifyUser2 = (msgOrError) => {
 	DataStore.setValue(['misc', 'messages-for-user'], msgs);
 };
 
+/**
+ * HACK (or hack-enabler) Add a new filter function, of the form 
+ * msgObject (Object) => accept (Boolean)
+ * to the list of filters every new message must pass through
+ */
+const registerFilter = (filterFn) => {
+	// Don't re-register existing filters!
+	if (filters.find(f => f === filterFn)) return;
+	filters.push(filterFn);
+}
+
 const Messaging = {
 	notifyUser,
-	jsxFromId
+	jsxFromId,
+	registerFilter,
 };
 window.Messaging = Messaging;
 // HACK wire up DataStore for default Message handling
