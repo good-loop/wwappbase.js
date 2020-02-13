@@ -120,5 +120,12 @@ module.exports = {
 	"globals": {
 		"window": true,
 		"document": true,
-	}
+		"page": true,
+		"browser": true,
+		"context": true,
+		"jestPuppeteer": true
+	},
+	"env": {
+		"jest": true
+	 },
 };

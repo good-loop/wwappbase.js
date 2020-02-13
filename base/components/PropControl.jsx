@@ -669,7 +669,9 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 	if (value && ! _.isBoolean(value)) {
 		console.error("PropControlYesNo - value not a proper boolean!", prop, value);
 		// if (value === 'yes') value = true;
-		// else if (value === 'no') value = false;
+		// convert string to false
+		if (value === 'no' || value==='false') value = false;
+		value = !! value; // its boolean now
 	}
 	// handle yes/no -> true/false
 	const onChange = e => {

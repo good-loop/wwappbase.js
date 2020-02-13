@@ -43,8 +43,7 @@ const RolesCard = () => {
 
 	return (<Misc.Card title='Roles'>
 		<p>Roles determine what you can do. E.g. only editors can publish changes.</p>
-		{proles.resolved? <p>No role</p> : <Misc.Loading />}
-		{roles? roles.map((role, i) => <RoleLine key={i+role} role={role} />) : null}				
+		{roles? roles.map((role, i) => <RoleLine key={i+role} role={role} />) : <Misc.Loading />}
 	</Misc.Card>);
 }
 

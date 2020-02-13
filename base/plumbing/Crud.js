@@ -131,7 +131,7 @@ ActionMan.saveEdits = (type, id, item) => {
  * @param onChange {Function: newItem => ()}
  * @returns {Promise}
  */
-ActionMan.saveAs = ({type, id, item, onChange}) => {
+ActionMan.saveAs = ({type, id, item, onChange, customVertiser = null}) => {
 	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, id);
 	if ( ! item) item = DataStore.getData(C.KStatus.PUBLISHED, type, id);
 	assert(item, "Crud.js no item "+type+" "+id);	
@@ -148,6 +148,8 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 		// make a probably unique name - use randomness TODO nicer
 		newItem.name += ' v_'+nonce(3);
 	}
+	if (customVertiser) { newItem.vertiser = customVertiser }
+
 	// save local
 	DataStore.setData(C.KStatus.DRAFT, newItem);
 	// modify e.g. url

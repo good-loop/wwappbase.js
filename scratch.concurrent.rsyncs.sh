@@ -3,13 +3,14 @@
 #TODO
 
 # Get the names of the targets
-PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh)
+PRODUCTION_SERVERS=("gl-es-03.soda.sh" "gl-es-04.soda.sh" "gl-es-05.soda.sh" "datalognode-01.good-loop.com")
 TARGET_SERVERS=${PRODUCTION_SERVERS[@]}
 # Count the number of targets
 NUM_REMOTE_TARGETS=${#TARGET_SERVERS[@]}
 
 # Cite the directories and files that should be sync'ed
-WHOLE_SYNC=("config" "src" "src-js" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "lib" "winterwell.datalog.jar")
+#WHOLE_SYNC=("config" "src" "src-js" "web" "package.json" "ssl.gl-es-03.good-loop.com.conf" "ssl.gl-es-03.good-loop.com.params.conf" "ssl.gl-es-04.good-loop.com.conf" "ssl.gl-es-04.good-loop.com.params.conf" "ssl.gl-es-05.good-loop.com.conf" "ssl.gl-es-05.good-loop.com.params.conf" "webpack.config.js" "lib" "winterwell.datalog.jar")
+WHOLE_SYNC=("test.dummy.txt.1" "test.dummy.txt.2" "test.dummy.txt.3" "test.dummy.txt.4")
 
 # Where should the files be put on the remote host
 TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
@@ -17,8 +18,7 @@ TARGET_DIRECTORY='/home/winterwell/lg.good-loop.com'
 
 RSYNC_ERROR_COUNT='0'
 function handle_rsync_exit_code {
-    RETVAL=$?
-    case $RETVAL in
+    case ${PIPESTATUS[0]} in
         0)
         printf "\n\tSuccessfully synced $sync_item to $server\n"
         ;;
@@ -101,16 +101,16 @@ function handle_rsync_exit_code {
 }
 
 # DEBUG-TOOL : Form the rsync commands as plaintext, but do not execute them.
-if [[ -f /tmp/rsync.commands.output.txt ]]; then
-		rm /tmp/rsync.commands.output.txt
-	fi
-for sync_item in ${WHOLE_SYNC[@]}; do
-    for server in ${TARGET_SERVERS[@]}; do
-        printf "rsync -rhP --delete-before $sync_item winterwell@$server:$TARGET_DIRECTORY/ & " >> /tmp/rsync.commands.output.txt
-    done
-    wait
-    printf "\n\tBatch Break\n" >> /tmp/rsync.commands.output.txt
-done
+# if [[ -f /tmp/rsync.commands.output.txt ]]; then
+# 		rm /tmp/rsync.commands.output.txt
+# 	fi
+# for sync_item in ${WHOLE_SYNC[@]}; do
+#     for server in ${TARGET_SERVERS[@]}; do
+#         printf "rsync -rhP --delete-before $sync_item winterwell@$server:$TARGET_DIRECTORY/ & " >> /tmp/rsync.commands.output.txt
+#     done
+#     wait
+#     printf "\n\tBatch Break\n" >> /tmp/rsync.commands.output.txt
+# done
 
 
 # clear out the 'lib' directory before performing a sync
@@ -129,3 +129,28 @@ done
 # 
 # printf "\nsyncing loops have completed\n"
 # printf "\nRsync error count was $RSYNC_ERROR_COUNT\N"
+
+
+
+###################
+###### Experimental batched rsync for having pretty output
+###################
+SYNC_LOG_OUTPUT='/tmp/sync_log_output.txt'
+if [ -f $SYNC_LOG_OUTPUT ]; then
+    rm $SYNC_LOG_OUTPUT
+    touch $SYNC_LOG_OUTPUT
+fi
+
+for sync_item in ${WHOLE_SYNC[@]}; do
+	for server in ${TARGET_SERVERS[@]}; do
+		printf "\nSyncing $sync_item to $server\n"
+		rsync $sync_item winterwell@$server:$TARGET_DIRECTORY/ | handle_rsync_exit_code >> /tmp/$SYNC_LOG_OUTPUT &
+	done
+wait
+done
+
+# Need a function / shim to capture the output of success/failure of the rsync process and then spit out a summary
+if [[ $RSYNC_ERROR_COUNT -ne 0 ]]; then
+    printf "\nThere were some errors during the syncing process:\n"
+    cat $SYNC_LOG_OUTPUT | grep -iv "success"
+fi

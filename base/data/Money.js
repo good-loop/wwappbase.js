@@ -19,7 +19,8 @@ class Money extends DataClass {
 	/** @type {?String} An optional name for this money */
 	name;
 
-	/** @type {Number} 1/100 of a penny, so £1 = 10,000 */
+	/** @type {Number} 1/100 of a penny, so £1 = 10,000. 
+	 * Integer to avoid floating point issues (if a float is input, it will be rounded). */
 	value100p;
 
 	/** @type {?String} raw string version - used during input to support incomplete input */
@@ -109,7 +110,7 @@ Money.setValue = (m, newVal) => {
 	Money.assIsa(m);
 	if (newVal) assMatch(newVal, Number, "Money.js - setValue() "+newVal);
 	m.value = newVal;
-	m.value100p = newVal? newVal * 10000 : 0; // NB: null x Number = 0 nut undefined x Number = NaN. So let's standardise on 0
+	m.value100p = newVal? Math.round(newVal * 10000) : 0; // NB: null x Number = 0 nut undefined x Number = NaN. So let's standardise on 0
 	// remove the raw field 'cos otherwise v100p() will use it to overwrite the new value!
 	delete m.raw;
 	if (Money.value(m) != newVal) {
@@ -124,9 +125,9 @@ Money.setValue = (m, newVal) => {
  */
 const v100p = m => {
 	if ( ! m) return 0;
-	// Patch old server data?
+	// Patch old server data? TODO remove Q2 2020
 	if (m.value100) {
-		if ( ! m.value100p && ! m.raw) m.value100p = m.value100 * 100;
+		if ( ! m.value100p && ! m.raw) m.value100p = Math.round(m.value100 * 100);
 		delete m.value100; // remove so it cant cause confusion esp if value becomes 0
 	}
 	// historical bug, seen April 2018 in SoGive: value edits lost! But preserved in .raw
@@ -137,7 +138,7 @@ const v100p = m => {
 				m.error = new Error("Cannot parse: "+m.raw);
 			}							
 			m.value = v;
-			m.value100p = v? v*10000 : 0;
+			m.value100p = v? Math.round(v*10000) : 0;
 		} catch(err) {
 			console.warn("Money.js", err, m);
 		}
@@ -148,7 +149,7 @@ const v100p = m => {
 	}
 	if (m.value) {
 		let v = parseFloat(m.value); // string or number
-		m.value100p = v * 10000;
+		m.value100p = Math.round(v * 10000);
 		return m.value100p;
 	}
 	return 0;
