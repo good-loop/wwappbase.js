@@ -96,7 +96,7 @@ const setTaskTags = (...tags) => {
  * Gets tags info via #setTaskTags (not parameters)
  *  - cos its inserted in the NavBar, which hasn't the tags info.
  */
-const TaskList = ({}) => {		
+const TaskList = ({}) => {
 	if ( ! Login.isLoggedIn()) {
 		return <TaskListButton disabled />
 	}
@@ -187,7 +187,8 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 				placeholder={parent? 'Reply / Comment' : 'Make a new task'} /> 
 			&nbsp;
 			<button className='btn btn-primary' disabled={ ! ttext} type='submit' onClick={quickTask}>Add</button>			
-		</div>);
+		</div>
+	);
 };
 
 /**

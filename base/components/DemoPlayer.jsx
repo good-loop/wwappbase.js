@@ -10,8 +10,8 @@ const deviceSvgs = {
 
 /** Description of the Good-Loop formats */
 const descriptions = {
-	social:	"The Good-Loop social swipe-to-donate player is shown in social media apps: SnapChat, Instagram, Facebook, or Twitter.",
-	video:	"Our core product, the Good-Loop video player is shown in a s website article as people scroll through, or apprears as a pre-roll before a video begins."
+	social: "The Good-Loop social swipe-to-donate player is shown in social media apps: SnapChat, Instagram, Facebook, or Twitter.",
+	video: "Our core product, the Good-Loop video player is shown in a s website article as people scroll through, or apprears as a pre-roll before a video begins."
 };
 
 /** Simulated device screen images */

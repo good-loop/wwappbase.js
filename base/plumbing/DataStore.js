@@ -514,10 +514,10 @@ class Store {
 
 	/**
 	 * Does the remote fetching work for fetch()
-	 * @param {String[]} path 
+	 * @param {String[]} path
 	 * @param {Function} fetchFn If unset (which is unusual), return in-progress or a failed PV
-	 * @param {?Boolean} messaging 
-	 * @param {?Number} cachePeriod 
+	 * @param {?Boolean} messaging
+	 * @param {?Number} cachePeriod
 	 * @returns {!PromiseValue}
 	 */
 	fetch2(path, fetchFn, messaging=true, cachePeriod) {

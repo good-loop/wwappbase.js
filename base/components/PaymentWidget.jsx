@@ -81,10 +81,10 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 			})
 		);
 		return (
-			<div className='PaymentWidget'>			
+			<div className='PaymentWidget'>
 				<button onClick={payNothing} className='btn btn-primary'>Confirm Free Purchase</button>
 			</div>
-		);					
+		);
 	} // ./ £0
 
 	// Invoke the callback, with a minimal fake token that the servlet will catch
@@ -110,12 +110,12 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 					<p>You have <Misc.Money amount={credit} /> in credit which will pay for this.</p>
 					<button onClick={payByCredit} className='btn btn-primary'>Send Payment</button>
 				</div>
-			);					
+			);
 		}
 	} // ./credit
 	
 	return (
-		<div className='section donation-amount'>			
+		<div className='section donation-amount'>
 			<StripeProvider apiKey={stripeKey}>
 				<Elements>
 					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient} 
@@ -130,7 +130,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 				<small className='clear'>
 					Test card no: 4000008260000000 (use any CVC and any future expiry date). 
 					Stolen test card no: 4000000000009979.
-					Or					
+					Or
 					<button onClick={skipAction}>test: pretend I paid</button>
 				</small>
 			) : null}
@@ -145,7 +145,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
  * @DW: Stripe widgets are wrapped in iframes specifically to promote Stripe's trust model of
  * "we provide the widgets and the host page can't touch your CC data".
  * It's conceivable we could pry that data out, but it's not a good idea.
- */	
+ */
 class StripeThingsClass extends Component {
 	constructor(props) {
 		super(props);
@@ -155,7 +155,7 @@ class StripeThingsClass extends Component {
 		let residual = amount;
 		// NB dont add on prior debts
 		if (credit && Money.value(credit) > 0) {
-			residual = Money.sub(amount, credit);		
+			residual = Money.sub(amount, credit);
 		}
 
 		// Native widget?
@@ -189,7 +189,7 @@ class StripeThingsClass extends Component {
 		paymentRequest.canMakePayment().then(result => {
 			this.setState({canMakePayment: !!result});
 		});
- 
+
 		this.state = {
 			canMakePayment: false,
 			paymentRequest,
