@@ -6,7 +6,7 @@ import _ from 'lodash';
 import $ from 'jquery';
 import SJTest from 'sjtest';
 import {assert, assMatch} from 'sjtest';
-import C from '../../C.js';
+import C from '../CBase.js';
 import {encURI} from 'wwutils';
 
 import Login from 'you-again';
@@ -35,47 +35,48 @@ ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = `https://uploads.good-loop.com/`;
 // Copy into ServerIO.js use UploadServlet instead of media.good-loop.com
 // ServerIO.MEDIA_ENDPOINT = '/upload.json';
-/** 
- * Call this from ServerIO.js 
- * Safety check - if we deploy test code, it will complain. */
-ServerIO.checkBase = () => {
-	// My-Loop doesn't have a "native" API base so must use a "foreign" host - in this case portal.good-loop.com
-	if (!ServerIO.NO_API_AT_THIS_HOST) {
-		if (ServerIO.APIBASE && C.isProduction()) {
-			if (ServerIO.APIBASE.indexOf('local') !== -1 || ServerIO.APIBASE.indexOf('test') !== -1) {
-				const err = new Error("ServerIO.js - ServerIO.APIBASE is using a test setting! Oops "+ServerIO.APIBASE+" NB: Reset it to ''");
-				console.warn(err);
-			}
-			ServerIO.APIBASE = ''; // clear it
-		}
-		// TODO include datalog here too in notify
-		if (ServerIO.APIBASE && ! C.isProduction()) {
-			notifyUser("Using Server: "+ServerIO.APIBASE);
-		}
-	}
 
-	// datalog endpoint
-	if (ServerIO.DATALOG_ENDPOINT && C.isProduction() && 
-			(ServerIO.DATALOG_ENDPOINT.indexOf('test') !== -1 || ServerIO.DATALOG_ENDPOINT.indexOf('local') !== -1)
-		) {
-		const err = new Error("ServerIO.js - ServerIO.DATALOG_ENDPOINT is using a test setting! Oops "+ServerIO.DATALOG_ENDPOINT);
-		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
-		console.warn(err);
-	}
-	if (ServerIO.DATALOG_ENDPOINT && ! C.isProduction() && ServerIO.DATALOG_ENDPOINT.indexOf('https://lg') !== -1) {
-		console.warn("Using production DataLog Server: "+ServerIO.DATALOG_ENDPOINT); // this is common enough
-	}
-	// profiler
-	if (ServerIO.PROFILER_ENDPOINT && C.isProduction() && 
-			(ServerIO.PROFILER_ENDPOINT.indexOf('test') !== -1 || ServerIO.PROFILER_ENDPOINT.indexOf('local') !== -1)
-		) {
-		const err = new Error("ServerIO.js - ServerIO.PROFILER_ENDPOINT is using a test setting! Oops "+ServerIO.PROFILER_ENDPOINT);
-		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com/profile';
-		console.warn(err);
-	}
-	if (ServerIO.PROFILER_ENDPOINT && ! C.isProduction() && ServerIO.PROFILER_ENDPOINT.indexOf('https://profiler') !== -1) {
-		console.warn("Using production Profiler Server: "+ServerIO.PROFILER_ENDPOINT);
-	}
+
+// Endpoints for checkBase to inspect - expand as necessary.
+// "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
+// "prodValue" is the expected / forcibly-reset-to-this value that production servers should have.
+const endpoints = [
+	{name: 'base API', key: 'APIBASE', prodValue: ''},
+	{name: 'DataLog', key: 'DATALOG_ENDPOINT', prodValue: 'https://lg.good-loop.com/data'},
+	{name: 'Profiler', key: 'PROFILER_ENDPOINT', prodValue: 'https://profiler.good-loop.com/profile'},
+	{name: 'Ad', key: 'AS_ENDPOINT', prodValue: 'https://as.good-loop.com/'},
+];
+
+/**
+ * Call this from ServerIO.js 
+ * Safety check - if we deploy test code, it will complain.
+ */
+ServerIO.checkBase = () => {
+	endpoints.forEach(({name, key, prodValue}) => {
+		const endpointUrl = ServerIO[key]
+		if (!(key in ServerIO)) return; // Not defined, don't check it
+
+		// Normally a URL that doesn't say "test" or "local" (empty string included) is production...
+		let urlIsProd = !(endpointUrl.match(/(test|local)/));
+		// ...but APIBASE is special - it's normally empty for "this host" (except for My-Loop, which doesn't have its own backend)
+		// So for APIBASE on non-production servers with their own API, an empty string signifies NOT prod
+		if (key === 'APIBASE' && !C.isProduction && !ServerIO.NO_API_AT_THIS_HOST && !url) {
+			urlIsProd = false;
+		}
+
+		// Production site + production URL, or test site + test/local URL? Everything's fine.
+		if (C.isProduction() === urlIsProd) return;
+
+		if (!urlIsProd) {
+			// Production site + test/local URL? Forcibly correct the URL.
+			const err = new Error(`ServerIO.js - ServerIO.${key} is using a test setting! Oops: ${endpointUrl} - Resetting to '${prodValue}'`);
+			ServerIO[key] = prodValue;
+			console.warn(err);
+		} else {
+			// Test site + production URL? Post a warning in the console.
+			console.warn(`Using production ${name} Server: ${endpointUrl}`); // Common enough for Datalog
+		}
+	});
 }; //./checkBase()
 
 
