@@ -46,7 +46,7 @@ const _onDrop = (e, id, onDrop, el) => {
 	dragstate.dragging = null;
 	let x = e.clientX - window.pageXOffset;
 	let y = e.clientY - window.pageYOffset;
-	const drop = {dropzone:id, draggable:dragid, 
+	const drop = {dropzone:id, draggable:dragid,
 		x, y, screenX:e.screenX, screenY:e.screenY,
 		clientX:e.clientX, clientY:e.clientY};
 	dragstate.drops.push(drop);
@@ -77,16 +77,16 @@ const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
 		onDragStart={e => _onDragStart(e, id, onDragStart)}
 		onDragEnd={e => _onDragEnd(e, id, onDragEnd)}
 		onDragLeave={e => _onDragLeave(e, id)}
-		onTouchStart={e => {			
-    		var touch = e.targetTouches[0];			
+		onTouchStart={e => {
+			var touch = e.targetTouches[0];
 			console.log('touchstart', e, touch, JSON.stringify(touch));
 			// // Place element where the finger is
 			// draggable.style.left = touch.pageX-25 + 'px';
 			// draggable.style.top = touch.pageY-25 + 'px';
 			// e.preventDefault();
 		}}
-		onTouchMove={e => {			
-    		var touch = e.targetTouches[0];			
+		onTouchMove={e => {
+			var touch = e.targetTouches[0];
 			console.log('touchmove', e, touch, JSON.stringify(touch));
 			// // Place element where the finger is
 			// draggable.style.left = touch.pageX-25 + 'px';
@@ -103,8 +103,8 @@ const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
  * @param onDrop {?Function} Called if there is a drop here. (e, dropInfo) => do-stuff
  */
 const DropZone = ({id, children, onDrop}) => {
-	return (<div className='DropZone' id={id}		
-		onDragOver={e => _onDragOver(e, id)} 
+	return (<div className='DropZone' id={id}
+		onDragOver={e => _onDragOver(e, id)}
 		onDragEnter={e => _onDragEnter(e,id)}
 		onDragExit={e => _onDragExit(e,id)}
 		onDrop={e => _onDrop(e, id, onDrop, this)}>

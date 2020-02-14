@@ -11,9 +11,9 @@ import C from '../CBase';
 import Misc from './Misc.jsx';
 import NGO from '../data/NGO';
 
-/** 
+/**
  * Share on Facebook etc
- * 
+ *
  * There are default display icons for each service, but you can provide children to use instead
  * @param service. Options: 'twitter', 'facebook', 'linkedin'
  * @param {!String} url for the thing being shared

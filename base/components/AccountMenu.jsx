@@ -47,7 +47,7 @@ const AccountMenu = (props) => {
 const DesktopMenu = ({active, logoutLink, user}) => (
 	<ul id='top-right-menu' className="nav navbar-nav navbar-right">
 		<li className={'dropdown' + (active? ' active' : '')}>
-			<a className="dropdown-toggle" 
+			<a className="dropdown-toggle"
 				data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
 				{ user.name || user.xid }&nbsp;
 				<span className="caret" />
@@ -62,15 +62,15 @@ const DesktopMenu = ({active, logoutLink, user}) => (
 );
 
 /** Clicking username to expand does not work well on mobile
-// Just display all options as part of burger-menu 
+// Just display all options as part of burger-menu
 */
 const MobileMenu = ({active, logoutLink, user}) => (
 	<ul id='top-right-menu' className="nav navbar-nav navbar-right">
 		<li>
 			<a href="#account">
-				{ user.name || user.xid }&nbsp; 
+				{ user.name || user.xid }&nbsp;
 			</a>
-		</li> 
+		</li>
 		<li>
 			<a href={logoutLink} onClick={() => doLogout()}>Log out</a>
 		</li>

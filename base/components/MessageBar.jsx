@@ -11,7 +11,7 @@ import Messaging from '../plumbing/Messaging';
 
 /**
  * To add a message: see Messaging.js
- * 
+ *
  * This displays messages
  */
 const MessageBar = () => {

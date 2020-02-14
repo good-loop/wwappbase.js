@@ -116,7 +116,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, debug});
 			insertAdunitCss({frame, css});
 			return cleanup;
-		} 
+		}
 	}, [frameLoaded, frameReady, frameDoc, unitKey]);
 
 	// Redo CSS when CSS or adunit frame changes

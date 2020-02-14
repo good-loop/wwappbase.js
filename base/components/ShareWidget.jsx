@@ -32,8 +32,8 @@ const ShareLink = ({item, type, id, thingId}) => {
 };
 
 /**
- * 
- * @param {!String} shareId - From shareThingId() 
+ *
+ * @param {!String} shareId - From shareThingId()
  */
 const shareThing = ({shareId, withXId}) => {
 	assMatch(shareId, String);
@@ -66,10 +66,10 @@ const sendEmailNotification = (url, emailData) => {
 
 /**
  * A dialog for adding and managing shares
- * 
+ *
  * @param {DataClass} item - The item to be shared
  * @param {?String}	name - optional name for the thing
- * 
+ *
  * Note: This does NOT include the share button -- see ShareLink for that
 */
 const ShareWidget = ({item, type, id, name}) => {
@@ -84,7 +84,7 @@ const ShareWidget = ({item, type, id, name}) => {
 	const shareId = shareThingId(type, id);
 	const basePath = ['widget', 'ShareWidget', shareId];
 	let data = DataStore.getValue(basePath) || DataStore.setValue(basePath, {form: {}}, false);
-	const {warning, show, form} = data;	
+	const {warning, show, form} = data;
 	const formPath = basePath.concat('form');
 	if ( ! name) name = shareId;
 	let title = "Share "+name;
@@ -107,11 +107,11 @@ const ShareWidget = ({item, type, id, name}) => {
 				<div className="container-fluid">
 					<div className="row form-inline">
 						<Misc.PropControl inline label='Email to share with' path={formPath} prop='email' type='email' />
-					</div>	
+					</div>
 					<div className="row">
 						<Misc.PropControl path={formPath} prop='enableNotification' label='Send a notification email' type='checkbox'/>
 						{enableNotification? <Misc.PropControl path={formPath} prop='optionalMessage' id='OptionalMessage' label='Attached message' type='textarea' /> : null}
-						<button className='btn btn-primary btn-lg btn-block' disabled={!validEmailBool} 
+						<button className='btn btn-primary btn-lg btn-block' disabled={!validEmailBool}
 							onClick={()=>{
 								const {form} = DataStore.getValue(basePath) || {};
 
@@ -145,9 +145,9 @@ const ListShares = ({list}) => {
 const SharedWithRow = ({share}) => {
 	assert(share, "SharedWithRow");
 	return (
-		<div className='clearfix'>		
+		<div className='clearfix'>
 			<p className='pull-left'>{share._to}</p>
-			<button className='btn btn-outline-danger pull-right' 
+			<button className='btn btn-outline-danger pull-right'
 				title="remove this person's access"
 				onClick={ () => deleteShare({share}) }
 			>
@@ -168,7 +168,7 @@ const AccessDenied = ({thingId}) => {
 };
 
 /**
- * 
+ *
  * @param {String} id - The app item ID.
  */
 const ClaimButton = ({type, id}) => {
@@ -183,7 +183,7 @@ const ClaimButton = ({type, id}) => {
 
 	return (
 		<div>
-			This {type} has not been claimed yet. If you are the owner or manager, please claim it. 
+			This {type} has not been claimed yet. If you are the owner or manager, please claim it.
 			<div>
 				<button className='btn btn-default' onClick={() => Shares.claimItem({type, id})} >
 					Claim {id}

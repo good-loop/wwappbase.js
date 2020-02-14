@@ -117,7 +117,7 @@ Misc.Col2 = ({children, noContainer}) => {
 
 /**
  * Money span, falsy displays as 0
- * 
+ *
  * @param amount {?Money|Number}
  */
 Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits = 2, maximumSignificantDigits}) => {
@@ -246,7 +246,7 @@ Misc.RelativeDate = ({date, ...rest}) => {
 	} else if (diff > 4 * WEEK) {
 		// months is fiddly, so let Date handle it
 		count = (now.getMonth() - dateObj.getMonth()) + (12 * (now.getYear() - dateObj.getYear()));
-		counter = 'month';	
+		counter = 'month';
 	} else if (diff > WEEK) {
 		count = calcCount(WEEK);
 		counter = 'week';
@@ -337,7 +337,7 @@ Misc.AvatarImg = ({peep, ...props}) => {
 		// try a gravatar -- maybe 20% will have one c.f. http://euri.ca/2013/how-many-people-use-gravatar/index.html#fnref-1104-3
 		if (id && XId.service(id) === 'email') {
 			let e = XId.id(id);
-			img = 'https://www.gravatar.com/avatar/'+md5(e);						
+			img = 'https://www.gravatar.com/avatar/'+md5(e);
 		}
 		// security paranoia -- but it looks like Gravatar dont set a tracking cookie
 		// let html = `<img className='AvatarImg' alt=${'Avatar for '+name} src=${src} />`;
@@ -350,13 +350,13 @@ Misc.AvatarImg = ({peep, ...props}) => {
 
 /**
  * @param d {Date}
- * @return {String} iso format 
+ * @return {String} iso format
  */
 Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
 
 
 /**
- * 
+ *
  * @param {
  * 	url: {?String} The image url. If falsy, return null
  * 	style: {?Object} Use to override default 100px width & height
@@ -378,7 +378,7 @@ Misc.VideoThumbnail = ({url, width=200, height=150, controls=true}) => url ? (
 ) : null;
 
 
-/** Hack: a debounced auto-save function for the save/publish widget 
+/** Hack: a debounced auto-save function for the save/publish widget
  * @param {type, id}
 */
 Misc.saveDraftFn = _.debounce(
@@ -411,7 +411,7 @@ Misc.publishDraftFn = _.debounce(
 
 /**
  * save buttons
- * 
+ *
  * @param saveAs {?Boolean} If set, offer a save-as button which will copy, tweak the ID and the name, then save.
  */
 Misc.SavePublishDiscard = ({
@@ -463,7 +463,7 @@ Misc.SavePublishDiscard = ({
 	// debug info on DataStore state
 	let pubv = DataStore.getData({status:C.KStatus.PUBLISHED, type, id});
 	let draftv = DataStore.getData({status:C.KStatus.DRAFT, type, id});
-	let dsi = pubv? (draftv? (pubv===draftv? "published = draft" : "published & draft") : "published only") 
+	let dsi = pubv? (draftv? (pubv===draftv? "published = draft" : "published & draft") : "published only")
 					: (draftv? "draft only" : "nothing loaded");
 	// Does a published version exist? (for if we show unpublish)
 	// NB: item.status = MODIFIED should be reliable but lets not entirely count on it.
@@ -496,7 +496,7 @@ Misc.SavePublishDiscard = ({
 				Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</BS.Button>
 			{saveAs ? <>&nbsp;
-				<BS.Button name="save-as" color='default' disabled={isSaving} 
+				<BS.Button name="save-as" color='default' disabled={isSaving}
 					title='Copy and save with a new ID'
 					onClick={confirmSaveAs} >
 					<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
@@ -508,12 +508,12 @@ Misc.SavePublishDiscard = ({
 				Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</BS.Button>
 			&nbsp;
-			<BS.Button name="discard" color='warning' disabled={isSaving || noEdits} 
+			<BS.Button name="discard" color='warning' disabled={isSaving || noEdits}
 				onClick={() => ActionMan.discardEdits(type, id)}>
 				Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
 			</BS.Button>
 			{unpublish && pubExists ? <>&nbsp;
-				<BS.Button name="unpublish" color='warning' disabled={isSaving || noEdits} 
+				<BS.Button name="unpublish" color='warning' disabled={isSaving || noEdits}
 					title='Move from published to draft'
 					onClick={() => ActionMan.unpublish(type, id)} >
 					Un-Publish <span className="glyphicon glyphicon-cd spinning" style={vis} />
@@ -531,7 +531,7 @@ Misc.SavePublishDiscard = ({
 
 
 /**
- * 
+ *
  * @param path {?String[]} path to the form-data to submit.
  * @param {Boolean} once If set, this button can only be clicked once.
  * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
@@ -542,7 +542,7 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, className='btn bt
 	// assMatch(path, 'String[]');
 	// track the submit request
 	const [submitStatus, setSubmitStatus] = useState();
-	// const tpath = ['transient','SubmitButton'].concat(path);	
+	// const tpath = ['transient','SubmitButton'].concat(path);
 	if ( ! formData && path) formData = DataStore.getValue(path);
 	// DataStore.setValue(tpath, C.STATUS.loading);
 	const params = {

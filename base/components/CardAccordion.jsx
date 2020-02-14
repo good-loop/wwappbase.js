@@ -8,15 +8,15 @@ import BS from './BS';
 /**
  * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
  * This also provides some robustness via try-catch error handling.
- * 
+ *
  * You can wrap these cards -- if you do, you MUST pass down misc parameters to enable the CardAccordion wiring to work. e.g.
  * <Foo {...stuff}> => <Misc.Card {...stuff}>
  * Note: If you see a card missing collapse controls -- this is probably the issue.
- * 
+ *
  * @param {String|JSX} title - will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.
- * 
+ *
  * TODO What is the use-case for titleChildren, titleClassName?? Deprecated??
- * 
+ *
  * @param titleChildren jsx elements to put in the header (can be used with/without title)
  * @param {any} error - If set, colour the card red
  * @param warning {any} If set, colour the card yellow
@@ -30,7 +30,7 @@ class Card extends React.Component {
 	 */
 	componentDidCatch(error, info) {
 		this.setState({error, info});
-		console.error(error, info); 
+		console.error(error, info);
 		if (window.onerror) window.onerror("Card caught error", null, null, null, error);
 	}
 
@@ -39,10 +39,10 @@ class Card extends React.Component {
 		// Card.current = this;
 
 		let {title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, titleClassName, warning, error, ...props} = this.props;
-		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.	
+		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.
 		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
 		if ( ! children) {
-			return null; 
+			return null;
 		}
 		let header = null;
 		if (title || titleChildren) {
@@ -53,10 +53,10 @@ class Card extends React.Component {
 			if (error && _.isString(error)) hoverText = error;
 			else if (warning && _.isString(warning)) hoverText = warning;
 			header = (
-				<div className={onHeaderClick? 'btn-link' : null} onClick={onHeaderClick} 
+				<div className={onHeaderClick? 'btn-link' : null} onClick={onHeaderClick}
 					title={hoverText} >
 					<span className={titleClassName}>
-						{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null} 
+						{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null}
 						{title || <span>&nbsp;</span>} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
 					</span>
 					{ titleChildren }
@@ -82,14 +82,14 @@ class Card extends React.Component {
 
 
 /**
- * 
+ *
  * @param {?String} widgetName - Best practice is to give the widget a name.
  * @param {?Boolean} multiple - If true, allow multiple cards to stay open.
  * @param {Misc.Card[]} children
  *    children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
  * @param {?Boolean} defaultOpen - Should all cards start open or closed? This is more normally set at the Card level.
  */
-const CardAccordion = ({widgetName, children, multiple, start, defaultOpen}) => {	
+const CardAccordion = ({widgetName, children, multiple, start, defaultOpen}) => {
 	// NB: accordion with one child is not an array
 	if ( ! _.isArray(children)) {
 		children = [children];
@@ -122,7 +122,7 @@ const CardAccordion = ({widgetName, children, multiple, start, defaultOpen}) => 
 	if ( ! children) {
 		return (<div className='CardAccordion' />);
 	}
-	assert(_.isArray(opens), "Misc.jsx - CardAccordion - open not an array", opens);	
+	assert(_.isArray(opens), "Misc.jsx - CardAccordion - open not an array", opens);
 	const kids = React.Children.map(children, (Kid, i) => {
 		let collapse = ! opens[i];
 		let onHeaderClick = e => {

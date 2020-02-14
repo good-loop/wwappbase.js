@@ -17,7 +17,7 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
 	// Display in progress as complete if left of the current page
 	let complete = i < stageNum;
 	// if (stage.complete === false) complete = false; TODO stage.error/warning?
-	let c = ''; 
+	let c = '';
 	if (i == stageNum) {
 		c = 'active';
 	} else if (complete) {
@@ -34,7 +34,7 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
 			</center>
 			<hr className='line' />
 			<h5 className='text-center below'>{stage.title}</h5>
-		</div>	
+		</div>
 	);
 };
 
@@ -43,24 +43,24 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
  * next, previous, sufficient, complete
  *
  * NB: these are used by the surrounding widgets - progress & next/prev buttons
- * 
+ *
  * Also for convenient lazy setting of sufficient/complete, a function is passed to children:
  * setNavStatus({sufficient, complete})
- * 
+ *
  * @param {?Boolean} sufficient default=true
  * @param {?Boolean} complete default=false
- * 
+ *
  * To get this, the child must have a boolean setNavStatus flag, which gets replaced.
  * @param onNext function called when user interacts with "next" button
- * @param onPrev function called when user interacts with "prev" button 
+ * @param onPrev function called when user interacts with "prev" button
  */
-const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous, 
-	sufficient=true, complete=false, 
-	title, onNext, onPrev, children}) => 
+const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
+	sufficient=true, complete=false,
+	title, onNext, onPrev, children}) =>
 {
 	assert(stageNum !==null && stageNum !== undefined);
 	assMatch(maxStage, Number);
-	if (stageKey != stageNum) { // allow "1" == 1		
+	if (stageKey != stageNum) { // allow "1" == 1
 		return null; //<p>k:{stageKey} n:{stageNum}</p>;
 	}
 
@@ -69,7 +69,7 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 	const setNavStatus = (newStatus) => {
 		Object.assign(navStatus, newStatus);
 	};
-	// pass in setNavStatus	
+	// pass in setNavStatus
 	if (children) {
 		// array of elements (or just one)?
 		if (children.filter) children = children.filter(x => !! x);
@@ -85,9 +85,9 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 	}
 	return (<div className='WizardStage'>
 		{children}
-		<WizardNavButtons stagePath={stagePath} 
-			navStatus={navStatus} 
-			maxStage={maxStage} 
+		<WizardNavButtons stagePath={stagePath}
+			navStatus={navStatus}
+			maxStage={maxStage}
 			onNext={onNext}
 			onPrev={onPrev}
 		/>
@@ -96,7 +96,7 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 
 
 /**
- * 
+ *
  * @param {
  * 	maxStage: {Number}
  * }
@@ -104,8 +104,8 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 const NextButton = ({complete, stagePath, maxStage, onNext, ...rest}) => {
 	const bsClass = complete ? 'primary' : null;
 	assMatch(maxStage, Number);
-	return (<NextPrevTab stagePath={stagePath} bsClass={bsClass} diff={1} 
-		text={<span>Next <Misc.Icon glyph='menu-right' /></span>} 
+	return (<NextPrevTab stagePath={stagePath} bsClass={bsClass} diff={1}
+		text={<span>Next <Misc.Icon glyph='menu-right' /></span>}
 		maxStage={maxStage} {...rest} callback={onNext} />);
 };
 const PrevButton = ({stagePath, onPrev, ...rest}) => {
@@ -115,7 +115,7 @@ const PrevButton = ({stagePath, onPrev, ...rest}) => {
 const NextPrevTab = ({stagePath, diff, text, bsClass='default', maxStage, callback, ...rest}) => {
 
 	assMatch(stagePath, 'String[]');
-	assMatch(diff, Number);	
+	assMatch(diff, Number);
 	assert(text, 'WizardProgressWidget.js - no button text');
 	const stage = parseInt(DataStore.getValue(stagePath) || 0);
 
@@ -131,9 +131,9 @@ const NextPrevTab = ({stagePath, diff, text, bsClass='default', maxStage, callba
 	const pull = diff > 0? 'pull-right' : 'pull-left';
 
 	return (
-		<button className={`btn btn-${bsClass} btn-lg ${pull}`} 
+		<button className={`btn btn-${bsClass} btn-lg ${pull}`}
 			onClick={() => {
-				changeTab(); 
+				changeTab();
 				if(callback) callback();
 			}}
 		{...rest} >
@@ -188,11 +188,11 @@ const WizardNavButtons = ({stagePath, maxStage, navStatus, onNext, onPrev}) => {
 	if (complete) sufficient = true;
 	let msg = ! sufficient? 'Please fill in more of the form' : null;
 	return (<div className='nav-buttons clearfix'>
-		{previous===false? null : 
-			<PrevButton stagePath={stagePath} onPrev={onPrev} /> 
+		{previous===false? null :
+			<PrevButton stagePath={stagePath} onPrev={onPrev} />
 		}
-		{next===false? null : 
-			<NextButton stagePath={stagePath} maxStage={maxStage} disabled={ ! sufficient} complete={complete} title={msg} onNext={onNext} /> 
+		{next===false? null :
+			<NextButton stagePath={stagePath} maxStage={maxStage} disabled={ ! sufficient} complete={complete} title={msg} onNext={onNext} />
 		}
 	</div>);
 };

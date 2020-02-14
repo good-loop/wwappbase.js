@@ -16,13 +16,13 @@ class ChartWidget extends React.Component {
 	}
 
 	componentWillMount() {
-		this.setState({		
+		this.setState({
 		});
 	}
 
 	componentDidCatch() {
 		this.setState({error, info});
-		console.error(error, info); 
+		console.error(error, info);
 		if (window.onerror) window.onerror("ChartWidget caught error", null, null, null, error);
 	}
 
@@ -87,7 +87,7 @@ class ChartWidget extends React.Component {
 				xAxes: [{
 					type: 'time',
 					time: {
-						displayFormats: {							
+						displayFormats: {
 							quarter: 'MMM YYYY',
 							hour: 'MMM D hA'
 						}
@@ -109,8 +109,8 @@ class ChartWidget extends React.Component {
  * @param data Array of {x (which can be a Time string), y}
  * @returns {label, data, etc}
  */
-const makeDataSet = (i, label, xydata) => {	
-	// console.log('makeDataSet', label, xydata);	
+const makeDataSet = (i, label, xydata) => {
+	// console.log('makeDataSet', label, xydata);
 	// HACK pick a colour
 	let colors = ["rgba(75,192,192,1)", "rgba(192,75,192,1)", "rgba(192,192,75,1)", "rgba(75,75,192,1)", "rgba(75,192,75,1)", "rgba(192,75,75,1)"];
 	let color = colors[i % colors.length];

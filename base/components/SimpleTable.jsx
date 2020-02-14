@@ -64,19 +64,19 @@ class Column extends DataClass {
 
 /**
  * @param data: {Item[]} each row an item. item.style will set row tr styling
- *  * 
+ *  *
  * @param dataObject Deprecated! a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
  * So the columns should use accessors 'key' and 'value'.
  * This is ONLY good for simple 2-column tables!
- * 
+ *
  * @param columns: {Column[]|String[]} Can mix String and Column
- * 
+ *
  * addTotalRow: {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
- * 
+ *
  * topRow: {Item} - A row Object. Provide an always visible (no filtering) top row, e.g. for totals including extra data.
- * 
+ *
  * showSortButtons {Boolean} default true
- * 
+ *
  * @param {?Boolean} hideEmpty - If true, hide empty columns
  * @param {?Number} rowsPerPage - Cap the number of rows shown. This cap is applied after filtering and sorting
  * @param {?Boolean} csv If true, offer csv download
@@ -94,7 +94,7 @@ class SimpleTable extends React.Component {
 			// doc type??
 			const checkboxValues = props.columns.reduce((obj, e) => {
 				const colHead = e.Header || e.accessor || str(e);
-				obj[colHead] = true;  
+				obj[colHead] = true;
 				return obj;
 			}, {});
 			this.setState({checkboxValues});
@@ -104,10 +104,10 @@ class SimpleTable extends React.Component {
 
 	render() {
 		let {
-			tableName='SimpleTable', data, dataObject, columns, 
-			headerRender, className, csv, 
+			tableName='SimpleTable', data, dataObject, columns,
+			headerRender, className, csv,
 			addTotalRow,
-			topRow, 
+			topRow,
 			bottomRow, hasFilter, rowsPerPage, statePath,
 			// checkboxValues, copied into state for modifying
 			hideEmpty,
@@ -174,9 +174,9 @@ class SimpleTable extends React.Component {
 
 		return (
 			<div className='SimpleTable'>
-				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control' 
-					value={tableSettings.filter || ''} 
-					onChange={filterChange} 
+				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control'
+					value={tableSettings.filter || ''}
+					onChange={filterChange}
 					/></div> : null}
 				<div>
 					{checkboxValues? <RemoveAllColumns table={this} /> : null}
@@ -186,18 +186,18 @@ class SimpleTable extends React.Component {
 	<thead>
 		<tr>
 			{visibleColumns.map((col, c) => {
-				return <Th table={this} tableSettings={tableSettings} key={c} 
-					column={col} c={c} dataArray={dataArray} headerRender={headerRender} 
+				return <Th table={this} tableSettings={tableSettings} key={c}
+					column={col} c={c} dataArray={dataArray} headerRender={headerRender}
 					checkboxValues={checkboxValues} showSortButtons={showSortButtons} />
 			})
 			}
 		</tr>
 
 		{topRow? <Row className='topRow' item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
-		{addTotalRow? 
+		{addTotalRow?
 			<tr className='totalRow' >
 				<th>{addTotalRow}</th>
-				{visibleColumns.slice(1).map((col, c) => 
+				{visibleColumns.slice(1).map((col, c) =>
 					<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
 				}
 			</tr>
@@ -212,10 +212,10 @@ class SimpleTable extends React.Component {
 	<TableFoot csv={csv} tableName={tableName} dataArray={dataArray} numPages={numPages} page={page} colSpan={visibleColumns.length} />
 </table>
 						</div>
-					</div>	
+					</div>
 					{checkboxValues? <DeselectedCheckboxes columns={columns} checkboxValues={checkboxValues} table={this} /> : null}
 				</div>
-			</div>			
+			</div>
 		);
 	} // ./ render()
 
@@ -227,7 +227,7 @@ class SimpleTable extends React.Component {
  * @returns {data, visibleColumns: COlumn[]}
  */
 const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxValues, rowsPerPage, page=0}) => {
-	// filter?		
+	// filter?
 	// always filter nulls
 	data = data.filter(row => !!row);
 	if (tableSettings.filter) {
@@ -272,8 +272,8 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 	}
 	// HACK: rowtree? add a collapse column
 	if (rowtree) {
-		const Cell = (v, col, {rowtree}) => Tree.children(rowtree).length? 
-			<button className='btn btn-xs' 
+		const Cell = (v, col, {rowtree}) => Tree.children(rowtree).length?
+			<button className='btn btn-xs'
 				onClick={e => {rowtree.collapsed = ! rowtree.collapsed; console.warn(rowtree, JSON.stringify(rowtree)); DataStore.update();}}
 			>{rowtree.collapsed? '+' : '-'}</button>
 			 : null;
@@ -288,7 +288,7 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 
 /**
  * The meat of the table! (normally)
- * @param {Object[]} data 
+ * @param {Object[]} data
  */
 const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 	if ( ! data) return null;
@@ -296,12 +296,12 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 	let min = rowsPerPage? page*rowsPerPage : 0;
 	let max = rowsPerPage? (page+1)*rowsPerPage : Infinity;
 	if ( ! csv) { // need to process them all for csv download. otherwise clip early
-		let pageData = data.slice(min, max);			
+		let pageData = data.slice(min, max);
 		data = pageData;
 	}
 	// build the rows
-	let $rows = data.map( (d,i) => 
-		<Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray} 
+	let $rows = data.map( (d,i) =>
+		<Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray}
 			hidden={csv && (i<min || i>=max)} />
 	);
 	return $rows;
@@ -311,7 +311,7 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons, checkboxValues}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
 	let sortByMe = _.isEqual(tableSettings.sortBy, column);
-	let onClick = e => { 
+	let onClick = e => {
 		console.warn('sort click', column, sortByMe, tableSettings);
 		if (sortByMe) {
 			table.setState({sortByReverse: ! tableSettings.sortByReverse});
@@ -337,13 +337,13 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 	let showColumnControl = null;
 	if(checkboxValues) {
 		if(checkboxValues[headerKeyString] === false) return null; //Don't display column if it has been deselected
-		showColumnControl = (<div key={headerKeyString} 
-			style={{cursor: 'pointer', marginBottom: '10px'}} 
-			onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}} 
+		showColumnControl = (<div key={headerKeyString}
+			style={{cursor: 'pointer', marginBottom: '10px'}}
+			onClick={() => {checkboxValues[headerKeyString] = !checkboxValues[headerKeyString]; table.setState(checkboxValues)}}
 			>
 				<Misc.Icon glyph='remove'/>
 			</div>);
-	}	
+	}
 	
 	let arrow = null;
 	if (sortByMe) arrow = <Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />;
@@ -368,7 +368,7 @@ const Row = ({item, row, rowtree, columns, dataArray, className, depth, hidden})
 	dataArray.push(dataRow);
 	const $cells = columns.map(col => <Cell key={JSON.stringify(col)} row={row} rowtree={rowtree} column={col} item={item} dataRow={dataRow} />);
 	const rstyle = Object.assign({}, hidden? {display:'none'} : null, item.style); // NB: we still have to render hidden rows, to get the data-processing side-effects
-	return (<tr className={join(className, "row"+row, "depth"+depth)} depth={depth} style={rstyle}>		
+	return (<tr className={join(className, "row"+row, "depth"+depth)} depth={depth} style={rstyle}>
 		{$cells}
 	</tr>);
 };
@@ -378,13 +378,13 @@ const getValue = ({item, row, column}) => {
 		console.error("SimpleTable.jsx getValue: null item", column);
 		return undefined;
 	}
-	let accessor = column.accessor || column; 
+	let accessor = column.accessor || column;
 	let v = _.isFunction(accessor)? accessor(item) : item[accessor];
 	return v;
 };
 
 /**
- * @param {Column} column 
+ * @param {Column} column
  * @returns {Function} item -> value for use in sorts and totals
  */
 const sortGetter = (column) => {
@@ -396,9 +396,9 @@ const sortGetter = (column) => {
 /**
  * A default sort
  * NOTE: this must have the column object passed in
- * @param {*} a 
- * @param {*} b 
- * @param {Column} column 
+ * @param {*} a
+ * @param {*} b
+ * @param {Column} column
  */
 const defaultSortMethodForGetter = (a, b, getter) => {
 	assert(_.isFunction(getter), "SimpleTable.jsx defaultSortMethodForGetter", getter);
@@ -443,7 +443,7 @@ const defaultCellRender = (v, column) => {
 };
 
 /**
- * 
+ *
  * @param {Column} column
  * @param {?Tree} rowtree
  */
@@ -524,8 +524,8 @@ const Editor = ({row, column, value, item}) => {
 		dummyItem[prop] = editedValue;
 	}
 	let type = column.type;
-	return (<Misc.PropControl type={type} item={dummyItem} path={path} prop={prop} 
-		saveFn={column.saveFn} 
+	return (<Misc.PropControl type={type} item={dummyItem} path={path} prop={prop}
+		saveFn={column.saveFn}
 	/>);
 }; // ./Editor
 const CellFormat = new Enum("percent string"); // What does a spreadsheet normally offer??
@@ -592,9 +592,9 @@ const DeselectedCheckboxes = ({columns, checkboxValues, table}) => {
 
 const RemoveAllColumns = ({table}) => {
 	return (
-		<div className='deselectAll' style={{display: 'inline-block', cursor: 'pointer', margin: '15px', color: '#9d130f'}} 
+		<div className='deselectAll' style={{display: 'inline-block', cursor: 'pointer', margin: '15px', color: '#9d130f'}}
 			onClick={() => {
-				Object.keys(table.state.checkboxValues).forEach(k => table.state.checkboxValues[k] = false); 
+				Object.keys(table.state.checkboxValues).forEach(k => table.state.checkboxValues[k] = false);
 				table.forceUpdate();}}>
 			<Misc.Icon glyph='remove' />
 			Remove all columns

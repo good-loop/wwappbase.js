@@ -20,10 +20,10 @@ import BS from './BS';
  * Provide a list of items of a given type.
  * Clicking on an item sets it as the nav value.
  * Get the item id via:
- * 
+ *
  * 	const path = DataStore.getValue(['location','path']);
  * 	const itemId = path[1];
- * 
+ *
  * @param {C.TYPES} type
  * @param {?String} q - Optional query e.g. advertiser-id=pepsi
  * Note: that filter can add to this
@@ -32,21 +32,21 @@ import BS from './BS';
  * @param {?Boolean} hasFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?String} status - e.g. "Draft"
  * @param {?String} servlet - @deprecated - use navpage instead
- * @param {?String} navpage - e.g. "publisher" If unset, a default is taken from the url. 
- * Best practice is to set navpage to avoid relying on url behaviour. 
+ * @param {?String} navpage - e.g. "publisher" If unset, a default is taken from the url.
+ * Best practice is to set navpage to avoid relying on url behaviour.
  * @param ListItem {?React component} if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
  * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).
  * @param {?String} itemClassName - If set, overrides the standard ListItem btn css classes
  */
-const ListLoad = ({type, status, servlet, navpage, 
+const ListLoad = ({type, status, servlet, navpage,
 	q,
 	sort,
 	filter, hasFilter,
-	ListItem, 
+	ListItem,
 	checkboxes, canDelete, canCreate, className,
-	notALink, itemClassName}) => 
+	notALink, itemClassName}) =>
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
@@ -64,9 +64,9 @@ const ListLoad = ({type, status, servlet, navpage,
 	// if (id) return null;
 
 	if (servlet && ! navpage) {
-		console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");	
+		console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");
 	}
-	if ( ! navpage) navpage = servlet || DataStore.getValue('location', 'path')[0]; //type.toLowerCase();	
+	if ( ! navpage) navpage = servlet || DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
 	if ( ! servlet) servlet = navpage;
 	if ( ! servlet) {
 		console.warn("ListLoad - no servlet? type="+type);
@@ -76,14 +76,14 @@ const ListLoad = ({type, status, servlet, navpage,
 	assMatch(navpage, String);
 	assert(navpage && navpage[0] !== '#', "ListLoad.jsx - navpage should be a 'word' ["+navpage+"]");
 	// store the lists in a separate bit of appstate
-	// from data. 
+	// from data.
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
 	// NB: case-insentive filtering
 	if (hasFilter) {
 		assert( ! filter, "ListLoad.jsx - Do NOT use filter and hasFilter props");
 		filter = DataStore.getValue(widgetPath.concat('filter'));
-	}	
+	}
 	if (filter) filter = filter.toLowerCase(); // normalise
 	
 	// Load via ActionMan -- both filtered and un-filtered
@@ -92,7 +92,7 @@ const ListLoad = ({type, status, servlet, navpage,
 
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
-	}	
+	}
 	// filter out duplicate-id (paranoia: this should already have been done server side)
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let items = [];
@@ -122,28 +122,28 @@ const ListLoad = ({type, status, servlet, navpage,
 		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
 	}
 
-	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >		
+	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} /> : null}
 		
-		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}		
+		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
 
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i}
-				item={item} 
-				type={type} 
-				checkboxes={checkboxes} 
-				canDelete={canDelete} 
+				item={item}
+				type={type}
+				checkboxes={checkboxes}
+				canDelete={canDelete}
 				servlet={servlet}
 				navpage={navpage}
 				notALink={notALink}
 				itemClassName={itemClassName}
 			>
 				<ListItem key={'li'+(getId(item) || i)}
-					type={type} 
-					servlet={servlet} 
-					navpage={navpage} 
-					item={item} 
+					type={type}
+					servlet={servlet}
+					navpage={navpage}
+					item={item}
 				/>
 			</ListItemWrapper>
 		))}
@@ -167,7 +167,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	const id = getId(item);
 
 	// TODO refactor this Portal specific code out of here.
-	// for the campaign page we want to manipulate the url to modify the vert/vertiser params 
+	// for the campaign page we want to manipulate the url to modify the vert/vertiser params
 	// that means both modifying href and onClick definitions
 	let itemUrl = servlet==="campaign" ? modifyHash([servlet,null], {'gl.vertiser':null, 'gl.vert':id}, true) : modifyHash([servlet, id], null, true);
 	let customParams = servlet==="campaign" ? {'gl.vertiser':null, 'gl.vert':id} : null;
@@ -181,7 +181,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	) : null;
 
 	// use a or div?
-	// ??Is there a nicer way to do this?	
+	// ??Is there a nicer way to do this?
 
 	return (
 		<div className='ListItemWrapper clearfix'>
@@ -201,7 +201,7 @@ const A = ({notALink, id, children, ...stuff}) => notALink? <div key={'Ad'+id} {
 
 /**
  * These can be clicked or control-clicked
- * 
+ *
  * @param servlet
  * @param navpage -- How/why/when does this differ from servlet??
  * @param nameFn {Function} Is there a non-standard way to extract the item's display name?
@@ -213,7 +213,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
-	if (name.length > 280) name = name.slice(0,280); 
+	if (name.length > 280) name = name.slice(0,280);
 	const status = C.KStatus.isPUBLISHED(item.status)? null : item.status;
 	return (
 		<div>
@@ -230,8 +230,8 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 
 
 const DefaultDelete = ({type,id}) => (
-	<button className='btn btn-xs btn-default pull-right' 
-		onClick={e => confirm("Delete this "+type+"?")? ActionMan.delete(type, id) : null} 
+	<button className='btn btn-xs btn-default pull-right'
+		onClick={e => confirm("Delete this "+type+"?")? ActionMan.delete(type, id) : null}
 		title='Delete'>
 		<BS.Icon name='trash' />
 	</button>
@@ -249,16 +249,16 @@ const DefaultDelete = ({type,id}) => (
  */
 const createBlank = ({type, navpage, base, id, make}) => {
 	assert( ! getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) "+type+". Safety hack: Pass in an id param instead");
-	// Call the make?	
+	// Call the make?
 	let newItem;
 	if (make) {
 		newItem = make(base);
 	} else {
 		const klass = getClass(type);
 		if (klass) {
-			const cons = klass.bind({}); // NB: need the bind otherwise `this` is undefined			
+			const cons = klass.bind({}); // NB: need the bind otherwise `this` is undefined
 			newItem = cons(base); // equivalent to `new Thing(base)` -- probably the normal way to do things
-			if (klass._name) newItem['@type'] = klass._name;	// NB: dont forget the DataClass type, which is lost by the bind 
+			if (klass._name) newItem['@type'] = klass._name;	// NB: dont forget the DataClass type, which is lost by the bind
 		}
 	}
 	if ( ! newItem) newItem = Object.assign({}, base);
@@ -294,9 +294,9 @@ const createBlank = ({type, navpage, base, id, make}) => {
 const CreateButton = ({type, props, navpage, base, id, make}) => {
 	assert(type);
 	assert( ! base || ! base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) "+type+". You can use top-level `id` instead.");
-	if ( ! navpage) navpage = DataStore.getValue('location', 'path')[0];	
+	if ( ! navpage) navpage = DataStore.getValue('location', 'path')[0];
 	// merge any form props into the base
-	const cpath = ['widget','CreateButton'];	
+	const cpath = ['widget','CreateButton'];
 	base = Object.assign({}, base, DataStore.getValue(cpath));
 	// was an ID passed in by editor props?
 	if ( ! id) id = base.id; // usually null
@@ -310,8 +310,8 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 };
 
 /**
- * 
- * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url. 
+ *
+ * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set servlet to avoid relying on url behaviour.
  */
 const ListItems = ({type, navpage, servlet, status=C.KStatus.ALL_BAR_TRASH, q}) => {

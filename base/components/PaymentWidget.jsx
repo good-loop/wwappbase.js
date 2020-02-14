@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 import { Button, Form, FormGroup, Col } from 'react-bootstrap';
 
 import { StripeProvider, Elements, injectStripe,
-	CardNumberElement, CardExpiryElement, CardCVCElement, 
+	CardNumberElement, CardExpiryElement, CardCVCElement,
 	PaymentRequestButtonElement } from 'react-stripe-elements';
 
 import C from '../CBase';
@@ -56,7 +56,7 @@ const STRIPE_MINIMUM_AMOUNTS = {
  * onToken: {!Function} inputs: token|source, which are similar but different. Sources can be reused
  * 	token = {id:String, type:String, token:String, email:String, type:"card", object:"token"}
  * 	source = {id, card:object, owner: {email, verified_email}, type:"card", object:"source"}
- * 	Called once the user has provided payment details, and we've got a token back from Stripe. 
+ * 	Called once the user has provided payment details, and we've got a token back from Stripe.
  * 	This should then call the server e.g. by publishing a donation - to take the actual payment.
  * 	The token string is either a Stripe authorisation token, or one of the fixed special values (e.g. credit_token).
  * @param {?Boolean} testOption true/false to show/hide the pretend-I-paid option. Defaults to true on test or local.
@@ -106,7 +106,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 	if (credit && Money.value(credit) > 0) {
 		if (Money.value(credit) >= Money.value(amount)) {
 			return (
-				<div className='section donation-amount'>			
+				<div className='section donation-amount'>
 					<p>You have <Misc.Money amount={credit} /> in credit which will pay for this.</p>
 					<button onClick={payByCredit} className='btn btn-primary'>Send Payment</button>
 				</div>
@@ -118,17 +118,17 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 		<div className='section donation-amount'>
 			<StripeProvider apiKey={stripeKey}>
 				<Elements>
-					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient} 
+					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient}
 						email={email} usePaymentRequest={usePaymentRequest} serverError={error}
 					/>
 				</Elements>
 			</StripeProvider>
 
-			{error? <div className='alert alert-danger'>{error}</div> : null} 
+			{error? <div className='alert alert-danger'>{error}</div> : null}
 
 			{testOption? (
 				<small className='clear'>
-					Test card no: 4000008260000000 (use any CVC and any future expiry date). 
+					Test card no: 4000008260000000 (use any CVC and any future expiry date).
 					Stolen test card no: 4000000000009979.
 					Or
 					<button onClick={skipAction}>test: pretend I paid</button>
@@ -218,7 +218,7 @@ class StripeThingsClass extends Component {
 		// get the token or reusable source from stripe
 		// see https://stripe.com/docs/sources/cards
 		// TODO update to https://stripe.com/docs/payments/payment-intents
-		this.props.stripe.createSource(tokenInfo, ownerInfo)		// Token(tokenInfo)		
+		this.props.stripe.createSource(tokenInfo, ownerInfo)		// Token(tokenInfo)
 			// then call custom processing (e.g. publish donation)
 			.then(({token, source, error, ...data}) => {
 				if (source) {
@@ -247,7 +247,7 @@ class StripeThingsClass extends Component {
 		return (
 			<Form horizontal onSubmit={(event) => this.handleSubmit(event)}>
 				<h3>Payment of <Misc.Money amount={amount} /> to {recipient}</h3>
-				{credit && Money.value(credit) > 0? 
+				{credit && Money.value(credit) > 0?
 					<FormGroup><Col md={12}>
 						You have <Misc.Money amount={credit} /> in credit which will be used towards this payment.
 					</Col></FormGroup>
@@ -275,9 +275,9 @@ class StripeThingsClass extends Component {
 					</Col>
 				</FormGroup>
 
-				<button className='btn btn-primary btn-lg pull-right' type='submit' 
-					disabled={isSaving || !isValidAmount} 
-					title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency} 
+				<button className='btn btn-primary btn-lg pull-right' type='submit'
+					disabled={isSaving || !isValidAmount}
+					title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency}
 					>Submit Payment</button>
 
 				{this.state.errorMsg? <div className='alert alert-danger'>{this.state.errorMsg}</div> : null}

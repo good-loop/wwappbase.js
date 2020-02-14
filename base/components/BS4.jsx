@@ -11,14 +11,14 @@ BS.version = 4;
 
 // NB: the `!! checked` is to avoid React complaining about a change from uncontrolled to controlled.
 BS.Checkbox = ({checked, value, label, onChange}) => {
-	return (<div className="form-check">	
-	<input className='form-check-input' type="checkbox" 
+	return (<div className="form-check">
+	<input className='form-check-input' type="checkbox"
 		value={value} onChange={onChange} checked={ !! checked} />
 	<label className="form-check-label">{label}</label>
 </div>);
 };
 
-BS.Radio = ({checked, value, label, onChange}) => (<div className="form-check">	
+BS.Radio = ({checked, value, label, onChange}) => (<div className="form-check">
 	<input className='form-check-input' type="radio" value={value} onChange={onChange} checked={!!checked} />
 	<label className="form-check-label">{label}</label>
 </div>);
@@ -84,7 +84,7 @@ BS.Button = ({size, color = 'outline-dark', bg, children, className, ...stuff}) 
 
 /**
  * @link https://getbootstrap.com/docs/4.3/components/navbar
- * 
+ *
  * @param placement {?String} e.g. "fixed-top"
  * @param color {?String} e.g. "dark"
  */

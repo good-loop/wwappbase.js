@@ -48,12 +48,12 @@ const DemoPlayer = ({ vertId, production, noSocial, adBlockerDetected }) => {
 	const handleDevicePickerClick = e => setState({ ...state, device: e.target.getAttribute('device')});
 
 	const ad = state.format === 'social' ? (
-		<SocialAd 
+		<SocialAd
 			vertId={vertId}
 			nonce={`${state.format}${state.device}${vertId}`}
 		/>
 	) : (
-		<GoodLoopAd 
+		<GoodLoopAd
 			vertId={vertId}
 			size={sizes[state.format][state.device]}
 			nonce={`${state.format}${state.device}${vertId}`}
@@ -100,14 +100,14 @@ const DemoPlayer = ({ vertId, production, noSocial, adBlockerDetected }) => {
 						className={`picker-button ${currentButtonHighlighter('landscape')}`}
 						onClick={handleDevicePickerClick}
 					>
-						{deviceSvgs["landscape"]} 
+						{deviceSvgs["landscape"]}
 					</button>
 					<button outline color="secondary"
 						device="desktop"
 						className={`picker-button ${currentButtonHighlighter('desktop')}`}
 						onClick={handleDevicePickerClick}
 					>
-						{deviceSvgs["desktop"]}	
+						{deviceSvgs["desktop"]}
 					</button>
 					<button outline color="secondary"
 						device="portrait"
@@ -125,7 +125,7 @@ const DemoPlayer = ({ vertId, production, noSocial, adBlockerDetected }) => {
 				</Col>
 			</Row>
 
-			{ adBlockerDetected ? 
+			{ adBlockerDetected ?
 				<UncontrolledAlert color="warning" role="alert">
 					Adblocker detected. Some of our adverts might not play properly!
 				</UncontrolledAlert>
@@ -187,13 +187,13 @@ const SocialAd = ({vertId, nonce}) => {
 		<div className="ad-sizer portrait" >
 			<div className="aspectifier" />
 			<div className="fake-feed" >
-				<video 
+				<video
 					onMouseDown={() => setShowAd(true) }
 					width="100%"
 					autoPlay
-					muted 
-					loop 
-					src="https://media.good-loop.com/uploads/standard/toms_snapchat_ad.mp4" 
+					muted
+					loop
+					src="https://media.good-loop.com/uploads/standard/toms_snapchat_ad.mp4"
 				/>
 				<div className="show-ad" onClick={() => setShowAd(true)}>trigger ad</div>
 			</div>

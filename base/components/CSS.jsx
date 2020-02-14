@@ -20,12 +20,12 @@ import React, {useState, useRef} from 'react';
 // 	}
 // 	insertionPoint.appendChild(styleNode);
 
-// 	// Remember to clean up later, if the 
+// 	// Remember to clean up later, if the
 // 	addUninstallAction({ action: () => (insertionPoint && insertionPoint.removeChild(styleNode)) });
 // };
 
 /**
- * 
+ *
  * @param {String} css
  */
 const CSS = ({css}) => {

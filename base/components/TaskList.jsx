@@ -23,9 +23,9 @@ const taskEditorDialogPath = ['widget','TaskEditorDialog'];
 
 /**
  * The core "show a task on the side" widget
- * 
+ *
  * TODO replace check box with green tick
- * 
+ *
  * ??swallow clicks??
  */
 const TaskListItem = ({item}) => {
@@ -61,7 +61,7 @@ const TaskListItem = ({item}) => {
  * navbar button to show/hide the task list
  */
 const TaskListButton = ({bpath, value, list}) => {
-	return (<button type="button" className='btn btn-default navbar-btn navbar-nav' 
+	return (<button type="button" className='btn btn-default navbar-btn navbar-nav'
 		disabled={ ! bpath}
 		onClick={e => DataStore.setValue(bpath, ! value)}>Tasks {list? '('+List.total(list)+')' : null}</button>
 	);
@@ -69,7 +69,7 @@ const TaskListButton = ({bpath, value, list}) => {
 
 /**
  * called by a Page to set the context.
- * Recommended: tags = type e.g. Advert, item.id 
+ * Recommended: tags = type e.g. Advert, item.id
  * @param tags {!String[]} Can contain nulls (ignored)
  */
 const setTaskTags = (...tags) => {
@@ -85,7 +85,7 @@ const setTaskTags = (...tags) => {
 		return;
 	}
 	// we're probably inside a render, so update after the current render
-	setTimeout( () => {				
+	setTimeout( () => {
 		DataStore.setValue(['widget', 'TaskList', 'tags'], tags);
 	}, 1);
 };
@@ -149,7 +149,7 @@ const TaskList = ({}) => {
  * @param parent {Task}
  * @param items {?List} If provided, optimistic add to this. Useful for filtered lists.
  */
-const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {		
+const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 	if ( ! Login.isLoggedIn()) {
 		return null;
 	}
@@ -183,10 +183,10 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 	const ttext = DataStore.getValue(qpath.concat('text'));
 	return (
 		<div key={'f'} className={join('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)}>
-			<PropControl type='text' path={qpath} prop='text' 
-				placeholder={parent? 'Reply / Comment' : 'Make a new task'} /> 
+			<PropControl type='text' path={qpath} prop='text'
+				placeholder={parent? 'Reply / Comment' : 'Make a new task'} />
 			&nbsp;
-			<button className='btn btn-primary' disabled={ ! ttext} type='submit' onClick={quickTask}>Add</button>			
+			<button className='btn btn-primary' disabled={ ! ttext} type='submit' onClick={quickTask}>Add</button>
 		</div>
 	);
 };
@@ -208,7 +208,7 @@ const TaskEditorDialog = () => {
 	const taskPath = taskEditorDialogPath.concat('task');
 	const {id} = task;
 
-	// const path = 
+	// const path =
 
 	// Debounce save function
 	// Important that this be stored to avoid publish on every key stroke
@@ -225,7 +225,7 @@ const TaskEditorDialog = () => {
 		<Modal show={show} className="TaskEditorModal" onHide={() => DataStore.setValue(taskEditorDialogPath.concat('show'), false)} >
 			<Modal.Header closeButton>
 				<Modal.Title>
-					Edit Task	
+					Edit Task
 				</Modal.Title>
 			</Modal.Header>
 			<Modal.Body>

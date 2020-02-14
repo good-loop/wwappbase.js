@@ -1,5 +1,5 @@
 import React, {useRef, useEffect, useState} from 'react';
-import ServerIO from '../plumbing/ServerIOBase'; 
+import ServerIO from '../plumbing/ServerIOBase';
 
 
 /** Takes React element reference. Calculates if div is visible to user or not */
@@ -34,10 +34,10 @@ const useDoesIfVisible = (fn, elementReference) => {
 
 		scrollListener = window.addEventListener(
 			'scroll',
-			// Pass in reference to actual DOM element 
+			// Pass in reference to actual DOM element
 			() => doIfVisible({
 				elementReference: elementReference.current,
-				fn: () => setIsVisible(true), 
+				fn: () => setIsVisible(true),
 			})
 		);
 		return () => window.removeEventListener('scroll', scrollListener);
@@ -60,7 +60,7 @@ const useDoOnResize = ({resizeFn}) => {
 		// Recalculate if size changes
 		// NB: This may be called twice on some devices. Not ideal, but doesn't seem too important
 		window.addEventListener('resize', resizeFn);
-		window.addEventListener('orientationchange', resizeFn);		
+		window.addEventListener('orientationchange', resizeFn);
 
 		return () => {
 			window.removeEventListener('resize', resizeFn);

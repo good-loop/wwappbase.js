@@ -12,10 +12,10 @@ import ServerIO from '../plumbing/ServerIOBase';
 // import { Server } from 'net';
 
 // For testing
-if ( (""+window.location).indexOf('login=local') !== -1) {	
+if ( (""+window.location).indexOf('login=local') !== -1) {
 	Login.ENDPOINT = 'http://localyouagain.good-loop.com/youagain.json';
 	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
-} else if ( (""+window.location).indexOf('login=test') !== -1) {	
+} else if ( (""+window.location).indexOf('login=test') !== -1) {
 	Login.ENDPOINT = 'https://test.youagain.good-loop.com/youagain.json';
 	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
 }
@@ -224,7 +224,7 @@ LoginWidget.emailLogin = ({verb, app, email, password, onRegister}) => {
 const EmailSignin = ({verb, onLogin, onRegister}) => {
 	// we need a place to stash form info. Maybe appstate.widget.LoginWidget.name etc would be better?
 	const path = ['data', C.TYPES.User, 'loggingIn'];
-	let person = DataStore.getValue(path);	
+	let person = DataStore.getValue(path);
 
 	const doItFn = e => {
 		killEvent(e);

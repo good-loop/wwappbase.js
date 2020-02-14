@@ -39,7 +39,7 @@ const bezierSlide = (x = 0) => {
  * @param {Number} initial Value to start counting from
  * @param {Number} animationLength Time (msec) to reach final number
  * @param {Number} fps frames per second
- * @param {String} currencySymbol 
+ * @param {String} currencySymbol
  * @param {Money} amount - Convenient way to set value + currencySymbol
  */
 const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', amount, pretty = true, sigFigs = 3 }) => {

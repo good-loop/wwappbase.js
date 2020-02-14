@@ -205,7 +205,7 @@ class Store {
 		assMatch(id, String, "DataStore.js bad id "+id);
 		const s = this.nodeForStatus(status);
 		if (domain) {
-			return [s, domain, type, id];	
+			return [s, domain, type, id];
 		} else {
 			return [s, type, id];
 		}
@@ -228,7 +228,7 @@ class Store {
 		switch(status) {
 			case C.KStatus.PUBLISHED: return 'data';
 			case C.KStatus.DRAFT: case C.KStatus.MODIFIED: case C.KStatus.PENDING: case C.KStatus.REQUEST_PUBLISH: case C.KStatus.ARCHIVED:
-				return 'draft';			
+				return 'draft';
 			case C.KStatus.TRASH: return 'trash';
 		}
 		throw new Error("DataStore - odd status "+status);

@@ -36,12 +36,12 @@ import MDText from './MDText';
 
 /**
  * Set the value and the modified flag in DataStore
- * @param {!String[]} proppath 
- * @param value 
+ * @param {!String[]} proppath
+ * @param value
  */
 const DSsetValue = (proppath, value) => {
 	DataStore.setModified(proppath);
-	DataStore.setValue(proppath, value);	
+	DataStore.setValue(proppath, value);
 };
 
 // Wrapped so the two outer functions can provide an interface consistent with the other validators
@@ -108,24 +108,24 @@ const isModifiedPath = fullpath => ['widget','modified'].concat(fullpath);
 /**
  * Input bound to DataStore.
  * aka Misc.PropControl
- * 
- * @param {Function} saveFn inputs: {path, prop, value} 
+ *
+ * @param {Function} saveFn inputs: {path, prop, value}
  * This gets called at the end of onChange.
  * You are advised to wrap this with e.g. _.debounce(myfn, 500).
  * NB: we cant debounce here, cos it'd be a different debounce fn each time.
- * Save utils: 
- * `Misc.saveDraftFn` and `Misc.savePublishFn`, 
+ * Save utils:
+ * `Misc.saveDraftFn` and `Misc.savePublishFn`,
  * or instead of saveFn, place a Misc.SavePublishDiscard on the page.
  *
- * Note: You can also use this for 
- * @param {?String} label 
+ * Note: You can also use this for
+ * @param {?String} label
  * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
  * 	Default: ['location','params'] which codes for the url
  * @param item The item being edited. Can be null, and it will be fetched by path.
- * @param prop The field being edited 
+ * @param prop The field being edited
  * @param dflt {?Object} default value Beware! This may not get saved if the user never interacts.
  * @param {?Function} modelValueFromInput - inputs: (value, type, eventType) See standardModelValueFromInput.
- * @param required {?Boolean} If set, this field should be filled in before a form submit. 
+ * @param required {?Boolean} If set, this field should be filled in before a form submit.
  * 	TODO mark that somehow
  * @param validator {?(value, rawValue) => String} Generate an error message if invalid
  * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
@@ -137,7 +137,7 @@ const PropControl = (props) => {
 	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
 	if ( ! path) {	// default to using path = the url
 		path = ['location','params'];
-		props = Object.assign({path}, props); 
+		props = Object.assign({path}, props);
 	}
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
@@ -198,16 +198,16 @@ const PropControl = (props) => {
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
 	const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
-	const optreq = optional? <small className='text-muted'>optional</small> 
+	const optreq = optional? <small className='text-muted'>optional</small>
 		: required? <small className={value===undefined? 'text-danger' : null}>*</small> : null;
 	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	// let props2 = Object.assign({}, props);
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
-	// type={type} path={path} prop={prop} error={error} {...stuff} recursing 
+	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	return (
 		<div className={join('form-group', type, error? 'has-error' : null)}>
-			{label || tooltip? 
+			{label || tooltip?
 				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
 			{inline ? ' ' : null}
@@ -225,7 +225,7 @@ const PropControl = (props) => {
 const PropControl2 = (props) => {
 	// track if the user edits, so we can preserve user-set-null/default vs initial-null/default
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
-	// unpack ??clean up 
+	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, onUpload, ...stuff} = props;
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
@@ -254,7 +254,7 @@ const PropControl2 = (props) => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.checked;
 			DSsetValue(proppath, val);
-			if (saveFn) saveFn({path, prop, item, value: val});		
+			if (saveFn) saveFn({path, prop, item, value: val});
 		};
 		if (value===undefined) value = false;
 		// make sure we don't have "false"
@@ -332,14 +332,14 @@ const PropControl2 = (props) => {
 		// NB: relies on a special-case innerHTML version of modelValueFromInput, set above
 		let __html = value;
 		// TODO onKeyDown={captureTab}
-		return <div contentEditable className="form-control" name={prop} 			
-			onChange={onChange} 
+		return <div contentEditable className="form-control" name={prop}
+			onChange={onChange}
 			onInput={onChange}
 			onBlur={onChange}
-			{...otherStuff} 
+			{...otherStuff}
 			style={{height:'auto'}}
 			dangerouslySetInnerHTML={{__html}}>
-			</div>;		
+			</div>;
 	}
 	
 	if (type === 'json') {
@@ -348,7 +348,7 @@ const PropControl2 = (props) => {
 		const onJsonChange = e => {
 			console.log("event", e.target && e.target.value, e, e.type);
 			DataStore.setValue(spath, e.target.value);
-			try {				
+			try {
 				let vnew = JSON.parse(e.target.value);
 				DSsetValue(proppath, vnew);
 				if (saveFn) saveFn({path, prop, value:vnew});
@@ -414,7 +414,7 @@ const PropControl2 = (props) => {
 	}
 
 	// Optional fancy colour picker - dummied out for now.
-	/* 
+	/*
 	if (type === 'color') {
 		return (
 			<div>
@@ -436,7 +436,7 @@ const PropControl2 = (props) => {
 
 // /**
 //  * TODO
-//  * @param {Event} e 
+//  * @param {Event} e
 //  */
 // let captureTab = e => {
 // 	console.warn(e, e.keyCode, e.keyCode===9);
@@ -463,7 +463,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 		if (_.isArray(labels)) {
 			labeller = v => labels[options.indexOf(v)] || v;
 		} else if (_.isFunction(labels)) {
-			labeller = labels;				
+			labeller = labels;
 		} else {
 			// map
 			labeller = v => labels[v] || v;
@@ -485,11 +485,11 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 		return <option key={thisKey} value={option} >{labeller(option)}</option>;
 	});
 	
-	/* text-muted is for my-loop mirror card 
+	/* text-muted is for my-loop mirror card
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
 	let klass = join('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
 	return (
-		<select className={klass} 
+		<select className={klass}
 			name={prop} value={sv} onChange={onChange}
 			multiple={multiple}
 			{...rest}
@@ -515,7 +515,7 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		const val = e && e.target && e.target.value;
 		const checked = e && e.target && e.target.checked;
 		let mv = modelValueFromInput(val, type, e.type);
-		// console.warn("onChange", val, checked, mv, e);		
+		// console.warn("onChange", val, checked, mv, e);
 		let vals = value || [];
 		let mvs;
 		if (checked) {
@@ -528,10 +528,10 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		if (saveFn) saveFn({path, prop, value:mvs});
 	}
 
-	let domOptions = options.map(option => 
-		<BS.Checkbox key={"option_"+option} value={option} 
+	let domOptions = options.map(option =>
+		<BS.Checkbox key={"option_"+option} value={option}
 			checked={sv && sv.indexOf(option) !== -1}
-			label={labeller(option)} onChange={onChange} inline />);	
+			label={labeller(option)} onChange={onChange} inline />);
 	let klass = join('form-group', className);
 	return (
 		<div className={klass}>
@@ -541,11 +541,11 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 };
 
 /**
- * 
+ *
  * TODO buttons style
- * 
+ *
  * TODO radio buttons
- * 
+ *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
 const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options, labels, inline, ...otherStuff}) => {
@@ -558,7 +558,7 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 		if (_.isArray(labels)) {
 			labeller = v => labels[options.indexOf(v)] || v;
 		} else if (_.isFunction(labels)) {
-			labeller = labels;				
+			labeller = labels;
 		} else {
 			// map
 			labeller = v => labels[v] || v;
@@ -576,21 +576,21 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 
 	return (
 		<div className='form-group' >
-			{options.map(option => (			
-				<Check key={"option_"+option} name={prop} value={option} 
-						checked={option == value} 
-						onChange={onChange} {...otherStuff} 
+			{options.map(option => (
+				<Check key={"option_"+option} name={prop} value={option}
+						checked={option == value}
+						onChange={onChange} {...otherStuff}
 						label={labeller(option)}
 						inline={inline} />)
 			)}
 		</div>
-	);	
+	);
 }; // ./radio
 
 
 /**
  * Strip commas £/$/euro and parse float
- * @param {*} v 
+ * @param {*} v
  * @returns Number. undefined/null are returned as-is. Bad inputs return NaN
  */
 const numFromAnything = v => {
@@ -612,7 +612,7 @@ const numFromAnything = v => {
  * @param currency {?String}
  * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
  */
-const PropControlMoney = ({prop, name, value, currency, path, proppath, 
+const PropControlMoney = ({prop, name, value, currency, path, proppath,
 									item, bg, dflt, saveFn, modelValueFromInput, onChange, ...otherStuff}) => {
 		// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
@@ -661,7 +661,7 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 
 /**
  * yes/no radio buttons (kind of like a checkbox)
- * 
+ *
  * @param value {?Boolean}
  */
 const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
@@ -700,7 +700,7 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 
 /**
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
- * Used to edit variant.style 
+ * Used to edit variant.style
  */
 const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 	const onChange = e => {
@@ -758,9 +758,9 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 
 	return (
 		<div className="keyset form-inline">
-			<div className="keys">{keyElements}</div>	
+			<div className="keys">{keyElements}</div>
 			<form className="form-inline" onSubmit={stopEvent}>
-				<input className='form-control' onChange={(event) => newKey = event.target.value} 
+				<input className='form-control' onChange={(event) => newKey = event.target.value}
 				/> <button className={'btn '+(value? 'btn-primary' : 'btn-default')} onClick={onClickAdd} >Add</button>
 			</form>
 		</div>
@@ -842,7 +842,7 @@ const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 		<FormControl type='text' name={prop} value={value} onChange={onChangeWithRaw} {...otherStuff} />
 		<div className='pull-right'><i>{datePreview}</i></div>
 		<div className='clearfix' />
-	</div>);	
+	</div>);
 };
 
 
@@ -852,7 +852,7 @@ options {Function|Object[]|String[]}
 renderItem {?JSX}
 getItemValue {?Function} item -> prop-value
 */
-const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem, path, proppath, 
+const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem, path, proppath,
 	item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff}) => {
 		// a place to store the working state of this widget
 		let widgetPath = ['widget', 'autocomplete'].concat(path);
@@ -865,7 +865,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		const onChange2 = (e, optItem) => {
 			// console.log("event", e, e.type, optItem);
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-			DataStore.setValue(['transient', 'doFetch'], e.type==='blur');	
+			DataStore.setValue(['transient', 'doFetch'], e.type==='blur');
 			// typing sneds an event, clicking an autocomplete sends a value
 			const val = e.target? e.target.value : e;
 			let mv = modelValueFromInput(val, type, e.type);
@@ -896,14 +896,14 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		};
 		
 	return (
-		<Autocomplete 
+		<Autocomplete
 			inputProps={{className: otherStuff.className || 'form-control'}}
 			getItemValue={getItemValue}
 			items={items}
 			renderItem={renderItem}
 			value={value}
 			onChange={onChange}
-			onSelect={onChange2} 
+			onSelect={onChange2}
 		/>
 	);
 }; //./autocomplete
@@ -921,7 +921,7 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 	if (type==='year') {
 		return parseInt(inputValue);
 	}
-	if (type==='number') {		
+	if (type==='number') {
 		return numFromAnything(inputValue);
 	}
 	// url: add in https:// if missing
@@ -951,21 +951,21 @@ Misc.normalise = s => {
 
 
 /**
- * This replaces the react-bootstrap version 'cos we saw odd bugs there. 
+ * This replaces the react-bootstrap version 'cos we saw odd bugs there.
  * Plus since we're providing state handling, we don't need a full component.
  */
 const FormControl = ({value, type, required, size, className, prepend, ...otherProps}) => {
 	if (value===null || value===undefined) value = '';
 
-	if (type === 'color' && !value) { 
+	if (type === 'color' && !value) {
 		// Chrome spits out a console warning about type="color" needing value in format "#rrggbb"
 		// ...but if we omit value, React complains about switching an input between controlled and uncontrolled
 		// So give it a dummy value and set a class to allow us to show a "no colour picked" signifier
-		return <input className='form-control no-color' value="#000000" type={type} {...otherProps} />;	
+		return <input className='form-control no-color' value="#000000" type={type} {...otherProps} />;
 	}
 	// add css classes for required fields
-	let klass = join(className, 'form-control', 
-		required? (value? 'form-required' : 'form-required blank') : null, 
+	let klass = join(className, 'form-control',
+		required? (value? 'form-required' : 'form-required blank') : null,
 		size? 'input-'+size : null);
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
@@ -1068,7 +1068,7 @@ InputStatus.str = is => [(is.path? is.path[is.path.length-1] : null), is.status,
 const statusPath = path => ['misc','inputStatus'].concat(path).concat('_status');
 
 /**
- * 
+ *
  * @param {?String} status - if null, remove any message
  */
 const setInputStatus = ({path, status, message}) => {

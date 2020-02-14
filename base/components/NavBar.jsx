@@ -33,7 +33,7 @@ const DefaultNavBar = ({pageLinks, currentPage, children, homelink}) => (
 );
 
 /**
- * 
+ *
  * @param {?String} currentPage e.g. 'account' Read from window.location via DataStore if unset.
  * @param {?String} homelink Relative url for the home-page. Defaults to "/"
  * @param {String[]} pages
