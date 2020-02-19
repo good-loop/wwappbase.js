@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.2.0'
+VERSION='Version=2.2.1'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -162,7 +162,8 @@ function brsync {
 	for sync_item in ${SYNC_LIST[@]}; do
 		for server in ${TARGETS[@]}; do
 			printf "\nSyncing $sync_item to $server\n"
-			rsync -rL --exclude 'node_modules' --exclude "*.java" --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ | handle_rsync_exit_code >> /tmp/$SYNC_LOG_OUTPUT &
+			RSYNC_CMD="rsync -rL --exclude 'node_modules' --exclude '*.java' --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ | handle_rsync_exit_code >> /tmp/$SYNC_LOG_OUTPUT &"
+			$RSYNC_CMD
 		done
 	wait
 	done
@@ -175,6 +176,25 @@ function brsync {
 # Print where that file went to (which server[s]), and/or if it failed.
 # Use that information to create a summary of the sync.
 # print somthing like, "160 files to be sync'ed || 160 files sync'ed successfully to 4 Targets"
+function generate_sync_results {
+	# Preamble, clear out any old sync-list text files
+	SYNC_LIST_TEXT='/tmp/sync.list.txt'
+	if [ f = $SYNC_LIST_TEXT ]; then
+		rm $SYNC_LIST_TEXT
+		touch $SYNC_LIST_TEXT
+	fi
+	#Job 01, make a list of ALL of the files that were explicitly told to be sync'ed, make this list via an rsync dry-run
+	for sync_item in ${SYNC_LIST[@]}; do
+		for server in ${TARGETS[@]}; do
+			rsync -rL --exclude 'node_modules' --exclude "*.java" --delete-before --dry-run $sync_item winterwell@$server:/$TARGET_DIRECTORY >> $SYNC_LIST_TEXT
+		done
+	done
+	#Job 02, attempt to find matches between the output of the dry-run, and the output of the actual sync.  If a match is found, then that item is confirmed as sync'ed successfully.
+	mapfile -t SYNC_LIST_TEXT_ARRAY < $SYNC_LIST_TEXT
+	mapfile -t SYNC_LOG_ARRAY < /tmp/$SYNC_LOG_OUTPUT
+	
+}
+# 
 #
 #
 #
@@ -204,6 +224,8 @@ SYNC_LOG_OUTPUT='/tmp/sync_log_output.txt'
 if [ -f $SYNC_LOG_OUTPUT ]; then
     rm $SYNC_LOG_OUTPUT
     touch $SYNC_LOG_OUTPUT
+else
+	touch $SYNC_LOG_OUTPUT
 fi
 
 
