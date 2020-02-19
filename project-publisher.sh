@@ -162,7 +162,7 @@ function brsync {
 	for sync_item in ${SYNC_LIST[@]}; do
 		for server in ${TARGETS[@]}; do
 			printf "\nSyncing $sync_item to $server\n"
-			RSYNC_CMD="rsync -rL --exclude 'node_modules' --exclude '*.java' --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ | handle_rsync_exit_code >> /tmp/$SYNC_LOG_OUTPUT &"
+			RSYNC_CMD="rsync -rL --exclude 'node_modules' --exclude '*.java' --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ | handle_rsync_exit_code >> $SYNC_LOG_OUTPUT &"
 			$RSYNC_CMD
 		done
 	wait
