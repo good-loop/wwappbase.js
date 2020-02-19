@@ -162,8 +162,7 @@ function brsync {
 	for sync_item in ${SYNC_LIST[@]}; do
 		for server in ${TARGETS[@]}; do
 			printf "\nSyncing $sync_item to $server\n"
-			RSYNC_CMD="rsync -rL --exclude 'node_modules' --exclude '*.java' --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ | handle_rsync_exit_code >> $SYNC_LOG_OUTPUT &"
-			$RSYNC_CMD
+			rsync -rL --exclude 'node_modules' --exclude '*.java' --delete-before $sync_item winterwell@$server:$TARGET_DIRECTORY/ | handle_rsync_exit_code >> $SYNC_LOG_OUTPUT &
 		done
 	wait
 	done
@@ -1052,7 +1051,7 @@ function clean_tmp_lib {
 function preserve_items {
 	for item in ${PRESERVE[@]}; do
 		printf "\nPreserving $item\n"
-		bssh "if [[ -d /tmp/$item ]]; then continue; else mkdir -p /tmp/$item; fi"
+		bssh "if [[ -d /tmp/$item ]]; then echo ""; else mkdir -p /tmp/$item; fi"
 		bssh "cd $TARGET_DIRECTORY && cp -r $item /tmp"
 	done
 }
