@@ -90,14 +90,14 @@ class SimpleTable extends React.Component {
 		super(props);
 
 		// Enable checkboxes by passing "checkboxValues" to SimpleTable
-		if(props.checkboxValues && props.columns) {
+		if (props.checkboxValues && props.columns) {
 			// doc type??
 			const checkboxValues = props.columns.reduce((obj, e) => {
 				const colHead = e.Header || e.accessor || str(e);
 				obj[colHead] = true;
 				return obj;
 			}, {});
-			this.setState({checkboxValues});
+			this.state = { checkboxValues };
 		}
 	}
 
@@ -164,6 +164,7 @@ class SimpleTable extends React.Component {
 		let cn = 'table'+(className? ' '+className : '');
 		// HACK build up an array view of the table
 		// TODO refactor to build this first, then generate the html
+		// TODO OR - refactor so this is only built on demand, because it's expensive
 		let dataArray = [[]];
 
 		const filterChange = e => {
@@ -276,7 +277,7 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 			<button className='btn btn-xs'
 				onClick={e => {rowtree.collapsed = ! rowtree.collapsed; console.warn(rowtree, JSON.stringify(rowtree)); DataStore.update();}}
 			>{rowtree.collapsed? '+' : '-'}</button>
-			 : null;
+			: null;
 		const uiCol = new Column({ui:true, Header:'+-', Cell});
 		visibleColumns = [uiCol].concat(visibleColumns);
 	}
@@ -291,7 +292,7 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
  * @param {Object[]} data
  */
 const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
-	if ( ! data) return null;
+	if (!data) return null;
 	// clip?
 	let min = rowsPerPage? page*rowsPerPage : 0;
 	let max = rowsPerPage? (page+1)*rowsPerPage : Infinity;
@@ -299,11 +300,13 @@ const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
 		let pageData = data.slice(min, max);
 		data = pageData;
 	}
-	// build the rows
-	let $rows = data.map( (d,i) =>
-		<Row key={'r'+i} item={d} row={i} columns={visibleColumns} dataArray={dataArray}
-			hidden={csv && (i<min || i>=max)} />
-	);
+	// build the rows & filter nulls (due to execute-but-don't-render-hidden behaviour)
+	let $rows = data.map((datum, i) => (
+		<Row key={'r'+i} item={datum} row={i}
+			columns={visibleColumns} dataArray={dataArray}
+			hidden={csv && (i < min || i >= max)}
+		/>
+	)).filter(a => !!a);
 	return $rows;
 };
 
@@ -359,18 +362,41 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 
 /**
  * A table row!
- * @param {!Number} row Can be -1 for specail rows ??0 or 1 indexed??
+ * @param {!Number} row Can be -1 for special rows ??0 or 1 indexed??
  * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, row, rowtree, columns, dataArray, className, depth, hidden}) => {
+const Row = ({item, row, rowtree, columns, dataArray, className, depth = 0, hidden}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
-	const $cells = columns.map(col => <Cell key={JSON.stringify(col)} row={row} rowtree={rowtree} column={col} item={item} dataRow={dataRow} />);
-	const rstyle = Object.assign({}, hidden? {display:'none'} : null, item.style); // NB: we still have to render hidden rows, to get the data-processing side-effects
+
+	// Experiment: Don't render the row and necessitate DOM reconciliation if hidden.
+	// EventHostTable in TrafficReport has 90,000 elements & 5-10 second redraw times.
+	// Render the cells to cause the needed side effects, but don't return anything from here.
+
+	const cells = columns.map(col => (
+		<Cell key={JSON.stringify(col)}
+			row={row} rowtree={rowtree}
+			column={col} item={item}
+			dataRow={dataRow}
+			hidden={hidden} // Maybe more optimisation: tell Cell it doesn't need to return an element, we're going to toss it anyway
+		/>
+	));
+
+	if (hidden) return null; // We have our side effects - if the row isn't to be shown we're done.
+	return (
+		<tr className={join("row"+row, "depth"+depth)} depth={depth} style={item.style}>
+			{cells}
+		</tr>
+	);
+	
+	/*
+	// NB: we still have to render hidden rows, to get the data-processing side-effects
+	const rstyle = Object.assign({}, hidden? {display:'none'} : null, item.style);
 	return (<tr className={join(className, "row"+row, "depth"+depth)} depth={depth} style={rstyle}>
 		{$cells}
 	</tr>);
+	*/
 };
 
 const getValue = ({item, row, column}) => {
@@ -415,6 +441,7 @@ const defaultSortMethodForGetter = (a, b, getter) => {
 	return (av < bv) ? -1 : (av > bv) ? 1 : 0;
 };
 
+
 const defaultCellRender = (v, column) => {
 	if (v===undefined || Number.isNaN(v)) return null;
 	if (column.format) {
@@ -442,35 +469,47 @@ const defaultCellRender = (v, column) => {
 	return str(v);
 };
 
+
+// Used to skip defaultCellRender for hidden cells - because we have a LOT of cells sometimes & everything adds up
+const nullCellRender = a => null;
+
+
 /**
  *
  * @param {Column} column
  * @param {?Tree} rowtree
+ * @param {?Boolean} hidden Don't bother rendering anything for display - but execute custom render function in case of side effects
  */
-const Cell = ({item, row, column, rowtree, dataRow}) => {
+const Cell = ({item, row, column, rowtree, dataRow, hidden}) => {
 	const citem = item;
 	try {
 		const v = getValue({item, row, column});
 		let render = column.Cell;
-		if ( ! render) {
+		if (!render) {
 			if (column.editable) {
 				// safety check we can edit this
 				assert(column.path || DataStore.getPathForItem(C.KStatus.DRAFT, item), "SimpleTable.jsx - Cell", item, column);
 				render = val => <Editor value={val} row={row} column={column} item={citem} />;
+			} else if (hidden) {
+				render = nullCellRender;
 			} else {
 				render = defaultCellRender;
 			}
 		}
 
-		// HACK for the csv
-		if ( ! column.ui) {
-			dataRow.push(defaultCellRender(v, column)); // TODO use custom render - but what about html/jsx?
+		// HACK write plaintext data for CSV export
+		if (!column.ui) {
+			// TODO Put results of custom render in CSV - but what about html/jsx?
+			// TODO When we do the above - don't use nullCellRender here for hidden cells!
+			dataRow.push(defaultCellRender(v, column));
 		}
 		const cellGuts = render(v, column, {item, row, rowtree});
+		if (hidden) return null; // If there are side effects in render function we want them, but skip creating DOM elements
 		return <td style={column.style}>{cellGuts}</td>;
 	} catch(err) {
 		// be robust
 		console.error(err);
+		if (hidden) return null; // see above
 		return <td>{str(err)}</td>;
 	}
 };
