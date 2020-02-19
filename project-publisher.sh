@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.2.1'
+VERSION='Version=2.2.2'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -450,9 +450,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('sogive')
-		FRONTEND_SYNC_LIST=("server" "src" "web" "package.json" "webpack.config.js")
+		FRONTEND_SYNC_LIST=("src" "web" "package.json" "webpack.config.js")
 		BACKEND_SYNC_LIST=("data" "lib")
-		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" "data" "lib")
+		WHOLE_SYNC=("src" "web" "package.json" "webpack.config.js" "data" "lib")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
 		POST_PUBLISHING_TASK='yes'
