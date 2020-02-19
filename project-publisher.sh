@@ -168,6 +168,17 @@ function brsync {
 	done
 }
 
+
+# for sync_item in ${SYNC_LIST[@]}; do
+# something that prints all of the sync_items including the contents of directories;
+# match those filenames to entries found in the $SYNC_LOG_OUTPUT file.
+# Print where that file went to (which server[s]), and/or if it failed.
+# Use that information to create a summary of the sync.
+# print somthing like, "160 files to be sync'ed || 160 files sync'ed successfully to 4 Targets"
+#
+#
+#
+
 # Analyze the results of the brsync process and print a summary of errors if necessary:
 function analyze_sync_results {
 	if [[ $RSYNC_ERROR_COUNT -ne 0 ]]; then
