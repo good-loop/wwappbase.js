@@ -169,34 +169,9 @@ function brsync {
 }
 
 
-# for sync_item in ${SYNC_LIST[@]}; do
-# something that prints all of the sync_items including the contents of directories;
-# match those filenames to entries found in the $SYNC_LOG_OUTPUT file.
-# Print where that file went to (which server[s]), and/or if it failed.
-# Use that information to create a summary of the sync.
-# print somthing like, "160 files to be sync'ed || 160 files sync'ed successfully to 4 Targets"
-function generate_sync_results {
-	# Preamble, clear out any old sync-list text files
-	SYNC_LIST_TEXT='/tmp/sync.list.txt'
-	if [ f = $SYNC_LIST_TEXT ]; then
-		rm $SYNC_LIST_TEXT
-		touch $SYNC_LIST_TEXT
-	fi
-	#Job 01, make a list of ALL of the files that were explicitly told to be sync'ed, make this list via an rsync dry-run
-	for sync_item in ${SYNC_LIST[@]}; do
-		for server in ${TARGETS[@]}; do
-			rsync -rL --exclude 'node_modules' --exclude "*.java" --delete-before --dry-run $sync_item winterwell@$server:/$TARGET_DIRECTORY >> $SYNC_LIST_TEXT
-		done
-	done
-	#Job 02, attempt to find matches between the output of the dry-run, and the output of the actual sync.  If a match is found, then that item is confirmed as sync'ed successfully.
-	mapfile -t SYNC_LIST_TEXT_ARRAY < $SYNC_LIST_TEXT
-	mapfile -t SYNC_LOG_ARRAY < /tmp/$SYNC_LOG_OUTPUT
-	
-}
-# 
-#
-#
-#
+# In order to have prettier output of what files got sync'ed where:
+# simply `cat $SYNC_LOG_OUTPUT | sort | uniq`
+# and if needed, create a numerical summary of how many successful sync'ed items per server
 
 # Analyze the results of the brsync process and print a summary of errors if necessary:
 function analyze_sync_results {
