@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.2.2'
+VERSION='Version=2.3.0'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -171,7 +171,14 @@ function brsync {
 
 # In order to have prettier output of what files got sync'ed where:
 # simply `cat $SYNC_LOG_OUTPUT | sort | uniq`
-# and if needed, create a numerical summary of how many successful sync'ed items per server
+# and if needed, create a numerical summary of how many successful sync'ed items per server 
+
+function create_sync_summary {
+	for server in ${TARGETS[@]}; do
+		printf "\n\t>>>>>>>$server sync summary<<<<<<<<<<<\n"
+		grep "$server" $SYNC_LOG_OUTPUT | sort | uniq
+	done
+}
 
 # Analyze the results of the brsync process and print a summary of errors if necessary:
 function analyze_sync_results {
@@ -1146,4 +1153,5 @@ run_post_publish_tasks
 start_proc
 clean_tmp_lib
 analyze_sync_results
+create_sync_summary
 run_automated_tests
