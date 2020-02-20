@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.2.0'
+VERSION='Version=2.3.0'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -162,22 +162,23 @@ function brsync {
 	for sync_item in ${SYNC_LIST[@]}; do
 		for server in ${TARGETS[@]}; do
 			printf "\nSyncing $sync_item to $server\n"
-			rsync -rL --exclude 'node_modules' --exclude "*.java" --delete-before $sync_item winterwell@$server:/$TARGET_DIRECTORY/ | handle_rsync_exit_code >> /tmp/$SYNC_LOG_OUTPUT &
+			rsync -rL --exclude 'node_modules' --exclude '*.java' --delete-before $sync_item winterwell@$server:$TARGET_DIRECTORY/ | handle_rsync_exit_code >> $SYNC_LOG_OUTPUT &
 		done
 	wait
 	done
 }
 
 
-# for sync_item in ${SYNC_LIST[@]}; do
-# something that prints all of the sync_items including the contents of directories;
-# match those filenames to entries found in the $SYNC_LOG_OUTPUT file.
-# Print where that file went to (which server[s]), and/or if it failed.
-# Use that information to create a summary of the sync.
-# print somthing like, "160 files to be sync'ed || 160 files sync'ed successfully to 4 Targets"
-#
-#
-#
+# In order to have prettier output of what files got sync'ed where:
+# simply `cat $SYNC_LOG_OUTPUT | sort | uniq`
+# and if needed, create a numerical summary of how many successful sync'ed items per server 
+
+function create_sync_summary {
+	for server in ${TARGETS[@]}; do
+		printf "\n\t>>>>>>>$server sync summary<<<<<<<<<<<\n"
+		grep "$server" $SYNC_LOG_OUTPUT | sort | uniq
+	done
+}
 
 # Analyze the results of the brsync process and print a summary of errors if necessary:
 function analyze_sync_results {
@@ -204,6 +205,8 @@ SYNC_LOG_OUTPUT='/tmp/sync_log_output.txt'
 if [ -f $SYNC_LOG_OUTPUT ]; then
     rm $SYNC_LOG_OUTPUT
     touch $SYNC_LOG_OUTPUT
+else
+	touch $SYNC_LOG_OUTPUT
 fi
 
 
@@ -429,9 +432,9 @@ case $1 in
 		COMPILE_UNITS='no'
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('sogive')
-		FRONTEND_SYNC_LIST=("server" "src" "web" "package.json" "webpack.config.js")
+		FRONTEND_SYNC_LIST=("src" "web" "package.json" "webpack.config.js")
 		BACKEND_SYNC_LIST=("data" "lib")
-		WHOLE_SYNC=("server" "src" "web" "package.json" "webpack.config.js" "data" "lib")
+		WHOLE_SYNC=("src" "web" "package.json" "webpack.config.js" "data" "lib")
 		PRESERVE=("web/uploads")
 		AUTOMATED_TESTING='yes'
 		POST_PUBLISHING_TASK='yes'
@@ -1030,7 +1033,7 @@ function clean_tmp_lib {
 function preserve_items {
 	for item in ${PRESERVE[@]}; do
 		printf "\nPreserving $item\n"
-		bssh "if [[ -d /tmp/$item ]]; then continue; else mkdir -p /tmp/$item; fi"
+		bssh "if [[ -d /tmp/$item ]]; then echo ""; else mkdir -p /tmp/$item; fi"
 		bssh "cd $TARGET_DIRECTORY && cp -r $item /tmp"
 	done
 }
@@ -1150,4 +1153,5 @@ run_post_publish_tasks
 start_proc
 clean_tmp_lib
 analyze_sync_results
+create_sync_summary
 run_automated_tests
