@@ -25,6 +25,18 @@ import Login from 'you-again';
 
 const Misc = {};
 
+// Pulled out so we can override it with a site-specific graphic
+Misc.spinnerSvg = (
+	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+		<g style={{stroke: 'none'}}>
+				<path style={{fill: '#f6ecd1'}} d="M 50 0 a 50 50 0 0 0 -50 50 L 10 50 a 40 40 0 0 1 40 -40 Z" />
+				<path style={{fill: '#507e88'}} d="M 0 50 a 50 50 0 0 0 50 50 L 50 90 a 40 40 0 0 1 -40 -40 Z" />
+				<path style={{fill: '#656565'}} d="M 50 100 a 50 50 0 0 0 50 -50 L 90 50 a 40 40 0 0 1 -40 40 Z" />
+				<path style={{fill: '#c73413'}} d="M 100 50 a 50 50 0 0 0 -50 -50 L 50 10 a 40 40 0 0 1 40 40 Z" />
+		</g>
+	</svg>
+);
+
 
 /**
 E.g. "Loading your settings...""
@@ -33,25 +45,22 @@ http://tobiasahlin.com/spinkit/
 
 @param {?PromiseValue} pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
 */
-Misc.Loading = ({text, pv}) => {
+Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	// handle ajax error?
 	if (pv && pv.error) {
 		let emsg = _.isString(pv.error)? pv.error : join(pvCharity.error.status, pvCharity.error.statusText);
 		let edetails = join(pvCharity.error.statusText, pvCharity.error.responseText);
 		return <BS.Alert><h4>Sorry - there was a problem. {emsg}</h4><div className='details'><small>{edetails}</small></div></BS.Alert>;
 	}
-	return (<div className='loader-box' style={{textAlign: 'center'}}>
-			<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" style={{margin: 'auto', display:'block', height: '120px', width: '120px'}}>
-				<g style={{stroke: 'none'}}>
-						<path style={{fill: '#f6ecd1'}} d="M 50 0 a 50 50 0 0 0 -50 50 L 10 50 a 40 40 0 0 1 40 -40 Z" />
-						<path style={{fill: '#507e88'}} d="M 0 50 a 50 50 0 0 0 50 50 L 50 90 a 40 40 0 0 1 -40 -40 Z" />
-						<path style={{fill: '#656565'}} d="M 50 100 a 50 50 0 0 0 50 -50 L 90 50 a 40 40 0 0 1 -40 40 Z" />
-						<path style={{fill: '#c73413'}} d="M 100 50 a 50 50 0 0 0 -50 -50 L 50 10 a 40 40 0 0 1 40 40 Z" />
-				</g>
-				<animateTransform attributeName="transform" attributeType="XML" from="0" to="360" dur="2s" type="rotate" repeatCount="indefinite" />
-			</svg>
-			{text === undefined? 'Loading...' : text}
-	</div>)
+
+	return (
+		<div className={'loader-box' + (inline ? ' inline' : '')} style={{textAlign: 'center'}}>
+			<div className="spinner-box">
+				{Misc.spinnerSvg}
+			</div>
+			<div className="loader-text">{text}</div>
+		</div>
+	)
 };
 
 
