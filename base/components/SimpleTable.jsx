@@ -447,10 +447,13 @@ const defaultCellRender = (v, column) => {
 	if (column.format) {
 		if (CellFormat.ispercent(column.format)) {
 			// 2 sig figs
-			return printer.prettyNumber(100*v, 2)+"%";
+			return printer.prettyNumber(100*v, 2) + "%";
+		}
+		if (CellFormat.ispounds(column.format)) {
+			return "£" + printer.prettyNumber(v, 2);
 		}
 		if (CellFormat.isstring(column.format)) {
-			return v;
+			return str(v); // Even if it looks like a number
 		}
 	}
 	// number or numeric string
@@ -541,7 +544,7 @@ const Editor = ({row, column, value, item}) => {
 			// we edit draft
 			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 			// make sure we have a draft
-			if ( ! DataStore.getValue(path)) {
+			if (!DataStore.getValue(path)) {
 				DataStore.setValue(path, item, false);
 			}
 		} catch(err) {
@@ -567,7 +570,7 @@ const Editor = ({row, column, value, item}) => {
 		saveFn={column.saveFn}
 	/>);
 }; // ./Editor
-const CellFormat = new Enum("percent string"); // What does a spreadsheet normally offer??
+const CellFormat = new Enum("percent pounds string"); // What does a spreadsheet normally offer??
 
 
 const TableFoot = ({csv, tableName, dataArray, numPages, colSpan, page=0}) => {
