@@ -41,7 +41,7 @@ const TestPage = () => {
 			<button onClick={e => DataStore.update()}>re-render</button>
 			<p>Insert a test widget below</p>
 
-			<SimpleTable data={data} columns={columns} rowtree={rowtree} collapse />;
+			<SimpleTable columns={columns} rowtree={rowtree} collapse />;
 
 		</div>
 	);

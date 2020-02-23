@@ -69,6 +69,8 @@ class Column extends DataClass {
  * So the columns should use accessors 'key' and 'value'.
  * This is ONLY good for simple 2-column tables!
  *
+ * @param {?Tree<Item>} rowtree Tree of data items
+ * 
  * @param columns: {Column[]|String[]} Can mix String and Column
  *
  * addTotalRow: {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
@@ -81,7 +83,7 @@ class Column extends DataClass {
  * @param {?Number} rowsPerPage - Cap the number of rows shown. This cap is applied after filtering and sorting
  * @param {?Boolean} csv If true, offer csv download
  * @param {?String} tableName Used to name the csv download
- * @param {?Tree<Item>} rowtree Tree of items
+
  */
 // NB: use a full component for error-handling
 // Also state (though maybe we should use DataStore)
@@ -114,19 +116,17 @@ class SimpleTable extends React.Component {
 			scroller, // if true, use fix col-1 scrollbars
 			showSortButtons=true,
 			page=0,
-			rowtree
+			rowtree,
+			dataTree
 		} = this.props;
 
 		const checkboxValues = this.state && this.state.checkboxValues;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
+
+		// Standardise the possible data inputs as a rowtree (which is the most general format)
+		let dataTree = standardiseData({data, dataObject, dataTree})
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
-		if (dataObject) {
-			// flatten an object into rows
-			assert( ! data, "SimpleTable.jsx - data or dataObject - not both");
-			data = Object.keys(dataObject).map(k => { return {key:k, value:dataObject[k]}; });
-		}
-		assert( ! data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);
-		const originalData = data;
+		const originalData = data; // for debug
 
 		// Table settings are stored in widget state by default. @deprecated But can also be linked to a DataStore via statePath
 		let tableSettings = this.state;
@@ -221,6 +221,24 @@ class SimpleTable extends React.Component {
 
 } // ./SimpleTable
 
+/**
+ * Convert data or dataObject into a tree, as the most general format
+ * @returns {!Tree}
+ */
+const standardiseData = ({data, dataObject, dataTree}) => {
+	assert([data, dataObject, dataTree].reduce((c,x) => x? c+1 : c, 0) === 1, "Need one and only one data input", [data, dataObject, dataTree]);
+	if (dataTree) return dataTree;
+	if (dataObject) {
+		// flatten an object into rows
+		assert( ! data, "SimpleTable.jsx - data or dataObject - not both");
+		data = Object.keys(dataObject).map(k => { return {key:k, value:dataObject[k]}; });
+	}
+	assert( ! data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);		
+	// make a flat root -> all-rows tree
+	dataTree = new Tree();
+	data.forEach(row => Tree.add(dataTree, row));
+	return dataTree;
+}
 
 /**
  * Filter columns, rows, and data + sort
