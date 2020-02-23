@@ -335,7 +335,7 @@ const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, ro
 		if ( ! item) return;
 		let $row = <Row key={'r'+rowNum} item={item} row={rowNum}
 			columns={visibleColumns} dataArray={dataArray}
-			hidden={csv && (i < min || i >= max)} 
+			hidden={csv && (rowNum < min || rowNum >= max)} 
 			node={dataTree}
 			/>;
 		$rows.push($row);
