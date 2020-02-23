@@ -258,7 +258,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
 		// HACK: add a collapse column
 		// ...collapse button
 		const Cell = (v, col, item, node) => {
-			if ( ! Tree.children(node).length) return null;
+			if ( ! node || ! Tree.children(node).length) return null;
 			console.warn("+- node", node, JSON.stringify(node)); 
 			const nodeid = Tree.id(node); 
 			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
@@ -335,7 +335,9 @@ const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, ro
 		if ( ! item) return;
 		let $row = <Row key={'r'+rowNum} item={item} row={rowNum}
 			columns={visibleColumns} dataArray={dataArray}
-			hidden={csv && (i < min || i >= max)} />;
+			hidden={csv && (i < min || i >= max)} 
+			node={dataTree}
+			/>;
 		$rows.push($row);
 		rowNum++;
 	});
@@ -399,7 +401,7 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
  * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, row, dataTree, columns, dataArray, className, depth = 0, hidden}) => {
+const Row = ({item, row, node, columns, dataArray, className, depth = 0, hidden}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
 
@@ -409,9 +411,8 @@ const Row = ({item, row, dataTree, columns, dataArray, className, depth = 0, hid
 
 	const cells = columns.map(col => (
 		<Cell key={JSON.stringify(col)}
-			row={row} dataTree={dataTree}
+			row={row} node={node}
 			column={col} item={item}
-			node={dataTree}
 			dataRow={dataRow}
 			hidden={hidden} // Maybe more optimisation: tell Cell it doesn't need to return an element, we're going to toss it anyway
 		/>
