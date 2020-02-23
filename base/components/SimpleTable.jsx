@@ -31,15 +31,15 @@ const str = printer.str;
 class Column extends DataClass {
 	/** @type {?String|Function} Extract the column value from an item. If a string, this is the property name. */
 	accessor;
-	/** @type {?Function} (value, column) -> jsx */
+	/** @type {?Function} (value, column, item) -> jsx */
 	Cell;
 	/** @type {?String} */
 	Header;
 	/** @type {?Boolean} */
 	editable;
 	/** @type {?Function} ({item,...}) -> {} */
-  saveFn;
-  /** @type {?Function} */
+	saveFn;
+	/** @type {?Function} */
 	sortMethod;
 	/** @type {?Function} */
 	sortAccessor;
@@ -81,6 +81,7 @@ class Column extends DataClass {
  * @param {?Number} rowsPerPage - Cap the number of rows shown. This cap is applied after filtering and sorting
  * @param {?Boolean} csv If true, offer csv download
  * @param {?String} tableName Used to name the csv download
+ * @param {?Tree<Item>} rowtree Tree of items
  */
 // NB: use a full component for error-handling
 // Also state (though maybe we should use DataStore)
@@ -100,7 +101,6 @@ class SimpleTable extends React.Component {
 			this.state = { checkboxValues };
 		}
 	}
-
 
 	render() {
 		let {
@@ -144,11 +144,10 @@ class SimpleTable extends React.Component {
 			_.defer(() => this.setState(tableSettings));
 		}
 
-		// Merge rowtree prop with stored widget state, to preserve e.g. collapsed setting
+		// rowtree - preserve collapsed setting
 		if (rowtree) {
-			rowtree = _.merge(tableSettings.rowtree, rowtree);
-			console.log("merged rowtree", rowtree, "nonce", tableSettings.nonce, "Old",tableSettings.rowtree);
-			tableSettings.rowtree = rowtree;
+			// NB: lodash _.merge wasnt working as expected - collapsed state got lost
+			if ( ! tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};
 		}
 
 		// filter and sort
@@ -234,6 +233,27 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 	if (tableSettings.filter) {
 		data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
 	}
+	// rowtree - filter out collapsed rows
+	let visibleColumns = columns;
+	if (rowtree) {
+		// HACK: rowtree? add a collapse column
+		// collapse button
+		const Cell = (v, col, item) => {
+			const nodes = Tree.findByValue(rowtree, item);
+			if ( ! nodes.length) return null;
+			let node = nodes[0];
+			if ( ! Tree.children(node).length) return null;
+			console.warn("+- node", node, JSON.stringify(node)); 
+			const nodeid = Tree.id(node); 
+			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
+			return (<button className='btn btn-xs'
+				onClick={e => {tableSettings.collapsed4nodeid[nodeid] = ! ncollapsed; DataStore.update();}}
+			>{ncollapsed? '+' : '-'}</button>);
+		};
+		// add column
+		const uiCol = new Column({ui:true, Header:'+-', Cell});
+		visibleColumns = [uiCol].concat(visibleColumns);
+	} // ./rowtree
 	// sort?
 	if (tableSettings.sortBy !== undefined) {
 		// pluck the sorting column
@@ -253,7 +273,6 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 	//Only show columns that have checkbox: true.
 	//Can't edit the actual columns object as that would make it impossible to reenable a column
 	//Display only columns that haven't been disabled
-	let visibleColumns = columns;
 	if(_.isObject(checkboxValues) && !_.isEmpty(checkboxValues)) {
 		visibleColumns = columns.filter(c => {
 			const headerKeyString = c.Header || c.accessor || str(c);
@@ -263,6 +282,7 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 	// hide columns with no data
 	if (hideEmpty) {
 		visibleColumns = visibleColumns.filter(c => {
+			if (c.ui) return true; // preserve UI columns
 			const getter = sortGetter(c);
 			for(let di=0; di<data.length; di++) {
 				let vi = getter(data[di]);
@@ -270,16 +290,6 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 			}
 			return false;
 		});
-	}
-	// HACK: rowtree? add a collapse column
-	if (rowtree) {
-		const Cell = (v, col, {rowtree}) => Tree.children(rowtree).length?
-			<button className='btn btn-xs'
-				onClick={e => {rowtree.collapsed = ! rowtree.collapsed; console.warn(rowtree, JSON.stringify(rowtree)); DataStore.update();}}
-			>{rowtree.collapsed? '+' : '-'}</button>
-			: null;
-		const uiCol = new Column({ui:true, Header:'+-', Cell});
-		visibleColumns = [uiCol].concat(visibleColumns);
 	}
 	// NB maxRows is done later to support csv-download being all data
 	return {data, visibleColumns};
@@ -488,7 +498,7 @@ const Cell = ({item, row, column, rowtree, dataRow, hidden}) => {
 	try {
 		const v = getValue({item, row, column});
 		let render = column.Cell;
-		if (!render) {
+		if ( ! render) {
 			if (column.editable) {
 				// safety check we can edit this
 				assert(column.path || DataStore.getPathForItem(C.KStatus.DRAFT, item), "SimpleTable.jsx - Cell", item, column);
@@ -506,7 +516,7 @@ const Cell = ({item, row, column, rowtree, dataRow, hidden}) => {
 			// TODO When we do the above - don't use nullCellRender here for hidden cells!
 			dataRow.push(defaultCellRender(v, column));
 		}
-		const cellGuts = render(v, column, {item, row, rowtree});
+		const cellGuts = render(v, column, item);
 		if (hidden) return null; // If there are side effects in render function we want them, but skip creating DOM elements
 		return <td style={column.style}>{cellGuts}</td>;
 	} catch(err) {
