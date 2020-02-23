@@ -125,9 +125,9 @@ class SimpleTable extends React.Component {
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 
 		// Standardise the possible data inputs as a dataTree (which is the most general format)
-		let dataTree = standardiseData({data, dataObject, dataTree})
-		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		const originalData = data; // for debug
+		dataTree = standardiseData({data, dataObject, dataTree})
+		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 
 		// Table settings are stored in widget state by default. @deprecated But can also be linked to a DataStore via statePath
 		let tableSettings = this.state;
@@ -146,7 +146,7 @@ class SimpleTable extends React.Component {
 		}
 
 		// dataTree - preserve collapsed setting
-		if ( ! data && ! dataObject) {
+		if (hasCollapse) {
 			// NB: lodash _.merge wasnt working as expected - collapsed state got lost
 			if ( ! tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};
 		}
@@ -199,7 +199,7 @@ class SimpleTable extends React.Component {
 			<tr className='totalRow' >
 				<th>{addTotalRow}</th>
 				{visibleColumns.slice(1).map((col, c) =>
-					<TotalCell data={data} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+					<TotalCell dataTree={dataTree} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
 				}
 			</tr>
 			: null}
@@ -207,7 +207,7 @@ class SimpleTable extends React.Component {
 	</thead>
 
 	<tbody>
-		<Rows data={data} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} />
+		<Rows dataTree={dataTree} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} />
 		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 	</tbody>
 	<TableFoot csv={csv} tableName={tableName} dataArray={dataArray} numPages={numPages} page={page} colSpan={visibleColumns.length} />
@@ -248,9 +248,9 @@ const standardiseData = ({data, dataObject, dataTree}) => {
 const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, checkboxValues, rowsPerPage, page=0}) => {
 	// filter?
 	// ...always filter nulls
-	dataTree = Tree.filter(dataTree, node => node && (node.children || node.x));
+	dataTree = Tree.filter(dataTree, item => !! item);
 	if (tableSettings.filter) {
-		dataTree = Tree.filter(dataTree, node => node.children || JSON.stringify(node).indexOf(tableSettings.filter) !== -1);
+		dataTree = Tree.filter(dataTree, item => JSON.stringify(item).indexOf(tableSettings.filter) !== -1);
 	}
 	// dataTree - filter out collapsed rows
 	let visibleColumns = columns;
@@ -258,9 +258,6 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
 		// HACK: add a collapse column
 		// ...collapse button
 		const Cell = (v, col, item, node) => {
-			const nodes = Tree.findByValue(dataTree, item);
-			if ( ! nodes.length) return null;
-			let node = nodes[0];
 			if ( ! Tree.children(node).length) return null;
 			console.warn("+- node", node, JSON.stringify(node)); 
 			const nodeid = Tree.id(node); 
@@ -274,6 +271,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
 		visibleColumns = [uiCol].concat(visibleColumns);
 	} // ./dataTree
 	// sort?
+	// NB: Not available for "true" trees - assume tree depth = 2, root + leaves
 	if (tableSettings.sortBy !== undefined) {
 		// pluck the sorting column
 		let column = tableSettings.sortBy;
@@ -283,10 +281,12 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
 			let getter = sortGetter(column);
 			sortFn = (a,b) => defaultSortMethodForGetter(a,b,getter);
 		}
-		// sort!
-		data = data.sort(sortFn);
+		if (Tree.depth(dataTree) > 2) {
+			throw new Error("Cannot sort a hierarchical tree", dataTree);
+		}
+		dataTree.children.sort((na,nb) => sortFn(na.x, nb.x));
 		if (tableSettings.sortByReverse) {
-			data = data.reverse();
+			dataTree.children = dataTree.children.reverse();
 		}
 	} // sort
 	//Only show columns that have checkbox: true.
@@ -298,8 +298,8 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
 			return checkboxValues[headerKeyString];
 		});
 	}
-	// hide columns with no data
-	if (hideEmpty) {
+	// TODO hide columns with no data
+	if (hideEmpty && false) {
 		visibleColumns = visibleColumns.filter(c => {
 			if (c.ui) return true; // preserve UI columns
 			const getter = sortGetter(c);
@@ -311,31 +311,35 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
 		});
 	}
 	// NB maxRows is done later to support csv-download being all data
-	return {data, visibleColumns};
+	return {dataTree, visibleColumns};
 } // ./filter
 
 
 
 /**
  * The meat of the table! (normally)
- * @param {Object[]} data
+ * @param {!Tree} dataTree
  */
-const Rows = ({data, visibleColumns, dataArray, csv, rowsPerPage, page=0}) => {
-	if (!data) return null;
+const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, rowNum=0}) => {
+	if ( ! dataTree) return null;
 	// clip?
 	let min = rowsPerPage? page*rowsPerPage : 0;
 	let max = rowsPerPage? (page+1)*rowsPerPage : Infinity;
-	if ( ! csv) { // need to process them all for csv download. otherwise clip early
+	if ( ! csv && false) { // FIXME need to process them all for csv download. otherwise clip early
 		let pageData = data.slice(min, max);
 		data = pageData;
 	}
 	// build the rows & filter nulls (due to execute-but-don't-render-hidden behaviour)
-	let $rows = data.map((datum, i) => (
-		<Row key={'r'+i} item={datum} row={i}
+	let $rows = [];
+	Tree.map(dataTree, item => {
+		if ( ! item) return;
+		let $row = <Row key={'r'+rowNum} item={item} row={rowNum}
 			columns={visibleColumns} dataArray={dataArray}
-			hidden={csv && (i < min || i >= max)}
-		/>
-	)).filter(a => !!a);
+			hidden={csv && (i < min || i >= max)} />;
+		$rows.push($row);
+		rowNum++;
+	});
+	$rows = $rows.filter(a=>!!a); // NB: Row can return null
 	return $rows;
 };
 
@@ -407,6 +411,7 @@ const Row = ({item, row, dataTree, columns, dataArray, className, depth = 0, hid
 		<Cell key={JSON.stringify(col)}
 			row={row} dataTree={dataTree}
 			column={col} item={item}
+			node={dataTree}
 			dataRow={dataRow}
 			hidden={hidden} // Maybe more optimisation: tell Cell it doesn't need to return an element, we're going to toss it anyway
 		/>
@@ -546,11 +551,11 @@ const Cell = ({item, row, node, column, dataRow, hidden}) => {
 	}
 };
 
-const TotalCell = ({data, column}) => {
+const TotalCell = ({dataTree, column}) => {
 	// sum the data for this column
 	let total = 0;
 	const getter = sortGetter(column);
-	data.forEach((rItem, row) => {
+	Tree.map(dataTree, rItem => {
 		const v = getter(rItem);
 		// NB: 1* to force coercion of numeric-strings
 		if ($.isNumeric(v)) total += 1*v;

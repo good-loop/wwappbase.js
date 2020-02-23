@@ -47,6 +47,57 @@ Tree.x = node => node.x;
 Tree.id = node => node.x? getId(node.x) || node.x.name || Tree.str(node.x) : "";
 
 /**
+ * @returns {Number} Max depth of the tree. A leaf has depth 1 
+ */
+Tree.depth = node => {
+	if ( ! node) return 0;
+	if ( ! node.children) return 1;
+	let kdepths = node.children.map(kid => Tree.depth(kid));
+	return 1 + Math.max(...kdepths);
+};
+
+/**
+ * Map fn over all tree node values.
+ * @param {!Tree} tree
+ * @param {Function} fn node-value -> new-node-value. Note: null/undefined node-values are not passed in.
+ * @returns {!Tree} A copy
+ */
+Tree.map = (tree, fn) => {
+	let t2 = new Tree();
+	if (tree.x !== undefined && tree.x !== null) {
+		let fx = fn(tree.x);
+		t2.x = fx;
+	}
+	if (tree.children) {
+		// recurse
+		let fkids = tree.children.map(kid => Tree.map(kid, fn));
+		t2.children = fkids;
+	}
+	return t2;
+};
+/**
+ * @param {Function} predicate node-value -> Boolean. Return falsy to prune.
+ * @returns {?Tree} A copy. Can be null if the whole tree is pruned.
+ */
+Tree.filter = (tree, predicate) => {
+	let t2 = new Tree();
+	let keepValue = false;
+	if (tree.x !== undefined && tree.x !== null) {
+		let px = predicate(tree.x);
+		if ( ! px) return null;
+		t2.x = tree.x;
+		keepValue = true;
+	}
+	// recurse
+	let fkids = Tree.children(tree).map(kid => Tree.filter(kid, predicate));
+	fkids = fkids.filter(k => !! k); // remove nulls
+	t2.children = fkids;
+	// prune null branches
+	if (t2.children.length===0 && ! keepValue) return null;
+	return t2;
+};
+
+/**
  * @param {Tree} branch
  * @param {Object} leafValue This will be wrapped in a Tree object
  * @returns {Tree} the new leaf node

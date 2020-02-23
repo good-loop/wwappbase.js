@@ -41,7 +41,12 @@ const TestPage = () => {
 			<button onClick={e => DataStore.update()}>re-render</button>
 			<p>Insert a test widget below</p>
 
-			<SimpleTable columns={columns} dataTree={rowtree} hasCollapse hasFilter />;
+			Row Table
+			<SimpleTable columns={columns} data={data} hasFilter />
+
+			Tree Table
+
+			<SimpleTable columns={columns} dataTree={rowtree} hasCollapse hasFilter />
 
 		</div>
 	);
