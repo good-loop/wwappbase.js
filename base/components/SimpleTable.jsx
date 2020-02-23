@@ -63,13 +63,13 @@ class Column extends DataClass {
 // https://reactjs.org/docs/error-boundaries.html
 
 /**
- * @param data: {Item[]} each row an item. item.style will set row tr styling
+ * @param {?Item[]} data - Each row an item. item.style will set row tr styling
  *  *
- * @param dataObject Deprecated! a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
+ * @param {?Object} dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
  * So the columns should use accessors 'key' and 'value'.
  * This is ONLY good for simple 2-column tables!
  *
- * @param {?Tree<Item>} rowtree Tree of data items
+ * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure.
  * 
  * @param columns: {Column[]|String[]} Can mix String and Column
  *
@@ -106,24 +106,25 @@ class SimpleTable extends React.Component {
 
 	render() {
 		let {
-			tableName='SimpleTable', data, dataObject, columns,
+			tableName='Table', data, dataObject, dataTree, 
+			columns,
 			headerRender, className, csv,
 			addTotalRow,
 			topRow,
-			bottomRow, hasFilter, rowsPerPage, statePath,
+			bottomRow, 
+			hasFilter, hasCollapse,
+			rowsPerPage, statePath,
 			// checkboxValues, copied into state for modifying
 			hideEmpty,
 			scroller, // if true, use fix col-1 scrollbars
 			showSortButtons=true,
-			page=0,
-			rowtree,
-			dataTree
+			page=0
 		} = this.props;
 
 		const checkboxValues = this.state && this.state.checkboxValues;
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 
-		// Standardise the possible data inputs as a rowtree (which is the most general format)
+		// Standardise the possible data inputs as a dataTree (which is the most general format)
 		let dataTree = standardiseData({data, dataObject, dataTree})
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		const originalData = data; // for debug
@@ -139,20 +140,20 @@ class SimpleTable extends React.Component {
 				DataStore.setValue(statePath, ts);
 			};
 		}
-		if (!tableSettings) {
+		if ( ! tableSettings) {
 			tableSettings = {nonce:nonce()};
 			_.defer(() => this.setState(tableSettings));
 		}
 
-		// rowtree - preserve collapsed setting
-		if (rowtree) {
+		// dataTree - preserve collapsed setting
+		if ( ! data && ! dataObject) {
 			// NB: lodash _.merge wasnt working as expected - collapsed state got lost
 			if ( ! tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};
 		}
 
 		// filter and sort
-		let {data:fdata,visibleColumns} = rowFilter({data, rowtree, columns, tableSettings, hideEmpty, checkboxValues, rowsPerPage});
-		data = fdata;
+		let {dataTree:fdataTree,visibleColumns} = rowFilter({dataTree, hasCollapse, columns, tableSettings, hideEmpty, checkboxValues, rowsPerPage});
+		dataTree = fdataTree;
 		// clip max rows now?
 		let numPages = 1;
 		if (rowsPerPage) {
@@ -242,22 +243,22 @@ const standardiseData = ({data, dataObject, dataTree}) => {
 
 /**
  * Filter columns, rows, and data + sort
- * @returns {data, visibleColumns: COlumn[]}
+ * @returns {dataTree, visibleColumns: COlumn[]}
  */
-const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxValues, rowsPerPage, page=0}) => {
+const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, checkboxValues, rowsPerPage, page=0}) => {
 	// filter?
-	// always filter nulls
-	data = data.filter(row => !!row);
+	// ...always filter nulls
+	dataTree = Tree.filter(dataTree, node => node && (node.children || node.x));
 	if (tableSettings.filter) {
-		data = data.filter(row => JSON.stringify(row).indexOf(tableSettings.filter) !== -1);
+		dataTree = Tree.filter(dataTree, node => node.children || JSON.stringify(node).indexOf(tableSettings.filter) !== -1);
 	}
-	// rowtree - filter out collapsed rows
+	// dataTree - filter out collapsed rows
 	let visibleColumns = columns;
-	if (rowtree) {
-		// HACK: rowtree? add a collapse column
-		// collapse button
-		const Cell = (v, col, item) => {
-			const nodes = Tree.findByValue(rowtree, item);
+	if (hasCollapse) {
+		// HACK: add a collapse column
+		// ...collapse button
+		const Cell = (v, col, item, node) => {
+			const nodes = Tree.findByValue(dataTree, item);
 			if ( ! nodes.length) return null;
 			let node = nodes[0];
 			if ( ! Tree.children(node).length) return null;
@@ -271,7 +272,7 @@ const rowFilter = ({data, rowtree, columns, tableSettings, hideEmpty, checkboxVa
 		// add column
 		const uiCol = new Column({ui:true, Header:'+-', Cell});
 		visibleColumns = [uiCol].concat(visibleColumns);
-	} // ./rowtree
+	} // ./dataTree
 	// sort?
 	if (tableSettings.sortBy !== undefined) {
 		// pluck the sorting column
@@ -394,7 +395,7 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
  * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, row, rowtree, columns, dataArray, className, depth = 0, hidden}) => {
+const Row = ({item, row, dataTree, columns, dataArray, className, depth = 0, hidden}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
 
@@ -404,7 +405,7 @@ const Row = ({item, row, rowtree, columns, dataArray, className, depth = 0, hidd
 
 	const cells = columns.map(col => (
 		<Cell key={JSON.stringify(col)}
-			row={row} rowtree={rowtree}
+			row={row} dataTree={dataTree}
 			column={col} item={item}
 			dataRow={dataRow}
 			hidden={hidden} // Maybe more optimisation: tell Cell it doesn't need to return an element, we're going to toss it anyway
@@ -508,10 +509,10 @@ const nullCellRender = a => null;
 /**
  *
  * @param {Column} column
- * @param {?Tree} rowtree
+ * @param {?Tree} dataTree
  * @param {?Boolean} hidden Don't bother rendering anything for display - but execute custom render function in case of side effects
  */
-const Cell = ({item, row, column, rowtree, dataRow, hidden}) => {
+const Cell = ({item, row, node, column, dataRow, hidden}) => {
 	const citem = item;
 	try {
 		const v = getValue({item, row, column});
@@ -534,7 +535,7 @@ const Cell = ({item, row, column, rowtree, dataRow, hidden}) => {
 			// TODO When we do the above - don't use nullCellRender here for hidden cells!
 			dataRow.push(defaultCellRender(v, column));
 		}
-		const cellGuts = render(v, column, item);
+		const cellGuts = render(v, column, item, node);
 		if (hidden) return null; // If there are side effects in render function we want them, but skip creating DOM elements
 		return <td style={column.style}>{cellGuts}</td>;
 	} catch(err) {
