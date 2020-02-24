@@ -124,7 +124,7 @@ class SimpleTable extends React.Component {
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
 
 		// Standardise the possible data inputs as a rowtree (which is the most general format)
-		let dataTree = standardiseData({data, dataObject, dataTree})
+		dataTree = standardiseData({data, dataObject, dataTree})
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 		const originalData = data; // for debug
 
