@@ -127,6 +127,7 @@ class SimpleTable extends React.Component {
 		// Standardise the possible data inputs as a dataTree (which is the most general format)
 		const originalData = data; // for debug
 		dataTree = standardiseData({data, dataObject, dataTree})
+		assert(dataTree);
 		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 
 		// Table settings are stored in widget state by default. @deprecated But can also be linked to a DataStore via statePath
@@ -153,7 +154,9 @@ class SimpleTable extends React.Component {
 
 		// filter and sort
 		let {dataTree:fdataTree,visibleColumns} = rowFilter({dataTree, hasCollapse, columns, tableSettings, hideEmpty, checkboxValues, rowsPerPage});
+		assert(fdataTree, "SimpleTable.jsx - rowFilter led to null?!", dataTree);
 		dataTree = fdataTree;
+
 		// clip max rows now?
 		let numPages = 1;
 		if (rowsPerPage) {
@@ -207,7 +210,7 @@ class SimpleTable extends React.Component {
 	</thead>
 
 	<tbody>
-		<Rows dataTree={dataTree} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} />
+		<Rows dataTree={dataTree} tableSettings={tableSettings} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} />
 		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 	</tbody>
 	<TableFoot csv={csv} tableName={tableName} dataArray={dataArray} numPages={numPages} page={page} colSpan={visibleColumns.length} />
@@ -248,9 +251,11 @@ const standardiseData = ({data, dataObject, dataTree}) => {
 const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, checkboxValues, rowsPerPage, page=0}) => {
 	// filter?
 	// ...always filter nulls
-	dataTree = Tree.filter(dataTree, item => !! item);
+	dataTree = Tree.filterByValue(dataTree, item => !! item);
+	if ( ! dataTree) return new Tree(); // empty!
 	if (tableSettings.filter) {
-		dataTree = Tree.filter(dataTree, item => JSON.stringify(item).indexOf(tableSettings.filter) !== -1);
+		dataTree = Tree.filterByValue(dataTree, item => JSON.stringify(item).indexOf(tableSettings.filter) !== -1);
+		if ( ! dataTree) return new Tree(); // empty!
 	}
 	// dataTree - filter out collapsed rows
 	let visibleColumns = columns;
@@ -320,7 +325,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
  * The meat of the table! (normally)
  * @param {!Tree} dataTree
  */
-const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, rowNum=0}) => {
+const Rows = ({dataTree, tableSettings, visibleColumns, dataArray, csv, rowsPerPage, page=0, rowNum=0}) => {
 	if ( ! dataTree) return null;
 	// clip?
 	let min = rowsPerPage? page*rowsPerPage : 0;
@@ -329,9 +334,20 @@ const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, ro
 		let pageData = data.slice(min, max);
 		data = pageData;
 	}
-	// build the rows & filter nulls (due to execute-but-don't-render-hidden behaviour)
+	// filter by collapsed (which is set on the parent)
+	// ?? Should collapsed rows affect csv creation??
+	if (tableSettings.collapsed4nodeid) {
+		dataTree = Tree.filter(dataTree, (node,parent) => {
+			if ( ! parent) return true;
+			const pnodeid = Tree.id(parent); 
+			const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
+			return ! ncollapsed;
+		});		
+	}
+
+	// build the rows
 	let $rows = [];
-	Tree.map(dataTree, item => {
+	Tree.mapByValue(dataTree, item => {
 		if ( ! item) return;
 		let $row = <Row key={'r'+rowNum} item={item} row={rowNum}
 			columns={visibleColumns} dataArray={dataArray}
@@ -341,6 +357,7 @@ const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, ro
 		$rows.push($row);
 		rowNum++;
 	});
+	// filter nulls (due to execute-but-don't-render-hidden behaviour)
 	$rows = $rows.filter(a=>!!a); // NB: Row can return null
 	return $rows;
 };
@@ -556,7 +573,7 @@ const TotalCell = ({dataTree, column}) => {
 	// sum the data for this column
 	let total = 0;
 	const getter = sortGetter(column);
-	Tree.map(dataTree, rItem => {
+	Tree.mapByValue(dataTree, rItem => {
 		const v = getter(rItem);
 		// NB: 1* to force coercion of numeric-strings
 		if ($.isNumeric(v)) total += 1*v;

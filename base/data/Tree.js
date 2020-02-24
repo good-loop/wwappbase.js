@@ -17,7 +17,7 @@ class Tree extends DataClass {
 	/** @type {?Tree[]} */
 	children;
 	/** @type {Object} */
-	x;
+	value;
 	/**
 	 * e.g. new Tree({x:"root", children:[new Tree({x:"Leaf"})] })
 	 */
@@ -25,6 +25,7 @@ class Tree extends DataClass {
 		super(base);
 		Object.assign(this, base);
 		// guard against easy errors
+		assert( ! base.x, "Use `value` instead");
 		assert(typeof(base) !== "string", "Tree.js - bad input, {x} expected");
 		assert(typeof(base) !== "number", "Tree.js - wrong input {x} expected");
 	}
@@ -39,12 +40,12 @@ Tree.children = node => node.children || [];
 /**
  * The main value stored on this node
  */
-Tree.x = node => node.x;
+Tree.value = node => node.value;
 
 /**
- * @returns {!String} An id based on the node.x value. Can be "".
+ * @returns {!String} An id based on the node.value. Can be "".
  */
-Tree.id = node => node.x? getId(node.x) || node.x.name || Tree.str(node.x) : "";
+Tree.id = node => node.value? getId(node.value) || node.value.name || Tree.str(node.value) : "";
 
 /**
  * @returns {Number} Max depth of the tree. A leaf has depth 1 
@@ -57,43 +58,77 @@ Tree.depth = node => {
 };
 
 /**
+ * Map fn over all tree nodes.
+ * @param {!Tree} tree
+ * @param {Function} fn (node,parent) -> new-node/whatever
+ * @returns {!Tree} A copy (if fn returns new-nodes). 
+ * 	NB: Callers may also ignore the return value, using this as a forEach.
+ */
+Tree.map = (tree, fn, parent=null) => {
+	let t2 = fn(tree, parent);
+	if (tree.children) {
+		// recurse
+		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree));
+		t2.children = fkids;
+	}
+	return t2;
+};
+
+/**
  * Map fn over all tree node values.
  * @param {!Tree} tree
  * @param {Function} fn node-value -> new-node-value. Note: null/undefined node-values are not passed in.
  * @returns {!Tree} A copy
  */
-Tree.map = (tree, fn) => {
+Tree.mapByValue = (tree, fn) => {
 	let t2 = new Tree();
-	if (tree.x !== undefined && tree.x !== null) {
-		let fx = fn(tree.x);
-		t2.x = fx;
+	if (tree.value !== undefined && tree.value !== null) {
+		let fx = fn(tree.value);
+		t2.value = fx;
 	}
 	if (tree.children) {
 		// recurse
-		let fkids = tree.children.map(kid => Tree.map(kid, fn));
+		let fkids = tree.children.map(kid => Tree.mapByValue(kid, fn));
 		t2.children = fkids;
 	}
 	return t2;
 };
 /**
- * @param {Function} predicate node-value -> Boolean. Return falsy to prune.
+ * @param {Function} predicate node-value -> ?Boolean. Return true to keep, false to prune, 
+ * 	null/undefined to decide based on children. Beware of falsy!
  * @returns {?Tree} A copy. Can be null if the whole tree is pruned.
  */
-Tree.filter = (tree, predicate) => {
+Tree.filterByValue = (tree, predicate) => {
+	return Tree.filter(tree, n => {
+		if (n.value === undefined || n.value === null) {
+			return null; // keep iff a child survives
+		}
+		let px = predicate(tree.value);
+		return px;
+	});
+};
+
+/**
+ * @param {Function} predicate (node,parent) -> ?Boolean. Return true to keep, false to prune, 
+ * 	null/undefined to decide based on children. Beware of falsy!
+ * @returns {?Tree} A copy. Can be null if the whole tree is pruned.
+ */
+Tree.filter = (tree, predicate, parent=null) => {
 	let t2 = new Tree();
-	let keepValue = false;
-	if (tree.x !== undefined && tree.x !== null) {
-		let px = predicate(tree.x);
-		if ( ! px) return null;
-		t2.x = tree.x;
-		keepValue = true;
+	let px = predicate(tree, parent);
+	if (px===false) {
+		return null;
 	}
+	assert(px || px===null || px===undefined, "predictae must return truthy, false, or null/undefined -- NOT falsy");
+	t2.value = tree.value;
 	// recurse
-	let fkids = Tree.children(tree).map(kid => Tree.filter(kid, predicate));
+	let fkids = Tree.children(tree).map(kid => Tree.filter(kid, predicate, tree));
 	fkids = fkids.filter(k => !! k); // remove nulls
 	t2.children = fkids;
-	// prune null branches
-	if (t2.children.length===0 && ! keepValue) return null;
+	// prune null branches?
+	if (t2.children.length===0 && ! px) {
+		return null;
+	}
 	return t2;
 };
 
@@ -105,19 +140,9 @@ Tree.filter = (tree, predicate) => {
 Tree.add = (branch, leafValue) => {
 	if ( ! branch.children) branch.children = [];
 	assert( ! Tree.isa(leafValue), "double wrapping Tree",leafValue);
-	let leaf = new Tree({x:leafValue});
+	let leaf = new Tree({value:leafValue});
 	branch.children.push(leaf);
 	return leaf;
-};
-/**
- * @param {!Tree} tree
- * @returns {!Tree[]}
- */
-Tree.findByValue = (tree, value) => {
-	const kids = Tree.children(tree);
-	let nodes = _.flatMap(kids, kid => Tree.findByValue(kid, value));
-	if (Tree.x(tree) === value) nodes.push(tree);
-	return nodes;
 };
 
 export default Tree;
