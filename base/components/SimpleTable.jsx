@@ -257,16 +257,34 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
 		dataTree = Tree.filterByValue(dataTree, item => JSON.stringify(item).indexOf(tableSettings.filter) !== -1);
 		if ( ! dataTree) return new Tree(); // empty!
 	}
+	
 	// dataTree - filter out collapsed rows
 	let visibleColumns = columns;
 	if (hasCollapse) {
+		// filter by collapsed (which is set on the parent)
+		// Note: collapsed rows DO affect csv creation??
+		if (tableSettings.collapsed4nodeid) {
+			dataTree = Tree.filter(dataTree, (node,parent) => {
+				if ( ! parent) return true;
+				const pnodeid = Tree.id(parent); 
+				const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
+				// if (ncollapsed) {
+				// 	// mark this, so we show the button. Have to mark the value 'cos the node itself isnt preserved by map/filter
+				// 	if (Tree.value(parent)) Tree.value(parent)._collapsed = true; // NB: this will not be preserved through another map or filter!
+				// }
+				return ! ncollapsed;
+			});		
+		}
 		// HACK: add a collapse column
 		// ...collapse button
 		const Cell = (v, col, item, node) => {
-			if ( ! node || ! Tree.children(node).length) return null;
-			console.warn("+- node", node, JSON.stringify(node)); 
-			const nodeid = Tree.id(node); 
+			let nodeid = Tree.id(node); 
+			if ( ! nodeid) nodeid = JSON.stringify(item);
 			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
+			if ( ! node || ! Tree.children(node).length) {
+				if ( ! ncollapsed) return null;
+				// if ( ! item._collapsed) return null;
+			}
 			return (<button className='btn btn-xs'
 				onClick={e => {tableSettings.collapsed4nodeid[nodeid] = ! ncollapsed; DataStore.update();}}
 			>{ncollapsed? '+' : '-'}</button>);
@@ -274,7 +292,8 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
 		// add column
 		const uiCol = new Column({ui:true, Header:'+-', Cell});
 		visibleColumns = [uiCol].concat(visibleColumns);
-	} // ./dataTree
+	} // ./hasCollapse
+
 	// sort?
 	// NB: Not available for "true" trees - assume tree depth = 2, root + leaves
 	if (tableSettings.sortBy !== undefined) {
@@ -325,7 +344,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ch
  * The meat of the table! (normally)
  * @param {!Tree} dataTree
  */
-const Rows = ({dataTree, tableSettings, visibleColumns, dataArray, csv, rowsPerPage, page=0, rowNum=0}) => {
+const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, rowNum=0}) => {
 	if ( ! dataTree) return null;
 	// clip?
 	let min = rowsPerPage? page*rowsPerPage : 0;
@@ -334,25 +353,16 @@ const Rows = ({dataTree, tableSettings, visibleColumns, dataArray, csv, rowsPerP
 		let pageData = data.slice(min, max);
 		data = pageData;
 	}
-	// filter by collapsed (which is set on the parent)
-	// ?? Should collapsed rows affect csv creation??
-	if (tableSettings.collapsed4nodeid) {
-		dataTree = Tree.filter(dataTree, (node,parent) => {
-			if ( ! parent) return true;
-			const pnodeid = Tree.id(parent); 
-			const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
-			return ! ncollapsed;
-		});		
-	}
-
 	// build the rows
 	let $rows = [];
-	Tree.mapByValue(dataTree, item => {
+	Tree.map(dataTree, node => {
+		const item = Tree.value(node);
 		if ( ! item) return;
+		// <Row>
 		let $row = <Row key={'r'+rowNum} item={item} row={rowNum}
 			columns={visibleColumns} dataArray={dataArray}
 			hidden={csv && (rowNum < min || rowNum >= max)} 
-			node={dataTree}
+			node={node}
 			/>;
 		$rows.push($row);
 		rowNum++;

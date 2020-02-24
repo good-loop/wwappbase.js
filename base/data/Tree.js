@@ -19,13 +19,13 @@ class Tree extends DataClass {
 	/** @type {Object} */
 	value;
 	/**
-	 * e.g. new Tree({x:"root", children:[new Tree({x:"Leaf"})] })
+	 * e.g. new Tree({value:"root", children:[new Tree({value:"Leaf"})] })
 	 */
 	constructor(base) {
 		super(base);
 		Object.assign(this, base);
 		// guard against easy errors
-		assert( ! base.x, "Use `value` instead");
+		assert( ! (base && base.x), "Use `value` instead");
 		assert(typeof(base) !== "string", "Tree.js - bad input, {x} expected");
 		assert(typeof(base) !== "number", "Tree.js - wrong input {x} expected");
 	}
@@ -61,7 +61,7 @@ Tree.depth = node => {
  * Map fn over all tree nodes.
  * @param {!Tree} tree
  * @param {Function} fn (node,parent) -> new-node/whatever
- * @returns {!Tree} A copy (if fn returns new-nodes). 
+ * @returns {?Tree} A copy (if fn returns new-nodes). 
  * 	NB: Callers may also ignore the return value, using this as a forEach.
  */
 Tree.map = (tree, fn, parent=null) => {
@@ -69,7 +69,7 @@ Tree.map = (tree, fn, parent=null) => {
 	if (tree.children) {
 		// recurse
 		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree));
-		t2.children = fkids;
+		if (t2) t2.children = fkids;
 	}
 	return t2;
 };
@@ -103,7 +103,7 @@ Tree.filterByValue = (tree, predicate) => {
 		if (n.value === undefined || n.value === null) {
 			return null; // keep iff a child survives
 		}
-		let px = predicate(tree.value);
+		let px = predicate(n.value);
 		return px;
 	});
 };
