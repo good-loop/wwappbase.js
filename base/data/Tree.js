@@ -71,15 +71,15 @@ Tree.depth = node => {
 /**
  * Map fn over all tree nodes.
  * @param {!Tree} tree
- * @param {Function} fn (node,parent) -> new-node/whatever
+ * @param {Function} fn (node,parent,depth) -> new-node/whatever
  * @returns {?Tree} A copy (if fn returns new-nodes). 
  * 	NB: Callers may also ignore the return value, using this as a forEach.
  */
-Tree.map = (tree, fn, parent=null) => {
+Tree.map = (tree, fn, parent=null, depth=0) => {
 	let t2 = fn(tree, parent);
 	if (tree.children) {
 		// recurse
-		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree));
+		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree, depth+1));
 		if (t2) t2.children = fkids;
 	}
 	return t2;

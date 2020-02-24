@@ -133,12 +133,6 @@ class SimpleTable extends React.Component {
 			_.defer(() => this.setState(tableSettings));
 		}
 
-		// dataTree - preserve collapsed setting
-		if (hasCollapse) {
-			// NB: lodash _.merge wasnt working as expected - collapsed state got lost
-			if ( ! tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};
-		}
-
 		// filter and sort
 		let {dataTree:fdataTree,visibleColumns} = rowFilter({dataTree, hasCollapse, columns, tableSettings, hideEmpty, rowsPerPage});
 		assert(fdataTree, "SimpleTable.jsx - rowFilter led to null?!", dataTree);
@@ -147,11 +141,11 @@ class SimpleTable extends React.Component {
 		// clip max rows now?
 		let numPages = 1;
 		if (rowsPerPage) {
-			numPages = Math.ceil(data.length / rowsPerPage);
+			let numRows = Tree.children(dataTree).length;
+			numPages = Math.ceil(numRows / rowsPerPage);
 			// NB: clipping is done later 'cos if we're doing a csv download, which should include all data
 		}
 
-		let cn = 'table'+(className? ' '+className : '');
 		// HACK build up an array view of the table
 		// TODO refactor to build this first, then generate the html
 		// TODO OR - refactor so this is only built on demand, because it's expensive
@@ -163,6 +157,7 @@ class SimpleTable extends React.Component {
 		};
 		// scrolling (credit to Irina): uses wrapper & scroller and css
 
+		// the html
 		return (
 			<div className='SimpleTable'>
 				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control'
@@ -172,7 +167,7 @@ class SimpleTable extends React.Component {
 				<div>
 					<div className={scroller? 'wrapper' : ''}>
 						<div className={scroller? 'scroller' : ''}>
-<table className={cn}>
+<table className={join("table",className)}>
 	<thead>
 		<tr>
 			{visibleColumns.map((col, c) => {
@@ -233,7 +228,7 @@ const standardiseData = ({data, dataObject, dataTree}) => {
  * Filter columns, rows, and data + sort
  * @returns {dataTree, visibleColumns: Column[]}
  */
-const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, rowsPerPage, page=0}) => {
+const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) => {
 	const originalDataTree = dataTree; // debug
 	// filter?
 	// ...always filter nulls
@@ -253,21 +248,22 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ro
 	// dataTree - filter out collapsed rows
 	let visibleColumns = columns;
 	if (hasCollapse) {
+		// preserve collapsed setting
+		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
+		if ( ! tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};		
 		// filter by collapsed (which is set on the parent)
 		// Note: collapsed rows DO affect csv creation??
-		if (tableSettings.collapsed4nodeid) {
-			dataTree = Tree.filter(dataTree, (node,parent) => {
-				if ( ! parent) return true;
-				const pnodeid = Tree.id(parent); 
-				const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
-				// if (ncollapsed) {
-				// 	// mark this, so we show the button. Have to mark the value 'cos the node itself isnt preserved by map/filter
-				// 	if (Tree.value(parent)) Tree.value(parent)._collapsed = true; // NB: this will not be preserved through another map or filter!
-				// }
-				return ! ncollapsed;
-			});	
-			assert(dataTree, "SimpleTable.jsx - collapsed to null?!");
-		}
+		dataTree = Tree.filter(dataTree, (node,parent) => {
+			if ( ! parent) return true;
+			const pnodeid = Tree.id(parent); 
+			const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
+			// if (ncollapsed) {
+			// 	// mark this, so we show the button. Have to mark the value 'cos the node itself isnt preserved by map/filter
+			// 	if (Tree.value(parent)) Tree.value(parent)._collapsed = true; // NB: this will not be preserved through another map or filter!
+			// }
+			return ! ncollapsed;
+		});	
+		assert(dataTree, "SimpleTable.jsx - collapsed to null?!");		
 		// HACK: add a collapse column
 		// ...collapse button
 		const Cell = (v, col, item, node) => {
@@ -301,9 +297,9 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ro
 		if (Tree.depth(dataTree) > 2) {
 			throw new Error("Cannot sort a hierarchical tree", dataTree);
 		}
-		dataTree.children.sort((na,nb) => sortFn(na.x, nb.x));
+		Tree.children(dataTree).sort((na,nb) => sortFn(Tree.value(na), Tree.value(nb)));
 		if (tableSettings.sortByReverse) {
-			dataTree.children = dataTree.children.reverse();
+			dataTree.children = Tree.children(dataTree).reverse();
 		}
 	} // sort
 
@@ -391,7 +387,6 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 
 	return (
 		<th>
-			{showColumnControl}
 			<span onClick={onClick}>{hText}{arrow}</span>
 		</th>
 	);
