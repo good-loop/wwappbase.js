@@ -7,6 +7,7 @@ import DataClass, {getType, getId, nonce} from './DataClass';
 import C from '../CBase';
 import Settings from '../Settings';
 import Enum from 'easy-enums';
+import { vpaidSWFLocation } from 'vast-player/lib/VASTPlayer';
 
 /** 
  * 
@@ -41,6 +42,16 @@ Tree.children = node => node.children || [];
  * The main value stored on this node
  */
 Tree.value = node => node.value;
+
+/**
+ * recursively collect all values
+ * @return Object[]
+ */
+Tree.allValues = tree => {
+	const vs = [];
+	Tree.mapByValue(tree, v => vs.push(v));
+	return vs;
+};
 
 /**
  * @returns {!String} An id based on the node.value. Can be "".

@@ -231,16 +231,23 @@ const standardiseData = ({data, dataObject, dataTree}) => {
 
 /**
  * Filter columns, rows, and data + sort
- * @returns {dataTree, visibleColumns: COlumn[]}
+ * @returns {dataTree, visibleColumns: Column[]}
  */
 const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, rowsPerPage, page=0}) => {
+	const originalDataTree = dataTree; // debug
 	// filter?
 	// ...always filter nulls
 	dataTree = Tree.filterByValue(dataTree, item => !! item);
-	if ( ! dataTree) return new Tree(); // empty!
+	if ( ! dataTree) {
+		console.warn("SimpleTable.jsx - filter nulls led to empty tree", originalDataTree);
+		dataTree = new Tree(); // empty!
+	}
 	if (tableSettings.filter) {
 		dataTree = Tree.filterByValue(dataTree, item => JSON.stringify(item).indexOf(tableSettings.filter) !== -1);
-		if ( ! dataTree) return new Tree(); // empty!
+		if ( ! dataTree) {
+			console.warn("SimpleTable.jsx - filter string led to empty tree: "+tableSettings.filter, originalDataTree);
+			dataTree = new Tree(); // empty!
+		}	
 	}
 	
 	// dataTree - filter out collapsed rows
@@ -258,7 +265,8 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ro
 				// 	if (Tree.value(parent)) Tree.value(parent)._collapsed = true; // NB: this will not be preserved through another map or filter!
 				// }
 				return ! ncollapsed;
-			});		
+			});	
+			assert(dataTree, "SimpleTable.jsx - collapsed to null?!");
 		}
 		// HACK: add a collapse column
 		// ...collapse button
@@ -299,8 +307,9 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty, ro
 		}
 	} // sort
 
-	// TODO hide columns with no data
-	if (hideEmpty && false) {
+	// hide columns with no data
+	if (hideEmpty) {
+		const data = Tree.allValues(dataTree);
 		visibleColumns = visibleColumns.filter(c => {
 			if (c.ui) return true; // preserve UI columns
 			const getter = sortGetter(c);
