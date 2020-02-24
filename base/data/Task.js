@@ -3,8 +3,11 @@
 	TODO It'd be nice to make this immutable (can we use Object.freeze to drive that thrgough??)
 */
 import {assert, assMatch} from 'sjtest';
+import Enum from 'easy-enums';
+
 import DataClass, {getType, nonce} from './DataClass';
 import C from '../CBase';
+
 
 const TASKS_SERVER = "calstat.good-loop.com";
 
@@ -63,17 +66,20 @@ Task.setParent = (child, parent) => {
 	child.parentId = parent.id;
 };
 
+Task.STAGES = new Enum('assigned wip testing done closed')
+
 /**
  * It's done! close the task
  */
 Task.close = task => {
 	task.closed = true;
-	task.stage = STAGE_CLOSED;
+	task.stage = Task.STAGES.closed;
 	return task;
 };
 
 Task.open = task => {
 	task.closed = false;
-	task.stage = "open";
+	task.stage = Task.STAGES.assigned;
 	return task;
 };
+
