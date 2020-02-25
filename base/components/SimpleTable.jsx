@@ -337,11 +337,11 @@ const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, ro
 	}
 	// build the rows
 	let $rows = [];
-	Tree.map(dataTree, node => {
+	Tree.map(dataTree, (node, parent, depth) => {
 		const item = Tree.value(node);
 		if ( ! item) return;
 		// <Row>
-		let $row = <Row key={'r'+rowNum} item={item} row={rowNum}
+		let $row = <Row key={'r'+rowNum} item={item} rowNum={rowNum} depth={depth}
 			columns={visibleColumns} dataArray={dataArray}
 			hidden={csv && (rowNum < min || rowNum >= max)} 
 			node={node}
@@ -394,11 +394,11 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 
 /**
  * A table row!
- * @param {!Number} row Can be -1 for special rows ??0 or 1 indexed??
+ * @param {!Number} rowNum Can be -1 for special rows ??0 or 1 indexed??
  * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, row, node, columns, dataArray, className, depth = 0, hidden}) => {
+const Row = ({item, rowNum, node, columns, dataArray, depth = 0, hidden}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
 
@@ -408,7 +408,7 @@ const Row = ({item, row, node, columns, dataArray, className, depth = 0, hidden}
 
 	const cells = columns.map(col => (
 		<Cell key={JSON.stringify(col)}
-			row={row} node={node}
+			row={rowNum} node={node}
 			column={col} item={item}
 			dataRow={dataRow}
 			hidden={hidden} // Maybe more optimisation: tell Cell it doesn't need to return an element, we're going to toss it anyway
@@ -417,7 +417,7 @@ const Row = ({item, row, node, columns, dataArray, className, depth = 0, hidden}
 
 	if (hidden) return null; // We have our side effects - if the row isn't to be shown we're done.
 	return (
-		<tr className={join("row"+row, "depth"+depth)} depth={depth} style={item.style}>
+		<tr className={join("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={item.style}>
 			{cells}
 		</tr>
 	);
