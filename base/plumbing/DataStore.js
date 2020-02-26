@@ -129,8 +129,9 @@ class Store {
 		}
 	} // ./update
 
+
 	/**
-	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.	 
+	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.
 	 * 
 	 * Warning: This does NOT load data from the server.
 	 * @param statusTypeIdObject -- backwards compatible update to named params
@@ -146,8 +147,11 @@ class Store {
 			console.warn("DataStore.getData - old inputs - please upgrade to named {status, type, id}", statusTypeIdObject, type, id);
 		}
 		if (statusTypeIdObject.id) id = statusTypeIdObject.id;
+		// First arg may be status - but check it's valid & if not, fill in status from item object
 		let status = statusTypeIdObject.status || statusTypeIdObject;
+		if (!status || !C.KStatus.has(status)) status = getStatus(item);
 		// end hack
+		
 
 		assert(C.KStatus.has(status), "DataStore.getData bad status: "+status);
 		assert(C.TYPES.has(type), "DataStore.getData bad type: "+type);
@@ -157,24 +161,27 @@ class Store {
 		return item;
 	}
 
+
 	/**
 	 * @param status {?C.KStatus} If unset, use item.status
 	 * @param item {!Object}
 	 */
-	setData(statusTypeIdObject, item, update=true) {		
+	setData(statusTypeIdObject, item, update = true) {
 		assert(statusTypeIdObject, "setData - no path input?! "+statusTypeIdObject, item);
 		// HACK to allow old code for setData(status, item, update = true) to still work - May 2019
 		if (statusTypeIdObject.item) item = statusTypeIdObject.item;
 		else {
 			console.warn("DataStore.setData - old inputs - please upgrade to named {status, item, update}", statusTypeIdObject, item);
 		}
-		if (statusTypeIdObject.update) update = statusTypeIdObject.update;
+		if (statusTypeIdObject.update !== undefined) update = statusTypeIdObject.update;
+		// First arg may be status - but check it's valid & if not, fill in status from item object
 		let status = statusTypeIdObject.status || statusTypeIdObject;
+		if (!status || !C.KStatus.has(status)) status = getStatus(item);
 		// end hack
 		
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
 		assert(C.TYPES.has(getType(item)), item);
-		if ( ! status) status = getStatus(item);
+		
 		const path = this.getPathForItem(status, item);
 		this.setValue(path, item, update);
 	}

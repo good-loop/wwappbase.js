@@ -15,23 +15,38 @@ import Misc from './Misc';
 import SimpleTable from './SimpleTable';
 import PropControl from './PropControl';
 import MDText from './MDText';
+import Tree from '../../base/data/Tree';
 
 const TestPage = () => {
 	let path = ['misc', 'TestPage'];
 	let widget = DataStore.getValue(path) || {};
 	const ism = DataStore.isModified(path.concat('green'));
+	const data = [
+		{name:"Winterstein"},
+		{name:"Dan"},{name:"Becca"},
+		{name:"Nicholson"},
+		{name:"Ken"},{name:"Lizzie"}
+	];
+	const columns = ["name", "foo"];
+	const rowtree = new Tree();
+	let w = Tree.add(rowtree, data[0]);
+	Tree.add(w, data[1]); Tree.add(w, data[2]);
+	let n = Tree.add(rowtree, data[3]);
+	Tree.add(n, data[4]); Tree.add(n, data[5]);
+	console.log(rowtree);
 
 	return (
 		<div className='TestPage'>
 			<h1>Test Page</h1>
+			<button onClick={e => DataStore.update()}>re-render</button>
 			<p>Insert a test widget below</p>
 
-			<PropControl label='Money' prop='green' path={path} type='Money' />
-			<pre>{""+widget.green} = {JSON.stringify(widget.green)}</pre>
-			<pre>modified = {JSON.stringify(ism)}</pre>
+			Row Table
+			<SimpleTable columns={columns} data={data} hasFilter />
 
-			<PropControl label='Yes No' prop='yn' path={path} type='yesNo' />
-			<pre>{JSON.stringify(widget.yn)}</pre>
+			Tree Table
+
+			<SimpleTable columns={columns} dataTree={rowtree} hasCollapse hasFilter />
 
 		</div>
 	);

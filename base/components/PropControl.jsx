@@ -769,7 +769,10 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 
 
 /**
- * What is this?? use-case eg??
+ * Convenience for editing a set of key-value pairs - eg the numerous string overrides stored on an Advert under customText
+ * @param {{String: String}} value Can be null initially
+ * @param {?String} keyName Explanatory placeholder text for entry key
+ * @param {?String} valueName Explanatory placeholder text for entry value
  */
 const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value', ...otherStuff}) => {
 	const addRemoveKey = (key, val, remove) => {
@@ -780,11 +783,12 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 		if (saveFn) saveFn({ path, prop, value: newValue });
 	}
 	
-	const entryElements = Object.entries(value || {}).filter(([key, val]) => val).map(([key, val]) => (
-		<div className="entry" key={key}>
-			{key}: <PropControl type="text" path={proppath} prop={key} />
-			<span className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</span>
-		</div>
+	const entryElements = Object.entries(value || {}).filter(([key, val]) => (val === '') || val).map(([key, val]) => (
+		<tr className="entry" key={key}>
+			<td><BS.Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</BS.Button></td>
+			<td>{key}:</td>
+			<td><PropControl type="text" path={proppath} prop={key} /></td>
+		</tr>
 	));
 	
 	let newKey, newValue;
@@ -798,7 +802,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 
 	return (
 		<div className="entryset form-inline">
-			<div className="entries">{entryElements}</div>
+			<table className="entries">{entryElements}</table>
 			<form className="form-inline" onSubmit={stopEvent}>
 				<input className='form-control' placeholder={keyName} onChange={(event) => newKey = event.target.value}
 				/> <input className='form-control' placeholder={valueName} onChange={(event) => newValue = event.target.value}

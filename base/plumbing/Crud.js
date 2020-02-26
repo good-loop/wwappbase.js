@@ -59,11 +59,11 @@ ActionMan.crud = ({type, id, action, item}) => {
 
 	// call the server
 	return ServerIO.crud(type, item, action)
-		.then(res => {			
+		.then(res => {
 			// update
 			let hits = DataStore.updateFromServer(res, status)
 			if (action==='publish') { // } && DataStore.getData(C.KStatus.DRAFT, type, id)) {
-				// also update the draft version								
+				// also update the draft version
 				let pubItem = DataStore.getValue(pubpath);
 				// copy it
 				let draftItem = _.cloneDeep(pubItem);
@@ -79,13 +79,13 @@ ActionMan.crud = ({type, id, action, item}) => {
 				DataStore.setValue(pubpath, null);
 				DataStore.setValue(draftpath, null);
 				// ??what if we were deleting a different Item than the focal one??
-				DataStore.setUrlValue(navtype, null);								
+				DataStore.setUrlValue(navtype, null);
 			} else if (id===C.newId) {
 				// id change!
 				// updateFromServer should have stored the new item
 				// So just repoint the focus
 				let serverId = getId(res.cargo);
-				DataStore.setFocus(type, serverId); // deprecated			
+				DataStore.setFocus(type, serverId); // deprecated
 				DataStore.setUrlValue(navtype, serverId);
 			}
 			// clear the saving flag
@@ -210,13 +210,13 @@ const preCrudListMod = ({type, id, item, action}) => {
 			DataStore.setValue(pathPublished, listPublished);
 		}
 		if (listAllBarTrash) {
-			List.add(item, listAllBarTrash, 0);	
+			List.add(item, listAllBarTrash, 0);
 			DataStore.setValue(pathAllBarTrash, listAllBarTrash);	
 		}
 		return;
 	}
 	// delete => optimistic remove
-	if (C.CRUDACTION.isdelete(action)) {		
+	if (C.CRUDACTION.isdelete(action)) {
 		if ( ! item) item = {type, id};
 		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
 			// NB: see listPath for format, which is [list, type, status, domain, query, sort]
