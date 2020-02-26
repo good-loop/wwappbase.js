@@ -472,9 +472,21 @@ Misc.SavePublishDiscard = ({
 	// merge discard / unpublish / delete into one button with a dropdown of options??
 	// merge save / saveAs into one button with a dropdown of options?
 
+	// Ask user for confirmation. Also, if they have specified a target vertiser id for the copy
+	// saves that along the name into DataStore before calling ActionMan.saveAs (which will internally check if these
+	// parameteres exist in the store)
 	const confirmSaveAs = () => {
-		const confirmed = window.confirm('Save changes onto a new advert?');
+		const confirmed = window.confirm('Save changes onto a new advert?'); // pauses execution, pops up alert and stores the chosen option
 		const customVertiser = DataStore.getValue(['misc', 'targetVertiserId']);
+		if (customVertiser) { // if the user has specified a custom target vertiser for the copy, then save it into the store along with the name!
+			ServerIO.getDataItem({type:C.TYPES.Advertiser, id:customVertiser})
+				.then(res => {
+					const vertiserName = res.cargo.name;
+					DataStore.setValue(['misc', 'targetVertiserName'], vertiserName);
+					ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null, customVertiser });
+				});
+			return;
+		}
 		if (confirmed) ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null, customVertiser });
 	}
 

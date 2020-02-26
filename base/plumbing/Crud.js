@@ -148,7 +148,10 @@ ActionMan.saveAs = ({type, id, item, onChange, customVertiser = null}) => {
 		// make a probably unique name - use randomness TODO nicer
 		newItem.name += ' v_'+nonce(3);
 	}
-	if (customVertiser) { newItem.vertiser = customVertiser }
+	if (customVertiser) { 
+		newItem.vertiser = customVertiser;
+		newItem.vertiserName = DataStore.getValue(['misc', 'targetVertiserName']);
+	}
 
 	// save local
 	DataStore.setData(C.KStatus.DRAFT, newItem);
