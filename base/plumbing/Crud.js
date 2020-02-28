@@ -201,7 +201,7 @@ const preCrudListMod = ({type, id, item, action}) => {
 	// TODO draft list??
 	// TODO invalidate any (other) cached list of this type (eg filtered lists may now be out of date)	
 	// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
-	if (C.CRUDACTION.ispublish(action)) {		
+	if (C.CRUDACTION.ispublish(action)) {
 		if (listPublished) {
 			List.add(item, listPublished, 0);
 			DataStore.setValue(pathPublished, listPublished);
@@ -253,7 +253,7 @@ ActionMan.delete = (type, pubId) => {
 	return ActionMan.crud({type, id:pubId, action:'delete'})
 		.then(e => {
 			console.warn("deleted!", type, pubId, e);
-			// remove the local versions			
+			// remove the local versions
 			DataStore.setValue(getDataPath({status: C.KStatus.PUBLISHED, type, id: pubId}), null);
 			DataStore.setValue(getDataPath({status: C.KStatus.DRAFT, type, id: pubId}), null);
 			// invalidate any cached list of this type
@@ -310,7 +310,7 @@ ServerIO.crud = function(type, item, action) {
 			type, // hm: is this needed?? the stype endpoint should have it
 			item: JSON.stringify(item)
 		}
-	};		
+	};
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
@@ -377,7 +377,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 			if (res.success) {
 				console.log("refreshed", type, id);
 				let item = res.cargo;
-				DataStore.setData(status, item);				
+				DataStore.setData(status, item);
 			} else {
 				console.warn("refresh-failed", res, type, id);
 			}

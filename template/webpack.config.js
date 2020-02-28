@@ -28,11 +28,11 @@ const baseConfig = {
 				exclude: /node_modules/,
 				options: {
 					presets: [
-						['@babel/preset-env', { targets: { ie: "11" }, loose: true }]
+						['@babel/preset-env', { targets: { ie: "11" }, loose: true }],
+						['@babel/preset-react']
 					],
 					plugins: [
 						'@babel/plugin-proposal-class-properties',
-						'@babel/plugin-transform-react-jsx',
 						'transform-node-env-inline'
 					]
 				}
