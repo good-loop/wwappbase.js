@@ -329,3 +329,15 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 
 	return snum;
 };
+
+/**
+ * e.g. for use in sort()
+ * @throws Error if currencies are not the same
+ * @returns {!Number} negative if a < b, 0 if equal, positive if a > b
+ */
+Money.compare = (a,b) => {
+	Money.assIsa(a);
+	Money.assIsa(b);
+	assCurrencyEq(a, b, "Money.compare() "+a+" "+b);
+	return Money.v100p(a) - Money.v100p(b);	
+};
