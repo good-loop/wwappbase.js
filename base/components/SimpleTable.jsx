@@ -381,9 +381,10 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 		hText = <div title={column.tooltip}>{hText}</div>;
 	}
 	
+	// Sort indicator: point down for descending, point up for ascending, outlined point down for "not sorted on this column"
 	let arrow = null;
-	if (sortByMe) arrow = <Misc.Icon glyph={'triangle-'+(tableSettings.sortByReverse? 'top' :'bottom')} />;
-	else if (showSortButtons) arrow = <Misc.Icon className='text-muted' glyph='triangle-bottom' />;
+	if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
+	else if (showSortButtons) arrow = <>&#x25BD;</>;
 
 	return (
 		<th>
@@ -624,7 +625,7 @@ const CSVDownload = ({tableName, columns, data, dataArray}) => {
 	let csvLink = 'data:text/csv;charset=utf-8,'+csv;
 	return (
 		<a href={csvLink} download={(tableName||'table')+'.csv'} >
-			<Misc.Icon glyph='download-alt' /> .csv
+			&#128229; Download .csv
 		</a>
 	);
 };
