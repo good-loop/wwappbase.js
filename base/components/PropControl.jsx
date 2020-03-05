@@ -276,6 +276,9 @@ const PropControl2 = (props) => {
 	if (type === 'yesNo') {
 		return <PropControlYesNo path={path} prop={prop} value={value} inline={inline} saveFn={saveFn} className={props.className} />
 	}
+	if (type === 'keyvalue') {
+		return <MapEditor {...props} />
+	}
 
 	if (value===undefined) value = '';
 
@@ -992,7 +995,7 @@ const FormControl = ({value, type, required, size, className, prepend, ...otherP
 const KControlType = new Enum("img imgUpload videoUpload textarea html text search select radio checkboxes autocomplete password email url color checkbox"
 							+" yesNo location date year number arraytext keyset entryset address postcode json country"
 							// some Good-Loop data-classes
-							+" Money XId");
+							+" Money XId keyvalue");
 
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
 
@@ -1058,6 +1061,45 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 	);
 }; // ./imgUpload
 
+
+const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp}) => {
+	assert($KeyProp && $ValProp, "PropControl MapEditor "+prop+": missing $KeyProp or $ValProp jsx (probably PropControl) widgets");
+	const temppath = ['widget','MapEditor'].concat(proppath);
+	const kv = DataStore.getValue(temppath) || {};
+	const addKV = () => {		
+		if ( ! kv.key) {
+			return; // no key!
+		}
+		const k = kv.key.trim();
+		if ( ! k) return;
+		if ( ! value) DataStore.setValue(proppath, {});
+		DataStore.setValue(proppath.concat(k), kv.val);
+		DataStore.setValue(temppath, null);	
+	};
+	const rmK = k => {
+		delete value[k];
+		DataStore.setValue(proppath, value, true);
+	};
+	const vkeys = Object.keys(value || {});
+	return (<>
+		{vkeys.map(
+			k => (<Misc.Col2 key={k}>
+					<div>{k}</div>
+					<div>
+						{React.cloneElement($ValProp, {path:proppath, prop:k, label:null})}
+						<BS.Button onClick={e => rmK(k)}>➖</BS.Button>
+					</div>
+				</Misc.Col2>)
+		)}
+		<Misc.Col2>
+			{React.cloneElement($KeyProp, {path:temppath, prop:'key'})}
+			<div>
+				{React.cloneElement($ValProp, {path:temppath, prop:'val'})}
+				<BS.Button onClick={addKV} disabled={ ! kv.key || ! kv.val}>➕</BS.Button>
+			</div>
+		</Misc.Col2>
+	</>);
+}; // ./MapEditor
 
 /** INPUT STATUS */
 class InputStatus extends JSend {

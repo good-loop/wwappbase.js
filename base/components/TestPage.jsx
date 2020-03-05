@@ -41,6 +41,13 @@ const TestPage = () => {
 			<button onClick={e => DataStore.update()}>re-render</button>
 			<p>Insert a test widget below</p>
 
+			<div className='well'>
+			<PropControl type='keyvalue' path={path} prop='ab'
+				$KeyProp={<PropControl label='"B" advert-id' />} 
+				$ValProp={<PropControl label='Share of impressions' type='number' min={0} max={1} help="[0-1] percentage" />} 
+			/>
+		</div>
+
 			Row Table
 			<SimpleTable columns={columns} data={data} hasFilter />
 
