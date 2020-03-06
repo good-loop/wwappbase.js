@@ -7,6 +7,7 @@ import DataClass, {getType, getId, nonce} from './DataClass';
 import C from '../CBase';
 import Settings from '../Settings';
 import Enum from 'easy-enums';
+
 /** 
  * 
  * e.g. new Tree({x:"root", children:[new Tree({x:"Leaf"})] })

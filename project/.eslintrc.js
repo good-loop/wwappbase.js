@@ -1,10 +1,20 @@
 module.exports = {
 	"extends": "airbnb",
+	"parser": "@typescript-eslint/parser",
 	"plugins": [
 		"react",
 		"jsx-a11y",
-		"import"
+		"import",
+		"@typescript-eslint"
 	],
+	"settings": {
+		"import/resolver": {
+			"node": {
+				"extensions": [".ts", ".tsx", ".js", ".jsx"],
+				"moduleDirectory": ["node_modules", "src/"],
+			},
+		},
+	},
 	"rules": {
 		"constructor-super": "warn", // DataClass has use-cases for not calling super
 		"jsx-a11y/tabindex-no-positive": "off",
@@ -89,6 +99,7 @@ module.exports = {
 		"react/jsx-closing-tag-location": "off",
 		"react/jsx-curly-spacing": "off",
 		"react/jsx-curly-brace-presence": "warn",
+		"react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
 		"react/jsx-first-prop-new-line": "off",
 		"react/jsx-indent-props": ["warn", "tab"],
 		"react/jsx-indent": ["warn", "tab"],

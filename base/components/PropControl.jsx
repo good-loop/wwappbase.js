@@ -67,8 +67,11 @@ const urlValidator = val => urlValidatorGuts(val);
 /** Default validator for secure URL values */
 const urlValidatorSecure = val => urlValidatorGuts(val, true);
 
-/** Default validator for money values */
-const moneyValidator = val => {
+/** Default validator for money values 
+ * @param {?Money} min
+ * @param {?Money} max
+*/
+const moneyValidator = (val,min,max) => {
 	if (!val) return null;
 	let nVal = Money.value(val);
 
@@ -78,7 +81,9 @@ const moneyValidator = val => {
 	if (!(nVal*100).toFixed(2).endsWith(".00")) {
 		return "Fractional pence may cause an error later";
 	}
-	if (val.error) return "" + val.error;
+	if (val.error) return "" + val.error;	
+	if (min && Money.compare(min,val) > 0) return "Value is below the minimum "+Money.str(min);
+	if (max && Money.compare(max,val) < 0) return "Value is above the maximum "+Money.str(max);
 	return null;
 };
 
@@ -157,7 +162,7 @@ const PropControl = (props) => {
 	}
 
 	// Default validator: Money (NB: not 100% same as the backend)
-	if (Misc.KControlType.isMoney(type) && !validator && !error) validator = moneyValidator;
+	if (Misc.KControlType.isMoney(type) && !validator && !error) validator = val => moneyValidator(val, props.min, props.max);
 
 	// validate!
 	if (validator) {
@@ -730,7 +735,11 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
 
 
 /**
- * What is this?? use-case eg??
+ * Special case of PropControlEntrySet where values are either true or not displayed.
+ * Used for eg Custom Parameters control on the advert editor
+ * -eg "I want to flag this ad as 'no_tq' and 'skip_splash'
+ * TODO Should this be a literal special case of the PropControlEntrySet code?
+ * @param {{String: Boolean}} value Can be null initially
  */
 const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 	const addRemoveKey = (key, remove) => {

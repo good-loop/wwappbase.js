@@ -59,11 +59,11 @@ ActionMan.crud = ({type, id, action, item}) => {
 
 	// call the server
 	return ServerIO.crud(type, item, action)
-		.then(res => {			
+		.then(res => {
 			// update
 			let hits = DataStore.updateFromServer(res, status)
 			if (action==='publish') { // } && DataStore.getData(C.KStatus.DRAFT, type, id)) {
-				// also update the draft version								
+				// also update the draft version
 				let pubItem = DataStore.getValue(pubpath);
 				// copy it
 				let draftItem = _.cloneDeep(pubItem);
@@ -79,13 +79,13 @@ ActionMan.crud = ({type, id, action, item}) => {
 				DataStore.setValue(pubpath, null);
 				DataStore.setValue(draftpath, null);
 				// ??what if we were deleting a different Item than the focal one??
-				DataStore.setUrlValue(navtype, null);								
+				DataStore.setUrlValue(navtype, null);
 			} else if (id===C.newId) {
 				// id change!
 				// updateFromServer should have stored the new item
 				// So just repoint the focus
 				let serverId = getId(res.cargo);
-				DataStore.setFocus(type, serverId); // deprecated			
+				DataStore.setFocus(type, serverId); // deprecated
 				DataStore.setUrlValue(navtype, serverId);
 			}
 			// clear the saving flag
@@ -148,7 +148,10 @@ ActionMan.saveAs = ({type, id, item, onChange, customVertiser = null}) => {
 		// make a probably unique name - use randomness TODO nicer
 		newItem.name += ' v_'+nonce(3);
 	}
-	if (customVertiser) { newItem.vertiser = customVertiser }
+	if (customVertiser) { 
+		newItem.vertiser = customVertiser;
+		newItem.vertiserName = DataStore.getValue(['misc', 'targetVertiserName']);
+	}
 
 	// save local
 	DataStore.setData(C.KStatus.DRAFT, newItem);
@@ -174,9 +177,9 @@ ActionMan.unpublish = (type, id) => {
 };
 
 
-ActionMan.publishEdits = (type, pubId, item) => {	
+ActionMan.publishEdits = (type, pubId, item) => {
 	assMatch(type, String);
-	assMatch(pubId, String, "Crud.js no id to publish to "+type);	
+	assMatch(pubId, String, "Crud.js no id to publish to "+type);
 	// if no item - well its the draft we publish
 	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, pubId);
 	assert(item, "Crud.js no item to publish "+type+" "+pubId);
@@ -184,12 +187,12 @@ ActionMan.publishEdits = (type, pubId, item) => {
 	// optimistic list mod
 	preCrudListMod({type, item, action:'publish'});
 	// call the server
-	return ActionMan.crud({type, id:pubId, action:'publish', item})
+	return ActionMan.crud({type, id: pubId, action: 'publish', item})
 		.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return err;
-		}); // ./then	
+		}); // ./then
 };
 
 const preCrudListMod = ({type, id, item, action}) => {
@@ -201,19 +204,19 @@ const preCrudListMod = ({type, id, item, action}) => {
 	// TODO draft list??
 	// TODO invalidate any (other) cached list of this type (eg filtered lists may now be out of date)	
 	// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
-	if (C.CRUDACTION.ispublish(action)) {		
+	if (C.CRUDACTION.ispublish(action)) {
 		if (listPublished) {
 			List.add(item, listPublished, 0);
 			DataStore.setValue(pathPublished, listPublished);
 		}
 		if (listAllBarTrash) {
-			List.add(item, listAllBarTrash, 0);	
+			List.add(item, listAllBarTrash, 0);
 			DataStore.setValue(pathAllBarTrash, listAllBarTrash);	
 		}
 		return;
 	}
 	// delete => optimistic remove
-	if (C.CRUDACTION.isdelete(action)) {		
+	if (C.CRUDACTION.isdelete(action)) {
 		if ( ! item) item = {type, id};
 		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
 			// NB: see listPath for format, which is [list, type, status, domain, query, sort]
@@ -253,7 +256,7 @@ ActionMan.delete = (type, pubId) => {
 	return ActionMan.crud({type, id:pubId, action:'delete'})
 		.then(e => {
 			console.warn("deleted!", type, pubId, e);
-			// remove the local versions			
+			// remove the local versions
 			DataStore.setValue(getDataPath({status: C.KStatus.PUBLISHED, type, id: pubId}), null);
 			DataStore.setValue(getDataPath({status: C.KStatus.DRAFT, type, id: pubId}), null);
 			// invalidate any cached list of this type
@@ -271,8 +274,8 @@ ActionMan.delete = (type, pubId) => {
 const startStatusForAction = (action) => {
 	switch(action) {
 		case C.CRUDACTION.publish:
-		case C.CRUDACTION.save: 		
-		case C.CRUDACTION.discardEdits: 
+		case C.CRUDACTION.save:
+		case C.CRUDACTION.discardEdits:
 		case C.CRUDACTION.unpublish: // is this OK?? It could be applied to either
 		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
@@ -310,7 +313,7 @@ ServerIO.crud = function(type, item, action) {
 			type, // hm: is this needed?? the stype endpoint should have it
 			item: JSON.stringify(item)
 		}
-	};		
+	};
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
@@ -377,7 +380,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 			if (res.success) {
 				console.log("refreshed", type, id);
 				let item = res.cargo;
-				DataStore.setData(status, item);				
+				DataStore.setData(status, item);
 			} else {
 				console.warn("refresh-failed", res, type, id);
 			}

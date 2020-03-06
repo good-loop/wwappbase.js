@@ -2,38 +2,39 @@
 import JSend from '../data/JSend';
 import C from '../CBase.js';
 import _ from 'lodash';
+import PromiseValue from 'promise-value';
+
 import {getId, getType, getStatus} from '../data/DataClass';
 import {assert,assMatch} from 'sjtest';
 import {yessy, getUrlVars, parseHash, modifyHash, toTitleCase} from 'wwutils';
-import PromiseValue from 'promise-value';
+
 
 /**
  * Hold data in a simple json tree, and provide some utility methods to update it - and to attach a listener.
  * E.g. in a top-of-the-app React container, you might do `DataStore.addListener((mystate) => this.setState(mystate));`
  */
-class Store {	
-
+class Store {
 	constructor() {
 		this.callbacks = [];
-		// init the "canonical" categories		
+		// init the "canonical" categories
 		this.appstate = {
 			// published data items
-			data:{}, 
+			data:{},
 			// draft = draft, modified, and pending
 			draft:{},
 			trash:{},
-			/** 
-			 * What are you looking at? 
+			/**
+			 * What are you looking at?
 			 * This is for transient focus. It is NOT for navigation parameters
 			 *  -- location and getUrlValue() are better for navigational focus.
 			*/
-			focus:{}, 
+			focus:{},
 			/** e.g. form settings */
-			widget:{}, 
+			widget:{},
 			/**
 			 * nav state, stored in the url (this gives nice shareable deep-linking urls)
 			 */
-			location:{}, 
+			location:{},
 			/** browser environment */
 			env:{},
 			misc:{},
@@ -45,11 +46,12 @@ class Store {
 		// and listen to changes
 		window.addEventListener('hashchange', e => {
 			// NB: avoid a loopy call triggered from setUrlValue()
-			if (this.updating) return true;			
-			this.parseUrlVars(window.location);			
+			if (this.updating) return true;
+			this.parseUrlVars(window.location);
 			return true;
 		});
 	}
+
 
 	/**
 	 * Keep navigation state in the url, after the hash, so we have shareable urls.
@@ -57,28 +59,29 @@ class Store {
 	 * 
 	 * Stored as location: { path: String[], params: {key: value} }
 	 */
-	parseUrlVars(url) {		
+	parseUrlVars(url) {
 		let {path, params} = parseHash();
-		// peel off eg publisher/myblog		
+		// peel off eg publisher/myblog
 		let location = {};
 		location.path = path;
 		let page = path? path[0] : null;
 		if (page) {
 			// page/slug? DEPRECATED If so, store in DataStore focus
-			const ptype = toTitleCase(page); // hack publisher -> Publisher			
-			this.setValue(['focus', ptype], path[1]);			
+			const ptype = toTitleCase(page); // hack publisher -> Publisher
+			this.setValue(['focus', ptype], path[1]);
 		}
 		location.page = page;
 		if (path.length > 2) location.slug = path[1];
-		if (path.length > 3) location.subslug = path[2];		
+		if (path.length > 3) location.subslug = path[2];
 		location.params = params;
 		this.setValue(['location'], location);
 	}
 
+
 	/**
 	 * Set a key=value in the url for navigation. This modifies the window.location and DataStore.appstore.location.params, and does an update.
-	 * @param {String} key 
-	 * @param {String} value 
+	 * @param {String} key
+	 * @param {String} value
 	 */
 	setUrlValue(key, value) {
 		assMatch(key, String);
@@ -87,15 +90,17 @@ class Store {
 		this.setValue(['location', 'params', key], value);
 	}
 
+
 	/**
 	 * Get a parameter setting from the url. Convenience for appstate.location.params.key. This is to match setUrlValue.
 	 * See also getValue('location','path') for the path.
-	 * @param {String} key 
+	 * @param {String} key
 	 */
 	getUrlValue(key) {
 		assMatch(key, String);
 		return this.getValue(['location', 'params', key]);
 	}
+
 
 	/**
 	 * It is a good idea to wrap your callback in _.debounce()
@@ -103,6 +108,7 @@ class Store {
 	addListener(callback) {
 		this.callbacks.push(callback);
 	}
+
 
 	/**
 	 * Update and trigger the on-update callbacks.
@@ -130,7 +136,7 @@ class Store {
 	} // ./update
 
 	/**
-	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.	 
+	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.
 	 * 
 	 * Warning: This does NOT load data from the server.
 	 * @param statusTypeIdObject -- backwards compatible update to named params
@@ -146,7 +152,9 @@ class Store {
 			console.warn("DataStore.getData - old inputs - please upgrade to named {status, type, id}", statusTypeIdObject, type, id);
 		}
 		if (statusTypeIdObject.id) id = statusTypeIdObject.id;
+		// First arg may be status - but check it's valid & if not, fill in status from item object
 		let status = statusTypeIdObject.status || statusTypeIdObject;
+		if (!status || !C.KStatus.has(status)) status = getStatus(item);
 		// end hack
 
 		assert(C.KStatus.has(status), "DataStore.getData bad status: "+status);
@@ -157,27 +165,31 @@ class Store {
 		return item;
 	}
 
+
 	/**
 	 * @param status {?C.KStatus} If unset, use item.status
 	 * @param item {!Object}
 	 */
-	setData(statusTypeIdObject, item, update=true) {		
+	setData(statusTypeIdObject, item, update = true) {
 		assert(statusTypeIdObject, "setData - no path input?! "+statusTypeIdObject, item);
 		// HACK to allow old code for setData(status, item, update = true) to still work - May 2019
 		if (statusTypeIdObject.item) item = statusTypeIdObject.item;
 		else {
 			console.warn("DataStore.setData - old inputs - please upgrade to named {status, item, update}", statusTypeIdObject, item);
 		}
-		if (statusTypeIdObject.update) update = statusTypeIdObject.update;
+		if (statusTypeIdObject.update !== undefined) update = statusTypeIdObject.update;
+		// First arg may be status - but check it's valid & if not, fill in status from item object
 		let status = statusTypeIdObject.status || statusTypeIdObject;
+		if (!status || !C.KStatus.has(status)) status = getStatus(item);
 		// end hack
 		
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
 		assert(C.TYPES.has(getType(item)), item);
-		if ( ! status) status = getStatus(item);
+		
 		const path = this.getPathForItem(status, item);
 		this.setValue(path, item, update);
 	}
+
 
 	/**
 	 * the DataStore path for this item, or null if item is null;
@@ -190,6 +202,7 @@ class Store {
 		}
 		return this.getDataPath({status, type:getType(item), id:getId(item)});
 	}
+
 
 	/**
 	 * the DataStore path for this item, or null if item is null;
@@ -211,6 +224,7 @@ class Store {
 		}
 	}
 
+
 	/**
 	 * @deprecated switch to getDataPath()
 	 * the DataStore path for this item, or null if item is null;
@@ -219,6 +233,7 @@ class Store {
 		console.warn("DataStore.getPath() - Please switch to getDataPath({status, type, id, domain})", status, type, id, domain);
 		return this.getDataPath({status, type, id, domain});
 	}
+
 
 	/**
 	 * @returns {String} the appstate.X node for storing data items of this status.
@@ -234,17 +249,18 @@ class Store {
 		throw new Error("DataStore - odd status "+status);
 	}
 
+
 	getValue(...path) {
 		assert(_.isArray(path), "DataStore.getValue - "+path);
 		// If a path array was passed in, use it correctly.
 		if (path.length===1 && _.isArray(path[0])) {
 			path = path[0];
 		}
-		assert(this.appstate[path[0]], 
-			"DataStore.getValue: "+path[0]+" is not a json element in appstate - As a safety check against errors, the root element must already exist to use getValue()");		
+		assert(this.appstate[path[0]],
+			"DataStore.getValue: "+path[0]+" is not a json element in appstate - As a safety check against errors, the root element must already exist to use getValue()");
 		let tip = this.appstate;
 		for(let pi=0; pi < path.length; pi++) {
-			let pkey = path[pi];			
+			let pkey = path[pi];
 			assert(pkey || pkey===0, "DataStore.getValue: "+path); // no falsy in a path - except that 0 is a valid key
 			let newTip = tip[pkey];
 			// Test for hard null -- falsy are valid values
@@ -253,6 +269,7 @@ class Store {
 		}
 		return tip;
 	}
+
 
 	/**
 	 * Update a single path=value.
@@ -272,7 +289,7 @@ class Store {
 	// TODO handle setValue(pathbit, pathbit, pathbit, value) too
 	setValue(path, value, update) {
 		assert(_.isArray(path), "DataStore.setValue: "+path+" is not an array.");
-		assert(this.appstate[path[0]], 
+		assert(this.appstate[path[0]],
 			"DataStore.setValue: "+path[0]+" is not a node in appstate - As a safety check against errors, the root node must already exist to use setValue()");
 		// console.log('DataStore.setValue', path, value);
 		const oldVal = this.getValue(path);
@@ -315,8 +332,8 @@ class Store {
 			tip = newTip;
 		}
 		// HACK: update a data value => mark it as modified (but not for deletes)
-		if (is(oldVal) && is(value) && (path[0] === 'data' || path[0] === 'draft') 
-			&& path.length > 2 && DataStore.DATA_MODIFIED_PROPERTY) 
+		if (is(oldVal) && is(value) && (path[0] === 'data' || path[0] === 'draft')
+			&& path.length > 2 && DataStore.DATA_MODIFIED_PROPERTY)
 		{
 			// chop path down to [data, type, id]
 			const itemPath = path.slice(0, 3);
@@ -332,10 +349,11 @@ class Store {
 		return value;
 	} // ./setValue()
 
+
 	/**
 	 * Has a data item been modified since loading?
-	 * @param {*} type 
-	 * @param {*} id 
+	 * @param {*} type
+	 * @param {*} id
 	 * @return "dirty", "clean", etc. -- see C.STATUS
 	 */
 	getLocalEditsStatus(type, id) {
@@ -343,10 +361,12 @@ class Store {
 		assert(id, "DataStore.getLocalEditsStatus: No id?! getData "+type);
 		return this.getValue('transient', type, id, DataStore.DATA_MODIFIED_PROPERTY);
 	}
+
+
 	/**
 	 * Has a data item been modified since loading?
-	 * @param {C.TYPES} type 
-	 * @param {!String} id 
+	 * @param {C.TYPES} type
+	 * @param {!String} id
 	 * @param {C.STATUS} status loading clean dirty saving
 	 * @return "dirty", "clean", etc. -- see C.STATUS
 	 */
@@ -358,6 +378,7 @@ class Store {
 		return this.setValue(['transient', type, id, DataStore.DATA_MODIFIED_PROPERTY], status, update);
 	}
 
+
 	/**
 	 * @param {!String[]} path - the full path to the value being edited
 	 * @returns {boolean} true if this path has been modified by a user-edit to a PropControl
@@ -366,6 +387,7 @@ class Store {
 		const mpath = ['widget', 'modified'].concat(path);
 		return this.getValue(mpath);
 	}
+
 
 	/**
 	 * Has a path in DataStore been modified by the user? This is auto-set by PropControl -- NOT by DataStore.
@@ -386,22 +408,24 @@ class Store {
 	/**
 	* Set widget.thing.show
 	 * @param {String} thing The name of the widget.
-	 * @param {Boolean} showing 
+	 * @param {Boolean} showing
 	 */
 	setShow(thing, showing) {
 		assMatch(thing, String);
 		this.setValue(['widget', thing, 'show'], showing);
 	}
 
+
 	/**
 	 * Convenience for widget.thing.show
-	 * @param {String} widgetName 
+	 * @param {String} widgetName
 	 * @returns {boolean} true if widget is set to show
 	 */
 	getShow(widgetName) {
 		assMatch(widgetName, String);
 		return this.getValue('widget', widgetName, 'show');
 	}
+
 
 	/**
 	* Set focus.type Largely @deprecated by url-values (which give deep-linking)
@@ -414,6 +438,7 @@ class Store {
 		this.setValue(['focus', type], id);
 	}
 
+
 	/**
 	 * Largely @deprecated by url-values (which give deep-linking)
 	 */
@@ -422,9 +447,10 @@ class Store {
 		return this.getValue('focus', type);
 	}
 
+
 	/**
 	 * Get hits from the cargo, and store them under data.type.id
-	 * @param {*} res 
+	 * @param {*} res
 	 * @returns {Item[]} hits, can be empty
 	 */
 	updateFromServer(res, status) {
@@ -432,7 +458,7 @@ class Store {
 		// must be bound to the store
 		assert(this && this.appstate, "DataStore.updateFromServer: Use with .bind(DataStore)");
 		let hits = res.hits || (JSend.data(res) && JSend.data(res).hits); // unwrap cargo
-		if ( ! hits && JSend.isa(res) && JSend.data(res)) {			
+		if ( ! hits && JSend.isa(res) && JSend.data(res)) {
 			hits = [JSend.data(res)]; // just the one?
 		}
 		if ( ! hits) return [];
@@ -466,24 +492,24 @@ class Store {
 
 
 	/**
-	 * get local, or fetch by calling fetchFn (but only once). 
+	 * get local, or fetch by calling fetchFn (but only once).
 	 * Does not call update here and now, so it can be used inside a React render().
 	 * 
 	 * Warning: This will not modify appstate except for the path given, and transient.
 	 * So if you fetch a list of data items, they will not be stored into appstate.data.
-	 * The calling method should do this. 
+	 * The calling method should do this.
 	 * NB: an advantage of this is that the server can return partial data (e.g. search results)
 	 * without over-writing the fuller data.
 	 * 
-	 * @param {String[]} path 
+	 * @param {String[]} path
 	 * @param {Function} fetchFn () -> Promise/value, which will be wrapped using promise-value.
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
 	 * As a convenience hack, this method will use `JSend` to extract `data` or `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * If unset, the call will return an inprogress PV, but will not do a fresh fetch.
 	 * @param {?Boolean} messaging If true (the default), try to use Messaging.js to notify the user of failures.
-	 * @param {?Number} cachePeriod milliseconds. Normally unset. If set, cache the data for this long - then re-fetch. 
-	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience. 
+	 * @param {?Number} cachePeriod milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
+	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience.
 	 * 	NB: Cache info is stored in `appstate.transient.fetchDate...`
 	 * @returns {!PromiseValue} (see promise-value.js)
 	 */
@@ -491,12 +517,12 @@ class Store {
 		assert(path, "DataStore.js - missing input",path);
 		// in the store?
 		let item = this.getValue(path);
-		if (item!==null && item!==undefined) { 
+		if (item!==null && item!==undefined) {
 			// out of date?
 			if (cachePeriod) {
 				const now = new Date();
 				const epath = ['transient', 'fetchDate'].concat(path);
-				let fetchDate = this.getValue(epath);				
+				let fetchDate = this.getValue(epath);
 				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - cachePeriod) {
 					// fetch a fresh copy
 					console.log("DataStore", "stale - fetch fresh", path);
@@ -512,6 +538,7 @@ class Store {
 		return this.fetch2(path, fetchFn, messaging, cachePeriod);
 	} // ./fetch()
 
+
 	/**
 	 * Does the remote fetching work for fetch()
 	 * @param {String[]} path
@@ -524,7 +551,7 @@ class Store {
 		// only ask once
 		const fpath = ['transient', 'PromiseValue'].concat(path);
 		const prevpv = this.getValue(fpath);
-		if (prevpv) return prevpv;	
+		if (prevpv) return prevpv;
 		if ( ! fetchFn) {
 			return new PromiseValue(null); // nothing in-progress, so return a reject PV
 		}
@@ -536,7 +563,7 @@ class Store {
 		// process the result async
 		let promiseWithCargoUnwrap = pvPromiseOrValue.promise.then(res => {
 			if ( ! res) return res;
-			// HACK handle WW standard json wrapper: unwrap cargo 			
+			// HACK handle WW standard json wrapper: unwrap cargo
 			// NB: success/fail is checked at the ajax level in in ServerIOBase
 			// TODO let's make unwrap a configurable setting
 			if (JSend.isa(res)) {
@@ -576,6 +603,7 @@ class Store {
 		return pv;
 	} // ./fetch2()
 
+
 	/**
 	 * Remove any list(s) stored under ['list', type].
 	 * 
@@ -593,10 +621,11 @@ class Store {
 		} else {
 			console.log('publish -> no lists to invalidate');
 		}
-		// also remove any promises for these lists -- see fetch()		
+		// also remove any promises for these lists -- see fetch()
 		let ppath = ['transient', 'PromiseValue', 'list', type];
 		this.setValue(ppath, null, false);
 	}
+
 
 	/**
 	 * Resolve a list against the data/draft node to get the data items.
@@ -607,7 +636,6 @@ class Store {
 		let items = listOfRefs.map(ref => this.getData(getStatus(ref), getType(ref), getId(ref)) || ref);
 		return items;
 	}
-
 } // ./Store
 
 // NB: this is also in wwutils, but npm or something is being weird about versioning. Feb 2018
