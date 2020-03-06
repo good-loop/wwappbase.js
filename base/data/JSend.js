@@ -66,7 +66,7 @@ JSend.status = status;
  * Boolean alternative to status.
  * @return {?Boolean} null if the success is not provided. warning returns true
  */
-JSend.success = jobj => {	
+JSend.success = jobj => {
 	if (jobj.success===true) return true;
 	if (jobj.success===false) return false;
 

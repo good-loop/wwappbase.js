@@ -2,10 +2,12 @@
 import JSend from '../data/JSend';
 import C from '../CBase.js';
 import _ from 'lodash';
+import PromiseValue from 'promise-value';
+
 import {getId, getType, getStatus} from '../data/DataClass';
 import {assert,assMatch} from 'sjtest';
 import {yessy, getUrlVars, parseHash, modifyHash, toTitleCase} from 'wwutils';
-import PromiseValue from 'promise-value';
+
 
 /**
  * Hold data in a simple json tree, and provide some utility methods to update it - and to attach a listener.

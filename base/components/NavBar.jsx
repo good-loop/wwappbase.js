@@ -38,10 +38,10 @@ const DefaultNavBar = ({pageLinks, currentPage, children, homelink}) => (
  * @param {?String} homelink Relative url for the home-page. Defaults to "/"
  * @param {String[]} pages
  */
-const NavBar = ({render=DefaultNavBar, ...props}) => {
+const NavBar = ({render = DefaultNavBar, ...props}) => {
 	const {currentPage, pages} = props;
 
-	if ( ! currentPage) {
+	if (!currentPage) {
 		let path = DataStore.getValue('location', 'path');
 		let currentPage = path && path[0];
 	}
@@ -68,12 +68,12 @@ const navClick = (e) => {
 	}
 };
 
-const NavLink = ({currentPage, targetPage, name}) => {
-	return (<li className={currentPage === targetPage? 'active' : ''}>
-				<a className="nav-item nav-link" href={'#'+targetPage} onClick={navClick} >
-					{name || targetPage}
-				</a>
-			</li>);
-};
+const NavLink = ({currentPage, targetPage, name}) => (
+	<li className={currentPage === targetPage? 'active' : ''}>
+		<a className="nav-item nav-link" href={'#'+targetPage} onClick={navClick} >
+			{name || targetPage}
+		</a>
+	</li>
+);
 
 export default NavBar;

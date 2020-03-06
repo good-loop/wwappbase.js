@@ -381,7 +381,7 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 		hText = <div title={column.tooltip}>{hText}</div>;
 	}
 	
-	// Sort indicator: point down for descending, point up for ascending, outlined point down for "not sorted on this column"
+	// Sort indicator glyph: point down for descending, point up for ascending, outlined point down for "not sorted on this column"
 	let arrow = null;
 	if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
 	else if (showSortButtons) arrow = <>&#x25BD;</>;
@@ -623,6 +623,7 @@ const CSVDownload = ({tableName, columns, data, dataArray}) => {
 	// // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
 	let csv = dataArray.map(r => r.join? r.map(cell => csvEscCell(cell)).join(",") : ""+r).join("\r\n");
 	let csvLink = 'data:text/csv;charset=utf-8,'+csv;
+	// NB the entity below is the emoji "Inbox Tray" glyph, U+1F4E5
 	return (
 		<a href={csvLink} download={(tableName||'table')+'.csv'} >
 			&#128229; Download .csv

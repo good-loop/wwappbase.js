@@ -177,9 +177,9 @@ ActionMan.unpublish = (type, id) => {
 };
 
 
-ActionMan.publishEdits = (type, pubId, item) => {	
+ActionMan.publishEdits = (type, pubId, item) => {
 	assMatch(type, String);
-	assMatch(pubId, String, "Crud.js no id to publish to "+type);	
+	assMatch(pubId, String, "Crud.js no id to publish to "+type);
 	// if no item - well its the draft we publish
 	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, pubId);
 	assert(item, "Crud.js no item to publish "+type+" "+pubId);
@@ -187,12 +187,12 @@ ActionMan.publishEdits = (type, pubId, item) => {
 	// optimistic list mod
 	preCrudListMod({type, item, action:'publish'});
 	// call the server
-	return ActionMan.crud({type, id:pubId, action:'publish', item})
+	return ActionMan.crud({type, id: pubId, action: 'publish', item})
 		.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return err;
-		}); // ./then	
+		}); // ./then
 };
 
 const preCrudListMod = ({type, id, item, action}) => {
@@ -274,8 +274,8 @@ ActionMan.delete = (type, pubId) => {
 const startStatusForAction = (action) => {
 	switch(action) {
 		case C.CRUDACTION.publish:
-		case C.CRUDACTION.save: 		
-		case C.CRUDACTION.discardEdits: 
+		case C.CRUDACTION.save:
+		case C.CRUDACTION.discardEdits:
 		case C.CRUDACTION.unpublish: // is this OK?? It could be applied to either
 		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;

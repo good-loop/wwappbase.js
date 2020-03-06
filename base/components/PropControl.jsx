@@ -732,7 +732,11 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
 
 
 /**
- * What is this?? use-case eg??
+ * Special case of PropControlEntrySet where values are either true or not displayed.
+ * Used for eg Custom Parameters control on the advert editor
+ * -eg "I want to flag this ad as 'no_tq' and 'skip_splash'
+ * TODO Should this be a literal special case of the PropControlEntrySet code?
+ * @param {{String: Boolean}} value Can be null initially
  */
 const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
 	const addRemoveKey = (key, remove) => {
