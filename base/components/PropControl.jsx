@@ -44,7 +44,7 @@ const DSsetValue = (proppath, value) => {
 	DataStore.setValue(proppath, value);
 };
 
-// Wrapped so the two outer functions can provide an interface consistent with the other validators
+/** Wrapped so the two (http/https) outer versions of this can provide an interface consistent with the other validators. */
 const urlValidatorGuts = (val, secure) => {
 	// no URL is not an error!
 	if (!val) return null;
@@ -103,12 +103,6 @@ const dateValidator = (val, rawValue) => {
 		return 'Please use the date format yyyy-mm-dd';
 	}
 };
-
-/**
- * @param {!String[]} fullpath
- * @returns {!String[]} path
- */
-const isModifiedPath = fullpath => ['widget','modified'].concat(fullpath);
 
 /**
  * Input bound to DataStore.
@@ -1183,8 +1177,9 @@ const getInputStatuses2 = (node, all) => {
  * TODO piecemeal refactor to be an extensible system
  */
 let $widgetForType = {};
+
 /**
- * 
+ * Extend or change support for a type
  * @param {!String} type e.g. "textarea"
  * @param {!JSX} $Widget the widget to render a propcontrol
  * ?? what props does it get?? {path, prop, proppath, value}
