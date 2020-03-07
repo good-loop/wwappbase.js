@@ -153,16 +153,16 @@ const PropControl = (props) => {
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
-	if (Misc.KControlType.isdate(type) && !validator) validator = dateValidator;
+	if (PropControl.KControlType.isdate(type) && !validator) validator = dateValidator;
 
 	// Default validator: URL
-	const isUrlInput = (Misc.KControlType.isurl(type) || Misc.KControlType.isimg(type) || Misc.KControlType.isimgUpload(type));
+	const isUrlInput = (PropControl.KControlType.isurl(type) || PropControl.KControlType.isimg(type) || PropControl.KControlType.isimgUpload(type));
 	if (isUrlInput && !validator) {
 		validator = stuff.https ? urlValidatorSecure : urlValidator;
 	}
 
 	// Default validator: Money (NB: not 100% same as the backend)
-	if (Misc.KControlType.isMoney(type) && !validator && !error) validator = val => moneyValidator(val, props.min, props.max);
+	if (PropControl.KControlType.isMoney(type) && !validator && !error) validator = val => moneyValidator(val, props.min, props.max);
 
 	// validate!
 	if (validator) {
@@ -196,7 +196,7 @@ const PropControl = (props) => {
 	// Minor TODO lets refactor this so we always do the wrapper, then call a 2nd jsx function for the input (instead of the recursing flag)
 	// label / help? show it and recurse
 	// NB: Checkbox has a different html layout :( -- handled below
-	if (Misc.KControlType.ischeckbox(type)) {
+	if (PropControl.KControlType.ischeckbox(type)) {
 		return <PropControl2 value={value} proppath={proppath} {...props} />
 	}
 
@@ -242,7 +242,7 @@ const PropControl2 = (props) => {
 			modelValueFromInput = standardModelValueFromInput;
 		}
 	}
-	assert( ! type || Misc.KControlType.has(type), 'Misc.PropControl: '+type);
+	assert( ! type || PropControl.KControlType.has(type), 'Misc.PropControl: '+type);
 	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: '+path+" prop:"+prop);
 	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path+" prop:"+prop);
 	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
@@ -253,8 +253,16 @@ const PropControl2 = (props) => {
 		item = DataStore.getValue(path) || {};
 	}
 
+	// New Pluggable System?
+	if ($widgetForType[type]) {
+		let $widget = $widgetForType[type];
+		props.item = item;
+		props.modelValueFromInput = modelValueFromInput;
+		return <$widget {...props} />
+	}
+
 	// Checkbox?
-	if (Misc.KControlType.ischeckbox(type)) {
+	if (PropControl.KControlType.ischeckbox(type)) {
 		const onChange = e => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.checked;
@@ -397,7 +405,7 @@ const PropControl2 = (props) => {
 	// date
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
-	if (Misc.KControlType.isdate(type)) {
+	if (PropControl.KControlType.isdate(type)) {
 		const acprops = {prop, item, value, onChange, ...otherStuff};
 		return <PropControlDate {...acprops} />;
 	}
@@ -1001,7 +1009,7 @@ const FormControl = ({value, type, required, size, className, prepend, ...otherP
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-const KControlType = new Enum("img imgUpload videoUpload textarea html text search select radio checkboxes autocomplete password email url color checkbox"
+PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html text search select radio checkboxes autocomplete password email url color checkbox"
 							+" yesNo location date year number arraytext keyset entryset address postcode json country"
 							// some Good-Loop data-classes
 							+" Money XId keyvalue");
@@ -1009,7 +1017,6 @@ const KControlType = new Enum("img imgUpload videoUpload textarea html text sear
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
 
 Misc.FormControl = FormControl;
-Misc.KControlType = KControlType;
 Misc.PropControl = PropControl;
 
 /**
@@ -1070,7 +1077,10 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 	);
 }; // ./imgUpload
 
-
+/**
+ * DEPRECATED replace/merge with PropControlEntrySet
+ * @param {*} param0 
+ */
 const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp}) => {
 	assert($KeyProp && $ValProp, "PropControl MapEditor "+prop+": missing $KeyProp or $ValProp jsx (probably PropControl) widgets");
 	const temppath = ['widget','MapEditor'].concat(proppath);
@@ -1169,7 +1179,25 @@ const getInputStatuses2 = (node, all) => {
 	Object.values(node).forEach(kid => getInputStatuses2(kid, all));
 };
 
+/**
+ * TODO piecemeal refactor to be an extensible system
+ */
+let $widgetForType = {};
+/**
+ * 
+ * @param {!String} type e.g. "textarea"
+ * @param {!JSX} $Widget the widget to render a propcontrol
+ * ?? what props does it get?? {path, prop, proppath, value}
+ */
+const registerControl = ({type, $Widget}) => {
+	assMatch(type, String);
+	assert($Widget);
+	PropControl.KControlType = PropControl.KControlType.concat(type);
+	$widgetForType[type] = $Widget;
+};
+
 export {
+	registerControl,
 	FormControl,
 	KControlType,
 
