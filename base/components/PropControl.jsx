@@ -1199,8 +1199,6 @@ const registerControl = ({type, $Widget}) => {
 export {
 	registerControl,
 	FormControl,
-	KControlType,
-
 	InputStatus,
 	setInputStatus,
 	getInputStatus,
