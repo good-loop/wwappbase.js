@@ -46,20 +46,21 @@ const displayVerb = {
 const STATUS_PATH = ['widget', 'LoginWidget', 'status'];
 
 /**
- * Note: verb is @deprecated in favour of children
+ * @param {String} verb "login"|"register"
  */
 const LoginLink = ({className, onClick, style, verb, children}) => {
-	if (!verb && !children) verb = 'Log In'; // default text
+	if ( ! verb && ! children) verb = 'login';
 	
 	const onClick2 = e => {
 		killEvent(e);
+		if (verb) LoginWidget.changeVerb(verb);
 		LoginWidget.show();
 		onClick && onClick(e);
 	};
 	
 	return (
 		<a className={className} href={window.location} onClick={onClick2} style={style}>
-			{verb}{children}
+			{children || toTitleCase(displayVerb[verb])}
 		</a>
 	);
 };
