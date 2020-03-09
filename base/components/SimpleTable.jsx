@@ -51,6 +51,10 @@ class Column extends DataClass {
 	style;
 	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
 	ui;
+	/** @significantDigits {?integer} used used to specify significant digits for numbers */
+	significantDigits;
+	/** @precision {?integer} used used to specify precision for numbers (digits after the decimal point) */
+	precision;
 
 	constructor(base) {
 		super(base);
@@ -337,11 +341,11 @@ const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, ro
 	}
 	// build the rows
 	let $rows = [];
-	Tree.map(dataTree, node => {
+	Tree.map(dataTree, (node, parent, depth) => {
 		const item = Tree.value(node);
 		if ( ! item) return;
 		// <Row>
-		let $row = <Row key={'r'+rowNum} item={item} row={rowNum}
+		let $row = <Row key={'r'+rowNum} item={item} rowNum={rowNum} depth={depth}
 			columns={visibleColumns} dataArray={dataArray}
 			hidden={csv && (rowNum < min || rowNum >= max)} 
 			node={node}
@@ -395,11 +399,11 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 
 /**
  * A table row!
- * @param {!Number} row Can be -1 for special rows ??0 or 1 indexed??
+ * @param {!Number} rowNum Can be -1 for special rows ??0 or 1 indexed??
  * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, row, node, columns, dataArray, className, depth = 0, hidden}) => {
+const Row = ({item, rowNum, node, columns, dataArray, depth = 0, hidden}) => {
 	let dataRow = [];
 	dataArray.push(dataRow);
 
@@ -409,7 +413,7 @@ const Row = ({item, row, node, columns, dataArray, className, depth = 0, hidden}
 
 	const cells = columns.map(col => (
 		<Cell key={JSON.stringify(col)}
-			row={row} node={node}
+			row={rowNum} node={node}
 			column={col} item={item}
 			dataRow={dataRow}
 			hidden={hidden} // Maybe more optimisation: tell Cell it doesn't need to return an element, we're going to toss it anyway
@@ -418,7 +422,7 @@ const Row = ({item, row, node, columns, dataArray, className, depth = 0, hidden}
 
 	if (hidden) return null; // We have our side effects - if the row isn't to be shown we're done.
 	return (
-		<tr className={join("row"+row, "depth"+depth)} depth={depth} style={item.style}>
+		<tr className={join("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={item.style}>
 			{cells}
 		</tr>
 	);
@@ -478,12 +482,19 @@ const defaultSortMethodForGetter = (a, b, getter) => {
 const defaultCellRender = (v, column) => {
 	if (v===undefined || Number.isNaN(v)) return null;
 	if (column.format) {
+		let significantDigits = 2; // set to the defualt value that was previously hard coded
+		let precision = 2;
+		if (column.precision){ precision = column.precision;}
+		if (column.significantDigits){ significantDigits = column.significantDigits}
+
 		if (CellFormat.ispercent(column.format)) {
 			// 2 sig figs
-			return printer.prettyNumber(100*v, 2) + "%";
+			return printer.prettyNumber(100*v, significantDigits) + "%";
 		}
 		if (CellFormat.ispounds(column.format)) {
-			return "£" + printer.prettyNumber(v, 2);
+			// v = printer.prettyNumber(v, significantDigits);
+			v = v.toFixed(precision).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
+			return "£" + v;
 		}
 		if (CellFormat.isstring(column.format)) {
 			return str(v); // Even if it looks like a number

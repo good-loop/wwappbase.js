@@ -485,7 +485,7 @@ Misc.SavePublishDiscard = ({
 	const confirmSaveAs = () => {
 		const confirmed = window.confirm('Save changes as a new advert?'); // pauses execution, pops up alert and stores the chosen option
 		if (confirmed) {
-			ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null, customVertiser });
+			ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs)? saveAs : null});
 		}
 	}
 
