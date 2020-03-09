@@ -53,6 +53,8 @@ class Column extends DataClass {
 	ui;
 	/** @significantDigits {?integer} used used to specify significant digits for numbers */
 	significantDigits;
+	/** @precision {?integer} used used to specify precision for numbers (digits after the decimal point) */
+	precision;
 
 	constructor(base) {
 		super(base);
