@@ -10,11 +10,7 @@
  * This file supports BOTH JSend and Winterwell's JsonResponse format, and jQuery responses.
  */
 
-import Enum from 'easy-enums';
-
-/**
- * @typedef {String} KAjaxStatus
- */
+// import Enum from 'easy-enums';
 
 /** 
  * fail: bad inputs - usually check data for details.
@@ -23,20 +19,21 @@ import Enum from 'easy-enums';
  * NB warning is non-standard but makes sense as success-but-be-warned.
  * Usages of warning: none at present Jan 2019
  */
-const KAjaxStatus = new Enum("success fail error warning");
+// const KAjaxStatus = new Enum("success fail error warning");
+
+enum KAjaxStatus {
+	success = 'sucess',
+	fail = 'fail',
+	error = 'error',
+	warning = 'warning'
+}
 
 class JSend {
-	/**
-	 * @type {KAjaxStatus}
-	 */
-	status;	
-	/** Usually set on error
-	 * @type {String} */
-	message;
-	/**
-	 * The payload, can be unset if the call failed
-	 */
-	data;
+	static isa: (jobj: any) => boolean;
+	static status: (jobj: any) => KAjaxStatus;
+	static success: (jobj: any) => boolean | null;
+	static message: (jobj: any) => string | null;
+	static data: (jobj: any) => any;
 }
 export default JSend;
 
@@ -44,7 +41,7 @@ export default JSend;
  * 
  * @return {!Boolean} true if the input is a JSend or WW's JsonResponse object
  */
-const isa = jobj => {
+const isa = (jobj: { cargo: any; }): boolean => {
 	if ( ! jobj) return false;
 	if (jobj.cargo) return true;
 	let s = JSend.success(jobj);
@@ -56,9 +53,9 @@ JSend.isa = isa;
 /**
  * 
  * @param {JSend} jobj 
- * @returns {KAjaxStatus String} success | error | fail | warning
+ * @returns {KAjaxStatus} success | error | fail | warning
  */
-const status = jobj => jobj.status 
+const status = (jobj: any): KAjaxStatus => jobj.status 
 	|| (jobj.success===true && 'success') || (jobj.success===false && 'error'); // WW's JsonResponse format
 JSend.status = status;
 
@@ -66,7 +63,7 @@ JSend.status = status;
  * Boolean alternative to status.
  * @return {?Boolean} null if the success is not provided. warning returns true
  */
-JSend.success = jobj => {	
+JSend.success = (jobj): boolean | null => {
 	if (jobj.success===true) return true;
 	if (jobj.success===false) return false;
 
@@ -82,14 +79,14 @@ JSend.success = jobj => {
 	}
 
 	console.warn("JSend: status unknown. Response is probably not JSend format: ", jobj);
-	return null;
+	return false;
 };
 
 /**
  * Optional error message
  * @return {?String}
  */
-JSend.message = jobj => {
+JSend.message = (jobj): string | null => {
 	if (jobj.message) return jobj.message;
 
 	// WW's JsonResponse format
