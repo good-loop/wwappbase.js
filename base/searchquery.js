@@ -68,9 +68,9 @@ class SearchQuery {
 	 * @param {?String|SearchQuery} sq 
 	 * @returns a NEW SearchQuery
 	 */
-	or(sq) {		
+	or(sq) {
 		if ( ! sq) return this;
-		if (typeof(sq)==='string') sq = new SearchQuery(sq);		
+		if (typeof(sq)==='string') sq = new SearchQuery(sq);
 		if ( ! this.query) return sq;
 		// CRUDE but it should work -- at least for simple cases
 		let newq = this.query+" "+SearchQuery.OR+" "+sq.query;

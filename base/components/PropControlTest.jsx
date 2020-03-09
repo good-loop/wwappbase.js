@@ -19,14 +19,6 @@ import DataStore from '../plumbing/DataStore';
 
 const testPath = ['widget', 'propcontroltest'];
 
-/*
-const KControlType = new Enum("img textarea text search select radio checkboxes password email url color checkbox"
-							+" yesNo location date year number arraytext keyset entryset address postcode json"
-							// some Good-Loop data-classes
-							+" Money ");
-For later:  imgUpload videoUpload autocomplete XId
-*/
-
 /**
  * tag -> {
  * 	initialValue: {?Object} provide an initial value if you want to test handling of preset state,

@@ -9,7 +9,7 @@ import C from '../CBase';
 import Settings from '../Settings';
 import Enum from 'easy-enums';
 
-/** 
+/**
  * 
  * e.g. new Money({currency:GBP, value:10}) = £10
  * 
@@ -19,18 +19,18 @@ class Money extends DataClass {
 	/** @type {?String} An optional name for this money */
 	name;
 
-	/** @type {Number} 1/100 of a penny, so £1 = 10,000. 
+	/** @type {Number} 1/100 of a penny, so £1 = 10,000.
 	 * Integer to avoid floating point issues (if a float is input, it will be rounded). */
 	value100p;
 
 	/** @type {?String} raw string version - used during input to support incomplete input */
-	raw;	
+	raw;
 
 	/** @type {!String} */
 	currency = 'GBP'; // default
 
 	/**
-	 * @param {?Money|String|Number} base 
+	 * @param {?Money|String|Number} base
 	 */
 	constructor(base) {
 		// allow `new Money("£10")`
@@ -52,7 +52,7 @@ class Money extends DataClass {
 		if ( ! obj) return false;
 		if (super.isa(obj)) return true;
 		// OLD format
-		if (getType(obj) === 'MonetaryAmount') return true;	
+		if (getType(obj) === 'MonetaryAmount') return true;
 		if (obj.value100p) return true;
 		if (obj.value100) return true;
 			// allow blank values
@@ -102,7 +102,7 @@ Money.hasValue = m => {
 
 /**
  * 
- * @param {!Money} m 
+ * @param {!Money} m
  * @param {!Number|falsy} newVal Can be null or '' for unset -- which will produce a value of 0
  * @return {Money} value and value100p set to newVal
  */
@@ -136,7 +136,7 @@ const v100p = m => {
 			let v = asNum(m.raw);
 			if (v===null || v===undefined) {
 				m.error = new Error("Cannot parse: "+m.raw);
-			}							
+			}
 			m.value = v;
 			m.value100p = v? Math.round(v*10000) : 0;
 		} catch(err) {
@@ -215,7 +215,7 @@ const assCurrencyEq = (a, b, msg) => {
 /** Will fail if not called on 2 Moneys of the same currency
  * @return {Money} a fresh object
  */
-Money.add = (amount1, amount2) => {	
+Money.add = (amount1, amount2) => {
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);
 	assCurrencyEq(amount1, amount2, "add()");
@@ -225,8 +225,8 @@ Money.add = (amount1, amount2) => {
 
 /**
  * Convenience to process the results from arithmetic ops, without the gotchas of make() keeping bits of stale data
- * @param {*} b100p 
- * @param {*} currency 
+ * @param {*} b100p
+ * @param {*} currency
  */
 const moneyFromv100p = (b100p, currency) => {
 	const res = {
@@ -234,7 +234,7 @@ const moneyFromv100p = (b100p, currency) => {
 		value: b100p/10000,
 		value100p: b100p
 	};
-	const m = new Money(res);	
+	const m = new Money(res);
 	return m;
 };
 
@@ -275,7 +275,7 @@ const mul = (amount, multiplier) => {
 };
 Money.mul = mul;
 
-/** 
+/**
  * Called on two Moneys
  * @return {Number}
  */
@@ -315,7 +315,7 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 	if (maximumFractionDigits===0) { // because if maximumSignificantDigits is also set, these two can conflict
 		value = Math.round(value);
 	}
-	let snum = new Intl.NumberFormat(Settings.locale, 
+	let snum = new Intl.NumberFormat(Settings.locale,
 		{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
 	).format(value);
 
@@ -328,4 +328,16 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 	if (snum.match(/\.\d$/)) snum += '0';
 
 	return snum;
+};
+
+/**
+ * e.g. for use in sort()
+ * @throws Error if currencies are not the same
+ * @returns {!Number} negative if a < b, 0 if equal, positive if a > b
+ */
+Money.compare = (a,b) => {
+	Money.assIsa(a);
+	Money.assIsa(b);
+	assCurrencyEq(a, b, "Money.compare() "+a+" "+b);
+	return Money.v100p(a) - Money.v100p(b);
 };

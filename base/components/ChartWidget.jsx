@@ -102,8 +102,8 @@ class ChartWidget extends React.Component {
 						{true ? <small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small> : null}
 					</div>
 				</div>);
-	}
-}
+	} // ./render
+} 
 
 /**
  * @param data Array of {x (which can be a Time string), y}
