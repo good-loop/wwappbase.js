@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.3.0'
+VERSION='Version=2.3.1'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -1003,8 +1003,7 @@ function run_automated_tests {
 		case $PROJECT in
 			sogive-app)
 				cd $PROJECT_LOCATION
-				/usr/local/bin/npm i
-				/usr/bin/node runtest.js
+				bash run-tests.sh
 			;;
 			portal)
 				cd $PROJECT_LOCATION
