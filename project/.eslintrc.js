@@ -1,16 +1,36 @@
 module.exports = {
+	"env": {
+		"jest": true,
+		"node": true,
+		"es6": false,
+		"browser": true
+	 },
+	 "globals": { // these are needed to avoid errors in puppeteer/node files
+		"window": true,
+		"document": true,
+		"page": true,
+		"browser": true,
+		"context": true,
+		"jestPuppeteer": true
+	},
+	"parser": "babel-eslint",
+	"parserOptions": {
+		"ecmaVersion": 9,// 2018 version. Can still be transpiled to 6 (2015) by Babel 
+		"sourceType": "module",
+		"ecmaFeatures": {
+			"jsx": true
+		}
+	},
 	"extends": "airbnb",
-	"parser": "@typescript-eslint/parser",
 	"plugins": [
 		"react",
 		"jsx-a11y",
 		"import",
-		"@typescript-eslint"
 	],
 	"settings": {
 		"import/resolver": {
 			"node": {
-				"extensions": [".ts", ".tsx", ".js", ".jsx"],
+				"extensions": [".js", ".jsx", ".ts", ".tsx"],
 				"moduleDirectory": ["node_modules", "src/"],
 			},
 		},
@@ -62,6 +82,7 @@ module.exports = {
 		"no-nested-ternary": "off",
 		"no-param-reassign": "off",
 		"no-plusplus": "off",
+		"no-redeclare": "warn",
 		"no-restricted-globals": "warn", // triggers on isNan()
 		"no-return-assign": "off",
 		"no-tabs": "off",
@@ -86,6 +107,7 @@ module.exports = {
 		"prefer-arrow-callback": "off",
 		"prefer-const": "off",
 		"prefer-destructuring": "off",
+		"prefer-object-spread": "warn",
 		"prefer-promise-reject-errors": "warn",
 		"prefer-template": "off",
 		"quote-props": "warn",
@@ -107,6 +129,7 @@ module.exports = {
 		"react/jsx-no-bind": "warn",
 		"react/jsx-no-target-blank": "warn",
 		"react/jsx-one-expression-per-line": "off",
+		"react/jsx-props-no-spreading": "warn",
 		"react/jsx-space-before-closing": "warn",
 		"react/jsx-tag-spacing": "warn",
 		"react/jsx-wrap-multilines": "off",
@@ -128,15 +151,22 @@ module.exports = {
 		"spaced-comment": "off",
 		"vars-on-top": "warn",
 	},
-	"globals": {
-		"window": true,
-		"document": true,
-		"page": true,
-		"browser": true,
-		"context": true,
-		"jestPuppeteer": true
-	},
-	"env": {
-		"jest": true
-	 },
+	"overrides": [
+		{
+			"files": ["*.ts", "*.tsx"],
+			"extends": [
+				"eslint:recommended",
+				"plugin:@typescript-eslint/eslint-recommended",
+				"plugin:@typescript-eslint/recommended"
+			],
+			"parser": "@typescript-eslint/parser",
+			"parserOptions": {
+				"ecmaFeatures": { "jsx": true },
+				"ecmaVersion": 2018,
+				"sourceType": "module",
+				"project": "./tsconfig.json"
+			},
+			"plugins": ["@typescript-eslint"],
+		}
+	]
 };

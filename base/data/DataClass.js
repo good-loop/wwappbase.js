@@ -89,7 +89,7 @@ class DataClass {
 	 * @returns {boolean} true
 	 */
 	static assIsa(obj, msg) {
-		assert(this.isa(obj), (msg||'')+" "+this.name+" expected, but got "+JSON.stringify(obj));
+		assert(this.isa(obj), (msg||'')+" "+this.name+" expected, but got ", obj);
 		return true;
 	}
 
