@@ -7,6 +7,7 @@
 #####
 
 ###
+# New in 2.3.2 : Changed the way in-which automated tests are run
 # New in 2.3.0 : Polished the human read output of a publishing process
 # New in 2.2.0 : revised the batch rsyncing process so that more readable output of success/failure can be created and interpreted by another function
 # New in 2.1.1 : revised automated testing calls, made notes for where to make improvements for faster file syncing

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.3.1'
+VERSION='Version=2.3.2'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -1007,8 +1007,7 @@ function run_automated_tests {
 			;;
 			portal)
 				cd $PROJECT_LOCATION
-				/usr/local/bin/npm i
-				/usr/bin/node runtest.js
+				bash run-tests.sh
 			;;
 		esac
 	fi
