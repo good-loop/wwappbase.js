@@ -5,6 +5,7 @@ import DataClass, { TimeString, XIdString } from './DataClass';
 import C from '../CBase';
 import Person from './Person';
 
+// interface
 interface ClaimData {
 	key: string,
 	value: any,
