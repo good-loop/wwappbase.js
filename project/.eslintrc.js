@@ -120,6 +120,7 @@ module.exports = {
 		"react/jsx-closing-bracket-location": "warn",
 		"react/jsx-closing-tag-location": "off",
 		"react/jsx-curly-spacing": "off",
+		"react/jsx-curly-newline": "warn",
 		"react/jsx-curly-brace-presence": "warn",
 		"react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
 		"react/jsx-first-prop-new-line": "off",

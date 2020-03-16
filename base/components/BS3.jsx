@@ -29,6 +29,10 @@ BS.Checkbox = (props) => <BinaryInput type="checkbox" {...props} />;
 BS.Radio = (props) => <BinaryInput type="radio" {...props} />;
 
 
+BS.InputGroup = ({className, children}) => <div class={space("input-group", className)}>{children}</div>;
+
+BS.InputGroup.Append = ({children}) => <span class="input-group-addon">{children}</span>;
+
 /**
  * Polyfill for BS4's Card type using Panel
  * See https://getbootstrap.com/docs/4.3/components/card/ vs https://getbootstrap.com/docs/3.4/components/#panels

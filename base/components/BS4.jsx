@@ -23,6 +23,10 @@ BS.Radio = ({checked, value, label, onChange}) => (<div className="form-check">
 	<label className="form-check-label">{label}</label>
 </div>);
 
+// ref https://getbootstrap.com/docs/4.4/components/input-group/
+BS.InputGroup.Append = ({children}) => <div class="input-group-append"><span class="input-group-text">{children}</span></div>;
+
+
 BS.Alert = ({color='warning', children}) => {
 	return <div role='alert' className={'alert alert-'+color}>{children}</div>
 };

@@ -339,5 +339,5 @@ Money.compare = (a,b) => {
 	Money.assIsa(a);
 	Money.assIsa(b);
 	assCurrencyEq(a, b, "Money.compare() "+a+" "+b);
-	return Money.v100p(a) - Money.v100p(b);
+	return v100p(a) - v100p(b);
 };

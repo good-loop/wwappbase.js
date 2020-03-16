@@ -15,7 +15,7 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
-import {join, mapkv, stopEvent, toTitleCase} from 'wwutils';
+import {join, mapkv, stopEvent, toTitleCase, str} from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import md5 from 'md5';
@@ -623,7 +623,7 @@ const numFromAnything = v => {
  * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
  */
 const PropControlMoney = ({prop, name, value, currency, path, proppath,
-									item, bg, dflt, saveFn, modelValueFromInput, onChange, ...otherStuff}) => {
+									item, bg, dflt, saveFn, modelValueFromInput, onChange, append, ...otherStuff}) => {
 		// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
 	// Convert null and numbers into Money objects
@@ -666,6 +666,7 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 	return (<InputGroup>
 		{$currency}
 		<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{minWidth}}/>
+		{append? <BS.InputGroup.Append>{append}</BS.InputGroup.Append> : null}
 	</InputGroup>);
 }; // ./£
 
