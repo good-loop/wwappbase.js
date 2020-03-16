@@ -72,6 +72,7 @@ SearchQuery.prop = (sq, propName) => {
 
 /**
  * Set a top-level prop, e.g. vert:foo
+ * @param {!SearchQuery} sq
  * @param {String} propName 
  * @param {String} propValue 
  * @returns a NEW SearchQuery
