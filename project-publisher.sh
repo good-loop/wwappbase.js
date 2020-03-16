@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.3.2'
+VERSION='Version=2.5.0'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -238,6 +238,32 @@ case $1 in
 		WHOLE_SYNC=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" "lib")
 		PRESERVE=("config/log.properties")
 		POST_PUBLISHING_TASK='yes'
+	;;
+	appnexusreportprobe|APPNEXUSREPORTPROBE)
+		PROJECT='appnexusreportprobe'
+		PRODUCTION_SERVERS=('egan.soda.sh')
+		TEST_SERVERS=('egan.soda.sh')
+		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
+		TARGET_DIRECTORY='/home/winterwell/appnexus.report.probe'
+		IMAGE_OPTIMISE='no'
+		IMAGEDIRECTORY="" #Only needed if 'IMAGE_OPTIMISE' is set to 'yes'
+		CONVERT_LESS='no'
+		LESS_FILES_LOCATION="" #Only needed if 'CONVERT_LESS' is set to 'yes'
+		CSS_OUTPUT_LOCATION="" #Only needed if 'CONVERT_LESS' is set to 'yes'
+		WEBPACK='no'
+		TEST_JAVASCRIPT='no'
+		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/" #Only needed if 'TEST_JAVASCRIPT' is set to 'yes', and you must ammend Section 10 to accomodate for how to find and process your JS files
+		COMPILE_UNITS='no'
+		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
+		RESTART_SERVICE_AFTER_SYNC='yes'
+		SERVICE_NAME='appnexusreportprobe'
+		FRONTEND_SYNC_LIST=("")
+		BACKEND_SYNC_LIST=("config" "lib")
+		# Use "lib" instead of "tmp-lib" for syncing your JAR files
+		WHOLE_SYNC=("config" "lib")
+		PRESERVE=("")
+		POST_PUBLISHING_TASK='no' # If this is set to 'yes', then you must ammend section 16 in order to specify how to handle the tasks
+		AUTOMATED_TESTING='no'  # If this is set to 'yes', then you must ammend Section 13 in order to specify how to kick-off the testing
 	;;
 	calstat|CALSTAT)
 		PROJECT='calstat'
@@ -787,34 +813,25 @@ function image_optimisation {
 	fi
 }
 
-################
-### REVISE PLEASE : 2020-01-29
-################
 ##################################
 ### Section 06: Define the Webpack Function
 ##################################
 function webpack {
 	if [[ $WEBPACK = yes ]]; then
-		printf "\nGetting NPM Dependencies ..."
-		bssh "cd $TARGET_DIRECTORY && npm i"
-		printf "\nWebpacking ..."
-		case $PROJECT in
-			portal)
-				bssh "cd $TARGET_DIRECTORY && npm run compile"
-			;;
-			myloop)
-				bssh "cd $TARGET_DIRECTORY && npm run compile"
-			;;
-			moneyscript)
-				bssh "cd $TARGET_DIRECTORY && npm run compile"
-			;;
-			sogive-app)
-				bssh "cd $TARGET_DIRECTORY && npm run compile"
-			;;
-			*)
-				bssh "cd $TARGET_DIRECTORY && webpack --progress -p"
-			;;
-		esac
+		# check for -- and get Node package updates
+		for server in ${TARGETS[@]}; do
+			printf "\n$server is Getting NPM Dependencies ..."
+			ssh winterwell@$server "cd $TARGET_DIRECTORY && npm i" &
+		wait
+		printf "\nAll servers finished getting NPM Dependencies...\n"
+		done
+		# Perform the webpacking in parallel
+		for server in ${TARGETS[@]}; do
+			printf "\n$server is now webpacking ..."
+			ssh winterwell@$server "cd $TARGET_DIRECTORY && npm run compile" &
+		wait
+		printf "\nAll servers finished webpacking"
+		done
 	fi
 }
 
