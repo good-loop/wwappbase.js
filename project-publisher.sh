@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.4.0'
+VERSION='Version=2.5.0'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -813,34 +813,25 @@ function image_optimisation {
 	fi
 }
 
-################
-### REVISE PLEASE : 2020-01-29
-################
 ##################################
 ### Section 06: Define the Webpack Function
 ##################################
 function webpack {
 	if [[ $WEBPACK = yes ]]; then
-		printf "\nGetting NPM Dependencies ..."
-		bssh "cd $TARGET_DIRECTORY && npm i"
-		printf "\nWebpacking ..."
-		case $PROJECT in
-			portal)
-				bssh "cd $TARGET_DIRECTORY && npm run compile"
-			;;
-			myloop)
-				bssh "cd $TARGET_DIRECTORY && npm run compile"
-			;;
-			moneyscript)
-				bssh "cd $TARGET_DIRECTORY && npm run compile"
-			;;
-			sogive-app)
-				bssh "cd $TARGET_DIRECTORY && npm run compile"
-			;;
-			*)
-				bssh "cd $TARGET_DIRECTORY && webpack --progress -p"
-			;;
-		esac
+		# check for -- and get Node package updates
+		for server in ${TARGETS[@]}; do
+			printf "\n$server is Getting NPM Dependencies ..."
+			ssh winterwell@$server "cd $TARGET_DIRECTORY && npm i" &
+		wait
+		printf "\nAll servers finished getting NPM Dependencies...\n"
+		done
+		# Perform the webpacking in parallel
+		for server in ${TARGETS[@]}; do
+			printf "\n$server is now webpacking ..."
+			ssh winterwell@$server "cd $TARGET_DIRECTORY && npm run compile" &
+		wait
+		printf "\nAll servers finished webpacking"
+		done
 	fi
 }
 
