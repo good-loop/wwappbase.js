@@ -42,7 +42,7 @@ const bezierSlide = (x = 0) => {
  * @param {String} currencySymbol
  * @param {Money} amount - Convenient way to set value + currencySymbol
  */
-const Counter = ({value, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', amount, pretty = true, sigFigs = 3 }) => {
+const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs = 3 }) => {
 	if (amount) {
 		value = Money.value(amount);
 		currencySymbol = Money.currencySymbol(amount);
