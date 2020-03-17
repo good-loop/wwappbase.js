@@ -263,6 +263,23 @@ const getAllXIds2 = (all, agendaXIds) => {
 	});
 };
 
+/**
+ * Process a mailing-list sign-up form
+ * @param {!String} email
+ * @param {?String} controller Who "owns" this data? Defaults to `ServerIO.dataspace`
+ * @param {?String} notify Our email to send a note to
+ */
+const doRegisterEmail = (data) => {
+	let email = data.email;
+	if ( ! email) {
+		console.error("Profiler.js - Cannot process - no email");
+		return;
+	}
+	if ( ! data.controller) data.controller = ServerIO.dataspace;
+	if ( ! data.ref) data.ref = ""+window.location;
+	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data});	
+};
+
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
 Person.getProfilesNow = getProfilesNow;
@@ -275,6 +292,8 @@ Profiler.saveSocialShareId = saveSocialShareId;
 Profiler.getAllXIds = getAllXIds;
 
 export {
+	doRegisterEmail,
+
 	convertConsents,
 	saveProfileClaims,
 	getAllXIds,

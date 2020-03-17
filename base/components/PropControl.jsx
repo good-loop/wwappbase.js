@@ -983,9 +983,12 @@ const FormControl = ({value, type, required, size, className, prepend, ...otherP
 		return <input className='form-control no-color' value="#000000" type={type} {...otherProps} />;
 	}
 	// add css classes for required fields
-	let klass = join(className, 'form-control',
+	let klass = join(
+		className, 
+		'form-control',
 		required? (value? 'form-required' : 'form-required blank') : null,
-		size? 'input-'+size : null);
+		size? (BS.version===3? 'input-':'form-control-')+size : null
+		);
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
 	delete otherProps.labels;
