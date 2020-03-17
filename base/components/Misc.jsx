@@ -22,6 +22,7 @@ import {getType, getId, nonce} from '../data/DataClass';
 import md5 from 'md5';
 import Settings from '../Settings';
 import Login from 'you-again';
+import Messaging from '../plumbing/Messaging';
 
 const Misc = {};
 
@@ -493,11 +494,14 @@ Misc.SavePublishDiscard = ({
 	 * Inform user delete action was succesful, and redirect to home preserving search params.
 	 */
 	const deleteAndRedirect = () => {
-		ActionMan.delete(type, id);
+		const pDel = ActionMan.delete(type, id);
+		pDel.then(() => {
+			Messaging.notifyUser(type+" "+id+" deleted");
+		})		
 		// To be extra safe we'll redirect back to the origin, preserving any params already present
 		const currentUrl = new URL(window.location);
 		window.location.href = (currentUrl.origin + '/' + currentUrl.search)
-		window.alert('Item deleted successfully!');
+		
 	}
 
 	return (

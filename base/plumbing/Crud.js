@@ -17,7 +17,7 @@ import List from '../data/List';
 
 /**
  * @param item {DataItem} can be null, in which case the item is got from DataStore
- * @returns Promise
+ * @returns {!Promise}
  */
 ActionMan.crud = ({type, id, action, item}) => {
 	if ( ! type) type = getType(item);
@@ -244,6 +244,7 @@ ActionMan.discardEdits = (type, id) => {
  * 
  * @param {*} type 
  * @param {*} pubId 
+ * @returns {!Promise}
  */
 ActionMan.delete = (type, pubId) => {
 	// optimistic list mod
