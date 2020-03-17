@@ -817,7 +817,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 
 	return (
 		<div className="entryset form-inline">
-			<table className="entries">{entryElements}</table>
+			<table className="entries"><tbody>{entryElements}</tbody></table>
 			<form className="form-inline" onSubmit={stopEvent}>
 				<input className='form-control' placeholder={keyName} onChange={(event) => newKey = event.target.value}
 				/> <input className='form-control' placeholder={valueName} onChange={(event) => newValue = event.target.value}
