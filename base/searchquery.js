@@ -81,7 +81,7 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	assMatch(propValue, String, "searchquery.js - "+propName+" "+propValue);
 	let newq = sq.query;
 	// renove the old
-	if (sq.prop(propName)) {
+	if (sq.prop && sq.prop[propName]) {
 		newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
 	}
 	// quote the value?
