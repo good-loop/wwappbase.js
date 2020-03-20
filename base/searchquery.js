@@ -5,7 +5,8 @@ import DataClass from './data/DataClass';
 /**
  * Manipulate search query strings like a boss.
  * e.g.
- * `new SearchQuery("apples OR oranges").setProp("lang", "en")`
+ * `let sq = new SearchQuery("apples OR oranges"); 
+ * SearchQuery.setProp(sq, "lang", "en")`
  * 
  * See DataLog for the original of this!
  * 
