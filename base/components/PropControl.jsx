@@ -250,9 +250,8 @@ const PropControl2 = (props) => {
 	// New Pluggable System?
 	if ($widgetForType[type]) {
 		let $widget = $widgetForType[type];
-		props.item = item;
-		props.modelValueFromInput = modelValueFromInput;
-		return <$widget {...props} />
+		let props2 = Object.assign({item, modelValueFromInput}, props);
+		return <$widget {...props2} />
 	}
 
 	// Checkbox?
