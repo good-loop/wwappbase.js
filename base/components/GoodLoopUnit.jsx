@@ -47,8 +47,10 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 	cssEls.forEach(node => node.parentElement.removeChild(node));
 }
 
-
-const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, debug}) => {
+/**
+ * Puts together the unit.json request
+ */
+const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -57,13 +59,13 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, debug
 	if (docBody) docBody.style = 'overflow: hidden;'; // NB: the if is paranoia - NPE hunt Oct 2019
 
 	// Insert preloaded unit.json, if we have it
+	// ??is unitJson json or html?
 	if (unitJson) appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
 
 	// Insert the element the unit goes in at the top of the document
 	// Keep it simple: Tell the unit it's already isolated in an iframe and doesn't need to create another.
 	appendEl(doc, {tag: 'div', className:'goodloopad-frameless'}, true);
 	
-
 	// Insert unit.js
 	let params = []
 	if (status) params.push(`gl.status=${status}`); // show published version unless otherwise specified
@@ -72,6 +74,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, debug
 	if (play) params.push(`gl.play=${play}`)
 	if (endCard) params.push(`gl.variant=tq`);
 	if (debug) params.push(`gl.debug=true`);
+	if (noab) params.push('noab=true');
 	const src = `${ServerIO.AS_ENDPOINT}/unit-debug.js${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
 
@@ -88,11 +91,13 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, debug
  * @param {String} css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
  * @param {String} size Defaults to "landscape".
  * @param {String} status Defaults to PUBLISHED if omitted.
- * @param {String} unitJson Optional: String with contents of a unit.json serve. Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
+ * @param {String} unitJson Optional: String with contents of a unit.json serve. 
+ * 	Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
  * @param {String} play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
  * @param {String} endCard Set truthy to display end-card without running through advert.
+ * @param {?Boolean} noab Set true to block any A/B experiments
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, debug}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, noab, debug}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [frameLoaded, setFrameLoaded] = useState(false);
@@ -113,7 +118,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
 		if ((frameLoaded || frameReady) && frameDoc) {
-			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, debug});
+			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug});
 			insertAdunitCss({frame, css});
 			return cleanup;
 		}
@@ -147,7 +152,8 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
-			<iframe key={unitKey} frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
+			<iframe key={unitKey} frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} 
+				onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
 		</div>
 	);
 };
