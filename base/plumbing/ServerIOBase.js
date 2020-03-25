@@ -37,9 +37,10 @@ ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = '/upload.json';
 
 
-// Endpoints for checkBase to inspect - expand as necessary.
+/** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
 // "prodValue" is the expected / forcibly-reset-to-this value that production servers should have.
+ */ 
 const endpoints = [
 	{name: 'base API', key: 'APIBASE', prodValue: ''},
 	{name: 'DataLog', key: 'DATALOG_ENDPOINT', prodValue: 'https://lg.good-loop.com/data'},
