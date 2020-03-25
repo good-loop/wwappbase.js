@@ -60,7 +60,9 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 
 	// Insert preloaded unit.json, if we have it
 	// ??is unitJson json or html?
-	if (unitJson) appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
+	if (unitJson) {
+		appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
+	}
 
 	// Insert the element the unit goes in at the top of the document
 	// Keep it simple: Tell the unit it's already isolated in an iframe and doesn't need to create another.
@@ -74,7 +76,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 	if (play) params.push(`gl.play=${play}`)
 	if (endCard) params.push(`gl.variant=tq`);
 	if (debug) params.push(`gl.debug=true`);
-	if (noab) params.push('noab=true');
+	if (noab) params.push('gl.noab=true');
 	const src = `${ServerIO.AS_ENDPOINT}/unit-debug.js${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
 
