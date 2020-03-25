@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.5.0'
+VERSION='Version=2.5.1'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -233,9 +233,9 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
-		FRONTEND_SYNC_LIST=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" )
+		FRONTEND_SYNC_LIST=("adunit" "legacy-units" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" )
 		BACKEND_SYNC_LIST=("lib")
-		WHOLE_SYNC=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" "lib")
+		WHOLE_SYNC=("adunit" "legacy-units" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" "lib")
 		PRESERVE=("config/log.properties")
 		POST_PUBLISHING_TASK='yes'
 	;;

@@ -7,6 +7,7 @@
 #####
 
 ###
+# New in 2.5.1 : Added the dir 'legacy-units' to the adserver publishing sync list.
 # New in 2.5.0 : Created NPM and webpacking process loops in a way that allows for all servers to be simultaneously creating bundle.js files
 # New in 2.4.0 : Added new project 'appnexusreportprobe' to the list of projects that can be published
 # New in 2.3.2 : Changed the way in-which automated tests are run
