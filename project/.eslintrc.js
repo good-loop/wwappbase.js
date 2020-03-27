@@ -73,6 +73,7 @@ module.exports = {
 		"max-depth": ["warn", 4],
 		"max-len": ["warn", 340],
 		"max-nested-callbacks": ["warn", 4],
+		"max-classes-per-file": "off",
 		"no-confusing-arrow": "off",
 		"no-continue": "off",
 		"no-extra-bind": "warn",
