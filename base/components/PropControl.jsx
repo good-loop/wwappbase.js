@@ -790,6 +790,7 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
  */
 const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value', ...otherStuff}) => {
 	const addRemoveKey = (key, val, remove) => {
+		if (!key) return;
 		const newValue = { ...value };
 		// set false instead of deleting - see rationale/TODO in PropControlKeySet
 		newValue[key] = remove ? false : val;
@@ -1076,28 +1077,42 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 
 /**
  * DEPRECATED replace/merge with PropControlEntrySet
- * @param {*} param0 
+ * @param {*} param0
+ * @param {Function} removeFn Takes (map, key), returns new map - use if "removing" a key means something other than just deleting it
+ * @param {Function} filterFn Takes (key, value), returns boolean - use if some entries should't be shown
  */
-const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp}) => {
+const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp, removeFn, filterFn = (() => true)}) => {
 	assert($KeyProp && $ValProp, "PropControl MapEditor "+prop+": missing $KeyProp or $ValProp jsx (probably PropControl) widgets");
 	const temppath = ['widget','MapEditor'].concat(proppath);
 	const kv = DataStore.getValue(temppath) || {};
-	const addKV = () => {		
-		if ( ! kv.key) {
-			return; // no key!
-		}
+
+	const addKV = () => {
+		// Don't execute nonsensical or no-op updates
+		if (!kv.key) return;
 		const k = kv.key.trim();
-		if ( ! k) return;
-		if ( ! value) DataStore.setValue(proppath, {});
-		DataStore.setValue(proppath.concat(k), kv.val);
-		DataStore.setValue(temppath, null);	
+		if (!k) return;
+		if (kv.val === value[k]) return;
+
+		// Break identity so shallow comparison sees a change
+		const newMap = { ...value, [k]: kv.val };
+		DataStore.setValue(proppath, newMap);
+		DataStore.setValue(temppath, null);
 	};
+
 	const rmK = k => {
-		delete value[k];
-		DataStore.setValue(proppath, value, true);
+		// Break identity so shallow comparison sees a change
+		let newMap = { ...value };
+		if (removeFn) {
+			newMap = removeFn(newMap, k);
+		} else {
+			delete newMap[k];
+		}
+		DataStore.setValue(proppath, newMap, true);
 	};
-	const vkeys = Object.keys(value || {});
-	return (<>
+
+	// Is there a "don't show these entries" rule? Apply it now.
+	const vkeys = Object.keys(value || {}).filter(k => filterFn(k, value[k]));
+	return <>
 		{vkeys.map(
 			k => (<Misc.Col2 key={k}>
 					<div>{k}</div>
@@ -1114,7 +1129,7 @@ const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp}) => {
 				<BS.Button onClick={addKV} disabled={ ! kv.key || ! kv.val}>➕</BS.Button>
 			</div>
 		</Misc.Col2>
-	</>);
+	</>;
 }; // ./MapEditor
 
 /** INPUT STATUS */
