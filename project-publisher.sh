@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.5.1'
+VERSION='Version=2.5.2'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -256,7 +256,7 @@ case $1 in
 		COMPILE_UNITS='no'
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/" #Only needed it 'COMPILE_UNITS' is set to 'yes', and you must ammend Section 11 to accomodate for how to find and process your unit files
 		RESTART_SERVICE_AFTER_SYNC='yes'
-		SERVICE_NAME='appnexusreportprobe'
+		SERVICE_NAME='appnexusprobe'
 		FRONTEND_SYNC_LIST=("")
 		BACKEND_SYNC_LIST=("config" "lib")
 		# Use "lib" instead of "tmp-lib" for syncing your JAR files
