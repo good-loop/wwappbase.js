@@ -410,11 +410,11 @@ const PropControl2 = (props) => {
 		let props2 = {onChange, value, modelValueFromInput, ...props};
 		return <PropControlSelect {...props2} />
 	}
-	// HACK just a few countries
+	// HACK just a few countries. TODO load in an iso list + autocomplete
 	if (type==='country') {
 		let props2 = {onChange, value, ...props};
-		props2.options=[null, 'GB', 'US'];
-		props2.labels=['', 'United Kingdom (UK)', 'United States of America (USA)'];
+		props2.options=[null, 'GB', 'US', 'AU', 'DE'];
+		props2.labels=['', 'United Kingdom (UK)', 'United States of America (USA)', 'Australia', 'Germany'];
 		return <PropControlSelect  {...props2} />
 	}
 	if (type === 'autocomplete') {
