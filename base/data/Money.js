@@ -37,6 +37,7 @@ class Money extends DataClass {
 		if (typeof(base)==='string') {
 			base = {raw: base};
 			if (base.raw[0]==='$') base.currency = 'USD'; // HACK! A look up from CURRENCY would be better
+			else if (base.raw[0]==='£') base.currency = 'GBP';
 		} else if (typeof(base)==='number') {
 			base = {value: base};
 		}
@@ -175,8 +176,17 @@ Money.eq = (a, b) => {
 // could we use an enum instead??
 Money.CURRENCY = {
 	GBP: "£",
-	USD: "$"
+	USD: "$",
+	AUD: "A$"
 };
+/**
+ * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
+ */
+Money.CURRENCY_FOR_COUNTRY = {
+	GB: "GBP", UK: "GBP", // "UK" is wrong, not an iso 3166 code, but handle it anyway
+	US: "USD",
+	AU: "AUD"
+}
 
 /**
  * Convenience for getting the symbol for a Money object

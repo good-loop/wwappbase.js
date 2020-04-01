@@ -33,10 +33,10 @@ const FREE_TOKEN = {
 /** minimal transation amount by currency
 // table copied from https://stripe.com/docs/currencies (31/08/18) */
 const STRIPE_MINIMUM_AMOUNTS = {
-	'GBP': 0.3,
-	'USD': 0.5,
-	'EUR': 0.5,
-	'AUD': 0.5,
+	'GBP': 0.5,
+	'USD': 0.75,
+	'EUR': 0.75,
+	'AUD': 0.75,
 	'CAD': 0.5,
 	'BRL': 0.5,
 	'CHF': 0.5,
