@@ -105,11 +105,11 @@ const NextButton = ({complete, stagePath, maxStage, onNext, ...rest}) => {
 	const bsClass = complete ? 'primary' : null;
 	assMatch(maxStage, Number);
 	return (<NextPrevTab stagePath={stagePath} bsClass={bsClass} diff={1}
-		text={<span>Next <Misc.Icon glyph='menu-right' /></span>}
+		text={<span>Next <Misc.Icon prefix="fas" fa="chevron-right" /></span>}
 		maxStage={maxStage} {...rest} callback={onNext} />);
 };
 const PrevButton = ({stagePath, onPrev, ...rest}) => {
-	return <NextPrevTab stagePath={stagePath} diff={-1} text={<span><Misc.Icon glyph='menu-left' /> Previous</span>} callback={onPrev} {...rest} />;
+	return <NextPrevTab stagePath={stagePath} diff={-1} text={<span><Misc.Icon prefix="fas" fa="chevron-left" /> Previous</span>} callback={onPrev} {...rest} />;
 };
 
 const NextPrevTab = ({stagePath, diff, text, bsClass='default', maxStage, callback, ...rest}) => {

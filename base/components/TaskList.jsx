@@ -1,13 +1,15 @@
-import React, { Component } from 'react';
-import {ReactDOM} from 'react-dom';
-import {SJTest, assMatch} from 'sjtest';
+import React from 'react';
+import { assMatch } from 'sjtest';
 import Login from 'you-again';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { join } from 'wwutils';
+
 import C from '../CBase';
 import List from '../data/List';
 import Misc from './Misc';
-import {stopEvent, join} from 'wwutils';
+
 import DataStore from '../plumbing/DataStore';
-// import BS from './BS';
+
 import ListLoad from './ListLoad';
 import Task from '../data/Task';
 // init basic stuff
@@ -15,9 +17,7 @@ import ActionMan from '../plumbing/ActionManBase';
 import Crud from '../plumbing/Crud';
 import MDText from './MDText';
 import PropControl from './PropControl';
-import {Modal} from 'react-bootstrap';
 
-// const Modal = BS.Modal;
 
 const taskEditorDialogPath = ['widget','TaskEditorDialog'];
 
@@ -195,8 +195,6 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
  * a whole page editor
  */
 const TaskEditorDialog = () => {
-	assert(Modal, "No BS?");
-
 	const widget = DataStore.getValue(taskEditorDialogPath) || {};
 	if( ! widget ) return null;
 
@@ -223,18 +221,14 @@ const TaskEditorDialog = () => {
 
 	return (
 		<Modal show={show} className="TaskEditorModal" onHide={() => DataStore.setValue(taskEditorDialogPath.concat('show'), false)} >
-			<Modal.Header closeButton>
-				<Modal.Title>
-					Edit Task
-				</Modal.Title>
-			</Modal.Header>
-			<Modal.Body>
+			<ModalHeader closeButton>Edit Task</ModalHeader>
+			<ModalBody>
 				{/* Would like this to be an actual editable field */}
 				<PropControl path={taskPath} prop='url' placeholder='URL' label='URL' type='text' saveFn={() => debouncedSaveFn(id, task)} />
 				<PropControl path={taskPath} prop='text' placeholder='Task description' label='Task description' type='text' saveFn={() => debouncedSaveFn(id, task)} />
 				<PropControl path={taskPath} prop='tags' placeholder='Tags' label='Task description' type='text' saveFn={() => debouncedSaveFn(id, task)} />
-			</Modal.Body>
-			<Modal.Footer />
+			</ModalBody>
+			<ModalFooter />
 		</Modal>
 	);
 }; // ./TaskEditorDialog

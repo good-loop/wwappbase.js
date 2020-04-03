@@ -38,13 +38,18 @@ BS.InputGroup.Append = ({children}) => <span class="input-group-addon">{children
  * See https://getbootstrap.com/docs/4.3/components/card/ vs https://getbootstrap.com/docs/3.4/components/#panels
  */
 BS.Card = ({className, color, imgTop, title, subtitle, children}) => {
-	return (<div className={space("panel panel-"+(color||'default'), className)} >
-	{imgTop ? <img src={imgTop} class="card-img-top" /> : null}
-	{title ? <div className='panel-heading'><h5 className="panel-title">{title}</h5>
-		{subtitle ? <h6 className="card-subtitle text-muted">{subtitle}</h6> : null}
-	</div> : null}
-	{children ? <div className="panel-body">{children}</div> : null}
-</div>);
+	return (
+		<div className={space("panel panel-"+(color||'default'), className)}>
+			{imgTop ? <img src={imgTop} class="card-img-top" /> : null}
+			{title ? (
+				<div className='panel-heading'>
+					<h5 className="panel-title">{title}</h5>
+					{subtitle ? <h6 className="card-subtitle text-muted">{subtitle}</h6> : null}
+				</div>
+			) : null}
+			{children ? <div className="panel-body">{children}</div> : null}
+		</div>
+	);
 };
 
 

@@ -1,15 +1,13 @@
 import React from 'react';
-import { assert, assMatch } from 'sjtest';
+import { assMatch } from 'sjtest';
 import Login from 'you-again';
-import {Modal} from 'react-bootstrap'; // TODO from BS
-import BS from './BS';
-import { XId, uid, stopEvent, toTitleCase} from 'wwutils';
-import Cookies from 'js-cookie';
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { stopEvent, toTitleCase } from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
 import ServerIO from '../plumbing/ServerIOBase';
-// import { Server } from 'net';
+
 
 // For testing
 if ( (""+window.location).indexOf('login=local') !== -1) {
@@ -29,6 +27,7 @@ const killEvent = e => {
 	e.preventDefault && e.preventDefault();
 }
 
+/** Pretty names for the available verbs  */
 const displayVerb = {
 	login: "Log in",
 	register: "Register",
@@ -53,8 +52,8 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 	
 	const onClick2 = e => {
 		killEvent(e);
-		if (verb) LoginWidget.changeVerb(verb);
-		LoginWidget.show();
+		if (verb) setLoginVerb(verb);
+		setShowLogin(true);
 		onClick && onClick(e);
 	};
 	
@@ -73,49 +72,38 @@ const RegisterLink = ({className, onClick, ...props}) => <LoginLink
 	{...props}
 />;
 
+const getShowLogin = () => DataStore.getValue(['widget', 'LoginWidget', 'show']);
+const setShowLogin = show => DataStore.setValue(['widget', 'LoginWidget', 'show'], show);
+const setLoginVerb = verb => DataStore.setValue(VERB_PATH, verb);
+
 /**
 	Log In or Register (one widget)
 	See SigninScriptlet
 	@param render {?JSX} default: LoginWidgetGuts
 	@param logo {?String} image url. If unset, guess via app.service
 */
-const LoginWidget = ({showDialog, logo, title, render = LoginWidgetGuts, services}) => {
-	if (showDialog === undefined) {
-		showDialog = DataStore.getValue(['widget','LoginWidget', 'show']);
-		// NB: the app is shown regardless
-	}
-	if (!showDialog) return null;
+const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services}) => {
+	const show = getShowLogin();
+
 	if (!services) services = ['twitter', 'facebook'];
 	let verb = DataStore.getValue(VERB_PATH) || 'login';
 
 	if (!title) title = `Welcome ${(verb === 'login') ? '(back)' : ''} to ${C.app.name}`;
 
-	const heading = {
-		login: 'Log In',
-		register: 'Register',
-		reset: 'Reset Password'
-	}[verb];
-
-	// BS.Modal still has some glitches. But react-bootstrap modal plain fails for BS v4
-	let Modal34 = (BS.version === 4) ? BS.Modal : Modal;
-
 	return (
-		<Modal34
-			show={showDialog}
+		<Modal
+			isOpen={show}
 			className="login-modal"
-			onHide={() => LoginWidget.hide()}
+			toggle={() => setShowLogin(!show)}
 		>
-			<Modal34.Header closeButton>
-				<Modal34.Title>
-					<Misc.Logo service={C.app.service} url={logo} transparent={false} className='pull-left m-r1' />
-					&nbsp; {title}
-				</Modal34.Title>
-			</Modal34.Header>
-			<Modal34.Body>
-				{render({services})}
-			</Modal34.Body>
-			{ /* <Modal34.Footer></Modal34.Footer> */ /* Dummied out because the switch-verb link lives in LoginWidget.EmailSignIn now*/}
-		</Modal34>
+			<ModalHeader>
+				<Misc.Logo service={C.app.service} url={logo} transparent={false} className='pull-left m-r1' />
+				{' '}{title}
+			</ModalHeader>
+			<ModalBody>
+				<Guts services={services} />
+			</ModalBody>
+		</Modal>
 	);
 }; // ./LoginWidget
 

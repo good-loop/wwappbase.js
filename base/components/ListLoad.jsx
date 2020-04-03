@@ -1,20 +1,15 @@
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import SJTest, { assert, assMatch } from 'sjtest';
+import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
-import printer from '../utils/printer.js';
 import {modifyHash, join} from 'wwutils';
 import C from '../CBase';
-import Roles from '../Roles';
 import Misc from './Misc';
 import PropControl from './PropControl';
-import DataStore, { getPath } from '../plumbing/DataStore';
+import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
-import List from '../data/List';
-import BS from './BS';
 
 /**
  * Provide a list of items of a given type.
@@ -189,9 +184,9 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<A href={itemUrl} key={'A'+id} id={id} notALink={notALink}
 				onClick={event => onPick({ event, navpage, id, customParams })}
-				className={itemClassName || ('ListItem btn btn-'+(BS.version===3?'default':'outline-secondary')+' status-' + item.status)}
+				className={itemClassName || `ListItem btn btn-outline-secondary status-${item.status}`}
 			>
-				<div key={'Adiv'+id}>{children}</div>
+				<div key={`Adiv${id}`}>{children}</div>
 			</A>
 		</div>
 	);
@@ -233,7 +228,7 @@ const DefaultDelete = ({type,id}) => (
 	<button className='btn btn-xs btn-default pull-right'
 		onClick={e => confirm("Delete this "+type+"?")? ActionMan.delete(type, id) : null}
 		title='Delete'>
-		<BS.Icon name='trash' />
+		<Misc.Icon prefix="fas" fa="trash-alt" />
 	</button>
 );
 
@@ -304,7 +299,7 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 	return (<div className={props? 'well' : ''}>
 		{props? props.map(prop => <Misc.PropControl key={prop} label={prop} prop={prop} path={cpath} inline />) : null}
 		<button className="btn btn-default" name="create-item" onClick={() => createBlank({type,navpage,base,id,make})}>
-			<BS.Icon name="plus" /> Create
+			<Misc.Icon prefix="fas" fa="plus-circle" /> Create
 		</button>
 	</div>);
 };

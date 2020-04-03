@@ -9,7 +9,8 @@ import React, { useState } from 'react';
 
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
-import { Checkbox, InputGroup, DropdownButton, MenuItem} from 'react-bootstrap';
+import { DropdownButton, MenuItem } from 'react-bootstrap';
+import { Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap';
 
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
@@ -196,8 +197,8 @@ const PropControl = (props) => {
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
-	const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : '';
-	const optreq = optional? <small className='text-muted'>optional</small>
+	const helpIcon = tooltip ? <Misc.Icon prefix="fas" fa="question-circle" title={tooltip} /> : '';
+	const optreq = optional ? <small className="text-muted">optional</small>
 		: required? <small className={value===undefined? 'text-danger' : null}>*</small> : null;
 	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
@@ -262,20 +263,23 @@ const PropControl2 = (props) => {
 			DSsetValue(proppath, val);
 			if (saveFn) saveFn({path, prop, item, value: val});
 		};
-		if (value===undefined) value = false;
+		if (value === undefined) value = false;
+
 		// make sure we don't have "false"
 		if (_.isString(value)) {
 			if (value==='true') value = true;
 			else if (value==='false') value = false;
 		}
-		const helpIcon = tooltip ? <Misc.Icon glyph='question-sign' title={tooltip} /> : null;
-		return (
-			<div>
-				<Checkbox checked={value} onChange={onChange} {...otherStuff}>{label} {helpIcon}</Checkbox>
-				{help? <span className="help-block">{help}</span> : null}
-				{error? <span className="help-block">{error}</span> : null}
-			</div>
-		);
+		const helpIcon = tooltip ? <Misc.Icon prefix="fas" fa='question-circle' title={tooltip} /> : null;
+
+		return <>
+			<FormGroup check inline>
+				<Input type="checkbox" checked={value} onChange={onChange} {...otherStuff} />
+				<Label check>{label} {helpIcon}</Label>
+			</FormGroup>
+			{help? <span className="help-block">{help}</span> : null}
+			{error? <span className="help-block">{error}</span> : null}
+		</>;
 	} // ./checkbox
 
 	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
@@ -337,6 +341,7 @@ const PropControl2 = (props) => {
 	if (type === 'textarea') {
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
 	}
+
 	if (type === 'html') {
 		// NB: relies on a special-case innerHTML version of modelValueFromInput, set above
 		let __html = value;
@@ -373,11 +378,13 @@ const PropControl2 = (props) => {
 
 	if (type === 'img') {
 		delete otherStuff.https;
-		return (<div>
+		return (
+			<div>
 				<FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
-			<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} background={bg} /></div>
+				<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} background={bg} /></div>
 				<div className='clearfix' />
-			</div>);
+			</div>
+		);
 	}
 
 	if (type === 'imgUpload' || type==='videoUpload') {
@@ -511,6 +518,8 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 
 /**
  * render multi select as multi checkbox 'cos React (Jan 2019) is awkward about multi-select
+ * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
+ * Deselect everything unless user holds Ctrl??? Really? -RM
  */
 const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromInput, sv, className, type, path, saveFn, ...rest}) => {
 	assert( ! sv || sv.length !== undefined, "value should be an array", sv, prop);
@@ -534,18 +543,24 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		}
 		const proppath = path.concat(prop);
 		DSsetValue(proppath, mvs);
-		if (saveFn) saveFn({path, prop, value:mvs});
+		if (saveFn) saveFn({path, prop, value: mvs});
 	}
 
-	let domOptions = options.map(option =>
-		<BS.Checkbox key={"option_"+option} value={option}
-			checked={sv && sv.indexOf(option) !== -1}
-			label={labeller(option)} onChange={onChange} inline />);
+	let domOptions = options.map(option => {
+		const checked = sv && sv.includes(option);
+		return (
+			<FormGroup inline check key={`option_${option}`}>
+				<Input type="checkbox" value={option} checked={checked} onChange={onChange} />
+				<Label check>{labeller(option)}</Label>
+			</FormGroup>
+		);
+	});
+
 	let klass = join('form-group', className);
 	return (
-		<div className={klass}>
+		<Form className={className}>
 			{domOptions}
-		</div>
+		</Form>
 	);
 };
 
@@ -560,6 +575,8 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options, labels, inline, ...otherStuff}) => {
 	assert(options, 'PropControl: no options for radio '+prop);
 	assert(options.map, 'PropControl: radio options for '+prop+' not an array '+options);
+
+	const check = (type === 'checkboxes');
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
 	let labeller = v => v;
@@ -581,18 +598,21 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 		if (saveFn) saveFn({path, prop, value: val});
 	};
 
-	const Check = type==='checkboxes'? BS.Checkbox : BS.Radio;
+	const inputType = check ? 'checkbox' : 'radio';
 
 	return (
-		<div className='form-group' >
+		<Form>
 			{options.map(option => (
-				<Check key={"option_"+option} name={prop} value={option}
+				<FormGroup check={check} inline={inline}>
+					<Input type="inputType" key={"option_"+option} name={prop} value={option}
 						checked={option == value}
 						onChange={onChange} {...otherStuff}
-						label={labeller(option)}
-						inline={inline} />)
-			)}
-		</div>
+						inline={inline}
+					/>
+					<Label check={check}>{labeller(option)}</Label>
+				</FormGroup>
+			))}
+		</Form>
 	);
 }; // ./radio
 
@@ -662,11 +682,13 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 	assert(v === 0 || v || v==='', [v, value]);
 	// make sure all characters are visible
 	let minWidth = ((""+v).length / 1.5)+"em";
-	return (<InputGroup>
-		{$currency}
-		<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{minWidth}}/>
-		{append? <BS.InputGroup.Append>{append}</BS.InputGroup.Append> : null}
-	</InputGroup>);
+	return (
+		<InputGroup>
+			{$currency}
+			<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{minWidth}}/>
+			{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
+		</InputGroup>
+	);
 }; // ./£
 
 /**
@@ -700,9 +722,9 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
 	return (
 		<>&nbsp;<div className={join('form-group form-inline',className)}>
-			<BS.Radio value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
+			<Input type="radio" value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
 			&nbsp;
-			<BS.Radio value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
+			<Input type="radio" value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
 		</div></>
 	);
 };
@@ -800,7 +822,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 	
 	const entryElements = Object.entries(value || {}).filter(([key, val]) => (val === '') || val).map(([key, val]) => (
 		<tr className="entry" key={key}>
-			<td><BS.Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</BS.Button></td>
+			<td><Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</Button></td>
 			<td>{key}:</td>
 			<td><PropControl type="text" path={proppath} prop={key} /></td>
 		</tr>
@@ -974,33 +996,32 @@ Misc.normalise = s => {
  * Plus since we're providing state handling, we don't need a full component.
  */
 const FormControl = ({value, type, required, size, className, prepend, ...otherProps}) => {
-	if (value===null || value===undefined) value = '';
+	if (value === null || value === undefined) value = '';
 
 	if (type === 'color' && !value) {
 		// Chrome spits out a console warning about type="color" needing value in format "#rrggbb"
 		// ...but if we omit value, React complains about switching an input between controlled and uncontrolled
 		// So give it a dummy value and set a class to allow us to show a "no colour picked" signifier
-		return <input className='form-control no-color' value="#000000" type={type} {...otherProps} />;
+		return <Input className='no-color' value="#000000" type={type} {...otherProps} />;
 	}
 	// add css classes for required fields
 	let klass = join(
-		className, 
-		'form-control',
-		required? (value? 'form-required' : 'form-required blank') : null,
-		size? (BS.version===3? 'input-':'form-control-')+size : null
-		);
+		className,
+		required ? 'form-required' : null,
+		required && !value ? 'blank' : null,
+	);
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
 	delete otherProps.labels;
 	// Minor TODO refactor into <BS.Input /> ?? or does reactstrap have something nice here??
-	const input = <input className={klass} type={type} value={value} {...otherProps} />;
-	if (prepend) {
-		return (<div className="input-group">
-			<div className={BS.version===3? "input-group-addon" : "input-group-prepend"}><span className="input-group-text">{prepend}</span></div>
+	const input = <Input className={klass} size={size} type={type} value={value} {...otherProps} />;
+
+	return prepend ? (
+		<InputGroup>
+			<InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon>
 			{input}
-		</div>);
-	}
-	return <input className={klass} type={type} value={value} {...otherProps} />;
+		</InputGroup>
+	) : input;
 };
 
 /**
@@ -1118,7 +1139,7 @@ const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp, removeFn, f
 					<div>{k}</div>
 					<div>
 						{React.cloneElement($ValProp, {path:proppath, prop:k, label:null})}
-						<BS.Button onClick={e => rmK(k)}>➖</BS.Button>
+						<Button onClick={e => rmK(k)}>➖</Button>
 					</div>
 				</Misc.Col2>)
 		)}
@@ -1126,7 +1147,7 @@ const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp, removeFn, f
 			{React.cloneElement($KeyProp, {path:temppath, prop:'key'})}
 			<div>
 				{React.cloneElement($ValProp, {path:temppath, prop:'val'})}
-				<BS.Button onClick={addKV} disabled={ ! kv.key || ! kv.val}>➕</BS.Button>
+				<Button onClick={addKV} disabled={ ! kv.key || ! kv.val}>➕</Button>
 			</div>
 		</Misc.Col2>
 	</>;

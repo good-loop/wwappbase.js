@@ -1,5 +1,5 @@
 import React from 'react';
-import { Nav, NavItem } from 'react-bootstrap';
+import { Nav, NavItem, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 import Login from 'you-again';
 
 import C from '../CBase';
@@ -25,13 +25,14 @@ TODO use react for the dropdown state - not bootstrap.js
 const AccountMenu = (props) => {
 	const isMobile = window.innerWidth <= 767;
 	const {noRegister} = (props || {});
+
 	// TODO see navbar dropdown
 	if (!Login.isLoggedIn()) {
 		return (
-			<ul id='top-right-menu' className="nav navbar-nav navbar-right">
-				{noRegister ? '' : <li id="register-link"><RegisterLink /></li>}
-				<li className="login-link"><LoginLink /></li>
-			</ul>
+			<Nav className="ml-auto" navbar>
+				{noRegister ? '' : <NavItem id="register-link"><RegisterLink /></NavItem>}
+				<NavItem className="login-link"><LoginLink /></NavItem>
+			</Nav>
 		);
 	}
 
@@ -44,37 +45,31 @@ const AccountMenu = (props) => {
 	);
 };
 
-const DesktopMenu = ({active, logoutLink, user}) => (
-	<ul id='top-right-menu' className="nav navbar-nav navbar-right">
-		<li className={'dropdown' + (active? ' active' : '')}>
-			<a className="dropdown-toggle"
-				data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
-				{ user.name || user.xid }&nbsp;
-				<span className="caret" />
-			</a>
-			<ul className="dropdown-menu">
-				<li><a href="#account">Account</a></li>
-				<li role="separator" className="divider" />
-				<li><a href={logoutLink} onClick={() => doLogout()}>Log out</a></li>
-			</ul>
-		</li>
-	</ul>
+const DesktopMenu = ({logoutLink, user}) => (
+	<Nav className="ml-auto" navbar>
+		<UncontrolledDropdown nav inNavbar>
+			<DropdownToggle nav caret>{ user.name || user.xid }</DropdownToggle>
+			<DropdownMenu>
+				<DropdownItem><a href="#account">Account</a></DropdownItem>
+				<DropdownItem divider />
+				<DropdownItem><a href={logoutLink} onClick={() => doLogout()}>Log out</a></DropdownItem>
+			</DropdownMenu>
+		</UncontrolledDropdown>
+	</Nav>
 );
 
 /** Clicking username to expand does not work well on mobile
 // Just display all options as part of burger-menu
 */
-const MobileMenu = ({active, logoutLink, user}) => (
-	<ul id='top-right-menu' className="nav navbar-nav navbar-right">
-		<li>
-			<a href="#account">
-				{ user.name || user.xid }&nbsp;
-			</a>
-		</li>
-		<li>
+const MobileMenu = ({logoutLink, user}) => (
+	<Nav navbar>
+		<NavItem>
+			<a href="#account">{ user.name || user.xid }</a>
+		</NavItem>
+		<NavItem>
 			<a href={logoutLink} onClick={() => doLogout()}>Log out</a>
-		</li>
-	</ul>
+		</NavItem>
+	</Nav>
 );
 
 export default AccountMenu;

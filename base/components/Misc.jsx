@@ -1,12 +1,14 @@
-import React, {useState} from 'react';
+import React, { useState, Fragment } from 'react';
 
-import BS, { space } from './BS';
+import { Alert, Card, Nav, Button } from 'reactstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
-import Enum from 'easy-enums';
-import { setHash, XId, addScript, join, modifyHash} from 'wwutils';
+import { XId, addScript, join } from 'wwutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
+import md5 from 'md5';
+import Login from 'you-again';
+// import I18n from 'easyi18n';
 
 import JSend from '../data/JSend';
 
@@ -17,11 +19,9 @@ import printer from '../utils/printer';
 import {LoginLink} from './LoginWidget';
 import C from '../CBase';
 import Money from '../data/Money';
-// import I18n from 'easyi18n';
+
 import {getType, getId, nonce} from '../data/DataClass';
-import md5 from 'md5';
-import Settings from '../Settings';
-import Login from 'you-again';
+
 import Messaging from '../plumbing/Messaging';
 
 const Misc = {};
@@ -51,7 +51,7 @@ Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	if (pv && pv.error) {
 		let emsg = _.isString(pv.error)? pv.error : join(pvCharity.error.status, pvCharity.error.statusText);
 		let edetails = join(pvCharity.error.statusText, pvCharity.error.responseText);
-		return <BS.Alert><h4>Sorry - there was a problem. {emsg}</h4><div className='details'><small>{edetails}</small></div></BS.Alert>;
+		return <Alert><h4>Sorry - there was a problem. {emsg}</h4><div className='details'><small>{edetails}</small></div></Alert>;
 	}
 
 	return (
@@ -92,11 +92,11 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 	};
 
 	const itemElements = list.map((item, index) => (
-		<BS.Well className="item-editor" key={'item' + index}>
+		<Card className="item-editor" key={'item' + index}>
 			{item.name ? <h4>{index}. {item.name}</h4> : null}
-			<button onClick={e => remove(index)} className='btn btn-danger btn-xs pull-right'><Misc.Icon glyph='trash'/></button>
+			<button onClick={e => remove(index)} className='btn btn-danger btn-xs pull-right'><Misc.Icon prefix="fas" fa='trash-alt'/></button>
 			<ItemEditor i={index} item={item} path={path.concat(index)} list={list} {...stuff} />
-		</BS.Well>
+		</Card>
 	));
 
 	return (
@@ -104,7 +104,7 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 			{itemElements}
 			{list.length? null : <p>{noneMessage || "None"}</p>}
 			<div>
-				<button className='btn btn-default' onClick={addBlank}><Misc.Icon glyph='plus' /> {createText}</button>
+				<button className='btn btn-default' onClick={addBlank}><Misc.Icon fa='plus-circle-fill' /> {createText}</button>
 			</div>
 		</div>
 	);
@@ -203,7 +203,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
  * @param {String} fa Font Awesome icon name, e.g. "twitter" or "star"
  * @param {String} prefix Font Awesome v5 prefix e.g. "fab" for brands
  */
-Misc.Icon = ({glyph, fa, size, className, prefix="fa", ...rest}) => {
+Misc.Icon = ({glyph, fa, size, className, prefix = 'fa', ...rest}) => {
 	// FontAwesome favours <i>
 	const Tag = glyph ? 'span' : 'i';
 	const classes = glyph ? ['glyphicon glyphicon-' + glyph] : [prefix, 'fa-' + fa];
@@ -507,38 +507,38 @@ Misc.SavePublishDiscard = ({
 	return (
 		<div className='SavePublishDiscard' title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
-			<BS.Button name="save" color='default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
+			<Button name="save" color='default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
 				Save Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</BS.Button>
+			</Button>
 			{saveAs ? <>&nbsp;
-				<BS.Button name="save-as" color='default' disabled={isSaving}
+				<Button name="save-as" color='default' disabled={isSaving}
 					title='Copy and save with a new ID'
 					onClick={confirmSaveAs} >
 					<small>Save As</small> <span className="glyphicon glyphicon-cd spinning" style={vis} />
-				</BS.Button>
+				</Button>
 			</> : null}
 			&nbsp;
-			<BS.Button name="publish" color='primary' disabled={disablePublish} title={publishTooltip}
+			<Button name="publish" color='primary' disabled={disablePublish} title={publishTooltip}
 				onClick={() => ActionMan.publishEdits(type, id)}>
 				Publish Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</BS.Button>
+			</Button>
 			&nbsp;
-			<BS.Button name="discard" color='warning' disabled={isSaving || noEdits}
+			<Button name="discard" color='warning' disabled={isSaving || noEdits}
 				onClick={() => ActionMan.discardEdits(type, id)}>
 				Discard Edits <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</BS.Button>
+			</Button>
 			{unpublish && pubExists ? <>&nbsp;
-				<BS.Button name="unpublish" color='warning' disabled={isSaving || noEdits}
+				<Button name="unpublish" color='warning' disabled={isSaving || noEdits}
 					title='Move from published to draft'
 					onClick={() => ActionMan.unpublish(type, id)} >
 					Un-Publish <span className="glyphicon glyphicon-cd spinning" style={vis} />
-				</BS.Button>
+				</Button>
 			</> : null}
 			&nbsp;
-			<BS.Button name="delete" color='danger' disabled={disableDelete}
+			<Button name="delete" color='danger' disabled={disableDelete}
 				onClick={deleteAndRedirect} >
 				Delete <span className="glyphicon glyphicon-cd spinning" style={vis} />
-			</BS.Button>
+			</Button>
 		</div>
 	);
 };
@@ -633,28 +633,27 @@ Misc.Tabs = ({children, path}) => {
 	
 	// Options to display
 	const headers = children.reduce((headers, child) => [...headers, child.props.option], []);
-	// Width assigned to each tab heading
-	const colSize = Math.floor(12 / headers.length);
 
-	// Show component selected, or the first option as a default
+	// Mark component selected, or the first option as a default
 	const headerElements = headers.map(h => {
 		const onClick = () => DataStore.setValue(path, h);
+		const active = selected === h ? 'active' : null;
 		return (
-			<a className={space('nav-link', selected===h? 'active' : '')} id={h} key={h} onClick={onClick}>
-				{h}
-			</a>
+			<NavItem>
+				<NavLink className={active} id={h} key={h} onClick={onClick}>{h}</NavLink>
+			</NavItem>
 		);
 	});
+
+	// Show the currently-active child - or an error message if the data-path specifies a nonexistent one
+	const activeChild = children.find(child => child.props.option === selected) || `Missing tab: ${selected}`;
+
 	// https://getbootstrap.com/docs/4.4/components/navs/#javascript-behavior
 	// NB: In BS, tab-content and tab-pane are used to manage show/hide -- which we do here in jsx instead
-	return (
-		<div>
-			<BS.NavTabs>{headerElements}</BS.NavTabs>
-			<div>
-				{children.find(child => child.props.option === selected) || "Missing tab: "+selected }
-			</div>
-		</div>
-	);
+	return <>
+		<Nav tabs>{ headerElements }</Nav>
+		<div>{ activeChild }</div>
+	</>;
 };
 
 

@@ -9,9 +9,8 @@
 // https://frictionlessdata.io/specs/table-schema/
 
 import React from 'react';
-import ReactDOM from 'react-dom';
 
-import SJTest, {assert, assMatch} from 'sjtest';
+import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Misc from './Misc';
 import printer from '../utils/printer';
@@ -19,11 +18,7 @@ import printer from '../utils/printer';
 import Enum from 'easy-enums';
 import {asNum, join} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
-import { relative } from 'path';
 import DataClass, { getClass, getType, nonce } from '../data/DataClass';
-import BS from './BS';
-import ErrorBoundary from './ErrorBoundary';
-import { useState } from 'react';
 import Tree from '../data/Tree';
 
 const str = printer.str;

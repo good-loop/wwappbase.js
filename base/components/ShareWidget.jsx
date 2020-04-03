@@ -27,7 +27,7 @@ const ShareLink = ({item, type, id, thingId}) => {
 	thingId = shareThingId(type, id);
 	const basePath = ['widget', 'ShareWidget', thingId];
 	return (<a href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); DataStore.setValue(basePath.concat('show'), true); } } >
-		<Misc.Icon glyph='share' /> Share
+		<Misc.Icon prefix="fas" fa="share-square" /> Share
 	</a>);
 };
 
@@ -99,7 +99,7 @@ const ShareWidget = ({item, type, id, name}) => {
 		<Modal show={show} className="share-modal" onHide={() => DataStore.setValue(basePath.concat('show'), false)}>
 			<Modal.Header closeButton>
 				<Modal.Title>
-					<Misc.Icon glyph='share' size='large' />
+					<Misc.Icon prefix="fas" fa="share-square" size="large" />
 					{title}
 				</Modal.Title>
 			</Modal.Header>
@@ -151,7 +151,7 @@ const SharedWithRow = ({share}) => {
 				title="remove this person's access"
 				onClick={ () => deleteShare({share}) }
 			>
-				<Misc.Icon glyph='remove'/>
+				<Misc.Icon prefix="fas" fa="cross-circle"/>
 			</button>
 	</div>);
 };

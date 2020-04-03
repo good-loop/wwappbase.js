@@ -1,9 +1,10 @@
 
 import React from 'react';
+import { Card as BSCard, CardHeader, CardTitle, CardBody } from 'reactstrap';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
-import { join } from 'wwutils';
-import BS from './BS';
+import { join } from './BS';
+
 
 /**
  * A Bootstrap panel, with collapse behaviour if combined with CardAccordion.
@@ -41,41 +42,31 @@ class Card extends React.Component {
 		let {title, glyph, icon, children, className, onHeaderClick, collapse, titleChildren, titleClassName, warning, error, ...props} = this.props;
 		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.
 		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
-		if ( ! children) {
-			return null;
-		}
+		if (!children) { return null; }
+
 		let header = null;
-		if (title || titleChildren) {
-			// if ( ! onHeaderClick) {
-			// 	console.log("No onHeaderClick for "+className+" "+title);
-			// }
+		if (title) {
 			let hoverText = null;
 			if (error && _.isString(error)) hoverText = error;
 			else if (warning && _.isString(warning)) hoverText = warning;
+			const caret = <Misc.Icon className='pull-right' prefix="fas" fa={`caret-${collapse ? 'down' : 'up'}`} />;
 			header = (
-				<div className={onHeaderClick? 'btn-link' : null} onClick={onHeaderClick}
-					title={hoverText} >
-					<span className={titleClassName}>
-						{icon? <Misc.Icon glyph={glyph} fa={icon} /> : null}
-						{title || <span>&nbsp;</span>} {onHeaderClick? <Misc.Icon className='pull-right' glyph={'triangle-'+(collapse?'bottom':'top')} /> : null}
-					</span>
-					{ titleChildren }
+				<div className={onHeaderClick? 'btn-link' : null} onClick={onHeaderClick} title={hoverText}>
+					{(glyph || icon) ? <Misc.Icon glyph={glyph} fa={icon} /> : null}
+					{title || <span>&nbsp;</span>} {onHeaderClick ? caret : null}
 				</div>
 			);
 		}
 
 		// TODO use BS.Card -- but how to do collapse??
-		let panelType = "panel-default"
-		if (error) panelType = "panel-danger";
-		else if (warning) panelType = "panel-warning";
-		let color = null;
-		if (error) color = "danger";
-		else if (warning) color = "warning";
+		const color = error ? 'danger' : warning ? 'warning' : null;
+		const titleText = _.isString(header) ? header : null;
 
 		return (
-			<BS.Card color={color} className={className} title={header}>
-				{collapse? null : children}
-			</BS.Card>
+			<BSCard color={color} outline className={join(className, 'mb-3')} title={titleText}>
+				<CardHeader className={`bg-${color}`}>{header}</CardHeader>
+				{collapse ? null : <CardBody>{children}</CardBody>}
+			</BSCard>
 		);
 	};
 }; // ./Card
