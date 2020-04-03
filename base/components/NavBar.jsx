@@ -57,7 +57,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	));
 
 	return (
-		<Navbar dark color="dark" expand="md">
+		<Navbar fixed="top" dark color="dark" expand="md">
 			<NavGuts {...props} isOpen={isOpen} toggle={toggle} />
 		</Navbar>
 	);
