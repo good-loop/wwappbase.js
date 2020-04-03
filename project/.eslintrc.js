@@ -4,7 +4,7 @@ module.exports = {
 		"node": true,
 		"es6": false,
 		"browser": true
-	 },
+	},
 	 "globals": { // these are needed to avoid errors in puppeteer/node files
 		"window": true,
 		"document": true,
@@ -42,7 +42,7 @@ module.exports = {
 		"block-spacing": "warn",
 		"no-empty-pattern": "warn",
 		"arrow-parens": "off",
-		"brace-style": "warn",		
+		"brace-style": "warn",
 		"camelcase": "off", // we use camelCase, but we also break it in places, e.g. myFn2_subFn()
 		"class-methods-use-this": "off",
 		"comma-dangle": "off",
@@ -57,7 +57,8 @@ module.exports = {
 		"import/newline-after-import": "warn",
 		"import/no-named-as-default-member": "off",
 		"import/no-named-as-default": "off",
-		"import/order": "warn",		"import/prefer-default-export": "warn",
+		"import/order": "warn",
+		"import/prefer-default-export": "warn",
 		"indent": ["warn", "tab"],
 		"jsx-a11y/alt-text": "warn",
 		"jsx-a11y/anchor-is-valid": "warn",
