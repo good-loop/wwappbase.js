@@ -123,7 +123,7 @@ const errorPath = ({type, id, action}) => {
 };
 
 ActionMan.saveEdits = (type, id, item) => {
-	return ActionMan.crud({type, id, action:'save', item});
+	return ActionMan.crud({type, id, action: 'save', item});
 };
 
 /**
@@ -181,7 +181,7 @@ ActionMan.publishEdits = (type, pubId, item) => {
 	assert(item, "Crud.js no item to publish "+type+" "+pubId);
 
 	// optimistic list mod
-	preCrudListMod({type, item, action:'publish'});
+	preCrudListMod({type, item, action: 'publish'});
 	// call the server
 	return ActionMan.crud({type, id: pubId, action: 'publish', item})
 		.catch(err => {
@@ -193,24 +193,22 @@ ActionMan.publishEdits = (type, pubId, item) => {
 
 const preCrudListMod = ({type, id, item, action}) => {
 	assert(type && (item || id) && action);
-	const pathPublished = listPath({type, status:C.KStatus.PUBLISHED});
-	const pathAllBarTrash = listPath({type, status:C.KStatus.ALL_BAR_TRASH});
-	const listPublished = DataStore.getValue(pathPublished);
-	const listAllBarTrash = DataStore.getValue(pathAllBarTrash);
-	// TODO draft list??
-	// TODO invalidate any (other) cached list of this type (eg filtered lists may now be out of date)	
+	
+	// TODO Update draft list??
+	// TODO invalidate any (other) cached list of this type (eg filtered lists may now be out of date)
 	// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
 	if (C.CRUDACTION.ispublish(action)) {
-		if (listPublished) {
-			List.add(item, listPublished, 0);
-			DataStore.setValue(pathPublished, listPublished);
-		}
-		if (listAllBarTrash) {
-			List.add(item, listAllBarTrash, 0);
-			DataStore.setValue(pathAllBarTrash, listAllBarTrash);	
-		}
+		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
+			const path = listPath({type, status});
+			const list = DataStore.getValue(path);
+			if (!list) return;
+			List.remove(item, list); // No duplicates - remove any existing copy of the item
+			List.add(item, list, 0);
+			DataStore.setValue(path, list);
+		});
 		return;
 	}
+
 	// delete => optimistic remove
 	if (C.CRUDACTION.isdelete(action)) {
 		if ( ! item) item = {type, id};

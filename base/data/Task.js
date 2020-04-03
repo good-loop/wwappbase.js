@@ -19,6 +19,11 @@ class Task extends DataClass {
 	url;
 	created;
 
+	assigned = [];
+	tags = [];
+	media = [];
+	messages = [];
+
 	/**
 	 * @type {Task[]}
 	 */
@@ -35,14 +40,13 @@ class Task extends DataClass {
 		// HACK no url on the tasks server itself
 		if (item.url.includes(TASKS_SERVER)) delete item.url;
 		// TODO @you and #tag
-		super(item);		
+		super(item);
 		Object.assign(this, item);
 		// parent-child
 		if (item.parent) {
 			Task.setParent(this, item.parent);
 		}
 	}
-
 };
 DataClass.register(Task, 'Task');
 const This = Task;
@@ -82,4 +86,3 @@ Task.open = task => {
 	task.stage = Task.STAGES.assigned;
 	return task;
 };
-
