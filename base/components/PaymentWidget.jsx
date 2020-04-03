@@ -1,6 +1,6 @@
 // @Flow
 import React, { Component } from 'react';
-import { Button, Form, FormGroup, Col } from 'react-bootstrap';
+import { Form, FormGroup, Col } from 'reactstrap';
 
 import { StripeProvider, Elements, injectStripe,
 	CardNumberElement, CardExpiryElement, CardCVCElement,
@@ -245,15 +245,15 @@ class StripeThingsClass extends Component {
 		const isValidAmount = value >= STRIPE_MINIMUM_AMOUNTS[currency]
 		// TODO an email editor if this.props.email is unset
 		return (
-			<Form horizontal onSubmit={(event) => this.handleSubmit(event)}>
+			<Form inline onSubmit={(event) => this.handleSubmit(event)}>
 				<h3>Payment of <Misc.Money amount={amount} /> to {recipient}</h3>
 				{credit && Money.value(credit) > 0?
-					<FormGroup><Col md={12}>
+					<FormGroup><Col md="12">
 						You have <Misc.Money amount={credit} /> in credit which will be used towards this payment.
 					</Col></FormGroup>
 				: null}
 				<FormGroup>
-					<Col md={12}>
+					<Col md="12">
 						<label>Card number</label>
 						<div className='form-control'>
 							<CardNumberElement placeholder='0000 0000 0000 0000' />
@@ -261,13 +261,13 @@ class StripeThingsClass extends Component {
 					</Col>
 				</FormGroup>
 				<FormGroup>
-					<Col md={6}>
+					<Col md="6">
 						<label>Expiry date</label>
 						<div className='form-control'>
 							<CardExpiryElement />
 						</div>
 					</Col>
-					<Col md={6}>
+					<Col md="6">
 						<label>CVC</label>
 						<div className='form-control'>
 							<CardCVCElement />

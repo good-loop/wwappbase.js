@@ -9,8 +9,7 @@ import React, { useState } from 'react';
 
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
-import { DropdownButton, MenuItem } from 'react-bootstrap';
-import { Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap';
+import { Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
@@ -28,7 +27,6 @@ import ServerIO from '../plumbing/ServerIOBase';
 // import ActionMan from '../plumbing/ActionManBase';
 import printer from '../utils/printer';
 import C from '../CBase';
-import BS from './BS';
 import Money from '../data/Money';
 // // import I18n from 'easyi18n';
 import {getType, getId, nonce} from '../data/DataClass';
@@ -671,12 +669,15 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 	if (changeCurrency) {
 		// TODO other currencies
 		$currency = (
-			<DropdownButton disabled={otherStuff.disabled} title={curr} componentClass={InputGroup.Button} id={'input-dropdown-addon-'+JSON.stringify(proppath)}>
-				<MenuItem key="1">{curr}</MenuItem>
-			</DropdownButton>
+			<UncontrolledButtonDropdown addonType="prepend" disabled={otherStuff.disabled} id={'input-dropdown-addon-'+JSON.stringify(proppath)}>
+				<DropdownToggle caret>{curr}</DropdownToggle>
+				<DropdownMenu>
+					<DropdownItem key="1">{curr}</DropdownItem>
+				</DropdownMenu>
+			</UncontrolledButtonDropdown>
 		);
 	} else {
-		$currency = <InputGroup.Addon>{curr}</InputGroup.Addon>;
+		$currency = <InputGroupAddon addonType="prepend">{curr}</InputGroupAddon>;
 	}
 	delete otherStuff.changeCurrency;
 	assert(v === 0 || v || v==='', [v, value]);
@@ -686,7 +687,7 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 		<InputGroup>
 			{$currency}
 			<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{minWidth}}/>
-			{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
+			{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
 		</InputGroup>
 	);
 }; // ./£

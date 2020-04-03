@@ -1,7 +1,7 @@
 import React from 'react';
 import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
-import {Modal} from 'react-bootstrap';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { XId, uid } from 'wwutils';
 import Cookies from 'js-cookie';
 import PromiseValue from 'promise-value';
@@ -96,14 +96,12 @@ const ShareWidget = ({item, type, id, name}) => {
 	// TODO share message email for new sharers
 
 	return (
-		<Modal show={show} className="share-modal" onHide={() => DataStore.setValue(basePath.concat('show'), false)}>
-			<Modal.Header closeButton>
-				<Modal.Title>
-					<Misc.Icon prefix="fas" fa="share-square" size="large" />
-					{title}
-				</Modal.Title>
-			</Modal.Header>
-			<Modal.Body>
+		<Modal isOpen={show} className="share-modal" toggle={() => DataStore.setValue([...basePath, 'show'], !show)}>
+			<ModalHeader closeButton>
+				<Misc.Icon prefix="fas" fa="share-square" size="large" />
+				{title}
+			</ModalHeader>
+			<ModalBody>
 				<div className="container-fluid">
 					<div className="row form-inline">
 						<Misc.PropControl inline label='Email to share with' path={formPath} prop='email' type='email' />
@@ -126,9 +124,8 @@ const ShareWidget = ({item, type, id, name}) => {
 						<ListShares list={sharesPV.value} />
 					</div>
 				</div>
-			</Modal.Body>
-			<Modal.Footer>
-			</Modal.Footer>
+			</ModalBody>
+			<ModalFooter />
 		</Modal>
 	);
 }; // ./ShareWidget
