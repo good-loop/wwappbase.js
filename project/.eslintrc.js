@@ -95,6 +95,7 @@ module.exports = {
 		"no-useless-concat": "warn",
 		"no-useless-constructor": "warn",
 		"no-useless-return": "off",
+		"lines-between-class-members": "off",
 		"no-use-before-define": "off",
 		"no-var": "warn",
 		"object-curly-newline": "off",
