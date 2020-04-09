@@ -222,6 +222,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 				<div className="name">{name}</div>
 				<div className="detail small">
 					id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
+					<Misc.Time time={item.created} />
 				</div>
 			</div>
 		</div>
