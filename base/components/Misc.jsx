@@ -94,7 +94,7 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 	const itemElements = list.map((item, index) => (
 		<Card className="item-editor" key={'item' + index}>
 			{item.name ? <h4>{index}. {item.name}</h4> : null}
-			<button onClick={e => remove(index)} className='btn btn-danger btn-xs pull-right'><Misc.Icon prefix="fas" fa='trash-alt'/></button>
+			<button onClick={e => remove(index)} className='btn btn-danger btn-xs pull-right'><Misc.Icon fa='trash-alt'/></button>
 			<ItemEditor i={index} item={item} path={path.concat(index)} list={list} {...stuff} />
 		</Card>
 	));
@@ -508,36 +508,36 @@ Misc.SavePublishDiscard = ({
 		<div className='SavePublishDiscard' title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
 			<Button name="save" color='default' disabled={isSaving || C.STATUS.isclean(localStatus)} onClick={() => ActionMan.saveEdits(type, id)}>
-				Save Edits <span className="fas fa-circle-notch spinning" style={vis} />
+				Save Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 			{saveAs ? <>&nbsp;
 				<Button name="save-as" color='default' disabled={isSaving}
 					title='Copy and save with a new ID'
 					onClick={confirmSaveAs} >
-					<small>Save As</small> <span className="fas fa-circle-notch spinning" style={vis} />
+					<small>Save As</small> <span className="fa fa-circle-notch spinning" style={vis} />
 				</Button>
 			</> : null}
 			&nbsp;
 			<Button name="publish" color='primary' disabled={disablePublish} title={publishTooltip}
 				onClick={() => ActionMan.publishEdits(type, id)}>
-				Publish Edits <span className="fas fa-circle-notch spinning" style={vis} />
+				Publish Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 			&nbsp;
 			<Button name="discard" color='warning' disabled={isSaving || noEdits}
 				onClick={() => ActionMan.discardEdits(type, id)}>
-				Discard Edits <span className="fas fa-circle-notch spinning" style={vis} />
+				Discard Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 			{unpublish && pubExists ? <>&nbsp;
 				<Button name="unpublish" color='warning' disabled={isSaving || noEdits}
 					title='Move from published to draft'
 					onClick={() => ActionMan.unpublish(type, id)} >
-					Un-Publish <span className="fas fa-circle-notch spinning" style={vis} />
+					Un-Publish <span className="fa fa-circle-notch spinning" style={vis} />
 				</Button>
 			</> : null}
 			&nbsp;
 			<Button name="delete" color='danger' disabled={disableDelete}
 				onClick={deleteAndRedirect} >
-				Delete <span className="fas fa-circle-notch spinning" style={vis} />
+				Delete <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 		</div>
 	);
@@ -592,7 +592,7 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, className='btn bt
 	return (
 		<button onClick={doSubmit} className={className} disabled={disabled} title={title}>
 			{children}
-			<span className="fas fa-circle-notch spinning" style={vis} />
+			<span className="fa fa-circle-notch spinning" style={vis} />
 		</button>
 	);
 };

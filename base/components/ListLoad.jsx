@@ -228,7 +228,7 @@ const DefaultDelete = ({type,id}) => (
 	<button className='btn btn-xs btn-default pull-right'
 		onClick={e => confirm("Delete this "+type+"?")? ActionMan.delete(type, id) : null}
 		title='Delete'>
-		<Misc.Icon prefix="fas" fa="trash-alt" />
+		<Misc.Icon fa="trash-alt" />
 	</button>
 );
 
@@ -299,7 +299,7 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 	return (<div className={props? 'well' : ''}>
 		{props? props.map(prop => <Misc.PropControl key={prop} label={prop} prop={prop} path={cpath} inline />) : null}
 		<button className="btn btn-default" name="create-item" onClick={() => createBlank({type,navpage,base,id,make})}>
-			<Misc.Icon prefix="fas" fa="plus-circle" /> Create
+			<Misc.Icon fa="plus-circle" /> Create
 		</button>
 	</div>);
 };

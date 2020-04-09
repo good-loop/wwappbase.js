@@ -195,7 +195,7 @@ const PropControl = (props) => {
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
-	const helpIcon = tooltip ? <Misc.Icon prefix="fas" fa="question-circle" title={tooltip} /> : '';
+	const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : '';
 	const optreq = optional ? <small className="text-muted">optional</small>
 		: required? <small className={value===undefined? 'text-danger' : null}>*</small> : null;
 	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
@@ -268,7 +268,7 @@ const PropControl2 = (props) => {
 			if (value==='true') value = true;
 			else if (value==='false') value = false;
 		}
-		const helpIcon = tooltip ? <Misc.Icon prefix="fas" fa='question-circle' title={tooltip} /> : null;
+		const helpIcon = tooltip ? <Misc.Icon fa='question-circle' title={tooltip} /> : null;
 
 		return <>
 			<FormGroup check inline>

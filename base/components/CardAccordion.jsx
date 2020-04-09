@@ -49,7 +49,7 @@ class Card extends React.Component {
 			let hoverText = null;
 			if (error && _.isString(error)) hoverText = error;
 			else if (warning && _.isString(warning)) hoverText = warning;
-			const caret = <Misc.Icon className='pull-right' prefix="fas" fa={`caret-${collapse ? 'down' : 'up'}`} />;
+			const caret = <Misc.Icon className='pull-right' fa={`caret-${collapse ? 'down' : 'up'}`} />;
 			header = (
 				<div className={onHeaderClick? 'btn-link' : null} onClick={onHeaderClick} title={hoverText}>
 					{(glyph || icon) ? <Misc.Icon glyph={glyph} fa={icon} /> : null}
