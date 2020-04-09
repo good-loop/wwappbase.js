@@ -122,6 +122,10 @@ const ListLoad = ({type, status, servlet, navpage,
 		
 		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
 
+		{servlet === 'vert' ?
+			<PropControl type="select" prop="sort" label="Sort" labels={['--', 'newest', 'oldest']} options={['', 'date-desc', 'date-asc']} dflt="--" path={['misc']} />
+		: ''}
+
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i}
@@ -139,6 +143,7 @@ const ListLoad = ({type, status, servlet, navpage,
 					servlet={servlet}
 					navpage={navpage}
 					item={item}
+					sort={DataStore.getValue(['misc', 'sort'])}
 				/>
 			</ListItemWrapper>
 		))}
