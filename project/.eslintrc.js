@@ -98,6 +98,7 @@ module.exports = {
 		"lines-between-class-members": "off",
 		"no-use-before-define": "off",
 		"no-var": "warn",
+		"one-var": "off",
 		"object-curly-newline": "off",
 		"object-curly-spacing": "off",
 		"object-property-newline": "off",
