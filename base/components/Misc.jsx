@@ -450,8 +450,8 @@ Misc.SavePublishDiscard = ({
 	}
 
 	// If setting enabled, will automatically publish every five seconds
-	if (autoPublish && C.STATUS.isdirty(localStatus)) {
-		Misc.publishDraftFn({type, id});
+	if (autoPublish && C.STATUS.isdirty(localStatus) && item.status !== 'ARCHIVED') {
+		// Misc.publishDraftFn({type, id});
 	}
 
 	// Sometimes we just want to autosave drafts!
