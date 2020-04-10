@@ -117,17 +117,42 @@ const ListLoad = ({type, status, servlet, navpage,
 		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
 	}
 
+	const filterByStatus = items => {
+		const targetStatus = DataStore.getValue(['misc', 'showByStatus']);
+		if (targetStatus === 'current')  return items.filter(item => item.status !== C.KStatus.ARCHIVED);
+		if (targetStatus === 'archived') return items.filter(item => item.status === C.KStatus.ARCHIVED);
+		return items;
+	}
+
 	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} /> : null}
 		
 		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
 
+		{/* Allows user to sort adverts on Portal */}
 		{servlet === 'vert' ?
-			<PropControl type="select" prop="sort" label="Sort" labels={['--', 'newest', 'oldest']} options={['', 'date-desc', 'date-asc']} dflt="--" path={['misc']} />
+			<><PropControl
+				type="select"
+				prop="sort"
+				label="Sort (sorting by date only applies to adverts created starting 04/20)"
+				labels={['--', 'newest', 'oldest']}
+				options={['', 'created-desc', 'created-asc']}
+				dflt="--"
+				path={['misc']}
+			/>
+			<PropControl
+				type="select"
+				prop="showByStatus"
+				label="Show/hide archived ads"
+				labels={['all', 'current', 'archived']}
+				options={['all', 'current', 'archived']}
+				dflt="all"
+				path={['misc']}
+			/></>
 		: ''}
 
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
-		{items.map( (item, i) => (
+		{filterByStatus(items).map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				item={item}
 				type={type}
