@@ -5,6 +5,7 @@ import Login from 'you-again';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
 import {LoginLink, RegisterLink} from './LoginWidget';
+import {isMobile} from '../utils/miscutils';
 
 // import {XId,yessy,uid} from '../js/util/orla-utils.js';
 
@@ -14,7 +15,7 @@ const doLogout = () => {
 	Login.logout();
 };
 
-/*
+/**
 The top-right menu
 active {boolean} true if on the account page
 account {boolean} true if we want to show the account option (true by default), needed by my-loop because it doesn't have an account page but needs logout
@@ -23,7 +24,6 @@ TODO use react for the dropdown state - not bootstrap.js
 */
 
 const AccountMenu = (props) => {
-	const isMobile = window.innerWidth <= 767;
 	const {noRegister} = (props || {});
 
 	// TODO see navbar dropdown
@@ -38,7 +38,7 @@ const AccountMenu = (props) => {
 
 	let user = Login.getUser();
 
-	return isMobile ? (
+	return isMobile() ? (
 		<MobileMenu {...props} user={user} />
 	) : (
 		<DesktopMenu {...props} user={user} />
