@@ -7,8 +7,12 @@ const randomPick = function(array)
 	return array[r];
 };
 
-const isMobile = ()  => {
-	return window.innerWidth <= 767;
+const isMobile = ()  => {		
+	const userAgent = navigator.userAgent || navigator.vendor || window.opera;
+	let _isMobile = userAgent.match('/mobile|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i');
+	return !! _isMobile;
+	// also for small browsers, for debug??
+	// return window.innerWidth <= 767;
 };
 
 export {
