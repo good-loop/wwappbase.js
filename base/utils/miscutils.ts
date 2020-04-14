@@ -1,5 +1,4 @@
 
-
 const randomPick = function(array)
 {
 	if ( ! array) return null;

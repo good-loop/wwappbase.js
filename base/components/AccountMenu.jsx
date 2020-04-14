@@ -5,7 +5,7 @@ import Login from 'you-again';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
 import {LoginLink, RegisterLink} from './LoginWidget';
-import {isMobile} from '../utils/miscutils';
+import {isMobile} from '../utils/miscutils.ts';
 
 // import {XId,yessy,uid} from '../js/util/orla-utils.js';
 
