@@ -291,6 +291,8 @@ const serverStatusForAction = (action) => {
 			return C.KStatus.PUBLISHED;
 		case C.CRUDACTION.unpublish:
 			return C.KStatus.DRAFT;
+		case C.CRUDACTION.archive:
+			return C.KStatus.ARCHIVED;
 	}
 	throw new Error("TODO serverStatusForAction "+action);
 };
@@ -300,6 +302,8 @@ ServerIO.crud = function(type, item, action) {
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
 	const status = serverStatusForAction(action);
+	// HACK, 'archive' is the same as 'save' except for the status.
+	if (action === C.CRUDACTION.archive) action = C.CRUDACTION.save;
 	let params = {
 		method: 'POST',
 		data: {
@@ -325,6 +329,9 @@ ServerIO.publishEdits = function(type, item) {
 ServerIO.discardEdits = function(type, item) {
 	return ServerIO.crud(type, item, C.CRUDACTION.discardEdits);
 };
+ServerIO.archive = function(type, item) {
+	return ServerIO.crud(type, item, 'archive');
+}
 
 /**
  * get an item from the backend -- does not save it into DataStore
