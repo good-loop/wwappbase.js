@@ -1,7 +1,7 @@
 import React from 'react';
 import { assMatch } from 'sjtest';
 import Login from 'you-again';
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
 import { stopEvent, toTitleCase } from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
