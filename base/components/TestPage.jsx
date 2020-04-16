@@ -3,7 +3,6 @@
  * This is not a replacement for proper unit testing - but it is a lot better than debugging via repeated top-level testing.
  */
 import React, {useState} from 'react';
-import ReactDOM from 'react-dom';
 
 import SJTest, {assert} from 'sjtest';
 import Login from 'you-again';

@@ -331,7 +331,7 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 		return (
 			<div>
 				<p>Logged in as {user.name || user.xid}</p>
-				<small>Not you? <button className="btn-link" onClick={() => Login.logout()}>Log out</button></small>
+				<small>Not you? <Button color="link" onClick={() => Login.logout()}>Log out</Button></small>
 			</div>);
 	}
 
