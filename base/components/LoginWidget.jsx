@@ -1,7 +1,7 @@
 import React from 'react';
 import { assMatch } from 'sjtest';
 import Login from 'you-again';
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
 import { stopEvent, toTitleCase } from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
@@ -331,7 +331,7 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 		return (
 			<div>
 				<p>Logged in as {user.name || user.xid}</p>
-				<small>Not you? <button className="btn-link" onClick={() => Login.logout()}>Log out</button></small>
+				<small>Not you? <Button color="link" onClick={() => Login.logout()}>Log out</Button></small>
 			</div>);
 	}
 

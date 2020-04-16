@@ -61,7 +61,7 @@ ActionMan.crud = ({type, id, action, item}) => {
 	return ServerIO.crud(type, item, action)
 		.then(res => {
 			// update
-			let hits = DataStore.updateFromServer(res, status)
+			let hits = DataStore.updateFromServer(res, status);
 			if (action==='publish') { // } && DataStore.getData(C.KStatus.DRAFT, type, id)) {
 				// also update the draft version
 				let pubItem = DataStore.getValue(pubpath);
@@ -302,8 +302,6 @@ ServerIO.crud = function(type, item, action) {
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
 	const status = serverStatusForAction(action);
-	// HACK, 'archive' is the same as 'save' except for the status.
-	if (action === C.CRUDACTION.archive) action = C.CRUDACTION.save;
 	let params = {
 		method: 'POST',
 		data: {
@@ -331,7 +329,7 @@ ServerIO.discardEdits = function(type, item) {
 };
 ServerIO.archive = function(type, item) {
 	return ServerIO.crud(type, item, 'archive');
-}
+};
 
 /**
  * get an item from the backend -- does not save it into DataStore
@@ -456,4 +454,4 @@ const CRUD = {
 export default CRUD;
 export {
 	errorPath
-}
+};
