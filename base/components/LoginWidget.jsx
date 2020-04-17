@@ -72,6 +72,8 @@ const RegisterLink = ({className, onClick, ...props}) => <LoginLink
 	{...props}
 />;
 
+// NB: not using useState here 'cos LoginLink (and similar) has to be able to
+// trigger opening via setShowLogin(true)
 const getShowLogin = () => DataStore.getValue(['widget', 'LoginWidget', 'show']);
 const setShowLogin = show => DataStore.setValue(['widget', 'LoginWidget', 'show'], show);
 const setLoginVerb = verb => DataStore.setValue(VERB_PATH, verb);

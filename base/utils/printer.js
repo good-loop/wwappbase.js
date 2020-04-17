@@ -81,13 +81,14 @@ Printer.prototype.str = function (object) {
 
 
 function escapeCircularReferences(object, cache) {
+	if ( ! object) return null;
 	var escapedObject;
 
 	if (!cache) {
 		cache = [];
 	}
 
-	if (object instanceof jQuery) {
+	if (object.jquery) {
 		return '{jQuery}';
 	} else if (_.isObject(object)) {
 		if (cache.indexOf(object) > -1) {
