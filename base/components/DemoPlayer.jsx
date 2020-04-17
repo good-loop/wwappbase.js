@@ -1,3 +1,4 @@
+// TODO move this into the demoproject
 import React, { useState, useRef, useCallback, useEffect, createRef, memo } from "react";
 import { Row, Col, Button, UncontrolledAlert } from "reactstrap";
 import { landscapeSvg, desktopSvg, portraitSvg } from "./DemoSvg";
@@ -145,7 +146,7 @@ const DemoPlayer = ({ vertId, production, noSocial, adBlockerDetected }) => {
 	);
 };
 
-
+// FIXME how does this relate to GoodLoopAd.jsx??
 const GoodLoopAd = memo(({ vertId, size, nonce, production, social }) => {
 	let prefix = '';
 	if (window.location.hostname.match(/^local/)) prefix = 'local';

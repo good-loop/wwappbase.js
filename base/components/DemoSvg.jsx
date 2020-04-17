@@ -1,3 +1,5 @@
+
+// TODO move this into the demo project
 import React from 'react';
 
 const landscapeSvg = (
