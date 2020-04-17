@@ -84,6 +84,23 @@ const ListLoad = ({type, status, servlet, navpage,
 	// Load via ActionMan -- both filtered and un-filtered
 	let pvItems = ActionMan.list({type, status, q, prefix:filter, sort});
 	let pvItemsAll = ActionMan.list({type, status, q, sort});
+	let pvItemsArchived = ActionMan.list({ type, status: C.KStatus.ARCHIVED, q, sort });
+
+	// Filter the full list of results according to criterion compared to list of archived items.
+	const filterByStatusGroup = (hits) => {
+		const adGroup = DataStore.getValue(['misc', 'showByStatus']) || 'nonArchived';
+
+		if ( ! pvItemsArchived.resolved ) return hits;
+		const archivedIdArray = pvItemsArchived.value.hits.map(e => e.id);
+
+		if (adGroup === 'archived') {
+			return hits.filter( hit => archivedIdArray.includes(hit.id));
+		}
+		if (adGroup === 'nonArchived') {
+			return hits.filter( hit => !archivedIdArray.includes(hit.id));
+		}
+		return hits;
+	};
 
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
@@ -94,7 +111,8 @@ const ListLoad = ({type, status, servlet, navpage,
 	let itemForId = {};
 	let hits = pvItems.resolved? pvItems.value && pvItems.value.hits : pvItemsAll.value && pvItemsAll.value.hits;
 	if (hits) {
-		const fastFilter =  ! pvItems.resolved;
+		const fastFilter = ! pvItems.resolved;
+		hits = filterByStatusGroup(hits);
 		hits.forEach(item => {
 			// fast filter via stringify
 			let sitem = null;
@@ -117,13 +135,6 @@ const ListLoad = ({type, status, servlet, navpage,
 		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
 	}
 
-	const filterByStatus = items => {
-		const targetStatus = DataStore.getValue(['misc', 'showByStatus']);
-		if (targetStatus === 'current')  return items.filter(item => item.status !== C.KStatus.ARCHIVED);
-		if (targetStatus === 'archived') return items.filter(item => item.status === C.KStatus.ARCHIVED);
-		return items;
-	}
-
 	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} /> : null}
 		
@@ -131,28 +142,30 @@ const ListLoad = ({type, status, servlet, navpage,
 
 		{/* Allows user to sort adverts on Portal */}
 		{servlet === 'vert' ?
-			<><PropControl
-				type="select"
-				prop="sort"
-				label="Sort (sorting by date only applies to adverts created starting 04/20)"
-				labels={['--', 'newest', 'oldest']}
-				options={['', 'created-desc', 'created-asc']}
-				dflt="--"
-				path={['misc']}
-			/>
-			<PropControl
-				type="select"
-				prop="showByStatus"
-				label="Show/hide archived ads"
-				labels={['all', 'current', 'archived']}
-				options={['all', 'current', 'archived']}
-				dflt="all"
-				path={['misc']}
-			/></>
-		: ''}
+			<>
+				<PropControl
+					type="select"
+					prop="sort"
+					label="Sort (sorting by date only applies to adverts created starting 04/20)"
+					labels={['--', 'newest', 'oldest']}
+					options={['', 'created-desc', 'created-asc']}
+					dflt="--"
+					path={['misc']}
+				/>
+				<PropControl
+					type="select"
+					prop="showByStatus"
+					label="Show/hide archived ads"
+					labels={['non-archived', 'archived', 'all']}
+					options={['nonArchived', 'archived', 'all']}
+					dflt="nonArchived"
+					path={['misc']}
+				/>
+			</>
+			: ''}
 
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
-		{filterByStatus(items).map( (item, i) => (
+		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				item={item}
 				type={type}
@@ -233,7 +246,7 @@ const A = ({notALink, id, children, ...stuff}) => notALink? <div key={'Ad'+id} {
  * 	TODO If it's of a data type which has getName(), default to that
  * @param extraDetail {Element} e.g. used on AdvertPage to add a marker to active ads
  */
-const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, nameFn, extraDetail}) => {
+const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, nameFn, extraDetail, button}) => {
 	if ( ! navpage) navpage = servlet;
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
@@ -249,6 +262,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 					id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
 					<Misc.Time time={item.created} />
 				</div>
+				{ button || '' }
 			</div>
 		</div>
 	);
