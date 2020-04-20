@@ -218,6 +218,14 @@ const preCrudListMod = ({type, id, item, action}) => {
 			recursivePruneFromTreeOfLists(item, domainQuerySortList);
 		});
 	} // ./action=delete
+
+	if (action === 'archive') {
+		const path = listPath({type, status: 'ARCHIVED'});
+		const list = DataStore.getValue(path);
+		if (!list) return;
+		List.add(item, list, 0);
+		DataStore.setValue(path, list);
+	}
 };
 
 /**
@@ -261,6 +269,8 @@ ActionMan.delete = (type, pubId) => {
 };
 
 ActionMan.archive = (type, item) => {
+	// optimistic list mod
+	preCrudListMod({type, item, action: 'archive'});
 	return ActionMan.crud({ type, item, action: C.CRUDACTION.archive });
 };
 
