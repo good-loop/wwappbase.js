@@ -146,7 +146,7 @@ const ListLoad = ({type, status, servlet, navpage,
 				<PropControl
 					type="select"
 					prop="sort"
-					label="Sort (sorting by date only applies to adverts created starting 04/20)"
+					label="Sort (sorting by date only applies to adverts created starting 05/20)"
 					labels={['none', 'newest', 'oldest']}
 					options={['', 'created-desc', 'created-asc']}
 					dflt="none"
