@@ -260,6 +260,10 @@ ActionMan.delete = (type, pubId) => {
 		});
 };
 
+ActionMan.archive = (type, item) => {
+	return ActionMan.crud({ type, item, action: C.CRUDACTION.archive });
+};
+
 // ServerIO //
 
 /**
