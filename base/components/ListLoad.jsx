@@ -90,7 +90,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	const filterByStatusGroup = (hits) => {
 		const adGroup = DataStore.getValue(['misc', 'showArchived']) ? 'archived' : 'nonArchived';
 
-		if ( ! pvItemsArchived.resolved ) return hits;
+		if ( ! pvItemsArchived.resolved || ! pvItemsArchived.value ) return hits;
 		const archivedIdArray = pvItemsArchived.value.hits.map(e => e.id);
 
 		if (adGroup === 'archived') {
