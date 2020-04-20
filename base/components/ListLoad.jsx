@@ -88,7 +88,7 @@ const ListLoad = ({type, status, servlet, navpage,
 
 	// Filter the full list of results according to criterion compared to list of archived items.
 	const filterByStatusGroup = (hits) => {
-		const adGroup = DataStore.getValue(['misc', 'showByStatus']) || 'nonArchived';
+		const adGroup = DataStore.getValue(['misc', 'showArchived']) ? 'archived' : 'nonArchived';
 
 		if ( ! pvItemsArchived.resolved ) return hits;
 		const archivedIdArray = pvItemsArchived.value.hits.map(e => e.id);
@@ -99,7 +99,6 @@ const ListLoad = ({type, status, servlet, navpage,
 		if (adGroup === 'nonArchived') {
 			return hits.filter( hit => !archivedIdArray.includes(hit.id));
 		}
-		console.log('pvItemsArchived: ', pvItemsArchived);
 		return hits;
 	};
 
@@ -143,26 +142,23 @@ const ListLoad = ({type, status, servlet, navpage,
 
 		{/* Allows user to sort adverts on Portal */}
 		{servlet === 'vert' ?
-			<>
+			<div className="sort-archive-form">
 				<PropControl
 					type="select"
 					prop="sort"
 					label="Sort (sorting by date only applies to adverts created starting 04/20)"
-					labels={['--', 'newest', 'oldest']}
+					labels={['none', 'newest', 'oldest']}
 					options={['', 'created-desc', 'created-asc']}
-					dflt="--"
+					dflt="none"
 					path={['misc']}
 				/>
-				<PropControl
-					type="select"
-					prop="showByStatus"
-					label="Show/hide archived ads"
-					labels={['non-archived', 'archived', 'all']}
-					options={['nonArchived', 'archived', 'all']}
-					dflt="nonArchived"
+				<PropControl 
+					type="checkbox"
+					prop="showArchived"
+					label="Show archived ads"
 					path={['misc']}
 				/>
-			</>
+			</div>
 			: ''}
 
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
