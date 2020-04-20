@@ -94,11 +94,12 @@ const ListLoad = ({type, status, servlet, navpage,
 		const archivedIdArray = pvItemsArchived.value.hits.map(e => e.id);
 
 		if (adGroup === 'archived') {
-			return hits.filter( hit => archivedIdArray.includes(hit.id));
+			return pvItemsArchived.value.hits;
 		}
 		if (adGroup === 'nonArchived') {
 			return hits.filter( hit => !archivedIdArray.includes(hit.id));
 		}
+		console.log('pvItemsArchived: ', pvItemsArchived);
 		return hits;
 	};
 
@@ -198,11 +199,24 @@ const onPick = ({event, navpage, id, customParams}) => {
 	customParams ? modifyHash([navpage,null],customParams) : modifyHash([navpage,id]);
 };
 
+const archiveOrPublishItem = (advert, isArchived) => {
+	const confirmationMessage = `Are you sure you want to ${isArchived ? 're-publish' : 'archive'} this advert?`; 
+	const confirmed = confirm(confirmationMessage);
+	if (confirmed) {
+		if (isArchived) ActionMan.publishEdits(C.TYPES.Advert, advert);
+		ActionMan.archive(C.TYPES.Advert, advert);
+	}
+};
+
 /**
  * checkbox, delete, on-click a wrapper
  */
 const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName}) => {
 	const id = getId(item);
+
+	const isArchived = DataStore.getValue(['misc', 'showByStatus']) === 'archived';
+	const buttonText = isArchived ? 're-publish' : 'archive';
+	const archiveButton = <button type="button" onClick={() => archiveOrPublishItem(item, isArchived)}>{ buttonText }</button>;
 
 	// TODO refactor this Portal specific code out of here.
 	// for the campaign page we want to manipulate the url to modify the vert/vertiser params
@@ -231,6 +245,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 			>
 				<div key={`Adiv${id}`}>{children}</div>
 			</A>
+			{ servlet === 'vert' && isArchived && id !== 'default-advert' ? '' : archiveButton }
 		</div>
 	);
 };
