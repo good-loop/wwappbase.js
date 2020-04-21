@@ -12,7 +12,12 @@ const isMobile = ()  => {
 	return !! _isMobile;
 };
 
+/**  */
+const isPortraitMobile = () => window.matchMedia("only screen and (max-width: 768px)").matches && window.matchMedia("(orientation: portrait)").matches;
+
+
 export {
 	randomPick,
-	isMobile
+	isMobile,
+	isPortraitMobile
 };
