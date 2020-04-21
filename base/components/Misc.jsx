@@ -497,7 +497,7 @@ Misc.SavePublishDiscard = ({
 		const pDel = ActionMan.delete(type, id);
 		pDel.then(() => {
 			Messaging.notifyUser(type+" "+id+" deleted");
-		})		
+		})
 		// To be extra safe we'll redirect back to the origin, preserving any params already present
 		const currentUrl = new URL(window.location);
 		window.location.href = (currentUrl.origin + '/' + currentUrl.search)

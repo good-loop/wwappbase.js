@@ -10,22 +10,20 @@ import ServerIO from '../plumbing/ServerIOBase';
 
 
 // For testing
-if ( (""+window.location).indexOf('login=local') !== -1) {
+if (window.location.href.match(/login=local/)) {
 	Login.ENDPOINT = 'http://localyouagain.good-loop.com/youagain.json';
-	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
-} else if ( (""+window.location).indexOf('login=test') !== -1) {
+	console.warn('config', `Set you-again Login endpoint to ${Login.ENDPOINT}`);
+} else if (window.location.href.match(/login=test/)) {
 	Login.ENDPOINT = 'https://test.youagain.good-loop.com/youagain.json';
-	console.warn("config", "Set you-again Login endpoint to "+Login.ENDPOINT);
+	console.warn('config', `Set you-again Login endpoint to ${Login.ENDPOINT}`);
 }
 
-const VERB_PATH = ['widget','LoginWidget','verb'];
 
-// Convenience: Stop propagation and prevent default on an event, null-safe
-const killEvent = e => {
-	if (!e) return;
-	e.stopPropagation && e.stopPropagation();
-	e.preventDefault && e.preventDefault();
-}
+const WIDGET_PATH = ['widget', 'LoginWidget', 'verb'];
+const SHOW_PATH = [...WIDGET_PATH, 'show'];
+const VERB_PATH = [...WIDGET_PATH, 'verb'];
+const STATUS_PATH = [...WIDGET_PATH, 'status'];
+
 
 /** Pretty names for the available verbs  */
 const displayVerb = {
@@ -36,19 +34,97 @@ const displayVerb = {
 	connect: "Connect"
 };
 
+/** As above, but for a button */
+const verbButtonLabels = {
+	login: 'Log In',
+	register: 'Register',
+	reset: 'Reset password',
+};
+
+/** Services you can connect through */
+const canSignIn = {
+	facebook: true,
+	instagram: true,
+	twitter: true,
+};
+
+
+/** True if the login widget is open */
+const getShowLogin = () => DataStore.getValue(SHOW_PATH);
+/** Open or close the login widget */
+const setShowLogin = show => DataStore.setValue(SHOW_PATH, show);
+/** Set the login widget's mode - eg login, register, reset */
+const setLoginVerb = verb => DataStore.setValue(VERB_PATH, verb);
+
+const socialLogin = (service) => {
+	// Special behaviour for My-Loop/Portal
+	// Doing it this way seemed the most maintainable option
+	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag:'Social login clicked ' + service});
+	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
+	// auth doesnt return a future, so rely on Login's change listener
+	// to close stuff.
+}; // ./socialLogin
+
+
+/**
+ * ajax call -- via Login.login() -- to login
+ */
+const emailLogin = ({verb, app, email, password, onRegister}) => {
+	assMatch(email, String, password, String);
+	const call = (verb === 'register') ? (
+		Login.register({email:email, password:password})
+	) : (
+		Login.login(email, password)
+	);
+
+	DataStore.setValue(STATUS_PATH, C.STATUS.loading);
+
+	call.then(function(res) {
+		console.warn("login", res);
+		DataStore.setValue(STATUS_PATH, C.STATUS.clean);
+		if (Login.isLoggedIn()) {
+			// close the dialog on success
+			setShowLogin(false);
+			// Security: wipe the password from DataStore
+			DataStore.setValue(['data', C.TYPES.User, 'loggingIn', 'password'], null);
+
+			if(verb === 'register' && onRegister) {
+				onRegister({...res, email});
+			}
+		} else {
+			// poke React via DataStore (e.g. for Login.error)
+			DataStore.update({});
+		}
+	}, err => {
+		DataStore.setValue(STATUS_PATH, C.STATUS.clean);
+	});
+};
+
+
+
+
+// Convenience: Stop propagation and prevent default on an event, null-safe
+const killEvent = e => {
+	if (!e) return;
+	e.stopPropagation && e.stopPropagation();
+	e.preventDefault && e.preventDefault();
+}
+
+
+
 /**
 	TODO:
 	- doEmailLogin(email, password) and doSocialLogin(service) are available as props now
 	- Use them in the appropriate section of the form
 */
 
-const STATUS_PATH = ['widget', 'LoginWidget', 'status'];
+
 
 /**
  * @param {String} verb "login"|"register"
  */
 const LoginLink = ({className, onClick, style, verb, children}) => {
-	if ( ! verb && ! children) verb = 'login';
+	if (!verb && !children) verb = 'login';
 	
 	const onClick2 = e => {
 		killEvent(e);
@@ -67,16 +143,15 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 // ??why does this have a special onClick??
 const RegisterLink = ({className, onClick, ...props}) => <LoginLink
 	className={className}
-	onClick={() => {props.onClick && props.onClick(); LoginWidget.changeVerb('register');}}
-	verb='Register'
+	onClick={() => {
+		props.onClick && props.onClick();
+		setLoginVerb('register');
+	}}
+	verb="Register"
 	{...props}
 />;
 
-// NB: not using useState here 'cos LoginLink (and similar) has to be able to
-// trigger opening via setShowLogin(true)
-const getShowLogin = () => DataStore.getValue(['widget', 'LoginWidget', 'show']);
-const setShowLogin = show => DataStore.setValue(['widget', 'LoginWidget', 'show'], show);
-const setLoginVerb = verb => DataStore.setValue(VERB_PATH, verb);
+
 
 /**
 	Log In or Register (one widget)
@@ -109,21 +184,6 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services}
 	);
 }; // ./LoginWidget
 
-LoginWidget.show = () => {
-	DataStore.setValue(['widget','LoginWidget', 'show'], true);
-};
-
-LoginWidget.hide = () => {
-	DataStore.setValue(['widget','LoginWidget', 'show'], false);
-};
-
-LoginWidget.changeVerb = verb => DataStore.setValue(VERB_PATH, verb);
-
-const canSignIn = {
-	facebook: true,
-	instagram: true,
-	twitter: true,
-};
 
 const SocialSignin = ({verb, services}) => {
 	if (verb === 'reset') return null;
@@ -168,46 +228,7 @@ const SocialSignInButton = ({className = "btn signin", children, service, verb =
 };
 
 
-const socialLogin = (service) => {
-	// Special behaviour for My-Loop/Portal
-	// Doing it this way seemed the most maintainable option
-	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag:'Social login clicked ' + service});
-	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
-	// auth doesnt return a future, so rely on Login's change listener
-	// to close stuff.
-}; // ./socialLogin
 
-/**
- * ajax call -- via Login.login() -- to login
- */
-LoginWidget.emailLogin = ({verb, app, email, password, onRegister}) => {
-	assMatch(email, String, password, String);
-	let call = verb==='register'?
-		Login.register({email:email, password:password})
-		: Login.login(email, password);
-	
-	DataStore.setValue(STATUS_PATH, C.STATUS.loading);
-
-	call.then(function(res) {
-		console.warn("login", res);
-		DataStore.setValue(STATUS_PATH, C.STATUS.clean);
-		if (Login.isLoggedIn()) {
-			// close the dialog on success
-			LoginWidget.hide();
-			// Security: wipe the password from DataStore
-			DataStore.setValue(['data', C.TYPES.User, 'loggingIn', 'password'], null);
-
-			if(verb === 'register' && onRegister) {
-				onRegister({...res, email});
-			}
-		} else {
-			// poke React via DataStore (e.g. for Login.error)
-			DataStore.update({});
-		}
-	}, err => {
-		DataStore.setValue(STATUS_PATH, C.STATUS.clean);
-	});
-};
 
 /**
  * @param onSignIn called after user has successfully registered and been logged in
@@ -241,15 +262,8 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 			});
 			return;
 		}
-		LoginWidget.emailLogin({verb, onRegister, ...person});
+		emailLogin({verb, onRegister, ...person});
 	};
-
-	const buttonText = {
-		login: 'Log In',
-		register: 'Register',
-		reset: 'Reset password',
-	}[verb];
-
 
 	const emailField = (
 		<div className="form-group">
@@ -262,9 +276,9 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 
 	const submitGroup = (
 		<div className="form-group">
-			<button type="submit" className="btn btn-lg btn-primary" disabled={C.STATUS.isloading(status)}>
-				{buttonText}
-			</button>
+			<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
+				{verbButtonLabels[verb]}
+			</Button>
 			{switchVerb}
 		</div>
 	);
@@ -333,7 +347,7 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 		return (
 			<div>
 				<p>Logged in as {user.name || user.xid}</p>
-				<small>Not you? <Button color="link" onClick={() => Login.logout()}>Log out</Button></small>
+				<small>Not you? <Button color="link" size="sm" onClick={() => Login.logout()}>Log out</Button></small>
 			</div>);
 	}
 
@@ -347,10 +361,10 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
 	let explain = (verb === 'register') ? 'Already have an account?' : 'Don\'t yet have an account?';
 	let switchText = {register: 'Log In', login: 'Register'}[verb];
-	let doIt = e => stopEvent(e) && LoginWidget.changeVerb({login: 'register', register: 'login'}[verb]);
+	let doIt = e => stopEvent(e) && setLoginVerb({login: 'register', register: 'login'}[verb]);
 
 	return (
-		<div className='switch-verb'>
+		<div className="switch-verb">
 			<small>{explain}</small><br/>
 			<a href='#' onClick={doIt}>{switchText}</a>
 		</div>
@@ -378,4 +392,17 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 
 
 export default LoginWidget;
-export {LoginLink, LoginWidgetEmbed, RegisterLink, SocialSignInButton, EmailSignin, SocialSignin, VERB_PATH};
+export {
+	LoginLink,
+	LoginWidgetEmbed,
+	RegisterLink,
+	SocialSignInButton,
+	EmailSignin,
+	SocialSignin,
+	VERB_PATH,
+	getShowLogin,
+	setShowLogin,
+	setLoginVerb,
+	emailLogin,
+	socialLogin
+};
