@@ -94,7 +94,7 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 	const itemElements = list.map((item, index) => (
 		<Card className="item-editor" key={'item' + index}>
 			{item.name ? <h4>{index}. {item.name}</h4> : null}
-			<button onClick={e => remove(index)} className='btn btn-danger btn-xs pull-right'><Misc.Icon fa='trash-alt'/></button>
+			<button onClick={e => remove(index)} className='btn btn-danger btn-xs pull-right'><Misc.Icon fa='trash'/></button>
 			<ItemEditor i={index} item={item} path={path.concat(index)} list={list} {...stuff} />
 		</Card>
 	));

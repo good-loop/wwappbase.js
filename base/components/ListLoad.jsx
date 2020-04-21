@@ -284,7 +284,7 @@ const DefaultDelete = ({type,id}) => (
 	<button className='btn btn-xs btn-default pull-right'
 		onClick={e => confirm("Delete this "+type+"?")? ActionMan.delete(type, id) : null}
 		title='Delete'>
-		<Misc.Icon fa="trash-alt" />
+		<Misc.Icon fa="trash" />
 	</button>
 );
 
