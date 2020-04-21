@@ -173,7 +173,7 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services}
 			className="login-modal"
 			toggle={() => setShowLogin(!show)}
 		>
-			<ModalHeader>
+			<ModalHeader toggle={() => setShowLogin(!show)}>
 				<Misc.Logo service={C.app.service} url={logo} transparent={false} className='pull-left m-r1' />
 				{' '}{title}
 			</ModalHeader>

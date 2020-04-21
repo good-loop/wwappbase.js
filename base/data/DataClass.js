@@ -257,7 +257,9 @@ Meta.get = (obj, fieldName) => {
  */
 const nonce = (n=10) => {
 	const s = [];
-	const az = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	// letters for clarity or randomness?
+	const az = n < 7? "23456789abcdefghijkmnpqrstuvwxyz" // lowercase and no o01l for safer transmission
+		: "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ";
 	for (let i = 0; i < n; i++) {
 		s[i] = az.substr(Math.floor(Math.random() * az.length), 1);
 	}
