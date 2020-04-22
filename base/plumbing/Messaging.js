@@ -11,15 +11,20 @@ import printer from '../utils/printer';
 const jsxFromId = {};
 const filters = [];
 
+class Msg {
+	type;
+	text;
+	id;
+	details;
+	/**
+	 * @type {?String[]|Boolean} TODO only show for this path (e.g. page + slug)
+	 */
+	path;
+	jsx;
+}
+
 /**
- * {
- * 	type
- * 	text
- *  jsx
- *  details
- * 	id
- *  path: {?String[]|Boolean} TODO only show for this path (e.g. page + slug)
- * }
+ @param {Msg} msgOrError
  */
 const notifyUser = msgOrError => {
 	// defer the call, so that this can be called within a render, and not upset react with nested updates.
