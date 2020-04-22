@@ -269,7 +269,7 @@ case $1 in
 		PROJECT='calstat'
 		PRODUCTION_SERVERS=(hugh.soda.sh)
 		TEST_SERVERS=(hugh.soda.sh)
-		PROJECT_LOCATION="/home/$USER/winterwell/calstat.good-loop.com"
+		PROJECT_LOCATION="/home/$USER/winterwell/calstat"
 		TARGET_DIRECTORY='/home/winterwell/calstat.good-loop.com'
 		IMAGE_OPTIMISE='no'
 		CONVERT_LESS='yes'
