@@ -665,7 +665,7 @@ const CSVDownload = ({tableName, visibleColumns, topRow, addTotalRow, dataTree, 
 		let dataArray = createCSVData({visibleColumns, topRow, addTotalRow, dataTree, bottomRow});
 		let csv = dataArray.map(r => r.join? r.map(cell => csvEscCell(cell)).join(",") : ""+r).join("\r\n");
 		let csvLink = 'data:text/csv;charset=utf-8,'+csv;	
-		console.log(e, e.target, $a, ref, csv, csvLink);
+		// console.log(e, e.target, $a, ref, csv, csvLink);
 		e.target.setAttribute('href', csvLink);
 	};
 	// NB the entity below is the emoji "Inbox Tray" glyph, U+1F4E5
