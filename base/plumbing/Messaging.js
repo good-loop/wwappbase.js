@@ -45,11 +45,13 @@ const notifyUser2 = (msgOrError) => {
 	if (msg.path===true) {
 		msg.path = DataStore.getValue(['location','path']);
 	}
+	// console
+	if (msgOrError.type==='error') console.error(msgOrError); else console.log(msgOrError);
 
 	// Filter the message (default: no filters, allow all)
 	// If any filter returns false, don't post the message
 	const allow = filters.reduce((acc, filterFn) => (acc && filterFn(msg)), true);
-	if (!allow) {
+	if ( ! allow) {
 		console.log('Messaging.js - message filtered out', msg);
 		return;
 	}
