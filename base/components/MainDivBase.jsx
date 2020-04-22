@@ -25,19 +25,27 @@ DataStore.update({
 });
 
 // Set up login + watcher here, at the highest level
-Login.app = C.app.service;
-Login.change(() => {
-	// ?? should we store and check for "Login was attempted" to guard this??
-	if (Login.isLoggedIn()) {
-		// close the login dialog on success		
-		setShowLogin(false);
-	} else {
-		// poke React via DataStore (e.g. for Login.error)
-		DataStore.update({});
-	}
-});
-// Are we logged in?
-Login.verify();
+// But after app code finishes loading (so use a timeout)
+let initFlag = false;
+const init = () => {
+	if (initFlag) return;
+	initFlag = true;
+
+	Login.app = C.app.service;
+
+	Login.change(() => {
+		// ?? should we store and check for "Login was attempted" to guard this??
+		if (Login.isLoggedIn()) {
+			// close the login dialog on success		
+			setShowLogin(false);
+		} else {
+			// poke React via DataStore (e.g. for Login.error)
+			DataStore.update({});
+		}
+	});
+	// Are we logged in?
+	Login.verify();
+};
 
 /**
 		Top-level: tabs
@@ -65,7 +73,11 @@ class MainDivBase extends Component {
 	}
 
 	render() {
-		const {pageForPath, navbarPages, securityCheck, SecurityFailPage, defaultPage} = this.props;
+		init();
+		let {pageForPath, navbarPages, securityCheck, SecurityFailPage, defaultPage} = this.props;		
+		if ( ! navbarPages) {
+			navbarPages = Object.keys(pageForPath);
+		}
 		// which page?
 		let path = DataStore.getValue('location', 'path');
 		let page = (path && path[0]);
