@@ -1,6 +1,8 @@
 import DataStore from '../plumbing/DataStore';
 
-/** Will set DataStore flag if the user has adblock enabled */
+/** Will set DataStore flag if the user has adblock enabled 
+ * @param {String[]} path - Where to set true/false
+*/
 const DetectAdBlock = ({path}) => {
 	const $script = document.createElement('script');
 	// Based on https://www.detectadblock.com/
