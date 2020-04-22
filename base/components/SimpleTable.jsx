@@ -1,14 +1,19 @@
 /*
-	Copying a little bit of react-table
-	Because react-table was causing my system to crash.
-	See https://github.com/react-tools/react-table#example
+	This started by because react-table was causing my system to crash.
+	But it has grown arms and legs!
+
+	TODO refactor tableSettings to be simpler.
+
+	TODO refactor so that csv creation is done separately from table rendering.
+
+	NB: see https://github.com/react-tools/react-table#example
 */
 
 // TODO it might be worth supporting one of these similar? same? formats
 // http://specs.dataatwork.org/json-table-schema/
 // https://frictionlessdata.io/specs/table-schema/
 
-import React from 'react';
+import React, { useState } from 'react';
 
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
@@ -16,7 +21,7 @@ import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import {asNum, join} from 'wwutils';
+import {asNum, join, stopEvent} from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType, nonce } from '../data/DataClass';
 import Tree from '../data/Tree';
@@ -101,11 +106,11 @@ class SimpleTable extends React.Component {
 			topRow,
 			bottomRow, 
 			hasFilter, hasCollapse,
-			rowsPerPage, statePath,
+			rowsPerPage, 
+			statePath, // Is this used??
 			hideEmpty,
 			scroller, // if true, use fix col-1 scrollbars
 			showSortButtons=true,
-			page=0
 		} = this.props;
 
 		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
@@ -120,7 +125,7 @@ class SimpleTable extends React.Component {
 		let tableSettings = this.state;
 		if (statePath) {
 			tableSettings = DataStore.getValue(statePath);
-			normalSetState = this.setState;
+			// normalSetState = this.setState;
 			this.setState = ns => {
 				let ts = DataStore.getValue(statePath) || {};
 				ts = Object.assign(ts, ns); // merge with other state settings
@@ -131,6 +136,8 @@ class SimpleTable extends React.Component {
 			tableSettings = {nonce:nonce()};
 			_.defer(() => this.setState(tableSettings));
 		}
+		// page?
+		let [page, setPage] = [tableSettings.page || 0, p => this.setState({page:p})]; // useState(0) - not within a Component;
 
 		// filter and sort
 		let {dataTree:fdataTree,visibleColumns} = rowFilter({dataTree, hasCollapse, columns, tableSettings, hideEmpty, rowsPerPage});
@@ -189,11 +196,19 @@ class SimpleTable extends React.Component {
 
 	</thead>
 
-	<tbody>
-		<Rows dataTree={dataTree} tableSettings={tableSettings} csv={csv} rowsPerPage={rowsPerPage} page={page} visibleColumns={visibleColumns} dataArray={dataArray} />
+	<tbody>		
+		<Rows 
+			dataTree={dataTree} 
+			tableSettings={tableSettings} 
+			csv={csv} 
+			rowsPerPage={rowsPerPage} 
+			page={page} 
+			visibleColumns={visibleColumns} 
+			dataArray={dataArray} 
+		/>
 		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
 	</tbody>
-	<TableFoot csv={csv} tableName={tableName} dataArray={dataArray} numPages={numPages} page={page} colSpan={visibleColumns.length} />
+	<TableFoot csv={csv} tableName={tableName} dataArray={dataArray} numPages={numPages} page={page} setPage={setPage} colSpan={visibleColumns.length} />
 </table>
 						</div>
 					</div>
@@ -612,16 +627,26 @@ const Editor = ({row, column, value, item}) => {
 const CellFormat = new Enum("percent pounds string"); // What does a spreadsheet normally offer??
 
 
-const TableFoot = ({csv, tableName, dataArray, numPages, colSpan, page=0}) => {
+const TableFoot = ({csv, tableName, dataArray, numPages, colSpan, page, setPage}) => {
 	if ( ! csv && numPages < 2) {
 		return null;
 	}
 	return (<tfoot><tr>
 		<td colSpan={colSpan}>
-			{numPages > 1? <div className='pull-left'>Page {page+1} of {numPages}</div> : null}
+			{numPages > 1? <TableFootPager page={page} setPage={setPage} numPages={numPages} /> : null}
 			{csv? <div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div> : null}
 		</td>
 	</tr></tfoot>);
+};
+
+const TableFootPager = ({page,setPage,numPages}) => {
+	return (<div className='pull-left'>		
+		Page  
+		&nbsp; {page > 0? <a href='' onClick={e => stopEvent(e) && setPage(page-1)} >&lt;</a> : <span className='disabled'>&lt;</span>} 
+		&nbsp; {page+1}
+		&nbsp; {page+1 < numPages? <a href='' onClick={e => stopEvent(e) && setPage(page+1)}>&gt;</a> : <span className='disabled'>&gt;</span>}
+		&nbsp; of {numPages} 
+	</div>);
 };
 
 const CSVDownload = ({tableName, columns, data, dataArray}) => {

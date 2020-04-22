@@ -18,34 +18,11 @@ import Tree from '../../base/data/Tree';
 
 import PV from 'promise-value';
 
-const MyAjaxWidget = () => {
-	// What is the state?
-	let [pvMyAjaxData, setpvMyAjaxData] = useState();
-	// Hack: a dummy state var to trigger a react update
-	let [dummy, setDummy] = useState();
-	if ( ! pvMyAjaxData) {
-		// Start the ajax call!
-		const pAjax = $.get("https://mysite.com/endpoint?foo=blah");		
-		pvMyAjaxData = new PV(pAjax);
-		setpvMyAjaxData(pvMyAjaxData); // set it, so we won't keep calling the server
-		// trigger a react render when done (inc on error)
-		pAjax.then(() => setDummy(":)"), () => setDummy(":("));
-	}
-	// Has the web request come back?
-	if ( ! pvMyAjaxData.resolved) {
-		// ...no -- return a spinner
-		return <div className='spinner'>Loading...</div>;
-	}
-	// Error handling
-	if (pvMyAjaxData.error) return <div>Web Request Failed :( {JSON.stringify(pvMyAjaxData.error)}</div>;
-	// yes! We have data
-	return <div>Lovely data! {JSON.stringify(pvMyAjaxData.value)}</div>;
-};
-
 const TestPage = () => {
 	let path = ['misc', 'TestPage'];
 	let widget = DataStore.getValue(path) || {};
 	const ism = DataStore.isModified(path.concat('green'));
+
 	const data = [
 		{name:"Winterstein"},
 		{name:"Dan"},{name:"Becca"},
@@ -53,35 +30,20 @@ const TestPage = () => {
 		{name:"Ken"},{name:"Lizzie"}
 	];
 	const columns = ["name", "foo"];
-	const rowtree = new Tree();
-	let w = Tree.add(rowtree, data[0]);
-	Tree.add(w, data[1]); Tree.add(w, data[2]);
-	let n = Tree.add(rowtree, data[3]);
-	Tree.add(n, data[4]); Tree.add(n, data[5]);
-	console.log(rowtree);
+	// const rowtree = new Tree();
+	// let w = Tree.add(rowtree, data[0]);
+	// Tree.add(w, data[1]); Tree.add(w, data[2]);
+	// let n = Tree.add(rowtree, data[3]);
+	// Tree.add(n, data[4]); Tree.add(n, data[5]);
+	// console.log(rowtree);
 
 	return (
 		<div className='TestPage'>
-			<h1>Test Page</h1>
-			
-			<MyAjaxWidget />
-
-			<button onClick={e => DataStore.update()}>re-render</button>
+			<h1>Test Page</h1>			
 			<p>Insert a test widget below</p>
 
-			<div className='well'>
-			<PropControl type='keyvalue' path={path} prop='ab'
-				$KeyProp={<PropControl label='"B" advert-id' />} 
-				$ValProp={<PropControl label='Share of impressions' type='number' min={0} max={1} help="[0-1] percentage" />} 
-			/>
-		</div>
-
 			Row Table
-			<SimpleTable columns={columns} data={data} hasFilter />
-
-			Tree Table
-
-			<SimpleTable columns={columns} dataTree={rowtree} hasCollapse hasFilter />
+			<SimpleTable columns={columns} data={data} hasFilter rowsPerPage={2} csv />
 
 		</div>
 	);
