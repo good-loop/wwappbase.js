@@ -13,7 +13,7 @@
 // http://specs.dataatwork.org/json-table-schema/
 // https://frictionlessdata.io/specs/table-schema/
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
@@ -152,11 +152,6 @@ class SimpleTable extends React.Component {
 			// NB: clipping is done later 'cos if we're doing a csv download, which should include all data
 		}
 
-		// HACK build up an array view of the table
-		// TODO refactor to build this first, then generate the html
-		// TODO OR - refactor so this is only built on demand, because it's expensive
-		let dataArray = [[]];
-
 		const filterChange = e => {
 			const v = e.target.value;
 			this.setState({filter: v});
@@ -178,13 +173,13 @@ class SimpleTable extends React.Component {
 		<tr>
 			{visibleColumns.map((col, c) => {
 				return <Th table={this} tableSettings={tableSettings} key={c}
-					column={col} c={c} dataArray={dataArray} headerRender={headerRender}
+					column={col} c={c} headerRender={headerRender}
 					showSortButtons={showSortButtons} />
 			})
 			}
 		</tr>
 
-		{topRow? <Row className='topRow' item={topRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+		{topRow? <Row className='topRow' item={topRow} row={-1} columns={visibleColumns} /> : null}
 		{addTotalRow?
 			<tr className='totalRow' >
 				<th>{addTotalRow}</th>
@@ -200,15 +195,14 @@ class SimpleTable extends React.Component {
 		<Rows 
 			dataTree={dataTree} 
 			tableSettings={tableSettings} 
-			csv={csv} 
 			rowsPerPage={rowsPerPage} 
 			page={page} 
 			visibleColumns={visibleColumns} 
-			dataArray={dataArray} 
 		/>
-		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} dataArray={dataArray} /> : null}
+		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} /> : null}
 	</tbody>
-	<TableFoot csv={csv} tableName={tableName} dataArray={dataArray} numPages={numPages} page={page} setPage={setPage} colSpan={visibleColumns.length} />
+	<TableFoot {...{csv, tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow, numPages, page, setPage}} 
+		colSpan={visibleColumns.length} />
 </table>
 						</div>
 					</div>
@@ -218,6 +212,54 @@ class SimpleTable extends React.Component {
 	} // ./ render()
 
 } // ./SimpleTable
+{/* <TableFoot csv={csv} tableName={tableName} visibleColumns, topRow, addTotalRow, dataTree, bottomRow,
+		numPages={numPages} page={page} setPage={setPage} colSpan={visibleColumns.length} /> */}
+
+const createCSVData = ({visibleColumns, topRow, addTotalRow, dataTree, bottomRow}) => {
+	// No UI buttons
+	visibleColumns = visibleColumns.filter(c => ! c.ui);
+	// build up an array view of the table
+	let dataArray = [];
+	// csv gets the text, never jsx from headerRender!
+	let ths = visibleColumns.map(column => column.Header || column.accessor || str(column)); 
+	dataArray.push(ths);
+	// special top rows
+	if (topRow) {
+		let rowData = createCSVData2_row({visibleColumns, item:topRow});
+		dataArray.push(rowData);
+	} 
+	if (addTotalRow) {
+		console.error("TODO totalRow csv");
+		// let r = [addTotalRow];
+		// visibleColumns.slice(1).map((col, c) <TotalCell dataTree={dataTree} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+		// dataArray.push(r);		
+	}
+	// rows
+	Tree.map(dataTree, (node, parent, depth) => {
+		const item = Tree.value(node);
+		if ( ! item) return;
+		// <Row>
+		let rowData = createCSVData2_row({visibleColumns, item});
+		dataArray.push(rowData);
+	});
+
+	if (bottomRow) {
+		let rowData = createCSVData2_row({visibleColumns, item:bottomRow});
+		dataArray.push(rowData);
+	} 
+	return dataArray;
+};
+
+const createCSVData2_row = ({visibleColumns, item}) => {
+	// See Row = (
+	const cells = visibleColumns.map(column => createCSVData3_cell({item, column}));
+	return cells;
+};
+const createCSVData3_cell = ({item, column}) => {
+	// See Cell = (
+	const v = getValue({item, column});
+	return defaultCellRender(v, column);
+};
 
 /**
  * Convert data or dataObject into a tree, as the most general format
@@ -340,24 +382,24 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
  * The meat of the table! (normally)
  * @param {!Tree} dataTree
  */
-const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, rowNum=0}) => {
+const Rows = ({dataTree, visibleColumns, rowsPerPage, page=0, rowNum=0}) => {
 	if ( ! dataTree) return null;
 	// clip?
 	let min = rowsPerPage? page*rowsPerPage : 0;
 	let max = rowsPerPage? (page+1)*rowsPerPage : Infinity;
-	if ( ! csv && false) { // FIXME need to process them all for csv download. otherwise clip early
-		let pageData = data.slice(min, max);
-		data = pageData;
-	}
 	// build the rows
 	let $rows = [];
 	Tree.map(dataTree, (node, parent, depth) => {
 		const item = Tree.value(node);
 		if ( ! item) return;
+		// clip from min/max paging?
+		if (rowNum < min || rowNum >= max) {
+			rowNum++;
+			return;
+		}
 		// <Row>
 		let $row = <Row key={'r'+rowNum} item={item} rowNum={rowNum} depth={depth}
-			columns={visibleColumns} dataArray={dataArray}
-			hidden={csv && (rowNum < min || rowNum >= max)} 
+			columns={visibleColumns}
 			node={node}
 			/>;
 		$rows.push($row);
@@ -368,7 +410,7 @@ const Rows = ({dataTree, visibleColumns, dataArray, csv, rowsPerPage, page=0, ro
 	return $rows;
 };
 
-// TODO onClick={} sortBy
+
 const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
 	let sortByMe = _.isEqual(tableSettings.sortBy, column);
@@ -386,10 +428,8 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 		// tableSettings.sortBy = c;
 	};
 	let hText;
-	const headerKeyString = column.Header || column.accessor || str(column);
 	if (headerRender) hText = headerRender(column);
-	else hText = column.Header || column.accessor || str(column);
-	dataArray[0].push(column.Header || column.accessor || str(column)); // csv gets the text, never jsx from headerRender!
+	else hText = column.Header || column.accessor || str(column);	
 	// add in a tooltip?
 	if (column.tooltip) {
 		hText = <div title={column.tooltip}>{hText}</div>;
@@ -410,13 +450,9 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 /**
  * A table row!
  * @param {!Number} rowNum Can be -1 for special rows ??0 or 1 indexed??
- * @param {?Boolean} hidden If true, process this row (eg for csv download) but dont diaply it
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, rowNum, node, columns, dataArray, depth = 0, hidden}) => {
-	let dataRow = [];
-	dataArray.push(dataRow);
-
+const Row = ({item, rowNum, node, columns, depth = 0}) => {
 	// Experiment: Don't render the row and necessitate DOM reconciliation if hidden.
 	// EventHostTable in TrafficReport has 90,000 elements & 5-10 second redraw times.
 	// Render the cells to cause the needed side effects, but don't return anything from here.
@@ -425,25 +461,14 @@ const Row = ({item, rowNum, node, columns, dataArray, depth = 0, hidden}) => {
 		<Cell key={JSON.stringify(col)}
 			row={rowNum} node={node}
 			column={col} item={item}
-			dataRow={dataRow}
-			hidden={hidden} // Maybe more optimisation: tell Cell it doesn't need to return an element, we're going to toss it anyway
 		/>
 	));
 
-	if (hidden) return null; // We have our side effects - if the row isn't to be shown we're done.
 	return (
 		<tr className={join("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={item.style}>
 			{cells}
 		</tr>
 	);
-	
-	/*
-	// NB: we still have to render hidden rows, to get the data-processing side-effects
-	const rstyle = Object.assign({}, hidden? {display:'none'} : null, item.style);
-	return (<tr className={join(className, "row"+row, "depth"+depth)} depth={depth} style={rstyle}>
-		{$cells}
-	</tr>);
-	*/
 };
 
 const getValue = ({item, row, column}) => {
@@ -526,18 +551,11 @@ const defaultCellRender = (v, column) => {
 	return str(v);
 };
 
-
-// Used to skip defaultCellRender for hidden cells - because we have a LOT of cells sometimes & everything adds up
-const nullCellRender = a => null;
-
-
 /**
- *
+ * @param {Number} row
  * @param {Column} column
- * @param {?Tree} dataTree
- * @param {?Boolean} hidden Don't bother rendering anything for display - but execute custom render function in case of side effects
  */
-const Cell = ({item, row, node, column, dataRow, hidden}) => {
+const Cell = ({item, row, node, column}) => {
 	const citem = item;
 	try {
 		const v = getValue({item, row, column});
@@ -547,21 +565,11 @@ const Cell = ({item, row, node, column, dataRow, hidden}) => {
 				// safety check we can edit this
 				assert(column.path || DataStore.getPathForItem(C.KStatus.DRAFT, item), "SimpleTable.jsx - Cell", item, column);
 				render = val => <Editor value={val} row={row} column={column} item={citem} />;
-			} else if (hidden) {
-				render = nullCellRender;
 			} else {
 				render = defaultCellRender;
 			}
 		}
-
-		// HACK write plaintext data for CSV export
-		if (!column.ui) {
-			// TODO Put results of custom render in CSV - but what about html/jsx?
-			// TODO When we do the above - don't use nullCellRender here for hidden cells!
-			dataRow.push(defaultCellRender(v, column));
-		}
 		const cellGuts = render(v, column, item, node);
-		if (hidden) return null; // If there are side effects in render function we want them, but skip creating DOM elements
 		return <td style={column.style}>{cellGuts}</td>;
 	} catch(err) {
 		// be robust
@@ -627,14 +635,14 @@ const Editor = ({row, column, value, item}) => {
 const CellFormat = new Enum("percent pounds string"); // What does a spreadsheet normally offer??
 
 
-const TableFoot = ({csv, tableName, dataArray, numPages, colSpan, page, setPage}) => {
+const TableFoot = ({csv, tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow, numPages, colSpan, page, setPage}) => {
 	if ( ! csv && numPages < 2) {
 		return null;
 	}
 	return (<tfoot><tr>
 		<td colSpan={colSpan}>
 			{numPages > 1? <TableFootPager page={page} setPage={setPage} numPages={numPages} /> : null}
-			{csv? <div className='pull-right'><CSVDownload tableName={tableName} dataArray={dataArray} /></div> : null}
+			{csv? <div className='pull-right'><CSVDownload {...{tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow}} /></div> : null}
 		</td>
 	</tr></tfoot>);
 };
@@ -649,14 +657,23 @@ const TableFootPager = ({page,setPage,numPages}) => {
 	</div>);
 };
 
-const CSVDownload = ({tableName, columns, data, dataArray}) => {
+const CSVDownload = ({tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow}) => {
+	const ref = useRef();
 	// assert(_.isArray(jsonArray), jsonArray);
 	// // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
-	let csv = dataArray.map(r => r.join? r.map(cell => csvEscCell(cell)).join(",") : ""+r).join("\r\n");
-	let csvLink = 'data:text/csv;charset=utf-8,'+csv;
+	const setupCsv = (e, $a) => {
+		let dataArray = createCSVData({visibleColumns, topRow, addTotalRow, dataTree, bottomRow});
+		let csv = dataArray.map(r => r.join? r.map(cell => csvEscCell(cell)).join(",") : ""+r).join("\r\n");
+		let csvLink = 'data:text/csv;charset=utf-8,'+csv;	
+		console.log(e, e.target, $a, ref, csv, csvLink);
+		e.target.setAttribute('href', csvLink);
+	};
 	// NB the entity below is the emoji "Inbox Tray" glyph, U+1F4E5
 	return (
-		<a href={csvLink} download={(tableName||'table')+'.csv'} >
+		<a href='' download={(tableName||'table')+'.csv'} 
+			ref={ref}
+			onClick={e => setupCsv(e, this)}
+		>
 			&#128229; Download .csv
 		</a>
 	);
