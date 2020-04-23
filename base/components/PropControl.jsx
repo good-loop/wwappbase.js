@@ -210,8 +210,8 @@ const PropControl = (props) => {
 				: null}
 			{inline ? ' ' : null}
 			<PropControl2 value={value} proppath={proppath} {...props} />
-			{help? <span className="help-block">{help}</span> : null}
-			{error? <span className="help-block">{error}</span> : null}
+			{help ? <span className="help-block mr-2">{help}</span> : null}
+			{error ? <span className="help-block text-danger">{error}</span> : null}
 		</div>
 	);
 }; // ./PropControl
@@ -275,8 +275,8 @@ const PropControl2 = (props) => {
 				<Input type="checkbox" checked={value} onChange={onChange} {...otherStuff} />
 				<Label check>{label} {helpIcon}</Label>
 			</FormGroup>
-			{help? <span className="help-block">{help}</span> : null}
-			{error? <span className="help-block">{error}</span> : null}
+			{help? <span className="help-block mr-2">{help}</span> : null}
+			{error? <span className="help-block text-danger">{error}</span> : null}
 		</>;
 	} // ./checkbox
 

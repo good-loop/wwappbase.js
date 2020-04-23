@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card as BSCard, CardHeader, CardTitle, CardBody } from 'reactstrap';
+import { Card as BSCard, CardHeader, CardBody, Button } from 'reactstrap';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import { join } from './BS';
@@ -44,27 +44,40 @@ class Card extends React.Component {
 		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
 		if (!children) { return null; }
 
-		let header = null;
-		if (title) {
-			let hoverText = null;
-			if (error && _.isString(error)) hoverText = error;
-			else if (warning && _.isString(warning)) hoverText = warning;
-			const caret = <Misc.Icon className='pull-right' fa={`caret-${collapse ? 'down' : 'up'}`} />;
-			header = (
-				<div className={onHeaderClick? 'btn btn-link' : null} onClick={onHeaderClick} title={hoverText}>
-					{(glyph || icon) ? <Misc.Icon glyph={glyph} fa={icon} /> : null}
-					{title || <span>&nbsp;</span>} {onHeaderClick ? caret : null}
-				</div>
-			);
-		}
-
 		// TODO use BS.Card -- but how to do collapse??
 		const color = error ? 'danger' : warning ? 'warning' : null;
+		
 		const titleText = _.isString(header) ? header : null;
+
+
+		let header = null;
+		let headerClasses = [];
+		if (onHeaderClick) headerClasses.push('btn btn-link');
+		if (color) {
+			headerClasses.push(`bg-${color}`);
+			headerClasses.push(error ? 'text-white' : warning ? 'text-dark' : null)
+		}
+
+		
+		// Error or warning to show user?
+		const alert = (error && _.isString(error)) ? (
+			<Misc.Icon fa="exclamation-triangle" color={color} title={error} className="mr-2" />
+		) : (warning && _.isString(warning)) ? (
+			<Misc.Icon fa="exclamation-circle" color={color} title={warning} className="mr-2" />
+		) : null;
+
+		const caret = onHeaderClick ? (
+			<Misc.Icon className='pull-right' fa={`caret-${collapse ? 'down' : 'up'}`} />
+		) : null;
 
 		return (
 			<BSCard color={color} outline className={join(className, 'mb-3')} title={titleText}>
-				<CardHeader className={`bg-${color}`}>{header}</CardHeader>
+				<CardHeader className={join(headerClasses)}>
+					{(glyph || icon) ? <Misc.Icon glyph={glyph} fa={icon} className="mr-2"/> : null}
+					{title ? <span className="mr-2">{title}</span> : null}
+					{alert}
+					{caret}
+				</CardHeader>
 				{collapse ? null : <CardBody>{children}</CardBody>}
 			</BSCard>
 		);

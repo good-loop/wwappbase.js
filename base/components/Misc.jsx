@@ -1,6 +1,6 @@
 import React, { useState, Fragment } from 'react';
 
-import { Alert, Card, Nav, Button } from 'reactstrap';
+import { Alert, Card, CardBody, Nav, Button } from 'reactstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import { XId, addScript, join } from 'wwutils';
@@ -74,7 +74,7 @@ const DefaultItemEditor = ({item, path}) => <div>{JSON.stringify(item)}</div>;
  * @param ItemEditor {Function} {item, path: to item i, i, ...stuff} -> jsx
  * @param blankFactory {?Function} path -> blank
  */
-Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMessage, createText = "Create", className="list-editor", ...stuff}) => {
+Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMessage, createText = 'Create', className, ...stuff}) => {
 	let list = DataStore.getValue(path) || [];
 	assert(_.isArray(list), "ListEditor " + path, list);
 
@@ -92,19 +92,21 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 	};
 
 	const itemElements = list.map((item, index) => (
-		<Card className="item-editor" key={'item' + index}>
-			{item.name ? <h4>{index}. {item.name}</h4> : null}
-			<button onClick={e => remove(index)} className='btn btn-danger btn-xs pull-right'><Misc.Icon fa='trash'/></button>
-			<ItemEditor i={index} item={item} path={path.concat(index)} list={list} {...stuff} />
+		<Card className="item-editor mb-3" key={'item' + index}>
+			<CardBody>
+				<Button color="danger" size="xs" onClick={e => remove(index)} className='pull-right mb-2'><Misc.Icon fa='trash'/></Button>
+				{item.name ? <h4>{index}. {item.name}</h4> : null}
+				<ItemEditor i={index} item={item} path={path.concat(index)} list={list} {...stuff} />
+			</CardBody>
 		</Card>
 	));
 
 	return (
-		<div className={className}>
+		<div className={join('list-editor mb-4', className)}>
 			{itemElements}
-			{list.length? null : <p>{noneMessage || "None"}</p>}
+			{list.length ? null : <p>{noneMessage || 'None'}</p>}
 			<div>
-				<button className='btn btn-default' onClick={addBlank}><Misc.Icon fa='plus-circle-fill' /> {createText}</button>
+				<Button onClick={addBlank}><Misc.Icon fa="plus-circle" /> {createText}</Button>
 			</div>
 		</div>
 	);
