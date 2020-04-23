@@ -3,6 +3,7 @@ import Login from 'you-again';
 import { assert, assMatch } from 'sjtest';
 import { getUrlVars, toTitleCase, modifyHash, yessy } from 'wwutils';
 import { Container } from 'reactstrap';
+import { isFunction } from 'lodash';
 
 // Plumbing
 import DataStore from '../plumbing/DataStore';
@@ -16,6 +17,8 @@ import ServerIO from '../plumbing/ServerIOBase';
 import MessageBar from './MessageBar';
 import NavBar from './NavBar';
 import LoginWidget, { setShowLogin } from './LoginWidget';
+
+
 
 // DataStore
 C.setupDataStore();
@@ -74,10 +77,12 @@ class MainDivBase extends Component {
 
 	render() {
 		init();
-		let {pageForPath, navbarPages, securityCheck, SecurityFailPage, defaultPage} = this.props;		
-		if ( ! navbarPages) {
-			navbarPages = Object.keys(pageForPath);
-		}
+		let {pageForPath, navbarPages, securityCheck, SecurityFailPage, defaultPage} = this.props;
+		// navbarPages might be a getter function now - so the invoking MainDiv can
+		// have a dynamic nav page list without being connected to the store itself.
+		if (isFunction(navbarPages)) navbarPages = navbarPages();
+		if (!navbarPages) navbarPages = Object.keys(pageForPath);
+
 		// which page?
 		let path = DataStore.getValue('location', 'path');
 		let page = (path && path[0]);
