@@ -86,7 +86,9 @@ class MainDivBase extends Component {
 		// which page?
 		let path = DataStore.getValue('location', 'path');
 		let page = (path && path[0]);
-		if ( ! page) {
+		if (!page) {
+			// defaultPage may be dynamic
+			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
 				setTimeout(() => modifyHash(defaultPage), 1); // let the next render get it
 			}
