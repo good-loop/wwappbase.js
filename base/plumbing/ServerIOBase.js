@@ -61,7 +61,7 @@ ServerIO.checkBase = () => {
 		let urlIsProd = !(endpointUrl.match(/(test|local)/));
 		// ...but APIBASE is special - it's normally empty for "this host" (except for My-Loop, which doesn't have its own backend)
 		// So for APIBASE on non-production servers with their own API, an empty string signifies NOT prod
-		if (key === 'APIBASE' && !C.isProduction() && !ServerIO.NO_API_AT_THIS_HOST && !url) {
+		if (key === 'APIBASE' && !C.isProduction() && !ServerIO.NO_API_AT_THIS_HOST && !endpointUrl) {
 			urlIsProd = false;
 		}
 
