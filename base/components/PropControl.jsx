@@ -571,10 +571,9 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
 const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options, labels, inline, ...otherStuff}) => {
-	assert(options, 'PropControl: no options for radio '+prop);
-	assert(options.map, 'PropControl: radio options for '+prop+' not an array '+options);
+	assert(options, `PropControl: no options for radio ${prop}`);
+	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
-	const check = (type === 'checkboxes');
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
 	let labeller = v => v;
@@ -596,18 +595,18 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 		if (saveFn) saveFn({path, prop, value: val});
 	};
 
-	const inputType = check ? 'checkbox' : 'radio';
+	const inputType = (type === 'checkboxes') ? 'checkbox' : 'radio';
 
 	return (
 		<Form>
 			{options.map(option => (
-				<FormGroup check={check} inline={inline}>
-					<Input type="inputType" key={"option_"+option} name={prop} value={option}
+				<FormGroup check inline={inline}>
+					<Input type={inputType} key={`option_${option}`} name={prop} value={option}
 						checked={option == value}
 						onChange={onChange} {...otherStuff}
 						inline={inline}
 					/>
-					<Label check={check}>{labeller(option)}</Label>
+					<Label check>{labeller(option)}</Label>
 				</FormGroup>
 			))}
 		</Form>
