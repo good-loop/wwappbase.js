@@ -467,5 +467,6 @@ const CRUD = {
 };
 export default CRUD;
 export {
+	listPath,
 	errorPath
 };

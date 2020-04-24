@@ -655,8 +655,9 @@ DataStore.update({
 	 */
 	widget: {},
 	/**
-	 * list should be: type -> list-id (e.g. 'all' or 'q=foo') -> {hits: refs[], total: Number}
-	 * Where refs are {id, type, status}
+	 * list should be: type (e.g. Advert) -> list-id (e.g. 'all' or 'q=foo') -> List
+	 * Where List is {hits: refs[], total: Number}
+	 * refs are {id, type, status}
 	 * see List.js
 	 * 
 	 * And store the actual data objects in the data/draft node.
