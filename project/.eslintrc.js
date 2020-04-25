@@ -79,6 +79,7 @@ module.exports = {
 		"no-continue": "off",
 		"no-extra-bind": "warn",
 		"no-loop-func": "off",
+		"no-lonely-if": "warn",
 		"no-mixed-operators": "off",
 		"no-multi-assign": "off", /* broken - seems to cause errors in linting */
 		"no-nested-ternary": "off",
