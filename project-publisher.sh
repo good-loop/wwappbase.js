@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.5.3'
+VERSION='Version=2.5.4'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -605,10 +605,10 @@ case $4 in
 	notests|NOTESTS)
 		SKIP_TESTS='yes'
 	;;
-	*)
-		printf "\nYour fourth argument either needs to be 'notests' or nothing at all.\n"
-		# exit 0
-	;;
+#	*)
+#		printf "\nYour fourth argument either needs to be 'notests' or nothing at all.\n"
+#		# exit 0
+#	;;
 esac
 
 #####################

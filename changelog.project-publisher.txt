@@ -7,6 +7,7 @@
 #####
 
 ###
+# New in 2.5.4 : removed text output warning users about using anything other than 'notests' as a fourth argument
 # New in 2.5.3 : removed LESS conversion from many projects, as it is not a webpack process
 # New in 2.5.2 : Corrected the service name for the appnexusreportprobe project
 # New in 2.5.1 : Added the dir 'legacy-units' to the adserver publishing sync list.
