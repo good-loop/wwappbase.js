@@ -79,6 +79,7 @@ module.exports = {
 		"no-continue": "off",
 		"no-extra-bind": "warn",
 		"no-loop-func": "off",
+		"no-lonely-if": "warn",
 		"no-mixed-operators": "off",
 		"no-multi-assign": "off", /* broken - seems to cause errors in linting */
 		"no-nested-ternary": "off",
@@ -135,7 +136,7 @@ module.exports = {
 		"react/jsx-no-bind": "warn",
 		"react/jsx-no-target-blank": "warn",
 		"react/jsx-one-expression-per-line": "off",
-		"react/jsx-props-no-spreading": "warn",
+		"react/jsx-props-no-spreading": ["warn", {explicitSpread:'ignore'}],
 		"react/jsx-space-before-closing": "warn",
 		"react/jsx-tag-spacing": "warn",
 		"react/jsx-wrap-multilines": "off",

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.5.2'
+VERSION='Version=2.5.4'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -223,9 +223,9 @@ case $1 in
 		TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
 		IMAGE_OPTIMISE='yes'
 		IMAGEDIRECTORY="$PROJECT_LOCATION/web-as/vert"
-		CONVERT_LESS='yes'
-		LESS_FILES_LOCATION="$PROJECT_LOCATION/adunit/style/base.less"
-		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-as/unit.css"
+		CONVERT_LESS='no'
+#		LESS_FILES_LOCATION="$PROJECT_LOCATION/adunit/style/base.less"
+#		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-as/unit.css"
 		WEBPACK='no'
 		TEST_JAVASCRIPT='yes'
 		JAVASCRIPT_FILES_TO_TEST="$PROJECT_LOCATION/adunit/variants/"
@@ -233,9 +233,9 @@ case $1 in
 		UNITS_LOCATION="$PROJECT_LOCATION/adunit/variants/"
 		RESTART_SERVICE_AFTER_SYNC='yes'
 		SERVICE_NAME=('adservermain')
-		FRONTEND_SYNC_LIST=("adunit" "legacy-units" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" )
+		FRONTEND_SYNC_LIST=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" )
 		BACKEND_SYNC_LIST=("lib")
-		WHOLE_SYNC=("adunit" "legacy-units" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" "lib")
+		WHOLE_SYNC=("adunit" "server" "src" "web-apps" "web-as" "web-test" "preact-unit" "package.json" "webpack.config.as.js" "webpack.config.js" "lib")
 		PRESERVE=("config/log.properties")
 		POST_PUBLISHING_TASK='yes'
 	;;
@@ -387,10 +387,10 @@ case $1 in
 		TARGET_DIRECTORY='/home/winterwell/my.good-loop.com'
 		IMAGE_OPTIMISE='yes'
 		IMAGEDIRECTORY="$PROJECT_LOCATION/web/img"
-		CONVERT_LESS='yes'
-		MINIFY_CSS='yes'
-		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
-		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
+		CONVERT_LESS='no'
+		MINIFY_CSS='no'
+#		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
+#		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
 		WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		JAVASCRIPT_FILES_TO_TEST=""
@@ -410,9 +410,9 @@ case $1 in
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
 		TARGET_DIRECTORY='/home/winterwell/as.good-loop.com'
 		IMAGE_OPTIMISE='no'
-		CONVERT_LESS='yes'
-		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
-		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-portal/style"
+		CONVERT_LESS='no'
+#		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
+#		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web-portal/style"
 		WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
@@ -449,10 +449,10 @@ case $1 in
 		PROJECT_LOCATION="/home/$USER/winterwell/sogive-app"
 		TARGET_DIRECTORY='/home/winterwell/sogive-app'
 		IMAGE_OPTIMISE='no'
-		CONVERT_LESS='yes'
-		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
-		LESS_FILES=("$LESS_FILES_LOCATION/main.less" "$LESS_FILES_LOCATION/print.less")
-		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
+		CONVERT_LESS='no'
+#		LESS_FILES_LOCATION="$PROJECT_LOCATION/src/style"
+#		LESS_FILES=("$LESS_FILES_LOCATION/main.less" "$LESS_FILES_LOCATION/print.less")
+#		CSS_OUTPUT_LOCATION="$PROJECT_LOCATION/web/style"
 		WEBPACK='yes'
 		TEST_JAVASCRIPT='no'
 		COMPILE_UNITS='no'
@@ -605,10 +605,10 @@ case $4 in
 	notests|NOTESTS)
 		SKIP_TESTS='yes'
 	;;
-	*)
-		printf "\nYour fourth argument either needs to be 'notests' or nothing at all.\n"
-		# exit 0
-	;;
+#	*)
+#		printf "\nYour fourth argument either needs to be 'notests' or nothing at all.\n"
+#		# exit 0
+#	;;
 esac
 
 #####################
