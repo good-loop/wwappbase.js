@@ -823,7 +823,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 	const entryElements = Object.entries(value || {}).filter(([key, val]) => (val === '') || val).map(([key, val]) => (
 		<tr className="entry" key={key}>
 			<td><Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</Button></td>
-			<td>{key}:</td>
+			<td className="px-2">{key}:</td>
 			<td><PropControl type="text" path={proppath} prop={key} /></td>
 		</tr>
 	));
@@ -838,13 +838,17 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 	};
 
 	return (
-		<div className="entryset form-inline">
+		<div className="entryset">
 			<table className="entries"><tbody>{entryElements}</tbody></table>
-			<form className="form-inline" onSubmit={stopEvent}>
-				<input className='form-control' placeholder={keyName} onChange={(event) => newKey = event.target.value}
-				/> <input className='form-control' placeholder={valueName} onChange={(event) => newValue = event.target.value}
-				/> <button className={'btn '+(value? 'btn-primary' : 'btn-default')} onClick={onClickAdd} >Add</button>
-			</form>
+			<Form inline onSubmit={stopEvent} className="mb-2">
+				<FormGroup className="mr-2">
+					<Input placeholder={keyName} onChange={(event) => newKey = event.target.value} />
+				</FormGroup>
+				<FormGroup className="mr-2">
+					<Input placeholder={valueName} onChange={(event) => newValue = event.target.value} />
+				</FormGroup>
+				<Button color="primary" onClick={onClickAdd} >Add</Button>
+			</Form>
 		</div>
 	);
 };
