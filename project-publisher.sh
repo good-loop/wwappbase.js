@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.5.4'
+VERSION='Version=2.5.5'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -470,7 +470,7 @@ case $1 in
 		PRODUCTION_SERVERS=(bester.soda.sh)
 		TEST_SERVERS=(hugh.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/code/youagain-server"
-		TARGET_DIRECTORY='/home/winterwell/youagain'
+		TARGET_DIRECTORY='/home/winterwell/youagain.good-loop.com'
 		IMAGE_OPTIMISE='no'
 		CONVERT_LESS='no'
 		WEBPACK='yes'
