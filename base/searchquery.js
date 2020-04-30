@@ -101,10 +101,12 @@ SearchQuery.or = (sq1, sq2) => {
 }
 
 SearchQuery.op = (sq1, sq2, op) => {	
-	if ( ! sq2) return sq1;
-	if ( ! sq1) return sq2;
+	// convert to class
 	if (typeof(sq1)==='string') sq1 = new SearchQuery(sq1);
 	if (typeof(sq2)==='string') sq2 = new SearchQuery(sq2);
+
+	if ( ! sq2) return sq1;
+	if ( ! sq1) return sq2;
 	if ( ! sq1.query) return sq2;
 	if ( ! sq2.query) return sq1;
 	// CRUDE but it should work -- at least for simple cases
