@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.5.5'
+VERSION='Version=2.6.0'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -1090,17 +1090,24 @@ function run_post_publish_tasks {
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
 						bssh "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						bssh "cd $TARGET_DIRECTORY/adunit && npm run build"
-						printf "\n\tConverting LESS for the Ad Unit\n"
-						bssh "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
+						bssh "cd $TARGET_DIRECTORY/adunit && npm run compile"
+						#printf "\n\tConverting LESS for the Ad Unit\n"
+						#bssh "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
 					everything)
 						printf "\n\tGetting NPM Dependencies for the Ad Unit\n"
 						bssh "cd $TARGET_DIRECTORY/adunit && npm i"
 						printf "\n\tWebpacking the Ad Unit\n"
-						bssh "cd $TARGET_DIRECTORY/adunit && npm run build"
-						printf "\n\tConverting LESS for the Ad Unit\n"
-						bssh "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
+						# Perform the webpacking in parallel
+						for server in ${TARGETS[@]}; do
+							printf "\n$server is now webpacking the adunit ..."
+							ssh winterwell@$server "cd $TARGET_DIRECTORY/adunit && npm run compile" &
+							wait
+							printf "\nAll servers finished webpacking"
+						done
+						#bssh "cd $TARGET_DIRECTORY/adunit && npm run compile"
+						#printf "\n\tConverting LESS for the Ad Unit\n"
+						#bssh "lessc $TARGET_DIRECTORY/adunit/style/base.less $TARGET_DIRECTORY/web-as/unit.css"
 					;;
 					backend)
 						printf "\n"
