@@ -7,6 +7,8 @@
 #####
 
 ###
+# New in 2.6.0 : Found an old lurking call of webpacking the adunit which was done in series. Now it should webpack the adunit in parallel.
+# New in 2.5.5 : Changed the target directory for the youagain project.
 # New in 2.5.4 : removed text output warning users about using anything other than 'notests' as a fourth argument
 # New in 2.5.3 : removed LESS conversion from many projects, as it is not a webpack process
 # New in 2.5.2 : Corrected the service name for the appnexusreportprobe project
