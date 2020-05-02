@@ -447,13 +447,13 @@ Misc.SavePublishDiscard = ({
 	let item = DataStore.getData({status, type, id});
 
 	// request a save?
-	if (autoSave && C.STATUS.isdirty(localStatus) && !isSaving) {
+	if (autoSave && C.STATUS.isdirty(localStatus) && ! isSaving) {
 		Misc.saveDraftFn({type,id});
 	}
 
 	// If setting enabled, will automatically publish every five seconds
 	if (autoPublish && C.STATUS.isdirty(localStatus) && item.status !== 'ARCHIVED') {
-		// Misc.publishDraftFn({type, id});
+		Misc.publishDraftFn({type, id}); // ??@AU - why was this switched off?
 	}
 
 	// Sometimes we just want to autosave drafts!
@@ -484,6 +484,7 @@ Misc.SavePublishDiscard = ({
 	// merge discard / unpublish / delete into one button with a dropdown of options??
 	// merge save / saveAs into one button with a dropdown of options?
 
+	// FIXME ??too-specific code @DW @AU
 	/** Ask user for confirmation before we make a new Advert */
 	const confirmSaveAs = () => {
 		const confirmed = window.confirm('Save changes as a new advert?'); // pauses execution, pops up alert and stores the chosen option

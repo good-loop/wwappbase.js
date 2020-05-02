@@ -82,12 +82,16 @@ const ListLoad = ({type, status, servlet, navpage,
 	if (filter) filter = filter.toLowerCase(); // normalise
 	
 	// Load via ActionMan -- both filtered and un-filtered
+	// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
+	// whilst fetching from the backedn using the filter)
 	let pvItems = ActionMan.list({type, status, q, prefix:filter, sort});
 	let pvItemsAll = ActionMan.list({type, status, q, sort});
+	// FIXME ??too-specific code @DW @AU
 	let pvItemsArchived = ActionMan.list({ type, status: C.KStatus.ARCHIVED, q, sort });
 
 	// Filter the full list of results according to criterion compared to list of archived items.
 	const filterByStatusGroup = (hits) => {
+		// FIXME ??too-specific code @DW @AU
 		const adGroup = DataStore.getValue(['misc', 'showArchived']) ? 'archived' : 'nonArchived';
 
 		if ( ! pvItemsArchived.resolved || ! pvItemsArchived.value ) return hits;
@@ -140,7 +144,7 @@ const ListLoad = ({type, status, servlet, navpage,
 		
 		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
 
-		{/* Allows user to sort adverts on Portal */}
+		{/* Allows user to sort adverts on Portal // FIXME ??too-specific code @DW @AU */}
 		{servlet === 'vert' ?
 			<div className="sort-archive-form">
 				<PropControl
@@ -195,6 +199,7 @@ const onPick = ({event, navpage, id, customParams}) => {
 	customParams ? modifyHash([navpage,null],customParams) : modifyHash([navpage,id]);
 };
 
+// FIXME ??too-specific code @DW @AU
 const archiveOrPublishItem = (advert, isArchived) => {
 	const confirmationMessage = `Are you sure you want to ${isArchived ? 're-publish' : 'archive'} this advert?`; 
 	const confirmed = confirm(confirmationMessage);
@@ -210,6 +215,7 @@ const archiveOrPublishItem = (advert, isArchived) => {
 const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName}) => {
 	const id = getId(item);
 
+	// FIXME ??too-specific code @DW @AU
 	const isArchived = DataStore.getValue(['misc', 'showByStatus']) === 'archived';
 	const buttonText = isArchived ? 're-publish' : 'archive';
 	const archiveButton = <button type="button" onClick={() => archiveOrPublishItem(item, isArchived)}>{ buttonText }</button>;
@@ -241,6 +247,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 			>
 				<div key={`Adiv${id}`}>{children}</div>
 			</A>
+			{/* // FIXME ??too-specific code @DW @AU */}
 			{ servlet === 'vert' && isArchived && id !== 'default-advert' ? '' : archiveButton }
 		</div>
 	);
