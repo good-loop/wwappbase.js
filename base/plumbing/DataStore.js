@@ -675,7 +675,7 @@ export default DataStore;
 // TODO move towards offering functions cos VS auto-complete seems to work better
 /**
  * the DataStore path for this item, or null if item is null;
- * @param status
+ * @param status WARNING - If you are editing, you need status=Draft!
  * @param type
  * @param id
  */

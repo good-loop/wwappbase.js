@@ -115,9 +115,10 @@ const ListLoad = ({type, status, servlet, navpage,
 	let items = [];
 	let itemForId = {};
 	let hits = pvItems.resolved? pvItems.value && pvItems.value.hits : pvItemsAll.value && pvItemsAll.value.hits;
+	let total = pvItems.resolved && pvItems.value.total;
 	if (hits) {
 		const fastFilter = ! pvItems.resolved;
-		hits = filterByStatusGroup(hits);
+		// hits = filterByStatusGroup(hits); buggy
 		hits.forEach(item => {
 			// fast filter via stringify
 			let sitem = null;
@@ -167,6 +168,8 @@ const ListLoad = ({type, status, servlet, navpage,
 			: ''}
 
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
+		{total? <div>About {total} results in total</div> : null}
+		
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				item={item}
