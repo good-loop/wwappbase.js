@@ -10,6 +10,7 @@ import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
+import { Button, Card, CardBody, Form } from 'reactstrap';
 
 /**
  * Provide a list of items of a given type.
@@ -329,6 +330,7 @@ const createBlank = ({type, navpage, base, id, make}) => {
 	id = getId(newItem);
 	if ( ! getType(newItem)) newItem['@type'] = type;
 	// poke a new blank into DataStore
+	newItem.status = C.KStatus.DRAFT;
 	const path = DataStore.getDataPath({status:C.KStatus.DRAFT, type, id});
 	DataStore.setValue(path, newItem);
 	// set the id
@@ -356,15 +358,20 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 	// merge any form props into the base
 	const cpath = ['widget','CreateButton'];
 	base = Object.assign({}, base, DataStore.getValue(cpath));
-	// was an ID passed in by editor props?
+	// was an ID passed in by editor props? (to avoid copy accidents id is not used from base, so to use it here we must fish it out)
 	if ( ! id) id = base.id; // usually null
 	delete base.id; // NB: this is a copy - the original base is not affected.
-	return (<div className={props? 'well' : ''}>
-		{props? props.map(prop => <Misc.PropControl key={prop} label={prop} prop={prop} path={cpath} inline />) : null}
-		<button className="btn btn-default" name="create-item" onClick={() => createBlank({type,navpage,base,id,make})}>
+	if ( ! props) {
+		// simple button
+		return <Button onClick={() => createBlank({type,navpage,base,id,make})}><Misc.Icon fa="plus-circle" /> Create</Button>;
+	}
+	// mini form
+	return (<Card><CardBody><Form inline>
+		{props.map(prop => <PropControl key={prop} label={prop} prop={prop} path={cpath} inline className='mr-2' />)}
+		<Button onClick={() => createBlank({type,navpage,base,id,make})}>
 			<Misc.Icon fa="plus-circle" /> Create
-		</button>
-	</div>);
+		</Button>
+		</Form></CardBody></Card>);
 };
 
 /**

@@ -205,15 +205,16 @@ class Store {
 
 
 	/**
-	 * the DataStore path for this item, or null if item is null;
+	 * the DataStore path for this item, or null if item is null. You can pass in an item as all the args (but not if it uses `domain` as a prop!)
 	 * @param status {C.KStatus}
 	 * @param type {!C.TYPES}
 	 * @param id {!String}
 	 * @param domain {?String} Only used by Profiler??
 	 * @returns {String[]}
 	 */
-	getDataPath({status, type, id, domain}) {
+	getDataPath({status, type, id, domain, ...restOfItem}) {
 		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
+		if ( ! type) type = getType(restOfItem);
 		assert(C.TYPES.has(type), "DataStore.js bad type: "+type);
 		assMatch(id, String, "DataStore.js bad id "+id);
 		const s = this.nodeForStatus(status);
@@ -669,14 +670,20 @@ DataStore.update({
 // switch on data item edits => modified flag
 DataStore.DATA_MODIFIED_PROPERTY = 'localStatus';
 export default DataStore;
+
 // provide getPath as a convenient export
+// TODO move towards offering functions cos VS auto-complete seems to work better
 /**
  * the DataStore path for this item, or null if item is null;
  * @param status
  * @param type
  * @param id
  */
-let getPath = DataStore.getPath.bind(DataStore);
-export {getPath};
+let getDataPath = DataStore.getDataPath.bind(DataStore);
+let getValue = DataStore.getValue.bind(DataStore); let setValue = DataStore.setValue.bind(DataStore);
+export {
+	getDataPath,
+	getValue, setValue
+};
 // accessible to debug
 if (typeof(window) !== 'undefined') window.DataStore = DataStore;

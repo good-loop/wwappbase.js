@@ -123,6 +123,7 @@ const errorPath = ({type, id, action}) => {
 };
 
 ActionMan.saveEdits = (type, id, item) => {
+	assMatch(id, String, "Are you using named parameters? Not for this function (we should prob refactor that)");
 	return ActionMan.crud({type, id, action: 'save', item});
 };
 
