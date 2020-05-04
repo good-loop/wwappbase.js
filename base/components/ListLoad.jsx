@@ -23,7 +23,9 @@ import { Button, Card, CardBody, Form } from 'reactstrap';
  * @param {C.TYPES} type
  * @param {?String} q - Optional query e.g. advertiser-id=pepsi
  * Note: that filter can add to this
- * @param {?String} sort -  Optional sort order, e.g. "start-desc"
+ * @param {?String} sort -  Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
+ * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
+ * TODO test "" works
  * @param {?String} filter - Set a filter. Do NOT use this and hasFilter
  * @param {?Boolean} hasFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?String} status - e.g. "Draft"
@@ -38,7 +40,7 @@ import { Button, Card, CardBody, Form } from 'reactstrap';
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q,
-	sort,
+	sort='created-desc',
 	filter, hasFilter,
 	ListItem,
 	checkboxes, canDelete, canCreate, className,
@@ -87,25 +89,6 @@ const ListLoad = ({type, status, servlet, navpage,
 	// whilst fetching from the backedn using the filter)
 	let pvItems = ActionMan.list({type, status, q, prefix:filter, sort});
 	let pvItemsAll = ActionMan.list({type, status, q, sort});
-	// FIXME ??too-specific code @DW @AU
-	let pvItemsArchived = ActionMan.list({ type, status: C.KStatus.ARCHIVED, q, sort });
-
-	// Filter the full list of results according to criterion compared to list of archived items.
-	const filterByStatusGroup = (hits) => {
-		// FIXME ??too-specific code @DW @AU
-		const adGroup = DataStore.getValue(['misc', 'showArchived']) ? 'archived' : 'nonArchived';
-
-		if ( ! pvItemsArchived.resolved || ! pvItemsArchived.value ) return hits;
-		const archivedIdArray = pvItemsArchived.value.hits.map(e => e.id);
-
-		if (adGroup === 'archived') {
-			return pvItemsArchived.value.hits;
-		}
-		if (adGroup === 'nonArchived') {
-			return hits.filter( hit => !archivedIdArray.includes(hit.id));
-		}
-		return hits;
-	};
 
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
@@ -118,7 +101,6 @@ const ListLoad = ({type, status, servlet, navpage,
 	let total = pvItems.resolved && pvItems.value.total;
 	if (hits) {
 		const fastFilter = ! pvItems.resolved;
-		// hits = filterByStatusGroup(hits); buggy
 		hits.forEach(item => {
 			// fast filter via stringify
 			let sitem = null;
@@ -145,27 +127,6 @@ const ListLoad = ({type, status, servlet, navpage,
 		{canCreate? <CreateButton type={type} /> : null}
 		
 		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
-
-		{/* Allows user to sort adverts on Portal // FIXME ??too-specific code @DW @AU */}
-		{servlet === 'vert' ?
-			<div className="sort-archive-form">
-				<PropControl
-					type="select"
-					prop="sort"
-					label="Sort (sorting by date only applies to adverts created starting 05/20)"
-					labels={['none', 'newest', 'oldest']}
-					options={['', 'created-desc', 'created-asc']}
-					dflt="none"
-					path={['misc']}
-				/>
-				<PropControl 
-					type="checkbox"
-					prop="showArchived"
-					label="Show archived ads"
-					path={['misc']}
-				/>
-			</div>
-			: ''}
 
 		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
 		{total? <div>About {total} results in total</div> : null}
@@ -203,26 +164,11 @@ const onPick = ({event, navpage, id, customParams}) => {
 	customParams ? modifyHash([navpage,null],customParams) : modifyHash([navpage,id]);
 };
 
-// FIXME ??too-specific code @DW @AU
-const archiveOrPublishItem = (advert, isArchived) => {
-	const confirmationMessage = `Are you sure you want to ${isArchived ? 're-publish' : 'archive'} this advert?`; 
-	const confirmed = confirm(confirmationMessage);
-	if (confirmed) {
-		if (isArchived) ActionMan.publishEdits(C.TYPES.Advert, advert);
-		ActionMan.archive(C.TYPES.Advert, advert);
-	}
-};
-
 /**
  * checkbox, delete, on-click a wrapper
  */
 const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName}) => {
 	const id = getId(item);
-
-	// FIXME ??too-specific code @DW @AU
-	const isArchived = DataStore.getValue(['misc', 'showByStatus']) === 'archived';
-	const buttonText = isArchived ? 're-publish' : 'archive';
-	const archiveButton = <button type="button" onClick={() => archiveOrPublishItem(item, isArchived)}>{ buttonText }</button>;
 
 	// TODO refactor this Portal specific code out of here.
 	// for the campaign page we want to manipulate the url to modify the vert/vertiser params
@@ -251,8 +197,6 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 			>
 				<div key={`Adiv${id}`}>{children}</div>
 			</A>
-			{/* // FIXME ??too-specific code @DW @AU */}
-			{ servlet === 'vert' && isArchived && id !== 'default-advert' ? '' : archiveButton }
 		</div>
 	);
 };
