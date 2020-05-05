@@ -680,6 +680,9 @@ export default DataStore;
  * @param id
  */
 let getDataPath = DataStore.getDataPath.bind(DataStore);
+/**
+ * @param {String[]} path
+ */
 let getValue = DataStore.getValue.bind(DataStore); let setValue = DataStore.setValue.bind(DataStore);
 export {
 	getDataPath,
