@@ -679,12 +679,14 @@ export default DataStore;
  * @param type
  * @param id
  */
-let getDataPath = DataStore.getDataPath.bind(DataStore);
+const getPath = DataStore.getPath.bind(DataStore);
+const getDataPath = DataStore.getDataPath.bind(DataStore);
 /**
  * @param {String[]} path
  */
-let getValue = DataStore.getValue.bind(DataStore); let setValue = DataStore.setValue.bind(DataStore);
+const getValue = DataStore.getValue.bind(DataStore); const setValue = DataStore.setValue.bind(DataStore);
 export {
+	getPath,
 	getDataPath,
 	getValue, setValue
 };
