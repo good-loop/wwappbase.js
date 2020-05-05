@@ -634,8 +634,23 @@ class Store {
 	getDataList(listOfRefs) {
 		if ( ! listOfRefs) return [];
 		// ?? if the data item is missing -- what should go into the list?? null / the ref / a promise ??
-		let items = listOfRefs.map(ref => this.getData(getStatus(ref), getType(ref), getId(ref)) || ref);
+		let items = listOfRefs.map(ref => this.resolveRef(ref));
+		items = items.filter(i => !!i); // paranoia: no nulls
 		return items;
+	}
+
+	resolveRef(ref) {
+		if ( ! ref) {
+			return null;
+		}
+		const status = getStatus(ref);
+		const type = getType(ref);
+		const id = getId(ref);
+		if ( ! (status && type && id)) {
+			console.warn("(skip) Bad ref in DataStore list", ref);
+			return null;
+		}
+		return this.getData({status,type,id}) || ref;
 	}
 } // ./Store
 

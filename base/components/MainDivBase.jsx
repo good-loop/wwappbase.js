@@ -51,7 +51,7 @@ const init = () => {
 };
 
 /**
-		Top-level: tabs
+	
 	props:
 	pageForPath: {String:JSX}
 	navbarPages: String[]
@@ -90,7 +90,7 @@ class MainDivBase extends Component {
 			// defaultPage may be dynamic
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
-				setTimeout(() => modifyHash(defaultPage), 1); // let the next render get it
+				setTimeout(() => modifyHash([defaultPage]), 1); // let the next render get it
 			}
 			return <Misc.Loading />;
 		}
