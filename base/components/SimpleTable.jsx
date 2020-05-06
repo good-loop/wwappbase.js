@@ -43,7 +43,7 @@ class Column extends DataClass {
 	sortMethod;
 	/** @type {?Function} */
 	sortAccessor;
-	/** @type {?String} Used for providing an editor - see Misc.PropControl */
+	/** @type {?String} Used for providing an editor - see PropControl */
 	type;
 	/** @type {?String} Text to show as help */
 	tooltip;
@@ -348,7 +348,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 		let sortFn = column.sortMethod;
 		if ( ! sortFn) {
 			let getter = sortGetter(column);
-			sortFn = (a,b) => defaultSortMethodForGetter(a,b,getter);
+			sortFn = (a,b) => defaultSortMethodForGetter(a,b,getter,column.type);
 		}
 		if (Tree.depth(dataTree) > 2) {
 			throw new Error("Cannot sort a hierarchical tree", dataTree);
@@ -498,7 +498,7 @@ const sortGetter = (column) => {
  * @param {*} b
  * @param {Column} column
  */
-const defaultSortMethodForGetter = (a, b, getter) => {
+const defaultSortMethodForGetter = (a, b, getter, type) => {
 	assert(_.isFunction(getter), "SimpleTable.jsx defaultSortMethodForGetter", getter);
 	// let ia = {item:a, column:column};
 	let av = getter(a);
@@ -506,9 +506,21 @@ const defaultSortMethodForGetter = (a, b, getter) => {
 	// // avoid undefined 'cos it messes up ordering
 	if (av === undefined || av === null) av = "";
 	if (bv === undefined || bv === null) bv = "";
+	// blank = last
+	if (av==="" && bv) return 1;
+	if (bv==="" && av) return -1;
 	// case insensitive
 	if (_.isString(av)) av = av.toLowerCase();
 	if (_.isString(bv)) bv = bv.toLowerCase();
+	// special type handling?
+	if (type==='date') {
+		try {
+			av = new Date(av);
+			bv = new Date(bv);
+		} catch(err) {
+			console.warn(err);
+		}
+	}
 	// console.log("sortFn", av, bv, a, b);
 	return (av < bv) ? -1 : (av > bv) ? 1 : 0;
 };
