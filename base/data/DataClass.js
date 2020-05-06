@@ -328,5 +328,7 @@ const allTypes = {};
 window.allTypes = allTypes
 window.DataClass = DataClass;
 
+const getName = DataClass.getName;
+
 export {getType, getId, getName, getStatus, Meta, nonce, getClass};	
 export default DataClass;

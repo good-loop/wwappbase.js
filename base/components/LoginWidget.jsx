@@ -60,6 +60,7 @@ const socialLogin = (service) => {
 	// Special behaviour for My-Loop/Portal
 	// Doing it this way seemed the most maintainable option
 	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag:'Social login clicked ' + service});
+
 	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
 	// auth doesnt return a future, so rely on Login's change listener
 	// to close stuff.
@@ -199,7 +200,7 @@ const SocialSignin = ({verb, services}) => {
 		<div className="social-signin">
 			{buttons}
 			<p><small>We will never share your data or post to social media without your consent.
-				You can read our <a href={C.app.privacyPolicy || 'https://sogive.org/privacy-policy.html'} target="_new">privacy policy</a> for more information.
+				You can read our <a href={C.app.privacyPolicy} target="_new">privacy policy</a> for more information.
 			</small></p>
 		</div>
 	);
