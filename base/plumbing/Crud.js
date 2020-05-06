@@ -269,9 +269,12 @@ ActionMan.delete = (type, pubId) => {
 		});
 };
 
+/**
+ * Archive this item
+ */
 // ?? should we put a confirm in here, and in delete()? But what if we are doing a batch operation?
 // -- let's not -- but be sure to put it in calling functions
-ActionMan.archive = (type, item) => {	
+ActionMan.archive = ({type, item}) => {	
 	// optimistic list mod
 	preCrudListMod({type, item, action: 'archive'});
 	return ActionMan.crud({ type, item, action: C.CRUDACTION.archive });
