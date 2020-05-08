@@ -4,6 +4,8 @@ import { assert, assMatch } from 'sjtest';
 import { getUrlVars, toTitleCase, modifyHash, yessy } from 'wwutils';
 import { Container } from 'reactstrap';
 import { isFunction } from 'lodash';
+// setup Misc.SavePublishDiscard for older code
+import SavePublishDeleteEtc from './SavePublishDeleteEtc';
 
 // Plumbing
 import DataStore from '../plumbing/DataStore';

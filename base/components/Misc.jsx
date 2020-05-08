@@ -222,12 +222,15 @@ Misc.Icon = ({glyph, fa, size, className, prefix = 'fa', ...rest}) => {
 /**
  * Try to make a thumbnail image for a data item by checking: logo, img
  */
-Misc.Thumbnail = ({item}) => {
-	if (!item) return null;
+Misc.Thumbnail = ({item, className}) => {
+	if ( ! item) return null;
 	// Newer ads store logo under item.branding.logo
 	// Kept old syntax in as back-up so that the #advert page will still show icons for old ads
-	let img = (item.branding && item.branding.logo) || item.logo || item.img;
-	return img ? <img src={img} className='logo img-thumbnail' /> : null;
+	let img = (item.branding && item.branding.logo) || item.logo || item.img || item.photo;
+	if ( ! img) return null;
+	// If its an ImageObject then unwrap it
+	if (img.url) img = img.url;
+	return <Misc.ImgThumbnail url={img} alt={item.name || item.id} className={className} />;
 };
 
 
@@ -376,12 +379,12 @@ Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
  * }
  * @return {JSX}
  */
-Misc.ImgThumbnail = ({url, background, style, className = '', ...props}) => {
+Misc.ImgThumbnail = ({url, alt, background, style, className = '', ...props}) => {
 	if (!url) return null;
 	// add in base (NB this works with style=null)
 	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain'}, style);
 	if (background) style.background = background;
-	return <img className={`img-thumbnail ${className}`} style={style} alt='thumbnail' src={url} />;
+	return <img className={join('img-thumbnail',className)} style={style} alt={alt || 'thumbnail'} src={url} />;
 };
 
 
