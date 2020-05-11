@@ -31,8 +31,9 @@ const assert = function(betrue, ...msgs) {
 };
 /**
  * Handle assert() failures. Users can replace this with a custom handler.
+ * @param {Object[]} msgs
  */
-let assertFailed = function(msgs : Object[]) {
+let assertFailed = function(msgs) {
 	// we usually pass in an array from ...msg
 	console.error("assert", ...msgs);
 	// A nice string?
