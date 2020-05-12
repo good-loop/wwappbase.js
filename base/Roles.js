@@ -7,6 +7,9 @@ import PromiseValue from 'promise-value';
  * @returns {PromiseValue<String[]>}
  */
 const getRoles = () => {
+	// HACK: This is set elsewhere - but there can be an init ordering issue
+	if ( ! Login.app) Login.app = C.app.service;
+
 	if ( ! Login.isLoggedIn()) {
 		return new PromiseValue([]);
 	}
