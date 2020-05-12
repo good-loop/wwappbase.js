@@ -48,10 +48,8 @@ http://tobiasahlin.com/spinkit/
 */
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	// handle ajax error?
-	if (pv && pv.error) {
-		let emsg = _.isString(pv.error)? pv.error : join(pvCharity.error.status, pvCharity.error.statusText);
-		let edetails = join(pvCharity.error.statusText, pvCharity.error.responseText);
-		return <Alert><h4>Sorry - there was a problem. {emsg}</h4><div className='details'><small>{edetails}</small></div></Alert>;
+	if (pv && pv.error) {		
+		return <Error error={pv.error} />;
 	}
 
 	return (

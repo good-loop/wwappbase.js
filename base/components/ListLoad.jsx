@@ -10,7 +10,7 @@ import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
-import { Button, Card, CardBody, Form } from 'reactstrap';
+import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
 
 /**
  * Provide a list of items of a given type.
@@ -98,7 +98,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	let items = [];
 	let itemForId = {};
 	let hits = pvItems.resolved? pvItems.value && pvItems.value.hits : pvItemsAll.value && pvItemsAll.value.hits;
-	let total = pvItems.resolved && pvItems.value.total;
+	let total = pvItems.value && pvItems.value.total;
 	if (hits) {
 		const fastFilter = ! pvItems.resolved;
 		hits.forEach(item => {
@@ -152,6 +152,7 @@ const ListLoad = ({type, status, servlet, navpage,
 			</ListItemWrapper>
 		))}
 		{pvItems.resolved? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
+		{pvItems.error? <Error error={pvItems.error}/> : null}
 	</div>);
 }; // ./ListLoad
 //
