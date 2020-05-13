@@ -468,11 +468,32 @@ ServerIO.list = ({type, status, q, prefix, sort, domain = ''}) => {
 		});
 };
 
+/**
+ * The id from a /servlet/id# RESTful url. 
+ * Assumes: the last segment is the id.
+ * @returns {?string}
+ */
+const restId = () => {
+	const path = DataStore.getValue(['location','path']);
+	return path[path.length-1];
+};
+/**
+ * The id and dataspace from a /servlet/dataspace/id# RESTful url. 
+ * @returns {id, dataspace}
+ */
+const restIdDataspace = () => {
+	const path = DataStore.getValue(['location','path']);
+	const dataspace = path[1];
+	const id = path[2];
+	return {id, dataspace};
+};
 
 const CRUD = {
 };
 export default CRUD;
 export {
 	listPath,
-	errorPath
+	errorPath,
+	restId,
+	restIdDataspace
 };
