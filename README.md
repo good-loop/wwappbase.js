@@ -8,4 +8,5 @@ project:
 
 template:
     copy and edit these files.
-	??for some reason these files don't work if sym-linked??
+	These are files that either don't work if sym-linked (webpack.config.js), 
+	or which require project-specific edits (package.json).
