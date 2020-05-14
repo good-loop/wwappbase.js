@@ -19,12 +19,29 @@ import printer from '../utils/printer';
 import {LoginLink} from './LoginWidget';
 import C from '../CBase';
 import Money from '../data/Money';
+import PropControl, { FormControl } from './PropControl';
 
 import {getType, getId, nonce} from '../data/DataClass';
 import ErrorAlert from './ErrorAlert';
 import Messaging from '../plumbing/Messaging';
 
+
 const Misc = {};
+
+Misc.FormControl = FormControl;
+Misc.PropControl = PropControl;
+
+/**
+ * Normalise unicode characters which have ascii equivalents (e.g. curly quotes), to avoid many annoying issues.
+ */
+Misc.normalise = s => {
+	if ( ! s) return s;
+	s = s.replace(/['`’‘’ʼ]/g, "'");
+	s = s.replace(/[\"“”„‟❛❜❝❞«»]/g, '"');
+	s = s.replace(/[‐‑‒–—―-]/g, '-');
+	s = s.replace(/[\u00A0\u2007\u202F\u200B]/g, ' ');
+	return s;
+};
 
 // Pulled out so we can override it with a site-specific graphic
 Misc.spinnerSvg = (

@@ -983,19 +983,6 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 };
 
 /**
- * Normalise unicode characters which have ascii equivalents (e.g. curly quotes), to avoid many annoying issues.
- */
-Misc.normalise = s => {
-	if ( ! s) return s;
-	s = s.replace(/['`’‘’ʼ]/g, "'");
-	s = s.replace(/[\"“”„‟❛❜❝❞«»]/g, '"');
-	s = s.replace(/[‐‑‒–—―-]/g, '-');
-	s = s.replace(/[\u00A0\u2007\u202F\u200B]/g, ' ');
-	return s;
-};
-
-
-/**
  * This replaces the react-bootstrap version 'cos we saw odd bugs there.
  * Plus since we're providing state handling, we don't need a full component.
  */
@@ -1038,9 +1025,6 @@ PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html tex
 							+" Money XId keyvalue");
 
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
-
-Misc.FormControl = FormControl;
-Misc.PropControl = PropControl;
 
 /**
  * image or video upload. Uses Dropzone
