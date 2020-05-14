@@ -5,3 +5,5 @@ npm-debug.log
 test/calstat-test-app/node_modules/*
 project/web/build
 test-base/babeled-res/*web/build
+web/build
+web/style/*.css
