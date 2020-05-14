@@ -7,7 +7,7 @@ import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
 import ServerIO from '../plumbing/ServerIOBase';
-
+import ErrorAlert from '../components/ErrorAlert';
 
 // For testing
 if (window.location.href.match(/login=local/)) {
@@ -173,6 +173,7 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services}
 			isOpen={show}
 			className="login-modal"
 			toggle={() => setShowLogin(!show)}
+			size='lg'
 		>
 			<ModalHeader toggle={() => setShowLogin(!show)}>
 				<Misc.Logo service={C.app.service} url={logo} transparent={false} className='pull-left m-r1' />
@@ -293,7 +294,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 				{emailField}
 				{requested ? <div className="alert alert-info">A password reset email has been sent out.</div> : ''}
 				{submitGroup}
-				<LoginError />
+				<ErrorAlert error={Login.error} />
 			</form>
 		);
 	}
@@ -309,7 +310,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 			</div>
 			{submitGroup}
 			<ResetLink verb={verb} />
-			<LoginError />
+			<Error error={Login.error} />
 		</form>
 	);
 }; // ./EmailSignin
@@ -325,16 +326,6 @@ const ResetLink = ({verb}) => {
 	};
 	return (
 		<small className="reset-link"><a href="#" onClick={toReset}>Forgotten password?</a></small>
-	);
-};
-
-
-const LoginError = function() {
-	if ( ! Login.error) return <div />;
-	return (
-		<div className="form-group">
-			<div className="alert alert-danger">{ Login.error.text }</div>
-		</div>
 	);
 };
 
@@ -376,7 +367,7 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 	if (!verb) verb = DataStore.getValue(VERB_PATH) || 'login';
 	return (
 		<div className="login-guts container-fluid">
-			<div className="login-divs row">
+			<Row>
 				<div className="login-email col-sm-6 pb-2">
 					<EmailSignin
 						verb={verb}
@@ -386,7 +377,7 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 				<div className="login-social col-sm-6">
 					<SocialSignin verb={verb} services={services} />
 				</div>
-			</div>
+			</Row>
 		</div>
 	);
 };

@@ -510,4 +510,5 @@ export {
 	isPortraitMobile,
 	doShare,
 	stopEvent,
+	space
 };
