@@ -8,8 +8,9 @@ import Misc from './Misc';
  * @param renderers ?? see react-markdown docs
  */
 const MDText = ({source, renderers}) => {
-	let nsource = Misc.normalise(source);
-	return <ReactMarkdown source={nsource} renderers={renderers}/>
+	// Misc.normalise is not a thing. Should this component be retired ??
+	// let nsource = Misc.normalise(source);
+	return <ReactMarkdown source={source} renderers={renderers} />;
 };
 
 export default MDText;
