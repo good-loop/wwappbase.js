@@ -250,7 +250,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 		// Doing it this way seemed the most maintainable option
 		if (ServerIO.mixPanelTrack) ServerIO.mixPanelTrack({mixPanelTag: 'Email login attempted', data: {verb}});
 		
-		if (!person) {
+		if ( ! person) {
 			Login.error = {text: 'Please fill in email and password'};
 			return;
 		}

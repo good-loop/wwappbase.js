@@ -1,19 +1,18 @@
+// A copy of package.json with comments & questions
 {
   "name": "G-L_Project_NPM_Skeleton",
-  "version": "0.0.5",
+  "version": "0.1.0",
   "description": "My app",
   "author": "Daniel Winterstein",
   "repository": {
-    "url": "https://github.com/winterstein/sogive-app",
+    "url": "https://github.com/foo/bar",
     "type": "git"
   },
   "license": "MIT",
   "dependencies": {
-    "chart.js": "^2.8.0",
-    "data-pivot": "^1.0.2",
+    "chart.js": "^2.8.0",	// Where do we use this??
     "easy-enums": "^1.1.7",
-    "easyi18n": "^1.1.1",
-    "hashmap": "^2.4.0",
+    "hashmap": "^2.4.0",	// Where do we use this??
     "intl": "^1.2.5",
     "jquery": "^3.5.0",
     "js-cookie": "^2.2.1",
@@ -22,12 +21,12 @@
     "promise-value": "^1.2.8",
     "react": "^16.13.1",
     "react-autocomplete": "^1.8.1",
-    "react-chartjs2": "^1.2.1",
+    "react-chartjs2": "^1.2.1",	// Where do we use this??
     "react-dom": "^16.13.1",
     "react-dropzone": "^8.1.0",
     "react-markdown": "^4.3.1",
-    "react-scroll": "^1.7.12",
-    "react-spring": "^8.0.27",
+    "react-scroll": "^1.7.12",	// Where do we use this??
+    "react-spring": "^8.0.27",	// Where do we use this??
     "reactstrap": "^8.4.1",
     "sjtest": "^0.4.9",
     "wwutils": "^0.9.5",
@@ -37,10 +36,10 @@
     "compile": "webpack --config $PWD/webpack.config.js --progress --colors",
     "compile-watch": "webpack --config $PWD/webpack.config.js --progress --colors --watch",
     "compile-watch-fast": "NO_PROD=true webpack --config $PWD/webpack.config.js --progress --colors --watch",
-    "test": "jest",
+    "test": "jest",	// Has puppeteer replaced Jest, or do they work together??
     "type-check": "tsc --noEmit"
   },
-  "devDependencies": {
+  "devDependencies": {	// TODO some of this must be obsolete
     "@babel/core": "^7.9.0",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
     "@babel/plugin-transform-react-jsx": "^7.9.4",
