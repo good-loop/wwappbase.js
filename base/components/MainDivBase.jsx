@@ -19,6 +19,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 import MessageBar from './MessageBar';
 import NavBar from './NavBar';
 import LoginWidget, { setShowLogin } from './LoginWidget';
+import { BasicAccountPage } from './AccountPageWidgets';
 
 
 
@@ -87,7 +88,7 @@ class MainDivBase extends Component {
 		// which page?
 		let path = DataStore.getValue('location', 'path');
 		let page = (path && path[0]);
-		if (!page) {
+		if ( ! page) {
 			// defaultPage may be dynamic
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
@@ -99,7 +100,11 @@ class MainDivBase extends Component {
 
 		let Page = pageForPath[page];
 		if ( ! Page) {
-			Page = E404Page;
+			// basic account?
+			if (page==='account') Page = BasicAccountPage;
+			else {
+				Page = E404Page;
+			}
 		}
 		// error handler
 		if (this.state && this.state.error && this.state.errorPath === path) {

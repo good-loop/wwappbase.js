@@ -18,10 +18,13 @@ import Tree from '../../base/data/Tree';
 
 import PV from 'promise-value';
 
+// 		WARNING:
+// 		CODE HERE MAY BE DELETED WITHOUT NOTICE!
+
 const TestPage = () => {
+
 	let path = ['misc', 'TestPage'];
-	let widget = DataStore.getValue(path) || {};
-	const ism = DataStore.isModified(path.concat('green'));
+	let widget = DataStore.getValue(path) || {};	
 
 	const data = [
 		{name:"Winterstein"},
@@ -39,7 +42,8 @@ const TestPage = () => {
 
 	return (
 		<div className='TestPage'>
-			<h1>Test Page</h1>			
+			<h1>Scratch Test Page</h1>			
+			<p>This page is for ad-hoc test & debug of individual widgets. The page is accessible in all our projects as #test.</p>
 			<p>Insert a test widget below</p>
 
 			Row Table
