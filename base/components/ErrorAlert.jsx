@@ -10,8 +10,12 @@ import { space } from '../utils/miscutils';
  */
 const ErrorAlert =({error,color}) => {
 	if ( ! error) return null;
-	let emsg = _.isString(error)? error : join(error.status, error.statusText);
-	let edetails = space(error.statusText, error.responseText, error.details);
+	let emsg = _.isString(error)? error : space(error.status, error.statusText);
+	let edetails = space(error.id, error.statusText, error.responseText, error.details);
+	if ( ! emsg && ! edetails) {
+		console.warn("ErrorAlert - blank?",error);
+		return null;
+	}
 	return <Alert color={color||'danger'}>{emsg}</Alert>;
 };
 export default ErrorAlert;

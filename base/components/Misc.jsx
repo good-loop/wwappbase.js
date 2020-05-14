@@ -21,7 +21,7 @@ import C from '../CBase';
 import Money from '../data/Money';
 
 import {getType, getId, nonce} from '../data/DataClass';
-
+import ErrorAlert from './ErrorAlert';
 import Messaging from '../plumbing/Messaging';
 
 const Misc = {};
@@ -49,7 +49,7 @@ http://tobiasahlin.com/spinkit/
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	// handle ajax error?
 	if (pv && pv.error) {		
-		return <Error error={pv.error} />;
+		return <ErrorAlert error={pv.error} />;
 	}
 
 	return (

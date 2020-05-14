@@ -11,6 +11,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
+import ErrorAlert from './ErrorAlert';
 
 /**
  * Provide a list of items of a given type.
@@ -152,7 +153,7 @@ const ListLoad = ({type, status, servlet, navpage,
 			</ListItemWrapper>
 		))}
 		{pvItems.resolved? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
-		{pvItems.error? <Error error={pvItems.error}/> : null}
+		<ErrorAlert error={pvItems.error}/>
 	</div>);
 }; // ./ListLoad
 //

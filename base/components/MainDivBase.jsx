@@ -43,10 +43,9 @@ const init = () => {
 		if (Login.isLoggedIn()) {
 			// close the login dialog on success		
 			setShowLogin(false);
-		} else {
-			// poke React via DataStore (e.g. for Login.error)
-			DataStore.update({});
 		}
+		// poke React via DataStore (e.g. for Login.error)
+		DataStore.update({});		
 	});
 	// Are we logged in?
 	Login.verify();

@@ -1,13 +1,14 @@
 import React from 'react';
 import { assMatch } from 'sjtest';
 import Login from 'you-again';
-import { Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
+import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
 import { stopEvent, toTitleCase } from 'wwutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
 import ServerIO from '../plumbing/ServerIOBase';
 import ErrorAlert from '../components/ErrorAlert';
+import PropControl from './PropControl';
 
 // For testing
 if (window.location.href.match(/login=local/)) {
@@ -52,7 +53,10 @@ const canSignIn = {
 /** True if the login widget is open */
 const getShowLogin = () => DataStore.getValue(SHOW_PATH);
 /** Open or close the login widget */
-const setShowLogin = show => DataStore.setValue(SHOW_PATH, show);
+const setShowLogin = show => {
+	console.log("setShowLogin", show);
+	return DataStore.setValue(SHOW_PATH, show);
+}
 /** Set the login widget's mode - eg login, register, reset */
 const setLoginVerb = verb => DataStore.setValue(VERB_PATH, verb);
 
@@ -270,7 +274,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 	const emailField = (
 		<div className="form-group">
 			<label>Email</label>
-			<Misc.PropControl type='email' path={path} item={person} prop='email' placeholder="Email" />
+			<PropControl type='email' path={path} item={person} prop='email' placeholder="Email" />
 		</div>
 	);
 
@@ -310,7 +314,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 			</div>
 			{submitGroup}
 			<ResetLink verb={verb} />
-			<Error error={Login.error} />
+			<ErrorAlert error={Login.error} />
 		</form>
 	);
 }; // ./EmailSignin
