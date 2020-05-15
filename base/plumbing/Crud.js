@@ -475,7 +475,11 @@ ServerIO.list = ({type, status, q, prefix, sort, domain = ''}) => {
  */
 const restId = () => {
 	const path = DataStore.getValue(['location','path']);
-	return path[path.length-1];
+	if (path.length < 2) return null;
+	if (path.length > 2) {
+		console.warn("restId() - unusually long rest path: "+path);
+	}
+	return path[1];
 };
 /**
  * The id and dataspace from a /servlet/dataspace/id# RESTful url. 
@@ -483,6 +487,7 @@ const restId = () => {
  */
 const restIdDataspace = () => {
 	const path = DataStore.getValue(['location','path']);
+	if (path.length < 2) return {};
 	const dataspace = path[1];
 	const id = path[2];
 	return {id, dataspace};

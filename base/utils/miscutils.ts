@@ -8,7 +8,7 @@ const randomPick = function<T>(array : T[]) : T
 	return array[r];
 };
 
-const sum = (array : Number[]) : Number => array.reduce((acc, a) => acc + a, 0);
+const sum = (array : number[]) : number => array.reduce((acc, a) => acc + a, 0);
 
 const isMobile = ()  => {		
 	const userAgent = navigator.userAgent || navigator.vendor || window.opera;
