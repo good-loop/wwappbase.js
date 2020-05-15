@@ -1,14 +1,13 @@
 /** Add "standard crud functions" to ServerIO and ActionMan */
 
 import _ from 'lodash';
-import $ from 'jquery';
-import {SJTest, assert, assMatch} from 'sjtest';
+import {assert, assMatch} from 'sjtest';
 import C from '../CBase';
-import DataStore, {getPath} from './DataStore';
+import DataStore from './DataStore';
 import {getId, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from 'you-again';
-import {XId, encURI, mapkv} from 'wwutils';
+import {encURI, mapkv} from '../utils/miscutils';
 
 import ServerIO from './ServerIOBase';
 import ActionMan from './ActionManBase';
@@ -60,8 +59,6 @@ ActionMan.crud = ({type, id, action, item}) => {
 	// call the server
 	return ServerIO.crud(type, item, action)
 		.then(res => {
-			// update
-			let hits = DataStore.updateFromServer(res, status);
 			if (action==='publish') { // } && DataStore.getData(C.KStatus.DRAFT, type, id)) {
 				// also update the draft version
 				let pubItem = DataStore.getValue(pubpath);
@@ -103,7 +100,7 @@ ActionMan.crud = ({type, id, action, item}) => {
 			notifyUser(new Error(action+" failed: "+msg));
 			// If it is a 401 - check the login status
 			if (err.status && err.status===401) {
-				Login.verify().catch(err2 => {
+				Login.verify().catch(() => {
 					notifyUser(new Error("Your login failed - Perhaps your session has expired. Please try logging in again. If that doesn't help, please contact support."));
 				});
 			}
@@ -236,7 +233,6 @@ const recursivePruneFromTreeOfLists = (item, treeOfLists) => {
 	if ( ! treeOfLists) return;
 	mapkv(treeOfLists, (k, kid) => {
 		if (List.isa(kid)) {
-			let fnd = List.remove(item, kid);
 			return;
 		}
 		recursivePruneFromTreeOfLists(item, kid);

@@ -2,7 +2,6 @@
 import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
 import DataClass, {nonce} from './DataClass';
-import {uid, blockProp} from 'wwutils';
 import Money from './Money';
 import C from '../CBase';
 import Login from 'you-again';

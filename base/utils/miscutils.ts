@@ -1,29 +1,29 @@
 import Messaging from "../plumbing/Messaging";
 import { assert } from "./assert";
 
-const randomPick = function<T>(array : T[]) : T
+export const randomPick = function<T>(array : T[]) : T
 {
 	if ( ! array) return null;
 	let r = Math.floor(array.length*Math.random());
 	return array[r];
 };
 
-const sum = (array : number[]) : number => array.reduce((acc, a) => acc + a, 0);
+export const sum = (array : number[]) : number => array.reduce((acc, a) => acc + a, 0);
 
-const isMobile = ()  => {		
+export const isMobile = ()  => {		
 	const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 	let _isMobile = userAgent.match('/mobile|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i');
 	return !! _isMobile;
 };
 
 /**  */
-const isPortraitMobile = () => window.matchMedia("only screen and (max-width: 768px)").matches && window.matchMedia("(orientation: portrait)").matches;
+export const isPortraitMobile = () => window.matchMedia("only screen and (max-width: 768px)").matches && window.matchMedia("(orientation: portrait)").matches;
 
 
 /**
  * 
  */
-const doShare = ({href,title,text}) => {
+export const doShare = ({href,title,text}) => {
 	if ( ! navigator.share) {
 		console.warn("No share function");		
 		Messaging.notifyUser("Sharing link copied to clipboard");
@@ -56,7 +56,7 @@ function fallbackCopyTextToClipboard(text : string) {
 	document.body.removeChild(textArea);
   }
 
-function copyTextToClipboard(text : string) {
+export function copyTextToClipboard(text : string) {
 	if (!navigator.clipboard) {
 		fallbackCopyTextToClipboard(text);
 		return;
@@ -74,7 +74,7 @@ function copyTextToClipboard(text : string) {
  * Recursive, so you can pass an arg list or an array OR multiple arrays.
  * @returns {!string}
  */
-const space = (...strings :string[]) => {
+export const space = (...strings :string[]) => {
 	let js = '';
 	if ( ! strings) return js;
 	strings.forEach(s => {
@@ -109,7 +109,7 @@ const setHash = function(unescapedHash :string) {
  * No path will return as []
  * @return {path: String[], params}
  */
-const parseHash = function(hash = window.location.hash) {
+export const parseHash = function(hash = window.location.hash) {
 	let params = getUrlVars(hash);
 	// Pop the # and peel off eg publisher/myblog NB: this works whether or not "?"" is present
 	let page = hash.substring(1).split('?')[0];
@@ -161,7 +161,7 @@ let fireHashChangeEvent = function({oldURL}) {
  * 
  * Or you could just use Object.entries directly -- but IE doesn't support it yet (Jan 2019)
  */
-const mapkv = function(obj, fn) {
+export const mapkv = function(obj, fn) {
 	return Object.keys(obj).map(k => fn(k, obj[k]));
 };
 
@@ -172,7 +172,7 @@ const mapkv = function(obj, fn) {
  * Bad inputs also return undefined (this makes for slightly simpler usage code
  *  -- you can't test `if (x)` cos 0 is falsy, but you can test `if (x!==undefined)`)
  */
-const asNum = (v :string|number|null) : number|null => {
+export const asNum = (v :string|number|null) : number|null => {
 	if (v===undefined || v===null || v==='' || v===false || v===true || Number.isNaN(v)) {
 		return undefined;
 	}
@@ -198,7 +198,7 @@ const asNum = (v :string|number|null) : number|null => {
  * 
  * NB: copy-pasta of Good-Loop's unit.js addScript()
  */
-const addScript = function(src:string, {async, onload, onerror}) {
+export const addScript = function(src:string, {async, onload, onerror}) {
 	let script = document.createElement('script');
 	script.setAttribute( 'src', src);
 	if (onerror) script.addEventListener('error', onerror); 
@@ -213,97 +213,12 @@ const addScript = function(src:string, {async, onload, onerror}) {
 };
 
 
-class XId {}
-
-/**
- * @param xid
- * @returns the id part of the XId, e.g. "winterstein" from "winterstein@twitter"
- */
-XId.id = function(xid) {
-	if ( ! xid) {
-		throw new Error("XId.id - no input "+xid);
-	}
-	var i = xid.lastIndexOf('@');
-	assert(i!=-1, "const js - id: No @ in xid "+xid);
-	return xid.substring(0, i);
-};
-
-/**
- * Convenience for nice display. Almost equivalent to XId.id() -- except this dewarts the XId.
- * So it's better for public display but cannot be used in ajax requests.
- * @param xid Does not have to be a valid XId! You can pass in just a name, or null.
- * @returns the id part of the XId, e.g. "winterstein" from "winterstein@twitter", "bob" from "p_bob@youtube"
- */
-XId.dewart = function(xid) {
-	if ( ! xid) return "";
-	assert(_.isString(xid), "const js - dewart: xid is not a string! " + xid);
-	// NB: handle invalid XId (where its just a name fragment)
-	var id = xid.indexOf('@') == -1? xid : XId.id(xid);
-	if (id.length < 3) return id;
-	if (id.charAt(1) != '_') return id;
-	var c0 = id.charAt(0);
-	if (c0 != 'p' && c0 != 'v' && c0 != 'g' && c0 != 'c') return id;
-	// so there (probably) is a wart...
-	var s = xid.indexOf('@') == -1? '' : XId.service(xid);
-	if (s !== 'twitter' && s !== 'facebook') {
-		return id.substring(2);
-	}
-	return id;
-};
-
-/**
- * @param xid {!String}
- * @returns the service part of the XId, e.g. "twitter"
- */
-XId.service = function(xid) {
-	assert(_.isString(xid), "const js service(): xid is not a string! " + xid);
-	var i = xid.lastIndexOf('@');
-	assert(i != -1, "const js service(): No @ in xid: " + xid);
-	return xid.substring(i + 1);
-};
-
-/**
- * @param xid Can be null (returns "") or not an XId (returns itself)
- * @returns the first chunk of the XId, e.g. "daniel" from "daniel@winterwell.com@soda.sh"
- * Also dewarts. Will put a leading @ on Twitter handles.
- */
-XId.prettyName = function(xid) {
-	var id = XId.dewart(xid);
-	var i = id.indexOf('@');
-	if (i != -1) {
-		id = id.substring(0, i);
-	}
-	// @alice for Twitter
-	const service = XId.service(xid);
-	if (xid.indexOf('@') !== -1 && service === 'twitter') {
-		id = '@' + id;
-	}
-	// Web? shorten the url
-	if (service==='Web') {
-		// TODO how to shorten a url? crib from SoDash
-	}
-	return id;
-};
-
-/**
- * @param id
- * @param service
- * @returns An xid string in the form 'id@service'
- */
- XId.xid = function(id, service) {
- 	assert(_.isString(id), "utils.js xid(): id is not a string! " + id);
- 	assert(_.isString(service), "utils.js xid(): service is not a string! " + service);
- 	return id + '@' + service;
- }
-
-
-
 /** Parse url arguments
  * @param {?string} url Optional, the string to be parsed, will default to window.location when not provided.
  * @param {?Boolean} lenient If true, if a decoding error is hit, it is swallowed and the raw string is used.
  * Use-case: for parsing urls that may contain adtech macros.
  * @returns a map */
-const getUrlVars = (url:string, lenient:boolean) => {
+export const getUrlVars = (url:string, lenient:boolean) => {
 	url = url || window.location.href;
 	// url = url.replace(/#.*/, ''); Why was this here?! DW
 	var s = url.indexOf("?");
@@ -384,9 +299,7 @@ const yessy = function(val :any) {
 /**
  * convenience for not-null not-undefined (but can be false, 0, or "")
  */
-const is = function(x) {
-	return x !== undefined && x !== null;
-};
+export const is = x => x !== undefined && x !== null;
 
 
 const getStackTrace = function() {
@@ -404,7 +317,7 @@ const getStackTrace = function() {
 /**
  * @return {string} a unique ID
  */
-const uid = function() {
+export const uid = function() {
     // A Type 4 RFC 4122 UUID, via http://stackoverflow.com/a/873856/346629
     var s = [];
     var hexDigits = "0123456789abcdef";
@@ -421,7 +334,7 @@ const uid = function() {
 //** String related functions */
 
 /** Uppercase the first letter, lowercase the rest -- e.g. "dan" to "Daniel" */
-const toTitleCase = function(s :string) {
+export const toTitleCase = function(s :string) {
 	if ( ! s) return s;
 	return s[0].toUpperCase() + s.substr(1).toLowerCase();
 }
@@ -429,7 +342,7 @@ const toTitleCase = function(s :string) {
 /**
  * Truncate text length.
  */
-const ellipsize = function(s :string, maxLength :number) {
+export const ellipsize = function(s :string, maxLength :number) {
 	if ( ! s) return s;
 	if ( ! maxLength) maxLength = 140;
 	if (s.length <= maxLength) return s;
@@ -439,7 +352,7 @@ const ellipsize = function(s :string, maxLength :number) {
 /**
  * e.g. winterwell.com from http://www.winterwell.com/stuff
  */
-const getHost = function(url) {
+export const getHost = function(url) {
     var a = document.createElement('a');
     a.href = url;
     var host = a.hostname;
@@ -465,7 +378,7 @@ const getHost = function(url) {
  escape 's which makes it dangerous, and it does unhelpfully encode /s and other legitimate url characters.
  This is a convenient best-of-both.
 */
-const encURI = function(urlPart : string) {
+export const encURI = function(urlPart : string) {
 	urlPart = encodeURIComponent(urlPart);
 	urlPart = urlPart.replace("'","%27");
 	// Keep some chars which are url safe
@@ -473,7 +386,7 @@ const encURI = function(urlPart : string) {
 	return urlPart;
 }
 
-const decURI = function(urlPart : string) {
+export const decURI = function(urlPart : string) {
 	let decoded = decodeURIComponent(urlPart);
 	return decoded;
 }
@@ -484,7 +397,7 @@ const decURI = function(urlPart : string) {
  * @param e {?Event|Object} a non-event is a no-op 
  * @returns true (so it can be chained with &&)
  */
-const stopEvent = (e : Event) => {
+export const stopEvent = (e : Event) => {
 	if ( ! e) return true;
 	if (e.preventDefault) {
 		e.preventDefault();
@@ -497,18 +410,4 @@ const stopEvent = (e : Event) => {
 
 // DEBUG hack
 window.miscutils = {
-	randomPick,
-	sum,
-	isMobile,
-	isPortraitMobile
-};
-
-export {
-	randomPick,
-	sum,
-	isMobile,
-	isPortraitMobile,
-	doShare,
-	stopEvent,
-	space
 };

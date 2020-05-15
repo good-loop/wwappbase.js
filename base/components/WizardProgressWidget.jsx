@@ -2,7 +2,6 @@ import React from 'react';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import {assMatch, assert} from 'sjtest';
-import {is} from 'wwutils';
 
 // TODO refactor a la Misc.CardAccordion
 

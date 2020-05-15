@@ -7,7 +7,8 @@
 import {assert, assMatch, assertMatch} from 'sjtest';
 // add funky methods to the "standard" Person data-class
 import PromiseValue from 'promise-value';
-import {mapkv, encURI, XId} from 'wwutils';
+import {mapkv, encURI} from '../base/utils/miscutils';
+import XId from '../base/data/XId';
 import Cookies from 'js-cookie';
 
 import Person from './data/Person';

@@ -2,7 +2,7 @@ import React from 'react';
 import { assMatch } from 'sjtest';
 import Login from 'you-again';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
-import { stopEvent, toTitleCase } from 'wwutils';
+import { stopEvent, toTitleCase } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';

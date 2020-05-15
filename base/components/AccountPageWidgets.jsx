@@ -11,7 +11,7 @@ import Misc from './Misc';
 // HACKS
 import CardAccordion from './CardAccordion'; // Hack: this is here to poke CardAccordion into Misc for older code
 import PropControl from './PropControl'; // Hack: this is here to poke Input into Misc for older code
-import {XId} from 'wwutils';
+import XId from '../data/XId';
 import {LoginLink} from './LoginWidget';
 import {setTaskTags} from './TaskList';
 

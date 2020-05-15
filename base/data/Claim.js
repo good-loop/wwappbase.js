@@ -1,8 +1,6 @@
 
-import {assert, assMatch} from 'sjtest';
-import {asNum} from 'wwutils';
+import {assMatch} from 'sjtest';
 import DataClass from './DataClass';
-import C from '../CBase';
 
 /** impact utils */
 class Claim extends DataClass {
@@ -48,7 +46,6 @@ class Claim extends DataClass {
 	};
 } // ./Claim
 DataClass.register(Claim, "Claim");
-const This = Claim;
 export default Claim;
 
 

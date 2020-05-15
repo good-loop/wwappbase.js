@@ -7,7 +7,7 @@ import $ from 'jquery';
 import SJTest from 'sjtest';
 import {assert, assMatch} from 'sjtest';
 import C from '../CBase.js';
-import {encURI} from 'wwutils';
+import {encURI} from '../utils/miscutils';
 
 import Login from 'you-again';
 

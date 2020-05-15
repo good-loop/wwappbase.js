@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Login from 'you-again';
 import { assert, assMatch } from 'sjtest';
-import { getUrlVars, toTitleCase, modifyHash, yessy } from 'wwutils';
+import { getUrlVars, toTitleCase, modifyHash, yessy } from '../utils/miscutils';
 import { Container } from 'reactstrap';
 import { isFunction } from 'lodash';
 // setup Misc.SavePublishDiscard for older code

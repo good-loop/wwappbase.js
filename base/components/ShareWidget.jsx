@@ -2,7 +2,7 @@ import React from 'react';
 import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
-import { XId, uid } from 'wwutils';
+import {uid } from '../utils/miscutils';
 import Cookies from 'js-cookie';
 import PromiseValue from 'promise-value';
 import DataStore from '../plumbing/DataStore';

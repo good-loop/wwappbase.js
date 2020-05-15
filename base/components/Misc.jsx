@@ -3,7 +3,7 @@ import React, { useState, Fragment } from 'react';
 import { Alert, Card, CardBody, Nav, Button } from 'reactstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
-import { XId, addScript, join } from 'wwutils';
+import {addScript, join } from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import md5 from 'md5';
@@ -117,7 +117,7 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 	));
 
 	return (
-		<div className={join('list-editor mb-4', className)}>
+		<div className={space('list-editor mb-4', className)}>
 			{itemElements}
 			{list.length ? null : <p>{noneMessage || 'None'}</p>}
 			<div>
@@ -198,7 +198,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 	assert(service || url, 'Misc.Logo');
 	// Social media - We can handle these services with FontAwesome icons
 	if (service && 'twitter facebook instagram'.indexOf(service) !== -1) {
-		const className = join(className, color? 'color-' + service : null);
+		const className = space(className, color? 'color-' + service : null);
 		const fa = service + (square ? '-square' : '');
 		const faSize = (size === 'xsmall') ? null : (size === 'small') ? '2x' : '4x'; // default to xlarge size, allow normal or large
 		return <Misc.Icon className={className} fa={fa} prefix={Misc.FontAwesome===5?'fab':"fa"} size={faSize} />
@@ -399,7 +399,7 @@ Misc.ImgThumbnail = ({url, alt, background, style, className = '', ...props}) =>
 	// add in base (NB this works with style=null)
 	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain'}, style);
 	if (background) style.background = background;
-	return <img className={join('img-thumbnail',className)} style={style} alt={alt || 'thumbnail'} src={url} />;
+	return <img className={space('img-thumbnail',className)} style={style} alt={alt || 'thumbnail'} src={url} />;
 };
 
 

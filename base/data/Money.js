@@ -3,7 +3,7 @@
 	TODO It'd be nice to make this immutable (can we use Object.freeze to drive that thrgough??)
 */
 import {assert, assMatch} from 'sjtest';
-import {asNum} from 'wwutils';
+import {asNum} from '../utils/miscutils';
 import DataClass, {getType} from './DataClass';
 import C from '../CBase';
 import Settings from '../Settings';

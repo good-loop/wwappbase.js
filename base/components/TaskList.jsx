@@ -2,7 +2,7 @@ import React from 'react';
 import { assMatch } from 'sjtest';
 import Login from 'you-again';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
-import { join } from 'wwutils';
+import {space} from '../utils/miscutils';
 
 import C from '../CBase';
 import List from '../data/List';
@@ -181,7 +181,7 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 	};
 	const ttext = DataStore.getValue(qpath.concat('text'));
 	return (
-		<div key={'f'} className={join('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)}>
+		<div key={'f'} className={space('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)}>
 			<PropControl type='text' path={qpath} prop='text'
 				placeholder={parent? 'Reply / Comment' : 'Make a new task'} />
 			&nbsp;

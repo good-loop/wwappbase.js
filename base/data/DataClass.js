@@ -3,7 +3,6 @@
 
 import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
-import {endsWith} from 'wwutils';
 
 /*
 

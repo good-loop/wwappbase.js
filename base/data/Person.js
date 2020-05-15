@@ -5,7 +5,7 @@ import DataStore from '../plumbing/DataStore';
 import { getClaimsForXId } from '../Profiler';
 import Link from '../data/Link';
 import Claim from '../data/Claim';
-import {XId} from 'wwutils';
+import XId from '.XId';
 
 class Person extends DataClass {
 	/** @type {Link[]} */

@@ -21,7 +21,7 @@ import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import {asNum, join, stopEvent} from 'wwutils';
+import {asNum, space, stopEvent} from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType, nonce } from '../data/DataClass';
 import Tree from '../data/Tree';
@@ -168,7 +168,7 @@ class SimpleTable extends React.Component {
 				<div>
 					<div className={scroller? 'wrapper' : ''}>
 						<div className={scroller? 'scroller' : ''}>
-<table className={join("table",className)}>
+<table className={space("table",className)}>
 	<thead>
 		<tr>
 			{visibleColumns.map((col, c) => {
@@ -465,7 +465,7 @@ const Row = ({item, rowNum, node, columns, depth = 0}) => {
 	));
 
 	return (
-		<tr className={join("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={item.style}>
+		<tr className={space("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={item.style}>
 			{cells}
 		</tr>
 	);

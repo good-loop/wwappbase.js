@@ -1,12 +1,8 @@
 /**
  * A simple tree datatype. Matches Tree.java
  */
-import {assert, assMatch} from 'sjtest';
-import {asNum} from 'wwutils';
-import DataClass, {getType, getId, nonce} from './DataClass';
-import C from '../CBase';
-import Settings from '../Settings';
-import Enum from 'easy-enums';
+import {assert} from 'sjtest';
+import DataClass, {getId} from './DataClass';
 
 /** 
  * 

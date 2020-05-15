@@ -6,7 +6,7 @@ import PromiseValue from 'promise-value';
 
 import {getId, getType, getStatus} from '../data/DataClass';
 import {assert,assMatch} from 'sjtest';
-import {yessy, getUrlVars, parseHash, modifyHash, toTitleCase} from 'wwutils';
+import {parseHash, modifyHash, toTitleCase, is} from '../utils/miscutils';
 
 
 /**
@@ -42,12 +42,12 @@ class Store {
 			shares:{}
 		};
 		// init url vars
-		this.parseUrlVars(window.location);
+		this.parseUrlVars();
 		// and listen to changes
-		window.addEventListener('hashchange', e => {
+		window.addEventListener('hashchange', () => {
 			// NB: avoid a loopy call triggered from setUrlValue()
 			if (this.updating) return true;
-			this.parseUrlVars(window.location);
+			this.parseUrlVars();
 			return true;
 		});
 	}
@@ -59,7 +59,7 @@ class Store {
 	 * 
 	 * Stored as location: { path: String[], params: {key: value} }
 	 */
-	parseUrlVars(url) {
+	parseUrlVars() {
 		let {path, params} = parseHash();
 		// peel off eg publisher/myblog
 		let location = {};
@@ -463,7 +463,6 @@ class Store {
 			hits = [JSend.data(res)]; // just the one?
 		}
 		if ( ! hits) return [];
-		let itemstate = {data:{}, draft:{}, trash:{}};
 		hits.forEach(item => {
 			try {
 				const type = getType(item);
@@ -527,7 +526,7 @@ class Store {
 				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - cachePeriod) {
 					// fetch a fresh copy
 					console.log("DataStore", "stale - fetch fresh", path);
-					const pv = this.fetch2(path, fetchFn, messaging, cachePeriod);
+					const pv = this.fetch2(path, fetchFn, cachePeriod);
 					// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
 					if (pv.resolved) return pv;
 				}
@@ -536,7 +535,7 @@ class Store {
 			return new PromiseValue(item);
 		}
 		// Fetch it
-		return this.fetch2(path, fetchFn, messaging, cachePeriod);
+		return this.fetch2(path, fetchFn, cachePeriod);
 	} // ./fetch()
 
 
@@ -548,7 +547,7 @@ class Store {
 	 * @param {?Number} cachePeriod
 	 * @returns {!PromiseValue}
 	 */
-	fetch2(path, fetchFn, messaging=true, cachePeriod) {
+	fetch2(path, fetchFn, cachePeriod) {
 		// only ask once
 		const fpath = ['transient', 'PromiseValue'].concat(path);
 		const prevpv = this.getValue(fpath);
@@ -653,9 +652,6 @@ class Store {
 		return this.getData({status,type,id}) || ref;
 	}
 } // ./Store
-
-// NB: this is also in wwutils, but npm or something is being weird about versioning. Feb 2018
-const is = x => x !== undefined && x !== null;
 
 const DataStore = new Store();
 // create some of the common data nodes

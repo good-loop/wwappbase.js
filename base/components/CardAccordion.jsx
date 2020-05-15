@@ -66,8 +66,8 @@ class Card extends React.Component {
 		) : null;
 
 		return (
-			<BSCard color={color} outline className={join(className, 'mb-3')}>
-				<CardHeader className={join(headerClasses)} onClick={onHeaderClick} title={titleText}>
+			<BSCard color={color} outline className={space(className, 'mb-3')}>
+				<CardHeader className={space(headerClasses)} onClick={onHeaderClick} title={titleText}>
 					{(glyph || icon) ? <Misc.Icon glyph={glyph} fa={icon} className="mr-2"/> : null}
 					{title ? <span className="mr-2">{title}</span> : null}
 					{alert}

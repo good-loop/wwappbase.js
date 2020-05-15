@@ -2,7 +2,7 @@ import React from 'react';
 
 import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
-import {modifyHash, join} from 'wwutils';
+import {modifyHash, space} from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
@@ -119,12 +119,12 @@ const ListLoad = ({type, status, servlet, navpage,
 		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
 	}
 
-	return (<div className={join('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
+	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} /> : null}
 		
 		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
 
-		{items.length === 0 ? <>No results found for <code>{join(q, filter) || type}</code></> : null}
+		{items.length === 0 ? <>No results found for <code>{space(q, filter) || type}</code></> : null}
 		{total? <div>About {total} results in total</div> : null}
 		
 		{items.map( (item, i) => (

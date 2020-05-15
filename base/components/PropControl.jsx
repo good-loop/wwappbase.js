@@ -1,6 +1,6 @@
 /** PropControl provides inputs linked to DataStore.
  */
-import React, { useState } from 'react';
+import React from 'react';
 
 // TODO Maybe add support for user-set-this, to separate user-cleared-blanks from initial-blanks
 
@@ -15,23 +15,21 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
-import {join, mapkv, stopEvent, toTitleCase, str} from 'wwutils';
+import {stopEvent, toTitleCase} from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
-import md5 from 'md5';
 import Autocomplete from 'react-autocomplete';
 
 import Misc from './Misc';
-import DataStore, {getPath} from '../plumbing/DataStore';
+import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 // import ActionMan from '../plumbing/ActionManBase';
 import printer from '../utils/printer';
 import C from '../CBase';
 import Money from '../data/Money';
 // // import I18n from 'easyi18n';
-import {getType, getId, nonce} from '../data/DataClass';
+import {getType, getId} from '../data/DataClass';
 import {notifyUser} from '../plumbing/Messaging';
-import MDText from './MDText';
 
 /**
  * Set the value and the modified flag in DataStore
@@ -204,7 +202,7 @@ const PropControl = (props) => {
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	return (
-		<div className={join('form-group', type, error? 'has-error' : null)}>
+		<div className={space('form-group', type, error? 'has-error' : null)}>
 			{label || tooltip?
 				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
@@ -501,7 +499,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 	
 	/* text-muted is for my-loop mirror card
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
-	let klass = join('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
+	let klass = space('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
 	return (
 		<select className={klass}
 			name={prop} value={sv} onChange={onChange}
@@ -519,7 +517,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
  * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
  * Deselect everything unless user holds Ctrl??? Really? -RM
  */
-const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromInput, sv, className, type, path, saveFn, ...rest}) => {
+const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromInput, sv, className, type, path, saveFn}) => {
 	assert( ! sv || sv.length !== undefined, "value should be an array", sv, prop);
 	// const mvfi = rest.modelValueFromInput;
 	// let modelValueFromInput = (s, type, etype) => {
@@ -554,7 +552,6 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		);
 	});
 
-	let klass = join('form-group', className);
 	return (
 		<Form className={className}>
 			{domOptions}
@@ -721,7 +718,7 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 	const noChecked = value===false;
 	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
 	return (
-		<>&nbsp;<div className={join('form-group form-inline',className)}>
+		<>&nbsp;<div className={space('form-group form-inline',className)}>
 			<Input type="radio" value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
 			&nbsp;
 			<Input type="radio" value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
@@ -765,7 +762,7 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
  * TODO Should this be a literal special case of the PropControlEntrySet code?
  * @param {{String: Boolean}} value Can be null initially
  */
-const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
+const PropControlKeySet = ({ value, prop, proppath, saveFn}) => {
 	const addRemoveKey = (key, remove) => {
 		const newValue = { ...value };
 		// Set false for "remove" instead of deleting because back-end performs a merge on update, which would lose simple key removal
@@ -810,7 +807,7 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
  * @param {?String} keyName Explanatory placeholder text for entry key
  * @param {?String} valueName Explanatory placeholder text for entry value
  */
-const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value', ...otherStuff}) => {
+const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value'}) => {
 	const addRemoveKey = (key, val, remove) => {
 		if (!key) return;
 		const newValue = { ...value };
@@ -820,7 +817,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 		if (saveFn) saveFn({ path, prop, value: newValue });
 	}
 	
-	const entryElements = Object.entries(value || {}).filter(([key, val]) => (val === '') || val).map(([key, val]) => (
+	const entryElements = Object.entries(value || {}).filter(([, val]) => (val === '') || val).map(([key]) => (
 		<tr className="entry" key={key}>
 			<td><Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</Button></td>
 			<td className="px-2">{key}:</td>
@@ -907,7 +904,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		const items = _.isArray(options)? options : DataStore.getValue(widgetPath) || [];
 
 		// NB: typing sends e = an event, clicking an autocomplete sends e = a value
-		const onChange2 = (e, optItem) => {
+		const onChange2 = (e) => {
 			// console.log("event", e, e.type, optItem);
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 			DataStore.setValue(['transient', 'doFetch'], e.type==='blur');
@@ -1090,7 +1087,7 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
  * @param {Function} removeFn Takes (map, key), returns new map - use if "removing" a key means something other than just deleting it
  * @param {Function} filterFn Takes (key, value), returns boolean - use if some entries should't be shown
  */
-const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp, removeFn, filterFn = (() => true)}) => {
+const MapEditor = ({prop, proppath, value, $KeyProp, $ValProp, removeFn, filterFn = (() => true)}) => {
 	assert($KeyProp && $ValProp, "PropControl MapEditor "+prop+": missing $KeyProp or $ValProp jsx (probably PropControl) widgets");
 	const temppath = ['widget','MapEditor'].concat(proppath);
 	const kv = DataStore.getValue(temppath) || {};
@@ -1127,7 +1124,7 @@ const MapEditor = ({path, prop, proppath, value, $KeyProp, $ValProp, removeFn, f
 					<div>{k}</div>
 					<div>
 						{React.cloneElement($ValProp, {path:proppath, prop:k, label:null})}
-						<Button onClick={e => rmK(k)}>➖</Button>
+						<Button onClick={() => rmK(k)}>➖</Button>
 					</div>
 				</Misc.Col2>)
 		)}
