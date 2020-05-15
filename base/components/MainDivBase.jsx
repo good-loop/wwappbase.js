@@ -79,7 +79,11 @@ class MainDivBase extends Component {
 
 	render() {
 		init();
-		let {pageForPath, navbarPages, securityCheck, SecurityFailPage, defaultPage} = this.props;
+		let {
+			pageForPath, navbarPages, 
+			securityCheck, SecurityFailPage=DefaultErrorPage, 
+			defaultPage
+		} = this.props;
 		// navbarPages might be a getter function now - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
 		if (isFunction(navbarPages)) navbarPages = navbarPages();
@@ -115,7 +119,7 @@ class MainDivBase extends Component {
 			try {
 				securityCheck({page});
 			} catch(err) {
-				Page = () => <SecurityFailPage error={err} /> || <DefaultErrorPage error={err} />;
+				Page = () => <SecurityFailPage error={err} />;
 			}
 		}
 		// nav		
@@ -140,9 +144,14 @@ class MainDivBase extends Component {
 
 const DefaultErrorPage = ({error}) => (
 	<div>
-		<h3>There was an Error :&#39;(</h3>
-		<p>Try navigating to a different tab, or reloading the page. If this problem persists, please contact support.</p>
-		<p>{error && error.message}<br /><small>{error && error.stack}</small></p>
+		<h3 className='mt-2'>There was an Error :&#39;(</h3>
+		<p>Try navigating to a different tab, or reloading the page. 
+			If this problem persists, please contact support.</p>
+		<p>
+			{error && error.message}
+			<br /><br />
+			<small>{error && error.stack}</small>
+		</p>
 	</div>);
 
 export default MainDivBase;
