@@ -57,11 +57,6 @@ const ListLoad = ({type, status, servlet, navpage,
 	// const [foo, setFoo] = useState({});
 	const widgetPath = ['widget','ListLoad',type,status];
 	
-	// selected item id from url
-	// let path = DataStore.getValue(['location', 'path']);
-	// let id = path[1];
-	// if (id) return null;
-
 	if (servlet && ! navpage) {
 		console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");
 	}
@@ -129,7 +124,7 @@ const ListLoad = ({type, status, servlet, navpage,
 		
 		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
 
-		{items.length === 0 ? <>No results found for <code>{join(q, filter)}</code></> : null}
+		{items.length === 0 ? <>No results found for <code>{join(q, filter) || type}</code></> : null}
 		{total? <div>About {total} results in total</div> : null}
 		
 		{items.map( (item, i) => (
@@ -172,11 +167,16 @@ const onPick = ({event, navpage, id, customParams}) => {
 const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName}) => {
 	const id = getId(item);
 
+	let itemUrl = modifyHash([servlet, id], null, true);	
+
 	// TODO refactor this Portal specific code out of here.
 	// for the campaign page we want to manipulate the url to modify the vert/vertiser params
 	// that means both modifying href and onClick definitions
-	let itemUrl = servlet==="campaign" ? modifyHash([servlet,null], {'gl.vertiser':null, 'gl.vert':id}, true) : modifyHash([servlet, id], null, true);
-	let customParams = servlet==="campaign" ? {'gl.vertiser':null, 'gl.vert':id} : null;
+	let customParams;
+	if (servlet==="campaign") {
+		itemUrl = modifyHash([servlet,null], {'gl.vertiser':null, 'gl.vert':id}, true);
+		customParams = {'gl.vertiser':null, 'gl.vert':id};
+	}
 
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 
