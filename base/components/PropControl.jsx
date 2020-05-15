@@ -993,7 +993,7 @@ const FormControl = ({value, type, required, size, className, prepend, ...otherP
 		return <Input className='no-color' value="#000000" type={type} {...otherProps} />;
 	}
 	// add css classes for required fields
-	let klass = join(
+	let klass = space(
 		className,
 		required ? 'form-required' : null,
 		required && !value ? 'blank' : null,

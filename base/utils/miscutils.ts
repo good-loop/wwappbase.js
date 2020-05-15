@@ -1,4 +1,3 @@
-import Messaging from "../plumbing/Messaging";
 import { assert } from "./assert";
 
 export const randomPick = function<T>(array : T[]) : T
@@ -21,15 +20,16 @@ export const isPortraitMobile = () => window.matchMedia("only screen and (max-wi
 
 
 /**
- * 
+ * @returns true if share was invoked, false if copy-to-clipboard was invoked
  */
 export const doShare = ({href,title,text}) => {
 	if ( ! navigator.share) {
-		console.warn("No share function");		
-		Messaging.notifyUser("Sharing link copied to clipboard");
-		return;
+		console.warn("No share function");				
+		copyTextToClipboard(href);
+		return false;
 	}
 	navigator.share({url:href,title,text});
+	return true;
 };
 
 function fallbackCopyTextToClipboard(text : string) {
