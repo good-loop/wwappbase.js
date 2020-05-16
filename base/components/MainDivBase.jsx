@@ -80,7 +80,8 @@ class MainDivBase extends Component {
 	render() {
 		init();
 		let {
-			pageForPath, navbarPages, 
+			pageForPath, 
+			navbarPages, navbarChildren,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			defaultPage
 		} = this.props;
@@ -128,6 +129,7 @@ class MainDivBase extends Component {
 		return (
 			<div>
 				<NavBar page={page} pages={navbarPages}>
+					{navbarChildren}
 				</NavBar>
 				<Container>
 					<MessageBar />
