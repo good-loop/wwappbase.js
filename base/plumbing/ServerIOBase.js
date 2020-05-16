@@ -442,30 +442,3 @@ ServerIO.addDefaultParams = function(params) {
 	if ( ! params.data) params.data = {};
 	return params;
 };
-
-// Log data to MixPanel. Instructions on how to view data output can be found in wiki
-/**
- * Function will only log the same data once per session
- * @param tag String used to identify data
- * @param data optional: any additional data you wish to send along with the request
- */
-ServerIO.mixPanelTrack = ({mixPanelTag, data = {}}) => {
-	// Record request if this has not already been done this session
-	const {mixpanel} = window;
-	const path = C.TRACKPATH.concat(mixPanelTag);
-	const alreadyTracked = DataStore.getValue(path);
-	const userId = Login.getId();
-
-	if( userId ) {
-		data.user = userId;
-	}
-
-	if(mixpanel && !alreadyTracked) {
-		try {
-			mixpanel.track(mixPanelTag, data);
-			DataStore.setValue(path, true, false);
-		} catch(e) {
-			console.warn(e);
-		}
-	}
-};

@@ -7,7 +7,7 @@ import DataStore from './DataStore';
 import {getId, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from 'you-again';
-import {encURI, mapkv} from '../utils/miscutils';
+import {encURI, mapkv, parseHash} from '../utils/miscutils';
 
 import ServerIO from './ServerIOBase';
 import ActionMan from './ActionManBase';
@@ -470,7 +470,7 @@ ServerIO.list = ({type, status, q, prefix, sort, domain = ''}) => {
  * @returns {?string}
  */
 const restId = () => {
-	const path = DataStore.getValue(['location','path']);
+	let {path, params} = parseHash();
 	if (path.length < 2) return null;
 	if (path.length > 2) {
 		console.warn("restId() - unusually long rest path: "+path);
@@ -482,7 +482,7 @@ const restId = () => {
  * @returns {id, dataspace}
  */
 const restIdDataspace = () => {
-	const path = DataStore.getValue(['location','path']);
+	let {path, params} = parseHash();
 	if (path.length < 2) return {};
 	const dataspace = path[1];
 	const id = path[2];

@@ -65,11 +65,6 @@ class Store {
 		let location = {};
 		location.path = path;
 		let page = path? path[0] : null;
-		if (page) {
-			// page/slug? DEPRECATED If so, store in DataStore focus
-			const ptype = toTitleCase(page); // hack publisher -> Publisher
-			this.setValue(['focus', ptype], path[1]);
-		}
 		location.page = page;
 		if (path.length > 2) location.slug = path[1];
 		if (path.length > 3) location.subslug = path[2];

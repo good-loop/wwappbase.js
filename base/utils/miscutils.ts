@@ -107,7 +107,6 @@ const setHash = function(unescapedHash :string) {
 /**
  * Note: params are always string valued, e.g. "1" not 1
  * No path will return as []
- * @return {path: String[], params}
  */
 export const parseHash = function(hash = window.location.hash) {
 	let params = getUrlVars(hash);
@@ -380,9 +379,9 @@ export const getHost = function(url) {
 */
 export const encURI = function(urlPart : string) {
 	urlPart = encodeURIComponent(urlPart);
-	urlPart = urlPart.replace("'","%27");
+	urlPart = urlPart.replace(/'/g,"%27");
 	// Keep some chars which are url safe
-	urlPart = urlPart.replace("%2F","/");
+	urlPart = urlPart.replace(/%2F/g,"/");
 	return urlPart;
 }
 

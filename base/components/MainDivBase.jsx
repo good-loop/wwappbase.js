@@ -53,10 +53,12 @@ const init = () => {
 };
 
 /**
-	
+	WARNING: This element will update on changes ...but the calling MainDiv most likely will *not*.
+	So the props will remain fixed.
+
 	props:
 	pageForPath: {String:JSX}
-	navbarPages: String[]
+	navbarPages: () => String[]
 	securityCheck: ({page}) => throw error / return true
 	SecurityFailPage: ?JSX
 	defaultPage: String
@@ -85,9 +87,11 @@ class MainDivBase extends Component {
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			defaultPage
 		} = this.props;
-		// navbarPages might be a getter function now - so the invoking MainDiv can
+		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
-		if (isFunction(navbarPages)) navbarPages = navbarPages();
+		if (isFunction(navbarPages)) {
+			navbarPages = navbarPages();
+		}
 		if (!navbarPages) navbarPages = Object.keys(pageForPath);
 
 		// which page?
@@ -124,12 +128,9 @@ class MainDivBase extends Component {
 			}
 		}
 		// nav		
-		if (ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag: 'Page rendered: ' + page, data: {user: Login.getId()}});
-
 		return (
 			<div>
 				<NavBar page={page} pages={navbarPages}>
-					{navbarChildren}
 				</NavBar>
 				<Container>
 					<MessageBar />
