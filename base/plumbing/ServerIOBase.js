@@ -349,7 +349,7 @@ ServerIO.load = function(url, params) {
 	if (ServerIO.APIBASE && url.indexOf('http') === -1 && url.indexOf('//') !== 0) {
 		url = ServerIO.APIBASE+url;
 	}
-	console.log("ServerIO.load", url, params);
+	// console.log("ServerIO.load", url, params);
 	params = ServerIO.addDefaultParams(params);
 	// sanity check: no Objects except arrays
 	_.values(params.data).map(
