@@ -2,6 +2,7 @@ import React from 'react';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import {assMatch, assert} from 'sjtest';
+import { Button } from 'reactstrap';
 
 // TODO refactor a la Misc.CardAccordion
 
@@ -26,13 +27,13 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
 	const maybeSetStage = () => complete && stagePath && DataStore.setValue(stagePath, i);
 
 	return (
-		<div className={'Stage '+c} onClick={maybeSetStage}>
-			<h5 className='text-center above'>{stage.title}</h5>
-			<center>
-				<span className='marker'>&#11044;</span>
-			</center>
-			<hr className='line' />
-			<h5 className='text-center below'>{stage.title}</h5>
+		<div className={`Stage ${c}`} onClick={maybeSetStage}>
+			<h5 className="text-center above">{stage.title}</h5>
+			<h5 className="graphic">
+				<div className="marker" />
+				<div className="line" />
+			</h5>
+			<h5 className="text-center below">{stage.title}</h5>
 		</div>
 	);
 };
@@ -101,43 +102,45 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
  * }
  */
 const NextButton = ({complete, stagePath, maxStage, onNext, ...rest}) => {
-	const bsClass = complete ? 'primary' : null;
+	const colour = complete ? 'primary' : undefined;
 	assMatch(maxStage, Number);
-	return (<NextPrevTab stagePath={stagePath} bsClass={bsClass} diff={1}
-		text={<span>Next <Misc.Icon fa="chevron-right" /></span>}
-		maxStage={maxStage} {...rest} callback={onNext} />);
-};
-const PrevButton = ({stagePath, onPrev, ...rest}) => {
-	return <NextPrevTab stagePath={stagePath} diff={-1} text={<span><Misc.Icon fa="chevron-left" /> Previous</span>} callback={onPrev} {...rest} />;
+
+	return (
+		<NextPrevTab stagePath={stagePath} colour={colour} diff={1} maxStage={maxStage} {...rest} callback={onNext}>
+			Next <Misc.Icon fa="chevron-right" />
+		</NextPrevTab>
+	);
 };
 
-const NextPrevTab = ({stagePath, diff, text, bsClass='default', maxStage, callback, ...rest}) => {
+const PrevButton = ({stagePath, onPrev, ...rest}) => (
+	<NextPrevTab stagePath={stagePath} diff={-1} callback={onPrev} {...rest}>
+		<Misc.Icon fa="chevron-left" /> Previous
+	</NextPrevTab>
+);
+
+const NextPrevTab = ({stagePath, diff, children, colour = 'default', maxStage, callback, ...rest}) => {
 
 	assMatch(stagePath, 'String[]');
 	assMatch(diff, Number);
-	assert(text, 'WizardProgressWidget.js - no button text');
+	assert(children, 'WizardProgressWidget.js - no button content');
 	const stage = parseInt(DataStore.getValue(stagePath) || 0);
 
 	if (stage === 0 && diff < 0) return null; // no previous on start
 	if (maxStage && stage >= maxStage && diff > 0) return null; // no next on end
 
-	const changeTab = () => {
+	const onClick = () => {
 		let n = stage + diff;
 		DataStore.setValue(stagePath, n);
+		if (callback) callback();
 	};
 	
 	// use Bootstrap pull class to left/right float
-	const pull = diff > 0? 'pull-right' : 'pull-left';
+	const pull = (diff > 0) ? 'pull-right' : 'pull-left';
 
 	return (
-		<button className={`btn btn-${bsClass} btn-lg ${pull}`}
-			onClick={() => {
-				changeTab();
-				if(callback) callback();
-			}}
-		{...rest} >
-		{text}
-		</button>
+		<Button size="lg" color={colour} className={pull} onClick={onClick} {...rest}>
+			{children}
+		</Button>
 	);
 };
 

@@ -1,7 +1,10 @@
 // @import 'Page.less';
 @import 'colours.less';
 
-@pale-blue: #80bde7;
+@stage-colour: #80bde7;
+@completed-colour: #005;
+
+@marker-radius: 15px;
 
 .WizardProgressWidget {
 	display: flex;
@@ -18,44 +21,61 @@
 			font-size: 18px;
 			transition: opacity 0.5s;
 		}
-		h5.active {
+
+		// container for marker and line - use as a position/sizing reference
+		.graphic {
+			position: relative
 		}
+
 		.marker {
-			font-size: 30px;
-			margin: 0px;
-			padding: 0px;
+			position: relative;
+			left: 50%;
+			margin-left: -@marker-radius;
+			width: (@marker-radius * 2);
+			height: (@marker-radius * 2);
+			border-radius: 50%;
+			z-index: 1;
 		}
+
 		.line {
+			position: absolute;
+			top: @marker-radius;
 			width: 100%;
-			border-top: solid 3px !important;
-			border-bottom: solid 3px;
-			margin:0;
-			margin-top: -23px !important;	
-			margin-bottom: 20px !important;
+			height: 0;
+			outline: 2px solid grey;
+			z-index: 0;
 		}
+
+		// Run the line between the dots - don't extend to the edges
+		&:first-child, &:last-child {
+			.line { width: 50%; }
+		}
+		&:first-child .line {
+			left: 50%;
+		}
+
+		// Mark previous stages as clickable to signify they can be jumped to
+		&.complete {
+			cursor: pointer;
+		}
+
+		// Labels: Above by default, below for currently active stage
 		.below {
 			opacity: 0;
 		}
-	}
-
-	// minor TODO semantic colours
-	.Stage {
-		color: @pale-blue;
-	}
-	.Stage.complete {
-		color:#005;
-		cursor: pointer;
-	}
-	.Stage.active {
-		color: #005;
-		.above {
-			opacity: 0;
+		&.active {
+			.above { opacity: 0; }
+			.below { opacity: 1; }
 		}
-		.below {
-			opacity: 1;
+
+		// Colours: Pale blue default, dark blue for active/complete
+		color: @stage-colour;
+		.marker { background-color: @stage-colour; }
+		&.complete, &.active {
+			color: @completed-colour;
+			.marker { background-color: @completed-colour; }
 		}
 	}
-
 } // ./WizardProgressWidget
 
 // Copied from sogive-app Page.less
