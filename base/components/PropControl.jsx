@@ -597,11 +597,10 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 	return (
 		<Form>
 			{options.map(option => (
-				<FormGroup check inline={inline}>
+				<FormGroup check inline={inline} key={option}>
 					<Input type={inputType} key={`option_${option}`} name={prop} value={option}
 						checked={option == value}
 						onChange={onChange} {...otherStuff}
-						inline={inline}
 					/>
 					<Label check>{labeller(option)}</Label>
 				</FormGroup>
