@@ -274,7 +274,7 @@ function isEmail(string :string) {
 /**
 Like truthy, but {}, [] amd [''] are also false alongside '', 0 and false.
 */
-const yessy = function(val :any) {
+export const yessy = function(val: any): boolean {
 	if ( ! val) return false;
 	if (typeof(val) === 'number' || typeof(val) === 'boolean') {
 		return true;
@@ -287,13 +287,13 @@ const yessy = function(val :any) {
 		return false;
 	}
 	if (val.length) {
-		for (var i = 0; i < val.length; i++) {
+		for (let i = 0; i < val.length; i++) {
 			if (val[i]) return true;
 		}
 		return false;
 	}
 	return true;
-}
+};
 
 /**
  * convenience for not-null not-undefined (but can be false, 0, or "")
