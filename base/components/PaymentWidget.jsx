@@ -1,6 +1,6 @@
 // @Flow
 import React, { Component } from 'react';
-import { Form, FormGroup, Col } from 'reactstrap';
+import { Form, FormGroup, Container, Row, Col, Button } from 'reactstrap';
 
 import { StripeProvider, Elements, injectStripe,
 	CardNumberElement, CardExpiryElement, CardCVCElement,
@@ -245,41 +245,50 @@ class StripeThingsClass extends Component {
 		const isValidAmount = value >= STRIPE_MINIMUM_AMOUNTS[currency]
 		// TODO an email editor if this.props.email is unset
 		return (
-			<Form inline onSubmit={(event) => this.handleSubmit(event)}>
+			<Form onSubmit={(event) => this.handleSubmit(event)}>
 				<h3>Payment of <Misc.Money amount={amount} /> to {recipient}</h3>
 				{credit && Money.value(credit) > 0?
 					<FormGroup><Col md="12">
 						You have <Misc.Money amount={credit} /> in credit which will be used towards this payment.
 					</Col></FormGroup>
 				: null}
-				<FormGroup>
-					<Col md="12">
-						<label>Card number</label>
-						<div className='form-control'>
-							<CardNumberElement placeholder='0000 0000 0000 0000' />
-						</div>
-					</Col>
-				</FormGroup>
-				<FormGroup>
-					<Col md="6">
-						<label>Expiry date</label>
-						<div className='form-control'>
-							<CardExpiryElement />
-						</div>
-					</Col>
-					<Col md="6">
-						<label>CVC</label>
-						<div className='form-control'>
-							<CardCVCElement />
-						</div>
-					</Col>
-				</FormGroup>
 
-				<button className='btn btn-primary btn-lg pull-right' type='submit'
+				<Row>
+					<Col md="12">
+						<FormGroup>
+							<label>Card number</label>
+							<div className='form-control'>
+								<CardNumberElement placeholder='0000 0000 0000 0000' />
+							</div>
+						</FormGroup>
+					</Col>
+				</Row>
+				<Row>
+					<Col md="6">
+						<FormGroup>
+							<label>Expiry date</label>
+							<div className='form-control'>
+								<CardExpiryElement />
+							</div>
+						</FormGroup>
+
+					</Col>
+					<Col md="6">
+						<FormGroup>
+							<label>CVC</label>
+							<div className='form-control'>
+								<CardCVCElement />
+							</div>
+						</FormGroup>
+					</Col>
+				</Row>
+
+				<Button color="primary" size="lg" className='pull-right' type='submit'
 					disabled={isSaving || !isValidAmount}
 					title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency}
-					>Submit Payment</button>
-
+				>
+					Submit Payment
+				</Button>
 				{this.state.errorMsg? <div className='alert alert-danger'>{this.state.errorMsg}</div> : null}
 			</Form>
 		);
