@@ -315,9 +315,9 @@ const PropControl2 = (props) => {
 		const displayValue = value.replace('@' + service, ''); // Strip @service wart for display
 		modelValueFromInput = s => Misc.normalise(s)+'@'+service;
 		return (
-			<div className="input-group">
-				<span className="input-group-addon">{toTitleCase(service)}</span>
+			<div className="input-group">				
 				<FormControl type='text' name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
+				<span className="input-group-append input-group-text">{toTitleCase(service)}</span>
 			</div>
 		);
 	}
