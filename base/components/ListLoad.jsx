@@ -29,6 +29,7 @@ import ErrorAlert from './ErrorAlert';
  * TODO test "" works
  * @param {?String} filter - Set a filter. Do NOT use this and hasFilter
  * @param {?Boolean} hasFilter - If true, offer a text filter. This will be added to q as a prefix filter.
+ * @param {?boolean} filterLocally - If true, do not call the server for filtering
  * @param {?String} status - e.g. "Draft"
  * @param {?String} servlet - @deprecated - use navpage instead
  * @param {?String} navpage - e.g. "publisher" If unset, a default is taken from the url.
@@ -42,7 +43,7 @@ import ErrorAlert from './ErrorAlert';
 const ListLoad = ({type, status, servlet, navpage,
 	q,
 	sort='created-desc',
-	filter, hasFilter,
+	filter, hasFilter, filterLocally,
 	ListItem,
 	checkboxes, canDelete, canCreate, className,
 	notALink, itemClassName}) =>
@@ -83,9 +84,9 @@ const ListLoad = ({type, status, servlet, navpage,
 	// Load via ActionMan -- both filtered and un-filtered
 	// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 	// whilst fetching from the backedn using the filter)
-	let pvItems = ActionMan.list({type, status, q, prefix:filter, sort});
+	let pvItemsFiltered = filter && ! filterLocally? ActionMan.list({type, status, q, prefix:filter, sort}) : {resolved:true};
 	let pvItemsAll = ActionMan.list({type, status, q, sort});
-
+	let pvItems = pvItemsFiltered.value? pvItemsFiltered : pvItemsAll;
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
 	}
@@ -93,10 +94,10 @@ const ListLoad = ({type, status, servlet, navpage,
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let items = [];
 	let itemForId = {};
-	let hits = pvItems.resolved? pvItems.value && pvItems.value.hits : pvItemsAll.value && pvItemsAll.value.hits;
+	let hits = pvItems.value && pvItems.value.hits;
 	let total = pvItems.value && pvItems.value.total;
 	if (hits) {
-		const fastFilter = ! pvItems.resolved;
+		const fastFilter = ! pvItemsFiltered.value;
 		hits.forEach(item => {
 			// fast filter via stringify
 			let sitem = null;
@@ -147,7 +148,7 @@ const ListLoad = ({type, status, servlet, navpage,
 				/>
 			</ListItemWrapper>
 		))}
-		{pvItems.resolved? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
+		{pvItemsFiltered.resolved && pvItemsAll.resolved? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
 		<ErrorAlert error={pvItems.error}/>
 	</div>);
 }; // ./ListLoad
