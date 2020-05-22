@@ -660,6 +660,7 @@ const TableFoot = ({csv, tableName, visibleColumns, topRow, addTotalRow, dataTre
 };
 
 const TableFootPager = ({page,setPage,numPages}) => {
+	// TODO https://getbootstrap.com/docs/4.5/components/pagination/
 	return (<div className='pull-left'>		
 		Page  
 		&nbsp; {page > 0? <a href='' onClick={e => stopEvent(e) && setPage(page-1)} >&lt;</a> : <span className='disabled'>&lt;</span>} 

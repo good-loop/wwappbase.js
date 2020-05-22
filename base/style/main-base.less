@@ -62,6 +62,13 @@ a {
 	background-image: none;
     border-color: #adadad;
 }
+// @deprecated Backwards compatibility: BS4 has dropped pull-left in favour of float-left
+.pull-left {
+    float: left;
+}
+.pull-right {
+	float: right;
+}
 
 // Either a Bootstrap styling glitch or a bad interaction with our stylesheets puts a 4px top margin on checkboxes
 .checkbox input {

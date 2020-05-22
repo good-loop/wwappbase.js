@@ -130,7 +130,7 @@ const dateValidator = (val, rawValue) => {
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
-	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, ...stuff} = props;
+	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, className, ...stuff} = props;
 	if ( ! path) {	// default to using path = the url
 		path = ['location','params'];
 		props = Object.assign({path}, props);
@@ -202,7 +202,7 @@ const PropControl = (props) => {
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	return (
-		<div className={space('form-group', type, error? 'has-error' : null)}>
+		<div className={space('form-group', type, className, error? 'has-error' : null)}>
 			{label || tooltip?
 				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
@@ -269,9 +269,11 @@ const PropControl2 = (props) => {
 		const helpIcon = tooltip ? <Misc.Icon fa='question-circle' title={tooltip} /> : null;
 
 		return <>
-			<FormGroup check inline>
-				<Input type="checkbox" checked={value} onChange={onChange} {...otherStuff} />
-				<Label check>{label} {helpIcon}</Label>
+			<FormGroup check inline={inline}>
+				<Label check>
+					<Input type="checkbox" checked={value} onChange={onChange} {...otherStuff} />
+					{label} {helpIcon}
+				</Label>
 			</FormGroup>
 			{help? <span className="help-block mr-2">{help}</span> : null}
 			{error? <span className="help-block text-danger">{error}</span> : null}
@@ -280,7 +282,7 @@ const PropControl2 = (props) => {
 
 	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
 	if (type === 'yesNo') {
-		return <PropControlYesNo path={path} prop={prop} value={value} inline={inline} saveFn={saveFn} className={props.className} />
+		return <PropControlYesNo path={path} prop={prop} value={value} inline={inline} saveFn={saveFn} />
 	}
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
@@ -563,7 +565,7 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
  *
  * TODO buttons style
  *
- * TODO radio buttons
+ * Radio buttons
  *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
@@ -585,6 +587,7 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 		}
 	}
 	// make the options html
+	// FIXME checkboxes should support multiple options -- list of vals
 	const onChange = e => {
 		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 		const val = e && e.target && e.target.value;
@@ -598,11 +601,13 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 		<Form>
 			{options.map(option => (
 				<FormGroup check inline={inline} key={option}>
-					<Input type={inputType} key={`option_${option}`} name={prop} value={option}
-						checked={option == value}
-						onChange={onChange} {...otherStuff}
-					/>
-					<Label check>{labeller(option)}</Label>
+					<Label check>
+						<Input type={inputType} key={`option_${option}`} name={prop} value={option}
+							checked={option == value}
+							onChange={onChange} {...otherStuff}
+						/>
+						{' '}{labeller(option)}
+					</Label>
 				</FormGroup>
 			))}
 		</Form>
@@ -717,12 +722,20 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 	const noChecked = value===false;
 	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
 	return (
-		<>&nbsp;<div className={space('form-group form-inline',className)}>
-			<Input type="radio" value='yes' name={prop} onChange={onChange} checked={!!value} inline label='Yes' />
-			&nbsp;
-			<Input type="radio" value='no' name={prop} onChange={onChange} checked={noChecked} inline label='No' />
-		</div></>
-	);
+		<>&nbsp;
+		<FormGroup check inline>
+          <Label check>
+		  	<Input type="radio" value='yes' name={prop} onChange={onChange} checked={!!value} />
+			  {' '}Yes
+          </Label>
+        </FormGroup>
+		<FormGroup check inline>
+          <Label check>
+		  	<Input type="radio" value='no' name={prop} onChange={onChange} checked={noChecked} />
+            {' '}No
+          </Label>
+        </FormGroup>
+	</>);
 };
 
 
