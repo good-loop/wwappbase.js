@@ -330,9 +330,15 @@ ServerIO.crud = function(type, item, action) {
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
+	
+	// debug delete
 	let stype = ServerIO.getEndpointForType(type);
+	let urlold = stype+'/'+encURI(getId(item))+'.json';
+
 	// NB: load() includes handle messages
-	return ServerIO.load(stype+'/'+encURI(getId(item))+'.json', params);
+	let id = getId(item);
+	let url = ServerIO.getUrlForItem({type, id, status});
+	return ServerIO.load(url, params);
 };
 ServerIO.saveEdits = function(type, item) {
 	return ServerIO.crud(type, item, 'save');

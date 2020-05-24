@@ -1013,6 +1013,12 @@ const FormControl = ({value, type, required, size, className, prepend, ...otherP
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
 	delete otherProps.labels;
+
+	// if (otherProps.readonly) { nah, let react complain and the dev can fix the cause
+	// 	otherProps.readonly = otherProps.readOnly;
+	// 	delete otherProps.readOnly;
+	// }
+
 	// Minor TODO refactor into <BS.Input /> ?? or does reactstrap have something nice here??
 	const input = <Input className={klass} size={size} type={type} value={value} {...otherProps} />;
 

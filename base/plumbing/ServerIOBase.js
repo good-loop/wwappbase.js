@@ -218,6 +218,7 @@ ServerIO.getDonationsData = ({q, start, end, name}) => {
  * Support for /servlet/dataspace/id paths via ServerIO.dataspace (off by default)
  * 
  * Note: this can be over-ridden to special case some types
+ * @param {?string} domain - e.g. "https://foo.com/" Leave unset (the norm) for "this server".
  */
 ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	// HACK route charity requests to SoGive
@@ -228,7 +229,9 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	}
 	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);
-	let url = domain + servlet+'/'+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '') + encURI(id)+'.json'
+	let url = domain + servlet+'/' 
+		+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '')
+		+ encURI(id)+'.json'
 		+ (status? '?status='+status : '');	
 	return url;
 };

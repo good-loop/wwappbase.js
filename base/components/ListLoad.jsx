@@ -37,15 +37,19 @@ import ErrorAlert from './ErrorAlert';
  * @param ListItem {?React component} if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
- * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).
+ * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
  * @param {?String} itemClassName - If set, overrides the standard ListItem btn css classes
+ * @param {?boolean} canCreate - If set, show a Create
+ * @param {?Object} createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q,
 	sort='created-desc',
 	filter, hasFilter, filterLocally,
 	ListItem,
-	checkboxes, canDelete, canCreate, className,
+	checkboxes, canDelete, 
+	canCreate, createBase,
+	className,
 	notALink, itemClassName}) =>
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
@@ -121,7 +125,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	}
 
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
-		{canCreate? <CreateButton type={type} /> : null}
+		{canCreate? <CreateButton type={type} base={createBase} navpage={navpage} /> : null}
 		
 		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
 
@@ -299,7 +303,7 @@ const createBlank = ({type, navpage, base, id, make}) => {
  * 	navpage: ?String - defaults to the curent page from url
  * }}
  * @param {?String} id - Optional id for the new item (otherwise nonce or a prop might be used)
- * @param props {?String[]} extra props ??how is this used??
+ * @param {?string[]} props - keys of extra props -- this is turned into a form for the user to enter
  */
 const CreateButton = ({type, props, navpage, base, id, make}) => {
 	assert(type);
@@ -324,21 +328,5 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 		</Form></CardBody></Card>);
 };
 
-/**
- *
- * @param servlet {?String} e.g. "publisher" If unset, a default is taken from the url.
- * Best practice is to set servlet to avoid relying on url behaviour.
- */
-const ListItems = ({type, navpage, servlet, status=C.KStatus.ALL_BAR_TRASH, q}) => {
-	assMatch(type, String);
-	return (
-		<div>
-			<h3 className="text-capitalize">List {type}</h3>
-			<CreateButton type={type} navpage={navpage} />
-			<ListLoad type={type} hasFilter navpage={servlet} status={status} q={q} />
-		</div>
-	);
-};
-
-export { CreateButton, DefaultListItem, ListItems, createBlank };
+export { CreateButton, DefaultListItem, createBlank };
 export default ListLoad;
