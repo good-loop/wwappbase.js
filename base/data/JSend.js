@@ -64,7 +64,8 @@ JSend.status = status;
 
 /**
  * Boolean alternative to status.
- * @return {?Boolean} null if the success is not provided. warning returns true
+ * @return {?Boolean} null if the success is not provided. 
+ * status=warning returns true
  */
 JSend.success = jobj => {
 	if (jobj.success===true) return true;
@@ -80,8 +81,7 @@ JSend.success = jobj => {
 		// 300 redirect??
 		return false;
 	}
-
-	console.warn("JSend: status unknown. Response is probably not JSend format: ", jobj);
+	// console.warn("JSend: status unknown. Response is probably not JSend format: ", jobj);
 	return null;
 };
 
