@@ -412,7 +412,7 @@ Misc.VideoThumbnail = ({url, width=200, height=150, controls=true}) => url ? (
  * A help note for the user
  */
 Misc.Help = ({children}) => {
-	return <Alert color='info' className='m-2'><h3 className='pull-right m-2'>&#9432;</h3>{children}</Alert>
+	return <Alert color='info' className='m-1'><h3 className='pull-right m-1'>&#9432;</h3>{children}</Alert>
 };
 
 
