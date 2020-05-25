@@ -317,7 +317,7 @@ const PropControl2 = (props) => {
 		const displayValue = value.replace('@' + service, ''); // Strip @service wart for display
 		modelValueFromInput = s => Misc.normalise(s)+'@'+service;
 		return (
-			<div className="input-group">				
+			<div className="input-group">
 				<FormControl type='text' name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
 				<span className="input-group-append input-group-text">{toTitleCase(service)}</span>
 			</div>
@@ -411,10 +411,12 @@ const PropControl2 = (props) => {
 	if (type === 'radio' || type === 'checkboxes') {
 		return <PropControlRadio value={value} {...props} />
 	}
+
 	if (type === 'select') {
 		let props2 = {onChange, value, modelValueFromInput, ...props};
 		return <PropControlSelect {...props2} />
 	}
+
 	// HACK just a few countries. TODO load in an iso list + autocomplete
 	if (type==='country') {
 		let props2 = {onChange, value, ...props};
@@ -422,6 +424,7 @@ const PropControl2 = (props) => {
 		props2.labels=['', 'United Kingdom (UK)', 'United States of America (USA)', 'Australia', 'Germany'];
 		return <PropControlSelect  {...props2} />
 	}
+
 	if (type === 'autocomplete') {
 		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlAutocomplete {...acprops} />;
@@ -962,6 +965,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 	);
 }; //./autocomplete
 
+
 /**
 * Convert inputs (probably text) into the model's format (e.g. numerical)
 * @param {?primitive} inputValue - The html value, often a String
@@ -991,25 +995,28 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 	return inputValue;
 };
 
+
 /**
  * This replaces the react-bootstrap version 'cos we saw odd bugs there.
  * Plus since we're providing state handling, we don't need a full component.
  */
-const FormControl = ({value, type, required, size, className, prepend, ...otherProps}) => {
+const FormControl = ({value, type, required, size, className, prepend, append, ...otherProps}) => {
 	if (value === null || value === undefined) value = '';
 
 	if (type === 'color' && !value) {
 		// Chrome spits out a console warning about type="color" needing value in format "#rrggbb"
 		// ...but if we omit value, React complains about switching an input between controlled and uncontrolled
 		// So give it a dummy value and set a class to allow us to show a "no colour picked" signifier
-		return <Input className='no-color' value="#000000" type={type} {...otherProps} />;
+		return <Input className="no-color" value="#000000" type={type} {...otherProps} />;
 	}
+	
 	// add css classes for required fields
 	let klass = space(
 		className,
 		required ? 'form-required' : null,
-		required && !value ? 'blank' : null,
+		(required && !value) ? 'blank' : null,
 	);
+
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
 	delete otherProps.labels;
@@ -1019,16 +1026,32 @@ const FormControl = ({value, type, required, size, className, prepend, ...otherP
 	// 	delete otherProps.readOnly;
 	// }
 
-	// Minor TODO refactor into <BS.Input /> ?? or does reactstrap have something nice here??
 	const input = <Input className={klass} size={size} type={type} value={value} {...otherProps} />;
 
-	return prepend ? (
-		<InputGroup>
-			<InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon>
+	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
+	const prependAddon = prepend ? (
+		<InputGroupAddon addonType="prepend">
+			<InputGroupText>{prepend}</InputGroupText>
+		</InputGroupAddon>
+	) : null;
+
+	const appendAddon = append ? (
+		<InputGroupAddon addonType="append">
+			{append}
+		</InputGroupAddon>
+	) : null;
+
+	if (prepend || append) {
+		return <InputGroup>
+			{prependAddon}
 			{input}
-		</InputGroup>
-	) : input;
+			{appendAddon}
+		</InputGroup>;
+	}
+
+	return input;
 };
+
 
 /**
  * List of types eg textarea
@@ -1040,6 +1063,7 @@ PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html tex
 							+" Money XId keyvalue");
 
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
+
 
 /**
  * image or video upload. Uses Dropzone
@@ -1098,6 +1122,7 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 		</div>
 	);
 }; // ./imgUpload
+
 
 /**
  * DEPRECATED replace/merge with PropControlEntrySet
