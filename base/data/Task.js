@@ -1,6 +1,5 @@
 /**
-	Money NB: based on the thing.org type MonetaryAmount
-	TODO It'd be nice to make this immutable (can we use Object.freeze to drive that thrgough??)
+ * Note: Tasks do NOT have a draft stage
 */
 import {assert, assMatch} from 'sjtest';
 import Enum from 'easy-enums';

@@ -1,13 +1,15 @@
 
 import {assert, assMatch} from 'sjtest';
-import DataClass, {getType} from './DataClass';
+import DataClass, {getType, getId} from './DataClass';
 import DataStore from '../plumbing/DataStore';
-import { getClaimsForXId } from '../Profiler';
 import Link from '../data/Link';
 import Claim from '../data/Claim';
 import XId from './XId';
+import md5 from 'md5';
 
 class Person extends DataClass {
+	/** @type {string} */
+	img;
 	/** @type {Link[]} */
 	links;
 	/** @type {Claim[]} */
@@ -29,6 +31,17 @@ export default Person;
 // (30/01/19) use filter instead of map to patch bug where Link.to returned undefined
 // filter only adds value to return array if it is not falsy
 Person.linkedIds = peep => peep.links? peep.links.reduce(Link.to, []) : [];
+
+Person.img = peep => {
+	if ( ! peep) return null;
+	if (peep.img) return peep.img;
+	const xid = getId(peep);
+	if (XId.service(xid) === 'email') {
+		const hash = md5(XId.id(xid).trim().toLowercase());
+		return 'https://www.gravatar.com/avatar/'+hash;
+	}
+	return null;	
+};
 
 /**
  * 

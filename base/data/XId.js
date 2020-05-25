@@ -6,9 +6,9 @@ import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
 import DataClass, {getType} from './DataClass';
 
-class XId extends DataClass {};
+class XId extends String {};
 // TODO how do we replace the constructor so it returns a string?
-DataClass.register(XId, "XId");
+// DataClass.register(XId, "XId");
 const This = XId;
 export default XId;
 
@@ -18,8 +18,8 @@ export default XId;
 XId.isa = xid => xid && xid.indexOf && xid.indexOf('@') > 0;
 
 /**
- * @param xid
- * @returns the id part of the XId, e.g. "winterstein" from "winterstein@twitter"
+ * @param {string} xid
+ * @returns {string} the id part of the XId, e.g. "winterstein" from "winterstein@twitter"
  */
 XId.id = function(xid) {
 	if ( ! xid) {
