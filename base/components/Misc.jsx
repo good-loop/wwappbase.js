@@ -24,6 +24,7 @@ import PropControl, { FormControl } from './PropControl';
 import {getType, getId, nonce} from '../data/DataClass';
 import ErrorAlert from './ErrorAlert';
 import Messaging from '../plumbing/Messaging';
+import XId from '../data/XId';
 
 
 const Misc = {};
@@ -359,7 +360,6 @@ Misc.AvatarImg = ({peep, ...props}) => {
 	let { img, name } = peep;
 	let { className, alt, ...rest} = props;
 	const id = getId(peep);
-
 	name = name || (id && XId.id(id)) || 'anon';
 	alt = alt || `Avatar for ${name}`;
 
@@ -367,7 +367,7 @@ Misc.AvatarImg = ({peep, ...props}) => {
 		// try a gravatar -- maybe 20% will have one c.f. http://euri.ca/2013/how-many-people-use-gravatar/index.html#fnref-1104-3
 		if (id && XId.service(id) === 'email') {
 			let e = XId.id(id);
-			img = 'https://www.gravatar.com/avatar/'+md5(e);
+			img = 'https://www.gravatar.com/avatar/'+md5(e.toLowerCase());
 		}
 		// security paranoia -- but it looks like Gravatar dont set a tracking cookie
 		// let html = `<img className='AvatarImg' alt=${'Avatar for '+name} src=${src} />`;
