@@ -315,7 +315,7 @@ const PropControl2 = (props) => {
 	if (type === 'XId') {
 		let service = otherStuff.service || 'WTF'; // FIXME // Does this actually need fixing? Is there any sensible default?
 		const displayValue = value.replace('@' + service, ''); // Strip @service wart for display
-		modelValueFromInput = s => Misc.normalise(s)+'@'+service;
+		modelValueFromInput = s => s? Misc.normalise(s)+'@'+service : null;
 		return (
 			<div className="input-group">
 				<FormControl type='text' name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
