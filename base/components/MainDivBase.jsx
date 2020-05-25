@@ -21,7 +21,7 @@ import NavBar from './NavBar';
 import LoginWidget, { setShowLogin } from './LoginWidget';
 import { BasicAccountPage } from './AccountPageWidgets';
 
-
+import E404Page from './E404Page';
 
 // DataStore
 C.setupDataStore();
