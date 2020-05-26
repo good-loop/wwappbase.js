@@ -69,7 +69,10 @@ const urlValidatorSecure = val => urlValidatorGuts(val, true);
  * @param {?Money} max
 */
 const moneyValidator = (val,min,max) => {
-	if (!val) return null;
+	// NB: we can get a Money skeleton object with no set value, seen May 2020
+	if ( ! val || ( ! val.value && ! val.value100p)) {
+		return null;
+	}
 	let nVal = Money.value(val);
 
 	if (!Number.isFinite(nVal)) {
