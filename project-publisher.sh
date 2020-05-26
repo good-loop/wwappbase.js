@@ -440,7 +440,7 @@ case $1 in
 		SERVICE_NAME=('profilermain')
 		FRONTEND_SYNC_LIST=("config" "formunit" "src" "web" "package.json" "webpack.config.js")
 		BACKEND_SYNC_LIST=("lib")
-		WHOLE_SYNC=("config" "formunit" "src" "web" "package.json" "webpack.config.js" "lib")
+		WHOLE_SYNC=("config" "formunit" "lib" "package.json" "src" "web" "webpack.config.js")
 	;;
 	sogive|SOGIVE|sogive-app|SOGIVE-APP)
 		PROJECT='sogive-app'
