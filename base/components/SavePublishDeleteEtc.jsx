@@ -108,12 +108,12 @@ const SavePublishDeleteEtc = ({
 
 	// request a save?
 	if (autoSave && C.STATUS.isdirty(localStatus) && ! isSaving) {
-		Misc.saveDraftFn({type,id});
+		saveDraftFn({type,id});
 	}
 
 	// If setting enabled, will automatically publish every five seconds
 	if (autoPublish && C.STATUS.isdirty(localStatus) && item.status !== 'ARCHIVED') {
-		Misc.publishDraftFn({type, id}); // ??@AU - why was this switched off?
+		publishDraftFn({type, id}); // ??@AU - why was this switched off?
 	}
 
 	// Sometimes we just want to autosave drafts!
