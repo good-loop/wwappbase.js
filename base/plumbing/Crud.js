@@ -104,8 +104,8 @@ ActionMan.crud = ({type, id, action, item}) => {
 					notifyUser(new Error("Your login failed - Perhaps your session has expired. Please try logging in again. If that doesn't help, please contact support."));
 				});
 			}
-			// mark the object as dirty
-			DataStore.setLocalEditsStatus(type, id, C.STATUS.dirty);
+			// mark the object as error
+			DataStore.setLocalEditsStatus(type, id, C.STATUS.error);
 			// and log an error relating to it
 			DataStore.setValue(errorPath({type, id, action}), msg);
 			return err;

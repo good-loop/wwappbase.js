@@ -102,17 +102,18 @@ const SavePublishDeleteEtc = ({
 	assMatch(id, String);
 
 	let localStatus = DataStore.getLocalEditsStatus(type, id) || C.STATUS.clean;
+	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.iserror(localStatus);
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
-	let item = DataStore.getData({status, type, id});
+	let item = DataStore.getData({status, type, id});	
 
 	// request a save?
-	if (autoSave && C.STATUS.isdirty(localStatus) && ! isSaving) {
+	if (autoSave && isdirty && ! isSaving) {
 		saveDraftFn({type,id});
 	}
 
 	// If setting enabled, will automatically publish every five seconds
-	if (autoPublish && C.STATUS.isdirty(localStatus) && item.status !== 'ARCHIVED') {
+	if (autoPublish && isdirty && item.status !== 'ARCHIVED') {
 		publishDraftFn({type, id}); // ??@AU - why was this switched off?
 	}
 
