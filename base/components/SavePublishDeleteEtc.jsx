@@ -102,7 +102,7 @@ const SavePublishDeleteEtc = ({
 	assMatch(id, String);
 
 	let localStatus = DataStore.getLocalEditsStatus(type, id) || C.STATUS.clean;
-	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.iserror(localStatus);
+	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.issaveerror(localStatus);
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData({status, type, id});	
@@ -169,7 +169,10 @@ const SavePublishDeleteEtc = ({
 		<div className='SavePublishDeleteEtc SavePublishDiscard' title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
 
-			<Button name="save" color='default' disabled={isSaving || C.STATUS.isclean(localStatus)} 
+			<Button name="save" 
+				color={C.STATUS.issaveerror(localStatus)? 'danger' : 'default'} 
+				title={C.STATUS.issaveerror(localStatus)? 'There was an error when saving' : null}
+				disabled={isSaving || C.STATUS.isclean(localStatus)} 
 				onClick={() => ActionMan.saveEdits(type, id)}>
 				Save Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>

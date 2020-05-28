@@ -105,7 +105,7 @@ ActionMan.crud = ({type, id, action, item}) => {
 				});
 			}
 			// mark the object as error
-			DataStore.setLocalEditsStatus(type, id, C.STATUS.error);
+			DataStore.setLocalEditsStatus(type, id, C.STATUS.saveerror);
 			// and log an error relating to it
 			DataStore.setValue(errorPath({type, id, action}), msg);
 			return err;
