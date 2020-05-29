@@ -528,6 +528,6 @@ Misc.Tabs = ({children, path}) => {
 };
 
 
-Misc.LoginToSee = ({desc}) => <div>Please login to see {desc||'this'}. <LoginLink className='btn btn-default' /></div>;
+Misc.LoginToSee = ({desc}) => <div>Please log in to see {desc||'this'}. <LoginLink className='btn btn-secondary' /></div>;
 
 export default Misc;

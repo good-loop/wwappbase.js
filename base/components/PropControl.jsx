@@ -807,13 +807,14 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn}) => {
 		});
 	};
 
+
 	return (
 		<div className="keyset form-inline">
 			<div className="keys">{keyElements}</div>
-			<form className="form-inline" onSubmit={stopEvent}>
-				<input className='form-control' onChange={(event) => newKey = event.target.value}
-				/> <button className={'btn '+(value? 'btn-primary' : 'btn-default')} onClick={onClickAdd} >Add</button>
-			</form>
+			<Form inline onSubmit={stopEvent}>
+				<Input onChange={(event) => newKey = event.target.value}
+				/> <Button color={value ? 'primary' : 'secondary'} onClick={onClickAdd} >Add</Button>
+			</Form>
 		</div>
 	);
 };

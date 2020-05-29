@@ -243,11 +243,11 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 
 
 const DefaultDelete = ({type,id}) => (
-	<button className='btn btn-xs btn-default pull-right'
-		onClick={e => confirm("Delete this "+type+"?")? ActionMan.delete(type, id) : null}
-		title='Delete'>
+	<Button color="secondary" size="xs" className="pull-right"
+		onClick={e => confirm(`Delete this ${type}?`) ? ActionMan.delete(type, id) : null}
+		title="Delete">
 		<Misc.Icon fa="trash" />
-	</button>
+	</Button>
 );
 
 

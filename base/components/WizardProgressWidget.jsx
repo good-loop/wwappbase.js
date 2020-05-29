@@ -118,7 +118,7 @@ const PrevButton = ({stagePath, onPrev, ...rest}) => (
 	</NextPrevTab>
 );
 
-const NextPrevTab = ({stagePath, diff, children, colour = 'default', maxStage, callback, ...rest}) => {
+const NextPrevTab = ({stagePath, diff, children, colour = 'secondary', maxStage, callback, ...rest}) => {
 
 	assMatch(stagePath, 'String[]');
 	assMatch(diff, Number);

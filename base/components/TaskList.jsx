@@ -60,9 +60,13 @@ const TaskListItem = ({item}) => {
  * navbar button to show/hide the task list
  */
 const TaskListButton = ({bpath, value, list}) => {
-	return (<button type="button" className='btn btn-default navbar-btn navbar-nav'
-		disabled={ ! bpath}
-		onClick={e => DataStore.setValue(bpath, ! value)}>Tasks {list? '('+List.total(list)+')' : null}</button>
+	return (
+		<Button color="secondary" className="navbar-btn navbar-nav"
+			disabled={!bpath}
+			onClick={e => DataStore.setValue(bpath, ! value)}
+		>
+			Tasks {list ? `(${List.total(list)})` : null}
+		</Button>
 	);
 };
 
