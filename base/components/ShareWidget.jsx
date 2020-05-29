@@ -109,15 +109,15 @@ const ShareWidget = ({item, type, id, name}) => {
 					<div className="row">
 						<Misc.PropControl path={formPath} prop='enableNotification' label='Send a notification email' type='checkbox'/>
 						{enableNotification? <Misc.PropControl path={formPath} prop='optionalMessage' id='OptionalMessage' label='Attached message' type='textarea' /> : null}
-						<button className='btn btn-primary btn-lg btn-block' disabled={!validEmailBool}
-							onClick={()=>{
+						<Button color="primary" size="lg" className='btn-block' disabled={!validEmailBool}
+							onClick={() => {
 								const {form} = DataStore.getValue(basePath) || {};
-
 								shareThing({shareId, withXId});
 								sendEmailNotification('/testEmail', {...form, senderId: Login.getId()});
-								}}>
+							}}
+						>
 							Submit
-						</button>
+						</Button>
 					</div>
 					<div className="row">
 						<h4>Shared with</h4>
@@ -140,22 +140,22 @@ const ListShares = ({list}) => {
 };
 
 const SharedWithRow = ({share}) => {
-	assert(share, "SharedWithRow");
+	assert(share, 'SharedWithRow');
 	return (
-		<div className='clearfix'>
-			<p className='pull-left'>{share._to}</p>
-			<button className='btn btn-outline-danger pull-right'
+		<div className="clearfix">
+			<p className="pull-left">{share._to}</p>
+			<Button outline color="danger" className="pull-right"
 				title="remove this person's access"
 				onClick={ () => deleteShare({share}) }
 			>
 				<Misc.Icon fa="cross-circle"/>
-			</button>
+			</Button>
 	</div>);
 };
 
 const AccessDenied = ({thingId}) => {
-	if ( ! getRoles().resolved) return <Misc.Loading text='Checking roles and access...' />;
-	return (<Misc.Card title='Access Denied :('>
+	if ( ! getRoles().resolved) return <Misc.Loading text="Checking roles and access..." />;
+	return (<Misc.Card title="Access Denied :(">
 		<div>Sorry - you don't have access to this content.
 			{thingId? <div><code>Content id: {thingId}</code></div> : null}
 			{Login.isLoggedIn()? <div><code>Your id: {Login.getId()}</code></div> : null}
@@ -172,7 +172,7 @@ const ClaimButton = ({type, id}) => {
 	const sid = shareThingId(type, id);
 	const plist = Shares.getShareListPV(sid);
 	if ( ! plist.resolved) {
-		return <Misc.Loading text='Loading access details' />;
+		return <Misc.Loading text="Loading access details" />;
 	}
 	if (plist.value.length !== 0) {
 		return <div>Access is held by: {plist.value.map( v => v._to + '\n')}</div>;
@@ -182,9 +182,9 @@ const ClaimButton = ({type, id}) => {
 		<div>
 			This {type} has not been claimed yet. If you are the owner or manager, please claim it.
 			<div>
-				<button className='btn btn-default' onClick={() => Shares.claimItem({type, id})} >
+				<Button color="secondary" onClick={() => Shares.claimItem({type, id})} >
 					Claim {id}
-				</button>
+				</Button>
 			</div>
 		</div>);
 };

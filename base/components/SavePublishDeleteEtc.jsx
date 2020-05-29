@@ -165,52 +165,52 @@ const SavePublishDeleteEtc = ({
 	};
 
 	return (
-		<div className='SavePublishDeleteEtc SavePublishDiscard' title={item && item.status}>
-			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving? ", saving...":null} | DataStore: {dsi}</small></div>
+		<div className="SavePublishDeleteEtc SavePublishDiscard" title={item && item.status}>
+			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div>
 
-			<Button name="save" color='default' disabled={isSaving || C.STATUS.isclean(localStatus)} 
+			<Button name="save" color="secondary" disabled={isSaving || C.STATUS.isclean(localStatus)} 
 				onClick={() => ActionMan.saveEdits(type, id)}>
 				Save Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 
 			{saveAs ? <>&nbsp;
-				<Button name="save-as" color='default' disabled={isSaving}
-					title='Copy and save with a new ID'
+				<Button name="save-as" color="secondary" disabled={isSaving}
+					title="Copy and save with a new ID"
 					onClick={doSaveAs} >
 					<small>Save As</small> <span className="fa fa-circle-notch spinning" style={vis} />
 				</Button>
 			</> : null}
 			&nbsp;
 
-			<Button name="publish" color='primary' disabled={disablePublish} title={publishTooltip}
+			<Button name="publish" color="primary" disabled={disablePublish} title={publishTooltip}
 				onClick={() => check(prePublish({item, action:C.CRUDACTION.publish})) && ActionMan.publishEdits(type, id)}>
 				Publish Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 			&nbsp;
 
-			<Button name="discard" color='warning' disabled={isSaving || noEdits}
+			<Button name="discard" color="warning" disabled={isSaving || noEdits}
 				onClick={() => ActionMan.discardEdits(type, id)}>
 				Discard Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 
 			{unpublish && pubExists ? <>&nbsp;
-				<Button name="unpublish" color='warning' disabled={isSaving || noEdits}
-					title='Move from published to draft'
+				<Button name="unpublish" color="warning" disabled={isSaving || noEdits}
+					title="Move from published to draft"
 					onClick={() => ActionMan.unpublish(type, id)} >
 					Un-Publish <span className="fa fa-circle-notch spinning" style={vis} />
 				</Button>
 			</> : null}
 			
 			{canArchive? <>&nbsp;
-				<Button name="archive" color='warning' disabled={isSaving || noEdits}
-					title='Archive'
+				<Button name="archive" color="warning" disabled={isSaving || noEdits}
+					title="Archive"
 					onClick={() => check(preArchive({item,action:'archive'})) && ActionMan.archive({type, id})} >
 					Archive <span className="fa fa-circle-notch spinning" style={vis} />
 				</Button>
 			</> : null}
 
 			&nbsp;
-			<Button name="delete" color='danger' disabled={disableDelete}
+			<Button name="delete" color="danger" disabled={disableDelete}
 				onClick={doDeleteAndRedirect} >
 				Delete <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
