@@ -45,7 +45,8 @@ C.isProduction = () => prod;
  */
 C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED TRASH ALL_BAR_TRASH PUB_OR_ARC PUB_OR_DRAFT');
 
-C.STATUS = new Enum('loading clean dirty saving');
+C.STATUS = new Enum('loading clean dirty saving saveerror'); // 
+// TODO error means a save failed
 
 C.CRUDACTION = new Enum('new getornew save copy publish unpublish discardEdits delete archive');
 

@@ -102,18 +102,19 @@ const SavePublishDeleteEtc = ({
 	assMatch(id, String);
 
 	let localStatus = DataStore.getLocalEditsStatus(type, id) || C.STATUS.clean;
+	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.issaveerror(localStatus);
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData({status, type, id});
 
 	// request a save?
-	if (autoSave && C.STATUS.isdirty(localStatus) && ! isSaving) {
-		Misc.saveDraftFn({type,id});
+	if (autoSave && isdirty && ! isSaving) {
+		saveDraftFn({type,id});
 	}
 
 	// If setting enabled, will automatically publish every five seconds
-	if (autoPublish && C.STATUS.isdirty(localStatus) && item.status !== 'ARCHIVED') {
-		Misc.publishDraftFn({type, id}); // ??@AU - why was this switched off?
+	if (autoPublish && isdirty && item.status !== 'ARCHIVED') {
+		publishDraftFn({type, id}); // ??@AU - why was this switched off?
 	}
 
 	// Sometimes we just want to autosave drafts!
@@ -168,7 +169,10 @@ const SavePublishDeleteEtc = ({
 		<div className="SavePublishDeleteEtc SavePublishDiscard" title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div>
 
-			<Button name="save" color="secondary" disabled={isSaving || C.STATUS.isclean(localStatus)} 
+			<Button name="save" 
+				color={C.STATUS.issaveerror(localStatus)? 'danger' : 'secondary'} 
+				title={C.STATUS.issaveerror(localStatus)? 'There was an error when saving' : null}
+				disabled={isSaving || C.STATUS.isclean(localStatus)} 
 				onClick={() => ActionMan.saveEdits(type, id)}>
 				Save Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
