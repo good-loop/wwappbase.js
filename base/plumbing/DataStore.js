@@ -686,6 +686,9 @@ export default DataStore;
  * @param id
  */
 const getPath = DataStore.getPath.bind(DataStore);
+/**
+ * @deprecated NOT the draft editor path
+ */
 const getDataPath = DataStore.getDataPath.bind(DataStore);
 
 
