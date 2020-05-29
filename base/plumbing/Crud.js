@@ -3,7 +3,7 @@
 import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
 import C from '../CBase';
-import DataStore from './DataStore';
+import DataStore, { getListPath } from './DataStore';
 import {getId, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from 'you-again';
@@ -30,7 +30,7 @@ ActionMan.crud = ({type, id, action, item}) => {
 	}
 	if ( ! item) {
 		// No item? fine for action=delete. Make a transient dummy here
-		assert(action==='delete', action+" "+type+" "+id);
+		assert(action==='delete', "no item?! "+action+" "+type+" "+id);
 		item = {id, "@type": type};
 	}
 	if ( ! getId(item)) {
@@ -120,8 +120,10 @@ const errorPath = ({type, id, action}) => {
 	return ['transient', type, id, action, 'error'];
 };
 
-ActionMan.saveEdits = (type, id, item) => {
-	assMatch(id, String, "Are you using named parameters? Not for this function (we should prob refactor that)");
+ActionMan.saveEdits = ({type, id, item}) => {
+	if ( ! type) type = getType(item);
+	if ( ! id) id = getId(item);
+	assMatch(id, String);
 	return ActionMan.crud({type, id, action: 'save', item});
 };
 
@@ -198,7 +200,7 @@ const preCrudListMod = ({type, id, item, action}) => {
 	// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
 	if (C.CRUDACTION.ispublish(action)) {
 		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
-			const path = listPath({type, status});
+			const path = getListPath({type, status});
 			const list = DataStore.getValue(path);
 			if (!list) return;
 			List.remove(item, list); // No duplicates - remove any existing copy of the item
@@ -212,14 +214,14 @@ const preCrudListMod = ({type, id, item, action}) => {
 	if (C.CRUDACTION.isdelete(action)) {
 		if ( ! item) item = {type, id};
 		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
-			// NB: see listPath for format, which is [list, type, status, domain, query, sort]
+			// NB: see getListPath for format, which is [list, type, status, domain, query, sort]
 			let domainQuerySortList = DataStore.getValue('list', type, status);
 			recursivePruneFromTreeOfLists(item, domainQuerySortList);
 		});
 	} // ./action=delete
 
 	if (action === 'archive') {
-		const path = listPath({type, status: 'ARCHIVED'});
+		const path = getListPath({type, status: 'ARCHIVED'});
 		const list = DataStore.getValue(path);
 		if (!list) return;
 		List.add(item, list, 0);
@@ -410,19 +412,6 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 		});
 };
 
-/**
- * DataStore path for list
- * @param {?String} sort Optional sort e.g. "created-desc"
- * @returns [list, type, status, domain, query, prefix, sort]
- */
-const listPath = ({type,status,q,prefix,sort,domain}) => {
-	// NB: we want fixed length paths, to avoid stored results overlapping with paths fragments.
-	return ['list', type, status, 
-		domain || 'nodomain', 
-		q || 'all', 
-		prefix || 'unfiltered', 
-		sort || 'unsorted'];
-};
 
 /**
  * @param sort {?String} e.g. "start-desc"
@@ -431,7 +420,7 @@ const listPath = ({type,status,q,prefix,sort,domain}) => {
 // Namespace anything fetched from a non-default domain
 ActionMan.list = ({type, status, q, prefix, sort, domain}) => {	
 	assert(C.TYPES.has(type), type);
-	const lpath = listPath({type,status,q,prefix,sort,domain});
+	const lpath =  getListPath({type,status,q,prefix,sort,domain});
 	return DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q, prefix, sort, domain});
 	});
@@ -500,7 +489,6 @@ const CRUD = {
 };
 export default CRUD;
 export {
-	listPath,
 	errorPath,
 	restId,
 	restIdDataspace

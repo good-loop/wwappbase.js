@@ -31,8 +31,8 @@ const confirmUserAction = ({item, action}) => {
  * @param {type, id}
 */
 const saveDraftFn = _.debounce(
-	({type, id}) => {
-		ActionMan.saveEdits(type, id);
+	({type, id, item}) => {
+		ActionMan.saveEdits({type, id, item});
 		return true;
 	}, 5000
 );
@@ -173,7 +173,7 @@ const SavePublishDeleteEtc = ({
 				color={C.STATUS.issaveerror(localStatus)? 'danger' : 'secondary'} 
 				title={C.STATUS.issaveerror(localStatus)? 'There was an error when saving' : null}
 				disabled={isSaving || C.STATUS.isclean(localStatus)} 
-				onClick={() => ActionMan.saveEdits(type, id)}>
+				onClick={() => ActionMan.saveEdits({type, id, item})}>
 				Save Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 

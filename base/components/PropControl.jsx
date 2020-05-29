@@ -108,15 +108,14 @@ const dateValidator = (val, rawValue) => {
  * Input bound to DataStore.
  * aka Misc.PropControl
  *
- * @param {Function} saveFn inputs: {path, prop, value}
+ * @param {?Function} saveFn inputs: {path, prop, value}
  * This gets called at the end of onChange.
  * You are advised to wrap this with e.g. _.debounce(myfn, 500).
  * NB: we cant debounce here, cos it'd be a different debounce fn each time.
  * Save utils:
- * `Misc.saveDraftFn` and `Misc.savePublishFn`,
- * or instead of saveFn, place a Misc.SavePublishDiscard on the page.
+ * SavePublishDeleteEtc `saveDraftFn` 
+ * or instead of saveFn, place a SavePublishDeleteEtc on the page.
  *
- * Note: You can also use this for
  * @param {?String} label
  * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
  * 	Default: ['location','params'] which codes for the url
@@ -128,8 +127,8 @@ const dateValidator = (val, rawValue) => {
  * 	TODO mark that somehow
  * @param validator {?(value, rawValue) => String} Generate an error message if invalid
  * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
- * @param https {?Boolean} if true, urls must use https not http (recommended)
- *
+ * @param https {?Boolean} if true, for type=url, urls must use https not http (recommended)
+ * 
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
@@ -140,6 +139,7 @@ const PropControl = (props) => {
 	}
 	assMatch(prop, "String|Number");
 	assMatch(path, Array);
+	assert( ! props.onChange, "PropControl.jsx "+path+"."+prop+" Use saveFn instead of onChange (which is set locally)");
 	const proppath = path.concat(prop);
 	let value = DataStore.getValue(proppath);
 	// Use a default? But not to replace false or 0

@@ -6,7 +6,7 @@ import PromiseValue from 'promise-value';
 
 import {getId, getType, getStatus} from '../data/DataClass';
 import {assert,assMatch} from 'sjtest';
-import {parseHash, modifyHash, toTitleCase, is} from '../utils/miscutils';
+import {parseHash, modifyHash, toTitleCase, is, space} from '../utils/miscutils';
 
 
 /**
@@ -687,6 +687,22 @@ export default DataStore;
  */
 const getPath = DataStore.getPath.bind(DataStore);
 const getDataPath = DataStore.getDataPath.bind(DataStore);
+
+
+/**
+ * DataStore path for list
+ *  * 	// TODO have a filter-function fot lists, which can dynamically add/remove items
+ * @param {?String} sort Optional sort e.g. "created-desc"
+ * @returns [list, type, status, domain, query+prefix, sort]
+ */
+const getListPath = ({type,status,q,prefix,sort,domain}) => {
+	// NB: we want fixed length paths, to avoid stored results overlapping with paths fragments.
+	return ['list', type, status, 
+		domain || 'nodomain', 
+		space(q, prefix) || 'all', 
+		sort || 'unsorted'];
+};
+
 /**
  * @param {String[]} path
  */
@@ -694,6 +710,7 @@ const getValue = DataStore.getValue.bind(DataStore); const setValue = DataStore.
 export {
 	getPath,
 	getDataPath,
+	getListPath,
 	getValue, setValue
 };
 // accessible to debug
