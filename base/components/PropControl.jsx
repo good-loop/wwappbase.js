@@ -15,7 +15,7 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
-import {stopEvent, toTitleCase} from '../utils/miscutils';
+import {stopEvent, toTitleCase, space} from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import Autocomplete from 'react-autocomplete';

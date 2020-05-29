@@ -50,8 +50,9 @@ ActionMan.crud = ({type, id, action, item}) => {
 	// TODO optimistic local edits
 	// crud2_optimisticLocalEdit()
 
-	// mark the widget as saving
-	DataStore.setLocalEditsStatus(type, id, C.STATUS.saving);
+	// mark the widget as saving (defer 'cos this triggers a react redraw, which cant be done inside a render, where we might be)
+	_.defer(() => DataStore.setLocalEditsStatus(type, id, C.STATUS.saving));
+	
 	const status = serverStatusForAction(action);
 	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
 	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
