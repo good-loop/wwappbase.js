@@ -1,4 +1,7 @@
 /**
+ * @deprecated - Use reactstrap and BS4
+ */
+/**
  * Bootstrap 3.
  */
 import React from 'react';

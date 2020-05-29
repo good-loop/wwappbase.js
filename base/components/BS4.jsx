@@ -1,3 +1,6 @@
+/**
+ * @deprecated - Use reactstrap and BS4
+ */
 import React from 'react';
 import BS, {space, classes} from './BS';
 // for now at least, we build on BS3, overwriting the changed parts

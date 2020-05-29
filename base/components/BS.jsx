@@ -1,5 +1,9 @@
 
 /**
+ * @deprecated - Use reactstrap and BS4
+ */
+
+/**
  * Allow for Bootstrap 3 or Bootstrap 4 -- depending on what MainDiv imports
  *
  * To initialise this, add an import to MainDiv:
