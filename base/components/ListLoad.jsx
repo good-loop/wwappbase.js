@@ -12,6 +12,7 @@ import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
 import ErrorAlert from './ErrorAlert';
+import { yessy } from 'wwutils';
 
 /**
  * Provide a list of items of a given type.
@@ -41,6 +42,7 @@ import ErrorAlert from './ErrorAlert';
  * @param {?String} itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} canCreate - If set, show a Create
  * @param {?Object} createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
+ * @param {?C.KStatus} preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q,
@@ -50,7 +52,9 @@ const ListLoad = ({type, status, servlet, navpage,
 	checkboxes, canDelete, 
 	canCreate, createBase,
 	className,
-	notALink, itemClassName}) =>
+	notALink, itemClassName,
+	preferStatus
+}) =>
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
@@ -96,33 +100,11 @@ const ListLoad = ({type, status, servlet, navpage,
 	}
 	// filter out duplicate-id (paranoia: this should already have been done server side)
 	// NB: this prefers the 1st occurrence and preserves the list order.
-	let items = [];
-	let itemForId = {};
 	let hits = pvItems.value && pvItems.value.hits;
+	const fastFilter = ! pvItemsFiltered.value;
+	// ...filter / resolve
+	let items = resolveItems({hits, type, status, preferStatus, filter, fastFilter});	
 	let total = pvItems.value && pvItems.value.total;
-	if (hits) {
-		const fastFilter = ! pvItemsFiltered.value;
-		hits.forEach(item => {
-			// fast filter via stringify
-			let sitem = null;
-			if (fastFilter) {
-				sitem = JSON.stringify(item).toLowerCase();
-				if (filter && sitem.indexOf(filter) === -1) {
-					return; // filtered out
-				}
-			}
-			// dupe?
-			let id = getId(item) || sitem || JSON.stringify(item).toLowerCase();
-			if (itemForId[id]) {
-				return; // skip dupe
-			}
-			// ok
-			items.push(item);
-			itemForId[id] = item;
-		});
-	} else {
-		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status, pvItems);
-	}
 
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} base={createBase} navpage={navpage} /> : null}
@@ -158,6 +140,57 @@ const ListLoad = ({type, status, servlet, navpage,
 }; // ./ListLoad
 //
 
+/**
+ * 
+ * @param {*} hits 
+ * @returns {Item[]}
+ */
+const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) => {
+	if ( ! hits) {
+		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status);
+		return [];
+	}
+	// HACK: Use-case: you load published items. But the list allows for edits. Those edits need draft items.
+	if (preferStatus) {
+		hits = DataStore.getDataList(hits, preferStatus);
+		// copy published into draft?
+		if (preferStatus===C.KStatus.DRAFT) {
+			hits.forEach(item => {			
+				let dpath = DataStore.getDataPath({status:preferStatus, type, id:getId(item)});
+				let draft = DataStore.getValue(dpath);
+				if ( ! yessy(draft)) {
+					DataStore.setValue(dpath, item, false);
+				}
+			});
+		}
+	}
+
+	const items = [];
+	const itemForId = {};
+	
+	// client-side filter
+	hits.forEach(item => {			
+		// fast filter via stringify
+		let sitem = null;
+		if (fastFilter) {
+			sitem = JSON.stringify(item).toLowerCase();
+			if (filter && sitem.indexOf(filter) === -1) {
+				return; // filtered out
+			}
+		}
+		// dupe?
+		let id = getId(item) || sitem || JSON.stringify(item).toLowerCase();
+		if (itemForId[id]) {
+			return; // skip dupe
+		}
+		// ok
+		items.push(item);
+		itemForId[id] = item;
+	});
+
+	return items;	
+};
+
 const onPick = ({event, navpage, id, customParams}) => {
 	if (event) {
 		event.stopPropagation();
@@ -171,7 +204,10 @@ const onPick = ({event, navpage, id, customParams}) => {
  */
 const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName}) => {
 	const id = getId(item);
-
+	if ( ! id) {
+		console.error("ListLoad.jsx - "+type+" with no id", item);
+		return null;
+	}
 	let itemUrl = modifyHash([servlet, id], null, true);	
 
 	// TODO refactor this Portal specific code out of here.

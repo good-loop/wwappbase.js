@@ -27,6 +27,8 @@ const confirmUserAction = ({item, action}) => {
 	return true;
 };
 
+const DEBOUNCE_MSECS = 3000;
+
 /** Hack: a debounced auto-save function for the save/publish widget
  * @param {type, id}
 */
@@ -34,17 +36,18 @@ const saveDraftFn = _.debounce(
 	({type, id, item}) => {
 		ActionMan.saveEdits({type, id, item});
 		return true;
-	}, 5000
+	}, DEBOUNCE_MSECS
 );
 
 
 /**
  * A TODO:debounced auto-publish function for the save/publish widget, or for SimpleTable saveFn
  * Must provide type and id, or path
- * * @param {type, id, path}
+ * path is only used to fill in for missing item info
+ * * @param {type, id, item, path}
  */
 const publishDraftFn = _.debounce(
-	({type, id, path}) => {
+	({type, id, path, item}) => {
 		if ( ! type || ! id) {
 			let item = DataStore.getValue(path);
 			id = id || getId(item);
@@ -52,9 +55,9 @@ const publishDraftFn = _.debounce(
 		}
 		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad/missing type: "+type+" id: "+id);
 		assMatch(id, String,"Misc.jsx publishDraftFn id?! "+type+" id: "+id);
-		ActionMan.publishEdits(type, id);
+		ActionMan.publishEdits(type, id, item);
 		return true;
-	}, 3000
+	}, DEBOUNCE_MSECS
 );
 
 

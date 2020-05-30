@@ -202,7 +202,7 @@ class Store {
 	/**
 	 * the DataStore path for this item, or null if item is null. 
 	 * You can pass in an item as all the args (but not if it uses `domain` as a prop!)
-	 *  -- But warning: editors should always use status DRAFT
+	 *  -- But WARNING: editors should always use status DRAFT
 	 * @param status {C.KStatus}
 	 * @param type {!C.TYPES}
 	 * @param id {!String}
@@ -626,8 +626,11 @@ class Store {
 
 	/**
 	 * Resolve a list against the data/draft node to get the data items.
+	 * @param {Ref[]} listOfRefs
+	 * @param {?string} preferStatus e.g. DRAFT to ask for drafts if possible -- which will give you the being-edited items
+	 * @returns {Item[]}
 	 */
-	getDataList(listOfRefs) {
+	getDataList(listOfRefs, preferStatus) {
 		if ( ! listOfRefs) return [];
 		// ?? if the data item is missing -- what should go into the list?? null / the ref / a promise ??
 		let items = listOfRefs.map(ref => this.resolveRef(ref));
@@ -635,20 +638,53 @@ class Store {
 		return items;
 	}
 
-	resolveRef(ref) {
+	/**
+	 * 
+	 * @param {!Ref} ref 
+	 * @param {?string} preferStatus
+	 * @returns {!Item|Ref}
+	 */
+	resolveRef(ref, preferStatus) {
 		if ( ! ref) {
 			return null;
 		}
-		const status = getStatus(ref);
+		let status = preferStatus || getStatus(ref);
 		const type = getType(ref);
 		const id = getId(ref);
 		if ( ! (status && type && id)) {
 			console.warn("(skip) Bad ref in DataStore list", ref);
 			return null;
 		}
-		return this.getData({status,type,id}) || ref;
+		let item = this.getData({status,type,id});
+		if (item) return item;
+		if (preferStatus) {
+			// try again?
+			status = getStatus(ref);
+			if (status && status !== preferStatus) {
+				item = this.getData({status,type,id});
+				if (item) return item;
+			}
+		}
+		// falback to the input ref
+		return ref;
 	}
 } // ./Store
+
+class Ref {
+	status;
+	type;
+	id;
+}
+/**
+ * Item could be anything - Advert, NGO, Person.
+ * This class is to help in defining the DataStore API -- not for actual use.
+ */
+class Item {
+	status;
+	type;
+	id;
+	name;
+}
 
 const DataStore = new Store();
 // create some of the common data nodes
@@ -689,6 +725,16 @@ export default DataStore;
  */
 const getPath = DataStore.getPath.bind(DataStore);
 
+/**
+ * the DataStore path for this item, or null if item is null. 
+ * You can pass in an item as all the args (but not if it uses `domain` as a prop!)
+ *  -- But WARNING: editors should always use status DRAFT
+ * @param status {C.KStatus}
+ * @param type {!C.TYPES}
+ * @param id {!String}
+ * @param domain {?String} Only used by Profiler??
+ * @returns {String[]}
+ */
 const getDataPath = DataStore.getDataPath.bind(DataStore);
 
 

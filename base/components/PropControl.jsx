@@ -137,7 +137,7 @@ const PropControl = (props) => {
 		path = ['location','params'];
 		props = Object.assign({path}, props);
 	}
-	assMatch(prop, "String|Number");
+	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
 	assert( ! props.onChange, "PropControl.jsx "+path+"."+prop+" Use saveFn instead of onChange (which is set locally)");
 	const proppath = path.concat(prop);

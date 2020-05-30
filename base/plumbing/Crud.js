@@ -416,6 +416,8 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 /**
  * @param sort {?String} e.g. "start-desc"
  * @returns PromiseValue<{hits: Object[]}>
+ * 
+ * WARNING: This should usually be run through DataStore.getDataList() before using
  */
 // Namespace anything fetched from a non-default domain
 ActionMan.list = ({type, status, q, prefix, sort, domain}) => {	
