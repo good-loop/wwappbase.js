@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { Card as BSCard, CardHeader, CardBody, Button } from 'reactstrap';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
+import { space } from '../utils/miscutils';
 
 
 /**

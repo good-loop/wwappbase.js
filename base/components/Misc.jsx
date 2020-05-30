@@ -3,7 +3,7 @@ import React, { useState, Fragment } from 'react';
 import { Alert, Card, CardBody, Nav, Button, NavItem } from 'reactstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
-import {addScript, join } from '../utils/miscutils';
+import {addScript, join, space } from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import md5 from 'md5';
