@@ -311,7 +311,7 @@ case $1 in
 		;;
 	lg|LG|datalog|DATALOG|datalogger|DATALOGGER)
 		PROJECT='datalogger'
-		PRODUCTION_SERVERS=(gl-es-03.soda.sh gl-es-04.soda.sh gl-es-05.soda.sh datalognode-01.good-loop.com)
+		PRODUCTION_SERVERS=(gl-es-03.good-loop.com gl-es-04.good-loop.com gl-es-05.good-loop.com datalognode-01.good-loop.com)
 		TEST_SERVERS=(baker.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/open-code/winterwell.datalog"
@@ -404,7 +404,7 @@ case $1 in
 	;;
 	portal|PORTAL)
 		PROJECT='portal'
-		PRODUCTION_SERVERS=('heppner.soda.sh')
+		PRODUCTION_SERVERS=('adserver-02.soda.sh')
 		TEST_SERVERS=(baker.soda.sh)
 		EXPERIMENTAL_SERVERS=(simmons.soda.sh)
 		PROJECT_LOCATION="/home/$USER/winterwell/adserver"
@@ -444,8 +444,8 @@ case $1 in
 	;;
 	sogive|SOGIVE|sogive-app|SOGIVE-APP)
 		PROJECT='sogive-app'
-		PRODUCTION_SERVERS=(heppner.soda.sh)
-		TEST_SERVERS=(baker.soda.sh)
+		PRODUCTION_SERVERS=(adserver-02.good-loop.com)
+		TEST_SERVERS=(baker.good-loop.com)
 		PROJECT_LOCATION="/home/$USER/winterwell/sogive-app"
 		TARGET_DIRECTORY='/home/winterwell/sogive-app'
 		IMAGE_OPTIMISE='no'
