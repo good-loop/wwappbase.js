@@ -200,7 +200,9 @@ class Store {
 
 
 	/**
-	 * the DataStore path for this item, or null if item is null. You can pass in an item as all the args (but not if it uses `domain` as a prop!)
+	 * the DataStore path for this item, or null if item is null. 
+	 * You can pass in an item as all the args (but not if it uses `domain` as a prop!)
+	 *  -- But warning: editors should always use status DRAFT
 	 * @param status {C.KStatus}
 	 * @param type {!C.TYPES}
 	 * @param id {!String}
@@ -686,9 +688,7 @@ export default DataStore;
  * @param id
  */
 const getPath = DataStore.getPath.bind(DataStore);
-/**
- * @deprecated NOT the draft editor path
- */
+
 const getDataPath = DataStore.getDataPath.bind(DataStore);
 
 
