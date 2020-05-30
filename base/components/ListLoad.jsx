@@ -2,7 +2,7 @@ import React from 'react';
 
 import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
-import {modifyHash, space} from '../utils/miscutils';
+import {modifyHash, space, yessy} from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
@@ -12,7 +12,6 @@ import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
 import ErrorAlert from './ErrorAlert';
-import { yessy } from 'wwutils';
 
 /**
  * Provide a list of items of a given type.
