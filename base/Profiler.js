@@ -192,24 +192,6 @@ const requestAnalyzeData = xid => {
 	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
 };
 
-/**
- * For share posts to Twitter or Facebook by the user
- * 
- * ??maybe just use gl.via=uxid + a post nonce??
- * 
-// Associate the socialShareId with the given user Profile
-// Once the ID has become associated with a Profile,
-// data on how many people have reached as.good-loop.com via "as.good-loop.com/gl.socialShareId=${SOCIAL_SHARE_ID}"
-// will be returned along with other Profile stats
- */
-const saveSocialShareId = ({xid, socialShareId, adid, name}) => {
-	let ssids = JSON.stringify([{socialShareId, adid, name}]);
-	console.warn(ssids);
-	return ServerIO.post(
-		`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
-		{socialShareIds: ssids}
-		);
-};
 
 const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid], () => {
 	assMatch(xid, String, "MyPage.jsx fetcher: xid is not a string "+xid);
@@ -289,7 +271,6 @@ Person.getConsents = getConsents;
 Person.setConsents = setConsents;
 
 Profiler.requestAnalyzeData = requestAnalyzeData;
-Profiler.saveSocialShareId = saveSocialShareId;
 Profiler.getAllXIds = getAllXIds;
 
 export {
@@ -304,7 +285,6 @@ export {
 	saveProfile,
 	getConsents,
 	setConsents,
-	requestAnalyzeData,
-	saveSocialShareId,
+	requestAnalyzeData
 };
 export default Profiler;
