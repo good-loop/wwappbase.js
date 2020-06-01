@@ -46,7 +46,7 @@ const RolesCard = () => {
 	</Misc.Card>);
 }
 
-// TODO use BS.Well instead for BS3/3 compatibility
+// TODO BS4
 const RoleLine = ({role}) => <div className='well'>{role}</div>;
 
 export {
