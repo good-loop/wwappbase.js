@@ -1,6 +1,6 @@
 /** PropControl provides inputs linked to DataStore.
  */
-import React from 'react';
+import React, { useRef } from 'react';
 
 // TODO Maybe add support for user-set-this, to separate user-cleared-blanks from initial-blanks
 
@@ -727,21 +727,20 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 	// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
 	const noChecked = value===false;
 	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
-	return (
-		<>&nbsp;
+	return <>
 		<FormGroup check inline>
-          <Label check>
-		  	<Input type="radio" value='yes' name={prop} onChange={onChange} checked={!!value} />
-			  {' '}Yes
-          </Label>
-        </FormGroup>
+			<Label check>
+				<Input type="radio" value='yes' name={prop} onChange={onChange} checked={!!value} />
+				{' '}Yes
+			</Label>
+		</FormGroup>
 		<FormGroup check inline>
-          <Label check>
-		  	<Input type="radio" value='no' name={prop} onChange={onChange} checked={noChecked} />
-            {' '}No
-          </Label>
-        </FormGroup>
-	</>);
+			<Label check>
+				<Input type="radio" value='no' name={prop} onChange={onChange} checked={noChecked} />
+				{' '}No
+			</Label>
+		</FormGroup>
+	</>;
 };
 
 
@@ -1075,6 +1074,10 @@ PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html tex
  */
 const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, ...otherStuff}) => {
 	delete otherStuff.https;
+
+	// Get a ref to the <input> in the FormControl so we can ping its change event on successful upload
+	const inputRef = useRef(null);
+
 	const uploadAccepted = (accepted, rejected) => {
 		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
 		const load = (event) => console.log('UPLOAD SUCCESS', event);
@@ -1088,6 +1091,10 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 					if (onUpload) {
 						onUpload({ path, prop, response, url });
 					}
+					// Forcibly trigger "change" on the URL FormControl
+					if (inputRef.current) {
+						inputRef.current.dispatchEvent(new Event('change'));
+					}
 				})
 				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
 		});
@@ -1096,8 +1103,10 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 			console.error("rejected :( " + file);
 		});
 	};
+
 	let acceptedTypes = type === 'imgUpload' ? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
 	let acceptedTypesDesc = type === 'imgUpload' ? 'JPG, PNG, or SVG image' : 'video';
+
 	// Catch special background-colour name for img and apply a special background to show img transparency
 	let className;
 	if (bg === 'transparent') {
@@ -1106,10 +1115,10 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 	}
 
 	// WARNING: the <Dropzone> code below does not work with recent versions of Dropzone! v4.3.0 has been tested and works.
-
+	// NB the "innerRef" prop used on FormControl is specific to Reactstrap - it applies the given ref to the underlying <input>
 	return (
 		<div>
-			<FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
+			<FormControl type='url' name={prop} value={value} onChange={onChange} innerRef={inputRef} {...otherStuff} />
 			<div className='pull-left'>
 				<Dropzone className='DropZone' accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
 					Drop a {acceptedTypesDesc} here
