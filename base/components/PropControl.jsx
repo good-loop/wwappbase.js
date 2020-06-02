@@ -108,7 +108,7 @@ const dateValidator = (val, rawValue) => {
  * Input bound to DataStore.
  * aka Misc.PropControl
  *
- * @param {?Function} saveFn inputs: {path, prop, value}
+ * @param {?Function} saveFn inputs: {path, prop, value, event}
  * This gets called at the end of onChange.
  * You are advised to wrap this with e.g. _.debounce(myfn, 500).
  * NB: we cant debounce here, cos it'd be a different debounce fn each time.
@@ -139,7 +139,12 @@ const PropControl = (props) => {
 	}
 	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
-	assert( ! props.onChange, "PropControl.jsx "+path+"."+prop+" Use saveFn instead of onChange (which is set locally)");
+	// old code
+	if (props.onChange) {
+		console.warn("PropControl.jsx "+path+"."+prop+" s/onChange/saveFn/ as onChange is set internally by PropControl");
+		props = Object.assign({saveFn: props.onChange}, props);
+		delete props.onChange;
+	}
 	const proppath = path.concat(prop);
 	let value = DataStore.getValue(proppath);
 	// Use a default? But not to replace false or 0
@@ -260,7 +265,7 @@ const PropControl2 = (props) => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.checked;
 			DSsetValue(proppath, val);
-			if (saveFn) saveFn({path, prop, item, value: val});
+			if (saveFn) saveFn({event:e, path, prop, item, value: val});
 		};
 		if (value === undefined) value = false;
 
@@ -308,7 +313,7 @@ const PropControl2 = (props) => {
 		let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 		// console.warn("onChange", e.target.value, mv, e);
 		DSsetValue(proppath, mv);
-		if (saveFn) saveFn({path, prop, value: mv});
+		if (saveFn) saveFn({event:e, path, prop, value: mv});
 		// Enable piggybacking custom onChange functionality
 		if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
 		e.preventDefault();
@@ -366,7 +371,7 @@ const PropControl2 = (props) => {
 			try {
 				let vnew = JSON.parse(e.target.value);
 				DSsetValue(proppath, vnew);
-				if (saveFn) saveFn({path, prop, value:vnew});
+				if (saveFn) saveFn({event:e, path, prop, value:vnew});
 			} catch(err) {
 				console.warn(err);
 				// TODO show error feedback
@@ -547,7 +552,7 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		}
 		const proppath = path.concat(prop);
 		DSsetValue(proppath, mvs);
-		if (saveFn) saveFn({path, prop, value: mvs});
+		if (saveFn) saveFn({event:e, path, prop, value: mvs});
 	}
 
 	let domOptions = options.map(option => {
@@ -598,7 +603,7 @@ const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options,
 		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 		const val = e && e.target && e.target.value;
 		DSsetValue(path.concat(prop), val);
-		if (saveFn) saveFn({path, prop, value: val});
+		if (saveFn) saveFn({event:e, path, prop, value: val});
 	};
 
 	const inputType = (type === 'checkboxes') ? 'checkbox' : 'radio';
@@ -665,7 +670,7 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 		const newM = e.target.value===''? null : new Money(e.target.value);
 		if (name && newM) newM.name = name; // preserve named Money items
 		DSsetValue(proppath, newM);
-		if (saveFn) saveFn({path, prop, newM});
+		if (saveFn) saveFn({event:e, path, prop, newM});
 		// call onChange after we do the standard updates TODO make this universal
 		if (onChange) onChange(e);
 	};
@@ -721,7 +726,7 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 		else newValue = undefined;
 		
 		DSsetValue(path.concat(prop), newValue);
-		if (saveFn) saveFn({path, prop, newValue});
+		if (saveFn) saveFn({event:e, path, prop, newValue});
 	};
 
 	// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
@@ -764,7 +769,7 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
 		}
 		
 		DSsetValue(proppath, newValue);
-		if (saveFn) saveFn({path, prop, value:newValue});
+		if (saveFn) saveFn({event:e, path, prop, value:newValue});
 		e.preventDefault();
 		e.stopPropagation();
 	}
@@ -789,7 +794,7 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn}) => {
 		// ...TODO DataStore to maintain a diff, which it can send to the backend.
 		newValue[key] = remove ? false : true;
 		DSsetValue(proppath, newValue);
-		if (saveFn) saveFn({ path, prop, value: newValue });
+		if (saveFn) saveFn({event:{}, path, prop, value: newValue });
 	}
 	
 	const keyElements = Object.keys(value || {}).filter(key => value[key]).map(key => (
@@ -833,7 +838,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 		// set false instead of deleting - see rationale/TODO in PropControlKeySet
 		newValue[key] = remove ? false : val;
 		DataStore.setValue(proppath, newValue);
-		if (saveFn) saveFn({ path, prop, value: newValue });
+		if (saveFn) saveFn({event:{}, path, prop, value: newValue });
 	}
 	
 	const entryElements = Object.entries(value || {}).filter(([, val]) => (val === '') || val).map(([key]) => (
@@ -931,7 +936,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 			const val = e.target? e.target.value : e;
 			let mv = modelValueFromInput(val, type, e.type);
 			DSsetValue(proppath, mv);
-			if (saveFn) saveFn({path:path, prop, value:mv});
+			if (saveFn) saveFn({event:e, path:path, prop, value:mv});
 			// e.preventDefault();
 			// e.stopPropagation();
 		};
