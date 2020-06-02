@@ -1,7 +1,7 @@
 import React from 'react';
 import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import {uid } from '../utils/miscutils';
 import Cookies from 'js-cookie';
 import PromiseValue from 'promise-value';
