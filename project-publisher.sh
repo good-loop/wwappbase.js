@@ -1,6 +1,6 @@
 #!/bin/bash
 
-VERSION='Version=2.7.0'
+VERSION='Version=2.7.1'
 
 #####
 ## HOW TO ADD A NEW PROJECT
@@ -1057,6 +1057,12 @@ function restore_preserved {
 	for item in ${PRESERVE[@]}; do
 		printf "\nRestoring $item\n"
 		bssh "cd /tmp && cp -r $item $TARGET_DIRECTORY/"
+		# shimming in horrid hacky fix for sogive's images
+		case $PROJECT in
+			sogive)
+				bssh "cp -r /tmp/uploads/* /home/winterwell/sogive-app/web/uploads/"
+			;;
+		esac
 	done
 }
 

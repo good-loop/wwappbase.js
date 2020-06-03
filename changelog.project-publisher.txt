@@ -7,6 +7,7 @@
 #####
 
 ###
+# New in 2.7.1 : inserted a truly horrific one-off hack to ensure that sogive has it's preserved images restored
 # New in 2.7.0 : 'baker' is now the default test-server for services.
 # New in 2.6.0 : Found an old lurking call of webpacking the adunit which was done in series. Now it should webpack the adunit in parallel.
 # New in 2.5.5 : Changed the target directory for the youagain project.
