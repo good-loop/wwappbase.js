@@ -81,7 +81,7 @@ const moneyValidator = (val,min,max) => {
 	if (!(nVal*100).toFixed(2).endsWith(".00")) {
 		return "Fractional pence may cause an error later";
 	}
-	if (val.error) return "" + val.error;	
+	if (val.error) return "" + val.error;
 	if (min && Money.compare(min,val) > 0) return "Value is below the minimum "+Money.str(min);
 	if (max && Money.compare(max,val) < 0) return "Value is above the maximum "+Money.str(max);
 	return null;
@@ -556,7 +556,8 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 	}
 
 	let domOptions = options.map(option => {
-		const checked = sv && sv.includes(option);
+		// React doesn't like when an input's value changes from undefined to an explicit value, so...
+		const checked = !!(sv && sv.includes(option)); // coerce from undefined/null to boolean false
 		return (
 			<FormGroup inline check key={`option_${option}`}>
 				<Input type="checkbox" value={option} checked={checked} onChange={onChange} />
