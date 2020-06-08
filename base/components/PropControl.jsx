@@ -161,7 +161,9 @@ const PropControl = (props) => {
 	}
 
 	// Default validator: Money (NB: not 100% same as the backend)
-	if (PropControl.KControlType.isMoney(type) && !validator && !error) validator = val => moneyValidator(val, props.min, props.max);
+	if (PropControl.KControlType.isMoney(type) && !validator && !error) {
+		validator = val => moneyValidator(val, props.min, props.max);
+	}
 
 	// validate!
 	if (validator) {
