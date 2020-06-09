@@ -365,22 +365,24 @@ const PropControl2 = (props) => {
 	}
 	
 	if (type === 'json') {
-		let spath = ['transient'].concat(proppath);
-		let svalue = DataStore.getValue(spath) || JSON.stringify(value);
-		const onJsonChange = e => {
-			console.log("event", e.target && e.target.value, e, e.type);
-			DataStore.setValue(spath, e.target.value);
+		let stringPath = ['transient'].concat(proppath);
+		let svalue = DataStore.getValue(stringPath) || JSON.stringify(value);
+
+		const onJsonChange = event => {
+			const rawVal = event.target.value;
+			DataStore.setValue(stringPath, rawVal);
 			try {
-				let vnew = JSON.parse(e.target.value);
-				DSsetValue(proppath, vnew);
-				if (saveFn) saveFn({event:e, path, prop, value:vnew});
+				// empty string is also a valid input - don't try to parse it though
+				const newVal = rawVal ? JSON.parse(rawVal) : null;
+				DSsetValue(proppath, newVal);
+				if (saveFn) saveFn({event, path, prop, value: newVal});
 			} catch(err) {
-				console.warn(err);
 				// TODO show error feedback
+				console.warn(err);
 			}
-			e.preventDefault();
-			e.stopPropagation();
+			stopEvent(event);
 		};
+
 		return <textarea className="form-control" name={prop} onChange={onJsonChange} {...otherStuff} value={svalue} />;
 	}
 

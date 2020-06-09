@@ -63,7 +63,7 @@ const setLoginVerb = verb => DataStore.setValue(VERB_PATH, verb);
 const socialLogin = (service) => {
 	// Special behaviour for My-Loop/Portal
 	// Doing it this way seemed the most maintainable option
-	if( ServerIO.mixPanelTrack ) ServerIO.mixPanelTrack({mixPanelTag:'Social login clicked ' + service});
+	if (ServerIO.mixPanelTrack) ServerIO.mixPanelTrack({mixPanelTag:'Social login clicked ' + service});
 
 	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
 	// auth doesnt return a future, so rely on Login's change listener
