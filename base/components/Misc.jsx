@@ -37,7 +37,7 @@ Misc.PropControl = PropControl;
  */
 Misc.normalise = s => {
 	if ( ! s) return s;
-	s = s.replace(/['`’‘’ʼ]/g, "'");
+	s = s.replace(/['`'''ʼ]/g, "'");
 	s = s.replace(/[\"“”„‟❛❜❝❞«»]/g, '"');
 	s = s.replace(/[‐‑‒–—―-]/g, '-');
 	s = s.replace(/[\u00A0\u2007\u202F\u200B]/g, ' ');

@@ -256,7 +256,7 @@ export const getUrlVars = (url:string, lenient:boolean) => {
 	return urlVars;
 };
 
-const emailRegex = /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
 /**
 	Validate email addresses using what http://emailregex.com/ assures me is the
 	standard regex prescribed by the W3C for <input type="email"> validation.
