@@ -1,21 +1,15 @@
 const puppeteer = require("puppeteer");
-const {
-	APIBASE,
-	eventIdFromName,
-	fillInForm,
-	fundIdByName,
-	login,
-	soGiveFailIfPointingAtProduction
-} = require("../res/UtilityFunctions");
-const {
-	username,
-	password
-} = require("../../../logins/sogive-app/puppeteer.credentials");
-const { createEvent, deleteEvent } = require("../res/UtilsSoGive");
-const {
-	SoGiveSelectors: { Fundraiser, General, Register }
-} = require("../utils/MasterSelectors");
-const { donate } = require("../utils/sogive-scripts/donation-form");
+const { login, soGiveFailIfPointingAtProduction, donate, fillInForm } = require("../utils/UtilityFunctions");
+const { username, password } = require("../utils/Credentials");
+const { CommonSelectors, Search, General, Register, Fundraiser } = require('../utils/SoGiveSelectors');
+const { targetServers } = require('../utils/testConfig');
+
+const config = JSON.parse(process.env.__CONFIGURATION);
+
+const baseSite = targetServers[config.site];
+const protocol = config.site === 'local' ? 'http://' : 'https://';
+
+let url = `${baseSite}`;
 
 // Default event data
 const eventData = {
@@ -42,45 +36,24 @@ const fundraiserData = {
 };
 
 // Use existing event to test fundraiser. We test event creation separately.
-const eventId = 'TurHe2nW';
+const eventId = 'VgT2FGzo';
 let fundraiserEditLink; // Link to fundraiser edit page, from where we delete it.
 let fundraiserId;
 
-const fundraiserIdClip = async () => {
-	return await fundraiserEditLink.split('/').pop();
-}
-
-let browser;
-let page;
+const fundraiserIdClip = () => {
+	return fundraiserEditLink.split('/').pop();
+};
 
 describe("Fundraiser tests", () => {
 
-    // beforeAll(async () => {
-    //     browser = await  puppeteer.launch({headless: false});
-	// });
-	
-	beforeEach(async () => {
-		browser = await  puppeteer.launch({headless: false});
-		page = await browser.newPage();
-	})
-
-	afterEach(async () => {
-		await browser.close();
-	})
-
-    // afterAll(async () => {
-    //     browser.close();
-    // })
-
 	test("Create a fundraiser", async () => {
-		await page.goto(`${APIBASE}#event`);
+		await page.goto(`${url}#event`);
 
-		// Safety check and login.
-		await soGiveFailIfPointingAtProduction({ page });
+		// login.
 		await login({ page, username, password });
 
 		// Go to event page and click on Register event
-		await page.goto(APIBASE + `#event/${eventId}`);
+		await page.goto(url + `#event/${eventId}`);
 		await page.waitForSelector('.btn');
 		await page.click('.btn');
 
@@ -131,7 +104,6 @@ describe("Fundraiser tests", () => {
 		);
 		fundraiserEditLink = await page.url();
 		fundraiserId = await fundraiserIdClip();
-		console.log(fundraiserId);
 		await fillInForm({
 			page,
 			data: fundraiserData.EditFundraiser,
@@ -147,10 +119,9 @@ describe("Fundraiser tests", () => {
 	}, 45000);
 
 	test("Logged-in fundraiser donation", async () => {
-		await page.goto(`${APIBASE}#fundraiser/${fundraiserId}`);
+		await page.goto(`${url}#fundraiser/${fundraiserId}`);
 		await page.reload();
 
-		await soGiveFailIfPointingAtProduction({ page });
 		await login({ page, username, password });
 
 		// Click on Donate button
@@ -194,8 +165,8 @@ describe("Fundraiser tests", () => {
 	}, 30000);
 
 	test("Logged-out fundraiser donation", async () => {
-		// await page.goto(`${APIBASE}#fundraiser/aundiks.TurHe2nW.01ff18`);
-		await page.goto(APIBASE);
+		// await page.goto(`${url}#fundraiser/aundiks.TurHe2nW.01ff18`);
+		await page.goto(url);
 
 		// Log out
 		// await page.waitForSelector('#top-right-menu');
@@ -204,8 +175,7 @@ describe("Fundraiser tests", () => {
 		// await page.click('#top-right-menu > li > ul > li:nth-child(3) > a');
 		// await page.reload();
 
-		await page.goto(`${APIBASE}#fundraiser/${fundraiserId}`);
-		await soGiveFailIfPointingAtProduction({ page });
+		await page.goto(`${url}#fundraiser/${fundraiserId}`);
 
 		// Wait for donate button
 		await page.waitForSelector('.btn');
@@ -221,7 +191,7 @@ describe("Fundraiser tests", () => {
 		// Click 'yes' on all radio options
 		const radioButtons = await page.$$eval('[type=radio]', radios => {
 			radios.map(radio => {
-				if (radio.value==='yes') radio.click();
+				if (radio.value==='yes') return radio.click();
 			});
 		});
 
@@ -248,9 +218,7 @@ describe("Fundraiser tests", () => {
 	}, 30000);
 
 	test("Delete fundraiser", async () => {
-		await page.goto(APIBASE);
-
-		await soGiveFailIfPointingAtProduction({ page });
+		await page.goto(url);
 		
 		await login({ page, username, password });
 		await page.goto(fundraiserEditLink);
