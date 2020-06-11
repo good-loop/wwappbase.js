@@ -2,7 +2,7 @@
 
 # TeamCity Continuous Integration Builder Template
 
-#Version 0.1 alpha
+#Version 0.2 alpha
 # Meaning - Script has been written, but not fully tested
 
 #####  GENERAL SETTINGS
@@ -12,7 +12,8 @@
 #####
 PROJECT_NAME='my_new_project' #This name will be used to create/or/refer-to the directory of the project in /home/winterwell/
 GIT_REPO_URL='github.com:/good-loop/my_new_project' #
-PROJECT_USES_BOB='yes'  #yes or no
+PROJECT_USES_BOB='yes'  #yes or no :: If 'yes', then you must also supply the name of the service which is used to start,stop,or restart the jvm
+NAME_OF_SERVICE='my_new_project_main' # This can be blank, but if your service uses a JVM, then you must put in the service name which is used to start,stop,or restart the JVM on the server.
 PROJECT_USES_NPM='yes' # yes or no
 PROJECT_USES_WEBPACK='yes' #yes or no
 PROJECT_USES_JERBIL='yes' #yes or no
@@ -95,6 +96,16 @@ function cleanup_repo {
     for server in ${TARGET_SERVERS[@]}; do
         printf "\nCleaning $server 's local repository...\n"
         ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && git gc --prune=now && git pull origin master && git reset --hard FETCH_HEAD"
+}
+
+# Stopping the JVM Backend (if applicable)
+function stop_service {
+    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
+        for server in ${TARGET_SERVERS[@]}; do
+            printf "\nStopping $NAME_OF_SERVICE on $server...\n"
+            ssh winterwell@$server "sudo service $NAME_OF_SERVICE stop"
+        done
+    fi
 }
 
 # Bob -- Evaluate and Use
@@ -182,6 +193,16 @@ function use_jerbil {
     fi
 }
 
+# Starting the JVM Backend (if applicable)
+function start_service {
+    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
+        for server in ${TARGET_SERVERS[@]}; do
+            printf "\nStarting $NAME_OF_SERVICE on $server...\n"
+            ssh winterwell@$server "sudo service $NAME_OF_SERVICE start"
+        done
+    fi
+}
+
 
 # Automated Testing -- Evaluate and Use
 function use_automated_tests {
@@ -206,8 +227,10 @@ check_repo_exists
 check_bob_exists
 check_jerbil_exists
 cleanup_repo
+stop_service
 use_bob
 use_npm
 use_webpack
 use_jerbil
+start_service
 use_automated_tests
