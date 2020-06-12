@@ -3,9 +3,9 @@ const shell = require('shelljs');
 const yargv = require('yargs').argv;
 
 let config = {
-	site: 'local', // TODO can we sniff this?? // How do we set it??
+	site: 'test', // TODO can we sniff this?? // How do we set it??
 	unsafe: false,
-	vert: '',
+	vert: 'test_wide_multiple',
 	head: true,
 	chrome: false,
 	flag: false,

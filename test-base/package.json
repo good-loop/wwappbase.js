@@ -1,4 +1,12 @@
 {
+  "name": "test-base",
+  "version": "0.0.1",
+  "description": "The Base which houses and deploys automated tests",
+  "author": "Daniel Appel, Standing on the shoulders of giants",
+  "repository": {
+    "url": "https://github.com/winterstein/wwappbase.js",
+    "type": "git"
+  },
   "dependencies": {
     "chalk": "^2.4.1",
     "jquery": "^3.5.1",
