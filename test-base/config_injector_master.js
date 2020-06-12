@@ -12,7 +12,7 @@ let config = {
 };
 let argv = process.argv.slice(0, 2);
 
-let testPath = '';
+//let testPath = '';
 let runInBand = '';
 
 Object.entries(yargv).forEach(([key, value]) => {

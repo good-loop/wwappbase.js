@@ -4,8 +4,13 @@ VERSION='0.0.1b'
 
 ## List of tests written for specific projects. When new tests are written for new projects, edit this line
 SUPPORTED_TESTS='adserver, demo, myloop, and sogive'
-
-rm runtests.js
+USAGE='developer-run-tests.sh adserver'
+########
+## Ensuring a clean environment
+########
+if [[ -f runtests.js ]]; then
+    rm runtests.js
+fi
 cp config_injector_master.js runtests.js
 
 ########
@@ -13,19 +18,23 @@ cp config_injector_master.js runtests.js
 ########
 case $1 in
     adserver|ADSERVER)
-        echo 'shell.exec(`npm run test${' ' + adserver} ${runInBand}`);' >> runtests.js
+        echo "let testPath = 'adserver';" >> runtests.js
+        echo "shell.exec(\`npm run test\${' ' + testPath} \${runInBand}\`);" >> runtests.js
     ;;
     demo|DEMO)
-        echo 'shell.exec(`npm run test${' ' + demo} ${runInBand}`);' >> runtests.js
+        echo "let testPath = 'demo';" >> runtests.js
+        echo "shell.exec(\`npm run test\${' ' + testPath} \${runInBand}\`);" >> runtests.js
     ;;
     myloop|MYLOOP)
-        echo 'shell.exec(`npm run test${' ' + myloop} ${runInBand}`);' >> runtests.js
+        echo "let testPath = 'myloop';" >> runtests.js
+        echo "shell.exec(\`npm run test\${' ' + testPath} \${runInBand}\`);" >> runtests.js
     ;;
     sogive|SOGIVE)
-        echo 'shell.exec(`npm run test${' ' + sogive} ${runInBand}`);' >> runtests.js
+        echo "let testPath = 'sogive';" >> runtests.js
+        echo "shell.exec(\`npm run test\${' ' + testPath} \${runInBand}\`);" >> runtests.js
     ;;
     *)
-        printf "\nUnknown Project specified, or no project specified\n\tsupported projects are:\n\t$SUPPORTED_TESTS\n"
+        printf "\nUnknown Project specified, or no project specified\n\tsupported projects are:\n\t$SUPPORTED_TESTS\n\n\nexample:\n\t$USAGE"
     ;;
 esac
     
@@ -60,6 +69,8 @@ printf "\nEnsuring that your 'logins' are up-to-date\n"
 git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins gc --prune=now
 git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins pull origin master
 git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins reset --hard FETCH_HEAD
+cp -r ~/winterwell/logins/test-base/adserver/utils adserver/
+cp -r ~/winterwell/logins/test-base/sogive/utils sogive/
 
 
 ########
@@ -96,30 +107,36 @@ while [ $DELAY_SECONDS -gt 0 ]; do
 	: $((DELAY_SECONDS--))
 done
 
-bash node config_injector.js
+if [[ ! -d test-results ]]; then
+    mkdir -p test-results/Logs
+fi
+
+TIME=$(date +%Y-%m-%dT%H:%M:%S-%Z)
+node runtests.js &> test-results/Logs/$1-testing-output-$TIME.log
 
 
 function send_alert {
-        TIME=$(date +%Y-%m-%dT%H:%M:%S-%Z)
-	message="Jest Detected Failure for -- $1 --myloop tests"
-	body="Hi,\nThe My-Loop jest/puppeteer script threw out a FAIL notice at $TIME:\n\n$line\n"
+    TIME=$(date +%Y-%m-%dT%H:%M:%S-%Z)
+	message="Jest Detected Failure for -- $1 tests"
+	body="Hi,\nThe jest/puppeteer script threw out a FAIL notice at $TIME:\n\n$line\n"
 	title="[$HOSTNAME] $message"
 	printf "$body" | mutt -s "$title" ${ATTACHMENTS[@]} -- $EMAIL_RECIPIENTS
 }
 
-ATTACHMENTS=()
 
-NEW_FAIL_LOGS=$(find ~/winterwell/wwappbase.js/test-base/test-results/Logs/ -type f -iname "*.txt" -amin +0 -amin -4)
-
-if [[ $NEW_FAIL_LOGS = '' ]]; then
-        printf "\nNo Failures Detected\n"
-else
-        printf "\nFailures Detected:\n"
-        for log_file in ${NEW_FAIL_LOGS[@]}; do
-                ATTACHMENTS+=("-a $log_file")
-                printf "\n$log_file"
-        done
-        printf "\n\nSending out Email with New Log Files Attached...\n"
-        send_alert
-        printf "\nDone\n"
+########
+### Cleaning Up
+########
+if [[ -d adserver/utils ]]; then
+    rm -rf adserver/utils
 fi
+
+if [[ -d sogive/utils ]]; then
+    rm -rf sogive/utils
+fi
+
+
+#########
+### Telling the human where to access their logged test results
+#########
+printf "\nYour test result log can be accessed in ~/winterwell/wwappbase.js/test-base/test-results/Logs/$1-testing-output-$TIME.log\n"
