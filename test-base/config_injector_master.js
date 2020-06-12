@@ -34,5 +34,3 @@ process.env.__CONFIGURATION = JSON.stringify(config);
 process.argv = argv;
 
 // Execute Jest. Specific target optional.
-// shell.exec(`npm run test${' ' + testPath} ${runInBand}`);
-shell.exec(`npm run test${' ' + testPath} ${runInBand}`);
