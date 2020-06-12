@@ -6,7 +6,13 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "rimraf": "^2.7.1",
-    "stacktrace-parser": "^0.1.7"
+    "stacktrace-parser": "^0.1.7",
+    "jest": "^25.1.0",
+    "shelljs": "^0.8.3",
+    "yargs": "^15.1.0",
+    "jest-puppeteer": "^4.4.0",
+    "puppeteer": "^2.0.0",
+    "puppet-theatre": "latest"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -63,10 +69,12 @@
     "preset": "jest-puppeteer",
     "globals": {
       "window": {}
-   },
+    }
+  },
   "scripts": {
     "jest": "jest",
     "jest-clear-cache": "jest --clearCache",
-    "webpack": "webpack"
+    "webpack": "webpack",
+    "test": "jest"
   }
 }
