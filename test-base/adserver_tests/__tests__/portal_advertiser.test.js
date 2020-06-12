@@ -1,51 +1,22 @@
-/** global test */
 const puppeteer = require("puppeteer");
-const {
-	APIBASE,
-	fillInForm,
-	isPointingAtProduction,
-	login,
-	vertIdByName,
-	vertiserIdByName,
-	watchAdvertAndDonate
-} = require("../res/UtilityFunctions");
-const {
-	fbUsername,
-	fbPassword,
-	password,
-	username,
-	twitterUsername,
-	twitterPassword
-} = require("../../../logins/sogive-app/puppeteer.credentials");
-import {
-	CommonSelectors,
-	FacebookSelectors,
-	PortalSelectors,
-	TwitterSelectors
-} from "../utils/MasterSelectors";
+const { CommonSelectors, FacebookSelectors, PortalSelectors, TwitterSelectors } = require("../utils/Selectors");
+const { login, vertiserIdByName } = require("../utils/UtilityFunctions");
+const { fbUsername, fbPassword, password, username, twitterUsername, twitterPassword } = require("../utils/Credentials");
+
+const config = JSON.parse(process.env.__CONFIGURATION);
+const { targetServer } = require('../utils/TestConfig');
+
+const APIBASE = targetServer[config.site];
 
 const timestamp = Date.now();
 const vertName = "advert-" + timestamp;
 let vertId;
 
-const argvs = process.argv;
-const devtools = argvs.join(",").includes("debug") || false;
-
-let browser;
-let page;
-
 describe("Portal advertiser tests", () => {
-	beforeEach(async () => {
-		browser = await puppeteer.launch({
-			headless: !devtools,
-			devtools: devtools,
-			slowMo: 0
-		});
-		page = await browser.newPage();
-	});
-
 	afterEach(async () => {
-		await browser.close();
+		await page.close();
+		const context = await browser.createIncognitoBrowserContext();
+		page = await context.newPage();
 	});
 
 	// Create advertiser
@@ -62,20 +33,20 @@ describe("Portal advertiser tests", () => {
 
 		await page.goto(APIBASE + `#advertiser`);
 
-		await failIfPointingAtProduction({ page });
-
 		// Use 
 		await page.waitForSelector('.glyphicon');
 		await page.click('.glyphicon');
 
 		// Fill in the form
 		await page.waitForSelector('[name=name]');
-		await page.type('[name=name', timestamp);
+		await page.type('[name=name]', timestamp.toString());
 		await page.type('[name=id]', 'sonic@thehedgehog.com')
-		await page.type('.form-group[name=name]', 'Sanic');
+		await page.type('.form-group [name=name]', 'Sanic');
 		await page.type('[name=description]', 'Gotta go fast!');
-		await page.type('[[name=logo]', testLogo);
+		await page.type('[name=logo]', testLogo);
 		await page.waitFor(2000); // Give it two secs to save draft
+
+		vertId = await page.url().split('/').pop();
 
 		// await page.waitFor(PortalSelectors.Advertiser.Create);
 		// await page.click(PortalSelectors.Advertiser.Create);
@@ -91,6 +62,7 @@ describe("Portal advertiser tests", () => {
 		// });
 		await page.click(CommonSelectors.Publish);
 		await page.waitFor(1000); //Give ES a second to update
+		// TODO After publishing, find the ID in the page and store it to a variable in higher scope accessible to the Delete Advertiser test
 	}, 45000);
 
 	// Delete advertiser
@@ -104,11 +76,7 @@ describe("Portal advertiser tests", () => {
 		await page.type("[name=password]", password);
 		await page.click(".btn-primary");
 
-		const vertiserId = await vertiserIdByName({ vertiserName: timestamp });
-
-		await page.goto(`${APIBASE}#advertiser/${vertiserId}`);
-
-		await failIfPointingAtProduction({ page });
+		await page.goto(`${APIBASE}#vertiser/${vertId}`);
 
 		// await page.waitFor(CommonSelectors.logIn); // wait for Misc.Loading to go away
 		// await login({ page, username, password });
@@ -116,11 +84,6 @@ describe("Portal advertiser tests", () => {
 
 		await page.waitFor(CommonSelectors.Delete);
 		await page.click(CommonSelectors.Delete);
+		await page.waitFor(2000);
 	}, 30000);
-
-	// /** Safety measure to stop weird test data being written to production */
-	const failIfPointingAtProduction = async ({ page }) => {
-		const bool = await isPointingAtProduction({ page });
-		if (bool) throw new Error("Aborting: page is using production lg!");
-	};
 });

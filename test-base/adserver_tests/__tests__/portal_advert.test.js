@@ -1,56 +1,27 @@
-/** global test */
 const puppeteer = require("puppeteer");
-const {
-	APIBASE,
-	fillInForm,
-	isPointingAtProduction,
-	login,
-	vertIdByName,
-	vertiserIdByName,
-	watchAdvertAndDonate
-} = require("../res/UtilityFunctions");
-const {
-	fbUsername,
-	fbPassword,
-	password,
-	username,
-	twitterUsername,
-	twitterPassword
-} = require("../../../logins/sogive-app/puppeteer.credentials");
-import {
-	CommonSelectors,
-	FacebookSelectors,
-	PortalSelectors,
-	TwitterSelectors
-} from "../utils/MasterSelectors";
+const { fillInForm, isPointingAtProduction, login, vertiserIdByName, watchAdvertAndDonate } = require("../utils/UtilityFunctions");
+const { fbUsername, fbPassword, password, username, twitterUsername, twitterPassword } = require("../utils/Credentials");
+const { Advertiser, Advert, General, Main, AdSignUp, CommonSelectors } = require("../utils/Selectors");
+
+const config = JSON.parse(process.env.__CONFIGURATION);
+const { targetServer } = require('../utils/TestConfig');
 
 const timestamp = Date.now();
 const vertName = "advert-" + timestamp;
 let vertId;
 
-const argvs = process.argv;
-const devtools = argvs.join(",").includes("debug") || false;
-
-let browser;
-let page;
+const APIBASE = targetServer[config.site];
 
 describe("Portal advert tests", () => {
 	beforeEach(async () => {
-		browser = await puppeteer.launch({
-			headless: !devtools,
-			devtools: devtools,
-			slowMo: 0
-		});
-		page = await browser.newPage();
-	});
-
-	afterEach(async () => {
-		await browser.close();
+		await page.close();
+		const context = await browser.createIncognitoBrowserContext();
+		page = await context.newPage();
 	});
 
 	test("Create an advert", async () => {
 		// const vertiserId = await vertiserIdByName({ vertiserName: timestamp });
-		const vertiserId = "wtVdPVvW";
+		const vertiserId = "default_advertiser"; //"wtVdPVvW";
 		await page.goto(APIBASE);
 
 		await page.waitForSelector(".switch-verb a");
@@ -60,18 +31,17 @@ describe("Portal advert tests", () => {
 		await page.type("[name=password]", password);
 		await page.click(".btn-primary");
 
-		await failIfPointingAtProduction({ page });
-
 		await page.goto(APIBASE + `#advert?vertiser=${vertiserId}`);
 
-		await page.waitFor(PortalSelectors.Advert.Create);
-		await page.click(PortalSelectors.Advert.Create);
+		await page.waitFor(Advertiser.Create);
 
-		await page.waitFor(6000);
+		await page.click(Advertiser.Create);
+
+		await page.waitFor(1000);
 
 		await fillInForm({
 			page,
-			Selectors: PortalSelectors.Advert,
+			Selectors: Advert,
 			data: {
 				name: vertName,
 				campaign: "soylent_green",
@@ -84,7 +54,7 @@ describe("Portal advert tests", () => {
 
 		await fillInForm({
 			page,
-			Selectors: PortalSelectors.Advert,
+			Selectors: Advert,
 			data: {
 				video: "https://testas.good-loop.com/vert/buck-480p.webm",
 				videoSeconds: 15
@@ -94,7 +64,7 @@ describe("Portal advert tests", () => {
 		// Fill in charities
 		await fillInForm({
 			page,
-			Selectors: PortalSelectors.Advert,
+			Selectors: Advert,
 			data: {
 				charityOne: "the-save-the-children-fund",
 				charityTwo: "wateraid",
@@ -121,36 +91,35 @@ describe("Portal advert tests", () => {
 	}, 90000);
 
 	//Check if advert can be viewed on landing page
-	test("Watch advert", async () => {
-		// const vertId = await vertIdByName({ vertName });
+	// test("Watch advert", async () => {
+	// 	// const vertId = await vertIdByName({ vertName });
 
-		await page.goto(APIBASE);
-		await page.waitFor(2000);
+	// 	await page.goto(APIBASE);
+	// 	await page.waitFor(2000);
 
-		await page.waitForSelector(".switch-verb a");
-		await page.click(".switch-verb a");
-		await page.waitFor(100);
-		await page.type("[name=email]", username);
-		await page.type("[name=password]", password);
-		await page.click(".btn-primary");
+	// 	await page.waitForSelector(".switch-verb a");
+	// 	await page.click(".switch-verb a");
+	// 	await page.waitFor(100);
+	// 	await page.type("[name=email]", username);
+	// 	await page.type("[name=password]", password);
+	// 	await page.click(".btn-primary");
 
-		let url;
+	// 	let url;
 
-		if (("" + APIBASE).includes("localportal")) {
-			url = "http://localas.good-loop.com/?gl.vert=" + vertId;
-		} else if (("" + APIBASE).includes("testportal")) {
-			url = "http://testas.good-loop.com/?gl.vert=" + vertId;
-		} else {
-			url = "http://as.good-loop.com/?gl.vert=" + vertId;
-		}
+	// 	if (("" + APIBASE).includes("local")) {
+	// 		url = "http://localtest.good-loop.com/?gl.vert=" + vertId;
+	// 	} else if (("" + APIBASE).includes("test")) {
+	// 		url = "http://test.good-loop.com/?gl.vert=" + vertId;
+	// 	} else {
+	// 		url = "http://test.good-loop.com/?gl.vert=" + vertId;
+	// 	}
 
-		await page.goto(url);
-		await watchAdvertAndDonate({ page });
-	}, 45000);
+	// 	await page.goto(url);
+	// 	await watchAdvertAndDonate({ page });
+	// }, 99000);
 
 	// //Delete advert
 	test("Delete advert", async () => {
-		const vertId = await vertIdByName({ vertName });
 		await page.goto(APIBASE);
 
 		await page.waitForSelector(".switch-verb a");
@@ -162,15 +131,9 @@ describe("Portal advert tests", () => {
 
 		await page.goto(`${APIBASE}#advert/${vertId}`);
 
-		await failIfPointingAtProduction({ page });
-
 		await page.waitFor(CommonSelectors.Delete);
 		await page.click(CommonSelectors.Delete);
-	}, 30000);
 
-	// /** Safety measure to stop weird test data being written to production */
-	const failIfPointingAtProduction = async ({ page }) => {
-		const bool = await isPointingAtProduction({ page });
-		if (bool) throw new Error("Aborting: page is using production lg!");
-	};
+		await page.waitFor(2000);
+	}, 99999);
 });
