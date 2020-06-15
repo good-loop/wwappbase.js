@@ -34,9 +34,9 @@ const TaskListItem = ({item}) => {
 
 	return (
 		<div>
-			<div className='pull-left'>
+			<div className="pull-left">
 				<Misc.PropControl path={path}
-					prop='closed' type='checkbox'
+					prop="closed" type="checkbox"
 					saveFn={() => Misc.publishDraftFn({type:'Task', id:item.id})}
 				/>
 			</div>
@@ -44,7 +44,7 @@ const TaskListItem = ({item}) => {
 			<MDText source={item.text} />
 			<div>{item.assigned && item.assigned.length? "@"+item.assigned.join(" @") : null}</div>
 			{item.url && item.url !== ''+window.location? <div><small><a href={item.url}>{item.url}</a></small></div> : null}
-			<button className='btn btn-xs' onClick={e => {
+			<button className="btn btn-xs" onClick={e => {
 				DataStore.setValue(taskEditorDialogPath.concat('task'), item);
 				DataStore.setValue(taskEditorDialogPath.concat('show'), true);
 			}}>edit</button>
@@ -130,7 +130,7 @@ const TaskList = ({}) => {
 		<div>
 			<TaskListButton bpath={wpath.concat('show')} value={true} list={pvItems.value} />
 			<TaskEditorDialog />
-			<div className='TaskList avoid-navbar' style={{position:'fixed', right:0, top:0}}>
+			<div className="TaskList avoid-navbar" style={{position:'fixed', right:0, top:0}}>
 				<h4>Tasks for {tags.join(" ")}</h4>
 				<QuickTaskMaker tags={tags} items={pvItems.value} />
 				<div>&nbsp;</div>
@@ -140,7 +140,7 @@ const TaskList = ({}) => {
 					type={type}
 					status={status}
 					ListItem={TaskListItem}
-					className='DefaultListLoad'
+					className="DefaultListLoad"
 					canDelete
 				/>
 			</div>
@@ -186,10 +186,10 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 	const ttext = DataStore.getValue(qpath.concat('text'));
 	return (
 		<div key={'f'} className={space('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)}>
-			<PropControl type='text' path={qpath} prop='text'
+			<PropControl type="text" path={qpath} prop="text"
 				placeholder={parent? 'Reply / Comment' : 'Make a new task'} />
 			&nbsp;
-			<button className='btn btn-primary' disabled={ ! ttext} type='submit' onClick={quickTask}>Add</button>
+			<button className="btn btn-primary" disabled={ ! ttext} type="submit" onClick={quickTask}>Add</button>
 		</div>
 	);
 };
@@ -227,9 +227,9 @@ const TaskEditorDialog = () => {
 			<ModalHeader closeButton>Edit Task</ModalHeader>
 			<ModalBody>
 				{/* Would like this to be an actual editable field */}
-				<PropControl path={taskPath} prop='url' placeholder='URL' label='URL' type='text' saveFn={() => debouncedSaveFn(id, task)} />
-				<PropControl path={taskPath} prop='text' placeholder='Task description' label='Task description' type='text' saveFn={() => debouncedSaveFn(id, task)} />
-				<PropControl path={taskPath} prop='tags' placeholder='Tags' label='Task description' type='text' saveFn={() => debouncedSaveFn(id, task)} />
+				<PropControl path={taskPath} prop="url" placeholder="URL" label="URL" type="text" saveFn={() => debouncedSaveFn(id, task)} />
+				<PropControl path={taskPath} prop="text" placeholder="Task description" label="Task description" type="text" saveFn={() => debouncedSaveFn(id, task)} />
+				<PropControl path={taskPath} prop="tags" placeholder="Tags" label="Task description" type="text" saveFn={() => debouncedSaveFn(id, task)} />
 			</ModalBody>
 			<ModalFooter />
 		</Modal>

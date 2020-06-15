@@ -81,8 +81,8 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 			})
 		);
 		return (
-			<div className='PaymentWidget'>
-				<button onClick={payNothing} className='btn btn-primary'>Confirm Free Purchase</button>
+			<div className="PaymentWidget">
+				<button onClick={payNothing} className="btn btn-primary">Confirm Free Purchase</button>
 			</div>
 		);
 	} // ./ £0
@@ -106,16 +106,16 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 	if (credit && Money.value(credit) > 0) {
 		if (Money.value(credit) >= Money.value(amount)) {
 			return (
-				<div className='section donation-amount'>
+				<div className="section donation-amount">
 					<p>You have <Misc.Money amount={credit} /> in credit which will pay for this.</p>
-					<button onClick={payByCredit} className='btn btn-primary'>Send Payment</button>
+					<button onClick={payByCredit} className="btn btn-primary">Send Payment</button>
 				</div>
 			);
 		}
 	} // ./credit
 	
 	return (
-		<div className='section donation-amount'>
+		<div className="section donation-amount">
 			<StripeProvider apiKey={stripeKey}>
 				<Elements>
 					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient}
@@ -124,10 +124,10 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 				</Elements>
 			</StripeProvider>
 
-			{error? <div className='alert alert-danger'>{error}</div> : null}
+			{error? <div className="alert alert-danger">{error}</div> : null}
 
 			{testOption? (
-				<small className='clear'>
+				<small className="clear">
 					Test card no: 4000008260000000 (use any CVC and any future expiry date).
 					Stolen test card no: 4000000000009979.
 					Or
@@ -257,8 +257,8 @@ class StripeThingsClass extends Component {
 					<Col md="12">
 						<FormGroup>
 							<label>Card number</label>
-							<div className='form-control'>
-								<CardNumberElement placeholder='0000 0000 0000 0000' />
+							<div className="form-control">
+								<CardNumberElement placeholder="0000 0000 0000 0000" />
 							</div>
 						</FormGroup>
 					</Col>
@@ -267,7 +267,7 @@ class StripeThingsClass extends Component {
 					<Col md="6">
 						<FormGroup>
 							<label>Expiry date</label>
-							<div className='form-control'>
+							<div className="form-control">
 								<CardExpiryElement />
 							</div>
 						</FormGroup>
@@ -276,20 +276,20 @@ class StripeThingsClass extends Component {
 					<Col md="6">
 						<FormGroup>
 							<label>CVC</label>
-							<div className='form-control'>
+							<div className="form-control">
 								<CardCVCElement />
 							</div>
 						</FormGroup>
 					</Col>
 				</Row>
 
-				<Button color="primary" size="lg" className='pull-right' type='submit'
+				<Button color="primary" size="lg" className="pull-right" type="submit"
 					disabled={isSaving || !isValidAmount}
 					title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency}
 				>
 					Submit Payment
 				</Button>
-				{this.state.errorMsg? <div className='alert alert-danger'>{this.state.errorMsg}</div> : null}
+				{this.state.errorMsg? <div className="alert alert-danger">{this.state.errorMsg}</div> : null}
 			</Form>
 		);
 	} // ./render()

@@ -99,7 +99,7 @@ class SimpleTable extends React.Component {
 
 	render() {
 		let {
-			tableName='Table', data, dataObject, dataTree, 
+			tableName = 'Table', data, dataObject, dataTree, 
 			columns,
 			headerRender, className, csv,
 			addTotalRow,
@@ -160,8 +160,8 @@ class SimpleTable extends React.Component {
 
 		// the html
 		return (
-			<div className='SimpleTable'>
-				{hasFilter? <div className='form-inline'>&nbsp;<label>Filter</label>&nbsp;<input className='form-control'
+			<div className="SimpleTable">
+				{hasFilter? <div className="form-inline">&nbsp;<label>Filter</label>&nbsp;<input className="form-control"
 					value={tableSettings.filter || ''}
 					onChange={filterChange}
 					/></div> : null}
@@ -179,9 +179,9 @@ class SimpleTable extends React.Component {
 			}
 		</tr>
 
-		{topRow? <Row className='topRow' item={topRow} row={-1} columns={visibleColumns} /> : null}
+		{topRow? <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} /> : null}
 		{addTotalRow?
-			<tr className='totalRow' >
+			<tr className="totalRow" >
 				<th>{addTotalRow}</th>
 				{visibleColumns.slice(1).map((col, c) =>
 					<TotalCell dataTree={dataTree} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
@@ -330,7 +330,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 				if ( ! ncollapsed) return null;
 				// if ( ! item._collapsed) return null;
 			}
-			return (<button className='btn btn-xs'
+			return (<button className="btn btn-xs"
 				onClick={e => {tableSettings.collapsed4nodeid[nodeid] = ! ncollapsed; DataStore.update();}}
 			>{ncollapsed? '+' : '-'}</button>);
 		};
@@ -513,7 +513,7 @@ const defaultSortMethodForGetter = (a, b, getter, type) => {
 	if (_.isString(av)) av = av.toLowerCase();
 	if (_.isString(bv)) bv = bv.toLowerCase();
 	// special type handling?
-	if (type==='date') {
+	if (type === 'date') {
 		try {
 			av = new Date(av);
 			bv = new Date(bv);
@@ -654,18 +654,18 @@ const TableFoot = ({csv, tableName, visibleColumns, topRow, addTotalRow, dataTre
 	return (<tfoot><tr>
 		<td colSpan={colSpan}>
 			{numPages > 1? <TableFootPager page={page} setPage={setPage} numPages={numPages} /> : null}
-			{csv? <div className='pull-right'><CSVDownload {...{tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow}} /></div> : null}
+			{csv? <div className="pull-right"><CSVDownload {...{tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow}} /></div> : null}
 		</td>
 	</tr></tfoot>);
 };
 
 const TableFootPager = ({page,setPage,numPages}) => {
 	// TODO https://getbootstrap.com/docs/4.5/components/pagination/
-	return (<div className='pull-left'>		
+	return (<div className="pull-left">		
 		Page  
-		&nbsp; {page > 0? <a href='' onClick={e => stopEvent(e) && setPage(page-1)} >&lt;</a> : <span className='disabled'>&lt;</span>} 
+		&nbsp; {page > 0? <a href='' onClick={e => stopEvent(e) && setPage(page-1)} >&lt;</a> : <span className="disabled">&lt;</span>} 
 		&nbsp; {page+1}
-		&nbsp; {page+1 < numPages? <a href='' onClick={e => stopEvent(e) && setPage(page+1)}>&gt;</a> : <span className='disabled'>&gt;</span>}
+		&nbsp; {page+1 < numPages? <a href='' onClick={e => stopEvent(e) && setPage(page+1)}>&gt;</a> : <span className="disabled">&gt;</span>}
 		&nbsp; of {numPages} 
 	</div>);
 };

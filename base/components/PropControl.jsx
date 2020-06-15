@@ -237,7 +237,7 @@ const PropControl2 = (props) => {
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 
 	if ( ! modelValueFromInput) {
-		if (type==='html') {
+		if (type === 'html') {
 			modelValueFromInput = (_v, type, eventType, target) => standardModelValueFromInput((target && target.innerHTML) || null, type, eventType);
 		} else {
 			modelValueFromInput = standardModelValueFromInput;
@@ -273,10 +273,10 @@ const PropControl2 = (props) => {
 
 		// make sure we don't have "false"
 		if (_.isString(value)) {
-			if (value==='true') value = true;
-			else if (value==='false') value = false;
+			if (value === 'true') value = true;
+			else if (value === 'false') value = false;
 		}
-		const helpIcon = tooltip ? <Misc.Icon fa='question-circle' title={tooltip} /> : null;
+		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
 
 		return <>
 			<FormGroup check inline={inline}>
@@ -328,7 +328,7 @@ const PropControl2 = (props) => {
 		modelValueFromInput = s => s? Misc.normalise(s)+'@'+service : null;
 		return (
 			<div className="input-group">
-				<FormControl type='text' name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
+				<FormControl type="text" name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
 				<span className="input-group-append input-group-text">{toTitleCase(service)}</span>
 			</div>
 		);
@@ -390,24 +390,24 @@ const PropControl2 = (props) => {
 		delete otherStuff.https;
 		return (
 			<div>
-				<FormControl type='url' name={prop} value={value} onChange={onChange} {...otherStuff} />
-				<div className='pull-right' style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} background={bg} /></div>
-				<div className='clearfix' />
+				<FormControl type="url" name={prop} value={value} onChange={onChange} {...otherStuff} />
+				<div className="pull-right" style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} background={bg} /></div>
+				<div className="clearfix" />
 			</div>
 		);
 	}
 
-	if (type === 'imgUpload' || type==='videoUpload') {
+	if (type === 'imgUpload' || type === 'videoUpload') {
 		return <PropControlImgUpload {...otherStuff} path={path} prop={prop} onUpload={onUpload} type={type} bg={bg} value={value} onChange={onChange} />;
 	} // ./imgUpload
 
-	if (type==='url') {
+	if (type === 'url') {
 		delete otherStuff.https;
 		return (
 			<div>
-				<FormControl type='url' name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
-				<div className='pull-right'><small>{value? <a href={value} target='_blank'>open in a new tab</a> : null}</small></div>
-				<div className='clearfix' />
+				<FormControl type="url" name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
+				<div className="pull-right"><small>{value? <a href={value} target="_blank">open in a new tab</a> : null}</small></div>
+				<div className="clearfix" />
 			</div>
 		);
 	}
@@ -430,10 +430,10 @@ const PropControl2 = (props) => {
 	}
 
 	// HACK just a few countries. TODO load in an iso list + autocomplete
-	if (type==='country') {
+	if (type === 'country') {
 		let props2 = {onChange, value, ...props};
-		props2.options=[null, 'GB', 'US', 'AU', 'DE'];
-		props2.labels=['', 'United Kingdom (UK)', 'United States of America (USA)', 'Australia', 'Germany'];
+		props2.options = [null, 'GB', 'US', 'AU', 'DE'];
+		props2.labels = ['', 'United Kingdom (UK)', 'United States of America (USA)', 'Australia', 'Germany'];
 		return <PropControlSelect  {...props2} />
 	}
 
@@ -719,7 +719,7 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 		console.error("PropControlYesNo - value not a proper boolean!", prop, value);
 		// if (value === 'yes') value = true;
 		// convert string to false
-		if (value === 'no' || value==='false') value = false;
+		if (value === 'no' || value === 'false') value = false;
 		value = !! value; // its boolean now
 	}
 	// handle yes/no -> true/false
@@ -740,13 +740,13 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 	return <>
 		<FormGroup check inline>
 			<Label check>
-				<Input type="radio" value='yes' name={prop} onChange={onChange} checked={!!value} />
+				<Input type="radio" value="yes" name={prop} onChange={onChange} checked={!!value} />
 				{' '}Yes
 			</Label>
 		</FormGroup>
 		<FormGroup check inline>
 			<Label check>
-				<Input type="radio" value='no' name={prop} onChange={onChange} checked={noChecked} />
+				<Input type="radio" value="no" name={prop} onChange={onChange} checked={noChecked} />
 				{' '}No
 			</Label>
 		</FormGroup>
@@ -909,9 +909,9 @@ const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 	// Encourage ISO8601 format
 	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is '+Misc.isoDate(new Date());
 	return (<div>
-		<FormControl type='text' name={prop} value={value} onChange={onChangeWithRaw} {...otherStuff} />
-		<div className='pull-right'><i>{datePreview}</i></div>
-		<div className='clearfix' />
+		<FormControl type="text" name={prop} value={value} onChange={onChangeWithRaw} {...otherStuff} />
+		<div className="pull-right"><i>{datePreview}</i></div>
+		<div className="clearfix" />
 	</div>);
 };
 
@@ -935,7 +935,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 		const onChange2 = (e) => {
 			// console.log("event", e, e.type, optItem);
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-			DataStore.setValue(['transient', 'doFetch'], e.type==='blur');
+			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
 			// typing sneds an event, clicking an autocomplete sends a value
 			const val = e.target? e.target.value : e;
 			let mv = modelValueFromInput(val, type, e.type);
@@ -989,20 +989,20 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 const standardModelValueFromInput = (inputValue, type, eventType) => {
 	if ( ! inputValue) return inputValue;
 	// numerical?
-	if (type==='year') {
+	if (type === 'year') {
 		return parseInt(inputValue);
 	}
-	if (type==='number') {
+	if (type === 'number') {
 		return numFromAnything(inputValue);
 	}
 	// url: add in https:// if missing
-	if (type==='url' && eventType==='blur') {
+	if (type === 'url' && eventType === 'blur') {
 		if (inputValue.indexOf('://') === -1 && inputValue[0] !== '/' && 'http'.substr(0, inputValue.length) !== inputValue.substr(0,4)) {
 			inputValue = 'https://'+inputValue;
 		}
 	}
 	// normalise text
-	if (type==='text' || type==='textarea') {
+	if (type === 'text' || type === 'textarea') {
 		inputValue = Misc.normalise(inputValue);
 	}
 	return inputValue;
@@ -1128,20 +1128,20 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 	// NB the "innerRef" prop used on FormControl is specific to Reactstrap - it applies the given ref to the underlying <input>
 	return (
 		<div>
-			<FormControl type='url' name={prop} value={value} onChange={onChange} innerRef={inputRef} {...otherStuff} />
-			<div className='pull-left'>
-				<Dropzone className='DropZone' accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
+			<FormControl type="url" name={prop} value={value} onChange={onChange} innerRef={inputRef} {...otherStuff} />
+			<div className="pull-left">
+				<Dropzone className="DropZone" accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
 					Drop a {acceptedTypesDesc} here
 				</Dropzone>
 			</div>
-			<div className='pull-right'>
+			<div className="pull-right">
 				{type === 'videoUpload' ? (
 					<Misc.VideoThumbnail url={value} />
 				) : (
 					<Misc.ImgThumbnail className={className} background={bg} url={value} />
 				)}
 			</div>
-			<div className='clearfix' />
+			<div className="clearfix" />
 		</div>
 	);
 }; // ./imgUpload

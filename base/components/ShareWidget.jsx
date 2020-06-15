@@ -104,12 +104,12 @@ const ShareWidget = ({item, type, id, name}) => {
 			<ModalBody>
 				<div className="container-fluid">
 					<div className="row form-inline">
-						<Misc.PropControl inline label='Email to share with' path={formPath} prop='email' type='email' />
+						<Misc.PropControl inline label="Email to share with" path={formPath} prop="email" type="email" />
 					</div>
 					<div className="row">
-						<Misc.PropControl path={formPath} prop='enableNotification' label='Send a notification email' type='checkbox'/>
-						{enableNotification? <Misc.PropControl path={formPath} prop='optionalMessage' id='OptionalMessage' label='Attached message' type='textarea' /> : null}
-						<Button color="primary" size="lg" className='btn-block' disabled={!validEmailBool}
+						<Misc.PropControl path={formPath} prop="enableNotification" label="Send a notification email" type="checkbox"/>
+						{enableNotification? <Misc.PropControl path={formPath} prop="optionalMessage" id="OptionalMessage" label="Attached message" type="textarea" /> : null}
+						<Button color="primary" size="lg" className="btn-block" disabled={!validEmailBool}
 							onClick={() => {
 								const {form} = DataStore.getValue(basePath) || {};
 								shareThing({shareId, withXId});
@@ -131,10 +131,10 @@ const ShareWidget = ({item, type, id, name}) => {
 }; // ./ShareWidget
 
 const ListShares = ({list}) => {
-	if ( ! list) return <Misc.Loading text='Loading current shares' />;
+	if ( ! list) return <Misc.Loading text="Loading current shares" />;
 	// console.warn('ListShares', list);
-	if ( ! list.length) return <div className='ListShares'>Not shared.</div>;
-	return (<div className='ListShares'>
+	if ( ! list.length) return <div className="ListShares">Not shared.</div>;
+	return (<div className="ListShares">
 		{list.map(s => <SharedWithRow key={JSON.stringify(s)} share={s} />)}
 	</div>);
 };

@@ -45,7 +45,7 @@ import ErrorAlert from './ErrorAlert';
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q,
-	sort='created-desc',
+	sort = 'created-desc',
 	filter, hasFilter, filterLocally,
 	ListItem,
 	checkboxes, canDelete, 
@@ -108,7 +108,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} base={createBase} navpage={navpage} /> : null}
 		
-		{hasFilter? <PropControl label='Filter' size='sm' type='search' path={widgetPath} prop='filter'/> : null}
+		{hasFilter? <PropControl label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/> : null}
 
 		{items.length === 0 ? <>No results found for <code>{space(q, filter) || type}</code></> : null}
 		{total? <div>About {total} results in total</div> : null}
@@ -221,8 +221,8 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 
 	const checkbox = checkboxes ? (
-		<div className='pull-left'>
-			<Misc.PropControl title='TODO mass actions' path={checkedPath} type='checkbox' prop={id} />
+		<div className="pull-left">
+			<Misc.PropControl title="TODO mass actions" path={checkedPath} type="checkbox" prop={id} />
 		</div>
 	) : null;
 
@@ -230,7 +230,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	// ??Is there a nicer way to do this?
 
 	return (
-		<div className='ListItemWrapper clearfix'>
+		<div className="ListItemWrapper clearfix">
 			{checkbox}
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<A href={itemUrl} key={'A'+id} id={id} notALink={notALink}
@@ -356,7 +356,7 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 	}
 	// mini form
 	return (<Card><CardBody><Form inline>
-		{props.map(prop => <PropControl key={prop} label={prop} prop={prop} path={cpath} inline className='mr-2' />)}
+		{props.map(prop => <PropControl key={prop} label={prop} prop={prop} path={cpath} inline className="mr-2" />)}
 		<Button onClick={() => createBlank({type,navpage,base,id,make})}>
 			<Misc.Icon fa="plus-circle" /> Create
 		</Button>

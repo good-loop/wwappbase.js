@@ -17,7 +17,7 @@ import {setTaskTags} from './TaskList';
 
 const BasicAccountPage = () => {
 	if (!Login.isLoggedIn()) {
-		return <div><h1>My Account: Please login</h1><LoginLink title='Login' /></div>;
+		return <div><h1>My Account: Please login</h1><LoginLink title="Login" /></div>;
 	}
 	
 	setTaskTags();
@@ -31,7 +31,7 @@ const BasicAccountPage = () => {
 };
 
 const LoginCard = () => {
-	return (<Misc.Card title='Login'>
+	return (<Misc.Card title="Login">
 		ID: {Login.getId()} <br />
 	</Misc.Card>);
 }
@@ -40,14 +40,14 @@ const RolesCard = () => {
 	let proles =Roles.getRoles();
 	let roles = proles.value;
 
-	return (<Misc.Card title='Roles'>
+	return (<Misc.Card title="Roles">
 		<p>Roles determine what you can do. E.g. only editors can publish changes.</p>
 		{roles? roles.map((role, i) => <RoleLine key={i+role} role={role} />) : <Misc.Loading />}
 	</Misc.Card>);
 }
 
 // TODO BS4
-const RoleLine = ({role}) => <div className='well'>{role}</div>;
+const RoleLine = ({role}) => <div className="well">{role}</div>;
 
 export {
 	BasicAccountPage,

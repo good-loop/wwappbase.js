@@ -154,7 +154,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
-			<iframe key={unitKey} frameBorder={0} scrolling='auto' style={{width: '100%', height: '100%'}} 
+			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} 
 				onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
 		</div>
 	);

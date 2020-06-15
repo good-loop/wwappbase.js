@@ -96,7 +96,7 @@ class ChartWidget extends React.Component {
 		}; // ./options;
 		console.warn("RC2 Draw chart", chartOptions, chartData);
 		return (<div><h3>{title}</h3>
-					<RC2 data={chartData} options={chartOptions} type='line' />
+					<RC2 data={chartData} options={chartOptions} type="line" />
 					<div>
 						{true ? <small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small> : null}
 					</div>

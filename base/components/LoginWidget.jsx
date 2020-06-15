@@ -177,10 +177,10 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services}
 			isOpen={show}
 			className="login-modal"
 			toggle={() => setShowLogin(!show)}
-			size='lg'			
+			size="lg"
 		>
 			<ModalHeader toggle={() => setShowLogin(!show)}>
-				<Misc.Logo service={C.app.service} url={logo} transparent={false} className='pull-left m-r1' />
+				<Misc.Logo service={C.app.service} url={logo} transparent={false} className="pull-left m-r1" />
 				{' '}{title}
 			</ModalHeader>
 			<ModalBody>
@@ -214,7 +214,7 @@ const SocialSignin = ({verb, services}) => {
 const SocialSignInButton = ({className = "btn signin", children, service, verb = 'login', size}) => {
 	if (!canSignIn[service]) return null;
 	if (!children) children = <>
-		<Misc.Logo size='xsmall' service={service} color={false} square={false} /> {toTitleCase(displayVerb[verb])} with {toTitleCase(service)}
+		<Misc.Logo size="xsmall" service={service} color={false} square={false} /> {toTitleCase(displayVerb[verb])} with {toTitleCase(service)}
 	</>;
 	
 	// TODO this will prep FB on mouseover -- But what about mobile or fast clickers?
@@ -274,7 +274,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 	const emailField = (
 		<div className="form-group">
 			<label>Email</label>
-			<PropControl type='email' path={path} item={person} prop='email' placeholder="Email" />
+			<PropControl type="email" path={path} item={person} prop="email" placeholder="Email" />
 		</div>
 	);
 
@@ -310,7 +310,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 			{emailField}
 			<div className="form-group">
 				<label>Password</label>
-				<Misc.PropControl type='password' path={path} item={person} prop='password' placeholder="Password" />
+				<Misc.PropControl type="password" path={path} item={person} prop="password" placeholder="Password" />
 			</div>
 			{submitGroup}
 			<ResetLink verb={verb} />
@@ -348,7 +348,7 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 	}
 
 	return (
-		<div className='login-widget'>
+		<div className="login-widget">
 			<LoginWidgetGuts services={services} verb={verb} onLogin={onLogin} />
 		</div>
 	);
@@ -362,7 +362,7 @@ const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
 	return (
 		<div className="switch-verb">
 			<small>{explain}</small><br/>
-			<a href='#' onClick={doIt}>{switchText}</a>
+			<a href="#" onClick={doIt}>{switchText}</a>
 		</div>
 	);
 };

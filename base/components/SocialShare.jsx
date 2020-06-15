@@ -30,13 +30,13 @@ const IntentLink = ({children, service, style={}, text, url}) => {
 	let img;
 	if ( service === 'twitter' ) {
 		href = `https://twitter.com/intent/tweet?text=${text}&amp;tw_p=tweetbutton&amp;url=${url}`;
-		img='/img/twitter.png';
+		img = '/img/twitter.png';
 	} else if ( service === 'facebook' ) {
 		href = `http://www.facebook.com/sharer.php?u=${url}&amp;quote=${text}`;
-		img='/img/facebook.png';
+		img = '/img/facebook.png';
 	} else if ( service === 'linkedin' ) {
 		href = `https://www.linkedin.com/shareArticle?mini=true&amp;title=Our%20ads%20are%20raising%20money%20for%20charity&amp;url=${url}&amp;summary=${text}`;
-		img='/img/linkedin-white.png';
+		img = '/img/linkedin-white.png';
 	} else {
 		console.error('Invalid service param provided to IntentLink component. Valid values are twitter, facebook or linkedin');
 		return;

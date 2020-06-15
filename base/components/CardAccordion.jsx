@@ -62,7 +62,7 @@ class Card extends React.Component {
 
 		// Clickable header takes a caret to signify it's clickable
 		const caret = onHeaderClick ? (
-			<Misc.Icon className='pull-right' fa={`caret-${collapse ? 'down' : 'up'}`} />
+			<Misc.Icon className="pull-right" fa={`caret-${collapse ? 'down' : 'up'}`} />
 		) : null;
 
 		return (
@@ -110,12 +110,12 @@ const CardAccordion = ({ children, multiple, defaultOpen}) => {
 		}
 	}, []);
 
-	if (!children) return <div className='CardAccordion' />;
+	if (!children) return <div className="CardAccordion" />;
 
 	assert(_.isArray(opens), "Misc.jsx - CardAccordion - opens not an array", opens);
 
 	return (
-		<div className='CardAccordion'>
+		<div className="CardAccordion">
 			{React.Children.map(children, (child, i) => {
 				let collapse = !opens[i];
 				let onHeaderClick = e => {

@@ -41,8 +41,8 @@ const TestPage = () => {
 	// console.log(rowtree);
 
 	return (
-		<div className='TestPage'>
-			<h1>Scratch Test Page</h1>			
+		<div className="TestPage">
+			<h1>Scratch Test Page</h1>
 			<p>This page is for ad-hoc test & debug of individual widgets. The page is accessible in all our projects as #test.</p>
 			<p>Insert a test widget below</p>
 

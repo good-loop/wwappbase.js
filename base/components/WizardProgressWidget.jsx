@@ -8,7 +8,7 @@ import { Button } from 'reactstrap';
 
 const WizardProgressWidget = ({stageNum, stages, stagePath}) => {
 	if ( ! stageNum) stageNum = 0;
-	return (<div className='WizardProgressWidget'>
+	return (<div className="WizardProgressWidget">
 		{stages.map((stage, i) => <Stage key={i} stage={stage} stageNum={stageNum} i={i} stagePath={stagePath} />)}
 	</div>);
 };
@@ -83,7 +83,7 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 			return React.cloneElement(Kid, {setNavStatus});
 		});
 	}
-	return (<div className='WizardStage'>
+	return (<div className="WizardStage">
 		{children}
 		<WizardNavButtons stagePath={stagePath}
 			navStatus={navStatus}
@@ -151,7 +151,7 @@ const Wizard = ({widgetName, stagePath, children}) => {
 	let stageNum = DataStore.getValue(wcpath);
 	if ( ! stageNum) stageNum = 0; // default to first kid open
 	if ( ! children) {
-		return (<div className='Wizard'></div>);
+		return (<div className="Wizard"></div>);
 	}
 	// filter null, undefined
 	children = children.filter(x => !! x);
@@ -176,7 +176,7 @@ const Wizard = ({widgetName, stagePath, children}) => {
 	kids = kids.filter(x => !! x);
 	let activeStage = kids[0];
 
-	return (<div className='Wizard'>
+	return (<div className="Wizard">
 		<WizardProgressWidget stages={stages} stagePath={stagePath} stageNum={stageNum} />
 		{kids}
 	</div>);
@@ -189,7 +189,7 @@ const WizardNavButtons = ({stagePath, maxStage, navStatus, onNext, onPrev}) => {
 	// navStatus;
 	if (complete) sufficient = true;
 	let msg = ! sufficient? 'Please fill in more of the form' : null;
-	return (<div className='nav-buttons clearfix'>
+	return (<div className="nav-buttons clearfix">
 		{previous===false? null :
 			<PrevButton stagePath={stagePath} onPrev={onPrev} />
 		}

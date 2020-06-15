@@ -110,7 +110,7 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 	const itemElements = list.map((item, index) => (
 		<Card className="item-editor mb-3" key={'item' + index}>
 			<CardBody>
-				<Button color="danger" size="xs" onClick={e => remove(index)} className='pull-right mb-2'><Misc.Icon fa='trash'/></Button>
+				<Button color="danger" size="xs" onClick={e => remove(index)} className="pull-right mb-2"><Misc.Icon fa="trash"/></Button>
 				{item.name ? <h4>{index}. {item.name}</h4> : null}
 				<ItemEditor i={index} item={item} path={path.concat(index)} list={list} {...stuff} />
 			</CardBody>
@@ -135,11 +135,11 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
  */
 Misc.Col2 = ({children, noContainer}) => {
 	const row = (
-		<div className='row'>
-			<div className='col-md-6 col-sm-6'>{children[0]}</div><div className='col-md-6 col-sm-6'>{children[1]}</div>
+		<div className="row">
+			<div className="col-md-6 col-sm-6">{children[0]}</div><div className="col-md-6 col-sm-6">{children[1]}</div>
 		</div>
 	);
-	return noContainer ? row : <div className='container-fluid'>{row}</div>;
+	return noContainer ? row : <div className="container-fluid">{row}</div>;
 };
 
 
@@ -157,9 +157,9 @@ Misc.Money = ({amount, minimumFractionDigits, maximumFractionDigits = 2, maximum
 	const snum = Money.prettyString({amount, minimumFractionDigits, maximumFractionDigits, maximumSignificantDigits});
 	const currencyCode = ((amount || 0).currency || 'GBP').toUpperCase();
 	return (
-		<span className='money'>
-			<span className='currency-symbol'>{Money.CURRENCY[currencyCode]}</span>
-			<span className='amount'>{snum}</span>
+		<span className="money">
+			<span className="currency-symbol">{Money.CURRENCY[currencyCode]}</span>
+			<span className="amount">{snum}</span>
 		</span>
 	);
 };
@@ -370,7 +370,7 @@ Misc.AvatarImg = ({peep, ...props}) => {
 			img = 'https://www.gravatar.com/avatar/'+md5(e.toLowerCase());
 		}
 		// security paranoia -- but it looks like Gravatar dont set a tracking cookie
-		// let html = `<img className='AvatarImg' alt=${'Avatar for '+name} src=${src} />`;
+		// let html = `<img className="AvatarImg" alt=${'Avatar for '+name} src=${src} />`;
 		// return <iframe title={nonce()} src={'data:text/html,' + encodeURIComponent(html)} />;
 	}
 
@@ -412,7 +412,7 @@ Misc.VideoThumbnail = ({url, width=200, height=150, controls=true}) => url ? (
  * A help note for the user
  */
 Misc.Help = ({children}) => {
-	return <Alert color='info' className='m-1'><h3 className='pull-right m-1'>&#9432;</h3>{children}</Alert>
+	return <Alert color="info" className="m-1"><h3 className="pull-right m-1">&#9432;</h3>{children}</Alert>
 };
 
 
@@ -423,7 +423,7 @@ Misc.Help = ({children}) => {
  * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
  * @param onSuccess {JSX} TODO rename this! shown after a successful submit. This is not a function to call!
  */
-Misc.SubmitButton = ({formData, path, url, responsePath, once, className='btn btn-primary', onSuccess, children}) => {
+Misc.SubmitButton = ({formData, path, url, responsePath, once, className = 'btn btn-primary', onSuccess, children}) => {
 	assMatch(url, String);
 	// assMatch(path, 'String[]');
 	// track the submit request
@@ -528,6 +528,6 @@ Misc.Tabs = ({children, path}) => {
 };
 
 
-Misc.LoginToSee = ({desc}) => <div>Please log in to see {desc||'this'}. <LoginLink className='btn btn-secondary' /></div>;
+Misc.LoginToSee = ({desc}) => <div>Please log in to see {desc||'this'}. <LoginLink className="btn btn-secondary" /></div>;
 
 export default Misc;
