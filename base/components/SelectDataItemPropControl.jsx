@@ -12,7 +12,7 @@ import PropControl, {registerControl} from './PropControl';
   * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
   */
 const SelectDataItemPropControl = ({path, prop, type, q, embed}) => {
-	return <PropControl type='text' prop={prop} path={path} />;
+	return <PropControl type="text" prop={prop} path={path} />;
 };
 registerControl({type:'DataItem', $Widget:SelectDataItemPropControl});
 

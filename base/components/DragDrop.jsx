@@ -103,7 +103,7 @@ const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
  * @param onDrop {?Function} Called if there is a drop here. (e, dropInfo) => do-stuff
  */
 const DropZone = ({id, children, onDrop}) => {
-	return (<div className='DropZone' id={id}
+	return (<div className="DropZone" id={id}
 		onDragOver={e => _onDragOver(e, id)}
 		onDragEnter={e => _onDragEnter(e,id)}
 		onDragExit={e => _onDragExit(e,id)}

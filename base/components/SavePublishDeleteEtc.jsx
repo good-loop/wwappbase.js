@@ -98,7 +98,7 @@ const SavePublishDeleteEtc = ({
 	// No anon edits
 	if (!Login.isLoggedIn()) {
 		if (hidden) return null;
-		return <div className='SavePublishDiscard'><i>Login to save or publish edits</i></div>;
+		return <div className="SavePublishDiscard"><i>Login to save or publish edits</i></div>;
 	}
 
 	assert(C.TYPES.has(type), 'SavePublishDeleteEtc');

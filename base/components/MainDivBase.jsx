@@ -110,7 +110,7 @@ class MainDivBase extends Component {
 		let Page = pageForPath[page];
 		if ( ! Page) {
 			// basic account?
-			if (page==='account') Page = BasicAccountPage;
+			if (page === 'account') Page = BasicAccountPage;
 			else {
 				Page = E404Page;
 			}
@@ -134,7 +134,7 @@ class MainDivBase extends Component {
 				</NavBar>
 				<Container>
 					<MessageBar />
-					<div className='page' id={page}>
+					<div className="page" id={page}>
 						<Page />
 					</div>
 				</Container>
@@ -147,7 +147,7 @@ class MainDivBase extends Component {
 
 const DefaultErrorPage = ({error}) => (
 	<div>
-		<h3 className='mt-2'>There was an Error :&#39;(</h3>
+		<h3 className="mt-2">There was an Error :&#39;(</h3>
 		<p>Try navigating to a different tab, or reloading the page. 
 			If this problem persists, please contact support.</p>
 		<p>
