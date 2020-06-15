@@ -71,6 +71,7 @@ git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winter
 git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winterwell/logins reset --hard FETCH_HEAD
 cp -r ~/winterwell/logins/test-base/adserver/utils adserver/
 cp -r ~/winterwell/logins/test-base/sogive/utils sogive/
+cp -r ~/winterwell/logins/test-base/myloop/utils myloop/
 
 
 ########
