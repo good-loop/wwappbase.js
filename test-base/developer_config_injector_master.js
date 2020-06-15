@@ -6,8 +6,9 @@ let config = {
 	site: 'test', // TODO can we sniff this?? // How do we set it??
 	unsafe: false,
 	vert: 'test_wide_multiple',
-	head: true,
-	chrome: false,
+//	head: true,
+    head: false,
+	chrome: true,
 	flag: false,
 };
 let argv = process.argv.slice(0, 2);
