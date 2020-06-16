@@ -3,7 +3,7 @@
 VERSION='0.0.2b'
 
 ## List of tests written for specific projects. When new tests are written for new projects, edit this line
-SUPPORTED_TESTS='adserver, demo, myloop, and sogive'
+SUPPORTED_TESTS='adserver, demo, myloop, sogive, and studio'
 USAGE='developer-run-tests.sh adserver'
 ########
 ## Ensuring a clean environment
@@ -32,6 +32,10 @@ case $1 in
     sogive|SOGIVE)
         echo "let testPath = 'sogive';" >> runtests.js
         echo "shell.exec(\`npm run test\${' ' + testPath} \${runInBand}\`);" >> runtests.js
+    ;;
+    studio|STUDIO)
+	echo "let testPath = 'studio';" >> runtests.js
+	echo "shell.exec(\`npm run test\${' ' + testPath} \${runInBand}\`);" >> runtests.js
     ;;
     *)
         printf "\nUnknown Project specified, or no project specified\n\tsupported projects are:\n\t$SUPPORTED_TESTS\n\n\nexample:\n\t$USAGE"
@@ -72,6 +76,7 @@ git --git-dir=/home/$USER/winterwell/logins/.git/ --work-tree=/home/$USER/winter
 cp -r ~/winterwell/logins/test-base/adserver/utils adserver/
 cp -r ~/winterwell/logins/test-base/sogive/utils sogive/
 cp -r ~/winterwell/logins/test-base/myloop/utils myloop/
+cp -r ~/winterwell/logins/test-base/studio/utils studio/
 
 
 ########
@@ -138,6 +143,10 @@ fi
 
 if [[ -d myloop/utils ]]; then
     rm -rf myloop/utils
+fi
+
+if [[ -d studio/utils ]]; then
+    rm -rf studio/utils
 fi
 
 #########
