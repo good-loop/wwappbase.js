@@ -4,7 +4,7 @@ VERSION='0.0.3b'
 
 ## List of tests written for specific projects. When new tests are written for new projects, edit this line
 SUPPORTED_TESTS='adserver, demo, myloop, sogive, and studio'
-USAGE='\tdeveloper-run-tests.sh -p adserver\n\tOR with all options argued\n\tdeveloper-run-tests.sh -p adserver -t local -a test_wide_multiple -h true -c true -s 150\n\n\tp = project_name\n\tt = target server eg. test|local|production.  DEFAULT = local\n\ta = use this advertID (applicable to portal/adserver tests). DEFAULT = test_wide_multiple\n\th = Should the tests be run headlessly? true or false. DEFAULT = true\n\tc = use my computers local binary of chrome, rather than chromium. true or false. DEFAULT = false\n\ts = milliseconds of slowdown between automated commands. DEFAULT = 0\n\n'
+USAGE='\tdeveloper-run-tests.sh -p adserver\n\tOR with all options argued\n\tdeveloper-run-tests.sh -p adserver -t local -a test_wide_multiple -h true -c true -s 150\n\n\tp = project_name\n\tt = target server eg. test|local|production.  DEFAULT = local\n\ta = use this advertID (applicable to portal/adserver tests). DEFAULT = test_wide_multiple\n\th = Should the tests be run headlessly? true or false. DEFAULT = true\n\tc = use my computers local binary of chrome, rather than chromium. true or false. DEFAULT = false\n\ts = milliseconds of slowdown between automated commands. DEFAULT = 0\n\n\tSupported Projects : $SUPPORTED_TESTS\n\n'
 ########
 ## Ensuring a clean environment
 ########
