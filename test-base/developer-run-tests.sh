@@ -4,12 +4,16 @@ VERSION='0.0.3b'
 
 ## List of tests written for specific projects. When new tests are written for new projects, edit this line
 SUPPORTED_TESTS='adserver, demo, myloop, sogive, and studio'
-USAGE='developer-run-tests.sh -p adserver\n\tOR with all options argued\n\tdeveloper-run-tests.sh -p adserver -t local -a test_wide_multiple -h true -c true'
+USAGE='developer-run-tests.sh -p adserver\n\tOR with all options argued\n\tdeveloper-run-tests.sh -p adserver -t local -a test_wide_multiple -h true -c true -s 150'
 ########
 ## Ensuring a clean environment
 ########
 if [[ -f runtests.js ]]; then
     rm runtests.js
+fi
+
+if [[ -f jest-puppeteer.config.js ]]; then
+	rm jest-puppeteer.config.js
 fi
 
 ########
@@ -20,9 +24,11 @@ TARGET_SERVER='local'
 SPECIFIED_ADVERT_ID='test_wide_multiple'
 HEADLESS_BROWSER_PREFERENCE='true' # true = 'yes, please HIDE the GUI Browser, and run headlessly'
 USE_CHROME_T_OR_F='false'
+SLOW_MO_VALUE='0'
+
 
 # Parse flagged arguments.  Declaring a project is manditory
-while getopts p:t:a:h:c: opt; do
+while getopts p:t:a:h:c:s: opt; do
 	case $opt in
 		# Project Name : This flag must be set in order for the script to run correctly
 		p)
@@ -109,6 +115,21 @@ while getopts p:t:a:h:c: opt; do
 				esac
 			fi
 		;;
+		# slowMo -- an option to have jest/puppeteer purposely slow down so that you can see each and every action in slow motion
+		### The value is supposed to be an integer which is measured in milliseconds.
+		s)
+			if [ -z $OPTARG ]; then
+				SLOW_MO_VALUE='0'
+			else
+				SLOW_MO_VALUE=$OPTARG
+				re='^[0-9]+$'
+				if ! [[ $OPTARG =~ $re ]]; then
+					printf "\nThe -s argument can only use integers.\n"
+					printf "\n$USAGE\n"
+					exit 0
+				fi
+			fi
+		;;
 		\?)
 			printf "\nInvalid Option used\n\nViable Usage:\n\t$USAGE\n\n"
 			exit 0
@@ -128,11 +149,11 @@ shift $((OPTIND -1))
 
 # Declaring the Set Variables to the User
 printf "\nProject : $PROJECT_NAME\n"
-printf "\nTarget Server : $TARGET_SERVER\n"
+printf "\nTarget Server (URL prefix) : $TARGET_SERVER\n"
 printf "\n(If Adserver/Portal Testing) Using Advert : $SPECIFIED_ADVERT_ID\n"
 printf "\nHIDE GUI Browser And Run HEADLESSLY? : $HEADLESS_BROWSER_PREFERENCE\n"
-printf "\nUse Local Chrome : $USE_CHROME_T_OR_F\n"
-
+printf "\nUse Local Chrome instead of Chromium? : $USE_CHROME_T_OR_F\n"
+printf "\nUse SlowMo with a Value of : $SLOW_MO_VALUE milliseconds\n"
 
 
 ########
@@ -196,6 +217,25 @@ EOF
 function generate_runtests_shell_exec {
 	cat <<EOF
 		shell.exec(\`npm run test\${' ' + testPath} \${runInBand}\`);
+EOF
+}
+
+
+########
+### Functions : Generate jest-puppeteer.config.js
+########
+function generate_jest_puppeteer_config_js {
+	cat <<EOF
+	const config = JSON.parse(process.env.__CONFIGURATION);
+console.log(config)
+
+module.exports = {
+	launch: {
+		headless: config.head,
+        slowMo: process.env.SLOWMO ? process.env.SLOWMO : $SLOW_MO_VALUE,
+		executablePath: config.chrome ? '/usr/bin/google-chrome-stable' : ''
+	}
+};
 EOF
 }
 
@@ -277,6 +317,7 @@ generate_runtests_let_block >> runtests.js
 generate_runtests_object_functions >> runtests.js
 generate_runtests_process_settings >> runtests.js
 generate_runtests_shell_exec >> runtests.js
+generate_jest_puppeteer_config_js >> jest-puppeteer.config.js
 node runtests.js &> test-results/Logs/$1-testing-output-$TIME.log
 
 
