@@ -41,6 +41,7 @@ module.exports = {
 		"arrow-body-style": "off",
 		"block-spacing": "warn",
 		"no-empty-pattern": "warn",
+		"no-multiple-empty-lines": "off",
 		"arrow-parens": "off",
 		"brace-style": "warn",
 		"camelcase": "off", // we use camelCase, but we also break it in places, e.g. myFn2_subFn()
