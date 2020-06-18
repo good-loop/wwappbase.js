@@ -2,8 +2,8 @@
 
 # TeamCity Continuous Integration Builder Template
 
-#Version 0.2 alpha
-# Meaning - Script has been written, but not fully tested
+#Version 1.0
+# Meaning - Script has been written and tested
 
 #####  GENERAL SETTINGS
 ## This section should be the most widely edited part of this script
@@ -18,8 +18,10 @@ PROJECT_USES_NPM='yes' # yes or no
 PROJECT_USES_WEBPACK='yes' #yes or no
 PROJECT_USES_JERBIL='yes' #yes or no
 PROJECT_USES_AUTOMATED_TESTING='yes' #yes or no
+PROJECT_USES_WWAPPBASE_SYMLINK='yes'
 
 ## TODO : put in an argument switch to allow a specific branch to be pulled from git
+## TODO : resolve symlinks with wwappbase.js
 
 
 
@@ -29,6 +31,7 @@ PROJECT_USES_AUTOMATED_TESTING='yes' #yes or no
 TARGET_SERVERS=(baker.good-loop.com)
 PROJECT_ROOT_ON_SERVER="/home/winterwell/$PROJECT_NAME"
 AUTOMATED_TESTS_COMMAND="bash $PROJECT_ROOT_ON_SERVER/run-tests.sh test"
+WWAPPBASE_REPO_PATH_ON_SERVER_DISK="/home/winterwell/wwappbase.js"
 
 
 
@@ -92,6 +95,20 @@ function check_jerbil_exists {
     fi
 }
 
+function check_wwappbasejs_exists {
+    BUILD_PROCESS_NAME='checking for wwappbase.js'
+    BUILD_STEP='checking the path for the wwappbase.js repository on the servers disk'
+    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
+        for server in ${TARGET_SERVERS[@]}; do
+            if [[ $(ssh winterwell@$server "ls $WWAPPBASE_REPO_PATH_ON_SERVER_DISK") = "ls: cannot access '$WWAPPBASE_REPO_PATH_ON_SERVER_DISK': No such file or directory" ]]; then
+                printf "\nThe Defined Path to wwappbase.js couldn't be validated. Sending Alert Emails and Breaking Operation\n"
+                send_alert_email
+                exit 0
+            fi
+        done
+    fi
+}
+
 
 # Cleanup Git -- Ensure a clean and predictable git repo for building
 function cleanup_repo {
@@ -99,6 +116,16 @@ function cleanup_repo {
         printf "\nCleaning $server 's local repository...\n"
         ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && git gc --prune=now && git pull origin master && git reset --hard FETCH_HEAD"
     done
+}
+
+# Cleanup wwappbase.js 's repo -- Ensure that this repository is up to date and clean
+function cleanup_wwappbasejs_repo {
+    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
+        for server in ${TARGET_SERVERS[@]}; do
+            printf "\nCleaning $server 's local wwappbase.js repository\n"
+            ssh winterwell@$server "cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git gc --prune=now && git pull origin master && git reset --hard FETCH_HEAD"
+        done
+    fi
 }
 
 # Stopping the JVM Backend (if applicable)
@@ -231,7 +258,9 @@ function use_automated_tests {
 check_repo_exists
 check_bob_exists
 check_jerbil_exists
+check_wwappbasejs_exists
 cleanup_repo
+cleanup_wwappbasejs_repo
 stop_service
 use_bob
 use_npm
