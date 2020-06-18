@@ -19,8 +19,7 @@
     "shelljs": "^0.8.3",
     "yargs": "^15.1.0",
     "jest-puppeteer": "^4.4.0",
-    "puppeteer": "^2.0.0",
-    "puppet-theatre": "latest"
+    "puppeteer": "^2.0.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.2.3",
@@ -63,7 +62,6 @@
     "jest-environment-puppeteer": "^4.3.0",
     "jest-puppeteer": "^4.4.0",
     "ndb": "^1.1.5",
-    "puppet-theatre": "latest",
     "puppeteer": "^2.0.0",
     "react-test-renderer": "^16.10.2",
     "regenerator-runtime": "^0.11.1",
