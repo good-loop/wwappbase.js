@@ -96,6 +96,7 @@ function cleanup_repo {
     for server in ${TARGET_SERVERS[@]}; do
         printf "\nCleaning $server 's local repository...\n"
         ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && git gc --prune=now && git pull origin master && git reset --hard FETCH_HEAD"
+    done
 }
 
 # Stopping the JVM Backend (if applicable)
