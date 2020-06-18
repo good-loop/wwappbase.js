@@ -19,6 +19,8 @@ PROJECT_USES_WEBPACK='yes' #yes or no
 PROJECT_USES_JERBIL='yes' #yes or no
 PROJECT_USES_AUTOMATED_TESTING='yes' #yes or no
 
+## TODO : put in an argument switch to allow a specific branch to be pulled from git
+
 
 
 #####  SPECIFIC SETTINGS
