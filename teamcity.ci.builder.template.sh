@@ -218,6 +218,8 @@ function use_automated_tests {
             ssh winterwell@$server "tmux send-keys -t $PROJECT_NAME-automated-tests 'cd $PROJECT_ROOT_ON_SERVER && npm run tests' C-m"
             printf "\n$server is running automated tests in a tmux session\n"
             printf "\tto check the progress, use ssh winterwell@$server and then use tmux attach-sessiont -t $PROJECT_NAME-automated-tests\n"
+        done
+    fi
 }
 
 
