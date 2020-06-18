@@ -62,8 +62,8 @@ function check_repo_exists {
 
 # First-Run-check for bob : Check if any of the target servers already have npm's bob
 function check_bob_exists {
-    EXPORT BUILD_PROCESS_NAME='checking for bob'
-    EXPORT BUILD_STEP='checking for a global installation of "bob"'
+    BUILD_PROCESS_NAME='checking for bob'
+    BUILD_STEP='checking for a global installation of "bob"'
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         for server in ${TARGET_SERVERS[@]}; do
             if [[ $(ssh winterwell@$server "which bob") = '' ]]; then
@@ -77,8 +77,8 @@ function check_bob_exists {
 
 # First-Run-check for Jerbil : Check if any of the target servers already have npm's jerbil
 function check_jerbil_exists {
-    EXPORT BUILD_PROCESS_NAME='checking for jerbil'
-    EXPORT BUILD_STEP='checking for a global installation of "jerbil"'
+    BUILD_PROCESS_NAME='checking for jerbil'
+    BUILD_STEP='checking for a global installation of "jerbil"'
     if [[ $PROJECT_USES_JERBIL = 'yes' ]]; then
         for server in ${TARGET_SERVERS[@]}; do
             if [[ $(ssh winterwell@$server "which jerbil") = '' ]]; then
@@ -112,8 +112,8 @@ function stop_service {
 # Bob -- Evaluate and Use
 function use_bob {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
-        EXPORT BUILD_PROCESS_NAME='bob'
-        EXPORT BUILD_STEP='bob was attempting to render jars'
+        BUILD_PROCESS_NAME='bob'
+        BUILD_STEP='bob was attempting to render jars'
         for server in ${TARGET_SERVERS[@]}; do
             printf "\ncleaning out old bob.log on $server ...\n"
             ssh winterwell@$server "rm -rf $PROJECT_ROOT_ON_SERVER/bob.log"
@@ -136,9 +136,9 @@ function use_bob {
 # NPM -- Evaluate and Use
 function use_npm {
     if [[ $PROJECT_USES_NPM = 'yes' ]]; then
-        EXPORT BUILD_PROCESS_NAME='npm'
-        EXPORT BUILD_STEP='npm was downloading packages'
-        EXPORT NPM_LOG_DATE=$(date +%Y-%m-%d)
+        BUILD_PROCESS_NAME='npm'
+        BUILD_STEP='npm was downloading packages'
+        NPM_LOG_DATE=$(date +%Y-%m-%d)
         for server in ${TARGET_SERVERS[@]}; do
             if [[ $NPM_CLEANOUT = 'yes' ]]; then
                 printf "\nDeleting the existing node_modules...\n"
@@ -161,9 +161,9 @@ function use_npm {
 # Webpack -- Evaluate and Use
 function use_webpack {
     if [[ $PROJECT_USES_WEBPACK = 'yes' ]]; then
-        EXPORT BUILD_PROCESS_NAME='webpack'
-        EXPORT BUILD_STEP='npm was running a weback process'
-        EXPORT NPM_LOG_DATE=$(date +%Y-%m-%d)
+        BUILD_PROCESS_NAME='webpack'
+        BUILD_STEP='npm was running a weback process'
+        NPM_LOG_DATE=$(date +%Y-%m-%d)
         for server in ${TARGET_SERVERS[@]}; do
             printf "\nNPM is now running a Webpack process on $server\n"
             ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && npm run compile"
@@ -182,8 +182,8 @@ function use_webpack {
 # Jerbil -- Evaluate and Use
 function use_jerbil {
     if [[ $PROJECT_USES_JERBIL = 'yes' ]]; then
-        EXPORT BUILD_PROCESS_NAME='jerbil'
-        EXPORT BUILD_STEP='jerbil was attempting to render markdown to html'
+        BUILD_PROCESS_NAME='jerbil'
+        BUILD_STEP='jerbil was attempting to render markdown to html'
         for server in ${TARGET_SERVERS[@]}; do
             printf "\n$server is ensuring that jerbil is up to date\n"
             ssh winterwell@$server "jerbil -update"
@@ -208,8 +208,8 @@ function start_service {
 # Automated Testing -- Evaluate and Use
 function use_automated_tests {
     if [[ $PROJECT_USES_AUTOMATED_TESTING = 'yes' ]]; then
-        EXPORT BUILD_PROCESS_NAME='automated testing'
-        EXPORT BUILD_STEP='automated tests were running'
+        BUILD_PROCESS_NAME='automated testing'
+        BUILD_STEP='automated tests were running'
         for server in ${TARGET_SERVERS[@]}; do
             printf "\nEnding old automated testing session on $server...\n"
             ssh winterwell@$server "tmux kill-session -t $PROJECT_NAME-automated-tests"
