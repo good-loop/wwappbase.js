@@ -114,7 +114,9 @@ function check_wwappbasejs_exists {
 function cleanup_repo {
     for server in ${TARGET_SERVERS[@]}; do
         printf "\nCleaning $server 's local repository...\n"
-        ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && git gc --prune=now && git pull origin master && git reset --hard FETCH_HEAD"
+        ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && git gc --prune=now"
+        ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && git pull origin master"
+        ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && git reset --hard FETCH_HEAD"
     done
 }
 
@@ -123,7 +125,9 @@ function cleanup_wwappbasejs_repo {
     if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
         for server in ${TARGET_SERVERS[@]}; do
             printf "\nCleaning $server 's local wwappbase.js repository\n"
-            ssh winterwell@$server "cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git gc --prune=now && git pull origin master && git reset --hard FETCH_HEAD"
+            ssh winterwell@$server "cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git gc --prune=now"
+            ssh winterwell@$server "cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git pull origin master"
+            ssh winterwell@$server "cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git reset --hard FETCH_HEAD"
         done
     fi
 }
