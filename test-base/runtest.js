@@ -3,16 +3,15 @@ const shell = require('shelljs');
 const yargv = require('yargs').argv;
 
 let config = {
-	site: 'test', // TODO can we sniff this?? // How do we set it??
+	site: 'test',
 	unsafe: false,
-	vert: 'test_wide_multiple',
+	vert: '',
 	head: true,
 	chrome: false,
-	flag: false,
 };
 let argv = process.argv.slice(0, 2);
 
-//let testPath = '';
+let testPath = '';
 let runInBand = '';
 
 Object.entries(yargv).forEach(([key, value]) => {
@@ -34,3 +33,4 @@ process.env.__CONFIGURATION = JSON.stringify(config);
 process.argv = argv;
 
 // Execute Jest. Specific target optional.
+shell.exec(`npm run test${' ' + testPath} ${runInBand}`);
