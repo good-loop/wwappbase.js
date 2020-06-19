@@ -16,7 +16,7 @@ const AboutPage = () => {
 
 			<p>Please see our website for more information on {C.app.name}: <a href={website}>{website}</a></p>
 
-			{C.app.facebookAppId? <a href={'https://www.facebook.com/games/?app_id="+C.app.facebookAppId}><Misc.Logo service="facebook' /> facebook</a> : null}
+			{C.app.facebookAppId? <a href={'https://www.facebook.com/games/?app_id="+C.app.facebookAppId'}><Misc.Logo service="facebook" /> facebook</a> : null}
 
 			<p>Software version: <i>{JSON.stringify(C.app.version || 'alpha')}</i></p>
 
