@@ -1,6 +1,6 @@
 /** PropControl provides inputs linked to DataStore.
  */
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 
 // TODO Maybe add support for user-set-this, to separate user-cleared-blanks from initial-blanks
 
@@ -121,7 +121,7 @@ const dateValidator = (val, rawValue) => {
  * 	Default: ['location','params'] which codes for the url
  * @param item The item being edited. Can be null, and it will be fetched by path.
  * @param prop The field being edited
- * @param dflt {?Object} default value Beware! This may not get saved if the user never interacts.
+ * @param dflt {?Object} default value (this will get set over-riding a null/undefined/'' value in the item)
  * @param {?Function} modelValueFromInput - inputs: (value, type, eventType) See standardModelValueFromInput.
  * @param required {?Boolean} If set, this field should be filled in before a form submit.
  * 	TODO mark that somehow
@@ -148,7 +148,17 @@ const PropControl = (props) => {
 	const proppath = path.concat(prop);
 	let value = DataStore.getValue(proppath);
 	// Use a default? But not to replace false or 0
-	if (value === undefined || value === null || value === '') value = dflt;
+	if (value === undefined || value === null || value === '') {
+		// allow the user to delete the field - so only set the default once
+		let [dfltFlag, setDfltFlag] = useState();
+		if ( ! dfltFlag) {
+			value = dflt;
+			// set the model too (otherwise the value gets lost!)
+			DataStore.setValue(proppath, value, false);
+			console.log("PropControl.jsx - set default value "+proppath, value);
+			setDfltFlag(true);
+		}
+	}
 
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
@@ -233,7 +243,7 @@ const PropControl2 = (props) => {
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
-	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, dflt, onUpload, ...stuff} = props;
+	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff} = props;
 	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
 
 	if ( ! modelValueFromInput) {
@@ -303,7 +313,7 @@ const PropControl2 = (props) => {
 	// £s
 	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
 	if (type === 'Money') {
-		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
+		let acprops = {prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlMoney {...acprops} />;
 	} // ./£
 
@@ -438,7 +448,7 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'autocomplete') {
-		let acprops = {prop, value, path, proppath, item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff};
+		let acprops = {prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff};
 		return <PropControlAutocomplete {...acprops} />;
 	}
 
@@ -481,7 +491,7 @@ const PropControl2 = (props) => {
  */
 const PropControlSelect = ({options, labels, value, multiple, prop, onChange, saveFn, canUnset, ...otherStuff}) => {
 	// NB: pull off internal attributes so the select is happy with rest
-	const {className, dflt, recursing, modelValueFromInput, ...rest} = otherStuff;
+	const {className, recursing, modelValueFromInput, ...rest} = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
 	assert(options.map, 'Misc.PropControl: options not an array '+options);
 	options = _.uniq(options);
@@ -498,7 +508,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 			labeller = v => labels[v] || v;
 		}
 	}
-	let sv = value || dflt;
+	let sv = value;
 
 	if (multiple) {
 		// WTF? multi-select is pretty broken in React as of Jan 2019
@@ -585,7 +595,7 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
  *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
-const PropControlRadio = ({type, prop, value, path, item, dflt, saveFn, options, labels, inline, ...otherStuff}) => {
+const PropControlRadio = ({type, prop, value, path, item, saveFn, options, labels, inline, ...otherStuff}) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -656,7 +666,7 @@ const numFromAnything = v => {
  * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
  */
 const PropControlMoney = ({prop, name, value, currency, path, proppath,
-									item, bg, dflt, saveFn, modelValueFromInput, onChange, append, ...otherStuff}) => {
+									item, bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff}) => {
 		// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
 	// Convert null and numbers into Money objects
@@ -923,7 +933,7 @@ renderItem {?JSX}
 getItemValue {?Function} item -> prop-value
 */
 const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem, path, proppath,
-	item, bg, dflt, saveFn, modelValueFromInput, ...otherStuff}) => {
+	item, bg, saveFn, modelValueFromInput, ...otherStuff}) => {
 		// a place to store the working state of this widget
 		let widgetPath = ['widget', 'autocomplete'].concat(path);
 		if (!getItemValue) getItemValue = s => s;
