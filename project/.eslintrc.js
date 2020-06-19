@@ -41,6 +41,7 @@ module.exports = {
 		"arrow-body-style": "off",
 		"block-spacing": "warn",
 		"no-empty-pattern": "warn",
+		"no-multiple-empty-lines": "off",
 		"arrow-parens": "off",
 		"brace-style": "warn",
 		"camelcase": "off", // we use camelCase, but we also break it in places, e.g. myFn2_subFn()
@@ -69,7 +70,7 @@ module.exports = {
 		"jsx-a11y/media-has-caption": "warn",
 		"jsx-a11y/no-static-element-interactions": "warn",
 		"jsx-a11y/control-has-associated-label":"warn",
-		"jsx-quotes": "off",
+		"jsx-quotes": ["warn", "prefer-double"],
 		"key-spacing": "off",
 		"keyword-spacing": "off",
 		"max-depth": ["warn", 4],

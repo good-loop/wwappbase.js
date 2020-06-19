@@ -377,9 +377,10 @@ ServerIO.getDataItem = function({type, id, status, domain, swallow, ...other}) {
  * @param type {!String} From C.TYPES
  * @param status {?String} From C.KStatus. If in doubt: use PUBLISHED for display, and DRAFT for editors. 
  * 	Default: look for a status= parameter in thre url, or use published.
+ * @param {?string} action e.g. `getornew`
  * @returns PromiseValue
  */
-ActionMan.getDataItem = ({type, id, status, domain, swallow, ...other}) => {
+export const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
 	assert(id!=='unset', "ActionMan.getDataItem() "+type+" id:unset?!");
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
@@ -388,9 +389,10 @@ ActionMan.getDataItem = ({type, id, status, domain, swallow, ...other}) => {
 	// TODO Decide if getPath should take object argument
 	let path = DataStore.getDataPath({status, type, id, domain});
 	return DataStore.fetch(path, () => {
-		return ServerIO.getDataItem({type, id, status, domain, swallow, ...other});
+		return ServerIO.getDataItem({type, id, status, domain, swallow, action, ...other});
 	}, ! swallow);
 };
+ActionMan.getDataItem = getDataItem;
 
 /**
  * Smooth update: Get an update from the server without null-ing out the local copy.
@@ -493,5 +495,5 @@ export default CRUD;
 export {
 	errorPath,
 	restId,
-	restIdDataspace
+	restIdDataspace,
 };

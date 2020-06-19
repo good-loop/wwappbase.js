@@ -40,6 +40,7 @@ import ErrorAlert from './ErrorAlert';
  * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
  * @param {?String} itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} canCreate - If set, show a Create
+ * @param {?boolean} hideTotal - If true, don't show the "Total about 17" line
  * @param {?Object} createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
  * @param {?C.KStatus} preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  */
@@ -52,7 +53,8 @@ const ListLoad = ({type, status, servlet, navpage,
 	canCreate, createBase,
 	className,
 	notALink, itemClassName,
-	preferStatus
+	preferStatus,
+	hideTotal
 }) =>
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
@@ -111,7 +113,7 @@ const ListLoad = ({type, status, servlet, navpage,
 		{hasFilter? <PropControl label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/> : null}
 
 		{items.length === 0 ? <>No results found for <code>{space(q, filter) || type}</code></> : null}
-		{total? <div>About {total} results in total</div> : null}
+		{total && ! hideTotal? <div>About {total} results in total</div> : null}
 		
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i}
@@ -190,6 +192,10 @@ const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) =>
 	return items;	
 };
 
+/**
+ * 
+ * @param {?Object} customParams - Not used! allows passing extra params through the click
+ */
 const onPick = ({event, navpage, id, customParams}) => {
 	if (event) {
 		event.stopPropagation();
@@ -209,14 +215,14 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	}
 	let itemUrl = modifyHash([servlet, id], null, true);	
 
-	// TODO refactor this Portal specific code out of here.
-	// for the campaign page we want to manipulate the url to modify the vert/vertiser params
-	// that means both modifying href and onClick definitions
-	let customParams;
-	if (servlet==="campaign") {
-		itemUrl = modifyHash([servlet,null], {'gl.vertiser':null, 'gl.vert':id}, true);
-		customParams = {'gl.vertiser':null, 'gl.vert':id};
-	}
+	// // TODO refactor this Portal specific code out of here.
+	// // for the Impact Hub campaign page we want to manipulate the url to modify the vert/vertiser params
+	// // that means both modifying href and onClick definitions
+	// let customParams;
+	// if (servlet==="campaign") {
+	// 	itemUrl = modifyHash([servlet,null], {'gl.vertiser':null, 'gl.vert':id}, true);
+	// 	customParams = {'gl.vertiser':null, 'gl.vert':id};
+	// }
 
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 
@@ -234,7 +240,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 			{checkbox}
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<A href={itemUrl} key={'A'+id} id={id} notALink={notALink}
-				onClick={event => onPick({ event, navpage, id, customParams })}
+				onClick={event => onPick({ event, navpage, id })}
 				className={itemClassName || `ListItem btn btn-outline-secondary status-${item.status}`}
 			>
 				<div key={`Adiv${id}`}>{children}</div>
