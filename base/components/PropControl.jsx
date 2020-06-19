@@ -148,14 +148,17 @@ const PropControl = (props) => {
 	const proppath = path.concat(prop);
 	let value = DataStore.getValue(proppath);
 	// Use a default? But not to replace false or 0
-	if (value === undefined || value === null || value === '') {
-		// allow the user to delete the field - so only set the default once
+	if (dflt) {
+		// allow the user to delete the field - so only check the default once
 		let [dfltFlag, setDfltFlag] = useState();
 		if ( ! dfltFlag) {
-			value = dflt;
-			// set the model too (otherwise the value gets lost!)
-			DataStore.setValue(proppath, value, false);
-			console.log("PropControl.jsx - set default value "+proppath, value);
+			if ((value === undefined || value === null || value === '') && ! dfltFlag) {				
+				value = dflt;
+				// set the model too (otherwise the value gets lost!)
+				DataStore.setValue(proppath, value, false);
+				console.log("PropControl.jsx - set default value "+proppath, value);		
+			}
+			// 1st time only
 			setDfltFlag(true);
 		}
 	}
@@ -307,8 +310,9 @@ const PropControl2 = (props) => {
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
 	}
-
-	if (value===undefined) value = '';
+	
+	// keep react happy
+	if (value===undefined || value===null) value = '';
 
 	// £s
 	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
@@ -356,7 +360,7 @@ const PropControl2 = (props) => {
 		return <PropControlEntrySet {...props} />;
 	}
 
-	if (type === 'textarea') {
+	if (type === 'textarea') {		
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
 	}
 
@@ -508,7 +512,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 			labeller = v => labels[v] || v;
 		}
 	}
-	let sv = value;
+	const sv = value;
 
 	if (multiple) {
 		// WTF? multi-select is pretty broken in React as of Jan 2019
