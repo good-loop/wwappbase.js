@@ -527,7 +527,8 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 		const thisKey = 'option_' + ((otherStuff.keys && otherStuff.keys[index]) || JSON.stringify(option));
 		return <option key={thisKey} value={option} >{labeller(option)}</option>;
 	});
-	
+	let showUnset = (canUnset || ! sv) && ! options.includes(null) && ! options.includes(''); 
+
 	/* text-muted is for my-loop mirror card
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
 	let klass = space('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
@@ -537,7 +538,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 			multiple={multiple}
 			{...rest}
 		>
-			{sv && ! canUnset? null : <option></option>}
+			{showUnset? <option></option> : null}
 			{domOptions}
 		</select>
 	);
