@@ -50,6 +50,7 @@ module.exports = {
 		"comma-spacing": "off",
 		"consistent-return": "warn",
 		"default-case": "off",
+		"eqeqeq": "warn",
 		"func-names": "off",
 		"function-paren-newline": "off",
 		"implicit-arrow-linebreak": "off",
