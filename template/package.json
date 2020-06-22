@@ -33,7 +33,7 @@
     "you-again": "^0.8.8"
   },
   "scripts": {
-    "compile": "webpack --config $PWD/webpack.config.js --progress --colors",
+    "compile": "webpack --config $PWD/webpack.config.js --progress --colors && git log -1 > web/build/npm-compile.gitlog.txt",
     "compile-watch": "webpack --config $PWD/webpack.config.js --progress --colors --watch",
     "compile-watch-fast": "NO_PROD=true webpack --config $PWD/webpack.config.js --progress --colors --watch",
     "test": "jest",
@@ -77,7 +77,7 @@
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
-    "yargs": "^15.1.0"
+    "yargs": "^15.3.1"
   },
   "jest": {
     "preset": "jest-puppeteer",
