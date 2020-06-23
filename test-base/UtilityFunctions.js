@@ -2,7 +2,7 @@
 const fs = require('fs');
 // import $ from 'jquery'; no - fails with error: Cannot use import statement outside a module
 const $ = require('./jquery.js');
-const { General, CommonSelectors } = require('./SoGiveSelectors');
+const { General, CommonSelectors } = require('./common-selectors');
 
 // set when calling Jest CLI with --testURL $url
 // const APIBASE = window.location.href;

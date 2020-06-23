@@ -1,7 +1,19 @@
-# runtest.js and jest-puppeteer.config.js
-In this directory, you will find two pretty basic JS files which instruct jest how to run and what configs to use.
 
-Copy runtest.js and jest-puppeteer.config.js into the root of your project, and then create src/puppeteer-tests/\_\_tests\_\_/
+## Setting up tests
+
+In a project:
+
+	cp ../wwappbase.js/template/runtest.js .
+	cp ../wwappbase.js/template/jest-puppeteer.config.js .
+	mkdir src/puppeteer-tests/
+	mkdir src/puppeteer-tests/__tests__
+
+NB: these directories are the jest+puppeteer defaults
+
+	cd src/puppeteer-tests/
+	ln -s ../../../logins/test/Credentials.js
+	ln -s ../../../wwappbase.js/test-base
+
 
 Place your tests inside of src/puppeteer-tests/\_\_tests\_\_  and then return to the root of your project.
 
@@ -10,6 +22,13 @@ the jest/puppeteer entries found in ~/winterwell/wwappbase.js/test-base/package.
 
 Then ensure that you have all needed packages by running npm i
 
+## Runing tests
 Simply use
-node runtest.js
+
+	node runtest.js
+
+Or to run against test:
+
+	node runtest.js --site test
+
 in order to run all tests found in your src/puppeteer-tests/\_\_tests\_\_ directory.
