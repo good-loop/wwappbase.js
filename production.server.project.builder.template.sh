@@ -2,8 +2,8 @@
 
 # Production Server Project Builder Template
 
-#Version 0.1
-# Meaning - Script has been written, but not tested
+#Version 0.5
+# Meaning - Script has been written, tested, but never used earnestly
 
 #####  GENERAL SETTINGS
 ## This section should be the most widely edited part of this script
@@ -19,15 +19,8 @@ PROJECT_USES_WEBPACK='yes' #yes or no
 PROJECT_USES_JERBIL='no' #yes or no
 PROJECT_USES_WWAPPBASE_SYMLINK='yes'
 PROJECT_USES_SECRET_CONFIG_FILES='yes' # Config files kept in the logins repo
-
-
-## TODO : use $1 as the branch specification
-## TODO : check that branch exists for both the project and the wwappbase.js repo , or , write alternative branch name for wwappbase.js repo
-## TODO : use a human interactive "yes" or "FORCE" in order to proceed
-## TODO : rename secret config files
-## TODO : Use a tmux session to build
-## TODO : Backup files function
-## TODO : Usage printout
+SPECIFIED_BRANCH=$1
+ALTERNATIVE_WWAPPBASEJS_BRANCH=$2
 
 
 #####  SPECIFIC SETTINGS
@@ -36,11 +29,7 @@ PROJECT_USES_SECRET_CONFIG_FILES='yes' # Config files kept in the logins repo
 PROJECT_ROOT_ON_SERVER="/home/winterwell/$PROJECT_NAME"
 WWAPPBASE_REPO_PATH_ON_SERVER_DISK="/home/winterwell/wwappbase.js"
 LOGINS_REPO_PATH_ON_SERVER_DISK='/home/winterwell/logins'
-BACKUP_THESE_PLEASE=("" "")
 SECRET_CONFIG_FILES_LOCATION='/home/winterwell/logins/my_project'
-
-
-
 
 ##### UNDENIABLY ESOTERIC SETTINGS
 ## This is the space where your project's settings make it completely non-standard
@@ -49,9 +38,11 @@ EMAIL_RECIPIENTS=(sysadmin@good-loop.com daniel@good-loop.com roscoe@good-loop.c
 BOB_ARGS='' #you can set bob arguments here, but they will run each and every time that the project is auto-built
 BOB_BUILD_PROJECT_NAME='' #If the project name isn't automatically sensed by bob, you can set it explicitly here
 NPM_CLEANOUT='no' #yes/no , will nuke the node_modules directory if 'yes', and then get brand-new packages.
-RENAME_CONFIG_FILES='yes' # yes/no , will use a function to rename config files that YOU MUST SPECIFY IN THE FUNCTIONS BELOW
 NPM_I_LOGFILE="/home/winterwell/.npm/_logs/npm.i.for.$PROJECT_NAME.log"
 NPM_RUN_COMPILE_LOGFILE="/home/winterwell/.npm/_logs/npm.run.compile.for.$PROJECT_NAME.log"
+##
+# Undeniably Esoteric Functions section to perform backups/pre-processing/post-processing/copy-properties-files/whatever for your specific project
+##
 
 
 
@@ -87,6 +78,27 @@ function check_bob_exists {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         if [[ $(which bob) = '' ]]; then
             printf "\nNo global installation of 'bob' was found. Sending Alert Emails and Breaking Operation\n"
+            send_alert_email
+            exit 0
+        fi
+    fi
+}
+
+function check_bobwarehouse_repos {
+    BUILD_PROCESS_NAME='checking for bobs discrete repos dependencies'
+    BUILD_STEP='Checking to see if bobwarehouse has cloned repo "code" in place'
+    if [[ ! -d /home/winterwell/bobwarehouse/code ]]; then
+        printf "\nNo 'code' repository was found in bobwarehouse.  Attempting to clone one now.\n"
+        cd /home/winterwell/bobwarehouse && git clone git@git.winterwell.com:/winterwell-code code
+    fi
+}
+
+function check_for_maven_binaries {
+    BUILD_PROCESS_NAME='checking for the presence of maven binaries'
+    BUILD_STEP='Checking to see if "mvn" is avilable via the command line'
+    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
+        if [[ $(which mvn) = '' ]]; then
+            printf "\nNo installation of the 'mvn' binary is availble on the current system's environment's PATH.\nYou must install 'maven' before you can use bob\n\nSending Email Alert and Breaking Operation\n"
             send_alert_email
             exit 0
         fi
@@ -143,6 +155,20 @@ function cleanup_repo {
     cd $PROJECT_ROOT_ON_SERVER && git reset --hard FETCH_HEAD
 }
 
+# Check if specified Branch exists for the project's repo
+function check_project_branch {
+    BUILD_PROCESS_NAME="checking for branch existence for $PROJECT_NAME"
+    BUILD_STEP="checking for the existence of specifed branch , $SPECIFIED_BRANCH , before attempting to build $PROJECT_NAME on $HOSTNAME"
+    printf "\nChecking if the specified branch, $SPECIFIED_BRANCH , exists. And if it does, then switching to it...\n"
+    if [[ $(cd $PROJECT_ROOT_ON_SERVER && git branch -a | grep "$SPECIFIED_BRANCH") = '' ]]; then
+        printf "\nSpecified branchname , $SPECIFIED_BRANCH , does not exist according to the canonical repository server.\nSending Alert Emails and Breaking Operation\n"
+        send_alert_email
+        exit 0
+    fi
+    printf "\nFound $SPECIFIED_BRANCH . Now switching to it for $PROJECT_NAME\n"
+    cd $PROJECT_ROOT_ON_SERVER && git checkout -f $SPECIFIED_BRANCH
+}
+
 # Cleanup wwappbase.js 's repo -- Ensure that this repository is up to date and clean
 function cleanup_wwappbasejs_repo {
     if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
@@ -150,6 +176,27 @@ function cleanup_wwappbasejs_repo {
         cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git gc --prune=now
         cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git pull origin $SPECIFIED_BRANCH
         cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git reset --hard FETCH_HEAD
+    fi
+}
+
+# Evaluate if a branch for wwappbase.js was specified, and if it was, use it.  If it wasn't, default to the same specified branch name as the main project
+function check_wwappbasejs_branch {
+    BUILD_PROCESS_NAME="checking for branch existence for wwappbase.js"
+    BUILD_STEP="checking for the existence of specifed branch for wwappbase.js , $ALTERNATIVE_WWAPPBASEJS_BRANCH , before attempting to build $PROJECT_NAME on $HOSTNAME"
+    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
+        if [[ $ALTERNATIVE_WWAPPBASEJS_BRANCH = '' ]]; then
+            printf "\nNo specific branch name was parsed for wwappbase.js\nDefaulting to the same branch name as $PROJECT_NAME , $SPECIFIED_BRANCH .\n"
+            cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git checkout -f $SPECIFIED_BRANCH
+        else
+            printf "\nChecking that $ALTERNATIVE_WWAPPBASEJS_BRANCH exists for wwappbase.js repo. And if it does, then switching to it\n"
+            if [[ $(cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git branch -a | grep "$ALTERNATIVE_WWAPPBASEJS_BRANCH") = '' ]]; then
+                printf "\nSpecified Branch Name for wwappbase.js , $ALTERNATIVE_WWAPPBASEJS_BRANCH , does not exist according to the canonical repository server.\nSending Alert Emails and Breaking Operation\n"
+                send_alert_email
+                exit 0
+            fi
+            printf "\nFound $ALTERNATIVE_WWAPPBASEJS_BRANCH for the wwappbase.js repo.  Switching to it\n"
+            cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git checkout -f $ALTERNATIVE_WWAPPBASEJS_BRANCH
+        fi
     fi
 }
 
@@ -173,10 +220,18 @@ function use_bob {
         printf "\n$HOSTNAME is building JARs...\n"
         cd $PROJECT_ROOT_ON_SERVER && bob $BOB_ARGS $BOB_BUILD_PROJECT_NAME
         printf "\nchecking bob.log for failures on $HOSTNAME\n"
+        if [[ $(grep -i 'ERROR EXIT' $PROJECT_ROOT_ON_SERVER/bob.log) = '' ]]; then
+            printf "\nNo bad exit detected from bob processes. Performing further log inspection\n"
+        else
+            printf "\nFailure or failures detected in latest bob.log. Sending Alert Emails and Breaking Operation\n"
+            ATTACHMENTS+=("-a $PROJECT_ROOT_ON_SERVER/bob.log")
+            send_alert_email
+            exit 0
         if [[ $(grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log) = '' ]]; then
             printf "\nNo failures recorded in bob.log on $HOSTNAME.  JARs should be fine.\n"
         else
             printf "\nFailure or failures detected in latest bob.log. Sending Alert Emails and Breaking Operation\n"
+            ATTACHMENTS+=("-a $PROJECT_ROOT_ON_SERVER/bob.log")
             send_alert_email
             exit 0
         fi
@@ -254,21 +309,32 @@ function start_service {
     fi
 }
 
+function leave_tmux_session {
+    exit
+}
+
 
 ################
 ### Run the Functions in Order
 ################
 check_repo_exists
 check_bob_exists
+check_bobwarehouse_repos
+check_for_maven_binaries
 check_jerbil_exists
 check_wwappbasejs_exists
 check_logins_exists
+backup_uploads
 cleanup_repo
+check_project_branch
 cleanup_wwappbasejs_repo
+check_wwappbasejs_branch
 stop_service
 use_bob
 use_npm
 use_webpack
 use_jerbil
+restore_uploads
+place_properties_files
 start_service
-use_automated_tests
+leave_tmux_session
