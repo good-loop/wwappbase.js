@@ -17,7 +17,6 @@ NAME_OF_SERVICE='my_new_project_main' # This can be blank, but if your service u
 PROJECT_USES_NPM='yes' # yes or no
 PROJECT_USES_WEBPACK='yes' #yes or no
 PROJECT_USES_JERBIL='yes' #yes or no
-PROJECT_USES_AUTOMATED_TESTING='yes' #yes or no
 PROJECT_USES_WWAPPBASE_SYMLINK='yes'
 
 # Where is the test server?
@@ -44,14 +43,12 @@ EMAIL_RECIPIENTS=(sysadmin@good-loop.com daniel@good-loop.com roscoe@good-loop.c
 BOB_ARGS='' #you can set bob arguments here, but they will run each and every time that the project is auto-built
 BOB_BUILD_PROJECT_NAME='' #If the project name isn't automatically sensed by bob, you can set it explicitly here
 NPM_CLEANOUT='no' #yes/no , will nuke the node_modules directory if 'yes', and then get brand-new packages.
-
 NPM_I_LOGFILE="/home/winterwell/.npm/_logs/npm.i.for.$PROJECT_NAME.log"
 NPM_RUN_COMPILE_LOGFILE="/home/winterwell/.npm/_logs/npm.run.compile.for.$PROJECT_NAME.log"
 
 ##### FUNCTIONS
 ## Do not edit these unless you know what you are doing
 #####
-
 ATTACHMENTS=()
 function send_alert_email {
     for email in ${EMAIL_RECIPIENTS[@]}; do
@@ -194,7 +191,7 @@ function use_npm {
                 # Get the NPM_I_LOGFILE
                 scp winterwell@$server:$NPM_I_LOGFILE .
                 # Add it to the Attachments
-                ATTACHMENTS+=("-a *.log")
+                ATTACHMENTS+=("-a npm.i.for.$PROJECT_NAME.log")
                 # Send the email
                 send_alert_email
             fi
@@ -219,7 +216,7 @@ function use_webpack {
                 # Get the NPM_RUN_COMPILE_LOGFILE
                 scp winterwell@$server:$NPM_RUN_COMPILE_LOGFILE .
                 # Add it to the Attachments
-                ATTACHMENTS+=("-a *.log")
+                ATTACHMENTS+=("-a npm.run.compile.for.$PROJECT_NAME.log")
                 # Send the email
                 send_alert_email
             fi
@@ -253,31 +250,6 @@ function start_service {
 }
 
 
-# Automated Testing -- Evaluate and Use
-function use_automated_tests {
-    if [[ $PROJECT_USES_AUTOMATED_TESTING = 'yes' ]]; then
-        DELAY_SECONDS='10'
-        printf "\nGetting Ready to Perform Tests...\n"
-        while [ $DELAY_SECONDS -gt 0 ]; do
-	        printf "$DELAY_SECONDS\033[0K\r"
-	        sleep 1
-	        : $((DELAY_SECONDS--))
-        done
-        BUILD_PROCESS_NAME='automated testing'
-        BUILD_STEP='automated tests were running'
-        for server in ${TARGET_SERVERS[@]}; do
-            printf "\nEnding old automated testing session on $server...\n"
-            ssh winterwell@$server "tmux kill-session -t $PROJECT_NAME-automated-tests"
-            printf "\n$server is starting automated tests...\n"
-            ssh winterwell@$server "tmux new-session -d -s $PROJECT_NAME-automated-tests -n panel01"
-            ssh winterwell@$server "tmux send-keys -t $PROJECT_NAME-automated-tests 'cd $PROJECT_ROOT_ON_SERVER && npm run tests' C-m"
-            printf "\n$server is running automated tests in a tmux session\n"
-            printf "\tto check the progress, use ssh winterwell@$server and then use tmux attach-sessiont -t $PROJECT_NAME-automated-tests\n"
-        done
-    fi
-}
-
-
 ################
 ### Run the Functions in Order
 ################
@@ -293,4 +265,3 @@ use_npm
 use_webpack
 use_jerbil
 start_service
-use_automated_tests
