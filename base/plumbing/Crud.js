@@ -60,11 +60,14 @@ ActionMan.crud = ({type, id, action, item}) => {
 	// call the server
 	return ServerIO.crud(type, item, action)
 		.then(res => {
-			if (action==='publish') { // } && DataStore.getData(C.KStatus.DRAFT, type, id)) {
-				// also update the draft version
-				let pubItem = DataStore.getValue(pubpath);
-				// copy it
-				let draftItem = _.cloneDeep(pubItem);
+			// returned item, but only if the crud action went OK
+			const freshItem = JSend.success(res) && JSend.data(res);
+			if (action==='publish' && freshItem) {
+				// set local published data				
+				DataStore.setValue(pubpath, freshItem);
+				// also update the draft version				
+				// ...copy it to allow for edits
+				let draftItem = _.cloneDeep(freshItem);
 				DataStore.setValue(draftpath, draftItem);
 			}
 			if (action==='unpublish') {

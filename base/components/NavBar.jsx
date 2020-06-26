@@ -4,6 +4,7 @@ import { Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Collapse, Nav, Co
 import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
+import { labeller } from '../utils/miscutils';
 
 
 /**
@@ -31,12 +32,13 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?String} currentPage e.g. 'account' Read from window.location via DataStore if unset.
  * @param {?String} homelink Relative url for the home-page. Defaults to "/"
  * @param {String[]} pages
+ * @param {?String[]|Function|Object} labels Map options to nice strings.
  */
 const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
-	let {currentPage, pages} = props;
+	let {currentPage, pages, labels} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
+	const labelFn = labeller(pages, labels);
 
 	// Handle nav toggling
-	// TODO Is this necessary with reactstrap?
 	const [isOpen, setIsOpen] = useState(false);
 	const close = () => setIsOpen(false);
 	const toggle = () => setIsOpen(!isOpen);
@@ -46,19 +48,19 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 		let path = DataStore.getValue('location', 'path');
 		currentPage = path && path[0];
 	}
-
+	
 	// make the page links
-	props.pageLinks = pages.map(page => (
+	const pageLinks = pages.map(page => (
 		<NavItem key={`navitem_${page}`} active={page === currentPage}>
 			<NavLink href={`#${page}`} onClick={close} >
-				{name || page}
+				{labelFn(page)}
 			</NavLink>
 		</NavItem>
 	));
 
 	return (
 		<Navbar sticky="top" dark color="dark" expand="md">
-			<NavGuts {...props} isOpen={isOpen} toggle={toggle} />
+			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} />
 		</Navbar>
 	);
 };

@@ -15,7 +15,7 @@ import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
-import {stopEvent, toTitleCase, space} from '../utils/miscutils';
+import {stopEvent, toTitleCase, space, labeller} from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import Autocomplete from 'react-autocomplete';
@@ -499,24 +499,12 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
 	assert(options.map, 'Misc.PropControl: options not an array '+options);
 	options = _.uniq(options);
-	// Make an option -> nice label function
-	// the labels prop can be a map or a function
-	let labeller = v => v;
-	if (labels) {
-		if (_.isArray(labels)) {
-			labeller = v => labels[options.indexOf(v)] || v;
-		} else if (_.isFunction(labels)) {
-			labeller = labels;
-		} else {
-			// map
-			labeller = v => labels[v] || v;
-		}
-	}
+	const labelFn = labeller(options, labels);
 	const sv = value;
 
 	if (multiple) {
 		// WTF? multi-select is pretty broken in React as of Jan 2019
-		return PropControlMultiSelect({value, prop, onChange, labeller, options, sv, className, modelValueFromInput, ...rest});
+		return PropControlMultiSelect({value, prop, onChange, labelFn, options, sv, className, modelValueFromInput, ...rest});
 	}
 
 	// make the options html
@@ -525,13 +513,11 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 		// The big IAB Taxonomy dropdown has some dupe names which are used as options
 		// - so permit a keys list, separate from the option strings, to differentiate them
 		const thisKey = 'option_' + ((otherStuff.keys && otherStuff.keys[index]) || JSON.stringify(option));
-		return <option key={thisKey} value={option} >{labeller(option)}</option>;
+		return <option key={thisKey} value={option} >{labelFn(option)}</option>;
 	});
 	let showUnset = (canUnset || ! sv) && ! options.includes(null) && ! options.includes(''); 
 
-	/* text-muted is for my-loop mirror card
-	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
-	let klass = space('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
+	let klass = space('form-control', className);
 	return (
 		<select className={klass}
 			name={prop} value={sv} onChange={onChange}
@@ -549,7 +535,7 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
  * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
  * Deselect everything unless user holds Ctrl??? Really? -RM
  */
-const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromInput, sv, className, type, path, saveFn}) => {
+const PropControlMultiSelect = ({value, prop, labelFn, options, modelValueFromInput, sv, className, type, path, saveFn}) => {
 	assert( ! sv || sv.length !== undefined, "value should be an array", sv, prop);
 	// const mvfi = rest.modelValueFromInput;
 	// let modelValueFromInput = (s, type, etype) => {
@@ -580,7 +566,7 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		return (
 			<FormGroup inline check key={`option_${option}`}>
 				<Input type="checkbox" value={option} checked={checked} onChange={onChange} />
-				<Label check>{labeller(option)}</Label>
+				<Label check>{labelFn(option)}</Label>
 			</FormGroup>
 		);
 	});
@@ -606,17 +592,7 @@ const PropControlRadio = ({type, prop, value, path, item, saveFn, options, label
 
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
-	let labeller = v => v;
-	if (labels) {
-		if (_.isArray(labels)) {
-			labeller = v => labels[options.indexOf(v)] || v;
-		} else if (_.isFunction(labels)) {
-			labeller = labels;
-		} else {
-			// map
-			labeller = v => labels[v] || v;
-		}
-	}
+	let labelFn = labeller(options, labels);
 	// make the options html
 	// FIXME checkboxes should support multiple options -- list of vals
 	const onChange = e => {
@@ -637,7 +613,7 @@ const PropControlRadio = ({type, prop, value, path, item, saveFn, options, label
 							checked={option == value}
 							onChange={onChange} {...otherStuff}
 						/>
-						{' '}{labeller(option)}
+						{' '}{labelFn(option)}
 					</Label>
 				</FormGroup>
 			))}

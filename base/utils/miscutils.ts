@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import { assert } from "./assert";
 
 export const randomPick = function<T>(array : T[]) : T
@@ -351,7 +352,7 @@ export const ellipsize = function(s :string, maxLength :number) {
 /**
  * e.g. winterwell.com from http://www.winterwell.com/stuff
  */
-export const getHost = function(url) {
+export const getHost = function(url : string) : string {
     var a = document.createElement('a');
     a.href = url;
     var host = a.hostname;
@@ -359,7 +360,23 @@ export const getHost = function(url) {
 	return host;
 }
 
-
+/**
+ * Make an option -> nice label function
+ * @param options 
+ * @param {?String[]|Object|Function} labels Can be falsy
+ * @returns {Function} option to label
+ */
+export const labeller = function(options: Object[], labels : any) {
+	if ( ! labels) return fIdentity;
+	if (_.isArray(labels)) {
+		return v => labels[options.indexOf(v)] || v;
+	} else if (_.isFunction(labels)) {
+		return labels;
+	} 
+	// map
+	return v => labels[v] || v;	
+};
+const fIdentity = (x : any) => x;
 
 /** 
  * Encoding should ALWAYS be used when making html from json data.

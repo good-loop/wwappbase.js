@@ -297,6 +297,11 @@ class Store {
 			return oldVal;
 		}
 
+		// DEBUG: log data/draft edits
+		if (path[0]==='draft' || path[0]==='data') {
+			console.log("DataStore.setValue", path, value, update, new Error("stacktrace"));
+		}
+
 		// HACK: modify the url?
 		if (path[0] === 'location' && path[1] === 'params') {
 			let newParams;
