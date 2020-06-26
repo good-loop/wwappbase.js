@@ -14,7 +14,7 @@
     "easy-enums": "^1.1.7",
     "hashmap": "^2.4.0",	// Where do we use this??
     "intl": "^1.2.5",
-    "jquery": "^3.5.0",
+    "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
     "lodash": "^4.17.15",
     "md5": "^2.2.1",
@@ -29,21 +29,24 @@
     "react-spring": "^8.0.27",	// Where do we use this??
     "reactstrap": "^8.4.1",
     "sjtest": "^0.4.9",
-    "wwutils": "^0.9.5",
     "you-again": "^0.8.8"
+	// Please do NOT put test modules, like jest and yargs, here. They go in devDependencies below.
   },
   "scripts": {
-    "compile": "webpack --config $PWD/webpack.config.js --progress --colors",
+	// gitstamp.sh records build info into a web-visible file
+    "compile": "webpack --config $PWD/webpack.config.js --progress --colors && gitstamp.sh",
     "compile-watch": "webpack --config $PWD/webpack.config.js --progress --colors --watch",
     "compile-watch-fast": "NO_PROD=true webpack --config $PWD/webpack.config.js --progress --colors --watch",
-    "test": "jest",	// Has puppeteer replaced Jest, or do they work together??
+	// Jest and puppeteer work together
+    "test": "jest",	
     "type-check": "tsc --noEmit"
   },
   "devDependencies": {	// TODO some of this must be obsolete
     "@babel/core": "^7.9.0",
     "@babel/plugin-proposal-class-properties": "^7.8.3",
+    "@babel/plugin-proposal-object-rest-spread": "^7.9.6",
     "@babel/plugin-transform-react-jsx": "^7.9.4",
-    "@babel/plugin-transform-typescript": "^7.9.4",
+    "@babel/plugin-transform-typescript": "^7.9.6",
     "@babel/polyfill": "^7.8.7",
     "@babel/preset-env": "^7.9.5",
     "@babel/preset-react": "^7.9.4",
@@ -60,8 +63,8 @@
     "eslint": "^6.8.0",
     "eslint-config-airbnb": "^18.1.0",
     "eslint-plugin-import": "^2.20.2",
-    "eslint-plugin-jsx-a11y": "^6.2.1",
-    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
+    "eslint-plugin-react": "^7.20.0",
     "eslint-plugin-react-hooks": "^3.0.0",
     "intl": "^1.2.5",
     "jest": "^25.2.7",
@@ -76,7 +79,7 @@
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
-    "yargs": "^15.1.0"
+    "yargs": "^15.3.1"
   },
   "jest": {
     "preset": "jest-puppeteer",
