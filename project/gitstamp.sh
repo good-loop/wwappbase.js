@@ -13,4 +13,5 @@ echo "" >> $LOGFILE
 echo '## wwappbase.js' >> $LOGFILE
 echo "" >> $LOGFILE 
 git --git-dir ../wwappbase.js/.git log -1 >> $LOGFILE
+
 echo "Wrote git manifest: $LOGFILE"
