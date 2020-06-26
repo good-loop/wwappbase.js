@@ -5,7 +5,7 @@ const $ = require('./jquery.js');
 const { General, CommonSelectors } = require('./common-selectors');
 
 /**
- * Wrap `test` with some console.log output
+ * Wrap `test` with some extra console.log output
  * @param {!string} name 
  * @param  {...any} args 
  */
