@@ -298,7 +298,7 @@ class Store {
 		}
 
 		// DEBUG: log data/draft edits
-		if (path[0]==='draft' || path[0]==='data') {
+		if (window.DEBUG && (path[0]==='draft' || path[0]==='data')) {
 			console.log("DataStore.setValue", path, value, update, new Error("stacktrace"));
 		}
 
