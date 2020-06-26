@@ -325,7 +325,6 @@ check_for_maven_binaries
 check_jerbil_exists
 check_wwappbasejs_exists
 check_logins_exists
-backup_uploads
 cleanup_repo
 check_project_branch
 cleanup_wwappbasejs_repo
@@ -335,7 +334,6 @@ use_bob
 use_npm
 use_webpack
 use_jerbil
-restore_uploads
 place_properties_files
 start_service
 leave_tmux_session
