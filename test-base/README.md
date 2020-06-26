@@ -23,6 +23,7 @@ the jest/puppeteer entries found in ~/winterwell/wwappbase.js/test-base/package.
 Then ensure that you have all needed packages by running npm i
 
 ## Runing tests
+
 Simply use
 
 	node runtest.js
@@ -31,4 +32,11 @@ Or to run against test:
 
 	node runtest.js --site test
 
-in order to run all tests found in your src/puppeteer-tests/\_\_tests\_\_ directory.
+in order to run all tests found in your src/puppeteer-tests/\_\_tests\_\_ directory
+
+To run a specific test, use
+
+	node runtest.js --test _keyword_
+
+For jest options, see https://jestjs.io/docs/en/cli.html
+

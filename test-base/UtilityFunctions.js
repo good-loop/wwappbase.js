@@ -4,6 +4,18 @@ const fs = require('fs');
 const $ = require('./jquery.js');
 const { General, CommonSelectors } = require('./common-selectors');
 
+/**
+ * Wrap `test` with some console.log output
+ * @param {!string} name 
+ * @param  {...any} args 
+ */
+const check = (name, ...args) => {
+	console.log("Test: "+name+" ...");
+	test(name, ...args);
+	// NB: test is async (so it probably hasn't finished here), unless runInBand was set 
+	// That makes this function's info of limited use.
+};
+
 // set when calling Jest CLI with --testURL $url
 // const APIBASE = window.location.href;
 
@@ -233,5 +245,6 @@ module.exports = {
 	login,
 	soGiveFailIfPointingAtProduction,
 	donate,
-	fillInForm
+	fillInForm, 
+	check
 };
