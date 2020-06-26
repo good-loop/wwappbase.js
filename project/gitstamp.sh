@@ -15,7 +15,7 @@ echo "" >> $LOGFILE
 
 echo '## wwappbase.js' >> $LOGFILE
 echo "" >> $LOGFILE 
-git status >> $LOGFILE 
+git --git-dir ../wwappbase.js/.git status >> $LOGFILE 
 echo "" >> $LOGFILE 
 git --git-dir ../wwappbase.js/.git log -1 >> $LOGFILE
 
