@@ -227,6 +227,7 @@ function use_bob {
             ATTACHMENTS+=("-a $PROJECT_ROOT_ON_SERVER/bob.log")
             send_alert_email
             exit 0
+	fi
         if [[ $(grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log) = '' ]]; then
             printf "\nNo failures recorded in bob.log on $HOSTNAME.  JARs should be fine.\n"
         else
