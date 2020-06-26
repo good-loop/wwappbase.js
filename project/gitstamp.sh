@@ -15,7 +15,9 @@ echo "" >> $LOGFILE
 
 echo '## wwappbase.js' >> $LOGFILE
 echo "" >> $LOGFILE 
-git --git-dir ../wwappbase.js/.git status >> $LOGFILE 
+echo "branch" >> $LOGFILE 
+# NB: status doesn't work with git-dir, so use branch
+git --git-dir ../wwappbase.js/.git branch >> $LOGFILE 
 echo "" >> $LOGFILE 
 git --git-dir ../wwappbase.js/.git log -1 >> $LOGFILE
 
