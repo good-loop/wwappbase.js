@@ -2,6 +2,8 @@
  */
 import React, { useRef, useState } from 'react';
 
+// TODO refactor so saveFn is only called at the end of an edit, e.g. on-blur or return or submit
+
 // TODO Maybe add support for user-set-this, to separate user-cleared-blanks from initial-blanks
 
 // BE CAREFUL HERE
