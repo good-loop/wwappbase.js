@@ -22,6 +22,12 @@ window.ServerIO = ServerIO;
 // Allow for local to point at live for debugging
 ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for testing
 
+/** HACK
+ * Set to true for test servers that's don't run an API.
+ * use-case?? 
+ * */
+ServerIO.NO_API_AT_THIS_HOST; 
+
 // HACK our special micro-services
 ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';

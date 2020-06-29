@@ -1,3 +1,5 @@
+// Note: We're not sure what all these packages are for.
+// template/package.json has the current normal test packages
 {
   "name": "test-base",
   "version": "0.0.1",

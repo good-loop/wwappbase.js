@@ -1,6 +1,6 @@
 {
   "name": "G-L_Project_NPM_Skeleton",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "My app",
   "author": "Daniel Winterstein",
   "repository": {
@@ -10,9 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "chart.js": "^2.8.0",
-    "data-pivot": "^1.0.2",
     "easy-enums": "^1.1.7",
-    "easyi18n": "^1.1.1",
     "hashmap": "^2.4.0",
     "intl": "^1.2.5",
     "jquery": "^3.5.1",
@@ -33,7 +31,7 @@
     "you-again": "^0.8.8"
   },
   "scripts": {
-    "compile": "webpack --config $PWD/webpack.config.js --progress --colors && git log -1 > web/build/npm-compile.gitlog.txt",
+    "compile": "webpack --config $PWD/webpack.config.js --progress --colors && ./gitstamp.sh",
     "compile-watch": "webpack --config $PWD/webpack.config.js --progress --colors --watch",
     "compile-watch-fast": "NO_PROD=true webpack --config $PWD/webpack.config.js --progress --colors --watch",
     "test": "jest",
@@ -72,7 +70,6 @@
     "less-loader": "^5.0.0",
     "mini-css-extract-plugin": "^0.9.0",
     "puppeteer": "^3.0.0",
-    "puppet-theatre": "^1.0.18",
     "shelljs": "^0.8.3",
     "typescript": "^3.8.3",
     "webpack": "^4.42.1",

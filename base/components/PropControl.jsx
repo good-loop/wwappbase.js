@@ -1,6 +1,8 @@
 /** PropControl provides inputs linked to DataStore.
  */
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState } from 'react';
+
+// TODO refactor so saveFn is only called at the end of an edit, e.g. on-blur or return or submit
 
 // TODO Maybe add support for user-set-this, to separate user-cleared-blanks from initial-blanks
 
@@ -15,7 +17,7 @@ import { assert, assMatch } from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
-import { stopEvent, toTitleCase, space, is } from '../utils/miscutils';
+import {stopEvent, toTitleCase, space, labeller, is} from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import Autocomplete from 'react-autocomplete';
@@ -501,19 +503,7 @@ const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, s
 	assert(options, 'Misc.PropControl: no options for select ' + [prop, otherStuff]);
 	assert(options.map, 'Misc.PropControl: options not an array ' + options);
 	options = _.uniq(options);
-	// Make an option -> nice label function
-	// the labels prop can be a map or a function
-	let labeller = v => v;
-	if (labels) {
-		if (_.isArray(labels)) {
-			labeller = v => labels[options.indexOf(v)] || v;
-		} else if (_.isFunction(labels)) {
-			labeller = labels;
-		} else {
-			// map
-			labeller = v => labels[v] || v;
-		}
-	}
+	const labelFn = labeller(options, labels);
 	const sv = value;
 
 	// Multi-select is a usability mess, so we use a row of checkboxes.
@@ -527,7 +517,7 @@ const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, s
 		// The big IAB Taxonomy dropdown has some dupe names which are used as options
 		// - so permit a keys list, separate from the option strings, to differentiate them
 		const thisKey = 'option_' + ((otherStuff.keys && otherStuff.keys[index]) || JSON.stringify(option));
-		return <option key={thisKey} value={option} >{labeller(option)}</option>;
+		return <option key={thisKey} value={option} >{labelFn(option)}</option>;
 	});
 	let showUnset = (canUnset || !value) && !options.includes(null) && !options.includes('');
 
@@ -574,17 +564,17 @@ const PropControlMultiSelect = ({ value, prop, labeller, options, modelValueFrom
 		}
 
 		const proppath = path.concat(prop);
-		DSsetValue(proppath, newMvs);
-		if (saveFn) saveFn({ event: e, path, prop, value: newMvs });
+		DSsetValue(proppath, mvs);
+		if (saveFn) saveFn({ event: e, path, prop, value: mvs });
 	}
 
 	let domOptions = options.map(option => {
 		// React doesn't like when an input's value changes from undefined to an explicit value, so...
-		const checked = !!(value.includes(option)); // coerce from undefined/null to boolean false
+		const checked = !!((value && value.includes(option)); // coerce from undefined/null to boolean false
 		return (
 			<FormGroup inline check key={`option_${option}`}>
 				<Input type="checkbox" value={option} checked={checked} onChange={onChange} />
-				<Label check>{labeller(option)}</Label>
+				<Label check>{labelFn(option)}</Label>
 			</FormGroup>
 		);
 	});
@@ -610,17 +600,7 @@ const PropControlRadio = ({ type, prop, value, path, item, saveFn, options, labe
 
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
-	let labeller = v => v;
-	if (labels) {
-		if (_.isArray(labels)) {
-			labeller = v => labels[options.indexOf(v)] || v;
-		} else if (_.isFunction(labels)) {
-			labeller = labels;
-		} else {
-			// map
-			labeller = v => labels[v] || v;
-		}
-	}
+	let labelFn = labeller(options, labels);
 	// make the options html
 	// FIXME checkboxes should support multiple options -- list of vals
 	const onChange = e => {
@@ -641,7 +621,7 @@ const PropControlRadio = ({ type, prop, value, path, item, saveFn, options, labe
 							checked={option == value}
 							onChange={onChange} {...otherStuff}
 						/>
-						{' '}{labeller(option)}
+						{' '}{labelFn(option)}
 					</Label>
 				</FormGroup>
 			))}
@@ -1123,7 +1103,7 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 
 					// Forcibly trigger "change" on the URL FormControl
 					if (inputRef.current) {
-						inputRef.current.dispatchEvent(new Event('change'), {bubbles: true});
+						inputRef.current.dispatchEvent(new Event('change'));
 					}
 				})
 				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
