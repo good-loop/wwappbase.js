@@ -11,7 +11,7 @@ import React, { useRef, useState } from 'react';
 
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
-import { Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
 import { assert, assMatch } from 'sjtest';
 import _ from 'lodash';
@@ -562,6 +562,7 @@ const PropControlMultiSelect = ({ value, prop, labelFn, options, modelValueFromI
 
 		const proppath = path.concat(prop);
 		// Turn null/undef DataStore value into an empty set so the real edit triggers local-status-dirty and autosave.
+		// TODO Fix DS and remove - setting a value over null/undefined should trigger save anyway
 		if (!is(value)) DSsetValue(proppath, []);
 		DSsetValue(proppath, newMvs);
 		if (saveFn) saveFn({ event: e, path, prop, value: newMvs });
@@ -795,6 +796,9 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
 		// ...But we want to keep update (i.e. merge) behaviour over fresh-index in general.
 		// ...TODO DataStore to maintain a diff, which it can send to the backend.
 		newValue[key] = remove ? false : true;
+		// Turn null/undef DataStore value into an empty set so the real edit triggers local-status-dirty and autosave.
+		// TODO Fix DS and remove - setting a value over null/undefined should trigger save anyway
+		if (!value) DSsetValue(proppath, {});
 		DSsetValue(proppath, newValue);
 		if (saveFn) saveFn({ event: {}, path, prop, value: newValue });
 	}
@@ -839,25 +843,38 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 		const newValue = { ...value };
 		// set false instead of deleting - see rationale/TODO in PropControlKeySet
 		newValue[key] = remove ? false : val;
-		DataStore.setValue(proppath, newValue);
+		// Turn null/undef DataStore value into an empty set so the real edit triggers local-status-dirty and autosave.
+		// TODO Fix DS and remove - setting a value over null/undefined should trigger save anyway
+		if (!value) DSsetValue(proppath, {});
+		DSsetValue(proppath, newValue);
 		if (saveFn) saveFn({ event: {}, path, prop, value: newValue });
 	}
 
-	const entryElements = Object.entries(value || {}).filter(([, val]) => (val === '') || val).map(([key]) => (
-		<tr className="entry" key={key}>
-			<td><Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</Button></td>
-			<td className="px-2">{key}:</td>
-			<td><PropControl type="text" path={proppath} prop={key} /></td>
-		</tr>
-	));
+	const entries = Object.entries(value).filter(([, val]) => (val === '') || val);
+	// pb-3 classes are for vertical alignment with PropControl which has a margin-bottom we can't remove
+	const entryElements = entries.length ? (
+		entries.map(([key]) => (
+			<tr className="entry" key={key}>
+				<td className="pb-3">
+					<Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>
+						<Misc.Icon fa="times" tooltip="Remove this entry" />
+					</Button>
+				</td>
+				<td className="px-2 pb-3">{key}:</td>
+				<td><PropControl type="text" path={proppath} prop={key} /></td>
+			</tr>
+		))
+	) : (
+		<tr><td>(Empty list)</td></tr>
+	);
 
-	let newKey, newValue;
-
+	const [newKey, setNewKey] = useState('');
+	const [newValue, setNewValue] = useState('');
+	
 	const onClickAdd = (event) => {
 		addRemoveKey(newKey, newValue);
-		event.target.parentNode.childNodes.forEach(child => {
-			if ((child.tagName || '').toLowerCase() === 'input') child.value = '';
-		});
+		setNewKey('');
+		setNewValue('');
 	};
 
 	return (
@@ -865,12 +882,12 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 			<table className="entries"><tbody>{entryElements}</tbody></table>
 			<Form inline onSubmit={stopEvent} className="mb-2">
 				<FormGroup className="mr-2">
-					<Input placeholder={keyName} onChange={(event) => newKey = event.target.value} />
+					<Input value={newKey} placeholder={keyName} onChange={(event) => setNewKey(event.target.value)} />
 				</FormGroup>
 				<FormGroup className="mr-2">
-					<Input placeholder={valueName} onChange={(event) => newValue = event.target.value} />
+					<Input value={newValue} placeholder={valueName} onChange={(event) => setNewValue(event.target.value)} />
 				</FormGroup>
-				<Button color="primary" onClick={onClickAdd} >Add</Button>
+				<Button color="primary" onClick={onClickAdd} >Add this</Button>
 			</Form>
 		</div>
 	);
@@ -1159,12 +1176,15 @@ const MapEditor = ({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filter
 		if (!kv.key) return;
 		const k = kv.key.trim();
 		if (!k) return;
-		if (kv.val === value[k]) return;
+		if (value && kv.val === value[k]) return;
 
 		// Break identity so shallow comparison sees a change
 		const newMap = { ...value, [k]: kv.val };
-		DataStore.setValue(proppath, newMap);
-		DataStore.setValue(temppath, null);
+		// Turn null/undef DataStore value into an empty set so the real edit triggers local-status-dirty and autosave.
+		// TODO Fix DS and remove - setting a value over null/undefined should trigger save anyway
+		if (!value) DSsetValue(proppath, {});
+		DSsetValue(proppath, newMap);
+		DSsetValue(temppath, null);
 	};
 
 	const rmK = k => {
@@ -1180,30 +1200,45 @@ const MapEditor = ({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filter
 
 	// Is there a "don't show these entries" rule? Apply it now.
 	const vkeys = Object.keys(value || {}).filter(k => filterFn(k, value[k]));
+	const entryRows = vkeys.map(k => (
+		<Row key={k}>
+			<Col xs="12" sm="5">{k}</Col>
+			<Col xs="8" sm="5">
+				{React.cloneElement($ValProp, { path: proppath, prop: k, label: null })}
+			</Col>
+			<Col xs="4" sm="2">
+				<Button onClick={() => rmK(k)}><Misc.Icon fa="minus" /></Button>
+			</Col>
+		</Row>
+	));
+
+	// FormGroup, empty label and extra div on Add button are hacks for vertical alignment
 	return <>
-		{vkeys.map(
-			k => (<Misc.Col2 key={k}>
-				<div>{k}</div>
-				<div>
-					{React.cloneElement($ValProp, { path: proppath, prop: k, label: null })}
-					<Button onClick={() => rmK(k)}>➖</Button>
-				</div>
-			</Misc.Col2>)
-		)}
-		<Misc.Col2>
-			{React.cloneElement($KeyProp, { path: temppath, prop: 'key' })}
-			<div>
+		<Row key="add-entry">
+			<Col xs="12" sm="5">
+				{React.cloneElement($KeyProp, { path: temppath, prop: 'key' })}
+			</Col>
+			<Col xs="8" sm="5">
 				{React.cloneElement($ValProp, { path: temppath, prop: 'val' })}
-				<Button onClick={addKV} disabled={!kv.key || !kv.val}>➕</Button>
-			</div>
-		</Misc.Col2>
+			</Col>
+			<Col xs="4" sm="2">
+				<FormGroup>
+					<Label>&nbsp;</Label>
+					<div><Button onClick={addKV} disabled={!kv.key || !kv.val}><Misc.Icon fa="plus" /> Add</Button></div>
+				</FormGroup>
+			</Col>
+		</Row>
+		{entryRows}
 	</>;
 }; // ./MapEditor
+
 
 /** INPUT STATUS */
 class InputStatus extends JSend {
 
 }
+
+
 /**
  * e.g. "url: warning: use https for security"
  */
