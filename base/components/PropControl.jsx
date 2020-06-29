@@ -1,6 +1,6 @@
 /** PropControl provides inputs linked to DataStore.
  */
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 
 // TODO Maybe add support for user-set-this, to separate user-cleared-blanks from initial-blanks
 
@@ -11,11 +11,11 @@ import React, { useRef, useState } from 'react';
 // TODO remove the rest of these
 import { Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from 'sjtest';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
-import {stopEvent, toTitleCase, space} from '../utils/miscutils';
+import { stopEvent, toTitleCase, space, is } from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import Autocomplete from 'react-autocomplete';
@@ -28,8 +28,8 @@ import printer from '../utils/printer';
 import C from '../CBase';
 import Money from '../data/Money';
 // // import I18n from 'easyi18n';
-import {getType, getId} from '../data/DataClass';
-import {notifyUser} from '../plumbing/Messaging';
+import { getType, getId } from '../data/DataClass';
+import { notifyUser } from '../plumbing/Messaging';
 
 /**
  * Set the value and the modified flag in DataStore
@@ -51,7 +51,7 @@ const urlValidatorGuts = (val, secure) => {
 	let urlObject;
 	try {
 		urlObject = new URL(val);
-	} catch(e) {
+	} catch (e) {
 		return 'This is not a valid URL';
 	}
 
@@ -68,9 +68,9 @@ const urlValidatorSecure = val => urlValidatorGuts(val, true);
  * @param {?Money} min
  * @param {?Money} max
 */
-const moneyValidator = (val,min,max) => {
+const moneyValidator = (val, min, max) => {
 	// NB: we can get a Money skeleton object with no set value, seen May 2020
-	if ( ! val || ( ! val.value && ! val.value100p)) {
+	if (!val || (!val.value && !val.value100p)) {
 		return null;
 	}
 	let nVal = Money.value(val);
@@ -78,12 +78,12 @@ const moneyValidator = (val,min,max) => {
 	if (!Number.isFinite(nVal)) {
 		return "Invalid number: " + val.raw;
 	}
-	if (!(nVal*100).toFixed(2).endsWith(".00")) {
+	if (!(nVal * 100).toFixed(2).endsWith(".00")) {
 		return "Fractional pence may cause an error later";
 	}
 	if (val.error) return "" + val.error;
-	if (min && Money.compare(min,val) > 0) return "Value is below the minimum "+Money.str(min);
-	if (max && Money.compare(max,val) < 0) return "Value is above the maximum "+Money.str(max);
+	if (min && Money.compare(min, val) > 0) return "Value is below the minimum " + Money.str(min);
+	if (max && Money.compare(max, val) < 0) return "Value is above the maximum " + Money.str(max);
 	return null;
 };
 
@@ -132,17 +132,17 @@ const dateValidator = (val, rawValue) => {
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
-	let {type="text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, className, ...stuff} = props;
-	if ( ! path) {	// default to using path = the url
-		path = ['location','params'];
-		props = Object.assign({path}, props);
+	let { type = "text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, className, ...stuff } = props;
+	if (!path) {	// default to using path = the url
+		path = ['location', 'params'];
+		props = Object.assign({ path }, props);
 	}
 	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
 	// old code
 	if (props.onChange) {
-		console.warn("PropControl.jsx "+path+"."+prop+" s/onChange/saveFn/ as onChange is set internally by PropControl");
-		props = Object.assign({saveFn: props.onChange}, props);
+		console.warn("PropControl.jsx " + path + "." + prop + " s/onChange/saveFn/ as onChange is set internally by PropControl");
+		props = Object.assign({ saveFn: props.onChange }, props);
 		delete props.onChange;
 	}
 	const proppath = path.concat(prop);
@@ -151,12 +151,12 @@ const PropControl = (props) => {
 	if (dflt) {
 		// allow the user to delete the field - so only check the default once
 		let [dfltFlag, setDfltFlag] = useState();
-		if ( ! dfltFlag) {
-			if ((value === undefined || value === null || value === '') && ! dfltFlag) {				
+		if (!dfltFlag) {
+			if ((value === undefined || value === null || value === '') && !dfltFlag) {
 				value = dflt;
 				// set the model too (otherwise the value gets lost!)
 				DataStore.setValue(proppath, value, false);
-				console.log("PropControl.jsx - set default value "+proppath, value);		
+				console.log("PropControl.jsx - set default value " + proppath, value);
 			}
 			// 1st time only
 			setDfltFlag(true);
@@ -180,7 +180,7 @@ const PropControl = (props) => {
 
 	// validate!
 	if (validator) {
-		const rawPath = path.concat(prop+"_raw");
+		const rawPath = path.concat(prop + "_raw");
 		const rawValue = DataStore.getValue(rawPath);
 		error = validator(value, rawValue);
 	}
@@ -190,7 +190,7 @@ const PropControl = (props) => {
 	if (!error) {
 		const is = getInputStatus(proppath);
 		if (!is && required && value === undefined) {
-			setInputStatus({path: proppath, status: 'error', message: 'Missing required input'});
+			setInputStatus({ path: proppath, status: 'error', message: 'Missing required input' });
 		}
 		if (is && is.status === 'error') {
 			error = is.message || 'Error';
@@ -202,7 +202,7 @@ const PropControl = (props) => {
 	if (error) {
 		const is = getInputStatus(proppath);
 		if (is && is.status === 'error' && required && value) {
-			setInputStatus({path: proppath, status: 'ok', message: 'ok'});
+			setInputStatus({ path: proppath, status: 'ok', message: 'ok' });
 			error = undefined;
 		}
 	}
@@ -218,15 +218,15 @@ const PropControl = (props) => {
 	const labelText = label || '';
 	const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : '';
 	const optreq = optional ? <small className="text-muted">optional</small>
-		: required? <small className={value===undefined? 'text-danger' : null}>*</small> : null;
+		: required ? <small className={value === undefined ? 'text-danger' : null}>*</small> : null;
 	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	// let props2 = Object.assign({}, props);
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	return (
-		<div className={space('form-group', type, className, error? 'has-error' : null)}>
-			{label || tooltip?
+		<div className={space('form-group', type, className, error ? 'has-error' : null)}>
+			{label || tooltip ?
 				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
 			{inline ? ' ' : null}
@@ -246,31 +246,31 @@ const PropControl2 = (props) => {
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
-	let {value, type="text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff} = props;
-	let {item, bg, saveFn, modelValueFromInput, ...otherStuff} = stuff;
+	let { value, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff } = props;
+	let { item, bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
 
-	if ( ! modelValueFromInput) {
+	if (!modelValueFromInput) {
 		if (type === 'html') {
 			modelValueFromInput = (_v, type, eventType, target) => standardModelValueFromInput((target && target.innerHTML) || null, type, eventType);
 		} else {
 			modelValueFromInput = standardModelValueFromInput;
 		}
 	}
-	assert( ! type || PropControl.KControlType.has(type), 'Misc.PropControl: '+type);
-	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: '+path+" prop:"+prop);
-	assert(path.indexOf(null)===-1 && path.indexOf(undefined)===-1, 'Misc.PropControl: null in path '+path+" prop:"+prop);
+	assert(!type || PropControl.KControlType.has(type), 'Misc.PropControl: ' + type);
+	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: ' + path + " prop:" + prop);
+	assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'Misc.PropControl: null in path ' + path + " prop:" + prop);
 	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
 	// if (item && item !== DataStore.getValue(path)) {
 	// 	console.warn("Misc.PropControl item != DataStore version", "path", path, "item", item);
 	// }
-	if ( ! item) {
+	if (!item) {
 		item = DataStore.getValue(path) || {};
 	}
 
 	// New Pluggable System?
 	if ($widgetForType[type]) {
 		let $widget = $widgetForType[type];
-		let props2 = Object.assign({item, modelValueFromInput}, props);
+		let props2 = Object.assign({ item, modelValueFromInput }, props);
 		return <$widget {...props2} />
 	}
 
@@ -280,26 +280,28 @@ const PropControl2 = (props) => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const val = e && e.target && e.target.checked;
 			DSsetValue(proppath, val);
-			if (saveFn) saveFn({event:e, path, prop, item, value: val});
+			if (saveFn) saveFn({ event: e, path, prop, item, value: val });
 		};
-		if (value === undefined) value = false;
 
 		// make sure we don't have "false"
 		if (_.isString(value)) {
 			if (value === 'true') value = true;
 			else if (value === 'false') value = false;
 		}
+		// Coerce other values to boolean
+		value = !!value;
+
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
 
 		return <>
 			<FormGroup check inline={inline}>
 				<Label check>
-					<Input type="checkbox" checked={value} onChange={onChange} {...otherStuff} />
+					<Input type="checkbox" checked={value} value={value} onChange={onChange} {...otherStuff} />
 					{label} {helpIcon}
 				</Label>
 			</FormGroup>
-			{help? <span className="help-block mr-2">{help}</span> : null}
-			{error? <span className="help-block text-danger">{error}</span> : null}
+			{help ? <span className="help-block mr-2">{help}</span> : null}
+			{error ? <span className="help-block text-danger">{error}</span> : null}
 		</>;
 	} // ./checkbox
 
@@ -310,14 +312,14 @@ const PropControl2 = (props) => {
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
 	}
-	
+
 	// keep react happy
-	if (value===undefined || value===null) value = '';
+	if (value === undefined || value === null) value = '';
 
 	// £s
 	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
 	if (type === 'Money') {
-		let acprops = {prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff};
+		let acprops = { prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlMoney {...acprops} />;
 	} // ./£
 
@@ -329,7 +331,7 @@ const PropControl2 = (props) => {
 		let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 		// console.warn("onChange", e.target.value, mv, e);
 		DSsetValue(proppath, mv);
-		if (saveFn) saveFn({event:e, path, prop, value: mv});
+		if (saveFn) saveFn({ event: e, path, prop, value: mv });
 		// Enable piggybacking custom onChange functionality
 		if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
 		e.preventDefault();
@@ -339,7 +341,7 @@ const PropControl2 = (props) => {
 	if (type === 'XId') {
 		let service = otherStuff.service || 'WTF'; // FIXME // Does this actually need fixing? Is there any sensible default?
 		const displayValue = value.replace('@' + service, ''); // Strip @service wart for display
-		modelValueFromInput = s => s? Misc.normalise(s)+'@'+service : null;
+		modelValueFromInput = s => s ? Misc.normalise(s) + '@' + service : null;
 		return (
 			<div className="input-group">
 				<FormControl type="text" name={prop} value={displayValue} onChange={onChange} {...otherStuff} />
@@ -360,7 +362,7 @@ const PropControl2 = (props) => {
 		return <PropControlEntrySet {...props} />;
 	}
 
-	if (type === 'textarea') {		
+	if (type === 'textarea') {
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
 	}
 
@@ -373,11 +375,11 @@ const PropControl2 = (props) => {
 			onInput={onChange}
 			onBlur={onChange}
 			{...otherStuff}
-			style={{height:'auto'}}
-			dangerouslySetInnerHTML={{__html}}>
-			</div>;
+			style={{ height: 'auto' }}
+			dangerouslySetInnerHTML={{ __html }}>
+		</div>;
 	}
-	
+
 	if (type === 'json') {
 		let stringPath = ['transient'].concat(proppath);
 		let svalue = DataStore.getValue(stringPath) || JSON.stringify(value);
@@ -389,8 +391,8 @@ const PropControl2 = (props) => {
 				// empty string is also a valid input - don't try to parse it though
 				const newVal = rawVal ? JSON.parse(rawVal) : null;
 				DSsetValue(proppath, newVal);
-				if (saveFn) saveFn({event, path, prop, value: newVal});
-			} catch(err) {
+				if (saveFn) saveFn({ event, path, prop, value: newVal });
+			} catch (err) {
 				// TODO show error feedback
 				console.warn(err);
 			}
@@ -405,7 +407,7 @@ const PropControl2 = (props) => {
 		return (
 			<div>
 				<FormControl type="url" name={prop} value={value} onChange={onChange} {...otherStuff} />
-				<div className="pull-right" style={{background: bg, padding:bg?'20px':'0'}}><Misc.ImgThumbnail url={value} background={bg} /></div>
+				<div className="pull-right" style={{ background: bg, padding: bg ? '20px' : '0' }}><Misc.ImgThumbnail url={value} background={bg} /></div>
 				<div className="clearfix" />
 			</div>
 		);
@@ -420,7 +422,7 @@ const PropControl2 = (props) => {
 		return (
 			<div>
 				<FormControl type="url" name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
-				<div className="pull-right"><small>{value? <a href={value} target="_blank">open in a new tab</a> : null}</small></div>
+				<div className="pull-right"><small>{value ? <a href={value} target="_blank">open in a new tab</a> : null}</small></div>
 				<div className="clearfix" />
 			</div>
 		);
@@ -430,7 +432,7 @@ const PropControl2 = (props) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
 	if (PropControl.KControlType.isdate(type)) {
-		const acprops = {prop, item, value, onChange, ...otherStuff};
+		const acprops = { prop, item, value, onChange, ...otherStuff };
 		return <PropControlDate {...acprops} />;
 	}
 
@@ -439,20 +441,20 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'select') {
-		let props2 = {onChange, value, modelValueFromInput, ...props};
+		let props2 = { onChange, value, modelValueFromInput, ...props };
 		return <PropControlSelect {...props2} />
 	}
 
 	// HACK just a few countries. TODO load in an iso list + autocomplete
 	if (type === 'country') {
-		let props2 = {onChange, value, ...props};
+		let props2 = { onChange, value, ...props };
 		props2.options = [null, 'GB', 'US', 'AU', 'DE'];
 		props2.labels = ['', 'United Kingdom (UK)', 'United States of America (USA)', 'Australia', 'Germany'];
 		return <PropControlSelect  {...props2} />
 	}
 
 	if (type === 'autocomplete') {
-		let acprops = {prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff};
+		let acprops = { prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlAutocomplete {...acprops} />;
 	}
 
@@ -493,11 +495,11 @@ const PropControl2 = (props) => {
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  * @param {?Boolean} canUnset If true, always offer an unset choice.
  */
-const PropControlSelect = ({options, labels, value, multiple, prop, onChange, saveFn, canUnset, ...otherStuff}) => {
+const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, saveFn, canUnset, ...otherStuff }) => {
 	// NB: pull off internal attributes so the select is happy with rest
-	const {className, recursing, modelValueFromInput, ...rest} = otherStuff;
-	assert(options, 'Misc.PropControl: no options for select '+[prop, otherStuff]);
-	assert(options.map, 'Misc.PropControl: options not an array '+options);
+	const { className, recursing, modelValueFromInput, ...rest } = otherStuff;
+	assert(options, 'Misc.PropControl: no options for select ' + [prop, otherStuff]);
+	assert(options.map, 'Misc.PropControl: options not an array ' + options);
 	options = _.uniq(options);
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
@@ -514,9 +516,9 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 	}
 	const sv = value;
 
+	// Multi-select is a usability mess, so we use a row of checkboxes.
 	if (multiple) {
-		// WTF? multi-select is pretty broken in React as of Jan 2019
-		return PropControlMultiSelect({value, prop, onChange, labeller, options, sv, className, modelValueFromInput, ...rest});
+		return PropControlMultiSelect({ value, prop, onChange, labeller, options, className, modelValueFromInput, ...rest });
 	}
 
 	// make the options html
@@ -527,18 +529,17 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
 		const thisKey = 'option_' + ((otherStuff.keys && otherStuff.keys[index]) || JSON.stringify(option));
 		return <option key={thisKey} value={option} >{labeller(option)}</option>;
 	});
-	let showUnset = (canUnset || ! sv) && ! options.includes(null) && ! options.includes(''); 
+	let showUnset = (canUnset || !value) && !options.includes(null) && !options.includes('');
 
 	/* text-muted is for my-loop mirror card
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
 	let klass = space('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
 	return (
 		<select className={klass}
-			name={prop} value={sv} onChange={onChange}
-			multiple={multiple}
+			name={prop} value={value} onChange={onChange}
 			{...rest}
 		>
-			{showUnset? <option></option> : null}
+			{showUnset ? <option></option> : null}
 			{domOptions}
 		</select>
 	);
@@ -549,19 +550,21 @@ const PropControlSelect = ({options, labels, value, multiple, prop, onChange, sa
  * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
  * Deselect everything unless user holds Ctrl??? Really? -RM
  */
-const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromInput, sv, className, type, path, saveFn}) => {
-	assert( ! sv || sv.length !== undefined, "value should be an array", sv, prop);
+const PropControlMultiSelect = ({ value, prop, labeller, options, modelValueFromInput, className, type, path, saveFn }) => {
+	assert(value.length !== undefined, "value should be an array", sv, prop);
 	// const mvfi = rest.modelValueFromInput;
 	// let modelValueFromInput = (s, type, etype) => {
 	// 	if (mvfi) s = mvfi(s, type, etype);
 	// 	console.warn("modelValueFromInput", s, sv);
 	// 	return [s];
 	// };
+
 	let onChange = e => {
-		const val = e && e.target && e.target.value;
+		const evtVal = e && e.target && e.target.value;
 		const checked = e && e.target && e.target.checked;
-		let mv = modelValueFromInput(val, type, e.type);
+		let mv = modelValueFromInput(evtVal, type, e.type);
 		// console.warn("onChange", val, checked, mv, e);
+
 		let vals = value || [];
 		let mvs;
 		if (checked) {
@@ -569,14 +572,15 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
 		} else {
 			mvs = vals.filter(v => v != mv);
 		}
+
 		const proppath = path.concat(prop);
-		DSsetValue(proppath, mvs);
-		if (saveFn) saveFn({event:e, path, prop, value: mvs});
+		DSsetValue(proppath, newMvs);
+		if (saveFn) saveFn({ event: e, path, prop, value: newMvs });
 	}
 
 	let domOptions = options.map(option => {
 		// React doesn't like when an input's value changes from undefined to an explicit value, so...
-		const checked = !!(sv && sv.includes(option)); // coerce from undefined/null to boolean false
+		const checked = !!(value.includes(option)); // coerce from undefined/null to boolean false
 		return (
 			<FormGroup inline check key={`option_${option}`}>
 				<Input type="checkbox" value={option} checked={checked} onChange={onChange} />
@@ -600,7 +604,7 @@ const PropControlMultiSelect = ({value, prop, labeller, options, modelValueFromI
  *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
-const PropControlRadio = ({type, prop, value, path, item, saveFn, options, labels, inline, ...otherStuff}) => {
+const PropControlRadio = ({ type, prop, value, path, item, saveFn, options, labels, inline, ...otherStuff }) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -623,7 +627,7 @@ const PropControlRadio = ({type, prop, value, path, item, saveFn, options, label
 		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 		const val = e && e.target && e.target.value;
 		DSsetValue(path.concat(prop), val);
-		if (saveFn) saveFn({event:e, path, prop, value: val});
+		if (saveFn) saveFn({ event: e, path, prop, value: val });
 	};
 
 	const inputType = (type === 'checkboxes') ? 'checkbox' : 'radio';
@@ -652,7 +656,7 @@ const PropControlRadio = ({type, prop, value, path, item, saveFn, options, label
  * @returns Number. undefined/null are returned as-is. Bad inputs return NaN
  */
 const numFromAnything = v => {
-	if (v===undefined || v===null) return v;
+	if (v === undefined || v === null) return v;
 	// NB: _.isNumber fails for numeric-strings e.g. "1" -- but the later code will handle that
 	if (_.isNumber(v)) return v;
 	// strip any commas, e.g. 1,000
@@ -670,27 +674,27 @@ const numFromAnything = v => {
  * @param currency {?String}
  * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
  */
-const PropControlMoney = ({prop, name, value, currency, path, proppath,
-									item, bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff}) => {
-		// special case, as this is an object.
+const PropControlMoney = ({ prop, name, value, currency, path, proppath,
+	item, bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff }) => {
+	// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
 	// Convert null and numbers into Money objects
-	if ( ! value || _.isString(value) || _.isNumber(value)) {
-		value = new Money({value});
+	if (!value || _.isString(value) || _.isNumber(value)) {
+		value = new Money({ value });
 	}
 	// prefer raw, so users can type incomplete answers!
 	let v = value.raw || value.value;
-	if (v===undefined || v===null || _.isNaN(v)) { // allow 0, which is falsy
+	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
 		v = '';
 	}
 	//Money.assIsa(value); // type can be blank
 	// handle edits
 	const onMoneyChange = e => {
 		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
-		const newM = e.target.value===''? null : new Money(e.target.value);
+		const newM = e.target.value === '' ? null : new Money(e.target.value);
 		if (name && newM) newM.name = name; // preserve named Money items
 		DSsetValue(proppath, newM);
-		if (saveFn) saveFn({event:e, path, prop, newM});
+		if (saveFn) saveFn({ event: e, path, prop, newM });
 		// call onChange after we do the standard updates TODO make this universal
 		if (onChange) onChange(e);
 	};
@@ -700,7 +704,7 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 	if (changeCurrency) {
 		// TODO other currencies
 		$currency = (
-			<UncontrolledButtonDropdown addonType="prepend" disabled={otherStuff.disabled} id={'input-dropdown-addon-'+JSON.stringify(proppath)}>
+			<UncontrolledButtonDropdown addonType="prepend" disabled={otherStuff.disabled} id={'input-dropdown-addon-' + JSON.stringify(proppath)}>
 				<DropdownToggle caret>{curr}</DropdownToggle>
 				<DropdownMenu>
 					<DropdownItem key="1">{curr}</DropdownItem>
@@ -711,13 +715,13 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
 		$currency = <InputGroupAddon addonType="prepend">{curr}</InputGroupAddon>;
 	}
 	delete otherStuff.changeCurrency;
-	assert(v === 0 || v || v==='', [v, value]);
+	assert(v === 0 || v || v === '', [v, value]);
 	// make sure all characters are visible
-	let minWidth = ((""+v).length / 1.5)+"em";
+	let minWidth = (("" + v).length / 1.5) + "em";
 	return (
 		<InputGroup>
 			{$currency}
-			<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{minWidth}}/>
+			<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{ minWidth }} />
 			{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
 		</InputGroup>
 	);
@@ -728,14 +732,14 @@ const PropControlMoney = ({prop, name, value, currency, path, proppath,
  *
  * @param value {?Boolean}
  */
-const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
+const PropControlYesNo = ({ path, prop, value, saveFn, className }) => {
 	// NB: try to spot bad code/values -- beware of truthy/falsy here
-	if (value && ! _.isBoolean(value)) {
+	if (value && !_.isBoolean(value)) {
 		console.error("PropControlYesNo - value not a proper boolean!", prop, value);
 		// if (value === 'yes') value = true;
 		// convert string to false
 		if (value === 'no' || value === 'false') value = false;
-		value = !! value; // its boolean now
+		value = !!value; // its boolean now
 	}
 	// handle yes/no -> true/false
 	const onChange = e => {
@@ -744,13 +748,13 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
 		if (e.target.value === 'yes') newValue = true;
 		else if (e.target.value === 'no') newValue = false;
 		else newValue = undefined;
-		
+
 		DSsetValue(path.concat(prop), newValue);
-		if (saveFn) saveFn({event:e, path, prop, newValue});
+		if (saveFn) saveFn({ event: e, path, prop, newValue });
 	};
 
 	// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
-	const noChecked = value===false;
+	const noChecked = value === false;
 	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
 	return <>
 		<FormGroup check inline>
@@ -773,7 +777,7 @@ const PropControlYesNo = ({path, prop, value, saveFn, className}) => {
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
  * Used to edit variant.style
  */
-const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) => {
+const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff }) => {
 	const onChange = e => {
 		const oldValue = DataStore.getValue(proppath) || [];
 		const oldString = oldValue.join(' ');
@@ -786,9 +790,9 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
 		if (oldString.indexOf(newString) >= 0) {
 			newValue = newValue.filter(val => val);
 		}
-		
+
 		DSsetValue(proppath, newValue);
-		if (saveFn) saveFn({event:e, path, prop, value:newValue});
+		if (saveFn) saveFn({ event: e, path, prop, value: newValue });
 		e.preventDefault();
 		e.stopPropagation();
 	}
@@ -804,7 +808,7 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff}) =
  * TODO Should this be a literal special case of the PropControlEntrySet code?
  * @param {{String: Boolean}} value Can be null initially
  */
-const PropControlKeySet = ({ value, prop, proppath, saveFn}) => {
+const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
 	const addRemoveKey = (key, remove) => {
 		const newValue = { ...value };
 		// Set false for "remove" instead of deleting because back-end performs a merge on update, which would lose simple key removal
@@ -813,14 +817,14 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn}) => {
 		// ...TODO DataStore to maintain a diff, which it can send to the backend.
 		newValue[key] = remove ? false : true;
 		DSsetValue(proppath, newValue);
-		if (saveFn) saveFn({event:{}, path, prop, value: newValue });
+		if (saveFn) saveFn({ event: {}, path, prop, value: newValue });
 	}
-	
+
 	const keyElements = Object.keys(value || {}).filter(key => value[key]).map(key => (
 		<span className="key" key={key}>{key} <span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
 	));
-	
-	
+
+
 	let newKey;
 
 	const onClickAdd = (event) => {
@@ -850,16 +854,16 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn}) => {
  * @param {?String} keyName Explanatory placeholder text for entry key
  * @param {?String} valueName Explanatory placeholder text for entry value
  */
-const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value'}) => {
+const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value' }) => {
 	const addRemoveKey = (key, val, remove) => {
 		if (!key) return;
 		const newValue = { ...value };
 		// set false instead of deleting - see rationale/TODO in PropControlKeySet
 		newValue[key] = remove ? false : val;
 		DataStore.setValue(proppath, newValue);
-		if (saveFn) saveFn({event:{}, path, prop, value: newValue });
+		if (saveFn) saveFn({ event: {}, path, prop, value: newValue });
 	}
-	
+
 	const entryElements = Object.entries(value || {}).filter(([, val]) => (val === '') || val).map(([key]) => (
 		<tr className="entry" key={key}>
 			<td><Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>&times;</Button></td>
@@ -867,7 +871,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 			<td><PropControl type="text" path={proppath} prop={key} /></td>
 		</tr>
 	));
-	
+
 	let newKey, newValue;
 
 	const onClickAdd = (event) => {
@@ -894,7 +898,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 };
 
 
-const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
+const PropControlDate = ({ prop, item, value, onChange, ...otherStuff }) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
 	// NB: parsing incomplete dates causes NaNs
 	let datePreview = null;
@@ -902,7 +906,7 @@ const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 		try {
 			let date = new Date(value);
 			// use local settings??
-			datePreview = date.toLocaleDateString('en-GB', {day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC'});
+			datePreview = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 		} catch (er) {
 			// bad date
 			datePreview = 'Invalid date';
@@ -911,8 +915,8 @@ const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 
 	// HACK: also set the raw text in _raw. This is cos the server may have to ditch badly formatted dates.
 	// NB: defend against _raw_raw
-	const rawProp = prop.substr(prop.length-4, prop.length) === '_raw'? null : prop+'_raw';
-	if ( ! value && item && rawProp) value = item[rawProp];
+	const rawProp = prop.substr(prop.length - 4, prop.length) === '_raw' ? null : prop + '_raw';
+	if (!value && item && rawProp) value = item[rawProp];
 	const onChangeWithRaw = e => {
 		if (item && rawProp) {
 			item[rawProp] = e.target.value;
@@ -922,7 +926,7 @@ const PropControlDate = ({prop, item, value, onChange, ...otherStuff}) => {
 
 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
 	// Encourage ISO8601 format
-	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is '+Misc.isoDate(new Date());
+	if (!otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
 	return (<div>
 		<FormControl type="text" name={prop} value={value} onChange={onChangeWithRaw} {...otherStuff} />
 		<div className="pull-right"><i>{datePreview}</i></div>
@@ -937,52 +941,52 @@ options {Function|Object[]|String[]}
 renderItem {?JSX}
 getItemValue {?Function} item -> prop-value
 */
-const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem, path, proppath,
-	item, bg, saveFn, modelValueFromInput, ...otherStuff}) => {
-		// a place to store the working state of this widget
-		let widgetPath = ['widget', 'autocomplete'].concat(path);
-		if (!getItemValue) getItemValue = s => s;
-		if (!renderItem) renderItem = a => printer.str(a);
-		const type = 'autocomplete';
-		const items = _.isArray(options)? options : DataStore.getValue(widgetPath) || [];
+const PropControlAutocomplete = ({ prop, value, options, getItemValue, renderItem, path, proppath,
+	item, bg, saveFn, modelValueFromInput, ...otherStuff }) => {
+	// a place to store the working state of this widget
+	let widgetPath = ['widget', 'autocomplete'].concat(path);
+	if (!getItemValue) getItemValue = s => s;
+	if (!renderItem) renderItem = a => printer.str(a);
+	const type = 'autocomplete';
+	const items = _.isArray(options) ? options : DataStore.getValue(widgetPath) || [];
 
-		// NB: typing sends e = an event, clicking an autocomplete sends e = a value
-		const onChange2 = (e) => {
-			// console.log("event", e, e.type, optItem);
-			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
-			// typing sneds an event, clicking an autocomplete sends a value
-			const val = e.target? e.target.value : e;
-			let mv = modelValueFromInput(val, type, e.type);
-			DSsetValue(proppath, mv);
-			if (saveFn) saveFn({event:e, path:path, prop, value:mv});
-			// e.preventDefault();
-			// e.stopPropagation();
-		};
+	// NB: typing sends e = an event, clicking an autocomplete sends e = a value
+	const onChange2 = (e) => {
+		// console.log("event", e, e.type, optItem);
+		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
+		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
+		// typing sneds an event, clicking an autocomplete sends a value
+		const val = e.target ? e.target.value : e;
+		let mv = modelValueFromInput(val, type, e.type);
+		DSsetValue(proppath, mv);
+		if (saveFn) saveFn({ event: e, path: path, prop, value: mv });
+		// e.preventDefault();
+		// e.stopPropagation();
+	};
 
-		const onChange = (e, optItem) => {
-			onChange2(e, optItem);
-			if (!e.target.value) return;
-			if (!_.isFunction(options)) return;
-			let optionsOutput = options(e.target.value);
-			let pvo = new PromiseValue(optionsOutput);
-			pvo.promise.then(oo => {
-				DataStore.setValue(widgetPath, oo);
-				// also save the info in data
-				// NB: assumes we use status:published for auto-complete
-				oo.forEach(opt => {
-					if (getType(opt) && getId(opt)) {
-						const optPath = DataStore.getDataPath({status:C.KStatus.PUBLISHED, type:getType(opt), id:getId(opt)});
-						DataStore.setValue(optPath, opt);
-					}
-				});
+	const onChange = (e, optItem) => {
+		onChange2(e, optItem);
+		if (!e.target.value) return;
+		if (!_.isFunction(options)) return;
+		let optionsOutput = options(e.target.value);
+		let pvo = new PromiseValue(optionsOutput);
+		pvo.promise.then(oo => {
+			DataStore.setValue(widgetPath, oo);
+			// also save the info in data
+			// NB: assumes we use status:published for auto-complete
+			oo.forEach(opt => {
+				if (getType(opt) && getId(opt)) {
+					const optPath = DataStore.getDataPath({ status: C.KStatus.PUBLISHED, type: getType(opt), id: getId(opt) });
+					DataStore.setValue(optPath, opt);
+				}
 			});
-			// NB: no action on fail - the user just doesn't get autocomplete
-		};
-		
+		});
+		// NB: no action on fail - the user just doesn't get autocomplete
+	};
+
 	return (
 		<Autocomplete
-			inputProps={{className: otherStuff.className || 'form-control'}}
+			inputProps={{ className: otherStuff.className || 'form-control' }}
 			getItemValue={getItemValue}
 			items={items}
 			renderItem={renderItem}
@@ -1002,7 +1006,7 @@ const PropControlAutocomplete = ({prop, value, options, getItemValue, renderItem
 * @returns the model value/object to be stored in DataStore
 */
 const standardModelValueFromInput = (inputValue, type, eventType) => {
-	if ( ! inputValue) return inputValue;
+	if (!inputValue) return inputValue;
 	// numerical?
 	if (type === 'year') {
 		return parseInt(inputValue);
@@ -1012,8 +1016,8 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 	}
 	// url: add in https:// if missing
 	if (type === 'url' && eventType === 'blur') {
-		if (inputValue.indexOf('://') === -1 && inputValue[0] !== '/' && 'http'.substr(0, inputValue.length) !== inputValue.substr(0,4)) {
-			inputValue = 'https://'+inputValue;
+		if (inputValue.indexOf('://') === -1 && inputValue[0] !== '/' && 'http'.substr(0, inputValue.length) !== inputValue.substr(0, 4)) {
+			inputValue = 'https://' + inputValue;
 		}
 	}
 	// normalise text
@@ -1028,7 +1032,7 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
  * This replaces the react-bootstrap version 'cos we saw odd bugs there.
  * Plus since we're providing state handling, we don't need a full component.
  */
-const FormControl = ({value, type, required, size, className, prepend, append, ...otherProps}) => {
+const FormControl = ({ value, type, required, size, className, prepend, append, ...otherProps }) => {
 	if (value === null || value === undefined) value = '';
 
 	if (type === 'color' && !value) {
@@ -1037,7 +1041,7 @@ const FormControl = ({value, type, required, size, className, prepend, append, .
 		// So give it a dummy value and set a class to allow us to show a "no colour picked" signifier
 		return <Input className="no-color" value="#000000" type={type} {...otherProps} />;
 	}
-	
+
 	// add css classes for required fields
 	let klass = space(
 		className,
@@ -1086,9 +1090,9 @@ const FormControl = ({value, type, required, size, className, prepend, append, .
  * TODO allow other jsx files to add to this - for more modular code.
  */
 PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html text search select radio checkboxes autocomplete password email url color checkbox"
-							+" yesNo location date year number arraytext keyset entryset address postcode json country"
-							// some Good-Loop data-classes
-							+" Money XId keyvalue");
+	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
+	// some Good-Loop data-classes
+	+ " Money XId keyvalue");
 
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
 
@@ -1097,7 +1101,7 @@ PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html tex
  * image or video upload. Uses Dropzone
  * @param onUpload {Function} {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  */
-const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, ...otherStuff}) => {
+const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	// Get a ref to the <input> in the FormControl so we can ping its change event on successful upload
@@ -1116,9 +1120,10 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 					if (onUpload) {
 						onUpload({ path, prop, response, url });
 					}
+
 					// Forcibly trigger "change" on the URL FormControl
 					if (inputRef.current) {
-						inputRef.current.dispatchEvent(new Event('change'));
+						inputRef.current.dispatchEvent(new Event('change'), {bubbles: true});
 					}
 				})
 				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
@@ -1153,8 +1158,8 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
 				{type === 'videoUpload' ? (
 					<Misc.VideoThumbnail url={value} />
 				) : (
-					<Misc.ImgThumbnail className={className} background={bg} url={value} />
-				)}
+						<Misc.ImgThumbnail className={className} background={bg} url={value} />
+					)}
 			</div>
 			<div className="clearfix" />
 		</div>
@@ -1168,9 +1173,9 @@ const PropControlImgUpload = ({path, prop, onUpload, type, bg, value, onChange, 
  * @param {Function} removeFn Takes (map, key), returns new map - use if "removing" a key means something other than just deleting it
  * @param {Function} filterFn Takes (key, value), returns boolean - use if some entries should't be shown
  */
-const MapEditor = ({prop, proppath, value, $KeyProp, $ValProp, removeFn, filterFn = (() => true)}) => {
-	assert($KeyProp && $ValProp, "PropControl MapEditor "+prop+": missing $KeyProp or $ValProp jsx (probably PropControl) widgets");
-	const temppath = ['widget','MapEditor'].concat(proppath);
+const MapEditor = ({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filterFn = (() => true) }) => {
+	assert($KeyProp && $ValProp, "PropControl MapEditor " + prop + ": missing $KeyProp or $ValProp jsx (probably PropControl) widgets");
+	const temppath = ['widget', 'MapEditor'].concat(proppath);
 	const kv = DataStore.getValue(temppath) || {};
 
 	const addKV = () => {
@@ -1202,18 +1207,18 @@ const MapEditor = ({prop, proppath, value, $KeyProp, $ValProp, removeFn, filterF
 	return <>
 		{vkeys.map(
 			k => (<Misc.Col2 key={k}>
-					<div>{k}</div>
-					<div>
-						{React.cloneElement($ValProp, {path:proppath, prop:k, label:null})}
-						<Button onClick={() => rmK(k)}>➖</Button>
-					</div>
-				</Misc.Col2>)
+				<div>{k}</div>
+				<div>
+					{React.cloneElement($ValProp, { path: proppath, prop: k, label: null })}
+					<Button onClick={() => rmK(k)}>➖</Button>
+				</div>
+			</Misc.Col2>)
 		)}
 		<Misc.Col2>
-			{React.cloneElement($KeyProp, {path:temppath, prop:'key'})}
+			{React.cloneElement($KeyProp, { path: temppath, prop: 'key' })}
 			<div>
-				{React.cloneElement($ValProp, {path:temppath, prop:'val'})}
-				<Button onClick={addKV} disabled={ ! kv.key || ! kv.val}>➕</Button>
+				{React.cloneElement($ValProp, { path: temppath, prop: 'val' })}
+				<Button onClick={addKV} disabled={!kv.key || !kv.val}>➕</Button>
 			</div>
 		</Misc.Col2>
 	</>;
@@ -1221,21 +1226,21 @@ const MapEditor = ({prop, proppath, value, $KeyProp, $ValProp, removeFn, filterF
 
 /** INPUT STATUS */
 class InputStatus extends JSend {
-	
+
 }
 /**
  * e.g. "url: warning: use https for security"
  */
-InputStatus.str = is => [(is.path? is.path[is.path.length-1] : null), is.status, is.message].join(': ');
+InputStatus.str = is => [(is.path ? is.path[is.path.length - 1] : null), is.status, is.message].join(': ');
 
 /** NB: the final path bit is to allow for status to be logged at different levels of the data-model tree */
-const statusPath = path => ['misc','inputStatus'].concat(path).concat('_status');
+const statusPath = path => ['misc', 'inputStatus'].concat(path).concat('_status');
 
 /**
  *
  * @param {?String} status - if null, remove any message
  */
-const setInputStatus = ({path, status, message}) => {
+const setInputStatus = ({ path, status, message }) => {
 	const spath = statusPath(path);
 	// no-op?
 	const old = DataStore.getValue(spath);
@@ -1265,14 +1270,14 @@ const getInputStatus = path => {
 const getInputStatuses = path => {
 	// if (true) return []; // possibly causing a performance issue?? On Feb 2019
 	assMatch(path, 'String[]');
-	const sppath = ['misc','inputStatus'].concat(path);
+	const sppath = ['misc', 'inputStatus'].concat(path);
 	const root = DataStore.getValue(sppath);
 	const all = [];
 	getInputStatuses2(root, all);
 	return all;
 }
 const getInputStatuses2 = (node, all) => {
-	if ( ! _.isObject(node)) return;
+	if (!_.isObject(node)) return;
 	if (node._status) all.push(node._status);
 	// assumes no loops!
 	Object.values(node).forEach(kid => getInputStatuses2(kid, all));
@@ -1289,7 +1294,7 @@ let $widgetForType = {};
  * @param {!JSX} $Widget the widget to render a propcontrol
  * ?? what props does it get?? {path, prop, proppath, value}
  */
-const registerControl = ({type, $Widget}) => {
+const registerControl = ({ type, $Widget }) => {
 	assMatch(type, String);
 	assert($Widget);
 	PropControl.KControlType = PropControl.KControlType.concat(type);

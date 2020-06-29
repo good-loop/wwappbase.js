@@ -311,17 +311,17 @@ class Store {
 		}
 
 		let tip = this.appstate;
-		for(let pi=0; pi < path.length; pi++) {
+		for(let pi = 0; pi < path.length; pi++) {
 			let pkey = path[pi];
 			if (pi === path.length-1) {
 				// Set it!
 				tip[pkey] = value;
 				break;
 			}
-			assert(pkey || pkey===0, "falsy in path "+path.join(" -> ")); // no falsy in a path - except that 0 is a valid key
+			assert(pkey || pkey === 0, `falsy in path ${path.join(' -> ')}`); // no falsy in a path - except that 0 is a valid key
 			let newTip = tip[pkey];
-			if ( ! newTip) {
-				if (value===null) {
+			if (!newTip) {
+				if (value === null) {
 					// don't make path for null values
 					return value;
 				}
