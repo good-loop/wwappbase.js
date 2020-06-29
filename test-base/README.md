@@ -18,7 +18,7 @@ NB: these directories are the jest+puppeteer defaults
 Place your tests inside of src/puppeteer-tests/\_\_tests\_\_  and then return to the root of your project.
 
 Ensure that your package.json contains relevant entries (probably more up to date ones) similar to 
-the jest/puppeteer entries found in ~/winterwell/wwappbase.js/test-base/package.json
+the jest/puppeteer entries found in ~/winterwell/wwappbase.js/template/package.json
 
 Then ensure that you have all needed packages by running npm i
 
