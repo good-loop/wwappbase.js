@@ -1095,15 +1095,12 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 					// TODO refactor to clean this up -- we should have one way of doing things.
 					// Different forms for UploadServlet vs MediaUploadServlet
 					let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
-					DSsetValue(path.concat(prop), url);
 					if (onUpload) {
 						onUpload({ path, prop, response, url });
 					}
-
-					// Forcibly trigger "change" on the URL FormControl
-					if (inputRef.current) {
-						inputRef.current.dispatchEvent(new Event('change'));
-					}
+					// Hack: Execute the onChange function explicitly to update value & trigger side effects
+					// (React really doesn't want to let us trigger it on the actual input element)
+					onChange && onChange({ target: { value: url } });
 				})
 				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
 		});
@@ -1127,7 +1124,7 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 	// NB the "innerRef" prop used on FormControl is specific to Reactstrap - it applies the given ref to the underlying <input>
 	return (
 		<div>
-			<FormControl type="url" name={prop} value={value} onChange={onChange} innerRef={inputRef} {...otherStuff} />
+			<FormControl type="url" name={prop} value={value} onChange={onChange} {...otherStuff} />
 			<div className="pull-left">
 				<Dropzone className="DropZone" accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
 					Drop a {acceptedTypesDesc} here
