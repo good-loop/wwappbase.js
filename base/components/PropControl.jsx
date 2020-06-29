@@ -504,29 +504,28 @@ const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, s
 	assert(options.map, 'Misc.PropControl: options not an array ' + options);
 	options = _.uniq(options);
 	const labelFn = labeller(options, labels);
-	const sv = value;
 
 	// Multi-select is a usability mess, so we use a row of checkboxes.
 	if (multiple) {
-		return PropControlMultiSelect({ value, prop, onChange, labeller, options, className, modelValueFromInput, ...rest });
+		return PropControlMultiSelect({ value, prop, onChange, labelFn, options, className, modelValueFromInput, ...rest });
 	}
 
 	// make the options html
-	// NB: react doesnt like the selected attribute ?? but we need it for multiple??
-	let domOptions = options.map((option, index) => {
+	const domOptions = options.map((option, index) => {
 		// The big IAB Taxonomy dropdown has some dupe names which are used as options
 		// - so permit a keys list, separate from the option strings, to differentiate them
 		const thisKey = 'option_' + ((otherStuff.keys && otherStuff.keys[index]) || JSON.stringify(option));
 		return <option key={thisKey} value={option} >{labelFn(option)}</option>;
 	});
-	let showUnset = (canUnset || !value) && !options.includes(null) && !options.includes('');
+	const showUnset = (canUnset || !value) && !options.includes(null) && !options.includes('');
 
 	/* text-muted is for my-loop mirror card
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
-	let klass = space('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
+	const klass = space('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
+	const safeValue = value || ''; // "correct usage" - controlled selects shouldn't have null/undef value
 	return (
 		<select className={klass}
-			name={prop} value={value} onChange={onChange}
+			name={prop} value={safeValue} onChange={onChange}
 			{...rest}
 		>
 			{showUnset ? <option></option> : null}
@@ -540,8 +539,8 @@ const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, s
  * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
  * Deselect everything unless user holds Ctrl??? Really? -RM
  */
-const PropControlMultiSelect = ({ value, prop, labeller, options, modelValueFromInput, className, type, path, saveFn }) => {
-	assert(value.length !== undefined, "value should be an array", sv, prop);
+const PropControlMultiSelect = ({ value, prop, labelFn, options, modelValueFromInput, className, type, path, saveFn }) => {
+	assert(!value || value.length !== undefined, "value should be an array", value, prop);
 	// const mvfi = rest.modelValueFromInput;
 	// let modelValueFromInput = (s, type, etype) => {
 	// 	if (mvfi) s = mvfi(s, type, etype);
@@ -555,22 +554,22 @@ const PropControlMultiSelect = ({ value, prop, labeller, options, modelValueFrom
 		let mv = modelValueFromInput(evtVal, type, e.type);
 		// console.warn("onChange", val, checked, mv, e);
 
-		let vals = value || [];
-		let mvs;
-		if (checked) {
-			mvs = vals.concat(mv);
-		} else {
-			mvs = vals.filter(v => v != mv);
-		}
+		let newMvs = checked ? (
+			(value || []).concat(mv)
+		) : (
+			(value || []).filter(v => v !== mv)
+		);
 
 		const proppath = path.concat(prop);
-		DSsetValue(proppath, mvs);
-		if (saveFn) saveFn({ event: e, path, prop, value: mvs });
+		// Turn null/undef DataStore value into an empty set so the real edit triggers local-status-dirty and autosave.
+		if (!is(value)) DSsetValue(proppath, []);
+		DSsetValue(proppath, newMvs);
+		if (saveFn) saveFn({ event: e, path, prop, value: newMvs });
 	}
 
 	let domOptions = options.map(option => {
 		// React doesn't like when an input's value changes from undefined to an explicit value, so...
-		const checked = !!((value && value.includes(option)); // coerce from undefined/null to boolean false
+		const checked = !!(value && value.includes(option)); // coerce from undefined/null to boolean false
 		return (
 			<FormGroup inline check key={`option_${option}`}>
 				<Input type="checkbox" value={option} checked={checked} onChange={onChange} />
