@@ -66,6 +66,7 @@
 			}
 			
 			var filename = isDebug ? 'bundle-debug.js' : 'bundle.js';
+			if ( ! isDebug) filename += '?cb='+Math.random(); // force fresh loading on e.g. devices
 			document.write('<script src="/build/js/' + filename + '"/><\/script>');
 		</script>
 		
