@@ -21,7 +21,7 @@ import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import {asNum, space, stopEvent} from '../utils/miscutils';
+import {asNum, space, stopEvent, encURI} from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType, nonce } from '../data/DataClass';
 import Tree from '../data/Tree';
@@ -677,7 +677,7 @@ const CSVDownload = ({tableName, visibleColumns, topRow, addTotalRow, dataTree, 
 	const setupCsv = (e, $a) => {
 		let dataArray = createCSVData({visibleColumns, topRow, addTotalRow, dataTree, bottomRow});
 		let csv = dataArray.map(r => r.join? r.map(cell => csvEscCell(cell)).join(",") : ""+r).join("\r\n");
-		let csvLink = 'data:text/csv;charset=utf-8,'+csv;	
+		let csvLink = 'data:text/csv;charset=utf-8,'+encURI(csv);	
 		// console.log(e, e.target, $a, ref, csv, csvLink);
 		e.target.setAttribute('href', csvLink);
 	};
