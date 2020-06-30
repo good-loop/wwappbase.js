@@ -25,10 +25,6 @@ PROJECT_USES_WWAPPBASE_SYMLINK='yes'
 # Where is the test server?
 TARGET_SERVERS=(baker.good-loop.com)
 
-## TODO : put in an argument switch to allow a specific branch to be pulled from git
-## TODO : resolve symlinks with wwappbase.js
-
-
 
 #####  SPECIFIC SETTINGS
 ## This section should only be selectively edited - based on non-standardized needs
