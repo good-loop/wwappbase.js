@@ -850,7 +850,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 		if (saveFn) saveFn({ event: {}, path, prop, value: newValue });
 	}
 
-	const entries = Object.entries(value).filter(([, val]) => (val === '') || val);
+	const entries = Object.entries(value || {}).filter(([, val]) => (val === '') || val);
 	// pb-3 classes are for vertical alignment with PropControl which has a margin-bottom we can't remove
 	const entryElements = entries.length ? (
 		entries.map(([key]) => (
