@@ -5,8 +5,8 @@
 # Versions of this script are usually run by TeamCity, in response to a git commit.
 # The script uses ssh remote commands to target a server -- it does not affect the local machine.
 # For testing, the script can also be run from your local computer.
-#Version 1.1
-# Meaning - Script has been written and tested
+#Version 1.2
+# Latest Change -- one more error sniffing task for the 'use_npm' function
 
 #####  GENERAL SETTINGS
 ## This section should be the most widely edited part of this script
@@ -188,7 +188,18 @@ function use_npm {
             ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && npm i &> $NPM_I_LOGFILE"
             printf "\nChecking for errors while npm was attempting to get packages on $server ...\n"
             if [[ $(ssh winterwell@$server "grep -i 'error' $NPM_I_LOGFILE") = '' ]]; then
-                printf "\nNo NPM errors detected\n"
+                printf "\nNPM package installer check : No mention of 'error' in $NPM_I_LOGFILE on $server\n"
+            else
+                printf "\nNPM encountered one or more errors while attempting to get node packages. Sending Alert Emails, but Continuing Operation\n"
+                # Get the NPM_I_LOGFILE
+                scp winterwell@$server:$NPM_I_LOGFILE .
+                # Add it to the Attachments
+                ATTACHMENTS+=("-a npm.i.for.$PROJECT_NAME.log")
+                # Send the email
+                send_alert_email
+            fi
+            if [[ $(ssh winterwell@$server "grep -i 'is not in the npm registry' $NPM_I_LOGFILE") = '' ]]; then
+                printf "\nNPM package installer check : No mention of packages which could not be found in $NPM_I_LOGFILE on $server\n"
             else
                 printf "\nNPM encountered one or more errors while attempting to get node packages. Sending Alert Emails, but Continuing Operation\n"
                 # Get the NPM_I_LOGFILE
