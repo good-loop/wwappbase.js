@@ -13,7 +13,7 @@ const webDir = process.env.OUTPUT_WEB_DIR || 'web';
 const baseConfig = {
 	entry: ['@babel/polyfill', './src/js/app.jsx'],
 	output: {
-		path: path.resolve(__dirname, './' + webDir + '/build/'),
+		path: path.resolve(__dirname, './' + webDir + '/build/'), // NB: this should include js and css outputs
 		// filename: is left undefined and filled in by makeConfig
 	},
 	devtool: 'source-map',
