@@ -68,3 +68,4 @@ NPM_RUN_COMPILE_LOGFILE="/home/winterwell/.npm/_logs/npm.run.compile.for.$PROJEC
 # 05. 'node' is version 12.x
 # 06. 'npm' is at the latest version
 # 07. 'wwappbase.js' directory is where it is expected (as defined earlier in this script)
+# 08. repository 'winterwell-code' is located in /home/winterwell/bobwarehouse/
