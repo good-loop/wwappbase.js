@@ -5,8 +5,8 @@
 # Versions of this script are usually run by TeamCity, in response to a git commit.
 # The script uses ssh remote commands to target a server -- it does not affect the local machine.
 # For testing, the script can also be run from your local computer.
-#Version 1.2.3
-# Latest Change -- removed a piped command which prevented any and all webpacking errors to be detected
+#Version 1.3.0
+# Latest Change -- Adding new dependency checks -- Attempting to create parity with production publisher template script
 
 #####  GENERAL SETTINGS
 ## This section should be the most widely edited part of this script
@@ -42,6 +42,7 @@ BOB_BUILD_PROJECT_NAME='' #If the project name isn't automatically sensed by bob
 NPM_CLEANOUT='no' #yes/no , will nuke the node_modules directory if 'yes', and then get brand-new packages.
 NPM_I_LOGFILE="/home/winterwell/.npm/_logs/npm.i.for.$PROJECT_NAME.log"
 NPM_RUN_COMPILE_LOGFILE="/home/winterwell/.npm/_logs/npm.run.compile.for.$PROJECT_NAME.log"
+BOBWAREHOUSE_PATH='/home/winterwell/bobwarehouse'
 
 ##### FUNCTIONS
 ## Do not edit these unless you know what you are doing
@@ -127,6 +128,19 @@ function cleanup_wwappbasejs_repo {
             ssh winterwell@$server "cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git gc --prune=now"
             ssh winterwell@$server "cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git pull origin master"
             ssh winterwell@$server "cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git reset --hard FETCH_HEAD"
+        done
+    fi
+}
+
+# Dependency Check Function - bobwarehouse directory has discrete 'code' repository nested inside of it.
+function check_for_code_repo_in_bobwarehouse {
+    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
+        for server in ${TARGET_SERVERS[@]}; do
+            if ssh winterwell@$server '[! -d $BOBWAREHOUSE_PATH/code]'; then
+                printf "\n\nNo 'code' repo found in $BOBWAREHOUSE_PATH on $server.  Cloning now ...\n"
+                ssh winterwell@$server "cd $BOBWAREHOUSE_PATH && git clone git@git.winterwell.com:/winterwell-code code"
+                printf "\nContinuing...\n"
+            fi
         done
     fi
 }
@@ -266,6 +280,7 @@ check_jerbil_exists
 check_wwappbasejs_exists
 cleanup_repo
 cleanup_wwappbasejs_repo
+check_for_code_repo_in_bobwarehouse
 stop_service
 use_bob
 use_npm
