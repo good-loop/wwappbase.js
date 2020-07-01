@@ -33,7 +33,7 @@ ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
 
-// TODO clean up other definitions inc PORTAL_DOMAIN
+// ServerIO.PORTAL_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}portal.good-loop.com`;
 ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
 
 ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
