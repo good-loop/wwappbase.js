@@ -212,7 +212,6 @@ function use_webpack {
     if [[ $PROJECT_USES_WEBPACK = 'yes' ]]; then
         BUILD_PROCESS_NAME='webpack'
         BUILD_STEP='npm was running a weback process'
-        NPM_LOG_DATE=$(date +%Y-%m-%d)
         for server in ${TARGET_SERVERS[@]}; do
             printf "\nNPM is now running a Webpack process on $server\n"
             ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && npm run compile &> $NPM_RUN_COMPILE_LOGFILE"
