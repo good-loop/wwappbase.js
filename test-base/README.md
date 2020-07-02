@@ -24,7 +24,7 @@ Then ensure that you have all needed packages by running npm i
 
 ## Runing tests
 
-Simply use
+To run against your local site, simply use
 
 	node runtest.js
 

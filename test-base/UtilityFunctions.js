@@ -3,18 +3,15 @@ const fs = require('fs');
 // import $ from 'jquery'; no - fails with error: Cannot use import statement outside a module
 const $ = require('./jquery.js');
 const { General, CommonSelectors } = require('./common-selectors');
+const shell = require('shelljs');
 
 /**
- * Wrap `test` with some extra console.log output
- * @param {!string} name 
- * @param  {...any} args 
+ * Convenient getter for process config (as set by runtest)
  */
-const check = (name, ...args) => {
-	console.log("Test: "+name+" ...");
-	test(name, ...args);
-	// NB: test is async (so it probably hasn't finished here), unless runInBand was set 
-	// That makes this function's info of limited use.
-};
+const getConfig = () => {
+	const config = JSON.parse(process.env.__CONFIGURATION);
+	return config;
+}
 
 // set when calling Jest CLI with --testURL $url
 // const APIBASE = window.location.href;
@@ -236,15 +233,31 @@ async function advanceWizard({page}) {
 	await page.goto(gotoURL);
 }
 
-async function soGiveFailIfPointingAtProduction({page}) {
+/**
+ * Please call this at the start of each block of tests. It checks that the test site is NOT pointing at the production API
+ * (and so guards against accidentally editing production data).
+ * @param {page} page 
+ * @param {?string} server Url for the server. If not set, assume that page.goto() has already been called.
+ */
+const serverSafetyCheck = async (page, server) => {
+	if (server) {
+		await page.goto(server);
+	}
 	const endpoint = await page.evaluate( () => window.ServerIO.APIBASE);
-	if( endpoint.match(/\/\/app.sogive.org/) || window.location.href.match(/\/\/app.sogive.org/) ) throw new Error("Test service is pointing at production server! Aborting test.");
-}
+	if (typeof(endpoint) !== 'string') {
+		throw new Error("Could not find ServerIO.APIBASE?!");
+	}
+	if( endpoint !== '' && ! endpoint.includes("local") && ! endpoint.includes("test")) {
+		console.log("Test service is pointing at production server! Aborting test. Please check ServerIO.js");
+		shell.exit(1);
+	}
+};
+
 
 module.exports = {
 	login,
-	soGiveFailIfPointingAtProduction,
 	donate,
-	fillInForm, 
-	check
+	fillInForm,
+	getConfig,
+	serverSafetyCheck
 };
