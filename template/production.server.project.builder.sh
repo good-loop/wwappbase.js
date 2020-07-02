@@ -5,6 +5,12 @@
 # VERSION=0.1b
 # VERSION_MEANING=script has been written, but never used.
 
+## Warning - This is a bare-bones template file.
+##     There are no functions written in here to
+##      preserve your config files, or uploaded media.
+##      It is expected that you will modify this script
+##      so as to have it meet these esoteric needs.
+
 ## USAGE -- human instructions for a how to use:
 # Assumption -- you want to use this script to build
 #     a project (eg. adserver, datalogger, portal, etc.)
@@ -21,17 +27,16 @@
 #     command(s) to be executed regardless of your ssh connection
 #     status
 #
-# 04. Ensure that ALL of the git repositories on this production
-#     server are ALREADY on the branch(es) which you wish to use
-#     as the basis for building the production releases for a project
-#
-# 05. as the user 'winterwell':
+# 04. as the user 'winterwell':
 #     cd into your project's repository
 #     ./production.server.project.builder.sh
+#     and answer the yes/no prompt when you are SURE that you
+#     have gotten all of your ducks in a row.
 
 ####### Goal -- create a project building script (using git, bob, jerbil, maven, npm, and webpack as the tools)
 ## which uses very similar, if not, the exact same, functions as the teamcity builder template script.
 PROJECT_NAME='my_new_project' #This is simply a human readable name
+GIT_REPO_URL='github.com:/good-loop/my_new_project'
 PROJECT_USES_BOB='yes'  #yes or no :: If 'yes', then you must also supply the name of the service which is used to start,stop,or restart the jvm
 NAME_OF_SERVICE='my_new_project_main' # This can be blank, but if your service uses a JVM, then you must put in the service name which is used to start,stop,or restart the JVM on the server.
 PROJECT_USES_NPM='yes' # yes or no
@@ -57,11 +62,43 @@ NPM_I_LOGFILE="/home/winterwell/.npm/_logs/npm.i.for.$PROJECT_NAME.log"
 NPM_RUN_COMPILE_LOGFILE="/home/winterwell/.npm/_logs/npm.run.compile.for.$PROJECT_NAME.log"
 BOBWAREHOUSE_PATH='/home/winterwell/bobwarehouse'
 
-#######
-### Functions
-#######
+##### FUNCTIONS
+## Do not edit these unless you know what you are doing
+#####
 
-# Dependency Check Function - 'bob' is globally available
+# Set empty array of attachments
+ATTACHMENTS=()
+
+# Email Function.  Sends emails to email addresses in $EMAIL_RECIPIENTS
+function send_alert_email {
+    for email in ${EMAIL_RECIPIENTS[@]}; do
+        TIME=$(date +%Y-%m-%dT%H:%M:%S-%Z)
+	    message="AutoBuild Detected a Failure Building $PROJECT_NAME during $BUILD_PROCESS_NAME"
+	    body="Hi,\nThe AutoPublisher detected a failure when $BUILD_STEP"
+	    title="TeamCity $message"
+	    printf "$body" | mutt -s "$title" ${ATTACHMENTS[@]} -- $email
+    done
+}
+
+
+# Git Cleanup Function -- More of a classic 'I type this too much, it should be a function', Function.
+function git_hard_set_to_master {
+    cd $1 && git gc --prune=now
+    cd $1 && git pull origin master
+    cd $1 && git reset --hard FETCH_HEAD
+}
+
+
+# Dependency Check Function : Check if repo exists on the server('s) disk(s) - This Function's Version is 0.01
+function check_repo_exists {
+    if [[ ! -d $PROJECT_ROOT_ON_SERVER ]]; then
+        printf '\ncloning the repo...\n'
+        cd ~/
+        git clone git@$GIT_REPO_URL
+    fi
+}
+
+# Dependency Check Function - 'bob' is globally available - This Function's Version is 0.01
 function check_bob_exists {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         if [[ $(which bob) = '' ]]; then
@@ -71,7 +108,7 @@ function check_bob_exists {
     fi
 }
 
-# Dependency Check Function - 'jerbil' is globally available
+# Dependency Check Function - 'jerbil' is globally available - This Function's Version is 0.01
 function check_jerbil_exists {
     if [[ $PROJECT_USES_JERBIL = 'yes' ]]; then
         if [[ $(which jerbil) = '' ]]; then
@@ -81,7 +118,7 @@ function check_jerbil_exists {
     fi
 }
 
-# Dependency Check Function - 'mvn' is globally available
+# Dependency Check Function - 'mvn' is globally available - This Function's Version is 0.01
 function check_maven_exists {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         if [[ $(which mvn) = '' ]]; then
@@ -91,7 +128,7 @@ function check_maven_exists {
     fi
 }
 
-# Dependency Check Function - 'JAVA_HOME' is set correctly in this CLI environment
+# Dependency Check Function - 'JAVA_HOME' is set correctly in this CLI environment - This Function's Version is 0.01
 function check_java_home {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         if [[ $(printf $JAVA_HOME) = '' ]]; then
@@ -105,7 +142,7 @@ function check_java_home {
     fi
 }
 
-# Dependency Check Function - nodejs is at version 12.x
+# Dependency Check Function - nodejs is at version 12.x - This Function's Version is 0.01
 function check_nodejs_version {
     if [[ $PROJECT_USES_NPM = 'yes' ]]; then
         if [[ $(node -v | grep "v12") = '' ]]; then
@@ -115,7 +152,7 @@ function check_nodejs_version {
     fi
 }
 
-# Dependency Check Function - wwappbase.js is verified on disk
+# Dependency Check Function - wwappbase.js is verified on disk - This Function's Version is 0.01
 function check_for_wwappbasejs_location {
     if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
         if [[ ! -d $WWAPPBASE_REPO_PATH_ON_SERVER_DISK ]]; then
@@ -125,146 +162,194 @@ function check_for_wwappbasejs_location {
     fi
 }
 
-# Dependency Check Function - bobwarehouse directory has discrete 'code' repository nested inside of it.
+# Dependency Check Function - bobwarehouse directory has discrete 'code' repository nested inside of it. - This Function's Version is 0.01
 function check_for_code_repo_in_bobwarehouse {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         if [[ ! -d $BOBWAREHOUSE_PATH/code ]]; then
             printf "\n\nNo 'code' repo found in $BOBWAREHOUSE_PATH.  Cloning now ...\n"
             cd $BOBWAREHOUSE_PATH && git clone git@git.winterwell.com:/winterwell-code code
-            printf "\nContinuing...\n"
+            printf "\nContinuing without verifying successful cloning of the winterwell-code repo...\n"
         fi
     fi
 }
 
-# Stopping the JVM Backend (if applicable)
+# Cleanup Git -- Ensure a clean and predictable git repo for building - This Function's Version is 0.01
+function cleanup_repo {
+    printf "\nCleaning $server 's local repository...\n"
+    git_hard_set_to_master $PROJECT_ROOT_ON_SERVER
+}
+
+# Cleanup wwappbase.js 's repo -- Ensure that this repository is up to date and clean - This Function's Version is 0.01
+function cleanup_wwappbasejs_repo {
+    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
+        printf "\nCleaning $server 's local wwappbase.js repository\n"
+        git_hard_set_to_master $WWAPPBASE_REPO_PATH_ON_SERVER_DISK
+    fi
+}
+
+# Cleanup the repos nested inside of bobwarehouse  - This Function's Version is 0.01
+function cleanup_bobwarehouse_repos {
+    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
+        printf "\nEnsuring that the repos inside of bobwarehouse are up-to-date...\n"
+        for repo in $BOBWAREHOUSE_PATH/*/; do
+            git_hard_set_to_master $repo
+        done
+    fi
+}
+
+# Checkout git branch on all repos for this release
+function git_checkout_release_branch {
+    printf "\nSwitching to your specified release branch ...\n"
+    cd $PROJECT_ROOT_ON_SERVER && git checkout -f $BRANCH_NAME
+    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
+        cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git checkout -f $BRANCH_NAME
+    fi
+    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
+        for repo in $BOBWAREHOUSE_PATH/; do
+            cd $BOBWAREHOUSE_PATH/$repo && git checkout -f $BRANCH_NAME
+        done
+    fi
+}
+
+# Stopping the JVM Backend (if applicable) - This Function's Version is 0.01
 function stop_service {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
-        for server in ${TARGET_SERVERS[@]}; do
-            printf "\nStopping $NAME_OF_SERVICE on $server...\n"
-            ssh winterwell@$server "sudo service $NAME_OF_SERVICE stop"
-        done
+        printf "\nStopping $NAME_OF_SERVICE on $server...\n"
+        sudo service $NAME_OF_SERVICE stop
     fi
 }
 
-# Bob -- Evaluate and Use
+# Bob -- Evaluate and Use - This Function's Version is 0.01
 function use_bob {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
-        BUILD_PROCESS_NAME='bob'
-        BUILD_STEP='bob was attempting to render jars'
-        for server in ${TARGET_SERVERS[@]}; do
-            printf "\ncleaning out old bob.log on $server ...\n"
-            ssh winterwell@$server "rm -rf $PROJECT_ROOT_ON_SERVER/bob.log"
-            printf "\n$server is updating bob...\n"
-            ssh winterwell@$server "bob -update"
-            printf "\n$server is building JARs...\n"
-            ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && bob $BOB_ARGS $BOB_BUILD_PROJECT_NAME"
-            printf "\nchecking bob.log for failures on $server\n"
-            if [[ $(ssh winterwell@$server "grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log") = '' ]]; then
-                printf "\nNo failures recorded in bob.log on $server.  JARs should be fine.\n"
-            else
-                printf "\nFailure or failures detected in latest bob.log. Sending Alert Emails and Breaking Operation\n"
-                send_alert_email
-                exit 0
-            fi
-        done
+        printf "\ncleaning out old bob.log ...\n"
+        rm -rf $PROJECT_ROOT_ON_SERVER/bob.log
+        printf "\nupdating bob...\n"
+        bob -update
+        printf "\nCleaning out old bobhistory.csv...\n"
+        rm $BOBWAREHOUSE_PATH/bobhistory.csv
+        printf "\nbuilding JARs...\n"
+        cd $PROJECT_ROOT_ON_SERVER && bob $BOB_ARGS $BOB_BUILD_PROJECT_NAME
+        printf "\nchecking bob.log for failures\n"
+        if [[ grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log = '' ]]; then
+            printf "\nNo failures recorded in bob.log on $server.  JARs should be fine.\n"
+        else
+            printf "\nFailure or failures detected in latest bob.log. Breaking Operation\n"
+            printf "\nAttempting to turn $NAME_OF_SERVICE back on...\n"
+            sudo service $NAME_OF_SERVICE start
+            printf "\nCheck the file $PROJECT_ROOT_ON_SERVER/bob.log for the failure, and check to see if\n"
+            printf "this server's old build is running.\n"
+            printf "\n\n\t\e[37;41mATTENTION: YOUR BUILD IS INCOMPLETE AND YOUR SERVICE/SITE MIGHT BE DOWN\e[0m\n"
+            exit 0
+        fi
     fi
 }
 
-# NPM -- Evaluate and Use
+# NPM -- Evaluate and Use - This Function's Version is 0.01
 function use_npm {
     if [[ $PROJECT_USES_NPM = 'yes' ]]; then
-        BUILD_PROCESS_NAME='npm'
-        BUILD_STEP='npm was downloading packages'
-        NPM_LOG_DATE=$(date +%Y-%m-%d)
-        for server in ${TARGET_SERVERS[@]}; do
-            if [[ $NPM_CLEANOUT = 'yes' ]]; then
-                printf "\nDeleting the existing node_modules...\n"
-                ssh winterwell@$server "rm -rf $PROJECT_ROOT_ON_SERVER/node_modules"
-            fi
-            # Ensuring that there are no residual npm error/debug logs in place
-            ssh winterwell@$server "rm -rf /home/winterwell/.npm/_logs/*.log"
-            printf "\nEnsuring all NPM Packages are in place on $server ...\n"
-            ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && npm i &> $NPM_I_LOGFILE"
-            printf "\nChecking for errors while npm was attempting to get packages on $server ...\n"
-            if [[ $(ssh winterwell@$server "grep -i 'error' $NPM_I_LOGFILE") = '' ]]; then
-                printf "\nNPM package installer check : No mention of 'error' in $NPM_I_LOGFILE on $server\n"
-            else
-                printf "\nNPM encountered one or more errors while attempting to get node packages. Sending Alert Emails, but Continuing Operation\n"
-                # Get the NPM_I_LOGFILE
-                scp winterwell@$server:$NPM_I_LOGFILE .
-                # Add it to the Attachments
-                ATTACHMENTS+=("-a npm.i.for.$PROJECT_NAME.log")
-                # Send the email
-                send_alert_email
-            fi
-            if [[ $(ssh winterwell@$server "grep -i 'is not in the npm registry' $NPM_I_LOGFILE") = '' ]]; then
-                printf "\nNPM package installer check : No mention of packages which could not be found in $NPM_I_LOGFILE on $server\n"
-            else
-                printf "\nNPM encountered one or more errors while attempting to get node packages. Sending Alert Emails, but Continuing Operation\n"
-                # Get the NPM_I_LOGFILE
-                scp winterwell@$server:$NPM_I_LOGFILE .
-                # Add it to the Attachments
-                ATTACHMENTS+=("-a npm.i.for.$PROJECT_NAME.log")
-                # Send the email
-                send_alert_email
-            fi
-        done
+        if [[ $NPM_CLEANOUT = 'yes' ]]; then
+            printf "\nDeleting the existing node_modules...\n"
+            rm -rf $PROJECT_ROOT_ON_SERVER/node_modules
+        fi
+        # Ensuring that there are no residual npm error/debug logs in place
+        rm -rf /home/winterwell/.npm/_logs/*.log
+        printf "\nEnsuring all NPM Packages are in place for $PROJECT_NAME ...\n"
+        cd $PROJECT_ROOT_ON_SERVER && npm i &> $NPM_I_LOGFILE
+        printf "\nChecking for errors while npm was attempting to get packages ...\n"
+        if [[ $(grep -i 'error' $NPM_I_LOGFILE) = '' ]]; then
+            printf "\nNPM package installer check : No mention of 'error' in $NPM_I_LOGFILE\n"
+        else
+            printf "\nNPM encountered one or more errors while attempting to get node packages in $PROJECT_ROOT_ON_SERVER. Breaking Operation\n"
+            printf "\n\n\t\e[37;41mATTENTION: YOUR BUILD IS INCOMPLETE AND YOUR SERVICE/SITE MIGHT BE DOWN\e[0m\n"
+            exit 0
+        fi
+        if [[ $(grep -i 'is not in the npm registry' $NPM_I_LOGFILE) = '' ]]; then
+            printf "\nNPM package installer check : No mention of packages which could not be found in $NPM_I_LOGFILE\n"
+        else
+            printf "\nNPM encountered one or more errors while attempting to get node packages. Breaking Operation\n"
+            printf "\n\n\t\e[37;41mATTENTION: YOUR BUILD IS INCOMPLETE AND YOUR SERVICE/SITE MIGHT BE DOWN\e[0m\n"
+            exit 0 
+        fi
     fi
 }
 
-# Webpack -- Evaluate and Use
+# Webpack -- Evaluate and Use - This Function's Version is 0.01
 function use_webpack {
     if [[ $PROJECT_USES_WEBPACK = 'yes' ]]; then
-        BUILD_PROCESS_NAME='webpack'
-        BUILD_STEP='npm was running a weback process'
-        for server in ${TARGET_SERVERS[@]}; do
-            printf "\nNPM is now running a Webpack process on $server\n"
-            ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && npm run compile &> $NPM_RUN_COMPILE_LOGFILE"
-            printf "\nChecking for errors that occurred during Webpacking process on $server ...\n"
-            if [[ $(ssh winterwell@$server "cat $NPM_RUN_COMPILE_LOGFILE | grep -i 'error' | grep -iv 'ErrorAlert.jsx'") = '' ]]; then
-                printf "\nNo Webpacking errors detected on $server\n"
-            else
-                printf "\nOne or more errors were recorded during the webpacking process. Sending Alert Emails, but Continuing Operation\n"
-                # Get the NPM_RUN_COMPILE_LOGFILE
-                scp winterwell@$server:$NPM_RUN_COMPILE_LOGFILE .
-                # Add it to the Attachments
-                ATTACHMENTS+=("-a npm.run.compile.for.$PROJECT_NAME.log")
-                # Send the email
-                send_alert_email
-            fi
-        done
+        printf "\nNPM is now running a Webpack process for $PROJECT_NAME\n"
+        cd $PROJECT_ROOT_ON_SERVER && npm run compile &> $NPM_RUN_COMPILE_LOGFILE
+        printf "\nChecking for errors that occurred during Webpacking process ...\n"
+        if [[ $(cat $NPM_RUN_COMPILE_LOGFILE | grep -i 'error' | grep -iv 'ErrorAlert.jsx') = '' ]]; then
+            printf "\nNo Webpacking errors detected\n"
+        else
+            printf "\nOne or more errors were recorded during the webpacking process. Breaking Operation\n"
+            printf "\n\n\t\e[37;41mATTENTION: YOUR BUILD IS INCOMPLETE AND YOUR SERVICE/SITE MIGHT BE DOWN\e[0m\n"
+            exit 0
+        fi
     fi
 }
 
-# Jerbil -- Evaluate and Use
+# Jerbil -- Evaluate and Use - This Function's Version is 0.01
 function use_jerbil {
     if [[ $PROJECT_USES_JERBIL = 'yes' ]]; then
-        BUILD_PROCESS_NAME='jerbil'
-        BUILD_STEP='jerbil was attempting to render markdown to html'
-        for server in ${TARGET_SERVERS[@]}; do
-            printf "\n$server is ensuring that jerbil is up to date\n"
-            ssh winterwell@$server "jerbil -update"
-            printf "\n$server is converting markdown to html..\n"
-            ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && jerbil"
-            ### Is there a way to check for errors?  I'd like to check to check for errors
-        done
+        printf "\nEnsuring that jerbil is up to date\n"
+        jerbil -update
+        printf "\nConverting markdown to html..\n"
+        cd $PROJECT_ROOT_ON_SERVER && jerbil
+        ### Is there a way to check for errors?  I'd like to check to check for errors
     fi
 }
 
-# Starting the JVM Backend (if applicable)
+# Starting the JVM Backend (if applicable) - This Function's Version is 0.01
 function start_service {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
-        for server in ${TARGET_SERVERS[@]}; do
-            printf "\nStarting $NAME_OF_SERVICE on $server...\n"
-            ssh winterwell@$server "sudo service $NAME_OF_SERVICE start"
-        done
+        printf "\nStarting $NAME_OF_SERVICE...\n"
+        sudo service $NAME_OF_SERVICE start
     fi
 }
+
+
+################
+### Interactive Portion -- Have the Human User type in the name of the git branch that
+###                         will be used to build the project. Also, give them once last
+###                         chance to back out if this was executed accidentally.
+################
+function get_branch_and_print_warning {
+    printf "\n\e[34;107mWhat branch would you like to use for this production build?\033[0m\n"
+    read branch
+    BRANCH_NAME=$branch
+    printf "\n\e[34;107mAre you absolutely certain that you want to build and release $PROJECT_NAME on this Production Server\033[0m\n\e[34;107mBased on your specified branch of $BRANCH_NAME ?\033[0m"
+    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK ='yes' ]]; then
+        printf "\n\t\e[34;107mFurther, are you certain that the branch $BRANCH_NAME exists in the wwappbase.js repo?\033[0m\n"
+    fi
+    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
+        printf "\n\t\e[34;107mFurther, are you certain that the branch $BRANCH_NAME exists in the open-code, elasticsearch-java-client, and winterwell-code repos?\033[0m\n"
+    fi
+    printf "\n\nyes/no\n"
+    read answer
+    ANSWER=$answer
+    case $ANSWER in
+        yes|YES)
+            printf "\n\n\t\tContinuing Production Build\n\n"
+        ;;
+        no|NO)
+            printf "\n\n\t\tAborting Operation\n\n"
+            exit 0
+        ;;
+        *)
+            printf "\n\n\t\tAnswer not understood.  Aborting Operation\n\n"
+            exit 0
+        ;;
+    esac
+}
+
 
 
 ################
 ### Run the Functions in Order
 ################
+get_branch_and_print_warning
 check_bob_exists
 check_jerbil_exists
 check_maven_exists
@@ -272,6 +357,10 @@ check_java_home
 check_nodejs_version
 check_for_wwappbasejs_location
 check_for_code_repo_in_bobwarehouse
+cleanup_repo
+cleanup_wwappbasejs_repo
+cleanup_bobwarehouse_repos
+git_checkout_release_branch
 stop_service
 use_bob
 use_npm
