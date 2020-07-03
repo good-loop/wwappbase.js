@@ -4,6 +4,9 @@ const fs = require('fs');
 const $ = require('./jquery.js');
 const { General, CommonSelectors } = require('./common-selectors');
 const shell = require('shelljs');
+const { hasUncaughtExceptionCaptureCallback } = require('process');
+
+const Credentials = require("./Credentials");
 
 /**
  * Convenient getter for process config (as set by runtest)
@@ -12,6 +15,30 @@ const getConfig = () => {
 	const config = JSON.parse(process.env.__CONFIGURATION);
 	return config;
 }
+
+/**
+ * Login. You must already have called `await page.goto(url);`
+ * @param {Page} page 
+ */
+const doLogin = async ({page, username, password}) => {	
+	if ( ! username || ! password) {
+		username=Credentials.username;
+		password=Credentials.password;
+		if ( ! username || ! password) {
+			throw new Error("Missing login details");
+		}
+	}
+	await page.$('.login-link');
+	await page.click('.login-link');
+	
+	await page.click('[name=email]');
+	await page.type('[name=email]', username);
+	await page.click('[name=password]');
+	await page.type('[name=password]', password);
+
+	await page.keyboard.press('Enter');
+	await page.waitForSelector('.logout-link');
+};
 
 // set when calling Jest CLI with --testURL $url
 // const APIBASE = window.location.href;
@@ -49,7 +76,9 @@ async function fillInForm({page, Selectors, data}) {
 	}
 }
 
-/**Login to app. Should work for both SoGive and Good-loop 
+/**
+ * TODO refactor and merge-in the simpler doLogin
+ * Login to app. Should work for both SoGive and Good-loop 
  * Make sure that you are actually on a page with a clickable login button before running this!
  * @param selectors CSS selectors for the given page
  * @param url option param. Will go to the url before attempting to log in
@@ -255,7 +284,7 @@ const serverSafetyCheck = async (page, server) => {
 
 
 module.exports = {
-	login,
+	doLogin,
 	donate,
 	fillInForm,
 	getConfig,

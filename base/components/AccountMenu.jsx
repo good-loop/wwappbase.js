@@ -27,7 +27,7 @@ const AccountMenu = (props) => {
 	const {noRegister} = (props || {});
 
 	// TODO see navbar dropdown
-	if (!Login.isLoggedIn()) {
+	if ( ! Login.isLoggedIn()) {
 		return (
 			<Nav className="ml-auto" navbar>
 				{noRegister ? '' : <NavItem id="register-link"><RegisterLink /></NavItem>}
@@ -67,7 +67,7 @@ const MobileMenu = ({logoutLink, user}) => (
 			<a href="#account">{ user.name || user.xid }</a>
 		</NavItem>
 		<NavItem>
-			<a href={logoutLink} onClick={() => doLogout()}>Log out</a>
+			<a href={logoutLink} className='logout-link' onClick={() => doLogout()}>Log out</a>
 		</NavItem>
 	</Nav>
 );
