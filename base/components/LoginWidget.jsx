@@ -145,6 +145,9 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 	);
 };
 
+const LogoutLink = ({className}) => <a href={'#'} className='logout-link' onClick={() => doLogout()}>Log out</a>;
+
+
 // ??why does this have a special onClick??
 const RegisterLink = ({className, onClick, ...props}) => <LoginLink
 	className={className}
@@ -390,6 +393,7 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 export default LoginWidget;
 export {
 	LoginLink,
+	LogoutLink,
 	LoginWidgetEmbed,
 	RegisterLink,
 	SocialSignInButton,

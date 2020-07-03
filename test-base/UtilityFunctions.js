@@ -16,6 +16,36 @@ const getConfig = () => {
 	return config;
 }
 
+const https = require('https');
+const http = require('http');
+/**
+ * Define a simple fetch, cos its not part of node
+ * // is there a way to import node-fetch??
+ */
+const fetch = async url => {
+	const get = url.startsWith("http:")? http.get : https.get;		
+	let p = new Promise((res, rej) => {
+		get(url, (resp) => {
+			let data = '';
+			// A chunk of data has been recieved.
+			resp.on('data', (chunk) => {
+				data += chunk;
+			});  
+			// The whole response has been received. Print out the result.
+			resp.on('end', () => {
+				// console.log("GOT DATA ",data);
+				res(data);
+			}); 
+			return data;
+		}).on("error", (err) => {
+			// console.log("Error: " + err.message);
+			rej(err);
+		});
+	});
+	return p;
+};
+
+
 /**
  * Login. You must already have called `await page.goto(url);`
  * @param {Page} page 
@@ -284,6 +314,7 @@ const serverSafetyCheck = async (page, server) => {
 
 
 module.exports = {
+	fetch,
 	doLogin,
 	donate,
 	fillInForm,

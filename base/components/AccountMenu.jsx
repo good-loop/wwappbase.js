@@ -4,16 +4,12 @@ import Login from 'you-again';
 
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
-import {LoginLink, RegisterLink} from './LoginWidget';
+import {LoginLink, RegisterLink, LogoutLink} from './LoginWidget';
 import {isMobile} from '../utils/miscutils.ts';
 
 // import {XId,yessy,uid} from '../js/util/orla-utils.js';
 
 import Misc from './Misc';
-
-const doLogout = () => {
-	Login.logout();
-};
 
 /**
 The top-right menu
@@ -52,7 +48,7 @@ const DesktopMenu = ({logoutLink, user}) => (
 			<DropdownMenu>
 				<DropdownItem><a href="#account">Account</a></DropdownItem>
 				<DropdownItem divider />
-				<DropdownItem><a href={logoutLink} onClick={() => doLogout()}>Log out</a></DropdownItem>
+				<DropdownItem><LogoutLink /></DropdownItem>
 			</DropdownMenu>
 		</UncontrolledDropdown>
 	</Nav>
@@ -67,7 +63,7 @@ const MobileMenu = ({logoutLink, user}) => (
 			<a href="#account">{ user.name || user.xid }</a>
 		</NavItem>
 		<NavItem>
-			<a href={logoutLink} className='logout-link' onClick={() => doLogout()}>Log out</a>
+			<LogoutLink />
 		</NavItem>
 	</Nav>
 );
