@@ -5,7 +5,7 @@
 # Versions of this script are usually run by TeamCity, in response to a git commit.
 # The script uses ssh remote commands to target a server -- it does not affect the local machine.
 # For testing, the script can also be run from your local computer.
-#Version 1.3.0
+#Version 1.3.7
 # Latest Change -- Adding new dependency checks -- Attempting to create parity with production publisher template script
 
 #####  GENERAL SETTINGS
@@ -65,9 +65,9 @@ function send_alert_email {
 
 # Git Cleanup Function -- More of a classic 'I type this too much, it should be a function', Function.
 function git_hard_set_to_master {
-    cd $1 && git gc --prune=now
-    cd $1 && git pull origin master
-    cd $1 && git reset --hard FETCH_HEAD
+    ssh winterwell@$server "cd $1 && git gc --prune=now"
+    ssh winterwell@$server "cd $1 && git pull origin master"
+    ssh winterwell@$server "cd $1 && git reset --hard FETCH_HEAD"
 }
 
 
@@ -123,26 +123,6 @@ function check_maven_exists {
     fi
 }
 
-# Dependency Check Function - 'JAVA_HOME' is set correctly in this CLI environment - This Function's Version is 0.01
-function check_java_home {
-    BUILD_PROCESS_NAME='checking JAVA_HOME'
-    BUILD_STEP='verifying that $JAVA_HOME is properly exported'
-    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
-        for server in ${TARGET_SERVERS[@]}; do
-            if [[ $(ssh winterwell@$server "printf $JAVA_HOME") = '' ]]; then
-                printf "\nYou must have an export in this user's .bashrc file which set's JAVA_HOME to the path where your java is installed\n\n\texport JAVA_HOME=/usr/lib/jvm/java-11-openjdk-amd64\n\nand then\n\tsource ~/.bashrc\nAnd then retry this script\n"
-                send_alert_email
-                exit 0
-            fi
-            if [[ $(ssh winterwell@$server "printf $JAVA_HOME") != '/usr/lib/jvm/java-11-openjdk-amd64' ]]; then
-                printf "\nYour \$JAVA_HOME is not set to the correct path.  It should be /usr/lib/jvm/java-11-openjdk-amd64\n"
-                exit 0
-                send_alert_email
-            fi
-        done
-    fi
-}
-
 # Dependency Check Function - nodejs is at version 12.x - This Function's Version is 0.01
 function check_nodejs_version {
     BUILD_PROCESS_NAME='verifying nodejs version'
@@ -186,30 +166,31 @@ function check_for_code_repo_in_bobwarehouse {
     fi
 }
 
-# Cleanup Git -- Ensure a clean and predictable git repo for building - This Function's Version is 0.01
+# Cleanup Git -- Ensure a clean and predictable git repo for building - This Function's Version is 1.00
 function cleanup_repo {
     for server in ${TARGET_SERVERS[@]}; do
         printf "\nCleaning $server 's local repository...\n"
-        ssh winterwell@$server "git_hard_set_to_master $PROJECT_ROOT_ON_SERVER"
+        git_hard_set_to_master $PROJECT_ROOT_ON_SERVER
     done
 }
 
-# Cleanup wwappbase.js 's repo -- Ensure that this repository is up to date and clean - This Function's Version is 0.01
+# Cleanup wwappbase.js 's repo -- Ensure that this repository is up to date and clean - This Function's Version is 1.00
 function cleanup_wwappbasejs_repo {
     if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
         for server in ${TARGET_SERVERS[@]}; do
             printf "\nCleaning $server 's local wwappbase.js repository\n"
-            ssh winterwell@$server "git_hard_set_to_master $WWAPPBASE_REPO_PATH_ON_SERVER_DISK"
+            git_hard_set_to_master $WWAPPBASE_REPO_PATH_ON_SERVER_DISK
         done
     fi
 }
 
-# Cleanup the repos nested inside of bobwarehouse  - This Function's Version is 0.01
+# Cleanup the repos nested inside of bobwarehouse  - This Function's Version is 1.00
 function cleanup_bobwarehouse_repos {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
-	for server in ${TARGET_SERVERS[@]}; do
-		printf "\nEnsuring that the repos inside of bobwarehouse are up-to-date...\n"
-        	ssh winterwell@$server "for repo in $BOBWAREHOUSE_PATH/*/; do git_hard_reset_to_master $repo; done"
+	    for server in ${TARGET_SERVERS[@]}; do
+		    printf "\nEnsuring that the repos inside of bobwarehouse are up-to-date...\n"
+        	ssh winterwell@$server "for repo in $BOBWAREHOUSE_PATH/*/; do cd \$repo; git gc --prune=now; git pull origin master; git reset --hard FETCH_HEAD; done"
+        done
     fi
 }
 
@@ -346,7 +327,6 @@ check_repo_exists
 check_bob_exists
 check_jerbil_exists
 check_maven_exists
-check_java_home
 check_nodejs_version
 check_for_wwappbasejs_location
 check_for_code_repo_in_bobwarehouse
