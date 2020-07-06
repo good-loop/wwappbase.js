@@ -370,16 +370,23 @@ const PropControl2 = (props) => {
 
 	if (type === 'html') {
 		// NB: relies on a special-case innerHTML version of modelValueFromInput, set above
-		let __html = value;
+
+		// Use dangerouslySetInnerHTML when element is empty, but leave uncontrolled
+		// thereafter, as overwriting HTML content resets the position of the edit caret
+		const inputRef = useRef();
+		if (inputRef.current && inputRef.current.innerHTML.length === 0) {
+			otherStuff.dangerouslySetInnerHTML = { __html: value };
+		}
+
 		// TODO onKeyDown={captureTab}
 		return <div contentEditable className="form-control" name={prop}
 			onChange={onChange}
 			onInput={onChange}
 			onBlur={onChange}
+			ref={inputRef}
 			{...otherStuff}
 			style={{ height: 'auto' }}
-			dangerouslySetInnerHTML={{ __html }}>
-		</div>;
+		/>;
 	}
 
 	if (type === 'json') {
