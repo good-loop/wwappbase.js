@@ -2,7 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.3b
+# VERSION=0.4b
 # VERSION_MEANING=script has been written, but never used.
 
 ## Warning - This is a bare-bones template file.
@@ -232,7 +232,18 @@ function use_bob {
         cd $PROJECT_ROOT_ON_SERVER && bob $BOB_ARGS $BOB_BUILD_PROJECT_NAME
         printf "\nchecking bob.log for failures\n"
         if [[ $(grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log) = '' ]]; then
-            printf "\nNo failures recorded in bob.log on $server.  JARs should be fine.\n"
+            printf "\nNo failures recorded in bob.log on $server in first bob.log sweep.\n"
+        else
+            printf "\nFailure or failures detected in latest bob.log. Breaking Operation\n"
+            printf "\nAttempting to turn $NAME_OF_SERVICE back on...\n"
+            sudo service $NAME_OF_SERVICE start
+            printf "\nCheck the file $PROJECT_ROOT_ON_SERVER/bob.log for the failure, and check to see if\n"
+            printf "this server's old build is running.\n"
+            printf "\n\n\t\e[37;41mATTENTION: YOUR BUILD IS INCOMPLETE AND YOUR SERVICE/SITE MIGHT BE DOWN\e[0m\n"
+            exit 0
+        fi
+        if [[ $(grep -i 'ERROR EXIT' $PROJECT_ROOT_ON_SERVER/bob.log) = '' ]]; then
+            printf "\nBob reported a clean exit from it's process.  Continuing to next task.\n"
         else
             printf "\nFailure or failures detected in latest bob.log. Breaking Operation\n"
             printf "\nAttempting to turn $NAME_OF_SERVICE back on...\n"
