@@ -145,7 +145,7 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 	);
 };
 
-const LogoutLink = ({className}) => <a href={'#'} className='logout-link' onClick={() => doLogout()}>Log out</a>;
+const LogoutLink = ({className}) => <a href={'#'} className='logout-link' onClick={() => Login.logout()}>Log out</a>;
 
 // ??why does this have a special onClick??
 const RegisterLink = ({className, onClick, ...props}) => <LoginLink
