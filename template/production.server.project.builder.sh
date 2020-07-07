@@ -2,7 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.1b
+# VERSION=0.2b
 # VERSION_MEANING=script has been written, but never used.
 
 ## Warning - This is a bare-bones template file.
@@ -219,7 +219,7 @@ function stop_service {
     fi
 }
 
-# Bob -- Evaluate and Use - This Function's Version is 0.01
+# Bob -- Evaluate and Use - This Function's Version is 0.02
 function use_bob {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         printf "\ncleaning out old bob.log ...\n"
@@ -231,7 +231,7 @@ function use_bob {
         printf "\nbuilding JARs...\n"
         cd $PROJECT_ROOT_ON_SERVER && bob $BOB_ARGS $BOB_BUILD_PROJECT_NAME
         printf "\nchecking bob.log for failures\n"
-        if [[ grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log = '' ]]; then
+        if [[ $(grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log) = '' ]]; then
             printf "\nNo failures recorded in bob.log on $server.  JARs should be fine.\n"
         else
             printf "\nFailure or failures detected in latest bob.log. Breaking Operation\n"
