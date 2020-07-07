@@ -19,7 +19,7 @@ import Enum from 'easy-enums';
 import JSend from '../data/JSend';
 import {stopEvent, toTitleCase, space, labeller, is} from '../utils/miscutils';
 import PromiseValue from 'promise-value';
-import Dropzone from 'react-dropzone';
+import { useDropzone } from 'react-dropzone';
 import Autocomplete from 'react-autocomplete';
 
 import Misc from './Misc';
@@ -1110,7 +1110,10 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 	// Get a ref to the <input> in the FormControl so we can ping its change event on successful upload
 	const inputRef = useRef(null);
 
-	const uploadAccepted = (accepted, rejected) => {
+	// New hooks-based DropZone - give it your upload specs & an upload-accepting function, receive props-generating functions
+	const { getRootProps, getInputProps } = useDropzone({accept, onDrop});
+
+	const onDrop = (accepted, rejected) => {
 		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
 		const load = (event) => console.log('UPLOAD SUCCESS', event);
 		accepted.forEach(file => {
@@ -1134,8 +1137,8 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 		});
 	};
 
-	let acceptedTypes = type === 'imgUpload' ? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
-	let acceptedTypesDesc = type === 'imgUpload' ? 'JPG, PNG, or SVG image' : 'video';
+	let accept = type === 'imgUpload' ? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
+	let acceptDesc = type === 'imgUpload' ? 'JPG, PNG, or SVG image' : 'video';
 
 	// Catch special background-colour name for img and apply a special background to show img transparency
 	let className;
@@ -1144,15 +1147,15 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 		className = 'stripe-bg';
 	}
 
-	// WARNING: the <Dropzone> code below does not work with recent versions of Dropzone! v4.3.0 has been tested and works.
 	// NB the "innerRef" prop used on FormControl is specific to Reactstrap - it applies the given ref to the underlying <input>
 	return (
 		<div>
 			<FormControl type="url" name={prop} value={value} onChange={onChange} {...otherStuff} />
 			<div className="pull-left">
-				<Dropzone className="DropZone" accept={acceptedTypes} style={{}} onDrop={uploadAccepted}>
-					Drop a {acceptedTypesDesc} here
-				</Dropzone>
+				<div className="DropZone" {...getRootProps()}>
+					<input {...getInputProps()} />
+					Drop a {acceptDesc} here
+				</div>
 			</div>
 			<div className="pull-right">
 				{type === 'videoUpload' ? (
