@@ -5,7 +5,7 @@ import { space } from '../utils/miscutils';
 
 /**
  * Show an error as a BS alert.
- * color=danger (red) by default.
+ * @param {string} color=danger (red) by default. Options: danger|warning|info
  * @param {Error|Response|string} error If error is falsy, show nothing.
  */
 const ErrorAlert =({error,color}) => {
