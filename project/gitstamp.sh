@@ -1,7 +1,7 @@
 # Record git status and log into a manifest file, to help in debugging
 # Use-case: This shows what code the server is running
 
-LOGFILE=web/build/npm-compile.gitlog.txt
+LOGFILE=web/build/gitlog.txt
 
 echo '## ' `pwd` > $LOGFILE
 echo "" >> $LOGFILE 
