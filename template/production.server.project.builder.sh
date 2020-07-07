@@ -2,7 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.1b
+# VERSION=0.8b
 # VERSION_MEANING=script has been written, but never used.
 
 ## Warning - This is a bare-bones template file.
@@ -85,6 +85,13 @@ function send_alert_email {
 function git_hard_set_to_master {
     cd $1 && git gc --prune=now
     cd $1 && git pull origin master
+    cd $1 && git reset --hard FETCH_HEAD
+}
+
+# Git change branch -- the hard way
+function git_change_branch {
+    cd $1 && git gc --prune=now
+    cd $1 && git pull origin $BRANCH_NAME
     cd $1 && git reset --hard FETCH_HEAD
 }
 
@@ -175,14 +182,14 @@ function check_for_code_repo_in_bobwarehouse {
 
 # Cleanup Git -- Ensure a clean and predictable git repo for building - This Function's Version is 0.01
 function cleanup_repo {
-    printf "\nCleaning $server 's local repository...\n"
+    printf "\nCleaning $HOSTNAME 's local repository...\n"
     git_hard_set_to_master $PROJECT_ROOT_ON_SERVER
 }
 
 # Cleanup wwappbase.js 's repo -- Ensure that this repository is up to date and clean - This Function's Version is 0.01
 function cleanup_wwappbasejs_repo {
     if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
-        printf "\nCleaning $server 's local wwappbase.js repository\n"
+        printf "\nCleaning $HOSTNAME 's local wwappbase.js repository\n"
         git_hard_set_to_master $WWAPPBASE_REPO_PATH_ON_SERVER_DISK
     fi
 }
@@ -200,13 +207,13 @@ function cleanup_bobwarehouse_repos {
 # Checkout git branch on all repos for this release
 function git_checkout_release_branch {
     printf "\nSwitching to your specified release branch ...\n"
-    cd $PROJECT_ROOT_ON_SERVER && git checkout -f $BRANCH_NAME
+    git_change_branch $PROJECT_ROOT_ON_SERVER
     if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
-        cd $WWAPPBASE_REPO_PATH_ON_SERVER_DISK && git checkout -f $BRANCH_NAME
+        git_change_branch $WWAPPBASE_REPO_PATH_ON_SERVER_DISK
     fi
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
-        for repo in $BOBWAREHOUSE_PATH/; do
-            cd $BOBWAREHOUSE_PATH/$repo && git checkout -f $BRANCH_NAME
+        for repo in $BOBWAREHOUSE_PATH/*/; do
+            git_change_branch $repo
         done
     fi
 }
@@ -214,12 +221,12 @@ function git_checkout_release_branch {
 # Stopping the JVM Backend (if applicable) - This Function's Version is 0.01
 function stop_service {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
-        printf "\nStopping $NAME_OF_SERVICE on $server...\n"
+        printf "\nStopping $NAME_OF_SERVICE on $HOSTNAME...\n"
         sudo service $NAME_OF_SERVICE stop
     fi
 }
 
-# Bob -- Evaluate and Use - This Function's Version is 0.01
+# Bob -- Evaluate and Use - This Function's Version is 0.02
 function use_bob {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         printf "\ncleaning out old bob.log ...\n"
@@ -231,8 +238,19 @@ function use_bob {
         printf "\nbuilding JARs...\n"
         cd $PROJECT_ROOT_ON_SERVER && bob $BOB_ARGS $BOB_BUILD_PROJECT_NAME
         printf "\nchecking bob.log for failures\n"
-        if [[ grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log = '' ]]; then
-            printf "\nNo failures recorded in bob.log on $server.  JARs should be fine.\n"
+        if [[ $(grep -i 'Compile task failed' $PROJECT_ROOT_ON_SERVER/bob.log) = '' ]]; then
+            printf "\nNo failures recorded in bob.log on $HOSTNAME in first bob.log sweep.\n"
+        else
+            printf "\nFailure or failures detected in latest bob.log. Breaking Operation\n"
+            printf "\nAttempting to turn $NAME_OF_SERVICE back on...\n"
+            sudo service $NAME_OF_SERVICE start
+            printf "\nCheck the file $PROJECT_ROOT_ON_SERVER/bob.log for the failure, and check to see if\n"
+            printf "this server's old build is running.\n"
+            printf "\n\n\t\e[37;41mATTENTION: YOUR BUILD IS INCOMPLETE AND YOUR SERVICE/SITE MIGHT BE DOWN\e[0m\n"
+            exit 0
+        fi
+        if [[ $(grep -i 'ERROR EXIT' $PROJECT_ROOT_ON_SERVER/bob.log) = '' ]]; then
+            printf "\nBob reported a clean exit from it's process.  Continuing to next task.\n"
         else
             printf "\nFailure or failures detected in latest bob.log. Breaking Operation\n"
             printf "\nAttempting to turn $NAME_OF_SERVICE back on...\n"
@@ -320,7 +338,7 @@ function get_branch_and_print_warning {
     read branch
     BRANCH_NAME=$branch
     printf "\n\e[34;107mAre you absolutely certain that you want to build and release $PROJECT_NAME on this Production Server\033[0m\n\e[34;107mBased on your specified branch of $BRANCH_NAME ?\033[0m"
-    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK ='yes' ]]; then
+    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
         printf "\n\t\e[34;107mFurther, are you certain that the branch $BRANCH_NAME exists in the wwappbase.js repo?\033[0m\n"
     fi
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
