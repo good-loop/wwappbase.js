@@ -2,7 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.2b
+# VERSION=0.3b
 # VERSION_MEANING=script has been written, but never used.
 
 ## Warning - This is a bare-bones template file.
@@ -320,7 +320,7 @@ function get_branch_and_print_warning {
     read branch
     BRANCH_NAME=$branch
     printf "\n\e[34;107mAre you absolutely certain that you want to build and release $PROJECT_NAME on this Production Server\033[0m\n\e[34;107mBased on your specified branch of $BRANCH_NAME ?\033[0m"
-    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK ='yes' ]]; then
+    if [[ $PROJECT_USES_WWAPPBASE_SYMLINK = 'yes' ]]; then
         printf "\n\t\e[34;107mFurther, are you certain that the branch $BRANCH_NAME exists in the wwappbase.js repo?\033[0m\n"
     fi
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
