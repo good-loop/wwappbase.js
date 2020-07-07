@@ -2,7 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.7b
+# VERSION=0.8b
 # VERSION_MEANING=script has been written, but never used.
 
 ## Warning - This is a bare-bones template file.
@@ -213,7 +213,7 @@ function git_checkout_release_branch {
     fi
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         for repo in $BOBWAREHOUSE_PATH/*/; do
-            git_change_branch $BOBWAREHOUSE_PATH/$repo
+            git_change_branch $repo
         done
     fi
 }
