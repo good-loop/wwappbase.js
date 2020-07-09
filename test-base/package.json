@@ -1,8 +1,8 @@
 {
   "name": "test-base",
   "version": "0.0.1",
-  "description": "a base for common test utils",
-  "author": "Daniel Winterstein",
+  "description": "A base for common test utils. This folder is sym-linked into project's puppeteer-tests folder. It has its own package.json to allow imports in these test-base files to work.",
+  "author": "Maintained by Daniel Appel",
   "devDependencies": {
     "shelljs": "^0.8.3"
   }

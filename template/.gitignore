@@ -8,3 +8,4 @@ test-base/babeled-res/*web/build
 web/build
 web/style/*.css
 test-base/*/utils
+package-lock.json
