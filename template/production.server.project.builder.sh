@@ -2,7 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.8b
+# VERSION=0.81b
 # VERSION_MEANING=script has been written, but never used.
 
 ## Warning - This is a bare-bones template file.
@@ -86,10 +86,13 @@ function git_hard_set_to_master {
     cd $1 && git gc --prune=now
     cd $1 && git pull origin master
     cd $1 && git reset --hard FETCH_HEAD
+    cd $1 && git checkout -f master
+    cd $1 && git pull
 }
 
-# Git change branch -- the hard way
+# Git change branch -- the hard way  - This Function's Version is 0.01
 function git_change_branch {
+    cd $1 && git checkout -f $BRANCH_NAME
     cd $1 && git gc --prune=now
     cd $1 && git pull origin $BRANCH_NAME
     cd $1 && git reset --hard FETCH_HEAD
