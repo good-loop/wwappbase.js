@@ -1,0 +1,9 @@
+{
+  "name": "test-base",
+  "version": "0.0.1",
+  "description": "a base for common test utils",
+  "author": "Daniel Winterstein",
+  "devDependencies": {
+    "shelljs": "^0.8.3"
+  }
+}
