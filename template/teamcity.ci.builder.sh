@@ -239,7 +239,6 @@ function use_bob {
                 send_alert_email
                 # remove bob.log from the teamcity server's disk
                 rm bob.log
-                send_alert_email
                 exit 0
             fi
         done
