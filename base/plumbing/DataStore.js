@@ -747,13 +747,14 @@ const getDataPath = DataStore.getDataPath.bind(DataStore);
  * DataStore path for list
  *  * 	// TODO have a filter-function fot lists, which can dynamically add/remove items
  * @param {?String} sort Optional sort e.g. "created-desc"
- * @returns [list, type, status, domain, query+prefix, sort]
+ * @returns [list, type, status, domain, query+prefix, period, sort]
  */
-const getListPath = ({type,status,q,prefix,sort,domain}) => {
+const getListPath = ({type,status,q,prefix,start,end,sort,domain}) => {
 	// NB: we want fixed length paths, to avoid stored results overlapping with paths fragments.
 	return ['list', type, status, 
 		domain || 'nodomain', 
 		space(q, prefix) || 'all', 
+		space(start, end) || 'whenever', 
 		sort || 'unsorted'];
 };
 

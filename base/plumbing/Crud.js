@@ -420,16 +420,18 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 
 /**
  * @param sort {?String} e.g. "start-desc"
+ * @param {?string|Date} start Add a time-filter. Usually unset.
+ * @param {?string|Date} end Add a time-filter. Usually unset.
  * @returns PromiseValue<{hits: Object[]}>
  * 
  * WARNING: This should usually be run through DataStore.getDataList() before using
  */
 // Namespace anything fetched from a non-default domain
-ActionMan.list = ({type, status, q, prefix, sort, domain}) => {	
+ActionMan.list = ({type, status, q, prefix, start, end, sort, domain}) => {	
 	assert(C.TYPES.has(type), type);
-	const lpath =  getListPath({type,status,q,prefix,sort,domain});
+	const lpath =  getListPath({type,status,q,prefix,start,end,sort,domain});
 	return DataStore.fetch(lpath, () => {
-		return ServerIO.list({type, status, q, prefix, sort, domain});
+		return ServerIO.list({type, status, q, prefix, start, end, sort, domain});
 	});
 };
 
@@ -447,7 +449,7 @@ ActionMan.list = ({type, status, q, prefix, sort, domain}) => {
  * @returns promise(List) 
  * List has form {hits: Object[], total: Number} -- see List.js
  */
-ServerIO.list = ({type, status, q, prefix, sort, domain = ''}) => {
+ServerIO.list = ({type, status, q, prefix, start, end, sort, domain = ''}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO.list - bad type:' +type);
 	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), 'Crud.js - ServerIO.list - bad status: '+status);
@@ -456,7 +458,7 @@ ServerIO.list = ({type, status, q, prefix, sort, domain = ''}) => {
 		+ (ServerIO.dataspace? '/'+ServerIO.dataspace : '')
 		+ '/_list.json';
 	let params = {
-		data: {status, q, prefix, sort}
+		data: {status, q, start, end, prefix, sort}
 	};	
 	return ServerIO.load(url, params)
 		.then(res => { // sanity check

@@ -45,7 +45,8 @@ import ErrorAlert from './ErrorAlert';
  * @param {?C.KStatus} preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  */
 const ListLoad = ({type, status, servlet, navpage,
-	q,
+	q, 
+	start, end,
 	sort = 'created-desc',
 	filter, hasFilter, filterLocally,
 	ListItem,
@@ -93,8 +94,8 @@ const ListLoad = ({type, status, servlet, navpage,
 	// Load via ActionMan -- both filtered and un-filtered
 	// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 	// whilst fetching from the backedn using the filter)
-	let pvItemsFiltered = filter && ! filterLocally? ActionMan.list({type, status, q, prefix:filter, sort}) : {resolved:true};
-	let pvItemsAll = ActionMan.list({type, status, q, sort});
+	let pvItemsFiltered = filter && ! filterLocally? ActionMan.list({type, status, q, start, end, prefix:filter, sort}) : {resolved:true};
+	let pvItemsAll = ActionMan.list({type, status, q, start, end, sort});
 	let pvItems = pvItemsFiltered.value? pvItemsFiltered : pvItemsAll;
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;
