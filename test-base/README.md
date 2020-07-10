@@ -14,13 +14,17 @@ NB: these directories are the jest+puppeteer defaults
 	ln -s ../../../logins/test/Credentials.js
 	ln -s ../../../wwappbase.js/test-base
 
-
 Place your tests inside of src/puppeteer-tests/\_\_tests\_\_  and then return to the root of your project.
 
 Ensure that your package.json contains relevant entries (probably more up to date ones) similar to 
 the jest/puppeteer entries found in ~/winterwell/wwappbase.js/template/package.json
-
 Then ensure that you have all needed packages by running npm i
+
+The test-base/package.json creates test-base/node_modules, which makes require(X) in e.g. UtilityFunctions.js happy.
+To do this:
+
+	cd wwappbase.js/test-base
+	npm i
 
 ## Runing tests
 
