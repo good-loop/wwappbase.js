@@ -226,14 +226,15 @@ const PropControl = (props) => {
 	// let props2 = Object.assign({}, props);
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
+	const sizeClass = {sm:'small',lg:'large'}[props.size]; // map BS input size to text-size
 	return (
 		<div className={space('form-group', type, className, error ? 'has-error' : null)}>
 			{label || tooltip ?
-				<label htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
+				<label className={sizeClass} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
 			{inline ? ' ' : null}
 			<PropControl2 value={value} proppath={proppath} {...props} />
-			{help ? <span className="help-block mr-2">{help}</span> : null}
+			{help ? <span className={"help-block mr-2 small"}>{help}</span> : null}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 		</div>
 	);
@@ -1061,30 +1062,17 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	// 	delete otherProps.readOnly;
 	// }
 
-	const input = <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
-
-	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
-	const prependAddon = prepend ? (
-		<InputGroupAddon addonType="prepend">
-			<InputGroupText>{prepend}</InputGroupText>
-		</InputGroupAddon>
-	) : null;
-
-	const appendAddon = append ? (
-		<InputGroupAddon addonType="append">
-			{append}
-		</InputGroupAddon>
-	) : null;
-
 	if (prepend || append) {
-		return <InputGroup>
-			{prependAddon}
-			{input}
-			{appendAddon}
+		// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
+
+		return <InputGroup className={klass} bsSize={size}>
+			{prepend? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
+			<Input type={type} value={value} {...otherProps} />;
+			{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
 		</InputGroup>;
 	}
 
-	return input;
+	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
 };
 
 
