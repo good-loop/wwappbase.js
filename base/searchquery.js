@@ -114,13 +114,15 @@ SearchQuery.op = (sq1, sq2, op) => {
 	if ( ! sq2.query) return sq1;
 	// HACK remove (works for simple cases)
 	if (SearchQuery.REMOVE === op) {
-		let t2 = sq1.tree.filter(
+		// (assume AND) pop the 1st tree op, filter out nodes that appear in sq2
+		let t2 = sq1.tree.slice(1).filter(
 			n1 => ! _.find(sq2.tree, n2 => _.eq(JSON.stringify(n1), JSON.stringify(n2)))
 		);
+		t2 = [sq1.tree[0]].concat(t2);
 		let u = unparse(t2);
 		console.warn(sq1.tree, sq2.tree, t2, u);
-		let newq = new SearchQuery(u);
-		return new SearchQuery(newq);	
+		let newsq = new SearchQuery(u);
+		return newsq;
 	}
 	// CRUDE but it should work -- at least for simple cases
 	let newq = sq1.query+" "+op+" "+sq2.query;
@@ -160,6 +162,7 @@ SearchQuery.str = sq => sq? sq.query : '';
  */
 const unparse = tree => {
 	if (typeof(tree)==='string') return tree;
+	if (tree.length===1) return tree[0]; // just a sole keyword
 	let op = tree[0];
 	let bits = tree.slice(1);
 	// TODO bracketing
