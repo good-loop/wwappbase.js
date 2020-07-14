@@ -335,7 +335,7 @@ class Store {
 			tip = newTip;
 		}
 		// HACK: update a data value => mark it as modified (but not for deletes)
-		if (is(oldVal) && is(value) && (path[0] === 'data' || path[0] === 'draft')
+		if (is(value) && (path[0] === 'data' || path[0] === 'draft')
 			&& path.length > 2 && DataStore.DATA_MODIFIED_PROPERTY)
 		{
 			// chop path down to [data, type, id]
