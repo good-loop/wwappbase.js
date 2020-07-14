@@ -336,8 +336,8 @@ class Store {
 		}
 		// HACK: update a data value => mark it as modified
 		// ...but not for setting the whole-object (path.length=3)
-		// ...or for value=null ??why? It's half likely that won't save, but why ignore it here??
-		if (is(value) && (path[0] === 'data' || path[0] === 'draft')
+		// // (off?) ...or for value=null ??why? It's half likely that won't save, but why ignore it here??
+		if ((path[0] === 'data' || path[0] === 'draft')
 			&& path.length > 3 && DataStore.DATA_MODIFIED_PROPERTY)
 		{
 			// chop path down to [data, type, id]
