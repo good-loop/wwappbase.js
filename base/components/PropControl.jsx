@@ -1095,11 +1095,8 @@ PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html tex
 const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange, ...otherStuff }) => {
 	delete otherStuff.https;
 
-	// Get a ref to the <input> in the FormControl so we can ping its change event on successful upload
-	const inputRef = useRef(null);
-
-	// New hooks-based DropZone - give it your upload specs & an upload-accepting function, receive props-generating functions
-	const { getRootProps, getInputProps } = useDropzone({accept, onDrop});
+	let accept = type === 'imgUpload' ? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
+	let acceptDesc = type === 'imgUpload' ? 'JPG, PNG, or SVG image' : 'video';
 
 	const onDrop = (accepted, rejected) => {
 		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
@@ -1125,8 +1122,8 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 		});
 	};
 
-	let accept = type === 'imgUpload' ? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
-	let acceptDesc = type === 'imgUpload' ? 'JPG, PNG, or SVG image' : 'video';
+	// New hooks-based DropZone - give it your upload specs & an upload-accepting function, receive props-generating functions
+	const { getRootProps, getInputProps } = useDropzone({accept, onDrop});
 
 	// Catch special background-colour name for img and apply a special background to show img transparency
 	let className;
