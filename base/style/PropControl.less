@@ -10,6 +10,34 @@
 	);
 }
 
+
+/* a more compact form layout than BS standard */
+.compact {
+	.form-group {
+		margin-bottom: 0.85rem;
+	}
+	
+	label {
+		margin-bottom: 0rem;
+	}
+	
+	.form-control {
+		padding: 0.55rem 0.35rem 0.15rem 0.35rem;
+		line-height: 1;
+		height: calc(1em + 0.7rem + 2px);
+	}
+	
+	line-height: 1.1;
+	.btn {
+		line-height: 1.1;
+	}
+	
+	input.form-check-input {
+		margin-top: 0;
+	}	
+} /* ./compact */
+
+
 .form-group.Money input, .form-group.email input, .form-group.imgUpload input, .form-group.videoUpload input, .form-group.textarea textarea {
 	max-width: @form-input-width;
 }
