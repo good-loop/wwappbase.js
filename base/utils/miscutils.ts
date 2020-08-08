@@ -71,7 +71,7 @@ export function copyTextToClipboard(text : string) {
 
 /**
  * Convenience for spacing base-css-class + optional-extra-css-class.
- * Skips falsy.
+ * Skips falsy, so you can do e.g. `space(test && "value")`.
  * Recursive, so you can pass an arg list or an array OR multiple arrays.
  * @returns {!string}
  */
