@@ -276,6 +276,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 				<div className="detail small">
 					id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
 					<Misc.Time time={item.created} />
+					{item.status && item.status !== C.KStatus.PUBLISHED? item.status.toLowerCase() : null}
 				</div>
 				{ button || '' }
 			</div>
