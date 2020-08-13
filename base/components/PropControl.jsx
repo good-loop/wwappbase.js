@@ -423,7 +423,7 @@ const PropControl2 = (props) => {
 		);
 	}
 
-	if (type === 'imgUpload' || type === 'videoUpload') {
+	if (type.match(/(img|video|both)Upload/)) {
 		return <PropControlImgUpload {...otherStuff} path={path} prop={prop} onUpload={onUpload} type={type} bg={bg} value={value} onChange={onChange} />;
 	} // ./imgUpload
 
@@ -1080,13 +1080,17 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html text search select radio checkboxes autocomplete password email url color checkbox"
+PropControl.KControlType = new Enum("img imgUpload videoUpload bothUpload textarea html text search select radio checkboxes autocomplete password email url color checkbox"
 	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
 	// some Good-Loop data-classes
 	+ " Money XId keyvalue");
 
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
 
+
+const imgTypes = 'image/jpeg, image/png, image/svg+xml';
+const videoTypes = 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
+const bothTypes = `${imgTypes}, ${videoTypes}`;
 
 /**
  * image or video upload. Uses Dropzone
@@ -1095,9 +1099,28 @@ PropControl.KControlType = new Enum("img imgUpload videoUpload textarea html tex
 const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange, ...otherStuff }) => {
 	delete otherStuff.https;
 
-	let accept = type === 'imgUpload' ? 'image/jpeg, image/png, image/svg+xml' : 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
-	let acceptDesc = type === 'imgUpload' ? 'JPG, PNG, or SVG image' : 'video';
+	// Accepted MIME types
+	let accept = {
+		imgUpload: imgTypes,
+		videoUpload: videoTypes,
+		bothUpload: bothTypes,
+	}[type];
 
+	// Human-readable description of accepted types
+	let acceptDesc = {
+		imgUpload: 'JPG, PNG, or SVG image',
+		videoUpload: 'video',
+		bothUpload: 'video or image',
+	}[type];
+
+	// Automatically decide appropriate thumbnail component
+	const Thumbnail = {
+		imgUpload: Misc.ImgThumbnail,
+		videoUpload: Misc.VideoThumbnail,
+		bothUpload: value.match(/(png|jpe?g|svg)$/) ? Misc.ImgThumbnail : Misc.VideoThumbnail
+	}[type];
+
+	// When file picked/dropped, upload to the media cluster
 	const onDrop = (accepted, rejected) => {
 		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
 		const load = (event) => console.log('UPLOAD SUCCESS', event);
@@ -1143,11 +1166,7 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 				</div>
 			</div>
 			<div className="pull-right">
-				{type === 'videoUpload' ? (
-					<Misc.VideoThumbnail url={value} />
-				) : (
-						<Misc.ImgThumbnail className={className} background={bg} url={value} />
-					)}
+				<Thumbnail className={className} background={bg} url={value} />
 			</div>
 			<div className="clearfix" />
 		</div>
