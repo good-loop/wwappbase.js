@@ -1075,11 +1075,13 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	if (prepend || append) {
 		// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
 
-		return <InputGroup className={klass} size={size}>
-			{prepend? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
-			<Input type={type} value={value} {...otherProps} />;
-			{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
-		</InputGroup>;
+		return (
+			<InputGroup className={klass} size={size}>
+				{prepend? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
+				<Input type={type} value={value} {...otherProps} />
+				{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
+			</InputGroup>
+		);
 	}
 
 	return <Input className={klass} size={size} type={type} value={value} {...otherProps} />;
