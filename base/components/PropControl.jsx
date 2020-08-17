@@ -128,37 +128,45 @@ const dateValidator = (val, rawValue) => {
  * @param required {?Boolean} If set, this field should be filled in before a form submit.
  * 	TODO mark that somehow
  * @param validator {?(value, rawValue) => String} Generate an error message if invalid
+ * @param {?string} error error message to show
+ * @param {?string} warning error message to show
  * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
  * @param https {?Boolean} if true, for type=url, urls must use https not http (recommended)
  * 
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
-	let { type = "text", optional, required, path, prop, label, help, tooltip, error, validator, inline, dflt, className, ...stuff } = props;
-	if (!path) {	// default to using path = the url
+	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, className, ...stuff } = props;
+	if ( ! path) {	// default to using path = the url
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
-	}
+	}	
 	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
+	// value comes from DataStore
+	let pvalue = props.value; // Hack: preserve value parameter for checkboxes
+	const proppath = path.concat(prop);
+	// TODO refactor to use `storeValue` in preference to `value` as it is unambiguous
+	// HACK: for now, we use both as theres a lot of code that refers to value, but its fiddly to update it all)
+	let storeValue = DataStore.getValue(proppath);
+	let value = storeValue;
+
 	// old code
 	if (props.onChange) {
 		console.warn("PropControl.jsx " + path + "." + prop + " s/onChange/saveFn/ as onChange is set internally by PropControl");
 		props = Object.assign({ saveFn: props.onChange }, props);
 		delete props.onChange;
 	}
-	const proppath = path.concat(prop);
-	let value = DataStore.getValue(proppath);
 	// Use a default? But not to replace false or 0
 	if (dflt) {
 		// allow the user to delete the field - so only check the default once
 		let [dfltFlag, setDfltFlag] = useState();
-		if (!dfltFlag) {
-			if ((value === undefined || value === null || value === '') && !dfltFlag) {
-				value = dflt;
+		if ( ! dfltFlag) {
+			if ((storeValue === undefined || storeValue === null || storeValue === '') && !dfltFlag) {
+				storeValue = dflt;	value = storeValue;
 				// set the model too (otherwise the value gets lost!)
-				DataStore.setValue(proppath, value, false);
-				console.log("PropControl.jsx - set default value " + proppath, value);
+				DataStore.setValue(proppath, storeValue, false);
+				console.log("PropControl.jsx - set default value " + proppath, storeValue);
 			}
 			// 1st time only
 			setDfltFlag(true);
@@ -184,14 +192,14 @@ const PropControl = (props) => {
 	if (validator) {
 		const rawPath = path.concat(prop + "_raw");
 		const rawValue = DataStore.getValue(rawPath);
-		error = validator(value, rawValue);
+		error = validator(storeValue, rawValue);
 	}
 
 	// Has an issue been reported?
 	// TODO refactor so validators and callers use setInputStatus
 	if (!error) {
 		const is = getInputStatus(proppath);
-		if (!is && required && value === undefined) {
+		if (!is && required && storeValue === undefined) {
 			setInputStatus({ path: proppath, status: 'error', message: 'Missing required input' });
 		}
 		if (is && is.status === 'error') {
@@ -203,24 +211,20 @@ const PropControl = (props) => {
 	// TODO: is this correct?
 	if (error) {
 		const is = getInputStatus(proppath);
-		if (is && is.status === 'error' && required && value) {
+		if (is && is.status === 'error' && required && storeValue) {
 			setInputStatus({ path: proppath, status: 'ok', message: 'ok' });
 			error = undefined;
 		}
 	}
 
-	// Minor TODO lets refactor this so we always do the wrapper, then call a 2nd jsx function for the input (instead of the recursing flag)
-	// label / help? show it and recurse
-	// NB: Checkbox has a different html layout :( -- handled below
-	if (PropControl.KControlType.ischeckbox(type)) {
-		return <PropControl2 value={value} proppath={proppath} {...props} />
-	}
+	// Hack: Checkbox has a different html layout :( -- handled below
+	const isCheck = PropControl.KControlType.ischeckbox(type);
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
 	const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : '';
 	const optreq = optional ? <small className="text-muted">optional</small>
-		: required ? <small className={value === undefined ? 'text-danger' : null}>*</small> : null;
+		: required ? <small className={storeValue === undefined ? 'text-danger' : null}>*</small> : null;
 	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
 	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	// let props2 = Object.assign({}, props);
@@ -228,15 +232,16 @@ const PropControl = (props) => {
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	const sizeClass = {sm:'small',lg:'large'}[props.size]; // map BS input size to text-size
 	return (
-		<div className={space('form-group', type, className, error ? 'has-error' : null)}>
-			{label || tooltip ?
+		<FormGroup check={isCheck} inline={inline} className={space(type, className, error ? 'has-error' : null)}>
+			{(label || tooltip) && ! isCheck?
 				<label className={sizeClass} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
 			{inline ? ' ' : null}
-			<PropControl2 value={value} proppath={proppath} {...props} />
+			<PropControl2 storeValue={storeValue} value={value} proppath={proppath} {...props} pvalue={pvalue} />
 			{help ? <span className={"help-block mr-2 small"}>{help}</span> : null}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
-		</div>
+			{warning ? <span className="help-block text-warning">{warning}</span> : null}
+		</FormGroup>
 	);
 }; // ./PropControl
 
@@ -249,7 +254,7 @@ const PropControl2 = (props) => {
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
-	let { value, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff } = props;
+	let { storeValue, value, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff } = props;
 	let { item, bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
 
 	if (!modelValueFromInput) {
@@ -278,51 +283,56 @@ const PropControl2 = (props) => {
 	}
 
 	// Checkbox?
-	if (PropControl.KControlType.ischeckbox(type)) {
-		const onChange = e => {
-			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
-			const val = e && e.target && e.target.checked;
-			DSsetValue(proppath, val);
-			if (saveFn) saveFn({ event: e, path, prop, item, value: val });
-		};
-
-		// make sure we don't have "false"
-		if (_.isString(value)) {
-			if (value === 'true') value = true;
-			else if (value === 'false') value = false;
+	if (PropControl.KControlType.ischeckbox(type)) {		
+		// on/off values hack - make sure we don't have "false"
+		let onValue = props.pvalue || true;		
+		let offValue = props.pvalue? null : false;
+		if (_.isString(storeValue)) {
+			if (storeValue === 'true') onValue=true;
+			else if (storeValue === 'false') {
+				storeValue=false; /*NB: so bvalue=false below*/ 
+				offValue=false;
+			}
+		}
+		if (_.isNumber(storeValue)) {
+			if (storeValue === 1) onValue=1;
+			else if (storeValue === 0) offValue=0;
 		}
 		// Coerce other values to boolean
-		value = !!value;
+		const bvalue = !!storeValue;
+		// ./on/off values hack
+
+		const onChange = e => {
+			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
+			const isOn = e && e.target && e.target.checked;
+			const newVal = isOn? onValue : offValue;
+			DSsetValue(proppath, newVal);
+			if (saveFn) saveFn({ event: e, path, prop, item, value:newVal });
+		};
 
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
 
-		return <>
-			<FormGroup check inline={inline}>
-				<Label check>
-					<Input type="checkbox" checked={value} value={value} onChange={onChange} {...otherStuff} />
-					{label} {helpIcon}
-				</Label>
-			</FormGroup>
-			{help ? <span className="help-block mr-2">{help}</span> : null}
-			{error ? <span className="help-block text-danger">{error}</span> : null}
-		</>;
+		return <Label check size={props.size}>
+				<Input size={props.size} type="checkbox" checked={bvalue} value={bvalue} onChange={onChange} {...otherStuff} />
+				{label} {helpIcon}
+			</Label>;
 	} // ./checkbox
 
 	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
 	if (type === 'yesNo') {
-		return <PropControlYesNo path={path} prop={prop} value={value} inline={inline} saveFn={saveFn} />
+		return <PropControlYesNo path={path} prop={prop} value={storeValue} inline={inline} saveFn={saveFn} />
 	}
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
 	}
 
 	// keep react happy
-	if (value === undefined || value === null) value = '';
+	if (storeValue === undefined || storeValue === null) storeValue = '';
 
 	// £s
 	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
 	if (type === 'Money') {
-		let acprops = { prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
+		let acprops = { prop, storeValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlMoney {...acprops} />;
 	} // ./£
 
@@ -343,7 +353,7 @@ const PropControl2 = (props) => {
 
 	if (type === 'XId') {
 		let service = otherStuff.service || 'WTF'; // FIXME // Does this actually need fixing? Is there any sensible default?
-		const displayValue = value.replace('@' + service, ''); // Strip @service wart for display
+		const displayValue = storeValue? storeValue.replace('@' + service, '') : ''; // Strip @service wart for display
 		modelValueFromInput = s => s ? Misc.normalise(s) + '@' + service : null;
 		return (
 			<div className="input-group">
@@ -366,7 +376,7 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'textarea') {
-		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={value} />;
+		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={storeValue} />;
 	}
 
 	if (type === 'html') {
@@ -376,7 +386,7 @@ const PropControl2 = (props) => {
 		// thereafter, as overwriting HTML content resets the position of the edit caret
 		const inputRef = useRef();
 		if (inputRef.current && inputRef.current.innerHTML.length === 0) {
-			otherStuff.dangerouslySetInnerHTML = { __html: value };
+			otherStuff.dangerouslySetInnerHTML = { __html: storeValue };
 		}
 
 		// TODO onKeyDown={captureTab}
@@ -392,7 +402,7 @@ const PropControl2 = (props) => {
 
 	if (type === 'json') {
 		let stringPath = ['transient'].concat(proppath);
-		let svalue = DataStore.getValue(stringPath) || JSON.stringify(value);
+		let svalue = DataStore.getValue(stringPath) || JSON.stringify(storeValue);
 
 		const onJsonChange = event => {
 			const rawVal = event.target.value;
@@ -416,22 +426,22 @@ const PropControl2 = (props) => {
 		delete otherStuff.https;
 		return (
 			<div>
-				<FormControl type="url" name={prop} value={value} onChange={onChange} {...otherStuff} />
-				<div className="pull-right" style={{ background: bg, padding: bg ? '20px' : '0' }}><Misc.ImgThumbnail url={value} background={bg} /></div>
+				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
+				<div className="pull-right" style={{ background: bg, padding: bg ? '20px' : '0' }}><Misc.ImgThumbnail url={storeValue} background={bg} /></div>
 				<div className="clearfix" />
 			</div>
 		);
 	}
 
 	if (type.match(/(img|video|both)Upload/)) {
-		return <PropControlImgUpload {...otherStuff} path={path} prop={prop} onUpload={onUpload} type={type} bg={bg} value={value} onChange={onChange} />;
+		return <PropControlImgUpload {...otherStuff} path={path} prop={prop} onUpload={onUpload} type={type} bg={bg} storeValue={storeValue} onChange={onChange} />;
 	} // ./imgUpload
 
 	if (type === 'url') {
 		delete otherStuff.https;
 		return (
 			<div>
-				<FormControl type="url" name={prop} value={value} onChange={onChange} onBlur={onChange} {...otherStuff} />
+				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} onBlur={onChange} {...otherStuff} />
 				<div className="pull-right"><small>{value ? <a href={value} target="_blank">open in a new tab</a> : null}</small></div>
 				<div className="clearfix" />
 			</div>
@@ -447,11 +457,11 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'radio' || type === 'checkboxes') {
-		return <PropControlRadio value={value} {...props} />
+		return <PropControlRadio storeValue={storeValue} value={value} {...props} />
 	}
 
 	if (type === 'select') {
-		let props2 = { onChange, value, modelValueFromInput, ...props };
+		let props2 = { onChange, storeValue, value, modelValueFromInput, ...props };
 		return <PropControlSelect {...props2} />
 	}
 
@@ -485,7 +495,7 @@ const PropControl2 = (props) => {
 	*/
 	// normal
 	// NB: type=color should produce a colour picker :)
-	return <FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />;
+	return <FormControl type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;
 }; //./PropControl2
 
 
@@ -505,7 +515,7 @@ const PropControl2 = (props) => {
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  * @param {?Boolean} canUnset If true, always offer an unset choice.
  */
-const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, saveFn, canUnset, ...otherStuff }) => {
+const PropControlSelect = ({ options, labels, storeValue, value, multiple, prop, onChange, saveFn, canUnset, ...otherStuff }) => {
 	// NB: pull off internal attributes so the select is happy with rest
 	const { className, recursing, modelValueFromInput, ...rest } = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select ' + [prop, otherStuff]);
@@ -515,7 +525,7 @@ const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, s
 
 	// Multi-select is a usability mess, so we use a row of checkboxes.
 	if (multiple) {
-		return PropControlMultiSelect({ value, prop, onChange, labelFn, options, className, modelValueFromInput, ...rest });
+		return PropControlMultiSelect({storeValue, value, prop, onChange, labelFn, options, className, modelValueFromInput, ...rest });
 	}
 
 	// make the options html
@@ -525,12 +535,12 @@ const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, s
 		const thisKey = 'option_' + ((otherStuff.keys && otherStuff.keys[index]) || JSON.stringify(option));
 		return <option key={thisKey} value={option} >{labelFn(option)}</option>;
 	});
-	const showUnset = (canUnset || !value) && !options.includes(null) && !options.includes('');
+	const showUnset = (canUnset || !storeValue) && !options.includes(null) && !options.includes('');
 
 	/* text-muted is for my-loop mirror card
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
 	const klass = space('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
-	const safeValue = value || ''; // "correct usage" - controlled selects shouldn't have null/undef value
+	const safeValue = storeValue || ''; // "correct usage" - controlled selects shouldn't have null/undef value
 	return (
 		<select className={klass}
 			name={prop} value={safeValue} onChange={onChange}
@@ -547,7 +557,7 @@ const PropControlSelect = ({ options, labels, value, multiple, prop, onChange, s
  * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
  * Deselect everything unless user holds Ctrl??? Really? -RM
  */
-const PropControlMultiSelect = ({ value, prop, labelFn, options, modelValueFromInput, className, type, path, saveFn }) => {
+const PropControlMultiSelect = ({storeValue, value, prop, labelFn, options, modelValueFromInput, className, type, path, saveFn }) => {
 	assert(!value || value.length !== undefined, "value should be an array", value, prop);
 	// const mvfi = rest.modelValueFromInput;
 	// let modelValueFromInput = (s, type, etype) => {
@@ -602,7 +612,7 @@ const PropControlMultiSelect = ({ value, prop, labelFn, options, modelValueFromI
  *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
-const PropControlRadio = ({ type, prop, value, path, item, saveFn, options, labels, inline, ...otherStuff }) => {
+const PropControlRadio = ({ type, prop, storeValue, value, path, item, saveFn, options, labels, inline, ...otherStuff }) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -626,7 +636,7 @@ const PropControlRadio = ({ type, prop, value, path, item, saveFn, options, labe
 				<FormGroup check inline={inline} key={option}>
 					<Label check>
 						<Input type={inputType} key={`option_${option}`} name={prop} value={option}
-							checked={option == value}
+							checked={option == storeValue}
 							onChange={onChange} {...otherStuff}
 						/>
 						{' '}{labelFn(option)}
@@ -662,16 +672,16 @@ const numFromAnything = v => {
  * @param currency {?String}
  * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
  */
-const PropControlMoney = ({ prop, name, value, currency, path, proppath,
+const PropControlMoney = ({ prop, name, storeValue, value, currency, path, proppath,
 	item, bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff }) => {
 	// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
 	// Convert null and numbers into Money objects
-	if (!value || _.isString(value) || _.isNumber(value)) {
-		value = new Money({ value });
+	if ( ! storeValue || _.isString(storeValue) || _.isNumber(storeValue)) {
+		storeValue = new Money({ storeValue });
 	}
 	// prefer raw, so users can type incomplete answers!
-	let v = value.raw || value.value;
+	let v = storeValue.raw || storeValue.value;
 	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
 		v = '';
 	}
@@ -686,7 +696,7 @@ const PropControlMoney = ({ prop, name, value, currency, path, proppath,
 		// call onChange after we do the standard updates TODO make this universal
 		if (onChange) onChange(e);
 	};
-	let curr = Money.CURRENCY[currency || (value && value.currency)] || <span>&pound;</span>;
+	let curr = Money.CURRENCY[currency || (storeValue && storeValue.currency)] || <span>&pound;</span>;
 	let $currency;
 	let changeCurrency = otherStuff.changeCurrency !== false;
 	if (changeCurrency) {
@@ -703,7 +713,7 @@ const PropControlMoney = ({ prop, name, value, currency, path, proppath,
 		$currency = <InputGroupAddon addonType="prepend">{curr}</InputGroupAddon>;
 	}
 	delete otherStuff.changeCurrency;
-	assert(v === 0 || v || v === '', [v, value]);
+	assert(v === 0 || v || v === '', [v, storeValue]);
 	// make sure all characters are visible
 	let minWidth = (("" + v).length / 1.5) + "em";
 	return (
@@ -765,7 +775,7 @@ const PropControlYesNo = ({ path, prop, value, saveFn, className }) => {
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
  * Used to edit variant.style
  */
-const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff }) => {
+const PropControlArrayText = ({ storeValue, value, prop, proppath, saveFn, ...otherStuff }) => {
 	const onChange = e => {
 		const oldValue = DataStore.getValue(proppath) || [];
 		const oldString = oldValue.join(' ');
@@ -784,7 +794,7 @@ const PropControlArrayText = ({ value, prop, proppath, saveFn, ...otherStuff }) 
 		e.preventDefault();
 		e.stopPropagation();
 	}
-	const safeValue = (value || []).join(' ');
+	const safeValue = (storeValue || []).join(' ');
 	return <FormControl name={prop} value={safeValue} onChange={onChange} {...otherStuff} />;
 };
 
@@ -945,7 +955,7 @@ options {Function|Object[]|String[]}
 renderItem {?JSX}
 getItemValue {?Function} item -> prop-value
 */
-const PropControlAutocomplete = ({ prop, value, options, getItemValue, renderItem, path, proppath,
+const PropControlAutocomplete = ({ prop, storeValue, value, options, getItemValue, renderItem, path, proppath,
 	item, bg, saveFn, modelValueFromInput, ...otherStuff }) => {
 	// a place to store the working state of this widget
 	let widgetPath = ['widget', 'autocomplete'].concat(path);
@@ -994,7 +1004,7 @@ const PropControlAutocomplete = ({ prop, value, options, getItemValue, renderIte
 			getItemValue={getItemValue}
 			items={items}
 			renderItem={renderItem}
-			value={value}
+			value={storeValue}
 			onChange={onChange}
 			onSelect={onChange2}
 		/>
@@ -1065,14 +1075,14 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	if (prepend || append) {
 		// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
 
-		return <InputGroup className={klass} bsSize={size}>
+		return <InputGroup className={klass} size={size}>
 			{prepend? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
 			<Input type={type} value={value} {...otherProps} />;
 			{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
 		</InputGroup>;
 	}
 
-	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
+	return <Input className={klass} size={size} type={type} value={value} {...otherProps} />;
 };
 
 
@@ -1096,7 +1106,7 @@ const bothTypes = `${imgTypes}, ${videoTypes}`;
  * image or video upload. Uses Dropzone
  * @param onUpload {Function} {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  */
-const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange, ...otherStuff }) => {
+const PropControlImgUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	// Accepted MIME types
@@ -1117,7 +1127,7 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 	const Thumbnail = {
 		imgUpload: Misc.ImgThumbnail,
 		videoUpload: Misc.VideoThumbnail,
-		bothUpload: value.match(/(png|jpe?g|svg)$/) ? Misc.ImgThumbnail : Misc.VideoThumbnail
+		bothUpload: storeValue.match(/(png|jpe?g|svg)$/) ? Misc.ImgThumbnail : Misc.VideoThumbnail
 	}[type];
 
 	// When file picked/dropped, upload to the media cluster
@@ -1158,7 +1168,7 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 	// NB the "innerRef" prop used on FormControl is specific to Reactstrap - it applies the given ref to the underlying <input>
 	return (
 		<div>
-			<FormControl type="url" name={prop} value={value} onChange={onChange} {...otherStuff} />
+			<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
 			<div className="pull-left">
 				<div className="DropZone" {...getRootProps()}>
 					<input {...getInputProps()} />
@@ -1166,7 +1176,7 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, value, onChange,
 				</div>
 			</div>
 			<div className="pull-right">
-				<Thumbnail className={className} background={bg} url={value} />
+				<Thumbnail className={className} background={bg} url={storeValue} />
 			</div>
 			<div className="clearfix" />
 		</div>
@@ -1238,7 +1248,7 @@ const MapEditor = ({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filter
 			<Col xs="4" sm="2">
 				<FormGroup>
 					<Label>&nbsp;</Label>
-					<div><Button onClick={addKV} disabled={!kv.key || !kv.val}><Misc.Icon fa="plus" /> Add</Button></div>
+					<Button onClick={addKV} disabled={!kv.key || !kv.val}><Misc.Icon fa="plus" /> Add</Button>
 				</FormGroup>
 			</Col>
 		</Row>
