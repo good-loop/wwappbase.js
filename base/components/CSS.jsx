@@ -27,6 +27,8 @@ import React, {useState, useRef} from 'react';
 /**
  *
  * @param {String} css
+ * 
+ * NB: Why an attribute instead of tag-contents? because {}s are special characters for jsx and for css -- using the tag contents isnt so good.
  */
 const CSS = ({css}) => {
 	return css && css.length? <style>{css}</style> : null;
