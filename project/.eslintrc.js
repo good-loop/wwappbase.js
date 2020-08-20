@@ -62,7 +62,8 @@ module.exports = {
 		"import/order": "warn",
 		"import/prefer-default-export": "warn",
 		"indent": ["warn", "tab"],
-		
+		"no-case-declarations": "off",
+
 		"jsx-a11y/alt-text": "warn",
 		"jsx-a11y/anchor-is-valid": "warn",
 		"jsx-a11y/click-events-have-key-events": "warn",

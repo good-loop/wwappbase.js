@@ -3,6 +3,7 @@
 
 import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
+import printer from '../utils/printer';
 
 /*
 
@@ -271,7 +272,19 @@ const nonce = (n=10) => {
 
 // NB: cannot assign DataClass.name as that is a reserved field name for classes
 DataClass.title = obj => obj && (obj.title || DataClass.getName(obj.name));
-DataClass.str = obj => JSON.stringify(obj);
+/**
+ * General purpose to-string
+ * @param {*} obj 
+ * @param {?boolean} _abandonLoop for internal use to help avoid loops
+ */
+DataClass.str = (obj, _abandonLoop) => {
+	if ( ! obj) return '';
+	let k = getClass(obj);
+	if (k && k.str && ! _abandonLoop) {
+		return k.str(obj, true);
+	}
+	return printer.str(k);
+}
 
 /**
  * @param typeOrItem {String|Object} If object, getType() is used
