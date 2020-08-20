@@ -61,6 +61,10 @@ class DataClass {
 	 * So data from `base` could easily be lost!
 	 */
 	constructor(base) {
+		this._init(base);
+	}
+
+	_init(base) {
 		Object.assign(this, base); // Better done in subclass!
 		this['@type'] = this.constructor._name || this.constructor.name;	
 		// Avoid e.g. copying a Published object and setting the status to Published

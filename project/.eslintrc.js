@@ -62,6 +62,7 @@ module.exports = {
 		"import/order": "warn",
 		"import/prefer-default-export": "warn",
 		"indent": ["warn", "tab"],
+		
 		"jsx-a11y/alt-text": "warn",
 		"jsx-a11y/anchor-is-valid": "warn",
 		"jsx-a11y/click-events-have-key-events": "warn",
@@ -71,6 +72,7 @@ module.exports = {
 		"jsx-a11y/media-has-caption": "warn",
 		"jsx-a11y/no-static-element-interactions": "warn",
 		"jsx-a11y/control-has-associated-label":"warn",
+
 		"jsx-quotes": ["warn", "prefer-double"],
 		"key-spacing": "off",
 		"keyword-spacing": "off",

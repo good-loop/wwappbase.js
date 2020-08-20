@@ -5,6 +5,7 @@ import SJTest from 'sjtest';
 
 import Misc from './base/components/Misc';
 import MainDiv from './components/MainDiv';
+import ServerIO from './plumbing/ServerIO'; // import to set api endpoints
 
 // Import root LESS file so webpack finds & renders it out to main.css
 import '../style/main.less';
