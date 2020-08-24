@@ -87,6 +87,8 @@ module.exports = {
 		"no-loop-func": "off",
 		"no-lonely-if": "warn",
 		"no-mixed-operators": "off",
+		"no-mixed-spaces-and-tabs": "warn",
+		"no-lonely-if": "off",
 		"no-multi-assign": "off", /* broken - seems to cause errors in linting */
 		"no-nested-ternary": "off",
 		"no-param-reassign": "off",
