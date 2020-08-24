@@ -47,7 +47,7 @@ const RolesCard = () => {
 }
 
 // TODO BS4
-const RoleLine = ({role}) => <div className="well">{role}</div>;
+const RoleLine = ({role}) => <div className="badge badge-pill badge-info">{role}</div>;
 
 export {
 	BasicAccountPage,
