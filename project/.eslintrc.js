@@ -36,6 +36,7 @@ module.exports = {
 		},
 	},
 	"rules": {
+		"array-bracket-spacing": "warn",
 		"constructor-super": "warn", // DataClass has use-cases for not calling super
 		"jsx-a11y/tabindex-no-positive": "off",
 		"arrow-body-style": "off",
@@ -63,6 +64,7 @@ module.exports = {
 		"import/prefer-default-export": "warn",
 		"indent": ["warn", "tab"],
 		"no-case-declarations": "off",
+		"no-extra-semi": "warn",
 
 		"jsx-a11y/alt-text": "warn",
 		"jsx-a11y/anchor-is-valid": "warn",
