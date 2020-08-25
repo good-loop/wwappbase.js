@@ -41,6 +41,7 @@ import { notifyUser } from '../plumbing/Messaging';
 const DSsetValue = (proppath, value) => {
 	DataStore.setModified(proppath);
 	DataStore.setValue(proppath, value);
+	console.log("set",proppath,value,DataStore.getValue(proppath));
 };
 
 /** Wrapped so the two (http/https) outer versions of this can provide an interface consistent with the other validators. */
@@ -150,6 +151,9 @@ const PropControl = (props) => {
 	// HACK: for now, we use both as theres a lot of code that refers to value, but its fiddly to update it all)
 	let storeValue = DataStore.getValue(proppath);
 	let value = storeValue;
+	// Allow the user to move between invalid values, by keeping a copy of their raw input
+	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
+	const [rawValue, setRawValue] = useState(storeValue);
 
 	// old code
 	if (props.onChange) {
@@ -190,8 +194,6 @@ const PropControl = (props) => {
 
 	// validate!
 	if (validator) {
-		const rawPath = path.concat(prop + "_raw");
-		const rawValue = DataStore.getValue(rawPath);
 		error = validator(storeValue, rawValue);
 	}
 
@@ -237,7 +239,7 @@ const PropControl = (props) => {
 				<label className={sizeClass} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
 			{inline ? ' ' : null}
-			<PropControl2 storeValue={storeValue} value={value} proppath={proppath} {...props} pvalue={pvalue} />
+			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{help ? <span className={"help-block mr-2 small"}>{help}</span> : null}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
@@ -254,7 +256,7 @@ const PropControl2 = (props) => {
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
-	let { storeValue, value, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff } = props;
+	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff } = props;
 	let { item, bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
 
 	if (!modelValueFromInput) {
@@ -341,9 +343,10 @@ const PropControl2 = (props) => {
 		// console.log("event", e, e.type);
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
+		setRawValue(e.target.value);
 		let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 		// console.warn("onChange", e.target.value, mv, e);
-		DSsetValue(proppath, mv);
+		DSsetValue(proppath, mv);		
 		if (saveFn) saveFn({ event: e, path, prop, value: mv });
 		// Enable piggybacking custom onChange functionality
 		if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
@@ -452,7 +455,7 @@ const PropControl2 = (props) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
 	if (PropControl.KControlType.isdate(type)) {
-		const acprops = { prop, item, value, onChange, ...otherStuff };
+		const acprops = { prop, item, storeValue, rawValue, onChange, ...otherStuff };
 		return <PropControlDate {...acprops} />;
 	}
 
@@ -672,7 +675,7 @@ const numFromAnything = v => {
  * @param currency {?String}
  * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
  */
-const PropControlMoney = ({ prop, name, storeValue, value, currency, path, proppath,
+const PropControlMoney = ({ prop, name, storeValue, rawValue, setRawValue, currency, path, proppath,
 	item, bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff }) => {
 	// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
@@ -681,7 +684,7 @@ const PropControlMoney = ({ prop, name, storeValue, value, currency, path, propp
 		storeValue = new Money({ storeValue });
 	}
 	// prefer raw, so users can type incomplete answers!
-	let v = storeValue.raw || storeValue.value;
+	let v = rawValue || storeValue.value;
 	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
 		v = '';
 	}
@@ -912,13 +915,13 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 };
 
 
-const PropControlDate = ({ prop, item, value, onChange, ...otherStuff }) => {
+const PropControlDate = ({ prop, item, storeValue, rawValue, onChange, ...otherStuff }) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
 	// NB: parsing incomplete dates causes NaNs
 	let datePreview = null;
-	if (value) {
+	if (rawValue) {
 		try {
-			let date = new Date(value);
+			let date = new Date(rawValue);
 			// use local settings??
 			datePreview = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
 		} catch (er) {
@@ -927,22 +930,22 @@ const PropControlDate = ({ prop, item, value, onChange, ...otherStuff }) => {
 		}
 	}
 
-	// HACK: also set the raw text in _raw. This is cos the server may have to ditch badly formatted dates.
-	// NB: defend against _raw_raw
-	const rawProp = prop.substr(prop.length - 4, prop.length) === '_raw' ? null : prop + '_raw';
-	if (!value && item && rawProp) value = item[rawProp];
-	const onChangeWithRaw = e => {
-		if (item && rawProp) {
-			item[rawProp] = e.target.value;
-		}
-		onChange(e);
-	};
+	// // HACK: also set the raw text in _raw. This is cos the server may have to ditch badly formatted dates.
+	// // NB: defend against _raw_raw
+	// const rawProp = prop.substr(prop.length - 4, prop.length) === '_raw' ? null : prop + '_raw';
+	// if (!value && item && rawProp) value = item[rawProp];
+	// const onChangeWithRaw = e => {
+	// 	if (item && rawProp) {
+	// 		item[rawProp] = e.target.value;
+	// 	}
+	// 	onChange(e);
+	// };
 
 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
 	// Encourage ISO8601 format
-	if (!otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
+	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
 	return (<div>
-		<FormControl type="text" name={prop} value={value} onChange={onChangeWithRaw} {...otherStuff} />
+		<FormControl type="text" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
 		<div className="pull-right"><i>{datePreview}</i></div>
 		<div className="clearfix" />
 	</div>);
