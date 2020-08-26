@@ -287,12 +287,12 @@ const sogiveid = id => {
 		'wwf': 'wwf-uk'
 	}[id];
 
-	// tries to do automatic matching, if manual match not specified above
-	if (id.includes('_') && !sid)
-		sid = id.replace(/_/g,'-');
+	// tries to do automatic adjustments, if manual match not specified above
+	if ( ! sid) {
+		sid = id.toLowerCase().replace(/[_ ]/g,'-');
+	}
 
-	if (sid) return sid;
-	return id;
+	return sid;	
 };
 
 /**

@@ -41,7 +41,7 @@ import { notifyUser } from '../plumbing/Messaging';
 const DSsetValue = (proppath, value) => {
 	DataStore.setModified(proppath);
 	DataStore.setValue(proppath, value);
-	console.log("set",proppath,value,DataStore.getValue(proppath));
+	// console.log("set",proppath,value,DataStore.getValue(proppath));
 };
 
 /** Wrapped so the two (http/https) outer versions of this can provide an interface consistent with the other validators. */

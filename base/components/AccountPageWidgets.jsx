@@ -46,7 +46,7 @@ const RolesCard = () => {
 	</Misc.Card>);
 }
 
-// TODO BS4
+
 const RoleLine = ({role}) => <div className="badge badge-pill badge-info">{role}</div>;
 
 export {
