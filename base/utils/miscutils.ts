@@ -71,7 +71,7 @@ export function copyTextToClipboard(text : string) {
 
 /**
  * Convenience for spacing base-css-class + optional-extra-css-class.
- * Skips falsy.
+ * Skips falsy, so you can do e.g. `space(test && "value")`.
  * Recursive, so you can pass an arg list or an array OR multiple arrays.
  * @returns {!string}
  */
@@ -195,10 +195,10 @@ export const asNum = (v :string|number|null) : number|null => {
 /**
  * @param src {!String} url for the script
  * @param onLoad {?Function} called on-load and on-error
- * 
+ * @param {?dom-element} domElement append to this, or to document.head
  * NB: copy-pasta of Good-Loop's unit.js addScript()
  */
-export const addScript = function(src:string, {async, onload, onerror}) {
+export const addScript = function(src:string, {async, onload, onerror, domElement}) {
 	let script = document.createElement('script');
 	script.setAttribute( 'src', src);
 	if (onerror) script.addEventListener('error', onerror); 
@@ -207,9 +207,11 @@ export const addScript = function(src:string, {async, onload, onerror}) {
 	script.type = 'text/javascript';
 	// c.f. https://stackoverflow.com/questions/538745/how-to-tell-if-a-script-tag-failed-to-load
 	// c.f. https://stackoverflow.com/questions/6348494/addeventlistener-vs-onclick
-	var head = document.getElementsByTagName("head")[0];
-	(head || document.body).appendChild( script );	
-	document.body.appendChild(script);
+	if ( ! domElement) {
+		let head = document.getElementsByTagName("head")[0];
+		domElement = (head || document.body);
+	}
+	domElement.appendChild(script);
 };
 
 

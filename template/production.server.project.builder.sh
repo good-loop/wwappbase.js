@@ -2,7 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.81b
+# VERSION=0.91
 # VERSION_MEANING=script has been written, but never used.
 
 ## Warning - This is a bare-bones template file.
@@ -197,17 +197,25 @@ function cleanup_wwappbasejs_repo {
     fi
 }
 
-# Cleanup the repos nested inside of bobwarehouse  - This Function's Version is 0.01
+# Cleanup the repos nested inside of bobwarehouse  - This Function's Version is 0.02
 function cleanup_bobwarehouse_repos {
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         printf "\nEnsuring that the repos inside of bobwarehouse are up-to-date...\n"
         for repo in $BOBWAREHOUSE_PATH/*/; do
-            git_hard_set_to_master $repo
+            if [[ $repo = '/home/winterwell/bobwarehouse/flexi-gson/' ]]; then
+                printf "\e[30;107mFound and skipped flex-gson -- BOB controls this repo\e[0m\n"
+            elif [[ $repo = '/home/winterwell/bobwarehouse/jtwitter/' ]]; then
+                printf "\e[30;107mFound and skipped jtwitter -- BOB controls this repo\e[0m\n"
+            elif [[ $repo = '/home/winterwell/bobwarehouse/juice/' ]]; then
+                printf "\e[30;107mFound and skipped juice -- BOB controls this repo\e[0m\n"
+            else
+                git_hard_set_to_master $repo
+            fi
         done
     fi
 }
 
-# Checkout git branch on all repos for this release
+# Checkout git branch on all repos for this release - This Function's Version is 0.02
 function git_checkout_release_branch {
     printf "\nSwitching to your specified release branch ...\n"
     git_change_branch $PROJECT_ROOT_ON_SERVER
@@ -216,7 +224,15 @@ function git_checkout_release_branch {
     fi
     if [[ $PROJECT_USES_BOB = 'yes' ]]; then
         for repo in $BOBWAREHOUSE_PATH/*/; do
-            git_change_branch $repo
+            if [[ $repo = '/home/winterwell/bobwarehouse/flexi-gson/' ]]; then
+                printf "\e[30;107mFound and skipped flex-gson -- BOB controls this repo\e[0m\n"
+            elif [[ $repo = '/home/winterwell/bobwarehouse/jtwitter/' ]]; then
+                printf "\e[30;107mFound and skipped jtwitter -- BOB controls this repo\e[0m\n"
+            elif [[ $repo = '/home/winterwell/bobwarehouse/juice/' ]]; then
+                printf "\e[30;107mFound and skipped juice -- BOB controls this repo\e[0m\n"
+            else
+                git_change_branch $repo
+            fi
         done
     fi
 }

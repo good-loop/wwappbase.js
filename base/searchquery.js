@@ -18,6 +18,9 @@ class SearchQuery
 	/** @type {!String} */
 	query;
 
+	/**
+	 * e.g. ["OR", "a", ["AND", "b", ["near", "c"]]]
+	 */
 	tree;
 
 	options;
@@ -109,10 +112,22 @@ SearchQuery.op = (sq1, sq2, op) => {
 	if ( ! sq1) return sq2;
 	if ( ! sq1.query) return sq2;
 	if ( ! sq2.query) return sq1;
+	// HACK remove (works for simple cases)
+	if (SearchQuery.REMOVE === op) {
+		// (assume AND) pop the 1st tree op, filter out nodes that appear in sq2
+		let t2 = sq1.tree.slice(1).filter(
+			n1 => ! _.find(sq2.tree, n2 => _.eq(JSON.stringify(n1), JSON.stringify(n2)))
+		);
+		t2 = [sq1.tree[0]].concat(t2);
+		let u = unparse(t2);
+		console.warn(sq1.tree, sq2.tree, t2, u);
+		let newsq = new SearchQuery(u);
+		return newsq;
+	}
 	// CRUDE but it should work -- at least for simple cases
 	let newq = sq1.query+" "+op+" "+sq2.query;
 	return new SearchQuery(newq);
-}
+}; 
 
 /**
  * Merge two queries with AND
@@ -123,13 +138,47 @@ SearchQuery.and = (sq1, sq2) => {
 	return SearchQuery.op(sq1,sq2,SearchQuery.AND);
 }
 
-SearchQuery.str = sq => sq.query;
+
+/**
+ * Remove sq2 from sq1, e.g. remove("foo AND bar", "bar") -> "foo"
+ * @param {?String|SearchQuery} sq1
+ * @param {?String|SearchQuery} sq2
+ * @returns {SearchQuery} a NEW SearchQuery
+ */
+SearchQuery.remove = (sq1, sq2) => {
+	return SearchQuery.op(sq1,sq2,SearchQuery.REMOVE);
+}
+
+/**
+ * @param {?SearchQuery} sq 
+ * @returns {!string}
+ */
+SearchQuery.str = sq => sq? sq.query : '';
+
+/**
+ * Convert a parse tree back into a query string
+ * @param {Object[]|string} tree 
+ * @returns {string}
+ */
+const unparse = tree => {
+	if (typeof(tree)==='string') return tree;
+	if (tree.length===1) return tree[0]; // just a sole keyword
+	let op = tree[0];
+	let bits = tree.slice(1);
+	// TODO bracketing
+	let ubits = bits.map(unparse);
+	return ubits.join(" "+op+" ");
+};
 
 
 // The built in boolean operators
 SearchQuery.AND = "AND";
 SearchQuery.OR = "OR";
 SearchQuery.NOT = "NOT";
+/**
+ * Hack for saying "this search, but removing this term"
+ */
+SearchQuery.REMOVE = "RM";
 
 SearchQuery.GENERAL_OPTIONS = {
 	OR: ["OR", ","],

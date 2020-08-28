@@ -276,6 +276,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 				<div className="detail small">
 					id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
 					<Misc.Time time={item.created} />
+					{item.status && item.status !== C.KStatus.PUBLISHED? item.status.toLowerCase() : null}
 				</div>
 				{ button || '' }
 			</div>
@@ -287,8 +288,8 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 const DefaultDelete = ({type,id}) => (
 	<Button color="secondary" size="xs" className="pull-right"
 		onClick={e => confirm(`Delete this ${type}?`) ? ActionMan.delete(type, id) : null}
-		title="Delete">
-		<Misc.Icon fa="trash" />
+		title="Delete">		
+		&#x1f5d1;
 	</Button>
 );
 

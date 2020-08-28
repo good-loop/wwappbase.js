@@ -36,6 +36,7 @@ module.exports = {
 		},
 	},
 	"rules": {
+		"array-bracket-spacing": "warn",
 		"constructor-super": "warn", // DataClass has use-cases for not calling super
 		"jsx-a11y/tabindex-no-positive": "off",
 		"arrow-body-style": "off",
@@ -62,6 +63,9 @@ module.exports = {
 		"import/order": "warn",
 		"import/prefer-default-export": "warn",
 		"indent": ["warn", "tab"],
+		"no-case-declarations": "off",
+		"no-extra-semi": "warn",
+
 		"jsx-a11y/alt-text": "warn",
 		"jsx-a11y/anchor-is-valid": "warn",
 		"jsx-a11y/click-events-have-key-events": "warn",
@@ -71,6 +75,7 @@ module.exports = {
 		"jsx-a11y/media-has-caption": "warn",
 		"jsx-a11y/no-static-element-interactions": "warn",
 		"jsx-a11y/control-has-associated-label":"warn",
+
 		"jsx-quotes": ["warn", "prefer-double"],
 		"key-spacing": "off",
 		"keyword-spacing": "off",
@@ -84,6 +89,8 @@ module.exports = {
 		"no-loop-func": "off",
 		"no-lonely-if": "warn",
 		"no-mixed-operators": "off",
+		"no-mixed-spaces-and-tabs": "warn",
+		"no-lonely-if": "off",
 		"no-multi-assign": "off", /* broken - seems to cause errors in linting */
 		"no-nested-ternary": "off",
 		"no-param-reassign": "off",

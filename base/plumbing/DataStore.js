@@ -334,9 +334,11 @@ class Store {
 			}
 			tip = newTip;
 		}
-		// HACK: update a data value => mark it as modified (but not for deletes)
-		if (is(oldVal) && is(value) && (path[0] === 'data' || path[0] === 'draft')
-			&& path.length > 2 && DataStore.DATA_MODIFIED_PROPERTY)
+		// HACK: update a data value => mark it as modified
+		// ...but not for setting the whole-object (path.length=3)
+		// // (off?) ...or for value=null ??why? It's half likely that won't save, but why ignore it here??
+		if ((path[0] === 'data' || path[0] === 'draft')
+			&& path.length > 3 && DataStore.DATA_MODIFIED_PROPERTY)
 		{
 			// chop path down to [data, type, id]
 			const itemPath = path.slice(0, 3);
@@ -345,6 +347,7 @@ class Store {
 				this.setLocalEditsStatus(getType(item), getId(item), C.STATUS.dirty, false);
 			}
 		}
+		// Tell e.g. React to re-render
 		if (update !== false) {
 			// console.log("setValue -> update", path, value);
 			this.update();
@@ -716,7 +719,7 @@ DataStore.update({
 	 */
 	list: {}
 });
-// switch on data item edits => modified flag
+/** When a data or draft item is edited => set a modified flag. Set to falsy if you want to disable this. */
 DataStore.DATA_MODIFIED_PROPERTY = 'localStatus';
 export default DataStore;
 

@@ -291,14 +291,12 @@ const sogiveid = id => {
 		'Dover Food Bank':'dover-food-bank'
 	}[id];
 
-	if (sid) {
-		return sid;
-	} else {
-		// tries to do automatic matching, if manual match not specified above
-		sid = id.replace(/(_| )/g,'-');
-		sid = sid.toLowerCase();
-		return sid;
+	// tries to do automatic adjustments, if manual match not specified above
+	if ( ! sid) {
+		sid = id.toLowerCase().replace(/[_ ]/g,'-');
 	}
+
+	return sid;	
 };
 
 /**

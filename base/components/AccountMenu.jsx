@@ -16,7 +16,6 @@ The top-right menu
 active {boolean} true if on the account page
 account {boolean} true if we want to show the account option (true by default), needed by my-loop because it doesn't have an account page but needs logout
 logoutLink {string} what page should be loaded after logout ('#dashboard' by default), to allow it to go to the dashboard in portal, but the same page in my-loop
-TODO use react for the dropdown state - not bootstrap.js
 */
 
 const AccountMenu = (props) => {

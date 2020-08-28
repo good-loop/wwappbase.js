@@ -307,7 +307,7 @@ const serverSafetyCheck = async (page, server) => {
 		throw new Error("Could not find ServerIO.APIBASE?!");
 	}
 	if( endpoint !== '' && ! endpoint.includes("local") && ! endpoint.includes("test")) {
-		console.log("Test service is pointing at production server! Aborting test. Please check ServerIO.js");
+		console.log("ServerIO.APIBASE = "+endpoint+"\nTest service is pointing at production server! Aborting test. Please check ServerIO.js!");
 		shell.exit(1);
 	}
 };
