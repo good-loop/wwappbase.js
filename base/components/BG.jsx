@@ -16,7 +16,7 @@ const BG = ({src, children, opacity=0.5, size='cover', fullscreen}) => {
 		zIndex: -1,
 		opacity
 	};
-	return (<div >
+	return (<div style={{position:'absolute'}} >
 		<div style={style} />
 		<div style={{zIndex:100}}>{children}</div>
 	</div>);
