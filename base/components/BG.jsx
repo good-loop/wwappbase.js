@@ -17,7 +17,7 @@ const BG = ({src, children, opacity=0.5, size='cover', fullscreen}) => {
 		opacity
 	};
 	// NB: the outer div with position abs seems to be needed to properly get full-size (oddities seen in chrome August 2020)
-	return (<div style={{position:'absolute'}} >
+	return (<div style={{position:'absolute', width:'100%'}} >
 		<div style={style} />
 		<div style={{zIndex:100}}>{children}</div>
 	</div>);
