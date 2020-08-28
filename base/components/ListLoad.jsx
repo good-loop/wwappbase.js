@@ -289,7 +289,7 @@ const DefaultDelete = ({type,id}) => (
 	<Button color="secondary" size="xs" className="pull-right"
 		onClick={e => confirm(`Delete this ${type}?`) ? ActionMan.delete(type, id) : null}
 		title="Delete">		
-		<Misc.Icon fa="trash" />
+		&#x1f5d1;
 	</Button>
 );
 
