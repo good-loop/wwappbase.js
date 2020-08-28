@@ -244,6 +244,7 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 
 // HACK match mismatches
 const sogiveid = id => {
+	console.log("I am IDing " + id);
 	// manual id matching, only needed for ids that don't follow the rule: _ --> -
 	let sid = {
 		'action_against_hunger': 'action-against-hunger',
@@ -284,15 +285,23 @@ const sogiveid = id => {
 		'water-aid': 'wateraid',
 		'woodland_trust': 'woodland-trust',
 		'woodland':'woodland-trust',
-		'wwf': 'wwf-uk'
+		'wwf': 'wwf-uk',
+		'carers uk':'carers-uk',
+		'Greenwich Food Bank':'greenwich-food-bank',
+		'Camden Food Bank':'camden-food-bank',
+		'Dover Food Bank':'dover-food-bank'
 	}[id];
 
-	// tries to do automatic matching, if manual match not specified above
-	if (id.includes('_') && !sid)
-		sid = id.replace(/_/g,'-');
-
-	if (sid) return sid;
-	return id;
+	if (sid) {
+		console.log(sid);
+		return sid;
+	} else {
+		console.log("Auto " + id);
+		// tries to do automatic matching, if manual match not specified above
+		sid = id.replace(/(_| )/g,'-');
+		sid = sid.toLowerCase();
+		return sid;
+	}
 };
 
 /**
