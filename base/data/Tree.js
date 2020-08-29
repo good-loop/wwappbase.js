@@ -28,6 +28,11 @@ class Tree extends DataClass {
 }
 DataClass.register(Tree, "Tree");
 
+// TODO recurse
+Tree.str = (tree, depth) => {
+	return Tree.value(tree)+"";
+}
+
 /**
  * @returns {!Tree[]} Can be empty, never null
  */

@@ -82,7 +82,7 @@ class Store {
 		assMatch(key, String);
 		if (value) assMatch(value, "String|Boolean|Number");
 		// the modifyHash hack is in setValue() so that Misc.PropControl can use it too
-		this.setValue(['location', 'params', key], value, update);
+		return this.setValue(['location', 'params', key], value, update);
 	}
 
 
