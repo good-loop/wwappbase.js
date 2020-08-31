@@ -153,7 +153,13 @@ const PropControl = (props) => {
 	let value = storeValue;
 	// Allow the user to move between invalid values, by keeping a copy of their raw input
 	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
-	const [rawValue, setRawValue] = useState(storeValue);
+
+	// Store value may be an object e.g. Money which is unsuitable for use as an <input> value - don't rely on type coercion
+	const storeToRaw = v => {
+		return (v && v.value) || v;
+	};
+	
+	const [rawValue, setRawValue] = useState(storeToRaw(storeValue));
 
 	// old code
 	if (props.onChange) {
@@ -334,7 +340,7 @@ const PropControl2 = (props) => {
 	// £s
 	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
 	if (type === 'Money') {
-		let acprops = { prop, storeValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
+		let acprops = { prop, storeValue, rawValue, setRawValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlMoney {...acprops} />;
 	} // ./£
 
@@ -683,14 +689,17 @@ const PropControlMoney = ({ prop, name, storeValue, rawValue, setRawValue, curre
 	if ( ! storeValue || _.isString(storeValue) || _.isNumber(storeValue)) {
 		storeValue = new Money({ storeValue });
 	}
-	// prefer raw, so users can type incomplete answers!
+
+	// Prefer raw value, so numeric substrings which aren't numbers or are "simplifiable", eg "-" or "1.", are preserved while user is in mid-input
 	let v = rawValue || storeValue.value;
+
 	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
 		v = '';
 	}
 	//Money.assIsa(value); // type can be blank
 	// handle edits
 	const onMoneyChange = e => {
+		setRawValue(e.target.value);
 		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
 		const newM = e.target.value === '' ? null : new Money(e.target.value);
 		if (name && newM) newM.name = name; // preserve named Money items
