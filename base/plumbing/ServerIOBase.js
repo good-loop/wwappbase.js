@@ -284,11 +284,7 @@ const sogiveid = id => {
 		'water-aid': 'wateraid',
 		'woodland_trust': 'woodland-trust',
 		'woodland':'woodland-trust',
-		'wwf': 'wwf-uk',
-		'carers uk':'carers-uk',
-		'Greenwich Food Bank':'greenwich-food-bank',
-		'Camden Food Bank':'camden-food-bank',
-		'Dover Food Bank':'dover-food-bank'
+		'wwf': 'wwf-uk'
 	}[id];
 
 	// tries to do automatic adjustments, if manual match not specified above
