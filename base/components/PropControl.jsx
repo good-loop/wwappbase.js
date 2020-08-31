@@ -234,7 +234,7 @@ const PropControl = (props) => {
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	const sizeClass = {sm:'small',lg:'large'}[props.size]; // map BS input size to text-size
 	return (
-		<FormGroup check={isCheck} inline={inline} className={space(type, className, error ? 'has-error' : null)}>
+		<FormGroup check={isCheck} className={space(type, className, inline&&'form-inline', error&&'has-error')}>
 			{(label || tooltip) && ! isCheck?
 				<label className={sizeClass} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
@@ -315,7 +315,7 @@ const PropControl2 = (props) => {
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
 
 		return <Label check size={props.size}>
-				<Input size={props.size} type="checkbox" checked={bvalue} value={bvalue} onChange={onChange} {...otherStuff} />
+				<Input bsSize={props.size} type="checkbox" checked={bvalue} value={bvalue} onChange={onChange} {...otherStuff} />
 				{label} {helpIcon}
 			</Label>;
 	} // ./checkbox
@@ -518,7 +518,7 @@ const PropControl2 = (props) => {
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  * @param {?Boolean} canUnset If true, always offer an unset choice.
  */
-const PropControlSelect = ({ options, labels, storeValue, value, multiple, prop, onChange, saveFn, canUnset, ...otherStuff }) => {
+const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, ...otherStuff }) => {
 	// NB: pull off internal attributes so the select is happy with rest
 	const { className, recursing, modelValueFromInput, ...rest } = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select ' + [prop, otherStuff]);
@@ -528,7 +528,7 @@ const PropControlSelect = ({ options, labels, storeValue, value, multiple, prop,
 
 	// Multi-select is a usability mess, so we use a row of checkboxes.
 	if (multiple) {
-		return PropControlMultiSelect({storeValue, value, prop, onChange, labelFn, options, className, modelValueFromInput, ...rest });
+		return PropControlMultiSelect({storeValue, value, rawValue, setRawValue, prop, onChange, labelFn, options, className, modelValueFromInput, ...rest });
 	}
 
 	// make the options html
@@ -615,7 +615,7 @@ const PropControlMultiSelect = ({storeValue, value, prop, labelFn, options, mode
  *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
-const PropControlRadio = ({ type, prop, storeValue, value, path, item, saveFn, options, labels, inline, ...otherStuff }) => {
+const PropControlRadio = ({ type, prop, storeValue, value, path, item, saveFn, options, labels, inline, size, ...otherStuff }) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -778,7 +778,7 @@ const PropControlYesNo = ({ path, prop, value, saveFn, className }) => {
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
  * Used to edit variant.style
  */
-const PropControlArrayText = ({ storeValue, value, prop, proppath, saveFn, ...otherStuff }) => {
+const PropControlArrayText = ({ storeValue, value, rawValue, setRawValue, prop, proppath, saveFn, ...otherStuff }) => {
 	const onChange = e => {
 		const oldValue = DataStore.getValue(proppath) || [];
 		const oldString = oldValue.join(' ');
@@ -1074,8 +1074,8 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	// 	otherProps.readonly = otherProps.readOnly;
 	// 	delete otherProps.readOnly;
 	// }
-	if (size && ! ['sm','lg'].includes(size)) {
-		console.warn("Odd size",size,otherProps);
+	if (size) {
+		if ( ! ['sm','lg'].includes(size)) console.warn("Odd size",size,otherProps);
 	}
 
 	if (prepend || append) {
@@ -1089,7 +1089,7 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 		);
 	}
 
-	return <Input className={klass} size={size} type={type} value={value} {...otherProps} />;
+	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
 };
 
 

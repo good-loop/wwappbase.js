@@ -111,7 +111,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} base={createBase} navpage={navpage} /> : null}
 		
-		{hasFilter? <PropControl label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/> : null}
+		{hasFilter? <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/> : null}
 
 		{items.length === 0 ? <>No results found for <code>{space(q, filter) || type}</code></> : null}
 		{total && ! hideTotal? <div>About {total} results in total</div> : null}

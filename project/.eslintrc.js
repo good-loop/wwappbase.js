@@ -37,7 +37,7 @@ module.exports = {
 	},
 	"rules": {
 		"array-bracket-spacing": "warn",
-		"constructor-super": "off", // DataClass has use-cases for not calling super
+		"constructor-super": "warn", // DataClass has use-cases for not calling super
 		"jsx-a11y/tabindex-no-positive": "off",
 		"arrow-body-style": "off",
 		"block-spacing": "warn",
@@ -100,7 +100,7 @@ module.exports = {
 		"no-restricted-globals": "warn", // triggers on isNan()
 		"no-return-assign": "off",
 		"no-tabs": "off",
-		"no-this-before-super": "off",
+		"no-this-before-super": "warn",
 		"no-trailing-spaces": "off",
 		"no-underscore-dangle": "off",
 		"no-unused-vars": "warn",
