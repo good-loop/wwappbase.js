@@ -144,12 +144,12 @@ const ListLoad = ({type, status, servlet, navpage,
 
 /**
  * 
- * @param {*} hits 
+ * @param {?LiteItem[]} hits 
  * @returns {Item[]}
  */
 const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) => {
 	if ( ! hits) {
-		console.warn("ListLoad.jsx - item list load failed for "+type+" "+status);
+		// an ajax call probably just hasn't loaded yet
 		return [];
 	}
 	// HACK: Use-case: you load published items. But the list allows for edits. Those edits need draft items.
