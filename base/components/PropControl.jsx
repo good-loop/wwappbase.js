@@ -141,7 +141,7 @@ const PropControl = (props) => {
 	if ( ! path) {	// default to using path = the url
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
-	}	
+	}
 	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
 	// value comes from DataStore
@@ -352,7 +352,7 @@ const PropControl2 = (props) => {
 		setRawValue(e.target.value);
 		let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 		// console.warn("onChange", e.target.value, mv, e);
-		DSsetValue(proppath, mv);		
+		DSsetValue(proppath, mv);
 		if (saveFn) saveFn({ event: e, path, prop, value: mv });
 		// Enable piggybacking custom onChange functionality
 		if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
@@ -483,7 +483,7 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'autocomplete') {
-		let acprops = { prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
+		let acprops = { prop, value, rawValue, setRawValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlAutocomplete {...acprops} />;
 	}
 
@@ -967,7 +967,7 @@ options {Function|Object[]|String[]}
 renderItem {?JSX}
 getItemValue {?Function} item -> prop-value
 */
-const PropControlAutocomplete = ({ prop, storeValue, value, options, getItemValue, renderItem, path, proppath,
+const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValue, options, getItemValue, renderItem, path, proppath,
 	item, bg, saveFn, modelValueFromInput, ...otherStuff }) => {
 	// a place to store the working state of this widget
 	let widgetPath = ['widget', 'autocomplete'].concat(path);
@@ -981,8 +981,9 @@ const PropControlAutocomplete = ({ prop, storeValue, value, options, getItemValu
 		// console.log("event", e, e.type, optItem);
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
-		// typing sneds an event, clicking an autocomplete sends a value
+		// typing sends an event, clicking an autocomplete sends a value
 		const val = e.target ? e.target.value : e;
+		setRawValue(val)
 		let mv = modelValueFromInput(val, type, e.type);
 		DSsetValue(proppath, mv);
 		if (saveFn) saveFn({ event: e, path: path, prop, value: mv });
@@ -1016,7 +1017,7 @@ const PropControlAutocomplete = ({ prop, storeValue, value, options, getItemValu
 			getItemValue={getItemValue}
 			items={items}
 			renderItem={renderItem}
-			value={storeValue}
+			value={rawValue}
 			onChange={onChange}
 			onSelect={onChange2}
 		/>
