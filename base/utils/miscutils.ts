@@ -193,12 +193,12 @@ export const asNum = (v :string|number|null) : number|null => {
 
 
 /**
- * @param src {!String} url for the script
- * @param onLoad {?Function} called on-load and on-error
+ * @param {!string} src url for the script
+ * @param {?Function} onload called on-load and on-error
  * @param {?dom-element} domElement append to this, or to document.head
  * NB: copy-pasta of Good-Loop's unit.js addScript()
  */
-export const addScript = function(src:string, {async, onload, onerror, domElement}) {
+export const addScript = function({src, async, onload, onerror, domElement}) {
 	let script = document.createElement('script');
 	script.setAttribute( 'src', src);
 	if (onerror) script.addEventListener('error', onerror); 
