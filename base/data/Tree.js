@@ -40,6 +40,21 @@ Tree.str = (tree, depth) => {
  * @returns {!Tree[]} Can be empty, never null
  */
 Tree.children = node => node.children || [];
+/**
+ * 
+ * @param {Tree} node 
+ * @returns {Tree[]}
+ */
+Tree.flatten = node => {
+	const all = [];
+	flatten2(node, all);
+	return all;
+};
+const flatten2 = (node, all) => {
+	all.push(node);
+	if ( ! node.children) return;
+	node.children.forEach(kid => flatten2(kid, all));
+};
 
 /**
  * The main value stored on this node
@@ -80,17 +95,19 @@ Tree.depth = node => {
 /**
  * Map fn over all tree nodes.
  * @param {!Tree} tree
- * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / whatever. depth starts at 0 for the root.
+ * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / new-value / null. depth starts at 0 for the root.
  * @returns {?Tree} A copy (if fn returns new-nodes). 
  * 	NB: Callers may also ignore the return value, using this as a forEach.
  * 
  */
 Tree.map = (tree, fn, parent=null, depth=0) => {
 	let t2 = fn(tree, parent, depth);
-	// if (t2===Tree.BREAK) return null;
+	// wrap the return into a tree node?
+	if (t2 && ! Tree.isa(t2)) t2 = new Tree({value:t2});
 	if (tree.children) {
 		// recurse
 		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree, depth+1));
+		const kidnodes = fkids.map();
 		// support an early break?? what should the return behaviour be?
 		// for(let i=0; i<tree.children.length; i++) {
 		// 	let kid = tree.children[i];
@@ -98,7 +115,9 @@ Tree.map = (tree, fn, parent=null, depth=0) => {
 		// 	if (fKid===Tree.BREAK) break;
 		// 	fkids.push(fKid);
 		// }
-		if (t2) t2.children = fkids;
+		if (t2) {
+			t2.children = fkids;
+		}
 	}
 	return t2;
 };
