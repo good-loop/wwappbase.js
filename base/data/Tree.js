@@ -107,7 +107,6 @@ Tree.map = (tree, fn, parent=null, depth=0) => {
 	if (tree.children) {
 		// recurse
 		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree, depth+1));
-		const kidnodes = fkids.map();
 		// support an early break?? what should the return behaviour be?
 		// for(let i=0; i<tree.children.length; i++) {
 		// 	let kid = tree.children[i];
