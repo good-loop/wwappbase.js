@@ -1,6 +1,15 @@
 import React, { Component } from 'react';
 import { useState } from 'react';
 import { useRef } from 'react';
+
+
+// Where should we request cached/resized images? Use the media cluster which matches the current local/test/prod site.
+let domainPrefix = window.location.host.match(/^(local|test)/);
+domainPrefix = domainPrefix ? domainPrefix[0] : '';
+domainPrefix = ''; // use the live cache
+const mediaCacheBase = `${window.location.protocol}//${domainPrefix}media.good-loop.com/uploads/mediacache/`;
+
+
 /**
  * A drop-in replacement for the html <img> tag, which adds in image size handling via media.gl.com
  * and mobile images via `msrc`
@@ -47,7 +56,7 @@ const DynImg = ({src, msrc, ...props}) => {
 		// Get scaled + cached image URL and set it on the <img>
 		_src = wrapUrl(src, width);
 	}
-	return <img src={_src} {...props} />;
+	return <img ref={ref} src={_src} {...props} />;
 };
 
 
@@ -57,12 +66,6 @@ const sizes = [ 2160, 1800, 1440, 1080, 720, 360, 180, 90 ];
 
 /** A 1x1 transparent PNG for use as a placeholder src */
 const transparentPixel = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABAQMAAAAl21bKAAAAA1BMVEUAAACnej3aAAAAAXRSTlMAQObYZgAAAApJREFUCNdjYAAAAAIAAeIhvDMAAAAASUVORK5CYII=';
-
-// Where should we request cached/resized images? Use the media cluster which matches the current local/test/prod site.
-let domainPrefix = window.location.host.match(/^(local|test)/);
-domainPrefix = domainPrefix ? domainPrefix[0] : '';
-const mediaCacheBase = `${window.location.protocol}//${domainPrefix}media.good-loop.com/uploads/mediacache/`;
-
 
 /** NB: Copy pasta from dynimg.js
  * Take a (hopefully image) URL and wrap it in a request to MediaCacheServlet, with optional scaling. 
