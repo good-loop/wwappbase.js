@@ -86,14 +86,14 @@ class MainDivBase extends Component {
 			navbarPages, navbarChildren,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			defaultPage,
-			navbar=true,
+			navbar=true, // false for no navbar!
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
 		if (isFunction(navbarPages)) {
 			navbarPages = navbarPages();
 		}
-		if (!navbarPages) navbarPages = Object.keys(pageForPath);
+		if ( ! navbarPages) navbarPages = Object.keys(pageForPath);
 
 		// which page?
 		let path = DataStore.getValue('location', 'path');
