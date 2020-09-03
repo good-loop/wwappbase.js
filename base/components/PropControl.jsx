@@ -939,17 +939,6 @@ const PropControlDate = ({ prop, item, storeValue, rawValue, onChange, ...otherS
 		}
 	}
 
-	// // HACK: also set the raw text in _raw. This is cos the server may have to ditch badly formatted dates.
-	// // NB: defend against _raw_raw
-	// const rawProp = prop.substr(prop.length - 4, prop.length) === '_raw' ? null : prop + '_raw';
-	// if (!value && item && rawProp) value = item[rawProp];
-	// const onChangeWithRaw = e => {
-	// 	if (item && rawProp) {
-	// 		item[rawProp] = e.target.value;
-	// 	}
-	// 	onChange(e);
-	// };
-
 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
 	// Encourage ISO8601 format
 	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
