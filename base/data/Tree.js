@@ -41,9 +41,9 @@ Tree.str = (tree, depth) => {
  */
 Tree.children = node => node.children || [];
 /**
- * 
+ * Flattens with parent nodes above children.
  * @param {Tree} node 
- * @returns {Tree[]}
+ * @returns {Tree[]} 
  */
 Tree.flatten = node => {
 	const all = [];
@@ -94,6 +94,9 @@ Tree.depth = node => {
 
 /**
  * Map fn over all tree nodes.
+ * 
+ * NB: Consider also `Tree.flatten(tree).map()`
+ * 
  * @param {!Tree} tree
  * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / new-value / null. depth starts at 0 for the root.
  * @returns {?Tree} A copy (if fn returns new-nodes). 
