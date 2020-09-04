@@ -621,7 +621,7 @@ const PropControlMultiSelect = ({storeValue, value, prop, labelFn, options, mode
  *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
-const PropControlRadio = ({ type, prop, storeValue, value, path, item, saveFn, options, labels, inline, size, ...otherStuff }) => {
+const PropControlRadio = ({ type, prop, storeValue, value, path, item, saveFn, options, labels, inline, size, rawValue, setRawValue, ...otherStuff }) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
