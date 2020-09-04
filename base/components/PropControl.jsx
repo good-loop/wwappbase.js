@@ -1006,7 +1006,7 @@ const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValu
 			getItemValue={getItemValue}
 			items={items}
 			renderItem={renderItem}
-			value={rawValue}
+			value={rawValue || ''}
 			onChange={onChange}
 			onSelect={onChange2}
 		/>
