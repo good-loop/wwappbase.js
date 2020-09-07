@@ -785,7 +785,9 @@ const PropControlYesNo = ({ path, prop, value, saveFn, className }) => {
 
 /**
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
- * Used to edit variant.style
+ * Used to edit variant.style. 
+ * 
+ * ??should this be pills??
  */
 const PropControlArrayText = ({ storeValue, value, rawValue, setRawValue, prop, proppath, saveFn, ...otherStuff }) => {
 	const onChange = e => {

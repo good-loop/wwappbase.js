@@ -6,6 +6,7 @@ import C from '../CBase.js';
 
 // Plumbing
 import DataStore from '../plumbing/DataStore';
+import CloseButton from './CloseButton';
 import Messaging from '../plumbing/Messaging';
 
 
@@ -48,7 +49,7 @@ const MessageBarItem = ({message}) => {
 			{text}
 			{Messaging.jsxFromId[message.id]}
 			<div className="hidden">Details {message.details}</div>
-			<button onClick={ e => { message.closed=true; DataStore.update(); } } type="button" className="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<CloseButton onClick={ e => { message.closed=true; DataStore.update(); } } />
 		</div>
 	);
 };
