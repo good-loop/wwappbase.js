@@ -41,8 +41,10 @@ const bezierSlide = (x = 0) => {
  * @param {Number} fps frames per second
  * @param {String} currencySymbol
  * @param {Money} amount - Convenient way to set value + currencySymbol
+ * @param {Number} sigFigs Round value
+ * @param {Boolean} preservePennies Preserves 2 digits on the pennies count if pennies are included in rounding
  */
-const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs = 3 }) => {
+const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs = 3, preservePennies = true }) => {
 	if (amount) {
 		value = Money.value(amount);
 		currencySymbol = Money.currencySymbol(amount);
@@ -69,8 +71,22 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 		if (elapsed >= animationLength) setState({...state, done: true});
 	}
 
-	const disp = pretty ? printer.prettyNumber(displayValue) : Math.floor(displayValue);
-	return <span ref={ref}>{currencySymbol + printer.prettyNumber(displayValue, sigFigs)}</span>;
+	let disp = pretty ? printer.prettyNumber(displayValue, sigFigs) : displayValue;
+	disp = disp.toString();
+	if (preservePennies) {
+		let parts = disp.split('.');
+		if (parts.length > 1) {
+			while (parts[1].length != 2) {
+				if (parts[1].length < 2)
+					parts[1] += "0";
+				else if (parts[1].length > 2) {
+					parts[1] = parts[1].substr(0, parts.length - 1);
+				}
+			}
+			disp = parts[0] + "." + parts[1];
+		}
+	}
+	return <span ref={ref}>{currencySymbol + disp}</span>;
 }
 
 export default Counter;
