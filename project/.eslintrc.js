@@ -75,6 +75,7 @@ module.exports = {
 		"jsx-a11y/media-has-caption": "warn",
 		"jsx-a11y/no-static-element-interactions": "warn",
 		"jsx-a11y/control-has-associated-label":"warn",
+		"jsx-a11y/accessible-emoji":"off",
 
 		"jsx-quotes": ["warn", "prefer-double"],
 		"key-spacing": "off",
@@ -99,6 +100,7 @@ module.exports = {
 		"no-restricted-globals": "warn", // triggers on isNan()
 		"no-return-assign": "off",
 		"no-tabs": "off",
+		"no-this-before-super": "warn",
 		"no-trailing-spaces": "off",
 		"no-underscore-dangle": "off",
 		"no-unused-vars": "warn",

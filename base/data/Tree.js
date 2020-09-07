@@ -8,6 +8,9 @@ import DataClass, {getId} from './DataClass';
  * 
  * e.g. new Tree({x:"root", children:[new Tree({x:"Leaf"})] })
  * 
+ * This is single-linked, with parents listing their children. 
+ * Child nodes don't hold a link back to the parent (because circular references are not valid json).
+ * 
 */
 class Tree extends DataClass {
 	/** @type {?Tree[]} */
@@ -15,7 +18,7 @@ class Tree extends DataClass {
 	/** @type {Object} */
 	value;
 	/**
-	 * e.g. new Tree({value:"root", children:[new Tree({value:"Leaf"})] })
+	 * e.g. ` new Tree({value:"root", children:[new Tree({value:"Leaf"})] }) `
 	 */
 	constructor(base) {
 		super(base);
@@ -28,10 +31,30 @@ class Tree extends DataClass {
 }
 DataClass.register(Tree, "Tree");
 
+// TODO recurse
+Tree.str = (tree, depth) => {
+	return Tree.value(tree)+"";
+}
+
 /**
  * @returns {!Tree[]} Can be empty, never null
  */
 Tree.children = node => node.children || [];
+/**
+ * Flattens with parent nodes above children.
+ * @param {Tree} node 
+ * @returns {Tree[]} 
+ */
+Tree.flatten = node => {
+	const all = [];
+	flatten2(node, all);
+	return all;
+};
+const flatten2 = (node, all) => {
+	all.push(node);
+	if ( ! node.children) return;
+	node.children.forEach(kid => flatten2(kid, all));
+};
 
 /**
  * The main value stored on this node
@@ -63,19 +86,40 @@ Tree.depth = node => {
 	return 1 + Math.max(...kdepths);
 };
 
+// /**
+//  * TODO what are the most useful semantices for this??
+//  * Special constant to break out of `map()` early.
+//  */
+// Tree.BREAK = "BREAK";
+
 /**
  * Map fn over all tree nodes.
+ * 
+ * NB: Consider also `Tree.flatten(tree).map()`
+ * 
  * @param {!Tree} tree
- * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / whatever. depth starts at 0 for the root.
+ * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / new-value / null. depth starts at 0 for the root.
  * @returns {?Tree} A copy (if fn returns new-nodes). 
  * 	NB: Callers may also ignore the return value, using this as a forEach.
+ * 
  */
 Tree.map = (tree, fn, parent=null, depth=0) => {
 	let t2 = fn(tree, parent, depth);
+	// wrap the return into a tree node?
+	if (t2 && ! Tree.isa(t2)) t2 = new Tree({value:t2});
 	if (tree.children) {
 		// recurse
 		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree, depth+1));
-		if (t2) t2.children = fkids;
+		// support an early break?? what should the return behaviour be?
+		// for(let i=0; i<tree.children.length; i++) {
+		// 	let kid = tree.children[i];
+		// 	let fKid = Tree.map(kid, fn, tree, depth+1);
+		// 	if (fKid===Tree.BREAK) break;
+		// 	fkids.push(fKid);
+		// }
+		if (t2) {
+			t2.children = fkids;
+		}
 	}
 	return t2;
 };

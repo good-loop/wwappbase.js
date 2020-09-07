@@ -468,24 +468,6 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, className = 'btn 
 	);
 };
 
-
-/**
- * A minor convenience for raw html
- */
-Misc.RawHtml = ({html}) => {
-	// extract and add scripts?!
-	let cleanhtml = html.replace(/<script[^>]+><\/script>/g, stag => {
-		let src = $(stag).attr('src');
-		addScript(src, {});
-		return '<!-- snip: script '+src+' -->';
-	});
-	return (
-		<div>
-			<div dangerouslySetInnerHTML={{__html:cleanhtml}} />;
-		</div>
-	);
-};
-
 /**
  * Markdown text
  */

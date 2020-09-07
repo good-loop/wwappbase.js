@@ -193,12 +193,12 @@ export const asNum = (v :string|number|null) : number|null => {
 
 
 /**
- * @param src {!String} url for the script
- * @param onLoad {?Function} called on-load and on-error
+ * @param {!string} src url for the script
+ * @param {?Function} onload called on-load and on-error
  * @param {?dom-element} domElement append to this, or to document.head
  * NB: copy-pasta of Good-Loop's unit.js addScript()
  */
-export const addScript = function(src:string, {async, onload, onerror, domElement}) {
+export const addScript = function({src, async, onload, onerror, domElement}) {
 	let script = document.createElement('script');
 	script.setAttribute( 'src', src);
 	if (onerror) script.addEventListener('error', onerror); 
@@ -213,6 +213,58 @@ export const addScript = function(src:string, {async, onload, onerror, domElemen
 	}
 	domElement.appendChild(script);
 };
+
+/**
+	 * A more flexible (and dangerous) version of substring.
+	 * 
+	 * @param {string} mystring
+	 *            Can be null, in which case null will be returned
+	 * @param {!number} start
+	 *            Inclusive. Can be negative for distance from the end.
+	 * @param {?number} end
+	 *            Exclusive. Can be null for "up to the end". Can be negative for distance from the end. E.g. -1
+	 *            indicates "all but the last character" (zero indicates
+	 *            "up to the end"). Can be longer than the actual string, in
+	 *            which case it is reduced. If end is negative and too large, an
+	 *            empty string will be returned.
+	 * @returns {?string} The chopped string. null if the input was null. The empty string
+	 *         if the range was invalid.
+	 */
+export const substr = (mystring:string, _start:number, _end: number) => {
+		if ( ! mystring) return mystring;
+		// keep the original values around for debugging
+		let start = _start;
+		let end = _end || 0;
+		const len = mystring.length;
+		// start from end?
+		if (start < 0) {
+			start = len + start;
+			if (start < 0) {
+				start = 0;
+			}
+		}
+		// from end?
+		if (end <= 0) {
+			end = len + end;
+			if (end < start) {
+				return "";
+			}
+		}
+		assert(end >= 0, start + " " + end);
+		// too long?
+		if (end > len) {
+			end = len;
+		}
+		// OK
+		if (start == 0 && end == len)
+			return mystring;
+		if (end < start) {
+			console.warn("substr() - Bogus start(" + _start+ ")/end(" + _end + " for " + mystring);
+			return "";
+		}
+		assert(start >= 0 && end >= 0, start + " " + end);
+		return mystring.substring(start, end);
+	};
 
 
 /** Parse url arguments

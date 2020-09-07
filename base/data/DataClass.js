@@ -46,30 +46,29 @@ export default MyType;
 class DataClass {
 
 	/**
-	 * Sub-classes with properties/fields MUST define a constructor with the line:
+	 * Sub-classes with properties/fields MUST define a constructor that calls `DataClass._init()` or has the line:
 	 * Object.assign(this, base);
 	 * For example:
 	 * ```
 	constructor(base) {
-		super(base);
-		Object.assign(this, base);
-		delete this.status;
+		super();
+		DataClass._init(this, base);
 	}
 	```
-	 * 
-	* WARNING: IF your class defines any property values, then
+	 
+	* Why? Otherwise IF your class defines any property values, then
 	 * these take precedence over anything this super constructor does.
-	 * So data from `base` could easily be lost!
+	 * So data from `base` would easily be lost.
 	 */
-	constructor(base) {
-		this._init(base);
+	constructor(base) {		
+		DataClass._init(this, base);
 	}
 
-	_init(base) {
-		Object.assign(this, base); // Better done in subclass!
-		this['@type'] = this.constructor._name || this.constructor.name;	
+	static _init(item, base) {
+		Object.assign(item, base); // Better done in subclass!
+		item['@type'] = item.constructor._name || item.constructor.name;	
 		// Avoid e.g. copying a Published object and setting the status to Published
-		delete this.status; // Better done in subclass!
+		delete item.status; // Better done in subclass!
 	}
 
 	/**

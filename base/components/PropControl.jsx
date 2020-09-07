@@ -141,7 +141,7 @@ const PropControl = (props) => {
 	if ( ! path) {	// default to using path = the url
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
-	}	
+	}
 	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
 	// value comes from DataStore
@@ -153,7 +153,13 @@ const PropControl = (props) => {
 	let value = storeValue;
 	// Allow the user to move between invalid values, by keeping a copy of their raw input
 	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
-	const [rawValue, setRawValue] = useState(storeValue);
+
+	// Store value may be an object e.g. Money which is unsuitable for use as an <input> value - don't rely on type coercion
+	const storeToRaw = v => {
+		return (v && v.value) || v;
+	};
+	
+	const [rawValue, setRawValue] = useState(storeToRaw(storeValue));
 
 	// old code
 	if (props.onChange) {
@@ -234,7 +240,7 @@ const PropControl = (props) => {
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	const sizeClass = {sm:'small',lg:'large'}[props.size]; // map BS input size to text-size
 	return (
-		<FormGroup check={isCheck} inline={inline} className={space(type, className, error ? 'has-error' : null)}>
+		<FormGroup check={isCheck} className={space(type, className, inline&&'form-inline', error&&'has-error')}>
 			{(label || tooltip) && ! isCheck?
 				<label className={sizeClass} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
@@ -313,9 +319,9 @@ const PropControl2 = (props) => {
 		};
 
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
-
+		delete otherStuff.size;
 		return <Label check size={props.size}>
-				<Input size={props.size} type="checkbox" checked={bvalue} value={bvalue} onChange={onChange} {...otherStuff} />
+				<Input bsSize={props.size} type="checkbox" checked={bvalue} value={bvalue} onChange={onChange} {...otherStuff} />
 				{label} {helpIcon}
 			</Label>;
 	} // ./checkbox
@@ -334,7 +340,7 @@ const PropControl2 = (props) => {
 	// £s
 	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
 	if (type === 'Money') {
-		let acprops = { prop, storeValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
+		let acprops = { prop, storeValue, rawValue, setRawValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlMoney {...acprops} />;
 	} // ./£
 
@@ -346,7 +352,7 @@ const PropControl2 = (props) => {
 		setRawValue(e.target.value);
 		let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 		// console.warn("onChange", e.target.value, mv, e);
-		DSsetValue(proppath, mv);		
+		DSsetValue(proppath, mv);
 		if (saveFn) saveFn({ event: e, path, prop, value: mv });
 		// Enable piggybacking custom onChange functionality
 		if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
@@ -477,7 +483,7 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'autocomplete') {
-		let acprops = { prop, value, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
+		let acprops = { prop, value, rawValue, setRawValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlAutocomplete {...acprops} />;
 	}
 
@@ -518,7 +524,7 @@ const PropControl2 = (props) => {
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  * @param {?Boolean} canUnset If true, always offer an unset choice.
  */
-const PropControlSelect = ({ options, labels, storeValue, value, multiple, prop, onChange, saveFn, canUnset, ...otherStuff }) => {
+const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, ...otherStuff }) => {
 	// NB: pull off internal attributes so the select is happy with rest
 	const { className, recursing, modelValueFromInput, ...rest } = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select ' + [prop, otherStuff]);
@@ -528,7 +534,7 @@ const PropControlSelect = ({ options, labels, storeValue, value, multiple, prop,
 
 	// Multi-select is a usability mess, so we use a row of checkboxes.
 	if (multiple) {
-		return PropControlMultiSelect({storeValue, value, prop, onChange, labelFn, options, className, modelValueFromInput, ...rest });
+		return PropControlMultiSelect({storeValue, value, rawValue, setRawValue, prop, onChange, labelFn, options, className, modelValueFromInput, ...rest });
 	}
 
 	// make the options html
@@ -615,7 +621,7 @@ const PropControlMultiSelect = ({storeValue, value, prop, labelFn, options, mode
  *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
-const PropControlRadio = ({ type, prop, storeValue, value, path, item, saveFn, options, labels, inline, ...otherStuff }) => {
+const PropControlRadio = ({ type, prop, storeValue, value, path, item, saveFn, options, labels, inline, size, rawValue, setRawValue, ...otherStuff }) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -683,14 +689,17 @@ const PropControlMoney = ({ prop, name, storeValue, rawValue, setRawValue, curre
 	if ( ! storeValue || _.isString(storeValue) || _.isNumber(storeValue)) {
 		storeValue = new Money({ storeValue });
 	}
-	// prefer raw, so users can type incomplete answers!
+
+	// Prefer raw value, so numeric substrings which aren't numbers or are "simplifiable", eg "-" or "1.", are preserved while user is in mid-input
 	let v = rawValue || storeValue.value;
+
 	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
 		v = '';
 	}
 	//Money.assIsa(value); // type can be blank
 	// handle edits
 	const onMoneyChange = e => {
+		setRawValue(e.target.value);
 		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
 		const newM = e.target.value === '' ? null : new Money(e.target.value);
 		if (name && newM) newM.name = name; // preserve named Money items
@@ -778,7 +787,7 @@ const PropControlYesNo = ({ path, prop, value, saveFn, className }) => {
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
  * Used to edit variant.style
  */
-const PropControlArrayText = ({ storeValue, value, prop, proppath, saveFn, ...otherStuff }) => {
+const PropControlArrayText = ({ storeValue, value, rawValue, setRawValue, prop, proppath, saveFn, ...otherStuff }) => {
 	const onChange = e => {
 		const oldValue = DataStore.getValue(proppath) || [];
 		const oldString = oldValue.join(' ');
@@ -930,17 +939,6 @@ const PropControlDate = ({ prop, item, storeValue, rawValue, onChange, ...otherS
 		}
 	}
 
-	// // HACK: also set the raw text in _raw. This is cos the server may have to ditch badly formatted dates.
-	// // NB: defend against _raw_raw
-	// const rawProp = prop.substr(prop.length - 4, prop.length) === '_raw' ? null : prop + '_raw';
-	// if (!value && item && rawProp) value = item[rawProp];
-	// const onChangeWithRaw = e => {
-	// 	if (item && rawProp) {
-	// 		item[rawProp] = e.target.value;
-	// 	}
-	// 	onChange(e);
-	// };
-
 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
 	// Encourage ISO8601 format
 	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
@@ -958,7 +956,7 @@ options {Function|Object[]|String[]}
 renderItem {?JSX}
 getItemValue {?Function} item -> prop-value
 */
-const PropControlAutocomplete = ({ prop, storeValue, value, options, getItemValue, renderItem, path, proppath,
+const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValue, options, getItemValue, renderItem, path, proppath,
 	item, bg, saveFn, modelValueFromInput, ...otherStuff }) => {
 	// a place to store the working state of this widget
 	let widgetPath = ['widget', 'autocomplete'].concat(path);
@@ -972,8 +970,9 @@ const PropControlAutocomplete = ({ prop, storeValue, value, options, getItemValu
 		// console.log("event", e, e.type, optItem);
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
-		// typing sneds an event, clicking an autocomplete sends a value
+		// typing sends an event, clicking an autocomplete sends a value
 		const val = e.target ? e.target.value : e;
+		setRawValue(val)
 		let mv = modelValueFromInput(val, type, e.type);
 		DSsetValue(proppath, mv);
 		if (saveFn) saveFn({ event: e, path: path, prop, value: mv });
@@ -1007,7 +1006,7 @@ const PropControlAutocomplete = ({ prop, storeValue, value, options, getItemValu
 			getItemValue={getItemValue}
 			items={items}
 			renderItem={renderItem}
-			value={storeValue}
+			value={rawValue || ''}
 			onChange={onChange}
 			onSelect={onChange2}
 		/>
@@ -1074,8 +1073,8 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	// 	otherProps.readonly = otherProps.readOnly;
 	// 	delete otherProps.readOnly;
 	// }
-	if (size && ! ['sm','lg'].includes(size)) {
-		console.warn("Odd size",size,otherProps);
+	if (size) {
+		if ( ! ['sm','lg'].includes(size)) console.warn("Odd size",size,otherProps);
 	}
 
 	if (prepend || append) {
@@ -1089,7 +1088,7 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 		);
 	}
 
-	return <Input className={klass} size={size} type={type} value={value} {...otherProps} />;
+	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
 };
 
 
