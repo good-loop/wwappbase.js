@@ -963,7 +963,7 @@ const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValu
 	// a place to store the working state of this widget
 	let widgetPath = ['widget', 'autocomplete'].concat(path);
 	if (!getItemValue) getItemValue = s => s;
-	if (!renderItem) renderItem = a => printer.str(a);
+	if (!renderItem) renderItem = a => <div>{printer.str(a)}</div>;
 	const type = 'autocomplete';
 	const items = _.isArray(options) ? options : DataStore.getValue(widgetPath) || [];
 
