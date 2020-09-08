@@ -444,9 +444,12 @@ const fIdentity = (x : any) => x;
 /** Url-encoding: e.g. encode a parameter value so you can append it onto a url.
  * 
  * Why? When there are 2 built in functions:
- * escape(), and encodeURIComponent() has better unicode handling -- however it doesn't
- escape 's which makes it dangerous, and it does unhelpfully encode /s and other legitimate url characters.
- This is a convenient best-of-both.
+ * 
+ * 1. escape() robust but doesn't handle unicode. 
+ * 2. encodeURIComponent() has better unicode handling -- however it doesn't escape 's which makes it dangerous, 
+ * and it does unhelpfully encode /s and other legitimate url characters.
+ 
+ This is a super-solid best-of-both.
 */
 export const encURI = function(urlPart : string) {
 	urlPart = encodeURIComponent(urlPart);
