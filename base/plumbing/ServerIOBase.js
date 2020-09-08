@@ -284,16 +284,20 @@ const sogiveid = id => {
 		'water-aid': 'wateraid',
 		'woodland_trust': 'woodland-trust',
 		'woodland':'woodland-trust',
-		'wwf': 'wwf-uk'
+		'wwf': 'wwf-uk',
+		'Regenboog': 'de-regenboog-groep',
+		'centrepoint': 'centrepoint-soho'
 	}[id];
 
 	// tries to do automatic adjustments, if manual match not specified above
-	if ( ! sid) {
+	if (!sid) {
 		sid = id.toLowerCase().replace(/[_ ]/g,'-');
 	}
 
 	return sid;	
 };
+
+export { sogiveid as normaliseSogiveId };
 
 /**
  * type -> servlet url
