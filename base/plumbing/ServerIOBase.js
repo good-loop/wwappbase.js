@@ -288,12 +288,14 @@ const sogiveid = id => {
 	}[id];
 
 	// tries to do automatic adjustments, if manual match not specified above
-	if ( ! sid) {
+	if (!sid) {
 		sid = id.toLowerCase().replace(/[_ ]/g,'-');
 	}
 
 	return sid;	
 };
+
+export { sogiveid as normaliseSogiveId };
 
 /**
  * type -> servlet url
