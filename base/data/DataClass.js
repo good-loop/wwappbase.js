@@ -10,27 +10,8 @@ import printer from '../utils/printer';
 DataClass helps avoid the serialisation / deserialisation pain when working with classes and json.
 It does this by using static methods, which take the object as their first input.
 This gives you an object-oriented coding style (including inheritance) -- which can work with plain-old-js-objects.
-
- * Coding Style??
  * 
- * ??Would it be better to use class MyType extends DataClass??
- * And MyType only defines static methods??
- * 
- * These files are all about defining a convention, so let's set some rules??
- * 
- * Standard use
-
-import DataClass, {getType} from './DataClass';
-import C from './C';
-class MyType extends DataClass {};
-DataClass.register(MyType, "MyType");
-// or
-class MyType extends ParentType {}
-
-const This = MyType;
-export default MyType;
-
-...custom functions
+ * These files are all about defining a convention, so please follow the rules below.
 
  */
 
@@ -42,7 +23,27 @@ export default MyType;
  * @typedef {String} TimeString
  */
 
+/**
+ * Standard use
+```
+import DataClass, {getType} from './DataClass';
+import C from './C';
+class MyType extends DataClass {
 
+};
+DataClass.register(MyType, "MyType");
+// or
+class MyType extends ParentType {
+
+}
+
+const This = MyType;
+export default MyType;
+```
+
+...custom functions
+
+ */
 class DataClass {
 
 	/**
