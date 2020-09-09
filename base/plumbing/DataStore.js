@@ -222,6 +222,19 @@ class Store {
 		}
 	}
 
+	/**
+	 * The draft DataStore path for this item, or null if item is null. This is a convenience for `getDataPath(status:DRAFT, type, id)`.
+	 * 
+	 * NB: It does NOT support `domain` sharded items.
+	 * 
+	 * @param type {!C.TYPES}
+	 * @param id {!String}
+	 * @returns {String[]}
+	 */
+	getDataPathDraft(item) {
+		return getDataPath({status:C.KStatus.DRAFT, type:getType(item), id:getId(item)});
+	}
+
 
 	/**
 	 * @deprecated switch to getDataPath()

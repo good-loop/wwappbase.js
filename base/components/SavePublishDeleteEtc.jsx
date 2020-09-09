@@ -88,7 +88,8 @@ const check = ok => {
  * @param saveAs {?Boolean} If set, offer a save-as button which will copy, tweak the ID and the name, then save.
  */
 const SavePublishDeleteEtc = ({
-	type, id, hidden, 
+	type, id, 
+	hidden, 
 	cannotPublish, cannotDelete, canArchive,
 	publishTooltipText = 'Your account cannot publish this.',
 	autoPublish, autoSave = true,
@@ -101,7 +102,7 @@ const SavePublishDeleteEtc = ({
 		return <div className="SavePublishDiscard"><i>Login to save or publish edits</i></div>;
 	}
 
-	assert(C.TYPES.has(type), 'SavePublishDeleteEtc');
+	assert(C.TYPES.has(type), 'SavePublishDeleteEtc - not a type: '+type);
 	assMatch(id, String);
 
 	let localStatus = DataStore.getLocalEditsStatus(type, id) || C.STATUS.clean;

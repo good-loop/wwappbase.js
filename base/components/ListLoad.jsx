@@ -35,8 +35,10 @@ import ErrorAlert from './ErrorAlert';
  * @param {?String} navpage - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
  * @param ListItem {?React component} if set, replaces DefaultListItem.
- * 	ListItem only has to describe/present the item
- * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
+ * 	ListItem only has to describe/present the item.   
+ * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
+ * 	Input props: {type, servlet, navpage, item, sort}
+
  * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
  * @param {?String} itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} canCreate - If set, show a Create

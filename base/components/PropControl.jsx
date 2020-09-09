@@ -38,7 +38,7 @@ import { notifyUser } from '../plumbing/Messaging';
  * @param {!String[]} proppath
  * @param value
  */
-const DSsetValue = (proppath, value) => {
+export const DSsetValue = (proppath, value) => {
 	DataStore.setModified(proppath);
 	DataStore.setValue(proppath, value);
 	// console.log("set",proppath,value,DataStore.getValue(proppath));
@@ -240,7 +240,7 @@ const PropControl = (props) => {
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	const sizeClass = {sm:'small',lg:'large'}[props.size]; // map BS input size to text-size
 	return (
-		<FormGroup check={isCheck} className={space(type, className, inline&&'form-inline', error&&'has-error')}>
+		<FormGroup check={isCheck} className={space(type, className, error&&'has-error')} inline={inline} >
 			{(label || tooltip) && ! isCheck?
 				<label className={sizeClass} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
@@ -524,7 +524,8 @@ const PropControl2 = (props) => {
  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
  * @param {?Boolean} canUnset If true, always offer an unset choice.
  */
-const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, ...otherStuff }) => {
+const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, inline, ...otherStuff }) => {
+	// NB inline does nothing here?
 	// NB: pull off internal attributes so the select is happy with rest
 	const { className, recursing, modelValueFromInput, ...rest } = otherStuff;
 	assert(options, 'Misc.PropControl: no options for select ' + [prop, otherStuff]);
@@ -548,10 +549,9 @@ const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRa
 
 	/* text-muted is for my-loop mirror card
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
-	const klass = space('form-control', className); //, sv && sv.includes('Unknown')? 'text-muted' : null);
 	const safeValue = storeValue || ''; // "correct usage" - controlled selects shouldn't have null/undef value
 	return (
-		<select className={klass}
+		<select className={space('form-control', className)}
 			name={prop} value={safeValue} onChange={onChange}
 			{...rest}
 		>
@@ -1334,8 +1334,9 @@ let $widgetForType = {};
 /**
  * Extend or change support for a type
  * @param {!String} type e.g. "textarea"
- * @param {!JSX} $Widget the widget to render a propcontrol
- * ?? what props does it get?? {path, prop, proppath, value}
+ * @param {!JSX} $Widget the widget to render a propcontrol, replacing PropControl2. 
+ * The label, error, help have _already_ been rendered. This widget should do the control guts.
+ * ?? what props does it get?? {path, prop, proppath, value, item, modelValueFromInput}
  */
 const registerControl = ({ type, $Widget }) => {
 	assMatch(type, String);
