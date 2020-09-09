@@ -15,7 +15,7 @@ const PropControlPills = ({item, modelValueFromInput, path, prop, proppath, type
 
 	const removeTag = (tg) => {
 		let pills2 = pills.filter(t => t !== tg);
-		// TODO refactor so this is donw by PropControl standard code, not plugin widget code
+		// TODO refactor so this is done by PropControl standard code, not plugin widget code
 		DSsetValue(proppath, pills2);
 		if (saveFn) saveFn({path, prop});
 	};
