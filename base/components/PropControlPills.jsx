@@ -7,7 +7,9 @@ import DataStore from '../plumbing/DataStore';
 import { Badge } from 'reactstrap';
 import CloseButton from './CloseButton';
 import { useState } from 'react';
-
+/**
+ * A list-of-strings editor, where the strings are drawn as discrete "pills"
+ */
 const PropControlPills = ({item, modelValueFromInput, path, prop, proppath, type, fcolor, saveFn}) => {
 	let pills = item[prop] || [];	
 
