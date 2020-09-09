@@ -86,10 +86,11 @@ const check = ok => {
  * save buttons
  *
  * @param saveAs {?Boolean} If set, offer a save-as button which will copy, tweak the ID and the name, then save.
+ * @param {?string} position fixed|relative
  */
 const SavePublishDeleteEtc = ({
 	type, id, 
-	hidden, 
+	hidden, position,
 	cannotPublish, cannotDelete, canArchive,
 	publishTooltipText = 'Your account cannot publish this.',
 	autoPublish, autoSave = true,
@@ -169,7 +170,7 @@ const SavePublishDeleteEtc = ({
 	};
 
 	return (
-		<div className="SavePublishDeleteEtc SavePublishDiscard" title={item && item.status}>
+		<div className="SavePublishDeleteEtc SavePublishDiscard" style={{position}} title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div>
 
 			<Button name="save" 

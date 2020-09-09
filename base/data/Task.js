@@ -69,6 +69,13 @@ Task.setParent = (child, parent) => {
 	child.parentId = parent.id;
 };
 
+/**
+ * 
+ * @param {!Task} task 
+ * @returns {!Date} if unset, returns a far-future date
+ */
+Task.dueDate = task => new Date(task.due || "3000-01-01");
+
 Task.STAGES = new Enum('assigned wip testing done closed')
 
 /**
