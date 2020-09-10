@@ -1,5 +1,6 @@
 
-import React from 'react';
+import React, { useState } from 'react';
+import PropControl from './PropControl';
 
 const FilterForm = () => <PropControl size="lg" prepend={<Misc.Icon fa="filter" />} label="Filter Controls"
 					type="search"
