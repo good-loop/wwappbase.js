@@ -27,8 +27,9 @@ import ErrorAlert from './ErrorAlert';
  * @param {?String} sort -  Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
- * @param {?String} filter - Set a filter. Do NOT use this and hasFilter
- * @param {?Boolean} hasFilter - If true, offer a text filter. This will be added to q as a prefix filter.
+ * @param {?String} filter - Set a filter. Do NOT use this and canFilter
+ * @param {?Boolean} canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
+ * @param {?boolean} canCreate - If set, show a Create
  * @param {?boolean} filterLocally - If true, do not call the server for filtering
  * @param {?String} status - e.g. "Draft"
  * @param {?String} servlet - @deprecated - use navpage instead
@@ -41,10 +42,10 @@ import ErrorAlert from './ErrorAlert';
 
  * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
  * @param {?String} itemClassName - If set, overrides the standard ListItem btn css classes
- * @param {?boolean} canCreate - If set, show a Create
  * @param {?boolean} hideTotal - If true, don't show the "Total about 17" line
  * @param {?Object} createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
  * @param {?C.KStatus} preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
+ * @param hasFilter - deprecated - use canFilter
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q, 
@@ -52,8 +53,9 @@ const ListLoad = ({type, status, servlet, navpage,
 	sort = 'created-desc',
 	filter, hasFilter, filterLocally,
 	ListItem,
-	checkboxes, canDelete, 
-	canCreate, createBase,
+	checkboxes, 
+	canDelete, canCreate, canFilter,
+	createBase,
 	className,
 	notALink, itemClassName,
 	preferStatus,
@@ -68,11 +70,11 @@ const ListLoad = ({type, status, servlet, navpage,
 	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
 	// widget settings TODO migrate to useState so we can have multiple overlapping ListLoads
 	// const [foo, setFoo] = useState({});
-	const widgetPath = ['widget','ListLoad',type,status];
-	
+	const widgetPath = ['widget','ListLoad',type,status];	
 	if (servlet && ! navpage) {
 		console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");
 	}
+	if ( ! canFilter) canFilter = hasFilter; // for old code
 	if ( ! navpage) navpage = servlet || DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
 	if ( ! servlet) servlet = navpage;
 	if ( ! servlet) {
@@ -87,8 +89,8 @@ const ListLoad = ({type, status, servlet, navpage,
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
 	// NB: case-insentive filtering
-	if (hasFilter) {
-		assert( ! filter, "ListLoad.jsx - Do NOT use filter and hasFilter props");
+	if (canFilter) {
+		assert( ! filter, "ListLoad.jsx - Do NOT use filter and canFilter props");
 		filter = DataStore.getValue(widgetPath.concat('filter'));
 	}
 	if (filter) filter = filter.toLowerCase(); // normalise
@@ -113,7 +115,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} base={createBase} navpage={navpage} /> : null}
 		
-		{hasFilter? <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/> : null}
+		{canFilter? <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/> : null}
 
 		{items.length === 0 ? <>No results found for <code>{space(q, filter) || type}</code></> : null}
 		{total && ! hideTotal? <div>About {total} results in total</div> : null}

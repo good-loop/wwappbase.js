@@ -135,7 +135,7 @@ const TaskList = ({}) => {
 				<QuickTaskMaker tags={tags} items={pvItems.value} />
 				<div>&nbsp;</div>
 				<ListLoad
-					hasFilter={true}
+					canFilter
 					q={q}
 					type={type}
 					status={status}
