@@ -4,7 +4,7 @@
  * Note: use these wrapped by DataStore.fetch
  */
 
-import {assert, assMatch, assertMatch} from 'sjtest';
+import { assert, assMatch } from './utils/assert';
 // add funky methods to the "standard" Person data-class
 import PromiseValue from 'promise-value';
 import {mapkv, encURI} from '../base/utils/miscutils';

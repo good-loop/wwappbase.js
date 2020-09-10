@@ -13,7 +13,7 @@ import React, { useRef, useState } from 'react';
 // TODO remove the rest of these
 import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
 
-import { assert, assMatch } from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
@@ -151,15 +151,13 @@ const PropControl = (props) => {
 	// HACK: for now, we use both as theres a lot of code that refers to value, but its fiddly to update it all)
 	let storeValue = DataStore.getValue(proppath);
 	let value = storeValue;
-	// Allow the user to move between invalid values, by keeping a copy of their raw input
-	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
 
-	// Store value may be an object e.g. Money which is unsuitable for use as an <input> value - don't rely on type coercion
-	const storeToRaw = v => {
-		return (v && v.value) || v;
-	};
-	
-	const [rawValue, setRawValue] = useState(storeToRaw(storeValue));
+	// What is rawValue?
+	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
+	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
+	// rawValue === undefined does not mean "show a blank". BUT rawValue === "" does!
+	const [rawValue, setRawValue] = useState();
+	assMatch(rawValue, "?String", "rawValue must be a string type:"+type+" path:"+path+" prop:"+prop);
 
 	// old code
 	if (props.onChange) {
@@ -346,7 +344,6 @@ const PropControl2 = (props) => {
 
 	// text based
 	const onChange = e => {
-		// console.log("event", e, e.type);
 		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
 		setRawValue(e.target.value);
@@ -690,8 +687,8 @@ const PropControlMoney = ({ prop, name, storeValue, rawValue, setRawValue, curre
 		storeValue = new Money({ storeValue });
 	}
 
-	// Prefer raw value, so numeric substrings which aren't numbers or are "simplifiable", eg "-" or "1.", are preserved while user is in mid-input
-	let v = rawValue || storeValue.value;
+	// Prefer raw value (including "" or 0), so numeric substrings which aren't numbers or are "simplifiable", eg "-" or "1.", are preserved while user is in mid-input
+	let v = rawValue===undefined? storeValue.value : rawValue;
 
 	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
 		v = '';
