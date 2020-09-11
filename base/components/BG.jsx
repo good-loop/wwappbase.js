@@ -2,7 +2,8 @@
 import React from 'react';
 
 /**
- * Drops a background image behind the children
+ * Drops a background image behind the children.
+ * See: https://studio.good-loop.com/#bg
  * @param {?ImageObject} image
  * @param {?string} size cover|contain|fit Fit means stretch to fit
  * @param {?string} height defaults to auto, which should take its size from the children.
@@ -26,7 +27,7 @@ const BG = ({image, src, children, opacity=0.5, size='cover', height='auto', min
 		{/* <div style={{position:'absolute', width:'100%', height, top:0, left:0}} > */}
 		<div style={style} />
 		<div style={{zIndex:100}}>{children}</div>
-		{image && <div style={{zIndex:100,position:'absolute',bottom:0,right:0,color:"white",background:"#666"}}><small>{image.name} image (cc) by {image.author}</small></div>}
+		{image && <div className='img-credit'><small>{image.name} image (cc) by {image.author}</small></div>}
 	{/* </div> */}
 	</div>);
 };
