@@ -3,6 +3,8 @@
  */
 import {assert} from 'sjtest';
 import DataClass, {getId} from './DataClass';
+import { Children } from 'react';
+import { str } from '../utils/printer';
 
 /** 
  * 
@@ -31,9 +33,21 @@ class Tree extends DataClass {
 }
 DataClass.register(Tree, "Tree");
 
-// TODO recurse
-Tree.str = (tree, depth) => {
-	return Tree.value(tree)+"";
+/**
+ * 
+ * @param {Tree} tree 
+ * @param {?number} depth 
+ */
+Tree.str = (tree, depth=0, maxDepth=5) => {
+	if (depth===maxDepth) return "...";
+	let sv = str(Tree.value(tree));
+	let kids = Tree.children(tree);
+	if ( ! kids.length) return sv;
+	let skids = kids.map(kid => Tree.str(kid, depth+1));
+	// make each line one deeper
+	let skids2 = skids.map(skid => skid.split("\n").map(line => "\t"+line).join("\n"));
+	return sv+"\n"+skids2.join("\n");
+		
 }
 
 /**
@@ -46,6 +60,7 @@ Tree.children = node => node.children || [];
  * @returns {Tree[]} 
  */
 Tree.flatten = node => {
+	assert(node, "Tree.js flatten() - "+node)
 	const all = [];
 	flatten2(node, all);
 	return all;
@@ -180,6 +195,27 @@ Tree.filter = (tree, predicate, parent=null) => {
 		return null;
 	}
 	return t2;
+};
+
+/**
+ * Depth first search
+ * @param {Tree} tree 
+ * @param {Function} predicate node-value (never null/undefined) -> falsy
+ */
+Tree.findByValue = (tree, predicate) => {
+	if (tree.value!==undefined && tree.value!==null) {
+		if (predicate(tree.value)) {
+			return tree; // found!
+		}
+	}
+	let kids = Tree.children(tree);
+	// first match
+	for (let i = 0; i < kids.length; i++) {
+		const kid = kids[i];
+		let v = Tree.findByValue(kid, predicate);
+		if (v) return v;
+	}
+	return null;
 };
 
 /**

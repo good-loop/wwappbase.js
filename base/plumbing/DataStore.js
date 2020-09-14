@@ -45,9 +45,10 @@ class Store {
 		this.parseUrlVars();
 		// and listen to changes
 		window.addEventListener('hashchange', () => {
+			// console.log("DataStore hashchange");
 			// NB: avoid a loopy call triggered from setUrlValue()
-			if (this.updating) return true;
-			this.parseUrlVars();
+			// NB: updating can be true from other updates
+			this.parseUrlVars(false);
 			return true;
 		});
 	}
@@ -58,8 +59,9 @@ class Store {
 	 * To set a nav variable, use setUrlValue(key, value);
 	 * 
 	 * Stored as location: { path: String[], params: {key: value} }
+	 * @param {?boolean} update Set false to avoid updates (e.g. in a loopy situation)
 	 */
-	parseUrlVars() {
+	parseUrlVars(update) {
 		let {path, params} = parseHash();
 		// peel off eg publisher/myblog
 		let location = {};
@@ -69,7 +71,7 @@ class Store {
 		if (path.length > 2) location.slug = path[1];
 		if (path.length > 3) location.subslug = path[2];
 		location.params = params;
-		this.setValue(['location'], location);
+		this.setValue(['location'], location, update);
 	}
 
 

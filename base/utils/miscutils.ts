@@ -108,6 +108,7 @@ const setHash = function(unescapedHash :string) {
 /**
  * Note: params are always string valued, e.g. "1" not 1
  * No path will return as []
+ * @returns path:string[], params:Object
  */
 export const parseHash = function(hash = window.location.hash) {
 	let params = getUrlVars(hash);
