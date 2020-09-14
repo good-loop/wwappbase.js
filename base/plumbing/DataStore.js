@@ -47,8 +47,8 @@ class Store {
 		window.addEventListener('hashchange', () => {
 			// console.log("DataStore hashchange");
 			// NB: avoid a loopy call triggered from setUrlValue()
-			// NB: updating can be true from other updates
-			this.parseUrlVars(false);
+			// NB: `updating` can be true from other updates ??
+			this.parseUrlVars( ! this.updating);
 			return true;
 		});
 	}
