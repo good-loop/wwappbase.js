@@ -11,7 +11,7 @@ import { useState } from 'react';
  * A list-of-strings editor, where the strings are drawn as discrete "pills"
  */
 const PropControlPills = ({item, modelValueFromInput, path, prop, proppath, type, fcolor, saveFn}) => {
-	let pills = item[prop] || [];	
+	let pills = (item && item[prop]) || [];	
 
 	const removeTag = (tg) => {
 		let pills2 = pills.filter(t => t !== tg);
