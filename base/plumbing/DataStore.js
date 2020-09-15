@@ -545,7 +545,7 @@ class Store {
 				let fetchDate = this.getValue(epath);
 				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - cachePeriod) {
 					// fetch a fresh copy
-					console.log("DataStore", "stale - fetch fresh", path);
+					console.log("DataStore", "stale vs "+fetchDate+" - fetch fresh", path);
 					const pv = this.fetch2(path, fetchFn, cachePeriod);
 					// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
 					if (pv.resolved) return pv;
