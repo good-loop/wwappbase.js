@@ -152,7 +152,7 @@ const TaskList = ({}) => {
  * @param parent {Task}
  * @param items {?List} If provided, optimistic add to this. Useful for filtered lists.
  */
-const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
+const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea}) => {
 	if ( ! Login.isLoggedIn()) {
 		return null;
 	}
@@ -186,7 +186,7 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items}) => {
 	const ttext = DataStore.getValue(qpath.concat('text'));
 	return (
 		<div key={'f'} className={space('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)}>
-			<PropControl type="text" path={qpath} prop="text"
+			<PropControl type={textarea?"textarea":"text"} path={qpath} prop="text"
 				placeholder={parent? 'Reply / Comment' : 'Make a new task'} />
 			&nbsp;
 			<button className="btn btn-primary" disabled={ ! ttext} type="submit" onClick={quickTask}>Add</button>
