@@ -1003,19 +1003,22 @@ const PropControlDate = ({ prop, item, storeValue, rawValue, onChange, ...otherS
 	</div>);
 };
 
+/** Use Bootstrap components to make the dropdown menu look nice by default*/
+const renderMenuDflt = (items, value, style) => <DropdownMenu className="show">{items}</DropdownMenu>;
+const renderItemDflt = (item) => <DropdownItem>{item}</DropdownItem>
 
 /**
-* wraps the reactjs autocomplete widget
-options {Function|Object[]|String[]}
-renderItem {?JSX}
-getItemValue {?Function} item -> prop-value
+ * wraps the reactjs autocomplete widget
+ * @param {Function|Object[]|String[]} options The items to select from
+ * @param {?JSX} renderItem Should return a Bootstrap DropdownItem, to look nice. Will be passed a member of the options prop as its only argument.
+ * @param {?Function} getItemValue Map item (member of options prop) to the value which should be stored
 */
 const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValue, options, getItemValue, renderItem, path, proppath,
 	item, bg, saveFn, modelValueFromInput, ...otherStuff }) => {
 	// a place to store the working state of this widget
 	let widgetPath = ['widget', 'autocomplete'].concat(path);
 	if (!getItemValue) getItemValue = s => s;
-	if (!renderItem) renderItem = a => <div>{printer.str(a)}</div>;
+	if (!renderItem) renderItem = renderItemDflt;
 	const type = 'autocomplete';
 	const items = _.isArray(options) ? options : DataStore.getValue(widgetPath) || [];
 
@@ -1059,10 +1062,13 @@ const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValu
 			inputProps={{ className: otherStuff.className || 'form-control' }}
 			getItemValue={getItemValue}
 			items={items}
+			renderMenu={renderMenuDflt}
 			renderItem={renderItem}
 			value={rawValue || ''}
 			onChange={onChange}
 			onSelect={onChange2}
+			shouldItemRender={(item, value) => item.toLowerCase().startsWith(value.toLowerCase())}
+			menuStyle={{zIndex: 1}}
 		/>
 	);
 }; //./autocomplete
