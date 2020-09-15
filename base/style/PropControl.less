@@ -33,7 +33,12 @@
 	
 	input.form-check-input {
 		margin-top: 0;
-	}	
+	}
+	
+	// HACK: Card headers that use .btn styling don't get fixed height so they can expand with tall content e.g. video preview
+	.card-header.btn {
+		height: unset;
+	}
 } /* ./compact */
 
 
@@ -91,6 +96,11 @@
 	&:focus {
 		border:none;
 	}
+}
+
+/** Make the inner wrapper of the autocomplete element a position reference for the dropdown menu */
+.autocomplete > div {
+	position: relative;
 }
 
 /**

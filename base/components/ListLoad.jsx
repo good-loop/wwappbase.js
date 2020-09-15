@@ -246,13 +246,14 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<A href={itemUrl} key={'A'+id} id={id} notALink={notALink}
 				onClick={event => onPick({ event, navpage, id })}
-				className={itemClassName || `ListItem btn btn-outline-secondary status-${item.status}`}
+				className={itemClassName || `ListItem btn-default btn btn-outline-secondary status-${item.status}`}
 			>
-				<div key={`Adiv${id}`}>{children}</div>
+				{children}
 			</A>
 		</div>
 	);
 };
+
 
 const A = ({notALink, id, children, ...stuff}) => notALink? <div key={'Ad'+id} {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
 
@@ -272,20 +273,18 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
 	if (name.length > 280) name = name.slice(0,280);
 	const status = C.KStatus.isPUBLISHED(item.status)? null : item.status;
-	return (
-		<div>
-			<Misc.Thumbnail item={item} />
-			<div className="info">
-				<div className="name">{name}</div>
-				<div className="detail small">
-					id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
-					<Misc.Time time={item.created} />
-					{item.status && item.status !== C.KStatus.PUBLISHED? item.status.toLowerCase() : null}
-				</div>
-				{ button || '' }
+	return <>
+		<Misc.Thumbnail item={item} />
+		<div className="info">
+			<div className="name">{name}</div>
+			<div className="detail small">
+				id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
+				<Misc.Time time={item.created} />
+				{item.status && item.status !== C.KStatus.PUBLISHED? item.status.toLowerCase() : null}
 			</div>
+			{ button || '' }
 		</div>
-	);
+	</>;
 };
 
 
