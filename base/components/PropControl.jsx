@@ -212,10 +212,10 @@ const PropControl = (props) => {
 
 	// validate!
 	if (newValidator) { // safe to override with this if it exists as it won't override explicit validator in props
-		validatorStatus = newValidator({ value: storeValue, props });	
+		validatorStatus = newValidator({ value: storeValue, props });
 	} else if (validator) {
 		const tempError = validator(storeValue, rawValue);
-		if (tempError) validatorStatus = { status: 'error', message: error }; 
+		if (tempError) validatorStatus = { status: 'error', message: tempError };
 	}
 
 	// Has an issue been reported?
