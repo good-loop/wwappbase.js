@@ -33,6 +33,7 @@ import Money from '../data/Money';
 import { getType, getId } from '../data/DataClass';
 import { notifyUser } from '../plumbing/Messaging';
 
+
 /**
  * Set the value and the modified flag in DataStore
  * @param {!String[]} proppath
@@ -129,8 +130,8 @@ const dateValidator = (val, rawValue) => {
  * @param required {?Boolean} If set, this field should be filled in before a form submit.
  * 	TODO mark that somehow
  * @param validator {?(value, rawValue) => String} Generate an error message if invalid
- * @param {?string} error error message to show
- * @param {?string} warning error message to show
+ * @param {?String} error Error message to show, regardless of validator output
+ * @param {?String} warning Warning message to show, regardless of validator output
  * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
  * @param https {?Boolean} if true, for type=url, urls must use https not http (recommended)
  * 
@@ -165,6 +166,7 @@ const PropControl = (props) => {
 		props = Object.assign({ saveFn: props.onChange }, props);
 		delete props.onChange;
 	}
+
 	// Use a default? But not to replace false or 0
 	if (dflt) {
 		// allow the user to delete the field - so only check the default once
@@ -181,24 +183,39 @@ const PropControl = (props) => {
 		}
 	}
 
+	// Temporary hybrid form while transitioning to all-modular PropControl structure
+	// newValidator produces an object compatible with setInputStatus
+	// ...but isn't used if a validator is explicitly supplied by caller.
+	// TODO Allow validator to output error and warning simultaneously?
+	// TODO Allow validator to output multiple errors / warnings?
+	const newValidator = validator ? null : validatorForType[type];
+
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
 	if (PropControl.KControlType.isdate(type) && !validator) validator = dateValidator;
 
+	/*
+	// URL and media upload inputs are now plugins & use plug-in validator
 	// Default validator: URL
 	const isUrlInput = (PropControl.KControlType.isurl(type) || PropControl.KControlType.isimg(type) || PropControl.KControlType.isimgUpload(type));
 	if (isUrlInput && !validator) {
 		validator = stuff.https ? urlValidatorSecure : urlValidator;
 	}
+	*/
 
 	// Default validator: Money (NB: not 100% same as the backend)
 	if (PropControl.KControlType.isMoney(type) && !validator && !error) {
 		validator = val => moneyValidator(val, props.min, props.max);
 	}
 
+	let validatorStatus;
+
 	// validate!
-	if (validator) {
-		error = validator(storeValue, rawValue);
+	if (newValidator) { // safe to override with this if it exists as it won't override explicit validator in props
+		validatorStatus = newValidator({ value: storeValue, props });
+	} else if (validator) {
+		const tempError = validator(storeValue, rawValue);
+		if (tempError) validatorStatus = { status: 'error', message: tempError };
 	}
 
 	// Has an issue been reported?
@@ -214,13 +231,20 @@ const PropControl = (props) => {
 	}
 
 	// if it had an error because the input was required but not filled, remove the error once it is filled
-	// TODO: is this correct?
+	// TODO Expand inputStatus system so we can explicitly mark some standard error types like "required but empty"?
 	if (error) {
 		const is = getInputStatus(proppath);
 		if (is && is.status === 'error' && required && storeValue) {
-			setInputStatus({ path: proppath, status: 'ok', message: 'ok' });
+			setInputStatus(null);
 			error = undefined;
 		}
+	}
+
+	// Prefer validator output, if present, over caller-supplied errors and warnings
+	// TODO Is this correct?
+	if (validatorStatus) {
+		if (validatorStatus.status === 'error') error = validatorStatus.message;
+		if (validatorStatus.status === 'warning') warning = validatorStatus.message;
 	}
 
 	// Hack: Checkbox has a different html layout :( -- handled below
@@ -263,16 +287,90 @@ const PropControl2 = (props) => {
 	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff } = props;
 	let { item, bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
 
-	if (!modelValueFromInput) {
-		if (type === 'html') {
-			modelValueFromInput = (_v, type, eventType, target) => standardModelValueFromInput((target && target.innerHTML) || null, type, eventType);
-		} else {
-			modelValueFromInput = standardModelValueFromInput;
-		}
-	}
 	assert(!type || PropControl.KControlType.has(type), 'Misc.PropControl: ' + type);
 	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: ' + path + " prop:" + prop);
 	assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'Misc.PropControl: null in path ' + path + " prop:" + prop);
+
+	// HACK: Fill in modelValueFromInput differently depending on whether this is a plugin-type input
+	// Temporary while shifting everything to plugins
+	if ($widgetForType[type]) {
+		if (!modelValueFromInput) {
+				modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
+		}
+	} else {
+		if (!modelValueFromInput) {
+			if (type === 'html') {
+				modelValueFromInput = (_v, type, eventType, target) => standardModelValueFromInput((target && target.innerHTML) || null, type, eventType);
+			} else {
+				modelValueFromInput = standardModelValueFromInput;
+			}
+		}
+	}
+
+	// Define onChange now, so it can be passed in to plugin controls
+	// TODO Should this also be pluggable?
+	// TODO Normalise setValue usage and event stopping
+	let onChange;
+
+	if (PropControl.KControlType.isjson(type)) {
+		onChange = event => {
+			const rawVal = event.target.value;
+			DataStore.setValue(stringPath, rawVal);
+			try {
+				// empty string is also a valid input - don't try to parse it though
+				const newVal = rawVal ? JSON.parse(rawVal) : null;
+				DSsetValue(proppath, newVal);
+				if (saveFn) saveFn({ event, path, prop, value: newVal });
+			} catch (err) {
+				// TODO show error feedback
+				console.warn(err);
+			}
+			stopEvent(event);
+		};
+	} else if (PropControl.KControlType.ischeckbox(type)) {
+		onChange = e => {
+			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
+			const isOn = e && e.target && e.target.checked;
+			const newVal = isOn? onValue : offValue;
+			DSsetValue(proppath, newVal);
+			if (saveFn) saveFn({ event: e, path, prop, item, value:newVal });
+		};
+	} else {
+			// text based
+		onChange = e => {
+			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
+			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
+			setRawValue(e.target.value);
+			let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
+			// console.warn("onChange", e.target.value, mv, e);
+			DSsetValue(proppath, mv);
+			if (saveFn) saveFn({ event: e, path, prop, value: mv });
+			// Enable piggybacking custom onChange functionality
+			if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
+			e.preventDefault();
+			e.stopPropagation();
+		};
+	}
+
+	// React complains about nully value given to input - normalise to ''
+	if (storeValue === undefined || storeValue === null) storeValue = '';
+
+	// Is there a plugin for this type?
+	if ($widgetForType[type]) {
+		const $widget = $widgetForType[type];
+
+		const props2 = {
+			item,
+			...props,
+			storeValue,
+			onChange,
+		};
+		// Fill in default modelValueFromInput but don't override an explicitly provided one
+		if (!modelValueFromInput) props2.modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
+
+		return <$widget {...props2} />
+	}
+
 	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
 	// if (item && item !== DataStore.getValue(path)) {
 	// 	console.warn("Misc.PropControl item != DataStore version", "path", path, "item", item);
@@ -281,17 +379,10 @@ const PropControl2 = (props) => {
 		item = DataStore.getValue(path) || {};
 	}
 
-	// New Pluggable System?
-	if ($widgetForType[type]) {
-		let $widget = $widgetForType[type];
-		let props2 = Object.assign({ item, modelValueFromInput }, props);
-		return <$widget {...props2} />
-	}
-
 	// Checkbox?
 	if (PropControl.KControlType.ischeckbox(type)) {		
 		// on/off values hack - make sure we don't have "false"
-		let onValue = props.pvalue || true;		
+		let onValue = props.pvalue || true;
 		let offValue = props.pvalue? null : false;
 		if (_.isString(storeValue)) {
 			if (storeValue === 'true') onValue=true;
@@ -308,16 +399,9 @@ const PropControl2 = (props) => {
 		const bvalue = !!storeValue;
 		// ./on/off values hack
 
-		const onChange = e => {
-			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
-			const isOn = e && e.target && e.target.checked;
-			const newVal = isOn? onValue : offValue;
-			DSsetValue(proppath, newVal);
-			if (saveFn) saveFn({ event: e, path, prop, item, value:newVal });
-		};
-
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
 		delete otherStuff.size;
+
 		return <Label check size={props.size}>
 				<Input bsSize={props.size} type="checkbox" checked={bvalue} value={bvalue} onChange={onChange} {...otherStuff} />
 				{label} {helpIcon}
@@ -328,12 +412,10 @@ const PropControl2 = (props) => {
 	if (type === 'yesNo') {
 		return <PropControlYesNo path={path} prop={prop} value={storeValue} inline={inline} saveFn={saveFn} />
 	}
+
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
 	}
-
-	// keep react happy
-	if (storeValue === undefined || storeValue === null) storeValue = '';
 
 	// £s
 	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
@@ -341,21 +423,6 @@ const PropControl2 = (props) => {
 		let acprops = { prop, storeValue, rawValue, setRawValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlMoney {...acprops} />;
 	} // ./£
-
-	// text based
-	const onChange = e => {
-		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
-		setRawValue(e.target.value);
-		let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
-		// console.warn("onChange", e.target.value, mv, e);
-		DSsetValue(proppath, mv);
-		if (saveFn) saveFn({ event: e, path, prop, value: mv });
-		// Enable piggybacking custom onChange functionality
-		if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
-		e.preventDefault();
-		e.stopPropagation();
-	};
 
 	if (type === 'XId') {
 		let service = otherStuff.service || 'WTF'; // FIXME // Does this actually need fixing? Is there any sensible default?
@@ -406,28 +473,26 @@ const PropControl2 = (props) => {
 		/>;
 	}
 
+	// TODO Use rawValue/storeValue to normalise away the transient hack
 	if (type === 'json') {
 		let stringPath = ['transient'].concat(proppath);
 		let svalue = DataStore.getValue(stringPath) || JSON.stringify(storeValue);
 
-		const onJsonChange = event => {
-			const rawVal = event.target.value;
-			DataStore.setValue(stringPath, rawVal);
-			try {
-				// empty string is also a valid input - don't try to parse it though
-				const newVal = rawVal ? JSON.parse(rawVal) : null;
-				DSsetValue(proppath, newVal);
-				if (saveFn) saveFn({ event, path, prop, value: newVal });
-			} catch (err) {
-				// TODO show error feedback
-				console.warn(err);
-			}
-			stopEvent(event);
-		};
-
-		return <textarea className="form-control" name={prop} onChange={onJsonChange} {...otherStuff} value={svalue} />;
+		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={svalue} />;
 	}
 
+	/*
+	// TODO Remove - url, img, *Upload types are modularised
+	if (type === 'url') {
+		delete otherStuff.https;
+		return (
+			<div>
+				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} onBlur={onChange} {...otherStuff} />
+				<div className="pull-right"><small>{value ? <a href={value} target="_blank">open in a new tab</a> : null}</small></div>
+				<div className="clearfix" />
+			</div>
+		);
+	}
 	if (type === 'img') {
 		delete otherStuff.https;
 		return (
@@ -442,17 +507,7 @@ const PropControl2 = (props) => {
 	if (type.match(/(img|video|both)Upload/)) {
 		return <PropControlImgUpload {...otherStuff} path={path} prop={prop} onUpload={onUpload} type={type} bg={bg} storeValue={storeValue} onChange={onChange} />;
 	} // ./imgUpload
-
-	if (type === 'url') {
-		delete otherStuff.https;
-		return (
-			<div>
-				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} onBlur={onChange} {...otherStuff} />
-				<div className="pull-right"><small>{value ? <a href={value} target="_blank">open in a new tab</a> : null}</small></div>
-				<div className="clearfix" />
-			</div>
-		);
-	}
+	*/
 
 	// date
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
@@ -1073,6 +1128,10 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	// remove stuff intended for other types that will upset input
 	delete otherProps.options;
 	delete otherProps.labels;
+	delete otherProps.rawValue;
+	delete otherProps.setRawValue;
+	delete otherProps.modelValueFromInput;
+	delete otherProps.saveFn;
 
 	// if (otherProps.readonly) { nah, let react complain and the dev can fix the cause
 	// 	otherProps.readonly = otherProps.readOnly;
@@ -1101,7 +1160,8 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-PropControl.KControlType = new Enum("img imgUpload videoUpload bothUpload textarea html text search select radio checkboxes autocomplete password email url color checkbox"
+PropControl.KControlType = new Enum("img textarea html text search select radio checkboxes autocomplete password email color checkbox"
+	// + " imgUpload videoUpload bothUpload url" // Removed to avoid double-add
 	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
 	// some Good-Loop data-classes
 	+ " Money XId keyvalue");
@@ -1112,6 +1172,18 @@ PropControl.KControlType = new Enum("img imgUpload videoUpload bothUpload textar
 const imgTypes = 'image/jpeg, image/png, image/svg+xml';
 const videoTypes = 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
 const bothTypes = `${imgTypes}, ${videoTypes}`;
+// Accepted MIME types
+const acceptDescs = {
+	imgUpload: 'JPG, PNG, or SVG image',
+	videoUpload: 'video',
+	bothUpload: 'video or image',
+};
+// Human-readable descriptions of accepted types
+const acceptTypes = {
+	imgUpload: imgTypes,
+	videoUpload: videoTypes,
+	bothUpload: bothTypes,
+};
 
 /**
  * image or video upload. Uses Dropzone
@@ -1119,20 +1191,6 @@ const bothTypes = `${imgTypes}, ${videoTypes}`;
  */
 const PropControlImgUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, ...otherStuff }) => {
 	delete otherStuff.https;
-
-	// Accepted MIME types
-	let accept = {
-		imgUpload: imgTypes,
-		videoUpload: videoTypes,
-		bothUpload: bothTypes,
-	}[type];
-
-	// Human-readable description of accepted types
-	let acceptDesc = {
-		imgUpload: 'JPG, PNG, or SVG image',
-		videoUpload: 'video',
-		bothUpload: 'video or image',
-	}[type];
 
 	// Automatically decide appropriate thumbnail component
 	const Thumbnail = {
@@ -1167,7 +1225,7 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, storeValue, valu
 	};
 
 	// New hooks-based DropZone - give it your upload specs & an upload-accepting function, receive props-generating functions
-	const { getRootProps, getInputProps } = useDropzone({accept, onDrop});
+	const { getRootProps, getInputProps } = useDropzone({accept: acceptTypes[type], onDrop});
 
 	// Catch special background-colour name for img and apply a special background to show img transparency
 	let className;
@@ -1176,14 +1234,13 @@ const PropControlImgUpload = ({ path, prop, onUpload, type, bg, storeValue, valu
 		className = 'stripe-bg';
 	}
 
-	// NB the "innerRef" prop used on FormControl is specific to Reactstrap - it applies the given ref to the underlying <input>
 	return (
 		<div>
 			<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
 			<div className="pull-left">
 				<div className="DropZone" {...getRootProps()}>
 					<input {...getInputProps()} />
-					Drop a {acceptDesc} here
+					Drop a {acceptDescs[type]} here
 				</div>
 			</div>
 			<div className="pull-right">
@@ -1322,6 +1379,7 @@ const getInputStatuses = path => {
 	getInputStatuses2(root, all);
 	return all;
 }
+
 const getInputStatuses2 = (node, all) => {
 	if (!_.isObject(node)) return;
 	if (node._status) all.push(node._status);
@@ -1333,20 +1391,34 @@ const getInputStatuses2 = (node, all) => {
  * TODO piecemeal refactor to be an extensible system
  */
 let $widgetForType = {};
+let validatorForType = {};
+let rawToStoreForType = {};
 
 /**
  * Extend or change support for a type
  * @param {!String} type e.g. "textarea"
- * @param {!JSX} $Widget the widget to render a propcontrol, replacing PropControl2. 
+ * @param {!JSX} $Widget the widget to render a propcontrol, replacing PropControl2.
+ * @param {?Function} validator The validator function for this type. Takes (rawInput, inputProps), returns array of statuses.
+ * @param {?Function} rawToStore AKA modelValueFromInput - converts a valid text input to e.g. numeric, date, etc
  * The label, error, help have _already_ been rendered. This widget should do the control guts.
  * ?? what props does it get?? {path, prop, proppath, value, item, modelValueFromInput}
  */
-const registerControl = ({ type, $Widget }) => {
+const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	assMatch(type, String);
 	assert($Widget);
+
 	PropControl.KControlType = PropControl.KControlType.concat(type);
 	$widgetForType[type] = $Widget;
+
+	if (validator) validatorForType[type] = validator;
+	if (rawToStore) rawToStoreForType[type] = rawToStore;
 };
+
+// Modularised PropControl types: import default types that should always be availablz
+import { specs as urlSpecs } from './PropControls/PropControlUrl';
+urlSpecs.forEach(spec => registerControl(spec));
+import { specs as uploadSpecs } from './PropControls/PropControlUpload';
+uploadSpecs.forEach(spec => registerControl(spec));
 
 export {
 	registerControl,
