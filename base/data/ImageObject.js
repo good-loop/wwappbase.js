@@ -13,4 +13,3 @@ DataClass.register(ImageObject, "ImageObject");
 const This = ImageObject;
 export default ImageObject;
 
-

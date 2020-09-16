@@ -78,15 +78,22 @@ SearchQuery.prop = (sq, propName) => {
  * Set a top-level prop, e.g. vert:foo
  * @param {!SearchQuery} sq
  * @param {String} propName 
- * @param {String} propValue 
+ * @param {?string} propValue If unset (null,undefined, or "" -- but not false or 0!), clear the prop
  * @returns a NEW SearchQuery
  */
-SearchQuery.setProp = (sq, propName, propValue) => {
-	assMatch(propValue, String, "searchquery.js - "+propName+" "+propValue);
-	let newq = sq.query;
+SearchQuery.setProp = (sq, propName, propValue) => {	
+	assMatch(propName, String, "searchquery.js - "+propName+" "+propValue);
 	// renove the old
-	if (sq.prop && sq.prop[propName]) {
-		newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
+	SearchQuery._init(sq);
+	// top level only??
+	// let prop = sq.tree.filter(bit => bit[0] === propName);
+	let newq = sq.query;
+	// if (prop) { // HACK out the old value TODO use the parse tree to handle quoting
+	newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
+	// }
+	// unset? (but do allow prop:false and x:0)
+	if (propValue===null || propValue===undefined || propValue==="") {
+		return;
 	}
 	// quote the value?
 	let qpropValue = propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"';

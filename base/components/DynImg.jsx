@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { useState } from 'react';
 import { useRef } from 'react';
+import ImageObject from '../data/ImageObject';
 
 
 // Where should we request cached/resized images? Use the media cluster which matches the current local/test/prod site.
@@ -13,8 +14,11 @@ const mediaCacheBase = `${window.location.protocol}//${domainPrefix}media.good-l
 /**
  * A drop-in replacement for the html <img> tag, which adds in image size handling via media.gl.com
  * and mobile images via `msrc`
+ * 
+ * @param {?ImageObject} image Alternative to src, which includes credit & license info
+ * 
  */
-const DynImg = ({src, msrc, ...props}) => {
+const DynImg = ({src, msrc, image, ...props}) => {
 	let _src = src;
 	// explicit mobile setting?
 	if (msrc && isMobile()) {

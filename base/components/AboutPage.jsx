@@ -6,7 +6,33 @@ import printer from '../utils/printer.js';
 import C from '../CBase';
 import Roles from '../Roles';
 import Misc from './Misc';
+import ImageObject from '../data/ImageObject.js';
+import LinkOut from './LinkOut.jsx';
 
+/**
+ * @type {ImageObject[]}
+ */
+const IMAGE_CREDITS = [];
+
+/**
+ * Add an image to the about-page credits. Repeat adds are harmless.
+ * @param {?ImageObject} image  
+ */
+export const addImageCredit = image => {
+	// use author as the key
+	if ( ! image || ! image.author) return;
+	if (IMAGE_CREDITS.find(ic => ic.author === image.author)) {
+		return null;
+	}
+	IMAGE_CREDITS.push(image);
+};
+
+// TODO sponsors
+
+/**
+ * 
+ * @param {*} param0 
+ */
 const AboutPage = () => {
 	let website = C.app.website; // ?? default to top-level domain
 	return (
@@ -16,11 +42,15 @@ const AboutPage = () => {
 
 			<p>Please see our website for more information on {C.app.name}: <a href={website}>{website}</a></p>
 
-			{C.app.facebookAppId? <a href={'https://www.facebook.com/games/?app_id="+C.app.facebookAppId'}><Misc.Logo service="facebook" /> facebook</a> : null}
+			{C.app.facebookAppId? <a href={'https://www.facebook.com/games/?app_id='+C.app.facebookAppId}><Misc.Logo service="facebook" /> facebook</a> : null}
 
 			<p>Software version: <i>{JSON.stringify(C.app.version || 'alpha')}</i></p>
 
 			<p>We are grateful to SMART:Scotland and The Hunter Foundation for their support.</p>
+
+			<p>This app uses Creative Commons images from various sources</p>
+			
+			{IMAGE_CREDITS.map(image => <LinkOut href={image.url}>{image.name} by {image.author}</LinkOut>)}
 
 			<p>This app uses data from various sources:</p>
 			<ul>

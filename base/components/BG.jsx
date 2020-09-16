@@ -1,5 +1,6 @@
 
 import React from 'react';
+import { addImageCredit } from './AboutPage';
 
 /**
  * Drops a background image behind the children.
@@ -11,7 +12,10 @@ import React from 'react';
  */
 const BG = ({image, src, children, size='cover', fullscreen, opacity}) => {
 	if (size==='fit') size = "100% 100%";
-	if (image) src = image.url;
+	if (image) {
+		src = image.url;
+		addImageCredit(image);
+	}
 	let credit = image && image.author? <div className='img-credit'><small>{image.name} image (cc) by {image.author}</small></div> : null;
 	if ( ! fullscreen) {
 		// TODO opacity for the bg without affecting the content 

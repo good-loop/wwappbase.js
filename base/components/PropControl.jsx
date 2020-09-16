@@ -123,9 +123,9 @@ const dateValidator = (val, rawValue) => {
  * @param {?String} label
  * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
  * 	Default: ['location','params'] which codes for the url
- * @param item The item being edited. Can be null, and it will be fetched by path.
  * @param prop The field being edited
  * @param dflt {?Object} default value (this will get set over-riding a null/undefined/'' value in the item)
+ * 	NB: "default" is a reserved word, hence the truncated spelling.
  * @param {?Function} modelValueFromInput - inputs: (value, type, eventType) See standardModelValueFromInput.
  * @param required {?Boolean} If set, this field should be filled in before a form submit.
  * 	TODO mark that somehow
@@ -285,7 +285,7 @@ const PropControl2 = (props) => {
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff } = props;
-	let { item, bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
+	let { bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
 
 	assert(!type || PropControl.KControlType.has(type), 'Misc.PropControl: ' + type);
 	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: ' + path + " prop:" + prop);
@@ -333,7 +333,7 @@ const PropControl2 = (props) => {
 			const isOn = e && e.target && e.target.checked;
 			const newVal = isOn? onValue : offValue;
 			DSsetValue(proppath, newVal);
-			if (saveFn) saveFn({ event: e, path, prop, item, value:newVal });
+			if (saveFn) saveFn({ event: e, path, prop, value:newVal });
 		};
 	} else {
 			// text based
@@ -360,7 +360,6 @@ const PropControl2 = (props) => {
 		const $widget = $widgetForType[type];
 
 		const props2 = {
-			item,
 			...props,
 			storeValue,
 			onChange,
@@ -369,14 +368,6 @@ const PropControl2 = (props) => {
 		if (!modelValueFromInput) props2.modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
 
 		return <$widget {...props2} />
-	}
-
-	// // item ought to match what's in DataStore - but this is too noisy when it doesn't
-	// if (item && item !== DataStore.getValue(path)) {
-	// 	console.warn("Misc.PropControl item != DataStore version", "path", path, "item", item);
-	// }
-	if (!item) {
-		item = DataStore.getValue(path) || {};
 	}
 
 	// Checkbox?
@@ -420,7 +411,7 @@ const PropControl2 = (props) => {
 	// £s
 	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
 	if (type === 'Money') {
-		let acprops = { prop, storeValue, rawValue, setRawValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
+		let acprops = { prop, storeValue, rawValue, setRawValue, path, proppath, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlMoney {...acprops} />;
 	} // ./£
 
@@ -513,7 +504,7 @@ const PropControl2 = (props) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
 	if (PropControl.KControlType.isdate(type)) {
-		const acprops = { prop, item, storeValue, rawValue, onChange, ...otherStuff };
+		const acprops = { prop, storeValue, rawValue, onChange, ...otherStuff };
 		return <PropControlDate {...acprops} />;
 	}
 
@@ -535,7 +526,7 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'autocomplete') {
-		let acprops = { prop, value, rawValue, setRawValue, path, proppath, item, bg, saveFn, modelValueFromInput, ...otherStuff };
+		let acprops = { prop, value, rawValue, setRawValue, path, proppath, bg, saveFn, modelValueFromInput, ...otherStuff };
 		return <PropControlAutocomplete {...acprops} />;
 	}
 
@@ -673,7 +664,7 @@ const PropControlMultiSelect = ({storeValue, value, prop, labelFn, options, mode
  *
  * @param labels {String[] | Function | Object} Optional value-to-string convertor.
  */
-const PropControlRadio = ({ type, prop, storeValue, value, path, item, saveFn, options, labels, inline, size, rawValue, setRawValue, ...otherStuff }) => {
+const PropControlRadio = ({ type, prop, storeValue, value, path, saveFn, options, labels, inline, size, rawValue, setRawValue, ...otherStuff }) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -734,7 +725,7 @@ const numFromAnything = v => {
  * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
  */
 const PropControlMoney = ({ prop, name, storeValue, rawValue, setRawValue, currency, path, proppath,
-	item, bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff }) => {
+	bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff }) => {
 	// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
 	// Convert null and numbers into Money objects
@@ -978,7 +969,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 };
 
 
-const PropControlDate = ({ prop, item, storeValue, rawValue, onChange, ...otherStuff }) => {
+const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
 	// NB: parsing incomplete dates causes NaNs
 	let datePreview = null;
@@ -1005,7 +996,7 @@ const PropControlDate = ({ prop, item, storeValue, rawValue, onChange, ...otherS
 
 /** Use Bootstrap components to make the dropdown menu look nice by default*/
 const renderMenuDflt = (items, value, style) => <DropdownMenu className="show">{items}</DropdownMenu>;
-const renderItemDflt = (item) => <DropdownItem>{item}</DropdownItem>
+const renderItemDflt = (itm) => <DropdownItem>{itm}</DropdownItem>
 
 /**
  * wraps the reactjs autocomplete widget
@@ -1014,7 +1005,7 @@ const renderItemDflt = (item) => <DropdownItem>{item}</DropdownItem>
  * @param {?Function} getItemValue Map item (member of options prop) to the value which should be stored
 */
 const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValue, options, getItemValue, renderItem, path, proppath,
-	item, bg, saveFn, modelValueFromInput, ...otherStuff }) => {
+	bg, saveFn, modelValueFromInput, ...otherStuff }) => {
 	// a place to store the working state of this widget
 	let widgetPath = ['widget', 'autocomplete'].concat(path);
 	if (!getItemValue) getItemValue = s => s;
@@ -1067,7 +1058,7 @@ const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValu
 			value={rawValue || ''}
 			onChange={onChange}
 			onSelect={onChange2}
-			shouldItemRender={(item, value) => item.toLowerCase().startsWith(value.toLowerCase())}
+			shouldItemRender={(itm, value) => itm.toLowerCase().startsWith(value.toLowerCase())}
 			menuStyle={{zIndex: 1}}
 		/>
 	);
@@ -1401,7 +1392,7 @@ let rawToStoreForType = {};
  * @param {?Function} validator The validator function for this type. Takes (rawInput, inputProps), returns array of statuses.
  * @param {?Function} rawToStore AKA modelValueFromInput - converts a valid text input to e.g. numeric, date, etc
  * The label, error, help have _already_ been rendered. This widget should do the control guts.
- * ?? what props does it get?? {path, prop, proppath, value, item, modelValueFromInput}
+ * ?? what props does it get?? {path, prop, proppath, value, modelValueFromInput}
  */
 const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	assMatch(type, String);
