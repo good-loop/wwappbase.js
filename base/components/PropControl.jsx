@@ -39,9 +39,9 @@ import { notifyUser } from '../plumbing/Messaging';
  * @param {!String[]} proppath
  * @param value
  */
-export const DSsetValue = (proppath, value) => {
+export const DSsetValue = (proppath, value, update) => {
 	DataStore.setModified(proppath);
-	DataStore.setValue(proppath, value);
+	DataStore.setValue(proppath, value, update);
 	// console.log("set",proppath,value,DataStore.getValue(proppath));
 };
 
@@ -135,11 +135,11 @@ const dateValidator = (val, rawValue) => {
  * @param {?String} warning Warning message to show, regardless of validator output
  * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
  * @param https {?Boolean} if true, for type=url, urls must use https not http (recommended)
- * 
+ * @param {?boolean} fast - if true optimise React updates and renders. Only use for busting bottlenecks.
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
-	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, className, ...stuff } = props;
+	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, className, fast, ...stuff } = props;
 	if ( ! path) {	// default to using path = the url
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
@@ -285,13 +285,15 @@ const PropControl2 = (props) => {
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
-	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, ...stuff } = props;
+	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
 	let { bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
-
 	assert(!type || PropControl.KControlType.has(type), 'Misc.PropControl: ' + type);
 	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: ' + path + " prop:" + prop);
 	assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'Misc.PropControl: null in path ' + path + " prop:" + prop);
-
+	// update is undefined by default, false if fast. See DataStore.update()
+	let update;
+	if (fast) update = false;
+	
 	// HACK: Fill in modelValueFromInput differently depending on whether this is a plugin-type input
 	// Temporary while shifting everything to plugins
 	if ($widgetForType[type]) {
@@ -332,11 +334,11 @@ const PropControl2 = (props) => {
 			// text based
 		onChange = e => {
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
+			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur', false); // obsolete??
 			setRawValue(e.target.value);
 			let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 			// console.warn("onChange", e.target.value, mv, e);
-			DSsetValue(proppath, mv);
+			DSsetValue(proppath, mv, update);
 			if (saveFn) saveFn({ event: e, path, prop, value: mv });
 			// Enable piggybacking custom onChange functionality
 			if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);

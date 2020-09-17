@@ -389,6 +389,7 @@ class Store {
 	 * @param {C.TYPES} type
 	 * @param {!String} id
 	 * @param {C.STATUS} status loading clean dirty saving
+	 * @param {?boolean} update Request a react rerender
 	 * @return "dirty", "clean", etc. -- see C.STATUS
 	 */
 	setLocalEditsStatus(type, id, status, update) {
