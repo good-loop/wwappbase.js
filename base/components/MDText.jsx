@@ -10,6 +10,7 @@ import Misc from './Misc';
 const MDText = ({source, renderers}) => {
 	// Misc.normalise is not a thing. Should this component be retired ??
 	let nsource = Misc.normalise(source);
+	nsource = nsource.replaceAll("<br/>","    \n"); // HACK - support break tags
 	return <ReactMarkdown source={nsource} renderers={renderers} />;
 };
 
