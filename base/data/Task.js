@@ -6,6 +6,7 @@ import Enum from 'easy-enums';
 
 import DataClass, {getType, nonce} from './DataClass';
 import C from '../CBase';
+import DataStore from '../plumbing/DataStore';
 
 
 const TASKS_SERVER = "calstat.good-loop.com";
@@ -84,11 +85,21 @@ Task.STAGES = new Enum('assigned wip testing done closed')
 Task.close = task => {
 	task.closed = true;
 	task.stage = Task.STAGES.closed;
+	pokeDS(task);	
 	return task;
+};
+
+/**
+ * 
+ * Poke DataStore, so that the dirty flag is updated
+ */
+const pokeDS = task => {
+	DataStore.setLocalEditsStatus("Task", task.id, C.STATUS.dirty, false);
 };
 
 Task.open = task => {
 	task.closed = false;
 	task.stage = Task.STAGES.assigned;
+	pokeDS(task);
 	return task;
 };
