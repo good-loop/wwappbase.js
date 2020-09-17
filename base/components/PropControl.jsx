@@ -1019,6 +1019,8 @@ const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValu
 	const type = 'autocomplete';
 	const items = _.isArray(options) ? options : DataStore.getValue(widgetPath) || [];
 
+	if (!rawValue) rawValue = value;
+
 	// NB: typing sends e = an event, clicking an autocomplete sends e = a value
 	const onChange2 = (e) => {
 		// console.log("event", e, e.type, optItem);
