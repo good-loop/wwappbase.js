@@ -68,7 +68,8 @@ const urlValidator = val => urlValidatorGuts(val);
 /** Default validator for secure URL values */
 const urlValidatorSecure = val => urlValidatorGuts(val, true);
 
-/** Default validator for money values 
+/** Default validator for money values
+ * TODO Should this also flag bad, non-empty raw values like £sdfgjklh?
  * @param {?Money} min
  * @param {?Money} max
 */
@@ -327,14 +328,6 @@ const PropControl2 = (props) => {
 			}
 			stopEvent(event);
 		};
-	} else if (PropControl.KControlType.ischeckbox(type)) {
-		onChange = e => {
-			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
-			const isOn = e && e.target && e.target.checked;
-			const newVal = isOn? onValue : offValue;
-			DSsetValue(proppath, newVal);
-			if (saveFn) saveFn({ event: e, path, prop, value:newVal });
-		};
 	} else {
 			// text based
 		onChange = e => {
@@ -371,24 +364,34 @@ const PropControl2 = (props) => {
 	}
 
 	// Checkbox?
-	if (PropControl.KControlType.ischeckbox(type)) {		
+	if (PropControl.KControlType.ischeckbox(type)) {
 		// on/off values hack - make sure we don't have "false"
+		// Is the checkbox for setting [path].prop = true/false, or for setting path.prop = [pvalue]/null?
 		let onValue = props.pvalue || true;
 		let offValue = props.pvalue? null : false;
+
 		if (_.isString(storeValue)) {
-			if (storeValue === 'true') onValue=true;
+			if (storeValue === 'true') onValue = true;
 			else if (storeValue === 'false') {
 				storeValue=false; /*NB: so bvalue=false below*/ 
 				offValue=false;
 			}
 		}
 		if (_.isNumber(storeValue)) {
-			if (storeValue === 1) onValue=1;
-			else if (storeValue === 0) offValue=0;
+			if (storeValue === 1) onValue = 1;
+			else if (storeValue === 0) offValue = 0;
 		}
 		// Coerce other values to boolean
 		const bvalue = !!storeValue;
 		// ./on/off values hack
+
+		onChange = e => {
+			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
+			const isOn = e && e.target && e.target.checked;
+			const newVal = isOn ? onValue : offValue;
+			DSsetValue(proppath, newVal);
+			if (saveFn) saveFn({ event: e, path, prop, value:newVal });
+		};
 
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
 		delete otherStuff.size;
@@ -995,21 +998,22 @@ const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }
 };
 
 /** Use Bootstrap components to make the dropdown menu look nice by default*/
-const renderMenuDflt = (items, value, style) => <DropdownMenu className="show">{items}</DropdownMenu>;
-const renderItemDflt = (itm) => <DropdownItem>{itm}</DropdownItem>
+const renderMenuDflt = (items, value, style) => <div className="dropdown-menu show">{items}</div>;
+const renderItemDflt = (itm) => <div className="dropdown-item">{itm}</div>
+const shouldItemRenderDflt = (itm, value) => (itm || '').toLowerCase().startsWith((value || '').toLowerCase());
 
 /**
  * wraps the reactjs autocomplete widget
+ * TODO When options is a function, default to "show all items"
  * @param {Function|Object[]|String[]} options The items to select from
  * @param {?JSX} renderItem Should return a Bootstrap DropdownItem, to look nice. Will be passed a member of the options prop as its only argument.
  * @param {?Function} getItemValue Map item (member of options prop) to the value which should be stored
 */
-const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValue, options, getItemValue, renderItem, path, proppath,
-	bg, saveFn, modelValueFromInput, ...otherStuff }) => {
+const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValue, options, getItemValue = (s => s),
+	renderItem = renderItemDflt, path, proppath, bg, saveFn, modelValueFromInput, shouldItemRender = shouldItemRenderDflt,
+	...otherStuff }) => {
 	// a place to store the working state of this widget
 	let widgetPath = ['widget', 'autocomplete'].concat(path);
-	if (!getItemValue) getItemValue = s => s;
-	if (!renderItem) renderItem = renderItemDflt;
 	const type = 'autocomplete';
 	const items = _.isArray(options) ? options : DataStore.getValue(widgetPath) || [];
 
@@ -1058,7 +1062,7 @@ const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValu
 			value={rawValue || ''}
 			onChange={onChange}
 			onSelect={onChange2}
-			shouldItemRender={(itm, value) => itm.toLowerCase().startsWith(value.toLowerCase())}
+			shouldItemRender={shouldItemRender}
 			menuStyle={{zIndex: 1}}
 		/>
 	);
