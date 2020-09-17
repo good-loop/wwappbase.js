@@ -187,7 +187,8 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea}) => {
 	return (
 		<div key={'f'} className={space('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)}>
 			<PropControl type={textarea?"textarea":"text"} path={qpath} prop="text"
-				placeholder={parent? 'Reply / Comment' : 'Make a new task'} />
+				placeholder={parent? 'Reply / Comment' : 'Make a new task'} 
+				fast />
 			&nbsp;
 			<button className="btn btn-primary" disabled={ ! ttext} type="submit" onClick={quickTask}>Add</button>
 		</div>

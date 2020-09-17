@@ -39,9 +39,9 @@ import { notifyUser } from '../plumbing/Messaging';
  * @param {!String[]} proppath
  * @param value
  */
-export const DSsetValue = (proppath, value, fast) => {
+export const DSsetValue = (proppath, value, update) => {
 	DataStore.setModified(proppath);
-	DataStore.setValue(proppath, value, ! fast);
+	DataStore.setValue(proppath, value, update);
 	// console.log("set",proppath,value,DataStore.getValue(proppath));
 };
 
@@ -286,11 +286,13 @@ const PropControl2 = (props) => {
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
 	let { bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
-
 	assert(!type || PropControl.KControlType.has(type), 'Misc.PropControl: ' + type);
 	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: ' + path + " prop:" + prop);
 	assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'Misc.PropControl: null in path ' + path + " prop:" + prop);
-
+	// update is undefined by default, false if fast. See DataStore.update()
+	let update;
+	if (fast) update = false;
+	
 	// HACK: Fill in modelValueFromInput differently depending on whether this is a plugin-type input
 	// Temporary while shifting everything to plugins
 	if ($widgetForType[type]) {
@@ -343,7 +345,7 @@ const PropControl2 = (props) => {
 			setRawValue(e.target.value);
 			let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
 			// console.warn("onChange", e.target.value, mv, e);
-			DSsetValue(proppath, mv, fast);
+			DSsetValue(proppath, mv, update);
 			if (saveFn) saveFn({ event: e, path, prop, value: mv });
 			// Enable piggybacking custom onChange functionality
 			if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
