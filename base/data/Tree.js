@@ -72,6 +72,30 @@ const flatten2 = (node, all) => {
 };
 
 /**
+ * 
+ * @param {Tree} root 
+ * @param {Tree} node 
+ * @returns {Tree[]} path from root to node, including node
+ */
+Tree.roots = (root, node) => {
+	Tree.assIsa(root);
+	Tree.assIsa(node);
+	const rpath = roots2(node,Tree.flatten(root));
+	assert(rpath[0] === root, "wrong root?", rpath);
+	assert(rpath[rpath.length-1] === node, "wrong leaf?", rpath);
+	return rpath;
+};
+const roots2 = (node,nodes) => {
+	let parent = nodes.find(n => n.children && n.children.includes(node));
+	if ( ! parent) {
+		return [node];
+	}
+	let roots = roots2(parent, nodes);
+	roots.push(node);
+	return roots;
+};
+
+/**
  * The main value stored on this node
  */
 Tree.value = node => node.value;
