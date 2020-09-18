@@ -298,7 +298,7 @@ const PropControl2 = (props) => {
 	// Temporary while shifting everything to plugins
 	if ($widgetForType[type]) {
 		if (!modelValueFromInput) {
-				modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
+			modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
 		}
 	} else {
 		if (!modelValueFromInput) {
@@ -1159,8 +1159,8 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-PropControl.KControlType = new Enum("img textarea html text search select radio checkboxes autocomplete password email color checkbox"
-	// + " imgUpload videoUpload bothUpload url" // Removed to avoid double-add
+PropControl.KControlType = new Enum("textarea html text search select radio checkboxes autocomplete password email color checkbox"
+	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
 	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
 	// some Good-Loop data-classes
 	+ " Money XId keyvalue");
@@ -1418,6 +1418,8 @@ import { specs as urlSpecs } from './PropControls/PropControlUrl';
 urlSpecs.forEach(spec => registerControl(spec));
 import { specs as uploadSpecs } from './PropControls/PropControlUpload';
 uploadSpecs.forEach(spec => registerControl(spec));
+import { specs as imgSpecs } from './PropControls/PropControlImg';
+imgSpecs.forEach(spec => registerControl(spec));
 
 export {
 	registerControl,
