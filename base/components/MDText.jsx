@@ -11,7 +11,7 @@ import Misc from './Misc';
 const MDText = ({source, renderers, escapeHtml = false}) => {
 	// Misc.normalise is not a thing. Should this component be retired ??
 	let nsource = Misc.normalise(source);
-	nsource = nsource.replace('<br/>', '    \n'); // HACK - always support break tags
+	nsource = nsource.replaceAll('<br/>', '    \n'); // HACK - always support break tags
 
 	// security: no onClick etc traps	
 	if ( ! escapeHtml) {
