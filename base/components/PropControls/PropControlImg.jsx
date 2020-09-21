@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { FormControl, registerControl } from '../PropControl';
-import { urlValidator } from './PropControlImg';
+import { urlValidator } from './PropControlUrl';
 import Misc from '../Misc';
 
 
