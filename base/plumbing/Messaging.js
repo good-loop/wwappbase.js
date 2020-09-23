@@ -12,6 +12,9 @@ const jsxFromId = {};
 const filters = [];
 
 class Msg {
+	/**
+	 * @type {string} error|warning|info
+	 */
 	type;
 	text;
 	id;
