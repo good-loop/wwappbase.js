@@ -887,24 +887,23 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
 		<span className="key" key={key}>{key} <span className="remove-key" onClick={() => addRemoveKey(key, true)}>&times;</span></span>
 	));
 
+	let [newKey, setNewKey] = useState();
 
-	let newKey;
-
-	const onClickAdd = (event) => {
+	// turn a raw input event into an add-key event
+	const onSubmit = (e) => {
+		stopEvent(e);
+		if (!newKey) return;
 		addRemoveKey(newKey);
-		// Clear the input(s)
-		event.target.parentNode.childNodes.forEach(child => {
-			if ((child.tagName || '').toLowerCase() === 'input') child.value = '';
-		});
+		setNewKey('');
 	};
 
 
 	return (
 		<div className="keyset form-inline">
 			<div className="keys">{keyElements}</div>
-			<Form inline onSubmit={stopEvent}>
-				<Input onChange={(event) => newKey = event.target.value}
-				/> <Button color={value ? 'primary' : 'secondary'} onClick={onClickAdd} >Add</Button>
+			<Form inline onSubmit={onSubmit}>
+				<Input value={newKey} onChange={(e) => setNewKey(e.target.value)}
+				/> <Button type="submit" disabled={!newKey} color="primary" >Add</Button>
 			</Form>
 		</div>
 	);
@@ -951,7 +950,9 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 	const [newKey, setNewKey] = useState('');
 	const [newValue, setNewValue] = useState('');
 	
-	const onClickAdd = (event) => {
+	const onSubmit = (e) => {
+		stopEvent(e);
+		if (!newKey || !newValue) return;
 		addRemoveKey(newKey, newValue);
 		setNewKey('');
 		setNewValue('');
@@ -960,14 +961,14 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 	return (
 		<div className="entryset">
 			<table className="entries"><tbody>{entryElements}</tbody></table>
-			<Form inline onSubmit={stopEvent} className="mb-2">
+			<Form inline onSubmit={onSubmit} className="mb-2">
 				<FormGroup className="mr-2">
-					<Input value={newKey} placeholder={keyName} onChange={(event) => setNewKey(event.target.value)} />
+					<Input value={newKey} placeholder={keyName} onChange={(e) => setNewKey(e.target.value)} />
 				</FormGroup>
 				<FormGroup className="mr-2">
-					<Input value={newValue} placeholder={valueName} onChange={(event) => setNewValue(event.target.value)} />
+					<Input value={newValue} placeholder={valueName} onChange={(e) => setNewValue(e.target.value)} />
 				</FormGroup>
-				<Button color="primary" onClick={onClickAdd} >Add this</Button>
+				<Button type="submit" disabled={!(newKey && newValue)} color="primary">Add this</Button>
 			</Form>
 		</div>
 	);
