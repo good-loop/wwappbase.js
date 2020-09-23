@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import PropControl from './PropControl';
 import Misc from './Misc';
+import { space } from '../utils/miscutils';
 
 const FilterForm = () => <PropControl size="lg" prepend={<Misc.Icon fa="filter" />} label="Filter Controls"
 					type="search"
