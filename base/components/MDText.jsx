@@ -4,12 +4,16 @@ import Misc from './Misc';
 
 /**
  * Remove non-standard characters and render Markdown.
- * @param {!String} source text to render
- * @param {?Object} renderers node type: React component. This is merged with the default renderers.
+ * @param {?string} source text to render
+ * @param {?Object} renderers node-type: React-component. This is merged with the default renderers.
  * The props passed to the component varies based on the type of node.
+ * @param {?boolean} escapeHtml By default we render html (with just an anti-script-injection check). Set true to block html.
  */
 const MDText = ({source, renderers, escapeHtml = false}) => {
-	// Misc.normalise is not a thing. Should this component be retired ??
+	if ( ! source) {
+		return null;
+	}
+
 	let nsource = Misc.normalise(source);
 	nsource = nsource.replace(/<br\s*\/?>/g, '    \n'); // HACK - always support break tags
 
