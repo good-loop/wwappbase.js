@@ -146,10 +146,8 @@ const SharedWithRow = ({share}) => {
 			<p className="pull-left">{share._to}</p>
 			<Button outline color="danger" className="pull-right"
 				title="remove this person's access"
-				onClick={ () => deleteShare({share}) }
-			>
-				<Misc.Icon fa="cross-circle"/>
-			</Button>
+				onClick={ () => deleteShare({share}) } 
+			>&#8855;</Button>
 	</div>);
 };
 

@@ -916,9 +916,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 		entries.map(([key]) => (
 			<tr className="entry" key={key}>
 				<td className="pb-3">
-					<Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)}>
-						<Misc.Icon fa="times" tooltip="Remove this entry" />
-					</Button>
+					<Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)} title="Remove this entry">&#10761;</Button>
 				</td>
 				<td className="px-2 pb-3">{key}:</td>
 				<td><PropControl type="text" path={proppath} prop={key} /></td>
@@ -1280,7 +1278,7 @@ const MapEditor = ({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filter
 				{React.cloneElement($ValProp, { path: proppath, prop: k, label: null })}
 			</Col>
 			<Col xs="4" sm="2">
-				<Button onClick={() => rmK(k)}><Misc.Icon fa="minus" /></Button>
+				<Button onClick={() => rmK(k)}><b>-</b></Button>
 			</Col>
 		</Row>
 	));
@@ -1297,7 +1295,7 @@ const MapEditor = ({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filter
 			<Col xs="4" sm="2">
 				<FormGroup>
 					<Label>&nbsp;</Label>
-					<Button onClick={addKV} disabled={!kv.key || !kv.val}><Misc.Icon fa="plus" /> Add</Button>
+					<Button onClick={addKV} disabled={!kv.key || !kv.val}><b>+</b> Add</Button>
 				</FormGroup>
 			</Col>
 		</Row>

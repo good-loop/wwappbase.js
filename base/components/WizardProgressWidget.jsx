@@ -104,17 +104,16 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 const NextButton = ({complete, stagePath, maxStage, onNext, ...rest}) => {
 	const colour = complete ? 'primary' : undefined;
 	assMatch(maxStage, Number);
-
 	return (
 		<NextPrevTab stagePath={stagePath} colour={colour} diff={1} maxStage={maxStage} {...rest} callback={onNext}>
-			Next <Misc.Icon fa="chevron-right" />
+			Next <b>&gt;</b>
 		</NextPrevTab>
 	);
 };
 
 const PrevButton = ({stagePath, onPrev, ...rest}) => (
 	<NextPrevTab stagePath={stagePath} diff={-1} callback={onPrev} {...rest}>
-		<Misc.Icon fa="chevron-left" /> Previous
+		<b>&lt;</b> Previous
 	</NextPrevTab>
 );
 

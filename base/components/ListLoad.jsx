@@ -361,7 +361,7 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 	// was an ID passed in by editor props? (to avoid copy accidents id is not used from base, so to use it here we must fish it out)
 	if ( ! id) id = base.id; // usually null
 	delete base.id; // NB: this is a copy - the original base is not affected.
-	const $createButton = <Button className='btn-create' onClick={() => createBlank({type,navpage,base,id,make})}><Misc.Icon fa="plus-circle" /> Create</Button>;
+	const $createButton = <Button className='btn-create' onClick={() => createBlank({type,navpage,base,id,make})}>&#8853; Create</Button>;
 	if ( ! props) {
 		// simple button
 		return $createButton;

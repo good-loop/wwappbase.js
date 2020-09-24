@@ -85,6 +85,8 @@ Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 const DefaultItemEditor = ({item, path}) => <div>{JSON.stringify(item)}</div>;
 
 /**
+ * NB: only used on AdvertPage -- TODO deprecate
+ * 
  * list with add, TODO remove, reorder. A simpler in-memory cousin of ListLoad
  * @param path {String[]} path to the list (which must be an array)
  * @param ItemEditor {Function} {item, path: to item i, i, ...stuff} -> jsx
@@ -122,7 +124,7 @@ Misc.ListEditor = ({path, ItemEditor = DefaultItemEditor, blankFactory, noneMess
 			{itemElements}
 			{list.length ? null : <p>{noneMessage || 'None'}</p>}
 			<div>
-				<Button onClick={addBlank}><Misc.Icon fa="plus-circle" /> {createText}</Button>
+				<Button onClick={addBlank}>&#8853; {createText}</Button>
 			</div>
 		</div>
 	);
