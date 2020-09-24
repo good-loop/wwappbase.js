@@ -70,6 +70,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
 	// widget settings TODO migrate to useState so we can have multiple overlapping ListLoads
 	// const [foo, setFoo] = useState({});
+	// ??preserves state across q and filter edits -- is that best??
 	const widgetPath = ['widget','ListLoad',type,status];	
 	if (servlet && ! navpage) {
 		console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");
@@ -119,7 +120,8 @@ const ListLoad = ({type, status, servlet, navpage,
 
 		{items.length === 0 ? <>No results found for <code>{space(q, filter) || type}</code></> : null}
 		{total && ! hideTotal? <div>About {total} results in total</div> : null}
-		
+		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
+
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				item={item}
@@ -145,6 +147,21 @@ const ListLoad = ({type, status, servlet, navpage,
 	</div>);
 }; // ./ListLoad
 //
+
+/**
+ * TODO
+ * @param {boolean} canDelete 
+ */
+const MassActionToolbar = ({type, canDelete, items}) => {
+	// checked count
+	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
+	let checked4id = DataStore.getValue(checkedPath);
+	let checkCnt = 0 // TODO
+	if ( ! checkCnt) return null; // TODO
+	return (<div class="btn-toolbar" role="toolbar" aria-label="Toolbar for checked items">
+		{checkCnt} checked of {items.length}
+	</div>);
+};
 
 /**
  * 
@@ -233,7 +250,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 
 	const checkbox = checkboxes ? (
 		<div className="pull-left">
-			<Misc.PropControl title="TODO mass actions" path={checkedPath} type="checkbox" prop={id} />
+			<Misc.PropControl title="Select for mass actions" path={checkedPath} type="checkbox" prop={id} />
 		</div>
 	) : null;
 
