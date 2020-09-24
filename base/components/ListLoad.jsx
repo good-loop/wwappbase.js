@@ -244,7 +244,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 		<div className="ListItemWrapper clearfix">
 			{checkbox}
 			{canDelete? <DefaultDelete type={type} id={id} /> : null }
-			<A href={itemUrl} key={'A'+id} id={id} notALink={notALink}
+			<A href={itemUrl} key={'A'+id} notALink={notALink}
 				onClick={event => onPick({ event, navpage, id })}
 				className={itemClassName || `ListItem btn-default btn btn-outline-secondary status-${item.status}`}
 			>
@@ -255,7 +255,7 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 };
 
 
-const A = ({notALink, id, children, ...stuff}) => notALink? <div key={'Ad'+id} {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
+const A = ({notALink, children, ...stuff}) => notALink? <div {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
 
 /**
  * These can be clicked or control-clicked

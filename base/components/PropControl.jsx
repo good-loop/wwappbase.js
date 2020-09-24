@@ -45,29 +45,6 @@ export const DSsetValue = (proppath, value, update) => {
 	// console.log("set",proppath,value,DataStore.getValue(proppath));
 };
 
-/** Wrapped so the two (http/https) outer versions of this can provide an interface consistent with the other validators. */
-const urlValidatorGuts = (val, secure) => {
-	// no URL is not an error!
-	if (!val) return null;
-	// Protocol-relative URLs are fine!
-	if (val.startsWith('//')) val = 'https:' + val;
-
-	let urlObject;
-	try {
-		urlObject = new URL(val);
-	} catch (e) {
-		return 'This is not a valid URL';
-	}
-
-	if (secure && urlObject.protocol !== 'https:') return 'Please use https for secure urls';
-
-	return null;
-};
-/** Default validator for URL values */
-const urlValidator = val => urlValidatorGuts(val);
-/** Default validator for secure URL values */
-const urlValidatorSecure = val => urlValidatorGuts(val, true);
-
 /** Default validator for money values
  * TODO Should this also flag bad, non-empty raw values like £sdfgjklh?
  * @param {?Money} min
@@ -136,6 +113,9 @@ const dateValidator = (val, rawValue) => {
  * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
  * @param https {?Boolean} if true, for type=url, urls must use https not http (recommended)
  * @param {?boolean} fast - if true optimise React updates and renders. Only use for busting bottlenecks.
+	 Warning: when coupled with other controls, this can cause issues, as the other controls won't always update. 
+	 E.g. if a fast text input has an associated button.
+ * 
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = (props) => {
@@ -262,10 +242,11 @@ const PropControl = (props) => {
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	const sizeClass = {sm:'small',lg:'large'}[props.size]; // map BS input size to text-size
+	// NB: label has mr-1 to give a bit of spacing when used in an inline form
 	return (
 		<FormGroup check={isCheck} className={space(type, className, error&&'has-error')} inline={inline} >
 			{(label || tooltip) && ! isCheck?
-				<label className={sizeClass} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
+				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
 			{inline ? ' ' : null}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
