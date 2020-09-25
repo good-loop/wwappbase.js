@@ -312,6 +312,11 @@ const serverSafetyCheck = async (page, server) => {
 	}
 };
 
+function delay(time) {
+	return new Promise(function(resolve) { 
+		setTimeout(resolve, time)
+	});
+ }
 
 module.exports = {
 	fetch,
@@ -319,5 +324,6 @@ module.exports = {
 	donate,
 	fillInForm,
 	getConfig,
-	serverSafetyCheck
+	serverSafetyCheck,
+	delay
 };
