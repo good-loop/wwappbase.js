@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { assert, assMatch } from 'sjtest';
 import Login from 'you-again';
@@ -59,7 +59,8 @@ const ListLoad = ({type, status, servlet, navpage,
 	className,
 	notALink, itemClassName,
 	preferStatus,
-	hideTotal
+	hideTotal,
+	pageSize
 }) =>
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
@@ -111,7 +112,10 @@ const ListLoad = ({type, status, servlet, navpage,
 	const fastFilter = ! pvItemsFiltered.value;
 	// ...filter / resolve
 	let items = resolveItems({hits, type, status, preferStatus, filter, fastFilter});	
-	let total = pvItems.value && pvItems.value.total;
+	// paginate
+	let [pageNum, setPageNum] = pageSize? useState(0) : [];
+	items = pageSize? paginate({items, pageNum, pageSize}) : items;
+	let total = pvItems.value && pvItems.value.total;	
 
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate? <CreateButton type={type} base={createBase} navpage={navpage} /> : null}
@@ -142,11 +146,21 @@ const ListLoad = ({type, status, servlet, navpage,
 				/>
 			</ListItemWrapper>
 		))}
+		{pageSize && <div>
+			<Button className='mr-2' color='secondary' disabled={ ! pageNum} onClick={e => setPageNum(pageNum-1)} ><b>&lt;</b></Button>
+			<Button color='secondary' onClick={e => setPageNum(pageNum+1)} ><b>&gt;</b></Button>
+		</div>}
 		{pvItemsFiltered.resolved && pvItemsAll.resolved? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
 		<ErrorAlert error={pvItems.error}/>
 	</div>);
 }; // ./ListLoad
 //
+
+
+const paginate = ({items, pageNum, pageSize}) => {
+	assert(pageSize, "paginate");
+	return items.slice(pageNum*pageSize, (pageNum+1)*pageSize);
+};
 
 /**
  * TODO

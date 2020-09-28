@@ -177,17 +177,17 @@ ActionMan.unpublish = (type, id) => {
 };
 
 
-ActionMan.publishEdits = (type, pubId, item) => {
+ActionMan.publishEdits = (type, id, item) => {
 	assMatch(type, String);
-	assMatch(pubId, String, "Crud.js no id to publish to "+type);
+	assMatch(id, String, "Crud.js no id to publish to "+type);
 	// if no item - well its the draft we publish
-	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, pubId);
-	assert(item, "Crud.js no item to publish "+type+" "+pubId);
+	if ( ! item) item = DataStore.getData({status:C.KStatus.DRAFT, type, id});
+	assert(item, "Crud.js no item to publish "+type+" "+id);
 
 	// optimistic list mod
-	preCrudListMod({type, item, action: 'publish'});
+	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
-	return ActionMan.crud({type, id: pubId, action: 'publish', item})
+	return ActionMan.crud({type, id, action: 'publish', item})
 		.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);

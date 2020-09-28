@@ -373,9 +373,9 @@ class Store {
 
 	/**
 	 * Has a data item been modified since loading?
-	 * @param {*} type
-	 * @param {*} id
-	 * @return "dirty", "clean", etc. -- see C.STATUS
+	 * @param {string} type
+	 * @param {string} id
+	 * @returns {?string} "dirty", "clean", etc. -- see C.STATUS
 	 */
 	getLocalEditsStatus(type, id) {
 		assert(C.TYPES.has(type), "DataStore.getLocalEditsStatus "+type);
