@@ -286,7 +286,10 @@ const sogiveid = id => {
 		'woodland':'woodland-trust',
 		'wwf': 'wwf-uk',
 		'Regenboog': 'de-regenboog-groep',
-		'centrepoint': 'centrepoint-soho'
+		'centrepoint': 'centrepoint-soho',
+		'MAW':'make-a-wish-uk',
+		'GOSH':'great-ormond-street-hospital-childrens-charity',
+		'tommys':'tommy-s'
 	}[id];
 
 	// tries to do automatic adjustments, if manual match not specified above
