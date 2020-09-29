@@ -1,6 +1,7 @@
 import React from 'react';
 
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
+import { isDev } from '../Roles';
 import { space } from '../utils/miscutils';
 
 /**
@@ -10,12 +11,16 @@ import { space } from '../utils/miscutils';
  */
 const ErrorAlert =({error,color}) => {
 	if ( ! error) return null;
-	let emsg = _.isString(error)? error : space(error.status, error.statusText, error.message);
-	let edetails = space(error.id, error.statusText, error.responseText, error.details, error.stack);
-	if ( ! emsg && ! edetails) {
+	// NB: error.text is used by You-Again Login.error. error.message is used by JSend
+	let emsg = _.isString(error)? error : space(error.status, error.statusText, error.message || error.text);
+	let edetails = space(error.id, error.responseText, error.details, error.stack);
+	if ( ! emsg) {
 		console.warn("ErrorAlert - blank?",error);
 		return null;
 	}
-	return <Alert color={color||'danger'}>{emsg}</Alert>;
+	return <Alert color={color||'danger'}>
+		{emsg}
+		{isDev() && edetails && <p><small>Dev details: {edetails}</small></p>}
+	</Alert>;
 };
 export default ErrorAlert;
