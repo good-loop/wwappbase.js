@@ -51,7 +51,8 @@ Transfer.getCredit = (uxid) => {
 	if ( ! uxid) uxid = Login.getId();
 	if ( ! uxid) return null;
 	const pvCreditToMe = DataStore.fetch(['list', 'Transfer', 'toFrom:'+Login.getId()], () => {	
-		return ServerIO.load('/credit/_list', {data: {toFrom: Login.getId()} });
+		// don't show an error if the credit load fails?? 'cos no-ones using credit for now
+		return ServerIO.load('/credit/_list', {data: {toFrom: Login.getId()}, swallow:true });
 	});
 	if (pvCreditToMe.value) {
 		// sum them

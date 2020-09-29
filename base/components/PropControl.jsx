@@ -243,8 +243,9 @@ const PropControl = (props) => {
 	// type={type} path={path} prop={prop} error={error} {...stuff} recursing
 	const sizeClass = {sm:'small',lg:'large'}[props.size]; // map BS input size to text-size
 	// NB: label has mr-1 to give a bit of spacing when used in an inline form
+	// NB: reactstrap inline is buggy (Sep 2020) so using className
 	return (
-		<FormGroup check={isCheck} className={space(type, className, error&&'has-error')} inline={inline} >
+		<FormGroup check={isCheck} className={space(type, className, inline&&'form-inline', error&&'has-error')} >
 			{(label || tooltip) && ! isCheck?
 				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
