@@ -44,7 +44,7 @@ const bezierSlide = (x = 0) => {
  * @param {Number} sigFigs Round value
  * @param {Boolean} preservePennies Preserves 2 digits on the pennies count if pennies are included in rounding
  */
-const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs = 3, preservePennies = true }) => {
+const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs = 3, preservePennies = true, preserveSize = true }) => {
 	if (amount) {
 		value = Money.value(amount);
 		currencySymbol = Money.currencySymbol(amount);
@@ -73,20 +73,43 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 
 	let disp = pretty ? printer.prettyNumber(displayValue, sigFigs) : displayValue;
 	disp = disp.toString();
-	if (preservePennies) {
-		let parts = disp.split('.');
-		if (parts.length > 1) {
-			while (parts[1].length != 2) {
-				if (parts[1].length < 2)
-					parts[1] += "0";
-				else if (parts[1].length > 2) {
-					parts[1] = parts[1].substr(0, parts.length - 1);
-				}
-			}
-			disp = parts[0] + "." + parts[1];
+	if (preservePennies)
+		disp = fillInPennies(disp);
+
+	if (!preserveSize)
+		return <span ref={ref}>{currencySymbol + disp}</span>;
+	else {
+		// Get the total value in pretty penny form too, for preserving the size
+		let totalVal = pretty ? printer.prettyNumber(value, sigFigs) : value;
+		totalVal = totalVal.toString();
+		if (preservePennies)
+			totalVal = fillInPennies(totalVal);
+		// Cut the display value down to a number of characters that will fit in the end size
+		while (disp.length > totalVal.length) {
+			disp = disp.substr(0, disp.length - 1);
 		}
+		return (
+			<div className="position-relative d-inline-block">
+				<span className="invisible">{currencySymbol + totalVal}</span>
+				<span className="position-absolute" style={{left: 0}} ref={ref}>{currencySymbol + disp}</span>
+			</div>
+		);
 	}
-	return <span ref={ref}>{currencySymbol + disp}</span>;
+}
+
+const fillInPennies = (disp) => {
+	let parts = disp.split('.');
+	if (parts.length > 1) {
+		while (parts[1].length != 2) {
+			if (parts[1].length < 2)
+				parts[1] += "0";
+			else if (parts[1].length > 2) {
+				parts[1] = parts[1].substr(0, parts.length - 1);
+			}
+		}
+		disp = parts[0] + "." + parts[1];
+	}
+	return disp;
 }
 
 export default Counter;
