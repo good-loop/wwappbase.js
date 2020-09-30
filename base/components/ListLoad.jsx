@@ -146,7 +146,7 @@ const ListLoad = ({type, status, servlet, navpage,
 				/>
 			</ListItemWrapper>
 		))}
-		{pageSize && total < pageSize && <div>
+		{pageSize && total > pageSize && <div>
 			<Button className='mr-2' color='secondary' disabled={ ! pageNum} onClick={e => setPageNum(pageNum-1)} ><b>&lt;</b></Button>
 			page {(pageNum+1)} of {Math.ceil(total / pageSize)}
 			<Button color='secondary' onClick={e => setPageNum(pageNum+1)} ><b>&gt;</b></Button>
