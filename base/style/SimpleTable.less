@@ -1,6 +1,6 @@
 
 // fixed 1st column row with scrolling
-@sticky-col-width: 260px;
+@sticky-col-width: 200px;
 
 .SimpleTable {
 
@@ -40,22 +40,24 @@
 		} // ./scroller
 	 } // ./wrapper
 	 
-	 tr.depth1 {
-		 font-size: 85%;
+	 tr.depth2 {
+		 font-size: 90%;
 		 td:first-child::before {
-			content:' - ';
+			content:' └ ';
+			// float: right;
 		}		 
 	 }
-	 tr.depth2 {
-		font-size: 75%;
+	 tr.depth3 {
+		font-size: 80%;
 		td:first-child::before {
-			content:' - - ';
+			// float: right;
+			content:' -└- ';
 		}
 	}
-	tr.depth3, tr.depth4, tr.depth5, tr.depth6 {
-		font-size: 65%;
+	tr.depth4, tr.depth5, tr.depth6, tr.depth7 {
+		font-size: 70%;
 		td:first-child::before {
-			content:' - - - ';
+			content:' --└-- ';
 		}
 	}
 	// For a caller-provided total row

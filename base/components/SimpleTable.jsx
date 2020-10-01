@@ -139,7 +139,7 @@ class SimpleTable extends React.Component {
 		// page?
 		let [page, setPage] = [tableSettings.page || 0, p => this.setState({page:p})]; // useState(0) - not within a Component;
 
-		// filter and sort
+		// filter and sort - and add in collapse buttons
 		let {dataTree:fdataTree,visibleColumns} = rowFilter({dataTree, hasCollapse, columns, tableSettings, hideEmpty, rowsPerPage});
 		assert(fdataTree, "SimpleTable.jsx - rowFilter led to null?!", dataTree);
 		dataTree = fdataTree;
@@ -198,6 +198,7 @@ class SimpleTable extends React.Component {
 			rowsPerPage={rowsPerPage} 
 			page={page} 
 			visibleColumns={visibleColumns} 
+			hasCollapse={hasCollapse}
 		/>
 		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} /> : null}
 	</tbody>
@@ -330,13 +331,14 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 				if ( ! ncollapsed) return null;
 				// if ( ! item._collapsed) return null;
 			}
-			return (<button className="btn btn-xs"
+			return (<button className="btn btn-sm btn-outline-secondary"
 				onClick={e => {tableSettings.collapsed4nodeid[nodeid] = ! ncollapsed; DataStore.update();}}
-			>{ncollapsed? '+' : '-'}</button>);
+			>{ncollapsed? '▷' : '▼'}</button>);
 		};
 		// add column
 		const uiCol = new Column({ui:true, Header:'+-', Cell});
-		visibleColumns = [uiCol].concat(visibleColumns);
+		let firstCol = visibleColumns.shift();
+		visibleColumns = [firstCol, uiCol].concat(visibleColumns);
 	} // ./hasCollapse
 
 	// sort?
@@ -382,7 +384,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
  * The meat of the table! (normally)
  * @param {!Tree} dataTree
  */
-const Rows = ({dataTree, visibleColumns, rowsPerPage, page=0, rowNum=0}) => {
+const Rows = ({dataTree, visibleColumns, rowsPerPage, page=0, rowNum=0, hasCollapse}) => {
 	if ( ! dataTree) return null;
 	// clip?
 	let min = rowsPerPage? page*rowsPerPage : 0;
@@ -398,7 +400,7 @@ const Rows = ({dataTree, visibleColumns, rowsPerPage, page=0, rowNum=0}) => {
 			return;
 		}
 		// <Row>
-		let $row = <Row key={'r'+rowNum} item={item} rowNum={rowNum} depth={depth}
+		let $row = <Row key={'r'+rowNum} item={item} rowNum={rowNum} depth={depth} hasCollapse={hasCollapse}
 			columns={visibleColumns}
 			node={node}
 			/>;
@@ -452,15 +454,12 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
  * @param {!Number} rowNum Can be -1 for special rows ??0 or 1 indexed??
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, rowNum, node, columns, depth = 0}) => {
-	// Experiment: Don't render the row and necessitate DOM reconciliation if hidden.
-	// EventHostTable in TrafficReport has 90,000 elements & 5-10 second redraw times.
-	// Render the cells to cause the needed side effects, but don't return anything from here.
-
+const Row = ({item, rowNum, node, columns, depth = 0, hasCollapse}) => {
 	const cells = columns.map(col => (
 		<Cell key={JSON.stringify(col)}
 			row={rowNum} node={node}
 			column={col} item={item}
+			hasCollapse={hasCollapse}
 		/>
 	));
 
@@ -567,7 +566,7 @@ const defaultCellRender = (v, column) => {
  * @param {Number} row
  * @param {Column} column
  */
-const Cell = ({item, row, node, column}) => {
+const Cell = ({item, row, node, column, hasCollapse}) => {
 	const citem = item;
 	try {
 		const v = getValue({item, row, column});
@@ -582,6 +581,10 @@ const Cell = ({item, row, node, column}) => {
 			}
 		}
 		const cellGuts = render(v, column, item, node);
+		// collapse? Done by an extra column
+		if (hasCollapse && Tree.children(node)) {
+
+		}
 		return <td style={column.style}>{cellGuts}</td>;
 	} catch(err) {
 		// be robust

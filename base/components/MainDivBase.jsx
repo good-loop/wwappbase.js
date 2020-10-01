@@ -61,7 +61,8 @@ const init = () => {
 	navbarPages: () => String[]
 	securityCheck: ({page}) => throw error / return true
 	SecurityFailPage: ?JSX
-	defaultPage: String
+	defaultPage: String,
+	fullWidthPages: String[]
 */
 class MainDivBase extends Component {
 	// React 16 has deprecated componentWillMount; React 17 will remove the unaliased version.
@@ -87,6 +88,7 @@ class MainDivBase extends Component {
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			defaultPage,
 			navbar=true, // false for no navbar!
+			fullWidthPages
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -128,11 +130,13 @@ class MainDivBase extends Component {
 				Page = () => <SecurityFailPage error={err} />;
 			}
 		}
-		// nav		
+		// full screen?
+		let fluid = fullWidthPages && fullWidthPages.includes(page);
+		//
 		return (
 			<div>
 				{navbar? <NavBar page={page} pages={navbarPages}></NavBar> : null}
-				<Container>
+				<Container fluid={fluid} >
 					<MessageBar />
 					<div className="page" id={page}>
 						<Page />
