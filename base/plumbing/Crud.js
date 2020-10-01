@@ -66,12 +66,16 @@ ActionMan.crud = ({type, id, action, item}) => {
 				if (action==='publish') {				
 					// set local published data				
 					DataStore.setValue(pubpath, freshItem);				
-				}
-				if (action==='publish' || action==='save') {
 					// update the draft version on a publish or a save
 					// ...copy it to allow for edits ??by whom?
 					let draftItem = _.cloneDeep(freshItem);
 					DataStore.setValue(draftpath, draftItem);
+				}
+				if (action==='save') {
+					// TODO we want to update DS, but there's a latency issue and we don't want to lose very-recent edits by the user.
+					// HACK: Let's update the status field, as the server owns that (and it avoids the "stuck on published" bug seen in SoGive Oct 2020)
+					// (better: use diffs)
+					DataStore.setValue(draftpath.concat('status'), freshItem.status);
 				}
 			}
 			if (action==='unpublish') {

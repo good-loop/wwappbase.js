@@ -171,7 +171,7 @@ const SavePublishDeleteEtc = ({
 
 	return (
 		<div className="SavePublishDeleteEtc SavePublishDiscard" style={{position}} title={item && item.status}>
-			<div><small>Status: {item && item.status} | Unpublished changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div>
+			<div><small>Status: {item && item.status} | Unsaved changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div>
 
 			<Button name="save" 
 				color={C.STATUS.issaveerror(localStatus)? 'danger' : 'secondary'} 
