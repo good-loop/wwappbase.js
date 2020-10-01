@@ -249,7 +249,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 		if (ServerIO.mixPanelTrack) ServerIO.mixPanelTrack({mixPanelTag: 'Email login attempted', data: {verb}});
 		
 		if ( ! person) {
-			Login.error = {text: 'Please fill in email and password'};
+			Login.error = 'Please fill in email and password';
 			return;
 		}
 		let email = person.email;

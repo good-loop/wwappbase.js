@@ -321,6 +321,7 @@ function delay(time) {
 module.exports = {
 	fetch,
 	doLogin,
+	login,
 	donate,
 	fillInForm,
 	getConfig,
