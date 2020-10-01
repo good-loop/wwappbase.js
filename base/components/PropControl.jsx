@@ -379,6 +379,7 @@ const PropControl2 = (props) => {
 
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
 		delete otherStuff.size;
+		delete otherStuff.dflt; // TODO handle checkbox default
 
 		return <Label check size={props.size}>
 				<Input bsSize={props.size} type="checkbox" checked={bvalue} value={bvalue} onChange={onChange} {...otherStuff} />

@@ -60,15 +60,19 @@ ActionMan.crud = ({type, id, action, item}) => {
 	// call the server
 	return ServerIO.crud(type, item, action)
 		.then(res => {
-			// returned item, but only if the crud action went OK
+			// Update DS with the returned item, but only if the crud action went OK
 			const freshItem = JSend.success(res) && JSend.data(res);
-			if (action==='publish' && freshItem) {
-				// set local published data				
-				DataStore.setValue(pubpath, freshItem);
-				// also update the draft version				
-				// ...copy it to allow for edits
-				let draftItem = _.cloneDeep(freshItem);
-				DataStore.setValue(draftpath, draftItem);
+			if (freshItem) {
+				if (action==='publish') {				
+					// set local published data				
+					DataStore.setValue(pubpath, freshItem);				
+				}
+				if (action==='publish' || action==='save') {
+					// update the draft version on a publish or a save
+					// ...copy it to allow for edits ??by whom?
+					let draftItem = _.cloneDeep(freshItem);
+					DataStore.setValue(draftpath, draftItem);
+				}
 			}
 			if (action==='unpublish') {
 				// remove from DataStore
