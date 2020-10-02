@@ -289,7 +289,8 @@ const sogiveid = id => {
 		'centrepoint': 'centrepoint-soho',
 		'MAW':'make-a-wish-uk',
 		'GOSH':'great-ormond-street-hospital-childrens-charity',
-		'tommys':'tommy-s'
+		'tommys':'tommy-s',
+		'amnesty':'amnesty-international'
 	}[id];
 
 	// tries to do automatic adjustments, if manual match not specified above
