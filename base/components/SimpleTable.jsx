@@ -73,7 +73,7 @@ class Column extends DataClass {
  * So the columns should use accessors 'key' and 'value'.
  * This is ONLY good for simple 2-column tables!
  *
- * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure.
+ * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items.
  * 
  * @param columns: {Column[]|String[]} Can mix String and Column
  *
@@ -303,7 +303,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 	}
 	
 	// dataTree - filter out collapsed rows
-	let visibleColumns = columns;
+	let visibleColumns = [...columns]; // copy for safety against the edits below
 	if (hasCollapse) {
 		// preserve collapsed setting
 		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
@@ -312,20 +312,15 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 		// Note: collapsed rows DO affect csv creation??
 		dataTree = Tree.filter(dataTree, (node,parent) => {
 			if ( ! parent) return true;
-			const pnodeid = Tree.id(parent); 
+			const pnodeid = Tree.id(parent) || JSON.stringify(parent.value);
 			const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
-			// if (ncollapsed) {
-			// 	// mark this, so we show the button. Have to mark the value 'cos the node itself isnt preserved by map/filter
-			// 	if (Tree.value(parent)) Tree.value(parent)._collapsed = true; // NB: this will not be preserved through another map or filter!
-			// }
 			return ! ncollapsed;
 		});	
 		assert(dataTree, "SimpleTable.jsx - collapsed to null?!");		
 		// HACK: add a collapse column
 		// ...collapse button
 		const Cell = (v, col, item, node) => {
-			let nodeid = Tree.id(node); 
-			if ( ! nodeid) nodeid = JSON.stringify(item);
+			let nodeid = Tree.id(node) || JSON.stringify(item);
 			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
 			if ( ! node || ! Tree.children(node).length) {
 				if ( ! ncollapsed) return null;

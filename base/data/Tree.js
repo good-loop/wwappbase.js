@@ -138,14 +138,16 @@ Tree.depth = node => {
  * 
  * @param {!Tree} tree
  * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / new-value / null. depth starts at 0 for the root.
- * @returns {?Tree} A copy (if fn returns new-nodes). 
+ * @returns {?Tree} A copy (if fn returns new-nodes / values-for-nodes). 
  * 	NB: Callers may also ignore the return value, using this as a forEach.
  * 
  */
 Tree.map = (tree, fn, parent=null, depth=0) => {
 	let t2 = fn(tree, parent, depth);
 	// wrap the return into a tree node?
-	if (t2 && ! Tree.isa(t2)) t2 = new Tree({value:t2});
+	if (t2 && ! Tree.isa(t2)) {
+		t2 = new Tree({value:t2});
+	}
 	if (tree.children) {
 		// recurse
 		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree, depth+1));
