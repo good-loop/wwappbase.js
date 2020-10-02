@@ -41,17 +41,46 @@ const bezierSlide = (x = 0) => {
  * @param {Number} fps frames per second
  * @param {String} currencySymbol
  * @param {Money} amount - Convenient way to set value + currencySymbol
- * @param {Number} sigFigs Round value
- * @param {Boolean} preservePennies Preserves 2 digits on the pennies count if pennies are included in rounding
+ * @param {Number} sigFigs Round value. 3 by default for non-Money inputs.
+ * @param {Boolean} preservePennies Preserves 2 digits on the pennies count. This overrides sigFigs. True by default for money.
  */
-const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs = 3, preservePennies = true, preserveSize = true }) => {
+const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies}) => 
+{
 	if (amount) {
 		value = Money.value(amount);
 		currencySymbol = Money.currencySymbol(amount);
 	}
-	const [state, setState] = useState({displayValue: initial, done: false});
-	const {startTime, displayValue, done} = state;
-	const ref = useRef();
+	if ( ! value) {	// paranoia
+		console.warn("Counter - No value or amount");
+		return null;
+	}
+	const [state, setState] = useState({displayValue: initial});
+	const [done, setDone] = useState();
+	const {startTime, displayValue} = state;
+	const ref = useRef();	
+
+	// Number Formatting
+	const options = {};
+	// ...set default value for preservePennies and sigFigs (but not both)
+	if (preservePennies===undefined && ! sigFigs && (amount || currencySymbol)) {
+		preservePennies = true;				
+	}
+	if (sigFigs===undefined) {
+		sigFigs = preservePennies? false : 3;
+	}
+	if (sigFigs) options.maximumSignificantDigits = sigFigs;
+	if (preservePennies) {
+		options.minimumFractionDigits = 2;
+		options.maximumFractionDigits = 2;
+	}
+	const formatNum = x => {		
+		try {
+			return new Intl.NumberFormat('en-GB', options).format(x);
+		} catch(er) {
+			console.warn("Counter.jsx formatNumber "+er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
+			return ""+x;	
+		}	
+	};
 
 	// Start animation the FIRST time the component enters the viewport
 	useDoesIfVisible(() => {
@@ -59,7 +88,7 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 	}, ref);
 
 	// Is the component visible & not yet done animating?
-	if (startTime && !done) {
+	if (startTime && ! done) {
 		const elapsed = new Date().getTime() - startTime;
 		// Display fraction of final amount based on "bezier curve"
 		// Aim to show roughly 20 frames per second
@@ -68,48 +97,27 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 			setState({...state, displayValue: displayVal});
 		}, animationLength / fps);
 		// Have we passed the end of the animation duration? Don't update again after this.
-		if (elapsed >= animationLength) setState({...state, done: true});
-	}
-
-	let disp = pretty ? printer.prettyNumber(displayValue, sigFigs) : displayValue;
-	disp = disp.toString();
-	if (preservePennies)
-		disp = fillInPennies(disp);
-
-	if (!preserveSize)
-		return <span ref={ref}>{currencySymbol + disp}</span>;
-	else {
-		// Get the total value in pretty penny form too, for preserving the size
-		let totalVal = pretty ? printer.prettyNumber(value, sigFigs) : value;
-		totalVal = totalVal.toString();
-		if (preservePennies)
-			totalVal = fillInPennies(totalVal);
-		// Cut the display value down to a number of characters that will fit in the end size
-		while (disp.length > totalVal.length) {
-			disp = disp.substr(0, disp.length - 1);
+		if (elapsed >= animationLength) {
+			setDone(true); // NB: done was mixed into state, but this made it easy to have bugs which lost the done flag
 		}
-		return (
-			<div className="position-relative d-inline-block">
-				<span className="invisible">{currencySymbol + totalVal}</span>
-				<span className="position-absolute" style={{left: 0}} ref={ref}>{currencySymbol + disp}</span>
-			</div>
-		);
 	}
-}
 
-const fillInPennies = (disp) => {
-	let parts = disp.split('.');
-	if (parts.length > 1) {
-		while (parts[1].length != 2) {
-			if (parts[1].length < 2)
-				parts[1] += "0";
-			else if (parts[1].length > 2) {
-				parts[1] = parts[1].substr(0, parts.length - 1);
-			}
-		}
-		disp = parts[0] + "." + parts[1];
-	}
-	return disp;
-}
+	let disp = pretty? formatNum(displayValue) : displayValue.toString();	
+
+	// Get the total value in pretty penny form too, for preserving the size
+	let totalVal = pretty ? formatNum(value) : value.toString();
+	
+	// Make sure the display value is no longer than the end size
+	disp = disp.substr(0, totalVal.length);
+
+	// To avoid having the surrounding text jitter, we fix the size.
+	// using an invisible final value to get the sizing right.
+	return (
+		<div className="position-relative d-inline-block">
+			<span className="invisible">{currencySymbol + totalVal}</span>
+			<span className="position-absolute" style={{right: 0}} ref={ref}>{currencySymbol + disp}</span>
+		</div>
+	);
+};
 
 export default Counter;
