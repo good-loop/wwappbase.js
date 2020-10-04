@@ -47,8 +47,10 @@ class Column extends DataClass {
 	type;
 	/** @type {?String} Text to show as help */
 	tooltip;
-	/** @type {Object} custom css styling */
+
+	/** @type {?Object|function} custom css styling. If a function, it does (cellValue, item, column) -> css-style-object */
 	style;
+	
 	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
 	ui;
 	/** @significantDigits {?integer} used used to specify significant digits for numbers */
@@ -452,14 +454,15 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 const Row = ({item, rowNum, node, columns, depth = 0, hasCollapse}) => {
 	const cells = columns.map(col => (
 		<Cell key={JSON.stringify(col)}
-			row={rowNum} node={node}
+			row={rowNum} depth={depth} 
+			node={node}
 			column={col} item={item}
 			hasCollapse={hasCollapse}
 		/>
 	));
-
+	let style = item.style;
 	return (
-		<tr className={space("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={item.style}>
+		<tr className={space("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={style}>
 			{cells}
 		</tr>
 	);
@@ -561,7 +564,7 @@ const defaultCellRender = (v, column) => {
  * @param {Number} row
  * @param {Column} column
  */
-const Cell = ({item, row, node, column, hasCollapse}) => {
+const Cell = ({item, row, depth, node, column, hasCollapse}) => {
 	const citem = item;
 	try {
 		const v = getValue({item, row, column});
@@ -580,13 +583,28 @@ const Cell = ({item, row, node, column, hasCollapse}) => {
 		if (hasCollapse && Tree.children(node)) {
 
 		}
-		return <td style={column.style}>{cellGuts}</td>;
+		let style = calcStyle({style: column.style, cellValue:v, item, row, depth, column});
+		let tooltip = calcStyle({style: column.tooltip, cellValue:v, item, row, depth, column});
+		// the moment you've been waiting for: a table cell!
+		return <td style={style} title={tooltip} >{cellGuts}</td>;
 	} catch(err) {
 		// be robust
 		console.error(err);
-		if (hidden) return null; // see above
 		return <td>{str(err)}</td>;
 	}
+};
+
+/**
+ * Custom css for a cell?
+ * @param {?Object|function} style if a function, it does (cellValue, item) -> css-style-object
+ * @returns (?Object)
+ */
+const calcStyle = ({style, cellValue, item, row, depth, column}) => {
+	if (typeof(style) === 'function') {
+		return style({cellValue, item, row, depth, column});
+	}
+	// an object e.g. {color:"blue"}
+	return style;
 };
 
 const TotalCell = ({dataTree, column}) => {
