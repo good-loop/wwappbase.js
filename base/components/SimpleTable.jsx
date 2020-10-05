@@ -45,10 +45,10 @@ class Column extends DataClass {
 	sortAccessor;
 	/** @type {?String} Used for providing an editor - see PropControl */
 	type;
-	/** @type {?String} Text to show as help */
+	/** @type {?String|Function} Text to show as help. If a function, works like style */
 	tooltip;
 
-	/** @type {?Object|function} custom css styling. If a function, it does (cellValue, item, column) -> css-style-object */
+	/** @type {?Object|Function} custom css styling. If a function, it does (cellValue, item, column) -> css-style-object */
 	style;
 	
 	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
@@ -412,6 +412,19 @@ const Rows = ({dataTree, visibleColumns, rowsPerPage, page=0, rowNum=0, hasColla
 
 const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
+	let hText;
+	if (headerRender) hText = headerRender(column);
+	else hText = column.Header || column.accessor || str(column);	
+	// add in a tooltip?
+	if (column.tooltip) {
+		let tooltip = calcStyle({style: column.tooltip, depth:0, column});
+		hText = <div title={tooltip}>{hText}</div>;
+	}
+	// No sorting?
+	if ( ! showSortButtons) return (
+		<th>{hText}</th>
+	);
+	// sort UI
 	let sortByMe = _.isEqual(tableSettings.sortBy, column);
 	let onClick = e => {
 		console.warn('sort click', column, sortByMe, tableSettings);
@@ -426,22 +439,15 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 		table.setState({sortBy: column});
 		// tableSettings.sortBy = c;
 	};
-	let hText;
-	if (headerRender) hText = headerRender(column);
-	else hText = column.Header || column.accessor || str(column);	
-	// add in a tooltip?
-	if (column.tooltip) {
-		hText = <div title={column.tooltip}>{hText}</div>;
-	}
 	
 	// Sort indicator glyph: point down for descending, point up for ascending, outlined point down for "not sorted on this column"
 	let arrow = null;
 	if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
-	else if (showSortButtons) arrow = <>&#x25BD;</>;
+	else arrow = <>&#x25BD;</>;
 
 	return (
 		<th>
-			<span onClick={onClick}>{hText}{arrow}</span>
+			<div onClick={onClick}>{hText}{arrow}</div>
 		</th>
 	);
 };
