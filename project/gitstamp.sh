@@ -7,7 +7,7 @@ printf "HOST:\t$HOSTNAME\n" > $LOGFILE
 printf "## $pwd\n" >> $LOGFILE
 printf "$(git status)\n" >> $LOGFILE 
 printf "$(git log -1)\n" >> $LOGFILE 
-printf '\n\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\n' >> $LOGFILE 
+printf '=======================\n' >> $LOGFILE 
 printf '## wwappbase.js\n' >> $LOGFILE
 printf "branch\n" >> $LOGFILE 
 # NB: status doesn't work with git-dir, so use branch
