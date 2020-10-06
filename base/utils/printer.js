@@ -39,24 +39,26 @@ Printer.URL_REGEX = /https?\:\/\/[0-9a-zA-Z]([-.\w]*[0-9a-zA-Z])*(:(0-9)*‌​)
  * @return x to n significant figures
  */
 Printer.prototype.toNSigFigs = function(x, n) {
-	if (x==0) return "0";
-	assert(n > 0, "Printer.js - toNSigFigs: n is not greater than 0");
-	try {
-		let snum = new Intl.NumberFormat('en-GB', {maximumSignificantDigits: n}).format(x);
-		return snum;
-	} catch(er) {
-		console.warn("toNSigFigs "+er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
-		return ""+x;	
-	}
+	return this.prettyNumber(x, n);
 };
 
 /**
  * @param {?Number} x The number to format. If null/undefined, return ''.
  * Convenience for new Intl.NumberFormat().format() directly
+ * @param {?Number} sigFigs Default to 3
+ * @param {?Number} minimumFractionDigits e.g. 2 for preserve-pence with money amounts
  */
-Printer.prototype.prettyNumber = function(x, sigFigs=3) {
+Printer.prototype.prettyNumber = function(x, sigFigs=3, minimumFractionDigits) {
 	if (x===undefined || x===null) return '';
-	return this.toNSigFigs(x, sigFigs);
+	if (x==0) return "0";
+	try {
+		let options = {maximumSignificantDigits:sigFigs, minimumFractionDigits};
+		let snum = new Intl.NumberFormat('en-GB', options).format(x);
+		return snum;
+	} catch(er) {
+		console.warn("toNSigFigs "+er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
+		return ""+x;	
+	}
 };
 
 /**
