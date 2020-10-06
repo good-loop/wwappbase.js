@@ -2,6 +2,7 @@
 import Enum from 'easy-enums';
 import Roles from './Roles';
 import DataStore from './plumbing/DataStore';
+import appInfo from '../../../GLAppInfo.json';
 
 const C = {};
 
@@ -10,11 +11,7 @@ const C = {};
 /**
  * app config
  */
-C.app = {
-	name: "My App",
-	service: "myapp",
-	logo: "/img/logo.png"
-};
+C.app = appInfo;
 
 // Below here: apps should leave as-is
 
