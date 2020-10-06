@@ -2,7 +2,6 @@
 import Enum from 'easy-enums';
 import Roles from './Roles';
 import DataStore from './plumbing/DataStore';
-import GLAppManifest from '../../../GLAppManifest';
 
 const C = {};
 
@@ -11,7 +10,11 @@ const C = {};
 /**
  * app config
  */
-C.app = GLAppManifest;
+C.app = {
+	name: "My App",
+	service: "myapp",
+	logo: "/img/logo.png"
+};
 
 // Below here: apps should leave as-is
 
