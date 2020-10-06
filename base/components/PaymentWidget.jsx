@@ -239,14 +239,15 @@ class StripeThingsClass extends Component {
 			return (<PaymentRequestButtonElement paymentRequest={this.state.paymentRequest} />);
 		}
 
-		const {amount, recipient, credit} = this.props;
+		const {amount, recipient, credit, repeatAmount, repeatFreq, repeatEnd} = this.props;
 		const {value, currency} = amount;
 		const isSaving = this.state.isSaving && ! this.props.serverError;
 		const isValidAmount = value >= STRIPE_MINIMUM_AMOUNTS[currency]
 		// TODO an email editor if this.props.email is unset
 		return (
 			<Form onSubmit={(event) => this.handleSubmit(event)}>
-				<h3>Payment of <Misc.Money amount={amount} /> to {recipient}</h3>
+				<h4>Payment to {recipient}</h4>
+				<PaymentAmount amount={amount} repeatAmount={repeatAmount} repeatFreq={repeatFreq} repeatEnd={repeatEnd} />
 				{credit && Money.value(credit) > 0?
 					<FormGroup><Col md="12">
 						You have <Misc.Money amount={credit} /> in credit which will be used towards this payment.
@@ -294,6 +295,23 @@ class StripeThingsClass extends Component {
 		);
 	} // ./render()
 } // ./StripeThingsClass
+
+const PaymentAmount = ({amount, repeatAmount, repeatFreq, repeatEnd}) => {
+	if ( ! repeatAmount) {
+		return <h4><Misc.Money amount={amount} /></h4>;
+	}
+	if (Money.value(repeatAmount) === Money.value(amount)) {
+		return (<>
+			<h4><Misc.Money amount={amount} /> {Donation.strRepeat(repeatFreq)} {repeatEnd}</h4>
+			<div>The regular payment can be cancelled at any time.</div>
+		</>);
+	}
+	return (<>
+		<h4><Misc.Money amount={amount} /> now.</h4>
+		<h4>Then <Misc.Money amount={repeatAmount} /> {Donation.strRepeat(repeatFreq)} {repeatEnd}.</h4>
+		<div>The regular payment can be cancelled at any time.</div>
+	</>);	
+};
 
 const StripeThings = injectStripe(StripeThingsClass);
 
