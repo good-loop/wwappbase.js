@@ -45,10 +45,12 @@ class Column extends DataClass {
 	sortAccessor;
 	/** @type {?String} Used for providing an editor - see PropControl */
 	type;
-	/** @type {?String} Text to show as help */
+	/** @type {?String|Function} Text to show as help. If a function, works like style */
 	tooltip;
-	/** @type {Object} custom css styling */
+
+	/** @type {?Object|Function} custom css styling. If a function, it does (cellValue, item, column) -> css-style-object */
 	style;
+	
 	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
 	ui;
 	/** @significantDigits {?integer} used used to specify significant digits for numbers */
@@ -73,7 +75,7 @@ class Column extends DataClass {
  * So the columns should use accessors 'key' and 'value'.
  * This is ONLY good for simple 2-column tables!
  *
- * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure.
+ * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items.
  * 
  * @param columns: {Column[]|String[]} Can mix String and Column
  *
@@ -303,7 +305,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 	}
 	
 	// dataTree - filter out collapsed rows
-	let visibleColumns = columns;
+	let visibleColumns = [...columns]; // copy for safety against the edits below
 	if (hasCollapse) {
 		// preserve collapsed setting
 		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
@@ -312,20 +314,15 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 		// Note: collapsed rows DO affect csv creation??
 		dataTree = Tree.filter(dataTree, (node,parent) => {
 			if ( ! parent) return true;
-			const pnodeid = Tree.id(parent); 
+			const pnodeid = Tree.id(parent) || JSON.stringify(parent.value);
 			const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
-			// if (ncollapsed) {
-			// 	// mark this, so we show the button. Have to mark the value 'cos the node itself isnt preserved by map/filter
-			// 	if (Tree.value(parent)) Tree.value(parent)._collapsed = true; // NB: this will not be preserved through another map or filter!
-			// }
 			return ! ncollapsed;
 		});	
 		assert(dataTree, "SimpleTable.jsx - collapsed to null?!");		
 		// HACK: add a collapse column
 		// ...collapse button
 		const Cell = (v, col, item, node) => {
-			let nodeid = Tree.id(node); 
-			if ( ! nodeid) nodeid = JSON.stringify(item);
+			let nodeid = Tree.id(node) || JSON.stringify(item);
 			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
 			if ( ! node || ! Tree.children(node).length) {
 				if ( ! ncollapsed) return null;
@@ -415,6 +412,19 @@ const Rows = ({dataTree, visibleColumns, rowsPerPage, page=0, rowNum=0, hasColla
 
 const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons}) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
+	let hText;
+	if (headerRender) hText = headerRender(column);
+	else hText = column.Header || column.accessor || str(column);	
+	// add in a tooltip?
+	if (column.tooltip) {
+		let tooltip = calcStyle({style: column.tooltip, depth:0, column});
+		hText = <div title={tooltip}>{hText}</div>;
+	}
+	// No sorting?
+	if ( ! showSortButtons) return (
+		<th>{hText}</th>
+	);
+	// sort UI
 	let sortByMe = _.isEqual(tableSettings.sortBy, column);
 	let onClick = e => {
 		console.warn('sort click', column, sortByMe, tableSettings);
@@ -429,22 +439,15 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 		table.setState({sortBy: column});
 		// tableSettings.sortBy = c;
 	};
-	let hText;
-	if (headerRender) hText = headerRender(column);
-	else hText = column.Header || column.accessor || str(column);	
-	// add in a tooltip?
-	if (column.tooltip) {
-		hText = <div title={column.tooltip}>{hText}</div>;
-	}
 	
 	// Sort indicator glyph: point down for descending, point up for ascending, outlined point down for "not sorted on this column"
 	let arrow = null;
 	if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
-	else if (showSortButtons) arrow = <>&#x25BD;</>;
+	else arrow = <>&#x25BD;</>;
 
 	return (
 		<th>
-			<span onClick={onClick}>{hText}{arrow}</span>
+			<div onClick={onClick}>{hText}{arrow}</div>
 		</th>
 	);
 };
@@ -457,14 +460,15 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 const Row = ({item, rowNum, node, columns, depth = 0, hasCollapse}) => {
 	const cells = columns.map(col => (
 		<Cell key={JSON.stringify(col)}
-			row={rowNum} node={node}
+			row={rowNum} depth={depth} 
+			node={node}
 			column={col} item={item}
 			hasCollapse={hasCollapse}
 		/>
 	));
-
+	let style = item.style;
 	return (
-		<tr className={space("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={item.style}>
+		<tr className={space("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={style}>
 			{cells}
 		</tr>
 	);
@@ -566,7 +570,7 @@ const defaultCellRender = (v, column) => {
  * @param {Number} row
  * @param {Column} column
  */
-const Cell = ({item, row, node, column, hasCollapse}) => {
+const Cell = ({item, row, depth, node, column, hasCollapse}) => {
 	const citem = item;
 	try {
 		const v = getValue({item, row, column});
@@ -585,13 +589,28 @@ const Cell = ({item, row, node, column, hasCollapse}) => {
 		if (hasCollapse && Tree.children(node)) {
 
 		}
-		return <td style={column.style}>{cellGuts}</td>;
+		let style = calcStyle({style: column.style, cellValue:v, item, row, depth, column});
+		let tooltip = calcStyle({style: column.tooltip, cellValue:v, item, row, depth, column});
+		// the moment you've been waiting for: a table cell!
+		return <td style={style} title={tooltip} >{cellGuts}</td>;
 	} catch(err) {
 		// be robust
 		console.error(err);
-		if (hidden) return null; // see above
 		return <td>{str(err)}</td>;
 	}
+};
+
+/**
+ * Custom css for a cell?
+ * @param {?Object|function} style if a function, it does (cellValue, item) -> css-style-object
+ * @returns (?Object)
+ */
+const calcStyle = ({style, cellValue, item, row, depth, column}) => {
+	if (typeof(style) === 'function') {
+		return style({cellValue, item, row, depth, column});
+	}
+	// an object e.g. {color:"blue"}
+	return style;
 };
 
 const TotalCell = ({dataTree, column}) => {

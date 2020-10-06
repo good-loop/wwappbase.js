@@ -21,4 +21,6 @@ git --git-dir ../wwappbase.js/.git branch >> $LOGFILE
 echo "" >> $LOGFILE 
 git --git-dir ../wwappbase.js/.git log -1 >> $LOGFILE
 
+echo "" >> $LOGFILE 
+echo "Made by gitstamp.sh at `date`" >> $LOGFILE 
 echo "Wrote git manifest: $LOGFILE"
