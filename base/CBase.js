@@ -2,7 +2,6 @@
 import Enum from 'easy-enums';
 import Roles from './Roles';
 import DataStore from './plumbing/DataStore';
-import GLAppManifest from '../../../GLAppManifest';
 
 const C = {};
 
@@ -10,8 +9,13 @@ const C = {};
 /// Apps Should Set These Things :)
 /**
  * app config
+ * Best practice: Set this in your app.jsx file, from values in a GLAppManifest file.
  */
-C.app = GLAppManifest;
+C.app = {
+	name: "MyApp",
+	service: "myapp",
+	logo: "/img/logo.png"
+};
 
 // Below here: apps should leave as-is
 
