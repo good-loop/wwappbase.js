@@ -300,6 +300,7 @@ const PaymentAmount = ({amount, repeatAmount, repeatFreq, repeatEnd}) => {
 	if ( ! repeatAmount) {
 		return <h4><Misc.Money amount={amount} /></h4>;
 	}
+		// TODO  {repeatEnd}
 	if (Money.value(repeatAmount) === Money.value(amount)) {
 		return (<>
 			<h4><Misc.Money amount={amount} /> {Donation.strRepeat(repeatFreq)} {repeatEnd}</h4>
@@ -308,7 +309,7 @@ const PaymentAmount = ({amount, repeatAmount, repeatFreq, repeatEnd}) => {
 	}
 	return (<>
 		<h4><Misc.Money amount={amount} /> now.</h4>
-		<h4>Then <Misc.Money amount={repeatAmount} /> {Donation.strRepeat(repeatFreq)} {repeatEnd}.</h4>
+		<h4>Then <Misc.Money amount={repeatAmount} /> {Donation.strRepeat(repeatFreq)}.</h4>
 		<div>The regular payment can be cancelled at any time.</div>
 	</>);	
 };

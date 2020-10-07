@@ -5,7 +5,6 @@ import DataStore from './plumbing/DataStore';
 
 const C = {};
 
-
 /// Apps Should Set These Things :)
 /**
  * app config
