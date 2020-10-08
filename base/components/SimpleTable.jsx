@@ -207,7 +207,7 @@ class SimpleTable extends React.Component {
 	<TableFoot {...{csv, tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow, numPages, page, setPage}} 
 		colSpan={visibleColumns.length} />
 </table>
-						</div>
+						</div> {/* scroller */}
 					</div>
 				</div>
 			</div>
@@ -312,6 +312,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 		if ( ! tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};		
 		// filter by collapsed (which is set on the parent)
 		// Note: collapsed rows DO affect csv creation??
+		let allDataTree = dataTree;
 		dataTree = Tree.filter(dataTree, (node,parent) => {
 			if ( ! parent) return true;
 			const pnodeid = Tree.id(parent) || JSON.stringify(parent.value);
@@ -324,16 +325,32 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 		const Cell = (v, col, item, node) => {
 			let nodeid = Tree.id(node) || JSON.stringify(item);
 			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
+			// no node or children? no need for a control
 			if ( ! node || ! Tree.children(node).length) {
-				if ( ! ncollapsed) return null;
-				// if ( ! item._collapsed) return null;
+				// but what if we'd filtered out the children above?
+				if ( ! ncollapsed ) return null;
 			}
-			return (<button className="btn btn-sm btn-outline-secondary"
+			return (<button className="btn btn-xs btn-outline-secondary" title={ncollapsed? "click to expand" : "click to collapse"}
 				onClick={e => {tableSettings.collapsed4nodeid[nodeid] = ! ncollapsed; DataStore.update();}}
 			>{ncollapsed? '▷' : '▼'}</button>);
 		};
-		// add column
-		const uiCol = new Column({ui:true, Header:'+-', Cell});
+		// add column, with a collapse/expand all option
+		let allCollapsed = !! tableSettings.collapsed4nodeid.all;
+		const uiCol = new Column({
+			ui:true, 
+			Header: <button className="btn btn-xs btn-outline-secondary" onClick={e => {				
+				allCollapsed = ! allCollapsed;
+				// NB: unshift so we dont collapse the root node
+				Tree.flatten(allDataTree).slice(1).map(node => {
+					if ( ! Tree.children(node).length) return;
+					let nodeid = Tree.id(node) || JSON.stringify(node.value);
+					tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
+				});
+				tableSettings.collapsed4nodeid.all = allCollapsed;
+				DataStore.update();
+			}} title={'click to collapse/expand all'} ><b>{allCollapsed? '▷' : '▼'}</b></button>, 
+			Cell
+		});
 		let firstCol = visibleColumns.shift();
 		visibleColumns = [firstCol, uiCol].concat(visibleColumns);
 	} // ./hasCollapse
@@ -458,8 +475,8 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
 const Row = ({item, rowNum, node, columns, depth = 0, hasCollapse}) => {
-	const cells = columns.map(col => (
-		<Cell key={JSON.stringify(col)}
+	const cells = columns.map((col,i) => (
+		<Cell key={i}
 			row={rowNum} depth={depth} 
 			node={node}
 			column={col} item={item}
