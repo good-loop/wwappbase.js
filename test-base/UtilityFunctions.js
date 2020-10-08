@@ -292,26 +292,6 @@ async function advanceWizard({page}) {
 	await page.goto(gotoURL);
 }
 
-/**
- * Please call this at the start of each block of tests. It checks that the test site is NOT pointing at the production API
- * (and so guards against accidentally editing production data).
- * @param {page} page 
- * @param {?string} server Url for the server. If not set, assume that page.goto() has already been called.
- */
-const serverSafetyCheck = async (page, server) => {
-	if (server) {
-		await page.goto(server);
-	}
-	const endpoint = await page.evaluate( () => window.ServerIO.APIBASE);
-	if (typeof(endpoint) !== 'string') {
-		throw new Error("Could not find ServerIO.APIBASE?!");
-	}
-	if( endpoint !== '' && ! endpoint.includes("local") && ! endpoint.includes("test")) {
-		console.log("ServerIO.APIBASE = "+endpoint+"\nTest service is pointing at production server! Aborting test. Please check ServerIO.js!");
-		shell.exit(1);
-	}
-};
-
 function delay(time) {
 	return new Promise(function(resolve) { 
 		setTimeout(resolve, time)
@@ -325,6 +305,5 @@ module.exports = {
 	donate,
 	fillInForm,
 	getConfig,
-	serverSafetyCheck,
 	delay
 };
