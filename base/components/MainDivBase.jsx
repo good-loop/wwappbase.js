@@ -58,7 +58,7 @@ const init = () => {
 
 	props:
 	pageForPath: {String:JSX}
-	navbarPages: () => String[]
+	navbarPages: String[]|() => String[]
 	securityCheck: ({page}) => throw error / return true
 	SecurityFailPage: ?JSX
 	defaultPage: String,
