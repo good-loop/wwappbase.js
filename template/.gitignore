@@ -9,3 +9,6 @@ web/build
 web/style/*.css
 test-base/*/utils
 package-lock.json
+bob.log
+dependencies
+logs
