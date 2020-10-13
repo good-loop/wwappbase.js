@@ -20,7 +20,6 @@ import JSend from '../data/JSend';
 import {stopEvent, toTitleCase, space, labeller, is} from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import { useDropzone } from 'react-dropzone';
-import Autocomplete from 'react-autocomplete';
 
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
@@ -513,11 +512,6 @@ const PropControl2 = (props) => {
 		return <PropControlSelect  {...props2} />
 	}
 
-	if (type === 'autocomplete') {
-		let acprops = { prop, value, rawValue, setRawValue, path, proppath, bg, saveFn, modelValueFromInput, ...otherStuff };
-		return <PropControlAutocomplete {...acprops} />;
-	}
-
 	// Optional fancy colour picker - dummied out for now.
 	/*
 	if (type === 'color') {
@@ -981,79 +975,6 @@ const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }
 	</div>);
 };
 
-/** Use Bootstrap components to make the dropdown menu look nice by default*/
-const renderMenuDflt = (items, value, style) => <div className="dropdown-menu show">{items}</div>;
-const renderItemDflt = (itm) => <div className="dropdown-item">{itm}</div>
-const shouldItemRenderDflt = (itm, value) => (itm || '').toLowerCase().startsWith((value || '').toLowerCase());
-
-/**
- * wraps the reactjs autocomplete widget
- * TODO When options is a function, default to "show all items"
- * @param {Function|Object[]|String[]} options The items to select from
- * @param {?JSX} renderItem Should return a Bootstrap DropdownItem, to look nice. Will be passed a member of the options prop as its only argument.
- * @param {?Function} getItemValue Map item (member of options prop) to the value which should be stored
-*/
-const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValue, options, getItemValue = (s => s),
-	renderItem = renderItemDflt, path, proppath, bg, saveFn, modelValueFromInput, shouldItemRender = shouldItemRenderDflt,
-	...otherStuff }) => {
-	// a place to store the working state of this widget
-	let widgetPath = ['widget', 'autocomplete'].concat(path);
-	const type = 'autocomplete';
-	const items = _.isArray(options) ? options : DataStore.getValue(widgetPath) || [];
-
-	if (!rawValue) rawValue = value;
-
-	// NB: typing sends e = an event, clicking an autocomplete sends e = a value
-	const onChange2 = (e) => {
-		// console.log("event", e, e.type, optItem);
-		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
-		// typing sends an event, clicking an autocomplete sends a value
-		const val = e.target ? e.target.value : e;
-		setRawValue(val)
-		let mv = modelValueFromInput(val, type, e.type);
-		DSsetValue(proppath, mv);
-		if (saveFn) saveFn({ event: e, path: path, prop, value: mv });
-		// e.preventDefault();
-		// e.stopPropagation();
-	};
-
-	const onChange = (e, optItem) => {
-		onChange2(e, optItem);
-		if (!e.target.value) return;
-		if (!_.isFunction(options)) return;
-		let optionsOutput = options(e.target.value);
-		let pvo = new PromiseValue(optionsOutput);
-		pvo.promise.then(oo => {
-			DataStore.setValue(widgetPath, oo);
-			// also save the info in data
-			// NB: assumes we use status:published for auto-complete
-			oo.forEach(opt => {
-				if (getType(opt) && getId(opt)) {
-					const optPath = DataStore.getDataPath({ status: C.KStatus.PUBLISHED, type: getType(opt), id: getId(opt) });
-					DataStore.setValue(optPath, opt);
-				}
-			});
-		});
-		// NB: no action on fail - the user just doesn't get autocomplete
-	};
-
-	return (
-		<Autocomplete
-			inputProps={{ className: otherStuff.className || 'form-control' }}
-			getItemValue={getItemValue}
-			items={items}
-			renderMenu={renderMenuDflt}
-			renderItem={renderItem}
-			value={rawValue || ''}
-			onChange={onChange}
-			onSelect={onChange2}
-			shouldItemRender={shouldItemRender}
-			menuStyle={{zIndex: 1}}
-		/>
-	);
-}; //./autocomplete
-
 
 /**
 * Convert inputs (probably text) into the model's format (e.g. numerical)
@@ -1141,7 +1062,7 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-PropControl.KControlType = new Enum("textarea html text search select radio checkboxes autocomplete password email color checkbox"
+PropControl.KControlType = new Enum("textarea html text search select radio checkboxes password email color checkbox"
 	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
 	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
 	// some Good-Loop data-classes
