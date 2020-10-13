@@ -242,7 +242,10 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	return url;
 };
 
-// HACK match mismatches
+/** HACK match mismatches
+ * @param {!string} id the charity ID as used e.g. in a Good-Loop advert
+ * @returns {!string} the "proper" id for use with SoGive
+ */
 const sogiveid = id => {
 	// manual id matching, only needed for ids that don't follow the rule: _ --> -
 	let sid = {

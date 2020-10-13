@@ -354,7 +354,7 @@ export const yessy = function(val: any): boolean {
 /**
  * convenience for not-null not-undefined (but can be false, 0, or "")
  */
-export const is = x => x !== undefined && x !== null;
+export const is = (x: any) => x !== undefined && x !== null;
 
 
 const getStackTrace = function() {

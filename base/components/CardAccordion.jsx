@@ -16,7 +16,7 @@ import { space } from '../utils/miscutils';
  *
  * @param {String|JSX} title - will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.
  * @param {any} error - If set, colour the card red
- * @param warning {any} If set, colour the card yellow
+ * @param {?string} warning - If set, colour the card yellow
  * @param {?String} className - Added to the BS panel classes
  * @param {?Boolean} collapse - If true, the children are not rendered.
  */
