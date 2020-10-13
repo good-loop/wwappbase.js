@@ -248,11 +248,16 @@ const moneyFromv100p = (b100p, currency) => {
 	return m;
 };
 
+/**
+ * 
+ * @param {Money[]} amounts Can include nulls
+ */
 Money.total = amounts => {
 	// assMatch(amounts, "Money[]", "Money.js - total()");
 	let zero = new Money();
 	Money.assIsa(zero);
 	let ttl = amounts.reduce( (acc, m) => {
+		if ( ! m) return acc; // skip nulls
 		if ( ! Money.isa(m)) {
 			console.warn(new Error("Money.total() - Not Money? "+JSON.stringify(m)), amounts);
 			return acc;
@@ -262,7 +267,13 @@ Money.total = amounts => {
 	return ttl;
 };
 
-// Will fail if not called on 2 Moneys of the same currency
+/** 
+ * Subtract.
+ * Will fail if not called on 2 Moneys of the same currency
+ * @param {!Money} amount1
+ * @param {!Money} amount2
+ * @returns {!Money} amount1 minues amount2
+ *  */
 Money.sub = (amount1, amount2) => {
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);
@@ -287,7 +298,7 @@ Money.mul = mul;
 
 /**
  * Called on two Moneys
- * @return {Number}
+ * @return {Number} total / part
  */
 Money.divide = (total, part) => {
 	Money.assIsa(total);
