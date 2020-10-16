@@ -31,6 +31,7 @@ class Advert extends DataClass {
 }
 DataClass.register(Advert, "Advert"); 
 
+C.DEFAULT_AD_ID = 'default-advert';
 /**
  * @returns {Advert}
  * Note: race condition on app loading - this will be null for a second.
