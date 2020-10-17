@@ -1,4 +1,6 @@
 import React from 'react';
+import { assMatch } from '../utils/assert';
+import { stopEvent } from '../utils/miscutils';
 
 const dragstate = {
 	dragging: null,
@@ -10,17 +12,17 @@ window.dragstate = dragstate;
 // must preventDefault to allow drag
 const _onDragOver = (e, id) => {
 	// TODO check for validity
-	e.preventDefault();
+	stopEvent(e);
 	let dragid = e.dataTransfer.getData("id");
-	console.log('onDragOver', dragstate.dragging, id, dragid, e);
+	// console.log('onDragOver', dragstate.dragging, id, dragid, e);
 };
 
 // must preventDefault to allow drag
 const _onDragEnter = (e, id) => {
 	let dragid = e.dataTransfer.getData("id");
 	// TODO check for validity
-	e.preventDefault();
-	console.log('onDragEnter', dragstate.dragging, id, dragid, e);
+	stopEvent(e);
+	// console.log('onDragEnter', dragstate.dragging, id, dragid, e);
 };
 
 const _onDragLeave = (e, id, onDragLeave) => {
@@ -31,8 +33,8 @@ const _onDragLeave = (e, id, onDragLeave) => {
 const _onDragExit = (e, id) => {
 	let dragid = e.dataTransfer.getData("id");
 	// TODO check for validity
-	e.preventDefault();
-	console.log('onDragExit', dragstate.dragging, id, dragid, e);
+	stopEvent(e);
+	// console.log('onDragExit', dragstate.dragging, id, dragid, e);
 };
 
 /**
@@ -64,13 +66,19 @@ const _onDragStart = (e, id, onDragStart) => {
 	if (onDragStart) onDragStart();
 };
 
-const _onDragEnd = (e, id, onDragStart) => {
+const _onDragEnd = (e, id, onDragEnd) => {
 	console.log('onDragEnd', id);
 	dragstate.dragging = null;
+	if (onDragEnd) onDragEnd();
 };
 
 // https://mobiforge.com/design-development/html5-mobile-web-touch-events
+/**
+ * Wrap an element to make it draggable to a DropZone.
+ * @param {*} param0 
+ */
 const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
+	assMatch(id, String);
 	className = className? className+' Draggable' : 'Draggable';
 	return (<div className={className} id={id}
 		draggable
@@ -86,12 +94,15 @@ const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
 			// e.preventDefault();
 		}}
 		onTouchMove={e => {
-			var touch = e.targetTouches[0];
-			console.log('touchmove', e, touch, JSON.stringify(touch));
+			let touch = e.targetTouches[0];
+			// console.log('touchmove', e, touch, JSON.stringify(touch));
+			let $div = touch && touch.target
 			// // Place element where the finger is
-			// draggable.style.left = touch.pageX-25 + 'px';
-			// draggable.style.top = touch.pageY-25 + 'px';
-			// e.preventDefault();
+			if ($div && $div.style) {
+				$div.style.left = touch.pageX-25 + 'px';
+				$div.style.top = touch.pageY-25 + 'px';
+			}
+			stopEvent(e);
 		}}
 		>
 		{children}
@@ -99,8 +110,8 @@ const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
 };
 
 /**
- * @param id {!String} identify this dropzone in the dragstate / drop info
- * @param onDrop {?Function} Called if there is a drop here. (e, dropInfo) => do-stuff
+ * @param {!String} id identify this dropzone in the dragstate / drop info
+ * @param {?Function} onDrop Called if there is a drop here. (e, dropInfo) => do-stuff
  */
 const DropZone = ({id, children, onDrop}) => {
 	return (<div className="DropZone" id={id}

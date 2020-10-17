@@ -474,8 +474,12 @@ export const decURI = function(urlPart : string) {
 export const stopEvent = (e : Event) => {
 	if ( ! e) return true;
 	if (e.preventDefault) {
-		e.preventDefault();
-		e.stopPropagation();
+		try {
+			e.preventDefault();
+			e.stopPropagation();
+		} catch(err) {
+			console.warn("(swallow) stopEvent cant stop", e, err);
+		}
 	}
 	return true;
 };
