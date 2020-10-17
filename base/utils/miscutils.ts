@@ -465,6 +465,11 @@ export const decURI = function(urlPart : string) {
 	return decoded;
 }
 
+/**
+ * @param d {Date}
+ * @return {String} iso format e.g. 2020-10-18
+ */
+export const isoDate = (d : Date) => d.toISOString().replace(/T.+/, '');
 
 /**
  * preventDefault + stopPropagation

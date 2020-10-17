@@ -3,7 +3,7 @@ import React, { useState, Fragment } from 'react';
 import { Alert, Card, CardBody, Nav, Button, NavItem, NavLink } from 'reactstrap';
 import {assert, assMatch} from 'sjtest';
 import _ from 'lodash';
-import {addScript, join, space } from '../utils/miscutils';
+import {addScript, isoDate, join, space } from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import Dropzone from 'react-dropzone';
 import md5 from 'md5';
@@ -355,6 +355,13 @@ Misc.dateTimeString = (d) => (
  */
 Misc.dateTimeTag = (d) => d?
 	<time datetime={d.toISOString()}>{d.getDate()} {shortMonths[d.getMonth()]} {d.getFullYear()} {oh(d.getHours())}:{oh(d.getMinutes())}</time>
+	: null;
+
+/**
+ * Human-readable, unambiguous date string which doesn't depend on toLocaleString support
+ */
+Misc.dateTag = (d) => d?
+	<time dateTime={isoDate(d)}>{d.getDate()} {shortMonths[d.getMonth()]} {d.getFullYear()}</time>
 	: null;
 
 Misc.AvatarImg = ({peep, ...props}) => {
