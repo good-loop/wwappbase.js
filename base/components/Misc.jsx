@@ -366,6 +366,8 @@ Misc.dateTag = (d) => d?
 	<time dateTime={isoDate(d)}>{d.getDate()} {shortMonths[d.getMonth()]} {d.getFullYear()}</time>
 	: null;
 
+Misc.dateStr = d => `${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()}`;
+
 Misc.AvatarImg = ({peep, ...props}) => {
 	if ( ! peep) return null;
 	let { img, name } = peep;

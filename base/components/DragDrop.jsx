@@ -134,12 +134,20 @@ const _onDragEnd = (e, id, onDragEnd) => {
 // https://mobiforge.com/design-development/html5-mobile-web-touch-events
 /**
  * Wrap an element to make it draggable to a DropZone.
- * @param {*} param0 
+ * @param {?string} id This is needed -- if falsy, then this will not be draggable.
+ * @param {?JSX} children This is needed -- if empty, then returns null.
+ * NB: supporting falsy id and no-children is a convenience for code that wraps ad-hoc stuff in Draggable.
  */
-const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
+const Draggable = ({children, id, onDragStart, onDragEnd, className, style}) => {
+	if ( ! id) {
+		return children || null; // NB: undefined upsets React
+	}
+	if ( ! children) {
+		return null;
+	}
 	assMatch(id, String);
 	className = className? className+' Draggable' : 'Draggable';
-	return (<div className={className} id={id}
+	return (<div className={className} style={style}
 		draggable
 		onDragStart={e => _onDragStart(e, id, onDragStart)}
 		onDragEnd={e => _onDragEnd(e, id, onDragEnd)}

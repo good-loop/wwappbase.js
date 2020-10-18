@@ -15,6 +15,11 @@ import LinkOut from './LinkOut.jsx';
 const IMAGE_CREDITS = [];
 
 /**
+ * @type {ImageObject[]}
+ */
+const MUSIC_CREDITS = [];
+
+/**
  * Add an image to the about-page credits. Repeat adds are harmless.
  * @param {?ImageObject} image  
  */
@@ -26,6 +31,20 @@ export const addImageCredit = image => {
 	}
 	IMAGE_CREDITS.push(image);
 };
+/**
+ * Add an image to the about-page credits. Repeat adds are harmless.
+ * @param {?ImageObject} image  
+ */
+export const addMusicCredit = image => {
+	// use author as the key
+	if ( ! image) return;
+	const json = JSON.stringify(image);
+	if (MUSIC_CREDITS.find(ic => JSON.stringify(ic) === json)) {
+		return null;
+	}
+	MUSIC_CREDITS.push(image);
+};
+
 
 // TODO sponsors
 
@@ -50,7 +69,14 @@ const AboutPage = () => {
 
 			<p>This app uses Creative Commons images from various sources</p>
 			
-			{IMAGE_CREDITS.map(image => <LinkOut href={image.url}>{image.name} by {image.author}</LinkOut>)}
+			{IMAGE_CREDITS.map(image => <LinkOut href={image.url}>{image.name} by {image.author}</LinkOut>)}			
+
+			{MUSIC_CREDITS.length &&
+				<div>
+					<p>This app uses music from:</p>
+					{MUSIC_CREDITS.map(image => <LinkOut href={image.url}>{image.name} by {image.author}</LinkOut>)}			
+				</div>
+			}
 
 			<p>This app uses data from various sources:</p>
 			<ul>
