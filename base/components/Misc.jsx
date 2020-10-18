@@ -304,9 +304,11 @@ Misc.RelativeDate = ({date, ...rest}) => {
 	return <span title={absoluteDate} {...rest}>{count} {counter} {relation}</span>;
 };
 
-
-const weekdays = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const shortWeekdays = weekdays.map(weekday => weekday.substr(0, 3));
+/**
+ * 0 = Sunday
+ */
+export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+const shortWeekdays = WEEKDAYS.map(weekday => weekday.substr(0, 3));
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const shortMonths = months.map(month => month.substr(0, 3));
 
@@ -315,7 +317,7 @@ const oh = (n) => n<10? '0'+n : n;
 Misc.LongDate = ({date, noWeekday}) => {
 	if (!date) return null;
 	if (_.isString(date)) date = new Date(date);
-	const weekday = noWeekday ? '' : weekdays[date.getDay()];
+	const weekday = noWeekday ? '' : WEEKDAYS[date.getDay()];
 	return <time dateTime={date.toISOString()}>{weekday + ' '}{date.getDate()} {months[date.getMonth()]} {date.getFullYear()}</time>;
 };
 

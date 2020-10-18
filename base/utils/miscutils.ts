@@ -3,10 +3,17 @@ import { assert } from "./assert";
 
 export const randomPick = function<T>(array : T[]) : T
 {
-	if ( ! array) return null;
+	if ( ! array) {
+		return null;
+	}
+	if ( ! array.length) {
+		return null;
+	}
 	let r = Math.floor(array.length*Math.random());
+	assert(r < array.length, array);
 	return array[r];
 };
+window.randomPick = randomPick; // debug
 
 export const sum = (array : number[]) : number => array.reduce((acc, a) => acc + a, 0);
 

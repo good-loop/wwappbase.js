@@ -187,8 +187,19 @@ const Draggable = ({children, id, onDragStart, onDragEnd, className}) => {
  * @param {!String} id identify this dropzone in the dragstate / drop info
  * @param {?Function} onDrop Called if there is a drop here. (e, dropInfo) => do-stuff
  */
-const DropZone = ({id, children, onDrop}) => {
-	return (<div className={space("DropZone", id && dragstate.dragover===id && "dragover")} id={id}
+const DropZone = ({id, children, onDrop, canDrop}) => {
+	// active?
+	let dragover;
+	if (id && dragstate.dragover===id) {
+		if (canDrop) {
+			let ok = canDrop(dragstate.dragging, id);
+			if (ok) dragover = "dragover"
+		} else {
+			dragover = "dragover";
+		}
+	}
+	// dropzone with handlers
+	return (<div className={space("DropZone", dragover)} id={id}
 		onDragOver={e => _onDragOver(e, id)}
 		onDragEnter={e => _onDragEnter(e,id)}
 		onDragExit={e => _onDragExit(e,id)}
