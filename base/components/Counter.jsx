@@ -7,6 +7,7 @@
 /* Possible TODO MAYBE! use react-spring for smoother, less expensive animations?? Should be default tool?? */
 
 import React, {useState, useEffect, useRef} from 'react';
+import { space } from '../utils/miscutils';
 import printer from '../utils/printer';
 import {useDoesIfVisible} from './CustomHooks';
 import Money from '../data/Money';
@@ -43,8 +44,9 @@ const bezierSlide = (x = 0) => {
  * @param {Money} amount - Convenient way to set value + currencySymbol
  * @param {Number} sigFigs Round value. 3 by default for non-Money inputs.
  * @param {Boolean} preservePennies Preserves 2 digits on the pennies count. This overrides sigFigs. True by default for money.
+ * @param {Boolean} centerText Centers the text when counting up in the animation.
  */
-const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies}) => 
+const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies, centerText=false}) => 
 {
 	if (amount) {
 		value = Money.value(amount);
@@ -115,7 +117,7 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 	return (
 		<div className="position-relative d-inline-block">
 			<span className="invisible">{currencySymbol + totalVal}</span>
-			<span className="position-absolute" style={{right: 0}} ref={ref}>{currencySymbol + disp}</span>
+			<span className="position-absolute text-center" style={{right: 0, width: centerText ? "100%" : "auto"}} ref={ref}>{currencySymbol + disp}</span>
 		</div>
 	);
 };
