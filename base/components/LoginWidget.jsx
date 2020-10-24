@@ -61,10 +61,6 @@ const setShowLogin = show => {
 const setLoginVerb = verb => DataStore.setValue(VERB_PATH, verb);
 
 const socialLogin = (service) => {
-	// Special behaviour for My-Loop/Portal
-	// Doing it this way seemed the most maintainable option
-	if (ServerIO.mixPanelTrack) ServerIO.mixPanelTrack({mixPanelTag:'Social login clicked ' + service});
-
 	Login.auth(service, C.app.facebookAppId, Login.PERMISSIONS.ID_ONLY);
 	// auth doesnt return a future, so rely on Login's change listener
 	// to close stuff.
@@ -232,85 +228,79 @@ const SocialSignInButton = ({className = "btn signin", children, service, verb =
 };
 
 
+const EmailReset = ({}) => {
+	const requested = DataStore.getValue('widget', 'LoginWidget', 'reset-requested');
+
+	const doItFn = e => {
+		killEvent(e);				
+		if ( ! person) {			
+			Login.error = {text:'Please fill in email and password'};
+			DataStore.update();
+			return;
+		}
+		let email = person.email;
+		assMatch(email, String);
+		let call = Login.reset(email).then(res => {
+			if (res.success) {
+				DataStore.setValue(['widget', 'LoginWidget', 'reset-requested'], true);
+				if (onLogin) onLogin(res);
+			} else {
+				DataStore.update({}); // The error will be in state, provoke a redraw to display it
+			}
+		});
+	};
+
+	return (
+		<form id="loginByEmail" onSubmit={doItFn}>
+			<p>Forgotten your password? No problem - we will email you a link to reset it.</p>
+			<PropControl label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
+			{requested ? <div className="alert alert-info">A password reset email has been sent out.</div> : ''}
+			<div className="form-group">
+				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
+					{verbButtonLabels[verb]}
+				</Button>
+			</div>
+			<ErrorAlert error={Login.error} />
+		</form>
+	);
+};
 
 
 /**
  * @param onSignIn called after user has successfully registered and been logged in
  */
 const EmailSignin = ({verb, onLogin, onRegister}) => {
+	// Reset: just email & submit
+	if (verb === 'reset') {
+		return <EmailReset />
+	}
+
 	// we need a place to stash form info. Maybe appstate.widget.LoginWidget.name etc would be better?
 	const path = ['data', C.TYPES.User, 'loggingIn'];
 	let person = DataStore.getValue(path);
 
 	const doItFn = e => {
 		killEvent(e);
-		// Special behaviour for My-Loop/Portal
-		// Doing it this way seemed the most maintainable option
-		if (ServerIO.mixPanelTrack) ServerIO.mixPanelTrack({mixPanelTag: 'Email login attempted', data: {verb}});
-		
 		if ( ! person) {			
 			Login.error = {text:'Please fill in email and password'};
 			return;
 		}
 		let email = person.email;
-
-		if (verb === 'reset') {
-			assMatch(email, String);
-			let call = Login.reset(email).then(res => {
-				if (res.success) {
-					DataStore.setValue(['widget', 'LoginWidget', 'reset-requested'], true);
-					if (onLogin) onLogin(res);
-				} else {
-					DataStore.update({}); // The error will be in state, provoke a redraw to display it
-				}
-			});
-			return;
-		}
 		emailLogin({verb, onRegister, ...person});
 	};
-
-	const emailField = (
-		<div className="form-group">
-			<label>Email</label>
-			<PropControl type="email" path={path} item={person} prop="email" placeholder="Email" />
-		</div>
-	);
-
-	const switchVerb = (verb !== 'reset') ? <SwitchVerb verb={verb} /> : null;
-
-	const submitGroup = (
-		<div className="form-group">
-			<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
-				{verbButtonLabels[verb]}
-			</Button>
-			{switchVerb}
-		</div>
-	);
-
-	// Reset: just email & submit
-	if (verb === 'reset') {
-		const requested = DataStore.getValue('widget', 'LoginWidget', 'reset-requested');
-		return (
-			<form id="loginByEmail" onSubmit={doItFn}>
-				<p>Forgotten your password? No problem - we will email you a link to reset it.</p>
-				{emailField}
-				{requested ? <div className="alert alert-info">A password reset email has been sent out.</div> : ''}
-				{submitGroup}
-				<ErrorAlert error={Login.error} />
-			</form>
-		);
-	}
 
 	// login/register
 	let status = DataStore.getValue(STATUS_PATH);
 	return (
 		<form id="loginByEmail" onSubmit={doItFn}>
-			{emailField}
+			<PropControl label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
+			<PropControl label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
 			<div className="form-group">
-				<label>Password</label>
-				<Misc.PropControl type="password" path={path} item={person} prop="password" placeholder="Password" />
+				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
+					{verbButtonLabels[verb]}
+				</Button>
+				<SwitchVerb verb={verb} />
 			</div>
-			{submitGroup}
 			<ResetLink verb={verb} />
 			<ErrorAlert error={Login.error} />
 		</form>
