@@ -69,6 +69,5 @@ const useDoOnResize = ({resizeFn}) => {
 
 export {
 	useDoesIfVisible,
-	useLogsIfVisible,
 	useDoOnResize
 };
