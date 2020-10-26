@@ -123,6 +123,7 @@ const PropControl = ({className, ...props}) => {
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
 	}
+	assert(prop, "PropControl - no prop! "+type, path);
 	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
 	// value comes from DataStore
