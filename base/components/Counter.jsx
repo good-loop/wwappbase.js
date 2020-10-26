@@ -115,8 +115,8 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 	// To avoid having the surrounding text jitter, we fix the size.
 	// using an invisible final value to get the sizing right.
 	return (
-		<div className="position-relative d-inline-block">
-			<span className="invisible">{currencySymbol + totalVal}</span>
+		<div className="position-relative d-inline-block" style={{padding: "0 " + (centerText ? "0.1rem" : "0")}}>
+			<span className="invisible text-center" style={{width: centerText ? "100%" : "auto"}}>{currencySymbol + totalVal}</span>
 			<span className="position-absolute text-center" style={{right: 0, width: centerText ? "100%" : "auto"}} ref={ref}>{currencySymbol + disp}</span>
 		</div>
 	);
