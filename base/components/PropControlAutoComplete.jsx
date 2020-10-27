@@ -6,9 +6,11 @@ import Autocomplete from 'react-autocomplete';
 import PromiseValue from'promise-value';
 
 import DataStore from '../plumbing/DataStore';
+import { getType, getId } from '../data/DataClass';
 import PropControl, { registerControl, DSsetValue } from './PropControl';
 
 import { str } from '../utils/assert';
+
 
 
 /** Use Bootstrap components to make the dropdown menu look nice by default*/
