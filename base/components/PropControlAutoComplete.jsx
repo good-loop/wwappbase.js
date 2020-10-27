@@ -1,25 +1,28 @@
 
 
-import React from 'react';
+import React, { useState } from 'react';
 
-import PropControl, {registerControl, DSsetValue} from './PropControl';
-import DataStore from '../plumbing/DataStore';
-import { Badge } from 'reactstrap';
-import CloseButton from './CloseButton';
-import { useState } from 'react';
 import Autocomplete from 'react-autocomplete';
+import PromiseValue from'promise-value';
+
+import DataStore from '../plumbing/DataStore';
+import PropControl, { registerControl, DSsetValue } from './PropControl';
+
 import { str } from '../utils/assert';
 
 
 /** Use Bootstrap components to make the dropdown menu look nice by default*/
 const renderMenuDflt = (items, value, style) => <div className="dropdown-menu show">{items}</div>;
 const renderItemDflt = (itm) => <div key={""+itm} className="dropdown-item">{itm}</div>
+
+
 /**
  * case insensitive string contains test
  * @param {string|Object} itm 
  * @param {?string} value 
  */
 const shouldItemRenderDflt = (itm, value) => str(itm).toLowerCase().startsWith((value || '').toLowerCase());
+
 
 /**
  * wraps the reactjs autocomplete widget
