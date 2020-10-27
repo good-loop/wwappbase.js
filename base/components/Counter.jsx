@@ -7,6 +7,7 @@
 /* Possible TODO MAYBE! use react-spring for smoother, less expensive animations?? Should be default tool?? */
 
 import React, {useState, useEffect, useRef} from 'react';
+import { space } from '../utils/miscutils';
 import printer from '../utils/printer';
 import {useDoesIfVisible} from './CustomHooks';
 import Money from '../data/Money';
@@ -43,8 +44,9 @@ const bezierSlide = (x = 0) => {
  * @param {Money} amount - Convenient way to set value + currencySymbol
  * @param {Number} sigFigs Round value. 3 by default for non-Money inputs.
  * @param {Boolean} preservePennies Preserves 2 digits on the pennies count. This overrides sigFigs. True by default for money.
+ * @param {Boolean} centerText Centers the text when counting up in the animation.
  */
-const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies}) => 
+const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies, centerText=false}) => 
 {
 	if (amount) {
 		value = Money.value(amount);
@@ -112,10 +114,13 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 
 	// To avoid having the surrounding text jitter, we fix the size.
 	// using an invisible final value to get the sizing right.
+	// Text is aligned by absolute position of span, right:0 = right alignment by default
+	// If centerText is set, width is set to 100 and text-center does the job
+	// When centerText is set, the container div gets some extra horizontal padding to stop text overflow
 	return (
-		<div className="position-relative d-inline-block">
-			<span className="invisible">{currencySymbol + totalVal}</span>
-			<span className="position-absolute" style={{right: 0}} ref={ref}>{currencySymbol + disp}</span>
+		<div className="position-relative d-inline-block" style={{padding: "0 " + (centerText ? "0.1rem" : "0")}}>
+			<span className="invisible text-center" style={{width: centerText ? "100%" : "auto"}}>{currencySymbol + totalVal}</span>
+			<span className="position-absolute text-center" style={{right: 0, width: centerText ? "100%" : "auto"}} ref={ref}>{currencySymbol + disp}</span>
 		</div>
 	);
 };
