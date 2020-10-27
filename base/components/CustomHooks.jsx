@@ -50,8 +50,6 @@ const useDoesIfVisible = (fn, elementReference) => {
 
 };
 
-const useLogsIfVisible = (elementReference, mixPanelTag) => useDoesIfVisible(() => ServerIO.mixPanelTrack({mixPanelTag}), elementReference);
-
 const useDoOnResize = ({resizeFn}) => {
 	useEffect(() => {
 		// Call on first render
@@ -71,6 +69,5 @@ const useDoOnResize = ({resizeFn}) => {
 
 export {
 	useDoesIfVisible,
-	useLogsIfVisible,
 	useDoOnResize
 };

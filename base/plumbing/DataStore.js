@@ -274,7 +274,7 @@ class Store {
 		let tip = this.appstate;
 		for(let pi=0; pi < path.length; pi++) {
 			let pkey = path[pi];
-			assert(pkey || pkey===0, "DataStore.getValue: "+path); // no falsy in a path - except that 0 is a valid key
+			assert(pkey || pkey===0, "DataStore.getValue falsy is not allowed in path: "+path); // no falsy in a path - except that 0 is a valid key
 			let newTip = tip[pkey];
 			// Test for hard null -- falsy are valid values
 			if (newTip===null || newTip===undefined) return null;

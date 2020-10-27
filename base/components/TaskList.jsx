@@ -186,12 +186,14 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea}) => {
 	const ttext = DataStore.getValue(qpath.concat('text'));
 	// NB: the use of `fast` means we cant put disabled={ ! ttext} on the Add button, as it wouldn't update to non-disabled
 	return (
-		<div key={'f'} className={space('QuickTaskMaker form-inline', parent? 'QuickTaskMakerReply' : null)}>
-			<PropControl type={textarea?"textarea":"text"} path={qpath} prop="text"
-				placeholder={parent? 'Reply / Comment' : 'Make a new task'} 
-				fast />
-			&nbsp;
-			<button className="btn btn-primary" type="submit" onClick={quickTask}>Add</button>
+		<div key={'f'} className={space('QuickTaskMaker flex-row', parent? 'QuickTaskMakerReply' : null)}>
+			<div className='flex-grow'>
+				<PropControl className="w-100"
+					type={textarea?"textarea":"text"} path={qpath} prop="text"
+					placeholder={parent? 'Reply / Comment' : 'Make a new task'} 
+					fast />
+			</div>
+			<button className="ml-1 btn btn-primary" type="submit" onClick={quickTask}>Add</button>
 		</div>
 	);
 };

@@ -117,12 +117,13 @@ const dateValidator = (val, rawValue) => {
  * 
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
-const PropControl = (props) => {
-	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, className, fast, ...stuff } = props;
+const PropControl = ({className, ...props}) => {
+	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, ...stuff } = props;
 	if ( ! path) {	// default to using path = the url
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
 	}
+	assert(prop, "PropControl - no prop! "+type, path);
 	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
 	// value comes from DataStore
