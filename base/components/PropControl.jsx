@@ -123,7 +123,7 @@ const PropControl = ({className, ...props}) => {
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
 	}
-	assert(prop, "PropControl - no prop! "+type, path);
+	assert(prop || prop===0, "PropControl - no prop! "+type, path); // NB 0 is valid as an array entry
 	assMatch(prop, "String|Number", path);
 	assMatch(path, Array);
 	// value comes from DataStore
