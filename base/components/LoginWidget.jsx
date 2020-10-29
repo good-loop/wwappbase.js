@@ -170,7 +170,10 @@ const RegisteredThankYou = () => {
 */
 const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services, onLogin, onRegister}) => {
 	const show = getShowLogin();
+
+	// Set up state for showing registration thanks
 	const [showThankyou, setThankyou] = useState(false);
+	// The widget shouldn't get stuck showing the thankyou, so reset it once it closes
 	if (!show && showThankyou) setThankyou(false);
 
 	if (!services) services = ['twitter', 'facebook'];
