@@ -157,8 +157,8 @@ const RegisteredThankYou = () => {
 	const name = user.name || user.xid;
 	return (<>
 		<h3>Thank you- and welcome!</h3>
-		Welcome to Good-Loop, {name}!<br/>
-		Check out your new account <a href="https://my.good-loop.com/#account">here</a>.
+		Welcome to {C.app.name}, {name}!<br/>
+		Check out your new account <a href="/#account">here</a>.
 	</>);
 };
 
