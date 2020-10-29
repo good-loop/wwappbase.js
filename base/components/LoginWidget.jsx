@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { assMatch } from 'sjtest';
 import Login from 'you-again';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
@@ -85,12 +85,13 @@ const emailLogin = ({verb, app, email, password, onRegister}) => {
 		DataStore.setValue(STATUS_PATH, C.STATUS.clean);
 		if (Login.isLoggedIn()) {
 			// close the dialog on success
-			setShowLogin(false);
 			// Security: wipe the password from DataStore
 			DataStore.setValue(['data', C.TYPES.User, 'loggingIn', 'password'], null);
 
 			if(verb === 'register' && onRegister) {
 				onRegister({...res, email});
+			} else {
+				setShowLogin(false);
 			}
 		} else {
 			// poke React via DataStore (e.g. for Login.error)
@@ -151,6 +152,15 @@ const RegisterLink = ({className, ...props}) => <LoginLink
 />;
 
 
+const RegisteredThankYou = () => {
+	const user = Login.getUser();
+	const name = user.name || user.xid;
+	return (<>
+		<h3>Thank you- and welcome!</h3>
+		Welcome to {C.app.name}, {name}!<br/>
+		Check out your new account <a href="/#account">here</a>.
+	</>);
+};
 
 /**
 	Log In or Register (one widget)
@@ -158,13 +168,23 @@ const RegisterLink = ({className, ...props}) => <LoginLink
 	@param render {?JSX} default: LoginWidgetGuts
 	@param logo {?String} image url. If unset, guess via app.service
 */
-const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services}) => {
+const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services, onLogin, onRegister}) => {
 	const show = getShowLogin();
+
+	// Set up state for showing registration thanks
+	const [showThankyou, setThankyou] = useState(false);
+	// The widget shouldn't get stuck showing the thankyou, so reset it once it closes
+	if (!show && showThankyou) setThankyou(false);
 
 	if (!services) services = ['twitter', 'facebook'];
 	let verb = DataStore.getValue(VERB_PATH) || 'login';
 
 	if (!title) title = `Welcome ${(verb === 'login') ? '(back)' : ''} to ${C.app.name}`;
+
+	const registerCallback = () => {
+		setThankyou(true);
+		onRegister();
+	}
 
 	return (
 		<Modal
@@ -178,7 +198,9 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services}
 				{' '}{title}
 			</ModalHeader>
 			<ModalBody>
-				<Guts services={services} />
+				{showThankyou ?
+					<RegisteredThankYou />
+				: <Guts services={services} onLogin={onLogin} onRegister={registerCallback} />}
 			</ModalBody>
 		</Modal>
 	);
@@ -267,7 +289,8 @@ const EmailReset = ({}) => {
 
 
 /**
- * @param onSignIn called after user has successfully registered and been logged in
+ * @param onLogin called after user has successfully logged in
+ * @param onRegister called after the user has successfully registered
  */
 const EmailSignin = ({verb, onLogin, onRegister}) => {
 	// Reset: just email & submit
@@ -355,7 +378,7 @@ const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
 	);
 };
 
-const LoginWidgetGuts = ({services, verb, onLogin}) => {
+const LoginWidgetGuts = ({services, verb, onLogin, onRegister}) => {
 	if (!verb) verb = DataStore.getValue(VERB_PATH) || 'login';
 	return (
 		<div className="login-guts container-fluid">
@@ -364,6 +387,7 @@ const LoginWidgetGuts = ({services, verb, onLogin}) => {
 					<EmailSignin
 						verb={verb}
 						onLogin={onLogin}
+						onRegister={onRegister}
 					/>
 				</div>
 				<div className="login-social col-sm-6">
