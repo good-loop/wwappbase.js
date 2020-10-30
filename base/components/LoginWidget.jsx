@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { assMatch } from 'sjtest';
 import Login from 'you-again';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
@@ -170,6 +170,16 @@ const RegisteredThankYou = () => {
 */
 const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services, onLogin, onRegister}) => {
 	const show = getShowLogin();
+	
+	const onHashChange = () => setShowLogin(false);
+
+	useEffect(function() {
+		window.addEventListener("hashchange", onHashChange);
+		
+		return function cleanup() {
+		  window.removeEventListener("hashchange", onHashChange);
+		}
+	}, []);
 
 	// Set up state for showing registration thanks
 	const [showThankyou, setThankyou] = useState(false);
