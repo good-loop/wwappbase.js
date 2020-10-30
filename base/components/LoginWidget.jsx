@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { assMatch } from 'sjtest';
 import Login from 'you-again';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
@@ -170,6 +170,18 @@ const RegisteredThankYou = () => {
 */
 const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services, onLogin, onRegister}) => {
 	const show = getShowLogin();
+	
+	// Login widget will vanish when an in-page navigation is made
+	const onHashChange = () => setShowLogin(false);
+
+	// Use hashchange event as normal navigations a. should refresh and close the LoginWidget anyway and b. are hard to track
+	useEffect(function() {
+		window.addEventListener("hashchange", onHashChange);
+		
+		return function cleanup() {
+		  window.removeEventListener("hashchange", onHashChange);
+		}
+	}, []);
 
 	// Set up state for showing registration thanks
 	const [showThankyou, setThankyou] = useState(false);
