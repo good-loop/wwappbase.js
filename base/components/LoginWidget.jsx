@@ -171,8 +171,10 @@ const RegisteredThankYou = () => {
 const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services, onLogin, onRegister}) => {
 	const show = getShowLogin();
 	
+	// Login widget will vanish when an in-page navigation is made
 	const onHashChange = () => setShowLogin(false);
 
+	// Use hashchange event as normal navigations a. should refresh and close the LoginWidget anyway and b. are hard to track
 	useEffect(function() {
 		window.addEventListener("hashchange", onHashChange);
 		
