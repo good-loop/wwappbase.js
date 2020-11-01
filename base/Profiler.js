@@ -203,6 +203,8 @@ const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid], () =
 });
 
 /**
+ * ?? Does this depend on YA login clearing? (ie there's a timing/race condition)
+ * 
  * @returns String[] xids
  */
 const getAllXIds = () => {

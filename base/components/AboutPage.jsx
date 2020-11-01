@@ -4,7 +4,6 @@ import SJTest, {assert} from 'sjtest';
 import Login from 'you-again';
 import printer from '../utils/printer.js';
 import C from '../CBase';
-import Roles from '../Roles';
 import Misc from './Misc';
 import ImageObject from '../data/ImageObject.js';
 import LinkOut from './LinkOut.jsx';
@@ -18,6 +17,17 @@ const IMAGE_CREDITS = [];
  * @type {ImageObject[]}
  */
 const MUSIC_CREDITS = [];
+
+/**
+ * @type {ImageObject[]} ??
+ */
+const DATA_CREDITS = [];
+
+/**
+ * @type {string[]}
+ */
+const FUNDER_CREDITS = [];
+
 
 /**
  * Add an image to the about-page credits. Repeat adds are harmless.
@@ -45,6 +55,23 @@ export const addMusicCredit = image => {
 	MUSIC_CREDITS.push(image);
 };
 
+export const addDataCredit = image => {
+	// use author as the key
+	if ( ! image) return;
+	const json = JSON.stringify(image);
+	if (DATA_CREDITS.find(ic => JSON.stringify(ic) === json)) {
+		return null;
+	}
+	DATA_CREDITS.push(image);
+};
+
+export const addFunderCredit = funder => {
+	if (FUNDER_CREDITS.includes(funder)) {
+		return null;
+	}
+	FUNDER_CREDITS.push(funder);
+};
+
 
 // TODO sponsors
 
@@ -65,7 +92,7 @@ const AboutPage = () => {
 
 			<p>Software version: <i>{JSON.stringify(C.app.version || 'alpha')}</i></p>
 
-			<p>We are grateful to SMART:Scotland and The Hunter Foundation for their support.</p>
+			<p>We are grateful to {FUNDER_CREDITS.length? FUNDER_CREDITS.join(", ") : "our funders"} for their support.</p>
 
 			<p>This app uses Creative Commons images from various sources</p>
 			
@@ -80,9 +107,7 @@ const AboutPage = () => {
 
 			<p>This app uses data from various sources:</p>
 			<ul>
-				<li>&copy; Crown Copyright and database right 2017. Data from the Scottish Charity Register supplied by the Office of the Scottish Charity Regulator and licensed under the Open Government Licence v.2.0.
-					See <a href="https://www.oscr.org.uk/charities/search-scottish-charity-register/charity-register-download">OSCR Charity Register Download</a>.
-				</li>
+				{DATA_CREDITS.map(dataset => <LinkOut href={dataset.url}>{dataset.name} by {dataset.author}</LinkOut>)}				
 			</ul>
 
 		</div>

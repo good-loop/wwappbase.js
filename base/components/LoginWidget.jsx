@@ -232,7 +232,7 @@ const SocialSignin = ({verb, services}) => {
 	return (
 		<div className="social-signin">
 			{buttons}
-			<p><small>We will never share your data or post to social media without your consent.
+			<p><small>We will never share your data without your consent unless there is a legal obligation.
 				You can read our <a href={C.app.privacyPolicy} target="_new">privacy policy</a> for more information.
 			</small></p>
 		</div>
