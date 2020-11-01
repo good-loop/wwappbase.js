@@ -1,7 +1,17 @@
 /**
  * Profiler sketch API
- * See also the profiler java code
- * Note: use these wrapped by DataStore.fetch
+ * See also the profiler java code, Person.java, and Person.js
+ * 
+ * The Profiler is a bit complex -- partly as the code is WIP, but partly because the task is complex:
+ * Model users "properly", handling multiple overlapping profiles e.g. Facebook / Twitter / email(s)
+ * And that seemingly simple flags like "yes-to-cookies" need complex data for audit trails and scope.
+ * 
+ * Core idea:
+ * The user does NOT have one profile. They have several linked profiles. Data may be drawn from any of those.
+ * 
+ * 
+ * TODO maybe merge this with Person.js
+ * 
  */
 
 import { assert, assMatch } from './utils/assert';
@@ -251,7 +261,10 @@ const requestAnalyzeData = xid => {
 	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
 };
 
-
+/**
+ * fetch and stash a profile
+ * @param {!string} xid 
+ */
 const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid], () => {
 	assMatch(xid, String, "MyPage.jsx fetcher: xid is not a string "+xid);
 	// Call analyzedata servlet to pull in user data from Twitter
@@ -328,16 +341,6 @@ const doRegisterEmail = (data) => {
 };
 
 
-/**
- * Have they signed up?
- */
-const hasRegisteredEmail = ({email, controller}) => {
-	if ( ! data.controller) data.controller = ServerIO.dataspace;
-	// Do we have an email??
-	// Do we have permission??
-	return false;
-};
-
 
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
@@ -352,7 +355,7 @@ Profiler.getAllXIds = getAllXIds;
 window.Person = Person; // debug
 window.Profiler = Profiler; // debug
 
-// FIXME TODO
+// FIXME TODO - using setConsents to edit one consent is clunky (and risks race conditions)
 const addConsent = (...props) => {
 	console.error("addConsent",props);
 };
@@ -364,7 +367,7 @@ const setClaim = (...props) => {
 };
 
 export {
-	doRegisterEmail, hasRegisteredEmail,	
+	doRegisterEmail,	
 	convertConsents,
 	saveProfileClaims,
 	getAllXIds,
@@ -374,8 +377,8 @@ export {
 	saveProfile,
 	getConsents, hasConsent,
 	setConsents,
-	addConsent, removeConsent,
-	setClaim,
+	// addConsent, removeConsent,
+	// setClaim,
 	requestAnalyzeData,
 	PURPOSES,
 	getEmail
