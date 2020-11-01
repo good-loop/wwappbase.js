@@ -10,7 +10,7 @@ import PromiseValue from 'promise-value';
 import {mapkv, encURI} from '../base/utils/miscutils';
 import XId from '../base/data/XId';
 import Cookies from 'js-cookie';
-
+import Enum from 'easy-enums';
 import Person from './data/Person';
 import ServerIO from './plumbing/ServerIOBase';
 
@@ -21,6 +21,11 @@ window.Person = Person;
 
 // deprecated -- overlaps with named exports, lets use them instead
 const Profiler = {};
+
+/**
+ * See Purposes.java
+ */
+const PURPOSES = new Enum("any email_app email_mailing_list email_marketing cookies cookies_personalization cookies_analytical cookies_marketing cookies_functional personalize_ads");
 
 /**
  * Use with DataStore
@@ -139,9 +144,28 @@ window.saveProfile = saveProfile;
  * The underlying consents model is rich (it can carry more options and audit info). 
  * We mostly want to work with something simple.
  * 
+ * @param {?Person} person
+ * @param {?Person[]} profiles Use this to combine from several linked profiles
  * @returns {String: Boolean} never null, empty = apply sensible defaults
  */
-const getConsents = ({person}) => {
+const getConsents = ({person, profiles}) => {
+	// several profiles?
+	if (profiles) {
+		// combine them
+		let perms = {};
+		profiles.forEach(peep => {
+			if ( ! peep) {
+				return; // paranoia
+			}
+			// hm - prefer true/false/most-recent??
+			let peepPerms = getConsents({person:peep});
+			if (peepPerms) {
+				Object.assign(perms, peepPerms);
+			}
+		});
+		return perms;
+	}
+	// one person
 	Person.assIsa(person);
 	// convert list-of-strings into a true/false map
 	let pmap = {};
@@ -262,13 +286,26 @@ const doRegisterEmail = (data) => {
 		return;
 	}
 	if ( ! data.controller) data.controller = ServerIO.dataspace;
-	if ( ! data.ref) data.ref = ""+window.location;
-	
-	// TODO consent = I grant consent purpose=email.mailing-list to the app
-	if ( ! data.purpose) data.purpose = "email.mailing-list";
+	if ( ! data.ref) data.ref = ""+window.location;	
+	// This will become a standard consent "I grant consent purpose=email_mailing_list to the data-controller"
+	if ( ! data.purpose) {
+		data.purpose = PURPOSES.email_mailing_list;
+	}
 
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data});	
 };
+
+
+/**
+ * Have they signed up?
+ */
+const hasRegisteredEmail = ({email, controller}) => {
+	if ( ! data.controller) data.controller = ServerIO.dataspace;
+	// Do we have an email??
+	// Do we have permission??
+	return false;
+};
+
 
 Person.saveProfileClaims = saveProfileClaims;
 Person.getProfile = getProfile;
@@ -295,7 +332,7 @@ const setClaim = (...props) => {
 };
 
 export {
-	doRegisterEmail,
+	doRegisterEmail, hasRegisteredEmail,	
 	convertConsents,
 	saveProfileClaims,
 	getAllXIds,
@@ -307,6 +344,7 @@ export {
 	setConsents,
 	addConsent, removeConsent,
 	setClaim,
-	requestAnalyzeData
+	requestAnalyzeData,
+	PURPOSES
 };
 export default Profiler;
