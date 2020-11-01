@@ -135,6 +135,7 @@ const saveProfile = (doc) => {
 window.saveProfile = saveProfile;
 
 /**
+ * This does NOT fetch any fresh data - it extracts data from the input Person object.
  * The underlying consents model is rich (it can carry more options and audit info). 
  * We mostly want to work with something simple.
  * 
@@ -262,6 +263,10 @@ const doRegisterEmail = (data) => {
 	}
 	if ( ! data.controller) data.controller = ServerIO.dataspace;
 	if ( ! data.ref) data.ref = ""+window.location;
+	
+	// TODO consent = I grant consent purpose=email.mailing-list to the app
+	if ( ! data.purpose) data.purpose = "email.mailing-list";
+
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data});	
 };
 
@@ -275,9 +280,22 @@ Person.setConsents = setConsents;
 Profiler.requestAnalyzeData = requestAnalyzeData;
 Profiler.getAllXIds = getAllXIds;
 
+window.Person = Person; // debug
+window.Profiler = Profiler; // debug
+
+// FIXME TODO
+const addConsent = (...props) => {
+	console.error("addConsent",props);
+};
+const removeConsent = (...props) => {
+	console.error("removeConsent",props);
+};
+const setClaim = (...props) => {
+	console.error("setClaim",props);
+};
+
 export {
 	doRegisterEmail,
-
 	convertConsents,
 	saveProfileClaims,
 	getAllXIds,
@@ -287,6 +305,8 @@ export {
 	saveProfile,
 	getConsents,
 	setConsents,
+	addConsent, removeConsent,
+	setClaim,
 	requestAnalyzeData
 };
 export default Profiler;

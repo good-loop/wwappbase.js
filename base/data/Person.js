@@ -7,6 +7,11 @@ import Claim from '../data/Claim';
 import XId from './XId';
 import md5 from 'md5';
 
+/**
+ * See Profiler.js and Person.java
+ * 
+ * Person is a rich model for profiles
+ */
 class Person extends DataClass {
 	/** @type {string} */
 	img;

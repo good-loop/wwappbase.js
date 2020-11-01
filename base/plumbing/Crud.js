@@ -345,10 +345,6 @@ ServerIO.crud = function(type, item, action) {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
 	
-	// debug delete
-	let stype = ServerIO.getEndpointForType(type);
-	let urlold = stype+'/'+encURI(getId(item))+'.json';
-
 	// NB: load() includes handle messages
 	let id = getId(item);
 	let url = ServerIO.getUrlForItem({type, id, status});

@@ -498,6 +498,6 @@ export const stopEvent = (e : Event) => {
 
 
 
-// DEBUG hack
-window.miscutils = {
-};
+// // DEBUG hack
+// window.miscutils = {
+// };
