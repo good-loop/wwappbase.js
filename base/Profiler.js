@@ -146,9 +146,14 @@ window.saveProfile = saveProfile;
  * 
  * @param {?Person} person
  * @param {?Person[]} profiles Use this to combine from several linked profiles
+ * @param {?string[]} xids Convenience for `profiles` using `getProfilesNow`.
  * @returns {String: Boolean} never null, empty = apply sensible defaults
  */
-const getConsents = ({person, profiles}) => {
+const getConsents = ({person, profiles, xids}) => {
+	if (xids) {
+		assert( ! profiles, "xids + profiles?!");
+		profiles = getProfilesNow(xids);
+	}
 	// several profiles?
 	if (profiles) {
 		// combine them
@@ -182,6 +187,24 @@ const getConsents = ({person, profiles}) => {
 	return pmap;
 };
 
+
+/**
+ * This does NOT fetch any fresh data - it extracts data from the input Person object.
+ * The underlying consents model is rich (it can carry more options and audit info). 
+ * We mostly want to work with something simple.
+ * 
+ * @param {?Person} person
+ * @param {?Person[]} profiles Use this to combine from several linked profiles
+ * @param {?string[]} xids Convenience for `profiles`.
+ * @param {!string} purpose The purpose ID of the consent you want
+ * @returns {Boolean} 
+ */
+const hasConsent = ({person, profiles, xids, purpose}) => {
+	assMatch(purpose, String);
+	const cs = getConsents({person, profiles, xids});
+	return cs[purpose];
+};
+
 /** Puts consents in to form used by back-end 
  * @param consents {String: Boolean} 
  * NB: handles the "yes"/"no" case
@@ -205,6 +228,17 @@ const setConsents = ({person, consents}) => {
 	return person;
 };
 
+/**
+ * Convenience for "find a linked profile for email, or null"
+ * @returns {?string} email
+ */
+const getEmail = ({xids}) => {
+	let exid = xids.find(xid => XId.service(xid)==="email");
+	if (exid) {
+		return XId.id(exid);
+	}
+	return null;
+};
 
 /**
  * Call AnalyzeDataServlet to fetch and analyse Twitter data.
@@ -228,33 +262,31 @@ const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid], () =
 });
 
 /**
- * ?? Does this depend on YA login clearing? (ie there's a timing/race condition)
+ * Warning: This races Login and profile fetch for handling linked ids -- so the results can change!
  * 
- * @returns String[] xids
+ * @returns {String[]} xids - includes unverified linked ones
  */
 const getAllXIds = () => {
-	let all =[]; // String[]
+	let all = new Set(); // String[]
+	// ID
+	if (Login.isLoggedIn()) {
+		all.add(Login.getId());
+	}
 	// cookie tracker
 	let trkid = Cookies.get("trkid");
-	// const trkIdMatches = document.cookie.match('trkid=([^;]+)');
-	// console.warn("trkIdMatches", trkIdMatches, "cookies", cookies);
-	// const currentTrkId = trkIdMatches && trkIdMatches[1];
-	if (trkid) all.push(trkid);
+	if (trkid) all.add(trkid);
 	// aliases
-	let axids = null;
 	if (Login.aliases) {
-		axids = Login.aliases.map(a => a.xid);
-		all = all.concat(axids);
-	}
+		let axids = Login.aliases.map(a => a.xid);
+		axids.forEach(a => all.add(a));
+	}	
 	// linked IDs?
-	getAllXIds2(all, all);
-	// de dupe
-	all = Array.from(new Set(all));
-	return all;
+	getAllXIds2(all, Array.from(all));
+	return Array.from(all);
 };
 /**
- * @param all {String[]} all XIds -- modify this!
- * @param agendaXIds {String[]} XIds to investigate
+ * @param {Set<String>} all XIds -- modify this!
+ * @param {String[]} agendaXIds XIds to investigate
  */
 const getAllXIds2 = (all, agendaXIds) => {
 	// ...fetch profiles from the agenda
@@ -265,9 +297,9 @@ const getAllXIds2 = (all, agendaXIds) => {
 		let peep = pvp.value;
 		let linkedIds = Person.linkedIds(peep);	
 		if ( ! linkedIds) return;
-		// loop test and recurse
-		linkedIds.filter(li => all.indexOf(li) === -1).forEach(li => {
-			all.push(li);
+		// loop test (must not already be in all) and recurse
+		linkedIds.filter(li => ! all.has(li)).forEach(li => {
+			all.add(li);
 			getAllXIds2(all, [li]);					
 		});
 	});
@@ -340,11 +372,12 @@ export {
 	getProfile,
 	getProfilesNow,
 	saveProfile,
-	getConsents,
+	getConsents, hasConsent,
 	setConsents,
 	addConsent, removeConsent,
 	setClaim,
 	requestAnalyzeData,
-	PURPOSES
+	PURPOSES,
+	getEmail
 };
 export default Profiler;

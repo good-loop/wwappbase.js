@@ -18,6 +18,7 @@ window.randomPick = randomPick; // debug
 export const sum = (array : number[]) : number => array.reduce((acc, a) => acc + a, 0);
 
 export const isMobile = ()  => {		
+	// NB: COPIED FROM ADUNIT'S device.js
 	const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 	let _isMobile = userAgent.match('/mobile|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i');
 	return !! _isMobile;

@@ -104,8 +104,14 @@ const defineRole = (role, cans) => {
  */
 const isDev = () => {
 	let cana = iCan('admin');
+	if (cana.value) return true;
 	let cand = iCan('dev');
-	return !! (cana.value || cand.value);
+	if (cand.value) return true;
+	// debug? (hack to switch on when not logged in or for debugging with other users)
+	if ((""+window.location).includes("debug=dev")) {
+		return true;
+	}
+	return false;
 };
 
 const Roles = {
