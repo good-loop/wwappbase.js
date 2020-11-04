@@ -127,7 +127,7 @@ SearchQuery.op = (sq1, sq2, op) => {
 		);
 		t2 = [sq1.tree[0]].concat(t2);
 		let u = unparse(t2);
-		console.warn(sq1.tree, sq2.tree, t2, u);
+		// console.warn(sq1.tree, sq2.tree, t2, u);
 		let newsq = new SearchQuery(u);
 		return newsq;
 	}
