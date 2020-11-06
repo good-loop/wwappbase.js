@@ -31,6 +31,7 @@ TARGET_SERVERS=(baker.good-loop.com)
 #####
 PROJECT_ROOT_ON_SERVER="/home/winterwell/$PROJECT_NAME"
 WWAPPBASE_REPO_PATH_ON_SERVER_DISK="/home/winterwell/wwappbase.js"
+PROJECT_LOG_FILE="$PROJECT_ROOT_ON_SERVER/logs/$PROJECT_NAME.log"
 
 
 ##### UNDENIABLY ESOTERIC SETTINGS
@@ -336,6 +337,30 @@ function start_service {
     fi
 }
 
+## Checking the immediate logged output for errors or warnings - This Function's Version is 0.01
+## TODO --
+## CRUMB 01 -- use a `while` loop to seek out the logged the string "AMain Running",  until that string is found, keep running a grep for errors and warnings
+## and print those on-screen.  Also, use a printout of "waiting for logged success of JVM startup..." on screen while this loop is running in the background
+## CRUMB 02 -- use `wc -l logfile.log` to know how many lines already exist in a stale logfile  AND THEN only grep for AMain Running on log lines which are
+## AFTER that number of logged lines.
+## CRUMB 03 -- the logged lines which indicate that a reindex is necessary are not errors or warnings, they are info and they contain specific strings.  You'll
+## need an additional check just for these stupid lines.
+INITIAL_LOG_NUM_LINES=$(wc -l $PROJECT_LOG_FILE | awk '{print $1}')
+function catch_JVM_success_or_error {
+    while read line; do
+        case "$line" in
+            *"AMain Running"* )
+                printf "\n\t$PROJECT_NAME 's JVM reports a successful startup\n"
+                exit
+            ;;
+            *"ES.init To reindex"* )
+                printf "\n\t\e[30;41m$PROJECT_NAME reports that at least one ES index will need to be re-indexed and re-aliased\e[0m\n"
+                printf "You'll need to read the logged output of the JVM in order to see what exactly needs to be changed\n"
+                exit
+            ;;
+        esac
+    done < < (tail --lines=+$INITIAL_LOG_NUM_LINES -f $PROJECT_LOG_FILE)    
+}
 
 ################
 ### Run the Functions in Order
@@ -356,3 +381,4 @@ use_npm
 use_webpack
 use_jerbil
 start_service
+#catch_JVM_success_or_error
