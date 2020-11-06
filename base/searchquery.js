@@ -93,11 +93,12 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	// }
 	// unset? (but do allow prop:false and x:0)
 	if (propValue===null || propValue===undefined || propValue==="") {
-		return;
+		// already removed the old
+	} else {
+		// quote the value?
+		let qpropValue = propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"';
+		newq += " "+propName+":"+qpropValue;
 	}
-	// quote the value?
-	let qpropValue = propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"';
-	newq += " "+propName+":"+qpropValue;
 	return new SearchQuery(newq.trim());
 }
 
