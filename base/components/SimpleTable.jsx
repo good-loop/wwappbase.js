@@ -77,7 +77,7 @@ class Column extends DataClass {
  *
  * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items.
  * 
- * @param columns: {Column[]|String[]} Can mix String and Column
+ * @param {Column[]|String[]} columns - Can mix String and Column
  *
  * addTotalRow: {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
  *

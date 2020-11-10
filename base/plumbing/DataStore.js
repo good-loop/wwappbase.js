@@ -79,6 +79,7 @@ class Store {
 	 * Set a key=value in the url for navigation. This modifies the window.location and DataStore.appstore.location.params, and does an update.
 	 * @param {String} key
 	 * @param {String} value
+	 * @returns {String} value
 	 */
 	setUrlValue(key, value, update) {
 		assMatch(key, String);
