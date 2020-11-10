@@ -229,7 +229,7 @@ const PropControl = ({className, ...props}) => {
 	}
 
 	// Hack: Checkbox has a different html layout :( -- handled below
-	const isCheck = PropControl.KControlType.ischeckbox(type);
+	const isCheck = PropControl.KControlType.ischeckbox(type) || PropControl.KControlType.isradio(type);
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
@@ -245,7 +245,7 @@ const PropControl = ({className, ...props}) => {
 	// NB: label has mr-1 to give a bit of spacing when used in an inline form
 	// NB: reactstrap inline is buggy (Sep 2020) so using className
 	return (
-		<FormGroup check={isCheck} className={space(type, className, inline&&'form-inline', error&&'has-error')} >
+		<FormGroup check={isCheck} className={space(type, className, inline && ! isCheck && 'form-inline', error&&'has-error')} >
 			{(label || tooltip) && ! isCheck?
 				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
@@ -668,13 +668,13 @@ const PropControlRadio = ({ type, prop, storeValue, value, path, saveFn, options
 	return (
 		<Form>
 			{options.map(option => (
-				<FormGroup check inline={inline} key={option}>
+				<FormGroup check inline={inline} key={option}>					
+					<Input type={inputType} key={`option_${option}`} name={prop} value={option}
+						checked={option == storeValue}
+						onChange={onChange} {...otherStuff}
+					/>
 					<Label check>
-						<Input type={inputType} key={`option_${option}`} name={prop} value={option}
-							checked={option == storeValue}
-							onChange={onChange} {...otherStuff}
-						/>
-						{' '}{labelFn(option)}
+						{labelFn(option)}
 					</Label>
 				</FormGroup>
 			))}
