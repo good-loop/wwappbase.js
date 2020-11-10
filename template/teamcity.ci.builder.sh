@@ -345,9 +345,9 @@ function start_service {
 ## AFTER that number of logged lines.
 ## CRUMB 03 -- the logged lines which indicate that a reindex is necessary are not errors or warnings, they are info and they contain specific strings.  You'll
 ## need an additional check just for these stupid lines.
-INITIAL_LOG_NUM_LINES=$(wc -l $PROJECT_LOG_FILE | awk '{print $1}')
 function catch_JVM_success_or_error {
-    while read line; do
+    INITIAL_LOG_NUM_LINES=$(wc -l $PROJECT_LOG_FILE | awk '{print $1}')
+    while read -t 10 line; do
         case "$line" in
             *"AMain Running"* )
                 printf "\n\t$PROJECT_NAME 's JVM reports a successful startup\n"
@@ -359,9 +359,17 @@ function catch_JVM_success_or_error {
                 exit
             ;;
         esac
-    done < < (tail --lines=+$INITIAL_LOG_NUM_LINES -f $PROJECT_LOG_FILE)    
+    done < <(tail --lines=+$INITIAL_LOG_NUM_LINES -f $PROJECT_LOG_FILE)
+    RETVAL=$?
+    case $RETVAL in
+        0)
+            echo ""
+        ;;
+        *)
+            printf "The JVM was given 10 seconds to report either success or that an elasticsearch index requires a re-index and re-aliasing before it could start. No such indication was received and parsed.  Please check your service and the log file for this project\n"       ;;
+        ;;
+    esac
 }
-
 ################
 ### Run the Functions in Order
 ################
@@ -381,4 +389,4 @@ use_npm
 use_webpack
 use_jerbil
 start_service
-#catch_JVM_success_or_error
+catch_JVM_success_or_error
