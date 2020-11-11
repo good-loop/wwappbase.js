@@ -1,5 +1,6 @@
 import _ from 'lodash';
 import { assert } from "./assert";
+import printer from './printer';
 
 export const randomPick = function<T>(array : T[]) : T
 {
@@ -497,7 +498,13 @@ export const stopEvent = (e : Event) => {
 	return true;
 };
 
-
+/**
+ * 
+ * @param x Convert anything to a string in a sensible-ish way.
+ * 
+ * Minor TODO: refactor printer.js to use `export` and use that directly
+ */
+export const str = x => printer.str(x)
 
 // // DEBUG hack
 // window.miscutils = {

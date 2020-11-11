@@ -13,7 +13,7 @@ import { labeller } from '../utils/miscutils';
 const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle}) => (
 	<Container>
 		<NavbarBrand title="Dashboard" href={homelink || '/'}>
-			<img alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+			<img className='logo-small' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 		</NavbarBrand>
 		<NavbarToggler onClick={toggle}/>
 		<Collapse isOpen={isOpen} navbar>
@@ -59,7 +59,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	));
 
 	return (
-		<Navbar sticky="top" dark color="dark" expand="md">
+		<Navbar sticky="top" dark color="dark" expand="md" className='p-1'>
 			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} />
 		</Navbar>
 	);

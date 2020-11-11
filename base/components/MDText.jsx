@@ -1,5 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
+import { assMatch } from 'sjtest';
 import Misc from './Misc';
 
 /**
@@ -13,6 +14,7 @@ const MDText = ({source, renderers, escapeHtml = false}) => {
 	if ( ! source) {
 		return null;
 	}
+	assMatch(source, String);
 
 	let nsource = Misc.normalise(source);
 	nsource = nsource.replace(/<br\s*\/?>/g, '    \n'); // HACK - always support break tags
