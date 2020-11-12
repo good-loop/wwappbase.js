@@ -180,7 +180,7 @@ ServerIO.search = function(type, filter) {
  * NB: the server parameter is currently `breakdown` (no -s).
  * Eventually we want to standardise on `breakdowns` as it's more intuitive for an array type,
  * but making the change server-side is expected to be very involved.
- * @param {?String|Date} start Date/time of oldest results (natural eg '1 month ago' OK)
+ * @param {?String|Date} start Date/time of oldest results (natural language eg '1 week ago' is OK). Default: 1 month ago
  * @param {?String|Date} end Date/time of oldest results
  * @param {?String} name Just for debugging - makes it easy to spot in the network tab
  */
