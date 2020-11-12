@@ -117,6 +117,8 @@ const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
 
 /**
  * Note: will not post an exact duplicate (but any change is enough to qualify for a fresh post).
+ * Also: The server will IGNORE an exact duplicate within a 15 minute time bucket. 
+ * If this is not what you want - add `eventParams.nonce = nonce()` which makes the event a unique one-off.
  * @param glslot Can be null for window-level events (e.g. the adblock test). Otherwise this really should be set!
  * @param eventTag {!String}
  * @param eventParams {?Object}
