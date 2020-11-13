@@ -20,9 +20,10 @@ const PropControlPills = ({storeValue, modelValueFromInput, path, prop, proppath
 		if (saveFn) saveFn({path, prop});
 	};
 
-	let [rawPartValue, setRawPartValue] = useState('');
-	const addTag = e => {
-		console.log("addTag", e);
+	let [rawPartValue, setRawPartValue] = useState('');	
+	/** don't add a tag until they've finished the word -- which re recognise via `space` (or enter or blur) */
+	const addTagOnChange = e => {
+		// console.log("addTag", e);
 		let tg = e.target.value || '';
 		tg = tg.trim();
 		if ( ! tg || tg === e.target.value) {
@@ -30,23 +31,32 @@ const PropControlPills = ({storeValue, modelValueFromInput, path, prop, proppath
 			setRawPartValue(e.target.value);
 			return;	
 		}
+		addTag2(tg);
+	};
+	const addTag2 = tg => {
+		if ( ! tg) return;
 		let pills2 = pills.concat(tg);
 		let pills3 = modelValueFromInput? modelValueFromInput(pills2) : pills2;
 		DSsetValue(proppath, pills3);
 		if (saveFn) saveFn({path, prop});
 		setRawPartValue('');
-	};
+	}
 
+	/** catch backspace (delete tag) and enter (add tag) */
 	const onKeyUp = e => {
-		console.log("keyup", e.key, e.keyCode, e);
+		// console.log("keyup", e.key, e.keyCode, e);
 		if (e.key==='Backspace' && pills.length) {
 			removeTag(pills[pills.length-1]);
 		}
+		if (e.key==='Enter' && pills.length) {
+			addTag2(rawPartValue);
+		}
 	};
 
-	return (<div className='form-control'>
+	return (<div className='form-control flex-row'>
 		{pills.map((tg,i) => <Badge className='mr-1' key={i} color={fcolor && fcolor(tg)}>{tg} <CloseButton onClick={e => removeTag(tg)}/></Badge>)}
-		<input value={rawPartValue} onChange={addTag} onKeyUp={onKeyUp} />
+		<input value={rawPartValue} className='flex-grow'
+			onChange={addTagOnChange} onKeyUp={onKeyUp} onBlur={e => addTag2(rawPartValue)} />
 	</div>);
 }
 
