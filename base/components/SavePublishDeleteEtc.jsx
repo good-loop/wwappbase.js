@@ -112,6 +112,8 @@ const SavePublishDeleteEtc = ({
 	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData({status, type, id});
 
+	TODO stash a copy for diff handling
+
 	// request a save?
 	if (autoSave && isdirty && ! isSaving) {
 		saveDraftFn({type,id});

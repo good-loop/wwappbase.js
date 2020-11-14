@@ -13,12 +13,15 @@ import ServerIO from './ServerIOBase';
 import ActionMan from './ActionManBase';
 import {notifyUser} from './Messaging';
 import List from '../data/List';
+import * as jsonpatch from 'fast-json-patch';
+import deepCopy from '../utils/deepCopy';
+
 
 /**
  * @param item {DataItem} can be null, in which case the item is got from DataStore
  * @returns {!Promise}
  */
-ActionMan.crud = ({type, id, action, item}) => {
+const crud = ({type, id, action, item, previous}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
@@ -35,11 +38,11 @@ ActionMan.crud = ({type, id, action, item}) => {
 	}
 	if ( ! getId(item)) {
 		// item has no ID?! Better fix that
-		console.warn("ActionMan.crud() - item without an ID! - setting id to "+id+". Best practice is to set the id property when creating the object.");
+		console.warn("crud() - item without an ID! - setting id to "+id+". Best practice is to set the id property when creating the object.");
 		item.id = id;
 	}
 	if ( ! getType(item)) {
-		console.warn("ActionMan.crud() - item without a type! - setting type to "+type+". Best practice is to use `new MyClass()` to set type when creating the object.");
+		console.warn("crud() - item without a type! - setting type to "+type+". Best practice is to use `new MyClass()` to set type when creating the object.");
 		item['@type'] = type;
 	}
 	// new item? then change the action
@@ -53,56 +56,14 @@ ActionMan.crud = ({type, id, action, item}) => {
 	// mark the widget as saving (defer 'cos this triggers a react redraw, which cant be done inside a render, where we might be)
 	_.defer(() => DataStore.setLocalEditsStatus(type, id, C.STATUS.saving));
 	
-	const status = serverStatusForAction(action);
-	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
-	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+	// const status = serverStatusForAction(action);
+	
+	// to spot and so preserve edits during the ajax call
+	const itemBefore = deepCopy(item);
 
 	// call the server
-	return ServerIO.crud(type, item, action)
-		.then(res => {
-			// Update DS with the returned item, but only if the crud action went OK
-			const freshItem = JSend.success(res) && JSend.data(res);
-			if (freshItem) {
-				if (action==='publish') {				
-					// set local published data				
-					DataStore.setValue(pubpath, freshItem);				
-					// update the draft version on a publish or a save
-					// ...copy it to allow for edits ??by whom?
-					let draftItem = _.cloneDeep(freshItem);
-					DataStore.setValue(draftpath, draftItem);
-				}
-				if (action==='save') {
-					// TODO we want to update DS, but there's a latency issue and we don't want to lose very-recent edits by the user.
-					// HACK: Let's update the status field, as the server owns that (and it avoids the "stuck on published" bug seen in SoGive Oct 2020)
-					// (better: use diffs)
-					DataStore.setValue(draftpath.concat('status'), freshItem.status);
-				}
-			}
-			if (action==='unpublish') {
-				// remove from DataStore
-				DataStore.setValue(pubpath, null);
-			}
-			// success :)
-			const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
-			if (action==='delete') {
-				DataStore.setValue(pubpath, null);
-				DataStore.setValue(draftpath, null);
-				// ??what if we were deleting a different Item than the focal one??
-				DataStore.setUrlValue(navtype, null);
-			} else if (id===C.newId) {
-				// id change!
-				// updateFromServer should have stored the new item
-				// So just repoint the focus
-				let serverId = getId(res.cargo);
-				DataStore.setFocus(type, serverId); // deprecated
-				DataStore.setUrlValue(navtype, serverId);
-			}
-			// clear the saving flag
-			DataStore.setLocalEditsStatus(type, id, C.STATUS.clean);
-			// and any error
-			DataStore.setValue(errorPath({type, id, action}), null);
-			return res;
-		})
+	return SIO_crud(type, item, previous, action)
+		.then( res => crud2_processResponse({res, item, itemBefore, id, serverId, action, type}) )
 		.catch(err => {
 			// bleurgh
 			console.warn(err);
@@ -123,6 +84,62 @@ ActionMan.crud = ({type, id, action, item}) => {
 			return err;
 		});
 }; // ./crud
+ActionMan.crud = crud;
+
+const crud2_processResponse = ({res, item, itemBefore, id, serverId, action, type}) => {
+	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
+	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+	const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
+	
+	// Update DS with the returned item, but only if the crud action went OK
+	const freshItem = JSend.success(res) && JSend.data(res);
+	if (freshItem) {
+		// Preserve very recent local edits (which we haven't yet told the server about)
+		let recentLocalDiffs = jsonpatch.compare(itemBefore, item);
+		if (recentLocalDiffs.length) {
+			console.warn("Race condition! Preserving recent local edits", recentLocalDiffs);
+			jsonpatch.applyPatch(freshItem, recentLocalDiffs);
+		}
+
+		if (action==='publish') {				
+			// set local published data				
+			DataStore.setValue(pubpath, freshItem);				
+			// update the draft version on a publish or a save
+			// ...copy it to allow for edits ??by whom?
+			let draftItem = _.cloneDeep(freshItem);
+			DataStore.setValue(draftpath, draftItem);
+		}
+		if (action==='save') {
+			// TODO we want to update DS, but there's a latency issue and we don't want to lose very-recent edits by the user.
+			// HACK: Let's update the status field, as the server owns that (and it avoids the "stuck on published" bug seen in SoGive Oct 2020)
+			// (better: use diffs)
+			DataStore.setValue(draftpath.concat('status'), freshItem.status);
+		}
+	}
+	// success :)
+	if (action==='unpublish') {
+		// remove from DataStore
+		DataStore.setValue(pubpath, null);
+	}
+	if (action==='delete') {
+		DataStore.setValue(pubpath, null);
+		DataStore.setValue(draftpath, null);
+		// ??what if we were deleting a different Item than the focal one??
+		DataStore.setUrlValue(navtype, null);
+	} else if (id===C.newId) {
+		// id change!
+		// updateFromServer should have stored the new item
+		// So just repoint the focus
+		let serverId = getId(res.cargo);
+		DataStore.setFocus(type, serverId); // deprecated
+		DataStore.setUrlValue(navtype, serverId);
+	}
+	// clear the saving flag
+	DataStore.setLocalEditsStatus(type, id, C.STATUS.clean);
+	// and any error
+	DataStore.setValue(errorPath({type, id, action}), null);
+	return res;
+};
 
 /**
  * @returns DataStore path for crud errors from this
@@ -135,7 +152,7 @@ ActionMan.saveEdits = ({type, id, item}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
-	return ActionMan.crud({type, id, action: 'save', item});
+	return crud({type, id, action: 'save', item});
 };
 
 /**
@@ -166,7 +183,7 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 	// modify e.g. url
 	if (onChange) onChange(newItem);
 	// save server
-	let p = ActionMan.crud({type, id:newId, action:'copy', item:newItem});
+	let p = crud({type, id:newId, action:'copy', item:newItem});
 	return p;
 };
 
@@ -176,7 +193,7 @@ ActionMan.unpublish = (type, id) => {
 	// TODO optimistic list mod
 	// preCrudListMod({type, id, action:'unpublish'});
 	// call the server
-	return ActionMan.crud({type, id, action:'unpublish'})
+	return crud({type, id, action:'unpublish'})
 		.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
@@ -195,7 +212,7 @@ ActionMan.publishEdits = (type, id, item) => {
 	// optimistic list mod
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
-	return ActionMan.crud({type, id, action: 'publish', item})
+	return crud({type, id, action: 'publish', item})
 		.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
@@ -254,7 +271,7 @@ const recursivePruneFromTreeOfLists = (item, treeOfLists) => {
 };
 
 ActionMan.discardEdits = (type, id) => {
-	return ActionMan.crud({type, id, action:C.CRUDACTION.discardEdits});	
+	return crud({type, id, action:C.CRUDACTION.discardEdits});	
 };
 
 /**
@@ -267,7 +284,7 @@ ActionMan.delete = (type, pubId) => {
 	// optimistic list mod
 	preCrudListMod({type, id:pubId, action:'delete'});
 	// ?? put a safety check in here??
-	return ActionMan.crud({type, id:pubId, action:'delete'})
+	return crud({type, id:pubId, action:'delete'})
 		.then(e => {
 			console.warn("deleted!", type, pubId, e);
 			// remove the local versions
@@ -287,7 +304,7 @@ ActionMan.delete = (type, pubId) => {
 ActionMan.archive = ({type, item}) => {	
 	// optimistic list mod
 	preCrudListMod({type, item, action: 'archive'});
-	return ActionMan.crud({ type, item, action: C.CRUDACTION.archive });
+	return crud({ type, item, action: C.CRUDACTION.archive });
 };
 
 // ServerIO //
@@ -327,19 +344,35 @@ const serverStatusForAction = (action) => {
 	throw new Error("TODO serverStatusForAction "+action);
 };
 
-ServerIO.crud = function(type, item, action) {	
+/**
+ * ServerIO (ie this does not use our client side datastore) crud call 
+ * @param {!string} type 
+ * @param {Item} item 
+ * @param {?Item} previous Optional pre-edit version of item. If supplied, a diff will be sent instead of the full item.
+ * @param {!string} action 
+ */
+const SIO_crud = function(type, item, previous, action) {	
 	assert(C.TYPES.has(type), type);
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
 	const status = serverStatusForAction(action);
+	const data = {
+		action,
+		status,
+		type, // hm: is this needed?? the stype endpoint should have it		
+	};
+	// diff?
+	if (previous) {
+		let diff = jsonpatch.compare(previous, item);
+		// remove add-null, as the server ignores it
+		diff = diff.filter(op => ! (op.op==="add" && op.value===null));
+		data.diff = JSON.stringify(diff);
+	} else {
+		data.item = JSON.stringify(item);
+	}
 	let params = {
 		method: 'POST',
-		data: {
-			action,
-			status,
-			type, // hm: is this needed?? the stype endpoint should have it
-			item: JSON.stringify(item)
-		}
+		data
 	};
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
@@ -349,28 +382,32 @@ ServerIO.crud = function(type, item, action) {
 	let id = getId(item);
 	let url = ServerIO.getUrlForItem({type, id, status});
 	return ServerIO.load(url, params);
+	// NB: our data processing is then done in crud2_processResponse()
 };
-ServerIO.saveEdits = function(type, item) {
-	return ServerIO.crud(type, item, 'save');
+// debug hack
+window.SIO_crud = SIO_crud;
+
+ServerIO.saveEdits = function(type, item, previous) {
+	return SIO_crud(type, item, previous, 'save');
 };
-ServerIO.publishEdits = function(type, item) {
-	return ServerIO.crud(type, item, 'publish');
+const SIO_publishEdits = function(type, item, previous) {
+	return SIO_crud(type, item, previous, 'publish');
 };
-ServerIO.discardEdits = function(type, item) {
-	return ServerIO.crud(type, item, C.CRUDACTION.discardEdits);
+ServerIO.discardEdits = function(type, item, previous) {
+	return SIO_crud(type, item, previous, C.CRUDACTION.discardEdits);
 };
-ServerIO.archive = function(type, item) {
-	return ServerIO.crud(type, item, 'archive');
+ServerIO.archive = function(type, item, previous) {
+	return SIO_crud(type, item, previous, 'archive');
 };
 
 /**
  * get an item from the backend -- does not save it into DataStore
  * @param {?Boolean} swallow
  */
-ServerIO.getDataItem = function({type, id, status, domain, swallow, ...other}) {
+const SIO_getDataItem = function({type, id, status, domain, swallow, ...other}) {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO - bad type: '+type);
 	if ( ! status) {
-		console.warn("Crud.js - ServerIO.getDataItem: no status - this is unwise! Editor pages should specify DRAFT. type: "+type+" id: "+id);
+		console.warn("Crud.js - SIO_getDataItem: no status - this is unwise! Editor pages should specify DRAFT. type: "+type+" id: "+id);
 	}
 	assMatch(id, String);
 	const params = {data: other, swallow};
@@ -387,7 +424,7 @@ ServerIO.getDataItem = function({type, id, status, domain, swallow, ...other}) {
  * @param {?string} action e.g. `getornew`
  * @returns PromiseValue
  */
-export const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
+const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
 	assert(id!=='unset', "ActionMan.getDataItem() "+type+" id:unset?!");
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
@@ -396,7 +433,7 @@ export const getDataItem = ({type, id, status, domain, swallow, action, ...other
 	// TODO Decide if getPath should take object argument
 	let path = DataStore.getDataPath({status, type, id, domain});
 	return DataStore.fetch(path, () => {
-		return ServerIO.getDataItem({type, id, status, domain, swallow, action, ...other});
+		return SIO_getDataItem({type, id, status, domain, swallow, action, ...other});
 	}, ! swallow);
 };
 ActionMan.getDataItem = getDataItem;
@@ -409,7 +446,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 	assert(C.KStatus.has(status), "Crud.js bad status "+status);
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan refreshDataItem - bad type: '+type);
 	assMatch(id, String);
-	return ServerIO.getDataItem({type, id, status, domain, ...other})
+	return SIO_getDataItem({type, id, status, domain, ...other})
 		.then(res => {
 			if (res.success) {
 				console.log("refreshed", type, id);
@@ -503,6 +540,7 @@ const CRUD = {
 export default CRUD;
 export {
 	errorPath,
+	getDataItem,
 	restId,
 	restIdDataspace,
 };
