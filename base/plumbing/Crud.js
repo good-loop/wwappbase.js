@@ -63,7 +63,7 @@ const crud = ({type, id, action, item, previous}) => {
 
 	// call the server
 	return SIO_crud(type, item, previous, action)
-		.then( res => crud2_processResponse({res, item, itemBefore, id, serverId, action, type}) )
+		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type}) )
 		.catch(err => {
 			// bleurgh
 			console.warn(err);
@@ -86,7 +86,7 @@ const crud = ({type, id, action, item, previous}) => {
 }; // ./crud
 ActionMan.crud = crud;
 
-const crud2_processResponse = ({res, item, itemBefore, id, serverId, action, type}) => {
+const crud2_processResponse = ({res, item, itemBefore, id, action, type}) => {
 	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
 	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 	const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
@@ -130,7 +130,7 @@ const crud2_processResponse = ({res, item, itemBefore, id, serverId, action, typ
 		// id change!
 		// updateFromServer should have stored the new item
 		// So just repoint the focus
-		let serverId = getId(res.cargo);
+		const serverId = getId(res.cargo);
 		DataStore.setFocus(type, serverId); // deprecated
 		DataStore.setUrlValue(navtype, serverId);
 	}
@@ -148,12 +148,13 @@ const errorPath = ({type, id, action}) => {
 	return ['transient', type, id, action, 'error'];
 };
 
-ActionMan.saveEdits = ({type, id, item}) => {
+const saveEdits = ({type, id, item, previous}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
-	return crud({type, id, action: 'save', item});
+	return crud({type, id, action: 'save', item, previous});
 };
+ActionMan.saveEdits = saveEdits;
 
 /**
  * This will modify the ID!
@@ -366,6 +367,12 @@ const SIO_crud = function(type, item, previous, action) {
 		let diff = jsonpatch.compare(previous, item);
 		// remove add-null, as the server ignores it
 		diff = diff.filter(op => ! (op.op==="add" && op.value===null));
+		// no edits and action=save? skip save
+		if ( ! diff.length && action==='save') {
+			console.log("crud", "skip no-diff save", item, previous);
+			const jsend = new JSend();
+			return Promise.resolve(jsend); // ?? is this the right thing to return
+		}
 		data.diff = JSON.stringify(diff);
 	} else {
 		data.item = JSON.stringify(item);
@@ -539,6 +546,7 @@ const CRUD = {
 };
 export default CRUD;
 export {
+	saveEdits,
 	errorPath,
 	getDataItem,
 	restId,
