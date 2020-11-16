@@ -101,7 +101,7 @@ const dateValidator = (val, rawValue) => {
  * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
  * 	Default: ['location','params'] which codes for the url
  * @param prop The field being edited
- * @param dflt {?Object} default value (this will get set over-riding a null/undefined/'' value in the item)
+ * @param {?Object} dflt default value (this will get set over-riding a null/undefined/'' value in the item)
  * 	NB: "default" is a reserved word, hence the truncated spelling.
  * @param {?Function} modelValueFromInput - inputs: (value, type, eventType) See standardModelValueFromInput.
  * @param required {?Boolean} If set, this field should be filled in before a form submit.
