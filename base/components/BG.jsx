@@ -7,10 +7,14 @@ import { addImageCredit } from './AboutPage';
  * See: https://studio.good-loop.com/#bg
  * @param {?ImageObject} image If image.author is provided, a (cc) credit is shown in the bottom-right
  * @param {?boolean} fullscreen
+ * @param {?number} top rect top position
+ * @param {?number} bottom rect bottom position
+ * @param {?number} left rect left position
+ * @param {?number} right rect right position
  * @param {?string} size cover|contain|fit How to size the background image. Fit means stretch to fit
  * @param {?number} opacity [0-100] ONLY works for fullscreen backgrounds
  */
-const BG = ({image, src, children, size='cover', fullscreen, opacity}) => {
+const BG = ({image, src, children, size='cover', top=0, left=0, right=0, bottom=0, fullscreen, opacity}) => {
 	if (size==='fit') size = "100% 100%";
 	if (image) {
 		src = image.url;
@@ -31,7 +35,7 @@ const BG = ({image, src, children, size='cover', fullscreen, opacity}) => {
 		backgroundSize: size,
 		position: fullscreen? 'fixed' : 'absolute',
 		opacity,
-		top:0,left:0,right:0,bottom:0,
+		top:top,left:left,right:right,bottom:bottom,
 		zIndex: -1
 	};
 	return (<>
