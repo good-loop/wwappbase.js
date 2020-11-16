@@ -298,7 +298,7 @@ const sogiveid = id => {
 
 	// tries to do automatic adjustments, if manual match not specified above
 	if (!sid) {
-		sid = id.toLowerCase().replace(/[^a-zA-Z0-9]/g,'-');
+		sid = id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
 	}
 
 	return sid;	
