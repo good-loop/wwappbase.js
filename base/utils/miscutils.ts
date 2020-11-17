@@ -506,6 +506,15 @@ export const stopEvent = (e : Event) => {
  */
 export const str = x => printer.str(x)
 
+/**
+ * @param {String} s 
+ * @returns {Date}
+ */
+export const asDate = (s: String) => {
+	if ( ! s) return null;
+	return new Date(s);
+};
+
 // // DEBUG hack
 // window.miscutils = {
 // };

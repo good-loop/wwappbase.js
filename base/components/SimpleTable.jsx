@@ -21,7 +21,7 @@ import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import {asNum, space, stopEvent, encURI} from '../utils/miscutils';
+import {asNum, space, stopEvent, encURI, asDate} from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType, nonce } from '../data/DataClass';
 import Tree from '../data/Tree';
@@ -37,13 +37,15 @@ class Column extends DataClass {
 	Header;
 	/** @type {?Boolean} */
 	editable;
+	/** @type {?CellFormat} How to format numbers e.g. "percent". See also `type` */
+	format;
 	/** @type {?Function} ({item,...}) -> {} */
 	saveFn;
 	/** @type {?Function} */
 	sortMethod;
 	/** @type {?Function} */
 	sortAccessor;
-	/** @type {?String} Used for providing an editor - see PropControl */
+	/** @type {?String} Used for providing an editor - see PropControl. e.g. `date` */
 	type;
 	/** @type {?String|Function} Text to show as help. If a function, works like style */
 	tooltip;
@@ -64,6 +66,7 @@ class Column extends DataClass {
 		delete this.status;
 	}
 };
+DataClass.register(Column, "Column");
 
 // class ErrorBoundary extends React.Component {
 // https://reactjs.org/docs/error-boundaries.html
@@ -548,6 +551,11 @@ const defaultSortMethodForGetter = (a, b, getter, type) => {
 
 const defaultCellRender = (v, column) => {
 	if (v===undefined || Number.isNaN(v)) return null;
+	// by type?
+	if (column.type === 'date' && v) {
+		let d = asDate(v);
+		return Misc.dateStr(d);
+	}
 	if (column.format) {
 		let significantDigits = 2; // set to the defualt value that was previously hard coded
 		let precision = 2;
