@@ -13,6 +13,9 @@ import C from '../CBase';
 // // import I18n from 'easyi18n';
 import DataClass, {getType, getId, nonce} from '../data/DataClass';
 import {notifyUser} from '../plumbing/Messaging';
+import { DSsetValue } from './PropControl';
+import deepCopy from '../utils/deepCopy';
+import { saveEdits } from '../plumbing/Crud';
 
 /**
  * 
@@ -34,7 +37,17 @@ const DEBOUNCE_MSECS = 3000;
 */
 const saveDraftFn = _.debounce(
 	({type, id, item}) => {
-		ActionMan.saveEdits({type, id, item});
+		// get snapshot
+		let previous = DataStore.getValue(['transient','snapshot',type, id]);
+		// save (by diff if previous was set)
+		let p = saveEdits({type, id, item, previous});
+		// update on return
+		p.then(res => {
+			console.log("update snapshot", res);
+			let updatedItem = JSend.data(res);
+			DataStore.setValue(['transient','snapshot',type, id], deepCopy(updatedItem), false);
+			return res;
+		});
 		return true;
 	}, DEBOUNCE_MSECS
 );
@@ -110,7 +123,12 @@ const SavePublishDeleteEtc = ({
 	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.issaveerror(localStatus);
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
-	let item = DataStore.getData({status, type, id});
+	let item = DataStore.getData({status, type, id}) || {};
+
+	// 1st time: stash a copy for diff handling
+	if ( ! DataStore.getValue(['transient','snapshot',type, id])) {
+		DataStore.setValue(['transient','snapshot',type, id], deepCopy(item), false);
+	}
 
 	// request a save?
 	if (autoSave && isdirty && ! isSaving) {
