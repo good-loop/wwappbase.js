@@ -19,7 +19,7 @@ class SearchQuery
 	query;
 
 	/**
-	 * e.g. ["OR", "a", ["AND", "b", ["near", "c"]]]
+	 * e.g. ["OR", "a", ["AND", "b", {"near", "c"}]]
 	 */
 	tree;
 
@@ -52,7 +52,7 @@ SearchQuery.parse = sq => {
 	let bits = sq.query.split(" ");
 	let bits2 = bits.map(bit => {
 		let kv = bit.match(/^([a-z]+):(.+)/);
-		if (kv) return [kv[1], kv[2]];
+		if (kv) return {[kv[1]]: kv[2]};
 		return bit;
 	});
 	/**
@@ -169,7 +169,14 @@ SearchQuery.str = sq => sq? sq.query : '';
  * @returns {string}
  */
 const unparse = tree => {
+	// a search term?
 	if (typeof(tree)==='string') return tree;
+	// key:value?
+	if ( ! tree.length) {
+		let keys = Object.keys(tree);
+		assert(keys.length === 1);
+		return keys[0]+":"+tree[keys[0]];
+	}
 	if (tree.length===1) return tree[0]; // just a sole keyword
 	let op = tree[0];
 	let bits = tree.slice(1);
