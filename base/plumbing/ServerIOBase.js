@@ -193,7 +193,8 @@ ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], sta
 	filters.start = start;
 	filters.end = end;
 	let endpoint = ServerIO.DATALOG_ENDPOINT;
-	const params = {data: filters};
+	// This stats data is _usually_ non essential, so swallow errors.
+	const params = {data: filters, swallow:true};
 	const url = endpoint + (name ? `?name=${encURI(name)}` : '');
 	return ServerIO.load(url, params);
 };

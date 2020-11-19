@@ -203,7 +203,7 @@ ActionMan.unpublish = (type, id) => {
 };
 
 
-ActionMan.publishEdits = (type, id, item) => {
+const publishEdits = (type, id, item) => {
 	assMatch(type, String);
 	assMatch(id, String, "Crud.js no id to publish to "+type);
 	// if no item - well its the draft we publish
@@ -220,6 +220,7 @@ ActionMan.publishEdits = (type, id, item) => {
 			return err;
 		}); // ./then
 };
+ActionMan.publishEdits = publishEdits;
 
 const preCrudListMod = ({type, id, item, action}) => {
 	assert(type && (item || id) && action);
@@ -547,6 +548,7 @@ const CRUD = {
 export default CRUD;
 export {
 	saveEdits,
+	publishEdits,
 	errorPath,
 	getDataItem,
 	restId,

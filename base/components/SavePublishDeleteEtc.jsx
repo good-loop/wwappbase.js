@@ -11,11 +11,9 @@ import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import C from '../CBase';
 // // import I18n from 'easyi18n';
-import DataClass, {getType, getId, nonce} from '../data/DataClass';
+import DataClass, {getType, getId, nonce, getStatus} from '../data/DataClass';
 import {notifyUser} from '../plumbing/Messaging';
-import { DSsetValue } from './PropControl';
-import deepCopy from '../utils/deepCopy';
-import { saveEdits } from '../plumbing/Crud';
+import {publishEdits, saveEdits} from '../plumbing/Crud';
 
 /**
  * 
@@ -37,38 +35,37 @@ const DEBOUNCE_MSECS = 3000;
 */
 const saveDraftFn = _.debounce(
 	({type, id, item}) => {
-		// get snapshot
-		let previous = DataStore.getValue(['transient','snapshot',type, id]);
-		// save (by diff if previous was set)
-		let p = saveEdits({type, id, item, previous});
-		// update on return
-		p.then(res => {
-			console.log("update snapshot", res);
-			let updatedItem = JSend.data(res);
-			DataStore.setValue(['transient','snapshot',type, id], deepCopy(updatedItem), false);
-			return res;
-		});
+		ActionMan.saveEdits({type, id, item});
 		return true;
 	}, DEBOUNCE_MSECS
 );
 
 
 /**
- * A TODO:debounced auto-publish function for the save/publish widget, or for SimpleTable saveFn
+ * A debounced auto-publish function for the save/publish widget, or for SimpleTable saveFn
  * Must provide type and id, or path
  * path is only used to fill in for missing item info
  * * @param {type, id, item, path}
  */
-const publishDraftFn = _.debounce(
+const autoPublishFn = _.debounce(
 	({type, id, path, item}) => {
 		if ( ! type || ! id) {
-			let item = DataStore.getValue(path);
+			let item = item || DataStore.getValue(path);
 			id = id || getId(item);
 			type = type || getType(item);
 		}
 		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad/missing type: "+type+" id: "+id);
 		assMatch(id, String,"Misc.jsx publishDraftFn id?! "+type+" id: "+id);
-		ActionMan.publishEdits(type, id, item);
+		// still wanted?
+		const localEditStatus = DataStore.getLocalEditsStatus(type, id);
+		const status = getStatus(item);
+		const isdirty = C.STATUS.isdirty(localEditStatus) || C.STATUS.issaveerror(localEditStatus);
+		const isSaving = C.STATUS.issaving(localEditStatus);
+		if (status===C.KStatus.PUBLISHED && ! isdirty) {
+			return;
+		}
+		// Do it
+		publishEdits(type, id, item);
 		return true;
 	}, DEBOUNCE_MSECS
 );
@@ -123,21 +120,16 @@ const SavePublishDeleteEtc = ({
 	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.issaveerror(localStatus);
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
-	let item = DataStore.getData({status, type, id}) || {};
-
-	// 1st time: stash a copy for diff handling
-	if ( ! DataStore.getValue(['transient','snapshot',type, id])) {
-		DataStore.setValue(['transient','snapshot',type, id], deepCopy(item), false);
-	}
+	let item = DataStore.getData({status, type, id});
 
 	// request a save?
 	if (autoSave && isdirty && ! isSaving) {
-		saveDraftFn({type,id});
+		saveDraftFn({type,id,item});
 	}
 
-	// If setting enabled, will automatically publish every five seconds
-	if (autoPublish && isdirty && item.status !== 'ARCHIVED') {
-		publishDraftFn({type, id}); // ??@AU - why was this switched off?
+	// If enabled, will automatically publish every five seconds -- BUT the save-draft has to have succeeded first (isdirty=false)
+	if (autoPublish && ! isdirty && item.status !== 'PUBLISHED' && item.status !== 'ARCHIVED') {
+		autoPublishFn({type, id, item});
 	}
 
 	// Sometimes we just want to autosave drafts!
@@ -195,7 +187,7 @@ const SavePublishDeleteEtc = ({
 				color={C.STATUS.issaveerror(localStatus)? 'danger' : 'secondary'} 
 				title={C.STATUS.issaveerror(localStatus)? 'There was an error when saving' : null}
 				disabled={isSaving || C.STATUS.isclean(localStatus)} 
-				onClick={() => ActionMan.saveEdits({type, id, item})}>
+				onClick={() => saveEdits({type, id, item})}>
 				Save Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 
@@ -209,7 +201,7 @@ const SavePublishDeleteEtc = ({
 			&nbsp;
 
 			<Button name="publish" color="primary" disabled={disablePublish} title={publishTooltip}
-				onClick={() => check(prePublish({item, action:C.CRUDACTION.publish})) && ActionMan.publishEdits(type, id)}>
+				onClick={() => check(prePublish({item, action:C.CRUDACTION.publish})) && publishEdits(type, id)}>
 				Publish Edits <span className="fa fa-circle-notch spinning" style={vis} />
 			</Button>
 			&nbsp;
@@ -246,12 +238,12 @@ const SavePublishDeleteEtc = ({
 
 // backwards compatibility
 Misc.SavePublishDiscard = SavePublishDeleteEtc;
-Misc.publishDraftFn = publishDraftFn;
+Misc.publishDraftFn = autoPublishFn;
 Misc.saveDraftFn = saveDraftFn;
 
 export default SavePublishDeleteEtc;
 export {
 	confirmUserAction,
-	publishDraftFn,
+	autoPublishFn as publishDraftFn,
 	saveDraftFn
 }
