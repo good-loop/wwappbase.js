@@ -4,11 +4,23 @@ import {assert, assMatch} from 'sjtest';
 import DataClass from './DataClass';
 import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
+import DataStore from '../plumbing/DataStore';
+import deepCopy from '../utils/deepCopy';
+
+/**
+ * See Branding.java
+ */
+class Branding {
+	logo;
+}
 
 /**
  * See Advert.java
  */
 class Advert extends DataClass {
+	
+	/** @type{Branding} */
+	branding;
 
 	/**
 	 * @param {{vertiser: !string}} base 
@@ -16,17 +28,22 @@ class Advert extends DataClass {
 	constructor(base) {
 		super();
 		assMatch(base.vertiser, String, "Advert.js make() - no vertiser ID", base);		
-		this['@type'] = 'Advert';
 		// copy CTA, variant info, and onX pixels (but nothing else, eg id name etc) from the default
 		let dad = Advert.defaultAdvert();
-		Object.assign(this, {variantSpec: dad.variantSpec});
+		Object.assign(this, {variantSpec: deepCopy(dad.variantSpec)});
 		// ..copy default onX pixels
 		if (dad.advanced) {
 			if ( ! this.advanced) this.advanced = {};
 			Object.keys(dad.advanced).filter(k => k.startsWith("on")).forEach(k => this.advanced[k] = dad.advanced[k]);
 		}
-		// now add in base
-		Object.assign(this, base);
+		// copy branding from the advertiser
+		let pvAdvertiser = DataStore.getDataItem({type:C.TYPES.Advertiser, id:base.vertiser, status:C.KStatus.PUBLISHED, swallow:true});
+		if (pvAdvertiser.value && pvAdvertiser.value.branding) {
+			this.branding = deepCopy(pvAdvertiser.value.branding);
+		}
+		// NB: Don't copy campaign-page -- that gets dynamically sorted out by the My.GL ImpactHub
+		// Now add in base
+		DataClass._init(this, base);
 	}
 }
 DataClass.register(Advert, "Advert"); 
