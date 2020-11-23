@@ -131,7 +131,8 @@ class MainDivBase extends Component {
 			}
 		}
 		// full screen?
-		let fluid = fullWidthPages && fullWidthPages.includes(page);
+		// Either by page, or for a dynamic setting within a page - HACK set window.fullWidthPage=true/false
+		let fluid = (fullWidthPages && fullWidthPages.includes(page)) || window.fullWidthPage;
 		//
 		return (
 			<div>

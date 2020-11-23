@@ -25,6 +25,7 @@ import {asNum, space, stopEvent, encURI, asDate} from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType, nonce } from '../data/DataClass';
 import Tree from '../data/Tree';
+import PropControl from './PropControl';
 
 const str = printer.str;
 
@@ -596,7 +597,8 @@ const defaultCellRender = (v, column) => {
  * @param {Column} column
  */
 const Cell = ({item, row, depth, node, column, hasCollapse}) => {
-	const citem = item;
+	const citem = item;	
+	let clickToEdit = null, clickToEditOff = null;
 	try {
 		const v = getValue({item, row, column});
 		let render = column.Cell;
@@ -608,6 +610,16 @@ const Cell = ({item, row, depth, node, column, hasCollapse}) => {
 			} else {
 				render = defaultCellRender;
 			}
+		} else {
+			// replace the render function with the built-in editor on-click?
+			if (column.editable) {
+				let [editing,setEditing] = useState();
+				clickToEdit = e => setEditing(true);
+				clickToEditOff = e => setEditing(false);
+				if (editing) {
+					render = val => <Editor value={val} row={row} column={column} item={citem} />;
+				}
+			}			
 		}
 		const cellGuts = render(v, column, item, node);
 		// collapse? Done by an extra column
@@ -617,7 +629,7 @@ const Cell = ({item, row, depth, node, column, hasCollapse}) => {
 		let style = calcStyle({style: column.style, cellValue:v, item, row, depth, column});
 		let tooltip = calcStyle({style: column.tooltip, cellValue:v, item, row, depth, column});
 		// the moment you've been waiting for: a table cell!
-		return <td style={style} title={tooltip} >{cellGuts}</td>;
+		return <td style={style} title={tooltip} onDoubleClick={clickToEdit} onBlur={clickToEditOff} >{cellGuts}</td>;
 	} catch(err) {
 		// be robust
 		console.error(err);
@@ -687,7 +699,7 @@ const Editor = ({row, column, value, item}) => {
 		dummyItem[prop] = editedValue;
 	}
 	let type = column.type;
-	return (<Misc.PropControl type={type} item={dummyItem} path={path} prop={prop}
+	return (<PropControl type={type} item={dummyItem} path={path} prop={prop}
 		saveFn={column.saveFn}
 	/>);
 }; // ./Editor
