@@ -70,7 +70,7 @@ const socialLogin = (service) => {
 /**
  * ajax call -- via Login.login() -- to login
  */
-const emailLogin = ({verb, app, email, password, onRegister}) => {
+const emailLogin = ({verb, app, email, password, onRegister, onLogin}) => {
 	assMatch(email, String, password, String);
 	const call = (verb === 'register') ? (
 		Login.register({email:email, password:password})
@@ -91,6 +91,7 @@ const emailLogin = ({verb, app, email, password, onRegister}) => {
 			if(verb === 'register' && onRegister) {
 				onRegister({...res, email});
 			} else {
+				onLogin({...res, email});
 				setShowLogin(false);
 			}
 		} else {

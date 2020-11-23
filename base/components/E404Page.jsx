@@ -10,7 +10,7 @@ const E404Page = () => {
 			<h1>Error 404: Page not found</h1>
 
 			<p>
-				Sorry: <code>{""+window.location}</code>is not a valid page url.
+				Sorry: <code>{""+window.location}</code> is not a valid page url.
 			</p>
 
 		</div>
