@@ -6,6 +6,7 @@ import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataStore from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
+import { getDataItem } from '../plumbing/Crud';
 
 /**
  * See Branding.java
@@ -37,7 +38,7 @@ class Advert extends DataClass {
 			Object.keys(dad.advanced).filter(k => k.startsWith("on")).forEach(k => this.advanced[k] = dad.advanced[k]);
 		}
 		// copy branding from the advertiser
-		let pvAdvertiser = DataStore.getDataItem({type:C.TYPES.Advertiser, id:base.vertiser, status:C.KStatus.PUBLISHED, swallow:true});
+		let pvAdvertiser = getDataItem({type:C.TYPES.Advertiser, id:base.vertiser, status:C.KStatus.PUBLISHED, swallow:true});
 		if (pvAdvertiser.value && pvAdvertiser.value.branding) {
 			this.branding = deepCopy(pvAdvertiser.value.branding);
 		}

@@ -11,6 +11,7 @@ import C from '../CBase';
 import DataClass, {getType, getId, getClass} from '../data/DataClass';
 import Roles, {getRoles} from '../Roles';
 import Shares, {Share, canRead, canWrite, shareThingId} from '../Shares';
+import PropControl from './PropControl';
 
 /**
  * a Share This button
@@ -104,11 +105,11 @@ const ShareWidget = ({item, type, id, name}) => {
 			<ModalBody>
 				<div className="container-fluid">
 					<div className="row form-inline">
-						<Misc.PropControl inline label="Email to share with" path={formPath} prop="email" type="email" />
+						<PropControl inline label="Email to share with" path={formPath} prop="email" type="email" />
 					</div>
 					<div className="row">
-						<Misc.PropControl path={formPath} prop="enableNotification" label="Send a notification email" type="checkbox"/>
-						{enableNotification? <Misc.PropControl path={formPath} prop="optionalMessage" id="OptionalMessage" label="Attached message" type="textarea" /> : null}
+						<PropControl path={formPath} prop="enableNotification" label="Send a notification email" type="checkbox"/>
+						{enableNotification? <PropControl path={formPath} prop="optionalMessage" id="OptionalMessage" label="Attached message" type="textarea" /> : null}
 						<Button color="primary" size="lg" className="btn-block" disabled={!validEmailBool}
 							onClick={() => {
 								const {form} = DataStore.getValue(basePath) || {};
