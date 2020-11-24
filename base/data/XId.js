@@ -6,6 +6,9 @@ import _ from 'lodash';
 import {assert, assMatch} from 'sjtest';
 import DataClass, {getType} from './DataClass';
 
+/**
+ * An id string of the form "identifier@service", e.g. "winterstein@twitter" or "daniel@good-loop.com@email"
+ */
 class XId extends String {};
 // TODO how do we replace the constructor so it returns a string?
 // DataClass.register(XId, "XId");

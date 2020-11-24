@@ -1,6 +1,6 @@
 /** PropControl provides inputs linked to DataStore.
  */
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 // TODO refactor so saveFn is only called at the end of an edit, e.g. on-blur or return or submit
 
@@ -89,28 +89,27 @@ const dateValidator = (val, rawValue) => {
  * Input bound to DataStore.
  * aka Misc.PropControl
  *
- * @param {?Function} saveFn inputs: {path, prop, value, event}
+ * @param {?Function} saveFn inputs: `{path, prop, value, event}`
  * This gets called at the end of onChange.
  * You are advised to wrap this with e.g. _.debounce(myfn, 500).
  * NB: we cant debounce here, cos it'd be a different debounce fn each time.
  * Save utils:
  * SavePublishDeleteEtc `saveDraftFn` 
  * or instead of saveFn, place a SavePublishDeleteEtc on the page.
- *
  * @param {?String} label
  * @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
  * 	Default: ['location','params'] which codes for the url
- * @param prop The field being edited
+ * @param {!string} prop The field being edited
  * @param {?Object} dflt default value (this will get set over-riding a null/undefined/'' value in the item)
- * 	NB: "default" is a reserved word, hence the truncated spelling.
+ * 	NB: "default" is a reserved word, hence the truncated spelling. This CANNOT change from unset to set or React will get upset (with the error "Rendered more hooks than during the previous render.")
  * @param {?Function} modelValueFromInput - inputs: (value, type, eventType) See standardModelValueFromInput.
- * @param required {?Boolean} If set, this field should be filled in before a form submit.
+ * @param {?boolean} required  If set, this field should be filled in before a form submit.
  * 	TODO mark that somehow
  * @param validator {?(value, rawValue) => String} Generate an error message if invalid
  * @param {?String} error Error message to show, regardless of validator output
  * @param {?String} warning Warning message to show, regardless of validator output
- * @param inline {?Boolean} If set, this is an inline form, so add some spacing to the label.
- * @param https {?Boolean} if true, for type=url, urls must use https not http (recommended)
+ * @param {?boolean} inline  If set, this is an inline form, so add some spacing to the label.
+ * @param {?boolean} https if true, for type=url, urls must use https not http (recommended)
  * @param {?boolean} fast - if true optimise React updates and renders. Only use for busting bottlenecks.
 	 Warning: when coupled with other controls, this can cause issues, as the other controls won't always update. 
 	 E.g. if a fast text input has an associated button.
@@ -151,17 +150,14 @@ const PropControl = ({className, ...props}) => {
 	// Use a default? But not to replace false or 0
 	if (dflt) {
 		// allow the user to delete the field - so only check the default once
-		let [dfltFlag, setDfltFlag] = useState();
-		if ( ! dfltFlag) {
-			if ((storeValue === undefined || storeValue === null || storeValue === '') && !dfltFlag) {
+		useEffect(() => {
+			if (storeValue === undefined || storeValue === null || storeValue === '') {
 				storeValue = dflt;	value = storeValue;
 				// set the model too (otherwise the value gets lost!)
 				DataStore.setValue(proppath, storeValue, false);
 				console.log("PropControl.jsx - set default value " + proppath, storeValue);
 			}
-			// 1st time only
-			setDfltFlag(true);
-		}
+		}, []); // 1st time only
 	}
 
 	// Temporary hybrid form while transitioning to all-modular PropControl structure

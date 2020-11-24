@@ -183,6 +183,7 @@ ServerIO.search = function(type, filter) {
  * @param {?String|Date} start Date/time of oldest results (natural language eg '1 week ago' is OK). Default: 1 month ago
  * @param {?String|Date} end Date/time of oldest results
  * @param {?String} name Just for debugging - makes it easy to spot in the network tab
+ * @returns {Promise}
  */
 ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
 	// HACK old calling convention

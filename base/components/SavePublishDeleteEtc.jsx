@@ -28,14 +28,17 @@ const confirmUserAction = ({item, action}) => {
 	return true;
 };
 
-const DEBOUNCE_MSECS = 3000;
+/**
+ * Save if no edits for 2 seconds
+ */
+const DEBOUNCE_MSECS = 2000;
 
 /** Hack: a debounced auto-save function for the save/publish widget
- * @param {type, id}
+ * @param {type, id, item, previous}
 */
 const saveDraftFn = _.debounce(
-	({type, id, item}) => {
-		ActionMan.saveEdits({type, id, item});
+	({type, id, item, previous}) => {
+		ActionMan.saveEdits({type, id, item, previous});
 		return true;
 	}, DEBOUNCE_MSECS
 );
