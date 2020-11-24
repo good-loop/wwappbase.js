@@ -381,15 +381,6 @@ const doRegisterEmail = (data) => {
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data});	
 };
 
-
-
-Person.getProfile = getProfile;
-Person.getProfilesNow = getProfilesNow;
-Person.getConsents = getConsents;
-Person.setConsents = setConsents;
-
-window.Person = Person; // debug
-
 // FIXME TODO - using setConsents to edit one consent is clunky (and risks race conditions)
 const addConsent = (...props) => {
 	console.error("addConsent",props);
@@ -409,8 +400,8 @@ const setClaimValue = ({persons, key, value}) => {
 };
 
 const addClaim = (peep, claim) => {
-	// assMatch(peep, Person); FIXME typeMatch vs isa in SJTest
-	assMatch(claim, Claim);
+	Person.assIsa(peep);
+	Claim.assIsa(claim);
 	if ( ! peep.claims) peep.claims = [];
 	
 	// Does it replace a claim? - remove overlaps
