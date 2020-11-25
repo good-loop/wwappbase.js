@@ -183,7 +183,7 @@ ServerIO.search = function(type, filter) {
  * @param {?String|Date} start Date/time of oldest results (natural language eg '1 week ago' is OK). Default: 1 month ago
  * @param {?String|Date} end Date/time of oldest results
  * @param {?String} name Just for debugging - makes it easy to spot in the network tab
- * @returns {Promise}
+ * @returns {Promise} p response object
  */
 ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
 	// HACK old calling convention
@@ -364,6 +364,7 @@ ServerIO.getEndpointForType = (type) => {
  
  *
  * @returns A <a href="http://api.jquery.com/jQuery.ajax/#jqXHR">jqXHR object</a>.
+ * NB: a PromiseValue would be nicer, but the refactor would affect lots of code.
 **/
 ServerIO.load = function(url, params) {
 	assMatch(url,String);

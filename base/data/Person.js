@@ -389,7 +389,9 @@ const removeConsent = (...props) => {
 	console.error("removeConsent",props);
 };
 
-
+/**
+ * Locally set a claim value (does NOT save -- use `savePersons()` to save)
+ */
 const setClaimValue = ({persons, key, value}) => {
 	let from = Login.getId();
 	let consent = ['dflt']; // the "what is my current default?" setting
@@ -431,10 +433,11 @@ const getClaimValue = ({persons, key}) => {
 	return claims[0].v;
 };
 /**
- * 
+ * @param {Person[]} persons
  * @returns {!Claim[]}
  */
 const getClaims = ({persons, key}) => {
+	assMatch(key, String);
 	let allClaims = [];
 	persons.forEach(peep => allClaims.push(...peep.claims));	
 	let keyClaims = allClaims.filter(claim => claim.k===key);
