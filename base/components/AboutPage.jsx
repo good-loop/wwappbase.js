@@ -1,7 +1,5 @@
 import React from 'react';
 
-import SJTest, {assert} from 'sjtest';
-import Login from 'you-again';
 import printer from '../utils/printer.js';
 import C from '../CBase';
 import Misc from './Misc';

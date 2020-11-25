@@ -289,5 +289,5 @@ let str = function(obj) {
 }; // str()
 
 export {
-	assert, match, isa, assMatch, str
+	assert, match, isa, assMatch, str, setAssertFailed
 }

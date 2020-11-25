@@ -2,7 +2,7 @@
 */
 
 import _ from 'lodash';
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import printer from '../utils/printer';
 
 /*

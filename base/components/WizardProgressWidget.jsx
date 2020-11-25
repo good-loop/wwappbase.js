@@ -1,7 +1,7 @@
 import React from 'react';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
-import {assMatch, assert} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import { Button } from 'reactstrap';
 
 // TODO refactor a la Misc.CardAccordion

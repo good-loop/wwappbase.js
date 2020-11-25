@@ -1,5 +1,4 @@
 /** Data model functions for the NGO data-type. */
-import {assert} from 'sjtest';
 
 import DataClass from './DataClass';
 

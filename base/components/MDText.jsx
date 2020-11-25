@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactMarkdown from 'react-markdown';
-import { assMatch } from 'sjtest';
+import { assMatch } from '../utils/assert';
 import Misc from './Misc';
 
 /**

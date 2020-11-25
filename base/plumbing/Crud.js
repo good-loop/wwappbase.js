@@ -1,7 +1,7 @@
 /** Add "standard crud functions" to ServerIO and ActionMan */
 
 import _ from 'lodash';
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import C from '../CBase';
 import DataStore, { getListPath } from './DataStore';
 import {getId, getType, nonce} from '../data/DataClass';

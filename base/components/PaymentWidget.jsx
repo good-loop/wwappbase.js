@@ -9,7 +9,7 @@ import { StripeProvider, Elements, injectStripe,
 import C from '../CBase';
 import Money from '../data/Money';
 import Transfer from '../data/Transfer';
-import {assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 

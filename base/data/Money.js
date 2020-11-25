@@ -2,7 +2,7 @@
 	Money NB: based on the thing.org type MonetaryAmount
 	TODO It'd be nice to make this immutable (can we use Object.freeze to drive that thrgough??)
 */
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import {asNum} from '../utils/miscutils';
 import DataClass, {getType} from './DataClass';
 import C from '../CBase';

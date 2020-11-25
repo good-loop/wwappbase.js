@@ -1,13 +1,12 @@
 import React from 'react';
 
-import SJTest from 'sjtest';
-
 import C from '../CBase.js';
 
 // Plumbing
 import DataStore from '../plumbing/DataStore';
 import CloseButton from './CloseButton';
 import Messaging from '../plumbing/Messaging';
+import { match } from '../utils/assert.js';
 
 
 /**
@@ -18,7 +17,7 @@ import Messaging from '../plumbing/Messaging';
 const MessageBar = () => {
 	// Retrieve messages & filter those intended for a particular page
 	let messages = Object.values(DataStore.getValue('misc', 'messages-for-user') || {})
-		.filter(m => m.path ? SJTest.match(m.path, DataStore.getValue('location', 'path')) : true);
+		.filter(m => m.path ? match(m.path, DataStore.getValue('location', 'path')) : true);
 	
 	if (messages && messages.length) {
 		// We're likely to get lots of messages on local and test.

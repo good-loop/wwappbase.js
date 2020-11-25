@@ -15,7 +15,7 @@
 
 import React, { useState, useRef } from 'react';
 
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import _ from 'lodash';
 import Misc from './Misc';
 import printer from '../utils/printer';

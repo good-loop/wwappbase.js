@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import Login from 'you-again';
-import { assert, assMatch } from 'sjtest';
+
 import { getUrlVars, toTitleCase, modifyHash, yessy } from '../utils/miscutils';
 import { Container } from 'reactstrap';
 import { isFunction } from 'lodash';
@@ -22,6 +22,7 @@ import LoginWidget, { setShowLogin } from './LoginWidget';
 import { BasicAccountPage } from './AccountPageWidgets';
 
 import E404Page from './E404Page';
+import { assert } from '../utils/assert';
 
 // DataStore
 C.setupDataStore();

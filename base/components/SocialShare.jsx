@@ -2,7 +2,6 @@
 // TODO move social share buttons from DonationForm here
 
 import React from 'react';
-import {assert, assMatch} from 'sjtest';
 import {encURI} from '../utils/miscutils';
 
 import DataStore from '../plumbing/DataStore';

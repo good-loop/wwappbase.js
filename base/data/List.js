@@ -10,7 +10,7 @@
 	}
 
 */
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import DataClass, {getType, getId, nonce} from './DataClass';
 import C from '../CBase';
 

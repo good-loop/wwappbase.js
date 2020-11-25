@@ -1,7 +1,7 @@
 // NB: simplified and modularised copy of adunit's log.js
 
 import ServerIO from './ServerIOBase';
-import { assMatch } from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 
 /** datalog.js: the log-to-server calls
  * 

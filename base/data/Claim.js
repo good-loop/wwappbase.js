@@ -1,5 +1,5 @@
 
-import {assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import { is } from '../utils/miscutils';
 import DataClass from './DataClass';
 

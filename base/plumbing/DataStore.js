@@ -5,7 +5,7 @@ import _ from 'lodash';
 import PromiseValue from 'promise-value';
 
 import {getId, getType, getStatus} from '../data/DataClass';
-import {assert,assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import {parseHash, modifyHash, toTitleCase, is, space} from '../utils/miscutils';
 
 

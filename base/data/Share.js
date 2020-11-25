@@ -3,7 +3,6 @@
  * ??move this into you-again.js??
  */
 
-import {assert, assMatch} from 'sjtest';
 import DataClass, {getType} from './DataClass';
 
 class Share extends DataClass {

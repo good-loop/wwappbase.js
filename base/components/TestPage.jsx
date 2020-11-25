@@ -4,7 +4,7 @@
  */
 import React, {useState} from 'react';
 
-import SJTest, {assert} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import Login from 'you-again';
 import printer from '../utils/printer.js';
 import DataStore from '../plumbing/DataStore';

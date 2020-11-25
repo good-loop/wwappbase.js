@@ -1,7 +1,7 @@
 /**
  * Note: Tasks do NOT have a draft stage
 */
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import Enum from 'easy-enums';
 
 import DataClass, {getType, nonce} from './DataClass';

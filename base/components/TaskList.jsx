@@ -1,5 +1,5 @@
 import React from 'react';
-import { assMatch } from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import Login from 'you-again';
 import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import {space} from '../utils/miscutils';

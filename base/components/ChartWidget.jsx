@@ -1,9 +1,9 @@
 import React from 'react';
 import _ from 'lodash';
-import SJTest, {assert} from 'sjtest';
 
 // import chartjs from 'chart.js';
 import RC2, {Line} from 'react-chartjs2';
+import { assert } from '../utils/assert';
 
 /**
 	@param dataFromLabel e.g. (label)adview -> time -> number

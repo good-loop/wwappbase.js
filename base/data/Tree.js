@@ -1,7 +1,7 @@
 /**
  * A simple tree datatype. Matches Tree.java
  */
-import {assert} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import DataClass, {getId} from './DataClass';
 import { Children } from 'react';
 import { str } from '../utils/printer';

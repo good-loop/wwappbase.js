@@ -1,5 +1,5 @@
 /** Data model functions for the Advert data-type. */
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 
 import DataClass from './DataClass';
 import C from '../CBase';

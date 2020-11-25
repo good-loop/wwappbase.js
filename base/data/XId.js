@@ -3,8 +3,7 @@
  */
 
 import _ from 'lodash';
-import {assert, assMatch} from 'sjtest';
-import DataClass, {getType} from './DataClass';
+import { assert, assMatch } from '../utils/assert';
 
 /**
  * An id string of the form "identifier@service", e.g. "winterstein@twitter" or "daniel@good-loop.com@email"

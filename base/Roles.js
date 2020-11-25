@@ -1,7 +1,7 @@
 import Login from 'you-again';
 import DataStore from './plumbing/DataStore';
-import {assMatch, assert} from 'sjtest';
 import PromiseValue from 'promise-value';
+import { assert, assMatch } from './utils/assert';
 
 /**
  * @returns {PromiseValue<String[]>}

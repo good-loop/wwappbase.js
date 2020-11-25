@@ -14,7 +14,7 @@
  * 
  */
 
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import DataClass, {getType, getId} from './DataClass';
 import DataStore from '../plumbing/DataStore';
 import Link from '../data/Link';
@@ -169,10 +169,10 @@ const getProfilesNow = xids => {
 	@param xids {String[]} XId format
 	@param claims {Claim[]}
 */ 
-const savePersons = _.debounce(({persons}) => {	
-	assMatch(persons, "Person[]", "Person.js saveProfileClaims persons")
+const savePersons = _.debounce(({persons}) => {
 	// one save per person ?? TODO batch
 	let pSaves = persons.map(peep => {
+		Person.assIsa(peep);
 		let claims = peep.claims;
 		console.warn("TODO filter for our new claims",claims);
 		if( _.isEmpty(claims) ) {

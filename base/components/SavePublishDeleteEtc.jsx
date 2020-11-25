@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import {Button} from 'reactstrap';
 
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch } from '../utils/assert';
 import _ from 'lodash';
 
 import Misc from './Misc';

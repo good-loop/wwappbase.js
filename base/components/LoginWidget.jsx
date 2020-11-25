@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { assMatch } from 'sjtest';
+
 import Login from 'you-again';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
 import { stopEvent, toTitleCase } from '../utils/miscutils';
@@ -9,6 +9,7 @@ import C from '../CBase';
 import ServerIO from '../plumbing/ServerIOBase';
 import ErrorAlert from '../components/ErrorAlert';
 import PropControl from './PropControl';
+import { assMatch } from '../utils/assert';
 
 // For testing
 if (window.location.href.match(/login=local/)) {

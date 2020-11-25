@@ -1,5 +1,3 @@
-import {assert, assMatch} from 'sjtest';
-import Enum from 'easy-enums';
 
 import DataClass, { nonce } from './DataClass';
 import C from '../CBase';

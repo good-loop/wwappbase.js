@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 
-import { assert, assMatch } from 'sjtest';
-import Login from 'you-again';
+import { assert, assMatch } from '../utils/assert';
+
 import {modifyHash, space, yessy} from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';

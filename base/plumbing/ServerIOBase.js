@@ -4,8 +4,7 @@
  */
 import _ from 'lodash';
 import $ from 'jquery';
-import SJTest from 'sjtest';
-import {assert, assMatch} from 'sjtest';
+import { assert, assMatch, setAssertFailed } from '../utils/assert';
 import C from '../CBase.js';
 import {encURI} from '../utils/miscutils';
 
@@ -112,7 +111,7 @@ window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {
 });
 // quiet asserts in production
 if (C.isProduction()) {
-	SJTest.assertFailed = msg => {
+	setAssertFailed(msg => {
 		// we usually pass in an array from ...msg
 		if (msg.length === 1) msg = msg[0];
 		console.error("assert", msg);
@@ -124,7 +123,7 @@ if (C.isProduction()) {
 			smsg = ""+msg;
 		}
 		window.onerror(smsg, null, null, null, new Error("assert-failed: "));
-	};
+	});
 }
 
 
