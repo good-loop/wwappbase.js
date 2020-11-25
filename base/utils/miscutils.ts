@@ -1,6 +1,8 @@
 import _ from 'lodash';
+import Enum from 'easy-enums';
 import { assert } from "./assert";
 import printer from './printer';
+
 
 export const randomPick = function<T>(array : T[]) : T
 {
@@ -23,6 +25,23 @@ export const isMobile = ()  => {
 	const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 	let _isMobile = userAgent.match('/mobile|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i');
 	return !! _isMobile;
+};
+/**
+ * Bootstrap 2-letter screen sizes e.g. "md"
+ */
+export const KScreenSize = new Enum("xs sm md lg xl");
+/**
+ * Bootstrap 2-letter screen sizes e.g. "md"
+ * See https://getbootstrap.com/docs/4.5/layout/overview/#containers
+ * @returns {KSreenSize}
+ */
+export const getScreenSize = () => {
+	const w = window.innerWidth;
+	if (w < 576) return KScreenSize.xs;
+	if (w < 768) return KScreenSize.sm;
+	if (w < 992) return KScreenSize.md;
+	if (w < 1200) return KScreenSize.lg;
+	return KScreenSize.xl
 };
 
 /**  */
