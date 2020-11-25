@@ -165,16 +165,15 @@ const getProfilesNow = xids => {
 
 /**
  * A debounced save - allows 1 second for batching edits
- * Create UI call for saving claim to back-end
-	@param xids {String[]} XId format
-	@param claims {Claim[]}
+ * Create UI call for saving claims to back-end
+	@param {Person[]} persons
 */ 
 const savePersons = _.debounce(({persons}) => {
 	// one save per person ?? TODO batch
 	let pSaves = persons.map(peep => {
 		Person.assIsa(peep);
 		let claims = peep.claims;
-		console.warn("TODO filter for our new claims",claims);
+		// TODO filter for our new claims, maybe just by date, and send a diff
 		if( _.isEmpty(claims) ) {
 			console.warn('Person.js saveProfileClaims -- no claims provided, aborting save');
 			return null;
@@ -183,6 +182,28 @@ const savePersons = _.debounce(({persons}) => {
 		return ServerIO.post(
 			`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
 			{claims: JSON.stringify(claims)}
+		);
+	});
+	// join them
+	let pSaveAll = Promise.allSettled(pSaves);
+	return pSaveAll; // wrap in a PV??
+}, 1000);
+
+/**
+ * A debounced save - allows 1 second for batching edits
+ * Create UI call for saving consents to back-end
+	@param {Person[]} persons
+*/ 
+const saveConsents = _.debounce(({persons}) => {
+	// one save per person ?? TODO batch
+	let pSaves = persons.map(peep => {
+		Person.assIsa(peep);
+		let consents = peep.c;
+		// TODO filter for our new claims, maybe just by date, and send a diff
+		let xid = Person.getId(peep);
+		return ServerIO.post(
+			`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
+			{consents: JSON.stringify(consents)}
 		);
 	});
 	// join them
@@ -200,16 +221,16 @@ const savePersons = _.debounce(({persons}) => {
  * @param {?string[]} xids Convenience for `profiles` using `getProfilesNow`.
  * @returns {String: Boolean} never null, empty = apply sensible defaults
  */
-const getConsents = ({person, profiles, xids}) => {
+const getConsents = ({person, persons, xids}) => {
 	if (xids) {
-		assert( ! profiles, "xids + profiles?!");
-		profiles = getProfilesNow(xids);
+		assert( ! persons, "xids + profiles?!");
+		persons = getProfilesNow(xids);
 	}
 	// several profiles?
-	if (profiles) {
+	if (persons) {
 		// combine them
 		let perms = {};
-		profiles.forEach(peep => {
+		persons.forEach(peep => {
 			if ( ! peep) {
 				return; // paranoia
 			}
@@ -245,14 +266,14 @@ const getConsents = ({person, profiles, xids}) => {
  * We mostly want to work with something simple.
  * 
  * @param {?Person} person
- * @param {?Person[]} profiles Use this to combine from several linked profiles
+ * @param {?Person[]} persons Use this to combine from several linked profiles
  * @param {?string[]} xids Convenience for `profiles`.
  * @param {!string} purpose The purpose ID of the consent you want
  * @returns {Boolean} 
  */
-const hasConsent = ({person, profiles, xids, purpose}) => {
+const hasConsent = ({person, persons, xids, purpose}) => {
 	assMatch(purpose, String);
-	const cs = getConsents({person, profiles, xids});
+	const cs = getConsents({person, persons, xids});
 	return cs[purpose];
 };
 
@@ -381,12 +402,30 @@ const doRegisterEmail = (data) => {
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data});	
 };
 
-// FIXME TODO - using setConsents to edit one consent is clunky (and risks race conditions)
-const addConsent = (...props) => {
-	console.error("addConsent",props);
+/**
+ * Does NOT call `savePersons()`
+ * @param {!string} consent
+ */
+const addConsent = ({persons, consent}) => {
+	persons.forEach(person => {
+		let consents = person.c;
+		if ( ! consents) consents = person.c = [];
+		if (consents.includes(consent)) return;
+		consents.push(consent);
+	});
+	console.error("addConsent",persons,consent);
 };
-const removeConsent = (...props) => {
-	console.error("removeConsent",props);
+/**
+ * 
+ * @param {!string} consent
+ */
+const removeConsent = ({persons, consent}) => {
+	persons.forEach(person => {
+		let consents = person.c;
+		if ( ! consents) return;
+		person.c = person.c.filter(pc => pc !== consent);
+	});
+	console.error("removeConsent",persons,consent);
 };
 
 /**
@@ -452,8 +491,8 @@ export {
 	getProfilesNow,
 	getConsents, hasConsent,
 	setConsents,
-	// addConsent, removeConsent,
-	// setClaim,
+	addConsent, removeConsent,
+	saveConsents,
 	requestAnalyzeData,
 	PURPOSES,
 	getEmail,

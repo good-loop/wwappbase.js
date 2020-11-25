@@ -230,7 +230,7 @@ ServerIO.getDonationsData = ({q, start, end, name}) => {
 ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	// HACK route charity requests to SoGive
 	if (type==='NGO' && C.app.service !== 'sogive') {
-		id = sogiveid(id);
+		id = normaliseSogiveId(id);
 		return 'https://app.sogive.org/charity/'+encURI(id)+'.json'
 			+(status? '?status='+status : '');
 	}
@@ -243,69 +243,53 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	return url;
 };
 
-/** HACK match mismatches
+/** HACK match mismatches.
+ * WARNING: You rarely need to use this. ServerIO does this low-level for most cases.
+ * 
  * @param {!string} id the charity ID as used e.g. in a Good-Loop advert
  * @returns {!string} the "proper" id for use with SoGive
  */
-const sogiveid = id => {
+const normaliseSogiveId = id => {
+	// Start with automatic adjustments
+	const canonId = id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
 	// manual id matching, only needed for ids that don't follow the rule: _ --> -
 	let sid = {
-		'action_against_hunger': 'action-against-hunger',
-		'against_malaria_foundation': 'against-malaria-foundation',
-		'alzheimers_research_uk': 'alzheimers-research-uk',
-		'art_fund': 'national-art-collections-fund',
-		'battersea_dogs_and_cats_home': 'battersea-dogs-and-cats-home',
+		'art-fund': 'national-art-collections-fund',
 		'bbct': 'bumblebee-conservation-trust',
 		'bdfa': 'batten-disease-family-association',
-		'cancer_research_uk': 'cancer-research-uk',
-		'care_international': 'care-international-uk',
-		'children_in_need': 'bbc-children-in-need',
-		'core_arts': 'core-arts',
-		'diabetes_uk': 'the-british-diabetic-association',
-		'end_fund': 'end-fund',
-		'great_ormand_street': 'great-ormand-street-hospital-childrens-charity',
-		'learning_through_landscapes': 'the-learning-through-landscapes-trust',
-		'learning_through_landscapes-teachertraining': 'the-learning-through-landscapes-trust',
-		'macmillan_cancer_support': 'macmillan-cancer-support',
-		'marine_conservation_society': 'marine-conservation-society',
-		'medicins_sans_frontieres': 'medecins-sans-frontieres-aka-doctors-without-borders-or-msf',
+		'care-international': 'care-international-uk',
+		'children-in-need': 'bbc-children-in-need',
+		'diabetes-uk': 'the-british-diabetic-association',
+		'great-ormand-street': 'great-ormand-street-hospital-childrens-charity',
+		'learning-through-landscapes': 'the-learning-through-landscapes-trust',
+		'learning-through-landscapes-teachertraining': 'the-learning-through-landscapes-trust',
+		'medicins-sans-frontieres': 'medecins-sans-frontieres-aka-doctors-without-borders-or-msf',
 		'meningitis_research_foundation': 'meningitis-research-foundation',
-		'movember_foundation': 'movember-europe',
-		'ms_society': 'multiple-sclerosis-society',
+		'movember-foundation': 'movember-europe',
+		'ms-society': 'multiple-sclerosis-society',
 		'npuk': 'niemann-pick-disease-group-uk',
 		'nspcc': 'the-national-society-for-the-prevention-of-cruelty-to-children',
-		'plan_uk': 'plan-international-uk',
-		'Refuge': 'refuge',
-		'save_the_children': 'the-save-the-children-fund',
-		'shelter_uk': 'shelter-national-campaign-for-homeless-people-limited',
-		'solar_aid': 'solar-aid',
-		'st_johns_ambulance' : 'the-priory-of-england-and-the-islands-of-the-most-venerable-order-of-the-hospital-of-st-john-of-jerusalem',
-		'target_ovarian_cancer': 'target-ovarian-cancer',
-		'tate_foundation': 'tate-foundation',
+		'plan-uk': 'plan-international-uk',
+		'refuge': 'refuge',
+		'save-the-children': 'the-save-the-children-fund',
+		'shelter-uk': 'shelter-national-campaign-for-homeless-people-limited',
+		'st-johns-ambulance' : 'the-priory-of-england-and-the-islands-of-the-most-venerable-order-of-the-hospital-of-st-john-of-jerusalem',
 		'tommys': 'tommy-s',
-		'trussell_trust': 'the-trussell-trust',
-		'war_child': 'war-child-uk',
+		'trussell-trust': 'the-trussell-trust',
+		'war-child': 'war-child-uk',
 		'water-aid': 'wateraid',
-		'woodland_trust': 'woodland-trust',
 		'woodland':'woodland-trust',
 		'wwf': 'wwf-uk',
-		'Regenboog': 'de-regenboog-groep',
+		'tegenboog': 'de-regenboog-groep',
 		'centrepoint': 'centrepoint-soho',
-		'MAW':'make-a-wish-uk',
-		'GOSH':'great-ormond-street-hospital-childrens-charity',
+		'maw':'make-a-wish-uk',
+		'gosh':'great-ormond-street-hospital-childrens-charity',
 		'tommys':'tommy-s',
 		'amnesty':'amnesty-international'
-	}[id];
+	}[canonId];
 
-	// tries to do automatic adjustments, if manual match not specified above
-	if (!sid) {
-		sid = id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
-	}
-
-	return sid;	
+	return sid || canonId;	
 };
-
-export { sogiveid as normaliseSogiveId };
 
 /**
  * type -> servlet url
@@ -464,3 +448,8 @@ ServerIO.addDefaultParams = function(params) {
 	if ( ! params.data) params.data = {};
 	return params;
 };
+
+export {
+	// WARNING: You rarely need to use this
+	normaliseSogiveId
+}
