@@ -29,7 +29,7 @@
     "react-spring": "^8.0.27",
     "reactstrap": "^8.5.1",
     "sjtest": "^0.4.9",
-    "you-again": "^0.8.8"
+    "you-again": "^0.8.9"
   },
   "scripts": {
     "compile": "webpack --config $PWD/webpack.config.js --progress --colors && ./gitstamp.sh",
