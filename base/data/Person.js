@@ -228,6 +228,7 @@ const getConsents = ({person, persons, xids}) => {
 	}
 	// several profiles?
 	if (persons) {
+		let debugWho4c = {};
 		// combine them
 		let perms = {};
 		persons.forEach(peep => {
@@ -238,8 +239,10 @@ const getConsents = ({person, persons, xids}) => {
 			let peepPerms = getConsents({person:peep});
 			if (peepPerms) {
 				Object.assign(perms, peepPerms);
+				Object.keys(peepPerms).forEach(c => debugWho4c[c] = peep.id);
 			}
 		});
+		console.log("getConsents who4c",debugWho4c,"perms",perms);
 		return perms;
 	}
 	// one person
@@ -342,6 +345,7 @@ const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid], () =
  * @returns {String[]} xids - includes unverified linked ones
  */
 const getAllXIds = () => {
+	// use Set to dedupe
 	let all = new Set(); // String[]
 	// ID
 	if (Login.isLoggedIn()) {
@@ -357,7 +361,13 @@ const getAllXIds = () => {
 	}	
 	// linked IDs?
 	getAllXIds2(all, Array.from(all));
-	return Array.from(all);
+	// turn into an array
+	let aall = Array.from(all);
+	// HACK: prune down to the main ones
+	let all2 = aall.filter(xid => XId.service(xid)!=='trk');
+	if (all2.length) aall = all2;
+	// done
+	return aall;
 };
 /**
  * @param {Set<String>} all XIds -- modify this!
