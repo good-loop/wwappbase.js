@@ -125,14 +125,13 @@ const SavePublishDeleteEtc = ({
 	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData({status, type, id});
 
-	// request a save?
-	if (autoSave && isdirty && ! isSaving) {
-		saveDraftFn({type,id,item});
-	}
-
-	// If enabled, will automatically publish every five seconds -- BUT the save-draft has to have succeeded first (isdirty=false)
-	if (autoPublish && ! isdirty && item.status !== 'PUBLISHED' && item.status !== 'ARCHIVED') {
-		autoPublishFn({type, id, item});
+	// request a save/publish?
+	if (isdirty && ! isSaving) {
+		if (autoPublish) {
+			autoPublishFn({type, id, item});
+		} else if (autoSave) {
+			saveDraftFn({type,id,item});
+		}
 	}
 
 	// Sometimes we just want to autosave drafts!

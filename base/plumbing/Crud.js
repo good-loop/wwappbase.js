@@ -202,7 +202,12 @@ ActionMan.unpublish = (type, id) => {
 		}); // ./then	
 };
 
-
+/**
+ * Thiss will save and publish
+ * @param {!string} type 
+ * @param {!string} id 
+ * @param {?Item} item 
+ */
 const publishEdits = (type, id, item) => {
 	assMatch(type, String);
 	assMatch(id, String, "Crud.js no id to publish to "+type);
