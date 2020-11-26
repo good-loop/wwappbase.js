@@ -3,7 +3,7 @@
  */
 import Login from 'you-again';
 import DataStore from './plumbing/DataStore';
-import { assert, assMatch } from '../utils/assert';
+import { assert, assMatch } from './utils/assert';
 import PromiseValue from 'promise-value';
 import C from './CBase';
 import DataClass from './data/DataClass';
