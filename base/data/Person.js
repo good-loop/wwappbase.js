@@ -198,14 +198,20 @@ const saveConsents = _.debounce(({persons}) => {
 	// one save per person ?? TODO batch
 	let pSaves = persons.map(peep => {
 		Person.assIsa(peep);
+		// string[] -- send as a comma-separated list
 		let consents = peep.c;
-		// TODO filter for our new claims, maybe just by date, and send a diff
+		if ( ! consents || ! consents.length) {
+			return null;
+		}
+		// ??send a diff??
 		let xid = Person.getId(peep);
 		return ServerIO.post(
 			`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
-			{consents: JSON.stringify(consents)}
+			{consents:consents.join(",")}
 		);
 	});
+	// filter any nulls
+	pSaves = pSaves.filter(p => p);
 	// join them
 	let pSaveAll = Promise.allSettled(pSaves);
 	return pSaveAll; // wrap in a PV??
