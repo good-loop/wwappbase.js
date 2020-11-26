@@ -31,11 +31,12 @@ C.newId = 'new';
 
 /**
  * hack: local, test, or ''
+ * Can be put at the start of our urls
  */
 C.SERVER_TYPE = ''; // production
 if (window.location.host.startsWith('test')) C.SERVER_TYPE = 'test';
 else if (window.location.host.startsWith('local')) C.SERVER_TYPE = 'local';
-// local servers dont have https
+/** HACK: http(s) local servers dont have https */
 C.HTTPS = (C.SERVER_TYPE === 'local') ? 'http' : 'https';
 const prod = C.SERVER_TYPE !== 'local' && C.SERVER_TYPE !== 'test';
 C.isProduction = () => prod;
