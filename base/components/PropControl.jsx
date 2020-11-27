@@ -37,10 +37,11 @@ import { notifyUser } from '../plumbing/Messaging';
  * Set the value and the modified flag in DataStore
  * @param {!String[]} proppath
  * @param value
+ * @returns value
  */
 export const DSsetValue = (proppath, value, update) => {
 	DataStore.setModified(proppath);
-	DataStore.setValue(proppath, value, update);
+	return DataStore.setValue(proppath, value, update);
 	// console.log("set",proppath,value,DataStore.getValue(proppath));
 };
 
@@ -718,33 +719,44 @@ const PropControlMoney = ({ prop, name, storeValue, rawValue, setRawValue, curre
 	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
 		v = '';
 	}
+	let currencyValue = currency || (storeValue && storeValue.currency) || "GBP";
+	let currLabel = Money.CURRENCY[currencyValue] || currencyValue;
 	//Money.assIsa(value); // type can be blank
+	
 	// handle edits
-	const onMoneyChange = e => {
-		setRawValue(e.target.value);
-		// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
-		const newM = e.target.value === '' ? null : new Money(e.target.value);
-		if (name && newM) newM.name = name; // preserve named Money items
-		DSsetValue(proppath, newM);
-		if (saveFn) saveFn({ event: e, path, prop, newM });
+	const onMoneyChange = (e, newCurrency) => {
+		let newMoney = storeValue;
+		if (e) {
+			setRawValue(e.target.value);
+			// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
+			newMoney = e.target.value === '' ? null : new Money(e.target.value);			
+		}				
+		if (newMoney) {
+			newMoney.name = name; // preserve named Money items			
+			newMoney.currency = newCurrency || currencyValue;
+		}
+		DSsetValue(proppath, newMoney);
+		if (saveFn) saveFn({ event: e, path, prop, newMoney});
 		// call onChange after we do the standard updates TODO make this universal
 		if (onChange) onChange(e);
-	};
-	let curr = Money.CURRENCY[currency || (storeValue && storeValue.currency)] || <span>&pound;</span>;
+	}; // ./onChange()
+
 	let $currency;
-	let changeCurrency = otherStuff.changeCurrency !== false;
+	let changeCurrency = otherStuff.changeCurrency !== false && ! currency;
 	if (changeCurrency) {
-		// TODO other currencies
+		
 		$currency = (
 			<UncontrolledButtonDropdown addonType="prepend" disabled={otherStuff.disabled} id={'input-dropdown-addon-' + JSON.stringify(proppath)}>
-				<DropdownToggle caret>{curr}</DropdownToggle>
+				<DropdownToggle caret>{currLabel}</DropdownToggle>
 				<DropdownMenu>
-					<DropdownItem key="1">{curr}</DropdownItem>
+					{Object.keys(Money.CURRENCY).map((c,i) => 
+						<DropdownItem key={i} onClick={e => onMoneyChange(null, c)}>{Money.CURRENCY[c]}</DropdownItem>
+					)}
 				</DropdownMenu>
 			</UncontrolledButtonDropdown>
 		);
 	} else {
-		$currency = <InputGroupAddon addonType="prepend">{curr}</InputGroupAddon>;
+		$currency = <InputGroupAddon addonType="prepend">{currLabel}</InputGroupAddon>;
 	}
 	delete otherStuff.changeCurrency;
 	assert(v === 0 || v || v === '', [v, storeValue]);
