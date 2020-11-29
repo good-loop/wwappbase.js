@@ -69,9 +69,9 @@ SearchQuery.parse = sq => {
  */
 SearchQuery.prop = (sq, propName) => {
 	SearchQuery._init(sq);
-	let prop = sq.tree.filter(bit => bit[0] === propName);
+	let prop = sq.tree.filter(bit => Object.keys(bit).includes(propName));
 	// What to return if prop:value is present but its complex??
-	return prop && prop[0]? prop[0][1] : null;
+	return prop? prop[propName] : null;
 }
 
 /**
@@ -86,7 +86,6 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	// renove the old
 	SearchQuery._init(sq);
 	// top level only??
-	// let prop = sq.tree.filter(bit => bit[0] === propName);
 	let newq = sq.query;
 	// if (prop) { // HACK out the old value TODO use the parse tree to handle quoting
 	newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
