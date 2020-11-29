@@ -65,13 +65,19 @@ SearchQuery.parse = sq => {
 /**
  * Convenience method.
  * IF propName occurs at the top-level, then return the value
- * @param {*} propName 
+ * @param {!SearchQuery} sq
+ * @param {!string} propName 
+ * @returns {?string}
  */
 SearchQuery.prop = (sq, propName) => {
 	SearchQuery._init(sq);
-	let prop = sq.tree.filter(bit => Object.keys(bit).includes(propName));
-	// What to return if prop:value is present but its complex??
-	return prop? prop[propName] : null;
+	let props = sq.tree.filter(bit => Object.keys(bit).includes(propName));
+	// ??What to return if prop:value is present but its complex??
+	if (props.length > 1) console.warn("SearchQuery.prop multiple values!", props, sq);
+	if (props.length) {
+		return props[0][propName];
+	}
+	return null;
 }
 
 /**
@@ -96,8 +102,17 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	} else {
 		// quote the value?
 		let qpropValue = propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"';
-		newq += " "+propName+":"+qpropValue;
+		newq += " AND "+propName+":"+qpropValue;
 	}
+	// HACK - trim ANDs
+	newq = newq.replace(" AND  AND "," AND ");
+	if (newq.substr(0, 5) === " AND ") {
+		newq = newq.substr(5);
+	}
+	if (newq.substr(newq.length-5, newq.length) === " AND ") {
+		newq = newq.substr(0, newq.length - 5);
+	}
+	// done
 	return new SearchQuery(newq.trim());
 }
 
