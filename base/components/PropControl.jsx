@@ -148,15 +148,12 @@ const PropControl = ({className, ...props}) => {
 		delete props.onChange;
 	}
 
-	// Use a default? But not to replace false or 0
+	// Use a default if given - but only replace emptyish values, not false or 0
+	// Only check once, so field doesn't snap back to default if the user empties it
 	if (dflt) {
-		// allow the user to delete the field - so only check the default once
 		useEffect(() => {
 			if (storeValue === undefined || storeValue === null || storeValue === '') {
-				storeValue = dflt;	value = storeValue;
-				// set the model too (otherwise the value gets lost!)
-				DataStore.setValue(proppath, storeValue, false);
-				console.log("PropControl.jsx - set default value " + proppath, storeValue);
+				DataStore.setValue(proppath, dflt);
 			}
 		}, []); // 1st time only
 	}
@@ -1325,7 +1322,7 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	if (rawToStore) rawToStoreForType[type] = rawToStore;
 };
 
-// Modularised PropControl types: import default types that should always be availablz
+// Modularised PropControl types: import default types that should always be available
 import { specs as urlSpecs } from './PropControls/PropControlUrl';
 urlSpecs.forEach(spec => registerControl(spec));
 import { specs as uploadSpecs } from './PropControls/PropControlUpload';
