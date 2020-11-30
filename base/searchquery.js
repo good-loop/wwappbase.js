@@ -105,7 +105,7 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 		newq += " AND "+propName+":"+qpropValue;
 	}
 	// HACK - trim ANDs
-	newq = newq.replace(" AND  AND "," AND ");
+	newq = newq.replace(/ AND  AND /g," AND ");
 	if (newq.substr(0, 5) === " AND ") {
 		newq = newq.substr(5);
 	}
