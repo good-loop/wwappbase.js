@@ -14,7 +14,7 @@ import { addImageCredit } from './AboutPage';
  * @param {?string} size cover|contain|fit How to size the background image. Fit means stretch to fit
  * @param {?number} opacity [0-100] ONLY works for fullscreen backgrounds
  */
-const BG = ({image, src, children, size='cover', top=0, left=0, right=0, bottom=0, fullscreen, opacity}) => {
+const BG = ({image, src, children, size='cover', top=0, left=0, right=0, bottom=0, fullscreen, opacity, style}) => {
 	if (size==='fit') size = "100% 100%";
 	if (image) {
 		src = image.url;
@@ -30,7 +30,7 @@ const BG = ({image, src, children, size='cover', top=0, left=0, right=0, bottom=
 		</div>);
 	}
 	// NB: z-index only works on positioned elements
-	let style= {
+	let baseStyle= {
 		backgroundImage: `url('${src}')`,
 		backgroundSize: size,
 		position: fullscreen? 'fixed' : 'absolute',
@@ -38,8 +38,11 @@ const BG = ({image, src, children, size='cover', top=0, left=0, right=0, bottom=
 		top:top,left:left,right:right,bottom:bottom,
 		zIndex: -1
 	};
+	// Assign custom style overrides
+	if (style) Object.assign(baseStyle, style);
+
 	return (<>
-		<div className='BG-img' style={style} />
+		<div className='BG-img' style={baseStyle} />
 		{children}
 		{credit}
 	</>);
