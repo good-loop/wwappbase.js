@@ -16,7 +16,7 @@
 
 import { assert, assMatch } from '../utils/assert';
 import DataClass, {getType, getId} from './DataClass';
-import DataStore from '../plumbing/DataStore';
+import DataStore, { getDataPath } from '../plumbing/DataStore';
 import Link from '../data/Link';
 import Claim from '../data/Claim';
 import XId from './XId';
@@ -28,6 +28,8 @@ import Enum from 'easy-enums';
 
 import ServerIO from '../plumbing/ServerIOBase';
 import { sortByDate } from '../utils/SortFn';
+import C from '../CBase';
+import JSend from './JSend';
 
 
 
@@ -130,14 +132,43 @@ Person.getLinks = (peep, service) => {
 const PURPOSES = new Enum("any email_app email_mailing_list email_marketing cookies cookies_personalization cookies_analytical cookies_marketing cookies_functional personalize_ads");
 
 /**
- * Use with DataStore
- * @return {promise(Person)}
+ * Get local or fetch
+ * TODO fields 
+ * @return {PromiseValue(Person)}
  */
-const getProfile = ({xid, fields, status}) => {
+const getProfile = ({xid, fields, status=C.KStatus.PUBLISHED}) => {
 	assMatch(xid, String);
-	// NB: dont report 404s
-	// NB: the "standard" servlet would be /person but it isnt quite ready yet (at which point we should switch to SIO_getDataItem)
-	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {data: {fields, status}, swallow:true});
+	const dsi = {type:'Person', status, id:xid};
+	const dpath = getDataPath(dsi);
+	// Use DS.fetch to avoid spamming the server
+	return DataStore.fetch(dpath, () => {			
+		// Call the server
+		// NB: dont report 404s
+		// NB: the "standard" servlet would be /person but it isnt quite ready yet (at which point we should switch to SIO_getDataItem)
+		const pPeep = ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {data: {fields, status}, swallow:true});
+		// save to local and DS
+		pPeep.then(jsend => {
+			assert(JSend.success(jsend), "getProfile fail"); // I think failure is handled in ServerIO
+			const peep = JSend.data(jsend);
+			Person.assIsa(peep);
+			localSave(peep);
+			// If we return a local save (see below), then DS.fetch thinks its job is done.
+			// So we better set the DS value here too.
+			// ?? use update instead to merge with any quick local edits??
+			console.log("getProfile - server replacement for "+xid);
+			DataStore.setValue(dpath, peep);
+		});
+		// Do we have a fast local answer?
+		let localPeep = localLoad(xid);
+		if (localPeep) {
+			console.log("getProfile - localLoad for "+xid);
+			return localPeep; 
+			// NB the server load is still going to run in the background
+		}
+		// return server-loading
+		console.log("getProfile - server load for "+xid);
+		return pPeep;
+	}); // ./DS.fetch
 };
 
 /**
@@ -148,16 +179,14 @@ const getProfile = ({xid, fields, status}) => {
  * let persons = getProfilesNow(getAllXIds());
  * let value = getClaimValue({persons, key:'name'});
  * ```
- * @param {String[]} xids 
+ * @param {?String[]} xids Defaults to `getAllXIds()`
  * @returns {Person[]} peeps
  */
 const getProfilesNow = xids => {
+	if ( ! xids) xids = getAllXIds();
 	assert(_.isArray(xids), "Person.js getProfilesNow "+xids);
 	xids = xids.filter(x => !!x); // no nulls
-	const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid ], () => {
-		return getProfile({xid});
-	});
-	let pvsPeep = xids.map(fetcher);	
+	let pvsPeep = xids.map(xid => getProfile({xid}));
 	let peeps = pvsPeep.filter(pvp => pvp.value).map(pvp => pvp.value);
 	return peeps;
 };
@@ -172,6 +201,8 @@ const savePersons = _.debounce(({persons}) => {
 	// one save per person ?? TODO batch
 	let pSaves = persons.map(peep => {
 		Person.assIsa(peep);
+		// local save
+		localSave(peep);
 		let claims = peep.claims;
 		// TODO filter for our new claims, maybe just by date, and send a diff
 		if( _.isEmpty(claims) ) {
@@ -188,6 +219,42 @@ const savePersons = _.debounce(({persons}) => {
 	let pSaveAll = Promise.allSettled(pSaves);
 	return pSaveAll; // wrap in a PV??
 }, 1000);
+
+
+const localSave = person => {
+	if ( ! window.localStorage) return false;
+	Person.assIsa(person);
+	try {
+		let json = JSON.stringify(person);	
+		let xid = Person.getId(person);
+		window.localStorage.setItem(xid, json);
+		return true;
+	} catch(err) {
+		// eg quota exceeded
+		console.error(err);
+		return false;
+	}
+};
+
+/**
+ * 
+ * @param {!string} xid 
+ * @returns {?Person}
+ */
+const localLoad = xid => {
+	if ( ! window.localStorage) return null;
+	assMatch(xid, String);
+	try {
+		let json = window.localStorage.getItem(xid);
+		let peep = JSON.parse(json);			
+		return peep;
+	} catch(err) { // paranoia
+		// Can this happen??
+		console.error(err);
+		return null;
+	}
+};
+
 
 /**
  * A debounced save - allows 1 second for batching edits
@@ -332,18 +399,6 @@ const requestAnalyzeData = xid => {
 	return ServerIO.load(ServerIO.PROFILER_ENDPOINT + '/analyzedata/gl/' + escape(xid));
 };
 
-/**
- * fetch and stash a profile
- * @param {!string} xid 
- */
-const fetcher = xid => DataStore.fetch(['data', 'Person', 'profiles', xid], () => {
-	assMatch(xid, String, "MyPage.jsx fetcher: xid is not a string "+xid);
-	// Call analyzedata servlet to pull in user data from Twitter
-	// Putting this here means that the DigitalMirror will refresh itself with the data
-	// once the request has finished processing
-	if( XId.service(xid) === 'twitter' ) return requestAnalyzeData(xid);
-	return getProfile({xid});
-});
 
 /**
  * Warning: This races Login and profile fetch for handling linked ids -- so the results can change!
@@ -381,7 +436,7 @@ const getAllXIds = () => {
  */
 const getAllXIds2 = (all, agendaXIds) => {
 	// ...fetch profiles from the agenda
-	let pvsPeep = agendaXIds.map(fetcher);
+	let pvsPeep = agendaXIds.map(xid => getProfile({xid}));
 	// races the fetches -- so the output can change as more data comes in!
 	// It can be considered done when DataStore holds a profile for each xid
 	pvsPeep.filter(pvp => pvp.value).forEach(pvp => {
@@ -512,6 +567,9 @@ export {
 	requestAnalyzeData,
 	PURPOSES,
 	getEmail,
+
+	// debug only
+	localLoad, localSave,
 
 	// Lets offer some easy ways to edit profile-bundles
 	getClaims, getClaimValue, setClaimValue, savePersons

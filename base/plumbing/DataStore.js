@@ -156,7 +156,7 @@ class Store {
 		// end hack
 
 		assert(C.KStatus.has(status), "DataStore.getData bad status: "+status);
-		assert(C.TYPES.has(type), "DataStore.getData bad type: "+type);
+		if ( ! C.TYPES.has(type)) console.warn("DataStore.getData bad type: "+type);
 		assert(id, "DataStore.getData - No id?! getData "+type);
 		const s = this.nodeForStatus(status);
 		let item = this.getValue([s, type, id]);
