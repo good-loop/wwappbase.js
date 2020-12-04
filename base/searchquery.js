@@ -105,7 +105,7 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 		newq += " AND "+propName+":"+qpropValue;
 	}
 	// HACK - trim ANDs
-	newq = newq.replace(/ AND  AND /g," AND ");
+	newq = newq.replace(/ AND +AND /g," AND ");
 	if (newq.substr(0, 5) === " AND ") {
 		newq = newq.substr(5);
 	}
@@ -125,17 +125,24 @@ SearchQuery.or = (sq1, sq2) => {
 	return SearchQuery.op(sq1,sq2,SearchQuery.OR);
 }
 
+/**
+ * 
+ * @param {string|SearchQuery} sq1 
+ * @param {string|SearchQuery} sq2 
+ * @param {!string} op 
+ * @returns {SearchQuery} Can be null if both inputs are null
+ */
 SearchQuery.op = (sq1, sq2, op) => {	
 	// convert to class
 	if (typeof(sq1)==='string') sq1 = new SearchQuery(sq1);
 	if (typeof(sq2)==='string') sq2 = new SearchQuery(sq2);
 
-	if ( ! sq2) return sq1;
-	if ( ! sq1) return sq2;
-	if ( ! sq1.query) return sq2;
-	if ( ! sq2.query) return sq1;
 	// HACK remove (works for simple cases)
+	// NB: done before the null tests as this handles null differently to and/or 
 	if (SearchQuery.REMOVE === op) {
+		if ( ! sq2 || ! sq2.query) return sq1;
+		// null remove thing => null??
+		if ( ! sq1 || ! sq1.query) return sq1;
 		// (assume AND) pop the 1st tree op, filter out nodes that appear in sq2
 		let t2 = sq1.tree.slice(1).filter(
 			n1 => ! _.find(sq2.tree, n2 => _.eq(JSON.stringify(n1), JSON.stringify(n2)))
@@ -146,6 +153,11 @@ SearchQuery.op = (sq1, sq2, op) => {
 		let newsq = new SearchQuery(u);
 		return newsq;
 	}
+	
+	if ( ! sq2) return sq1;
+	if ( ! sq1) return sq2;
+	if ( ! sq1.query) return sq2;
+	if ( ! sq2.query) return sq1;
 	// CRUDE but it should work -- at least for simple cases
 	let newq = sq1.query+" "+op+" "+sq2.query;
 	return new SearchQuery(newq);
