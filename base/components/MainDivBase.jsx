@@ -18,7 +18,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 // Templates
 import MessageBar from './MessageBar';
 import NavBar from './NavBar';
-import LoginWidget, { setShowLogin } from './LoginWidget';
+import LoginWidget, { LoginPage, setShowLogin } from './LoginWidget';
 import { BasicAccountPage } from './AccountPageWidgets';
 
 import E404Page from './E404Page';
@@ -60,6 +60,7 @@ const init = () => {
 	props:
 	pageForPath: {String:JSX}
 	navbarPages: String[]|() => String[]
+	loginRequired: {?boolean}
 	securityCheck: ({page}) => throw error / return true
 	SecurityFailPage: ?JSX
 	defaultPage: String,
@@ -87,6 +88,7 @@ class MainDivBase extends Component {
 			pageForPath, 
 			navbarPages, navbarChildren,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
+			loginRequired,
 			defaultPage,
 			navbar=true, // false for no navbar!
 			fullWidthPages
@@ -123,8 +125,10 @@ class MainDivBase extends Component {
 		if (this.state && this.state.error && this.state.errorPath === path) {
 			Page = DefaultErrorPage;
 		}
-		// must login and be an admin for most pages
-		if (securityCheck) {
+		// must login?
+		if (loginRequired && ! Login.isLoggedIn()) {
+			Page = () => <LoginPage />;
+		} else if (securityCheck) {
 			try {
 				securityCheck({page});
 			} catch(err) {

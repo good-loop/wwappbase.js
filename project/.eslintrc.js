@@ -1,41 +1,44 @@
 module.exports = {
-	"env": {
-		"jest": true,
-		"node": true,
-		"es6": false,
-		"browser": true
+	env: {
+		jest: true,
+		node: true,
+		es6: false,
+		browser: true
 	},
-	 "globals": { // these are needed to avoid errors in puppeteer/node files
-		"window": true,
-		"document": true,
-		"page": true,
-		"browser": true,
-		"context": true,
-		"jestPuppeteer": true
+	 globals: { // these are needed to avoid errors in puppeteer/node files
+		window: true,
+		document: true,
+		page: true,
+		browser: true,
+		context: true,
+		jestPuppeteer: true
 	},
-	"parser": "babel-eslint",
-	"parserOptions": {
-		"ecmaVersion": 9,// 2018 version. Can still be transpiled to 6 (2015) by Babel 
-		"sourceType": "module",
-		"ecmaFeatures": {
-			"jsx": true
+	parser: "babel-eslint",
+	parserOptions: {
+		ecmaVersion: 9,// 2018 version. Can still be transpiled to 6 (2015) by Babel 
+		sourceType: "module",
+		ecmaFeatures: {
+			jsx: true
 		}
 	},
-	"extends": "airbnb",
-	"plugins": [
+	extends: "airbnb",
+	plugins: [
 		"react",
+		"react-hooks",
 		"jsx-a11y",
 		"import",
+		"jsdoc",
+		"eslint-comments"
 	],
-	"settings": {
+	settings: {
 		"import/resolver": {
-			"node": {
-				"extensions": [".js", ".jsx", ".ts", ".tsx"],
-				"moduleDirectory": ["node_modules", "src/"],
+			node: {
+				extensions: [".js", ".jsx", ".ts", ".tsx"],
+				moduleDirectory: ["node_modules", "src/"],
 			},
 		},
 	},
-	"rules": {
+	rules: {
 		"array-bracket-spacing": "warn",
 		"constructor-super": "warn", // DataClass has use-cases for not calling super
 		"jsx-a11y/tabindex-no-positive": "off",
@@ -45,13 +48,13 @@ module.exports = {
 		"no-multiple-empty-lines": "off",
 		"arrow-parens": "off",
 		"brace-style": "warn",
-		"camelcase": "off", // we use camelCase, but we also break it in places, e.g. myFn2_subFn()
+		camelcase: "off", // we use camelCase, but we also break it in places, e.g. myFn2_subFn()
 		"class-methods-use-this": "off",
 		"comma-dangle": "off",
 		"comma-spacing": "off",
 		"consistent-return": "warn",
 		"default-case": "off",
-		"eqeqeq": "warn",
+		eqeqeq: "warn",
 		"func-names": "off",
 		"function-paren-newline": "off",
 		"implicit-arrow-linebreak": "off",
@@ -62,7 +65,7 @@ module.exports = {
 		"import/no-named-as-default": "off",
 		"import/order": "warn",
 		"import/prefer-default-export": "warn",
-		"indent": ["warn", "tab"],
+		indent: ["warn", "tab"],
 		"no-case-declarations": "off",
 		"no-extra-semi": "warn",
 
@@ -88,7 +91,6 @@ module.exports = {
 		"no-continue": "off",
 		"no-extra-bind": "warn",
 		"no-loop-func": "off",
-		"no-lonely-if": "warn",
 		"no-mixed-operators": "off",
 		"no-mixed-spaces-and-tabs": "warn",
 		"no-lonely-if": "off",
@@ -104,14 +106,12 @@ module.exports = {
 		"no-trailing-spaces": "off",
 		"no-underscore-dangle": "off",
 		"no-unused-vars": "warn",
-		"no-use-before-define": "warn",
 		"no-useless-concat": "warn",
 		"no-useless-constructor": "warn",
 		"no-useless-return": "off",
 		"lines-between-class-members": "off",
 		"no-use-before-define": "off",
 		"no-var": "warn",
-		"one-var": "off",
 		"object-curly-newline": "off",
 		"object-curly-spacing": "off",
 		"object-property-newline": "off",
@@ -129,8 +129,8 @@ module.exports = {
 		"prefer-promise-reject-errors": "warn",
 		"prefer-template": "off",
 		"quote-props": "warn",
-		"quotes": "off",
-		"radix": "off",
+		quotes: "off",
+		radix: "off",
 		"react/button-has-type": "warn",
 		"react/destructuring-assignment": "off",
 		"react/forbid-prop-types": "warn",
@@ -140,7 +140,7 @@ module.exports = {
 		"react/jsx-curly-spacing": "off",
 		"react/jsx-curly-newline": "warn",
 		"react/jsx-curly-brace-presence": "warn",
-		"react/jsx-filename-extension": [2, { "extensions": [".js", ".jsx", ".ts", ".tsx"] }],
+		"react/jsx-filename-extension": [2, { extensions: [".js", ".jsx", ".ts", ".tsx"] }],
 		"react/jsx-first-prop-new-line": "off",
 		"react/jsx-indent-props": ["warn", "tab"],
 		"react/jsx-indent": ["warn", "tab"],
@@ -153,7 +153,6 @@ module.exports = {
 		"react/jsx-tag-spacing": "off",
 		"react/jsx-wrap-multilines": "off",
 		"react/no-array-index-key": "off",
-		"react/no-array-index-key": "warn",		
 		"react/no-multi-comp": "off",
 		"react/no-unescaped-entities": "warn",
 		"react/no-unused-state": "warn",
@@ -170,22 +169,22 @@ module.exports = {
 		"spaced-comment": "off",
 		"vars-on-top": "warn",
 	},
-	"overrides": [
+	overrides: [
 		{
-			"files": ["*.ts", "*.tsx"],
-			"extends": [
+			files: ["*.ts", "*.tsx"],
+			extends: [
 				"eslint:recommended",
 				"plugin:@typescript-eslint/eslint-recommended",
 				"plugin:@typescript-eslint/recommended"
 			],
-			"parser": "@typescript-eslint/parser",
-			"parserOptions": {
-				"ecmaFeatures": { "jsx": true },
-				"ecmaVersion": 2018,
-				"sourceType": "module",
-				"project": "./tsconfig.json",
+			parser: "@typescript-eslint/parser",
+			parserOptions: {
+				ecmaFeatures: { jsx: true },
+				ecmaVersion: 2018,
+				sourceType: "module",
+				project: "./tsconfig.json",
 			},
-			"plugins": ["@typescript-eslint"],
+			plugins: ["@typescript-eslint"],
 		}
 	]
 };

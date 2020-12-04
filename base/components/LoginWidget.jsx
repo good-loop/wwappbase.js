@@ -358,7 +358,9 @@ const ResetLink = ({verb}) => {
 	);
 };
 
-
+/**
+ * A non-modal login widget - stick it in a page
+ */
 const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 	// NB: prefer the user-set verb (so they can change it)
 	verb = DataStore.getValue(VERB_PATH) || verb || 'register';
@@ -413,6 +415,12 @@ const LoginWidgetGuts = ({services, verb, onLogin, onRegister}) => {
 };
 
 
+const LoginPage = ({error}) => (
+	<div>
+		<h3 className="mt-2">Welcome to {C.app.name} - Please Sign-up or Login below</h3>
+		<LoginWidgetEmbed />
+	</div>);
+
 export default LoginWidget;
 export {
 	LoginLink,
@@ -427,5 +435,6 @@ export {
 	setShowLogin,
 	setLoginVerb,
 	emailLogin,
-	socialLogin
+	socialLogin,
+	LoginPage
 };
