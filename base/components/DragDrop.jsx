@@ -59,7 +59,9 @@ const _onDragOver = (e, id) => {
 	stopEvent(e);
 	dragstate.dragover = id;
 	let dragid = getDragId(e);
-	console.log('onDragOver', dragstate.dragging, id, dragid, e);
+	let x = e.clientX - window.pageXOffset;
+	let y = e.clientY - window.pageYOffset;
+	console.log('onDragOver', dragstate.dragging, id, dragid, e, {x,y});
 };
 
 // must preventDefault to allow drag
@@ -97,6 +99,10 @@ class DropInfo {
 	screenY;
 	clientX;
 	clientY;
+	/** @type {Number} x/left position within the dropzone */
+	zoneX;
+	/** @type {Number} y/top position within the dropzone */
+	zoneY
 }
 
 /**
@@ -107,13 +113,17 @@ const _onDrop = (e, id, onDrop, el) => {
 	stopEvent(e);
 	dragstate.dragover = null;
 	let dragid = getDragId(e);
-	console.log('onDrop', el, "this", this, id, dragid, dragstate.dragging);
+	console.log('onDrop', e, e.target, "el", el, "this", this, id, dragid, dragstate.dragging);
+	let ct = e.currentTarget;
+	let rect = ct.getBoundingClientRect();
 	setDragId(e, null);
 	let x = e.clientX - window.pageXOffset;
 	let y = e.clientY - window.pageYOffset;
 	const drop = {dropzone:id, draggable:dragid,
 		x, y, screenX:e.screenX, screenY:e.screenY,
-		clientX:e.clientX, clientY:e.clientY};
+		clientX:e.clientX, clientY:e.clientY, 
+		zone:rect, zoneX:x-rect.x, zoneY:y-rect.y
+	};
 	dragstate.drops.push(drop);
 	if (onDrop) onDrop(e, drop);
 };
@@ -207,7 +217,13 @@ const DropZone = ({id, children, onDrop, canDrop}) => {
 		}
 	}
 	// dropzone with handlers
-	return (<div className={space("DropZone", dragover)} id={id}
+	return (<div className={space("DropZone", dragover)} 
+		id={id}
+		ref={el => {			
+			// NB: el can be null - see https://reactjs.org/docs/refs-and-the-dom.html#caveats-with-callback-refs
+			if (!el) return;	
+			console.log(el.getBoundingClientRect().width); // prints 200px
+		}}
 		onDragOver={e => _onDragOver(e, id)}
 		onDragEnter={e => _onDragEnter(e,id)}
 		onDragExit={e => _onDragExit(e,id)}
