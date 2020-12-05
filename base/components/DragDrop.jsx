@@ -92,7 +92,7 @@ class DropInfo {
 	dropzone;	
 	/** @type {String} */
 	draggable;
-	/** ?? */
+	/** ??x,y of the mouse -- This IGNORES where the mouse is within the draggable! */
 	x;
 	y;
 	screenX;
@@ -129,7 +129,7 @@ const _onDrop = (e, id, onDrop, el) => {
 };
 
 const _onDragStart = (e, id, onDragStart) => {	
-	console.log('onDragStart', id);
+	console.log('onDragStart', id, e);
 	setDragId(e,id);
 	if (onDragStart) onDragStart();
 };
