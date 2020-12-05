@@ -122,7 +122,7 @@ const _onDrop = (e, id, onDrop, el) => {
 	const drop = {dropzone:id, draggable:dragid,
 		x, y, screenX:e.screenX, screenY:e.screenY,
 		clientX:e.clientX, clientY:e.clientY, 
-		zone:rect, zoneX:x-rect.x, zoneY:y-rect.y
+		zone:rect, zoneX:e.clientX-rect.x, zoneY:e.clientY-rect.y
 	};
 	dragstate.drops.push(drop);
 	if (onDrop) onDrop(e, drop);
