@@ -1000,8 +1000,9 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	// add css classes for required fields
 	let klass = space(
 		className,
-		required ? 'form-required' : null,
-		(required && !value) ? 'blank' : null,
+		required && 'form-required',
+		(required && !value) && 'blank',
+		// type==='range' && "form-control-range"
 	);
 
 	// remove stuff intended for other types that will upset input
