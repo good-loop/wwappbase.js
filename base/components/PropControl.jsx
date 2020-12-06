@@ -19,7 +19,6 @@ import Enum from 'easy-enums';
 import JSend from '../data/JSend';
 import {stopEvent, toTitleCase, space, labeller, is} from '../utils/miscutils';
 import PromiseValue from 'promise-value';
-import { useDropzone } from 'react-dropzone';
 
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
@@ -453,34 +452,6 @@ const PropControl2 = (props) => {
 
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={svalue} />;
 	}
-
-	/*
-	// TODO Remove - url, img, *Upload types are modularised
-	if (type === 'url') {
-		delete otherStuff.https;
-		return (
-			<div>
-				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} onBlur={onChange} {...otherStuff} />
-				<div className="pull-right"><small>{value ? <a href={value} target="_blank">open in a new tab</a> : null}</small></div>
-				<div className="clearfix" />
-			</div>
-		);
-	}
-	if (type === 'img') {
-		delete otherStuff.https;
-		return (
-			<div>
-				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
-				<div className="pull-right" style={{ background: bg, padding: bg ? '20px' : '0' }}><Misc.ImgThumbnail url={storeValue} background={bg} /></div>
-				<div className="clearfix" />
-			</div>
-		);
-	}
-
-	if (type.match(/(img|video|both)Upload/)) {
-		return <PropControlImgUpload {...otherStuff} path={path} prop={prop} onUpload={onUpload} type={type} bg={bg} storeValue={storeValue} onChange={onChange} />;
-	} // ./imgUpload
-	*/
 
 	// date
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
@@ -1093,71 +1064,6 @@ const acceptTypes = {
 	bothUpload: bothTypes,
 };
 
-/**
- * image or video upload. Uses Dropzone
- * @param onUpload {Function} {path, prop, url, response: the full server response} Called after the server has accepted the upload.
- */
-const PropControlImgUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, ...otherStuff }) => {
-	delete otherStuff.https;
-
-	// Automatically decide appropriate thumbnail component
-	const Thumbnail = {
-		imgUpload: Misc.ImgThumbnail,
-		videoUpload: Misc.VideoThumbnail,
-		bothUpload: storeValue.match(/(png|jpe?g|svg)$/) ? Misc.ImgThumbnail : Misc.VideoThumbnail
-	}[type];
-
-	// When file picked/dropped, upload to the media cluster
-	const onDrop = (accepted, rejected) => {
-		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
-		const load = (event) => console.log('UPLOAD SUCCESS', event);
-		accepted.forEach(file => {
-			ServerIO.upload(file, progress, load)
-				.done(response => {
-					// TODO refactor to clean this up -- we should have one way of doing things.
-					// Different forms for UploadServlet vs MediaUploadServlet
-					let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
-					if (onUpload) {
-						onUpload({ path, prop, response, url });
-					}
-					// Hack: Execute the onChange function explicitly to update value & trigger side effects
-					// (React really doesn't want to let us trigger it on the actual input element)
-					onChange && onChange({ target: { value: url } });
-				})
-				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
-		});
-		rejected.forEach(file => {
-			// TODO Inform the user that their file had a Problem
-			console.error("rejected :( " + file);
-		});
-	};
-
-	// New hooks-based DropZone - give it your upload specs & an upload-accepting function, receive props-generating functions
-	const { getRootProps, getInputProps } = useDropzone({accept: acceptTypes[type], onDrop});
-
-	// Catch special background-colour name for img and apply a special background to show img transparency
-	let className;
-	if (bg === 'transparent') {
-		bg = '';
-		className = 'stripe-bg';
-	}
-
-	return (
-		<div>
-			<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
-			<div className="pull-left">
-				<div className="DropZone" {...getRootProps()}>
-					<input {...getInputProps()} />
-					Drop a {acceptDescs[type]} here
-				</div>
-			</div>
-			<div className="pull-right">
-				<Thumbnail className={className} background={bg} url={storeValue} />
-			</div>
-			<div className="clearfix" />
-		</div>
-	);
-}; // ./imgUpload
 
 
 /**
