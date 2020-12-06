@@ -192,6 +192,21 @@ const _onDragEnd = (e, id, onDragEnd) => {
 	if (onDragEnd) onDragEnd();
 };
 
+const _onTouchMove = (e, id) => {
+	let touch = e.targetTouches[0];
+	if (_debug) logOnce('touchmove', e, touch, JSON.stringify(touch));
+	let $div = touch && touch.target
+	// // Place element where the finger is
+	if ($div && $div.style) {
+		$div.style.left = touch.pageX-25 + 'px';
+		$div.style.top = touch.pageY-25 + 'px';
+	}
+	dragstate.pageX = touch.pageX;
+	dragstate.pageY = touch.pageY;
+	// TODO is there a DropZone underneath?
+	stopEvent(e);
+};
+
 const _onTouchEnd = (e, id, onDragEnd) => {
 	console.log('touchEnd', e, e.targetTouches, e.touches, JSON.stringify(e.touches));
 	// is there a DropZone underneath?
@@ -245,21 +260,7 @@ const Draggable = ({children, id, onDragStart, onDragEnd, className, style}) => 
 			if (_debug) console.log('touchstart', e, touch, JSON.stringify(touch));
 			_onDragStart(e, id, onDragStart);
 		}}
-		onTouchMove={e => {
-			let touch = e.targetTouches[0];
-			if (_debug) logOnce('touchmove', e, touch, JSON.stringify(touch));
-			let $div = touch && touch.target
-			// // Place element where the finger is
-			if ($div && $div.style) {
-				$div.style.left = touch.pageX-25 + 'px';
-				$div.style.top = touch.pageY-25 + 'px';
-			}
-			dragstate.pageX = touch.pageX;
-			dragstate.pageY = touch.pageY;
-			// TODO is there a DropZone underneath?
-
-			stopEvent(e);
-		}}
+		onTouchMove={e => _onTouchMove(e, id)}
 		onTouchCancel={e => {
 			let touch = e.targetTouches[0];
 			if (_debug) console.log('touchCancel', e, touch, JSON.stringify(touch));
