@@ -29,7 +29,7 @@ const FUNDER_CREDITS = [];
 
 /**
  * Add an image to the about-page credits. Repeat adds are harmless.
- * @param {?ImageObject} image  
+ * @param {?ImageObject} image e.g. {author, url, name, caption}
  */
 export const addImageCredit = image => {
 	// use author as the key
