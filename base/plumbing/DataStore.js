@@ -113,6 +113,7 @@ class Store {
 	 * @param newState {?Object} This will do an overwrite merge with the existing state.
 	 * Note: This means you cannot delete/clear an object using this - use direct modification instead.
 	 * Can be null, which still triggers the on-update callbacks.
+	 * @returns {boolean} `true` for convenience - can be chained with &&
 	 */
 	update(newState) {
 		// console.log('update', newState);
@@ -131,6 +132,7 @@ class Store {
 		} finally {
 			this.updating = false;
 		}
+		return true; // can be chained with &&
 	} // ./update
 
 	/**

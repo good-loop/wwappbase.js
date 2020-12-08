@@ -166,15 +166,16 @@ const _onDrop = (e, id, onDrop) => {
 	let y = e.clientY - window.pageYOffset;
 	let zoneX = e.clientX - rect.x - offsetX;
 	let zoneY = e.clientY - rect.y - offsetY;
-	const drop = new DropInfo({dropzone:id, draggable:dragid,
+	const dropInfo = new DropInfo({dropzone:id, draggable:dragid,
 		x, y,
 		pageX: e.pageX, pageY: e.pageY,
 		screenX:e.screenX, screenY:e.screenY,
 		clientX:e.clientX, clientY:e.clientY, 
 		zoneX, zoneY
 	});
-	dragstate.drops.push(drop);
-	if (onDrop) onDrop(e, drop);	
+	dragstate.drops.push(dropInfo);
+	e.dropInfo = dropInfo; // because it's natural to assume the event has all the data
+	if (onDrop) onDrop(e, dropInfo);	
 };
 
 const _onDragStart = (e, id, onDragStart) => {	
