@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { assMatch } from '../utils/assert';
+// import { assMatch } from '../utils/assert'; avoid dependency
 import { space, stopEvent } from '../utils/miscutils';
 
 /*
