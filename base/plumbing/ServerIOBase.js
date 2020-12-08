@@ -285,7 +285,8 @@ const normaliseSogiveId = id => {
 		'maw':'make-a-wish-uk',
 		'gosh':'great-ormond-street-hospital-childrens-charity',
 		'tommys':'tommy-s',
-		'amnesty':'amnesty-international'
+		'amnesty':'amnesty-international',
+		'regenboog':'de-regenboog-groep'
 	}[canonId];
 
 	return sid || canonId;	
