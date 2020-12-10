@@ -55,6 +55,11 @@ class DragState {
 	 */
 	dragover;
 
+
+	// /** @type {Number} Where is the mouse/touch point on the screen (wanted for positioning during drag) */
+	// screenX;
+	// screenY;
+
 	/** @type {Number} Where is the mouse/touch point on the page */
 	pageX;
 	pageY;
@@ -160,18 +165,19 @@ const _onDrop = (e, id, onDrop) => {
 	const offsetY = dragstate.offsetY || 0;
 	console.log('onDrop', e, e.target, "id", id, dragid, dragstate.dragging);
 	let elTarget = e.currentTarget || e.target;
+	// dropzone rect relative to the viewport (which = page xy coords?)
 	let rect = elTarget.getBoundingClientRect();
 	setDragId(e, null);	
 	let x = e.clientX - window.pageXOffset;
 	let y = e.clientY - window.pageYOffset;
-	let zoneX = e.clientX - rect.x - offsetX;
-	let zoneY = e.clientY - rect.y - offsetY;
+	let zoneX = e.pageX - rect.x - offsetX;
+	let zoneY = e.pageY - rect.y - offsetY;
 	const dropInfo = new DropInfo({dropzone:id, draggable:dragid,
 		x, y,
 		pageX: e.pageX, pageY: e.pageY,
 		screenX:e.screenX, screenY:e.screenY,
 		clientX:e.clientX, clientY:e.clientY, 
-		zoneX, zoneY
+		zoneX, zoneY, zoneWidth:rect.width, zoneHeight:rect.height, 
 	});
 	dragstate.drops.push(dropInfo);
 	e.dropInfo = dropInfo; // because it's natural to assume the event has all the data
@@ -242,16 +248,16 @@ const _onTouchEnd = (e, id, onDragEnd) => {
  * @param {?JSX} children This is needed -- if empty, then returns null.
  * NB: supporting falsy id and no-children is a convenience for code that wraps ad-hoc stuff in Draggable.
  */
-const Draggable = ({children, id, onDragStart, onDragEnd, className, style}) => {
+const Draggable = ({children, id, onDragStart, onDragEnd, moveDuringDrag, className, style={}}) => {
 	if ( ! id) {
 		return children || null; // NB: undefined upsets React
 	}
 	if ( ! children) {
 		return null;
 	}
+
 	assMatch(id, String);
-	className = className? className+' Draggable' : 'Draggable';
-	return (<div className={className} style={style}
+	return (<div className={space(className,'Draggable')} style={style}
 		draggable
 		onDragStart={e => _onDragStart(e, id, onDragStart)}
 		onDragEnd={e => _onDragEnd(e, id, onDragEnd)}
@@ -295,7 +301,7 @@ const getDropZone = (pageX, pageY) => {
  * @param {!String} id identify this dropzone in the dragstate / drop info
  * @param {?Function} onDrop Called if there is a drop here. (e, dropInfo) => do-stuff
  */
-const DropZone = ({id, children, onDrop, canDrop}) => {
+const DropZone = ({id, children, onDrop, canDrop, className, style}) => {
 	if ( ! id) {
 		console.error("DropZone without an id - drops might not work");
 	}
@@ -310,7 +316,7 @@ const DropZone = ({id, children, onDrop, canDrop}) => {
 		}
 	}
 	// dropzone with handlers
-	return (<div className={space("DropZone", dragover)} 
+	return (<div className={space(className, "DropZone", dragover)} style={style}
 		id={id}
 		ref={el => {
 			// NB: el can be null - see https://reactjs.org/docs/refs-and-the-dom.html#caveats-with-callback-refs

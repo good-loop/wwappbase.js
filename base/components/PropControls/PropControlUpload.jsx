@@ -34,9 +34,10 @@ const fakeEvent = {
 
 /**
  * image or video upload. Uses Dropzone
- * @param onUpload {Function} {path, prop, url, response: the full server response} Called after the server has accepted the upload.
+ * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
+ * @param {?string} version mobile|raw|standard -- defaults to raw
  */
-const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, ...otherStuff }) => {
+const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, version="raw", ...otherStuff }) => {
 	delete otherStuff.https;
 
 	// Automatically decide appropriate thumbnail component
@@ -55,7 +56,10 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 				.done(response => {
 					// TODO refactor to clean this up -- we should have one way of doing things.
 					// Different forms for UploadServlet vs MediaUploadServlet
-					let url = (response.cargo.url) || (response.cargo.standard && response.cargo.standard.url);
+					let url = response.cargo.url; // raw
+					if (response.cargo[version] && response.cargo[version].url) {
+						url = response.cargo[version].url; // e.g. prefer mobile
+					}
 					if (onUpload) {
 						onUpload({ path, prop, response, url });
 					}

@@ -4,8 +4,9 @@ import {getScreenSize} from '../utils/miscutils';
 
 /**
  * @param {JSX[]} children 1 to 3 elements, for left (optional), main, right
+ * @param {?Boolean} showAll If true, then all panes are always shown -- on small devices: left as slide-out nav (TODO), right underneath.
  */
-const Editor3ColLayout = ({children}) => {
+const Editor3ColLayout = ({children, showAll}) => {
 	const sz = getScreenSize();
 	if (children.length > 3) {
 		console.error("Editor3ColLayout - Truncating to 3", children);
@@ -16,12 +17,23 @@ const Editor3ColLayout = ({children}) => {
 	const rightPane = is3? children[2] : children[1];
 
 	// ?? make left also no-vertical scroll (but I think this is not as easy as for right)
-	
+	let showLeft = (sz==='md' || sz==='lg' || sz==='xl') && is3;
+	let showRight = (sz==='lg' || sz==='xl') && rightPane;
+
 	return (<div className='flex-row'>
-		{(sz==='md' || sz==='lg' || sz==='xl') && is3 && <div className='mt-1'><div>{leftNav}</div></div>}
+		{showLeft && <div className='mt-1'><div>{leftNav}</div></div>}
+		{showAll && ! showLeft && <Tray>{leftNav}</Tray>}
 		<Container>{mainPane}</Container>
-		{(sz==='lg' || sz==='xl') && rightPane && <div className='mt-1 flex-grow'><div className='position-fixed'>{rightPane}</div></div>}
+		{showRight && <div className='mt-1 flex-grow'><div className='position-fixed'>{rightPane}</div></div>}
+		{showAll && ! showRight && rightPane && <Container>{rightPane}</Container>}
 	</div>);
+};
+
+/**
+ * TODO a slide-out tray, typically for in-page nav
+ */
+const Tray = ({children}) => {
+	return <div>{children}</div>;
 };
 
 export default Editor3ColLayout;
