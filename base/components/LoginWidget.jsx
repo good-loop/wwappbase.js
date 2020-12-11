@@ -265,6 +265,7 @@ const SocialSignInButton = ({className = "btn signin", children, service, verb =
 
 
 const EmailReset = ({}) => {
+	const verb = 'reset';
 	const requested = DataStore.getValue('widget', 'LoginWidget', 'reset-requested');
 	const path = ['data', C.TYPES.User, 'loggingIn'];
 
