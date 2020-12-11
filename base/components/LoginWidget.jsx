@@ -266,15 +266,16 @@ const SocialSignInButton = ({className = "btn signin", children, service, verb =
 
 const EmailReset = ({}) => {
 	const requested = DataStore.getValue('widget', 'LoginWidget', 'reset-requested');
+	const path = ['data', C.TYPES.User, 'loggingIn'];
 
 	const doItFn = e => {
 		killEvent(e);				
-		if ( ! person) {			
-			Login.error = {text:'Please fill in email and password'};
+		let email = DataStore.getValue(path.concat("email"));
+		if ( ! email) {			
+			Login.error = {text:'Please enter your email'};
 			DataStore.update();
 			return;
-		}
-		let email = person.email;
+		}		
 		assMatch(email, String);
 		let call = Login.reset(email).then(res => {
 			if (res.success) {
@@ -289,7 +290,7 @@ const EmailReset = ({}) => {
 	return (
 		<form id="loginByEmail" onSubmit={doItFn}>
 			<p>Forgotten your password? No problem - we will email you a link to reset it.</p>
-			<PropControl label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
+			<PropControl label='Email' type="email" path={path} prop="email" placeholder="Email" />			
 			{requested ? <div className="alert alert-info">A password reset email has been sent out.</div> : ''}
 			<div className="form-group">
 				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
