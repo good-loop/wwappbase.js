@@ -26,10 +26,14 @@ const Tabs = ({activeTabId, setActiveTabId, defaultTabId, children, ...props}) =
 	let _setActiveTabId = setActiveTabId || setLocalActiveTab;
 
 	// Pull tab key and title out of child Tab items & construct clickable headers
-	const navItems = React.Children.map(children, ({ props: { tabId, title } }) => {
+	let $activeTab = null;
+	const navItems = React.Children.map(children, (childTab) => {
+		let {props: {tabId, title}} = childTab; // extract the info
 		if ( ! tabId) console.error("Tabs.jsx - Tab without an ID",title);
 		if ( ! _activeTabId) _activeTabId = tabId; // default to the first if unset
 		const active = (_activeTabId === tabId);
+		// pick active - which is the only tab to get rendered
+		if (active) $activeTab = childTab;
 		return (
 			<NavItem className={space(active&&'active')}>
 				<NavLink onClick={() => ( ! active && _setActiveTabId(tabId))}
@@ -46,7 +50,7 @@ const Tabs = ({activeTabId, setActiveTabId, defaultTabId, children, ...props}) =
 			{navItems}
 		</Nav>
 		<TabContent activeTab={_activeTabId}>
-			{children}
+			{$activeTab}
 		</TabContent>
 	</div>
 };
