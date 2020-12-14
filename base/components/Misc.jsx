@@ -341,6 +341,50 @@ Misc.RoughDate = ({date}) => {
 	return <time dateTime={date.toISOString()}>{[time, day, month, year].filter(a => a).join(' ')}</time>;
 };
 
+/**
+ * Display a duration between 2 dates
+ * e.g. March - May 2019
+ * Only displays duration in months
+ */
+Misc.DateDuration = ({startDate, endDate}) => {
+	if (!startDate && !endDate) {
+		console.warn("No dates provided to DateDuration!");
+		return null;
+	}
+	if (_.isString(startDate) || _.isNumber(startDate)) startDate = new Date(startDate);
+	if (_.isString(endDate) || _.isNumber(endDate)) endDate = new Date(endDate);
+	let durationString = "";
+	// Optimise display of date for niceness
+	if (startDate && !endDate) {
+		// If only a start date is provided
+		// e.g. May 2020
+		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear();
+	} else if (!startDate && endDate) {
+		// If only an end date is provided
+		// e.g. May 2020
+		durationString = months[endDate.getMonth()] + " " + endDate.getFullYear();
+	} else if (startDate.getFullYear() === endDate.getFullYear()) {
+		if (startDate.getMonth() === endDate.getMonth()) {
+			// If the dates lie on the same month and year
+			// e.g. May 2020
+			durationString = months[startDate.getMonth()] + " " + startDate.getFullYear();
+		} else {
+			// If the dates lie on the same year and different months
+			// e.g. June - November 2020
+			durationString = months[startDate.getMonth()] + " - " + months[endDate.getMonth()] + " " + startDate.getFullYear();
+		}
+	} else if (startDate.getMonth() == endDate.getMonth()) {
+		// If the dates lie on the same month of different years
+		// e.g. August 2018 - 2019
+		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + endDate.getFullYear();
+	} else {
+		// If the dates are entirely different
+		// e.g. May 2019 - June 2020
+		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + months[endDate.getMonth()] + " " + endDate.getFullYear();
+	}
+
+	return <span>{durationString}</span>
+}
 
 /**
  * @deprecated use dateTimeTag
