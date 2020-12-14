@@ -4,6 +4,7 @@ import PromiseValue from 'promise-value';
 const path = ['misc', 'adBlockEnabled'];
 
 /** Will set DataStore flag if the user has adblock enabled 
+ * @returns {Promise}
 */
 const doDetect = () => {	
 	const $script = document.createElement('script');
@@ -25,7 +26,7 @@ const doDetect = () => {
 	};
 
 	document.head.appendChild($script);
-	return pv;
+	return pv.promise;
 };
 
 /**

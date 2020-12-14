@@ -566,7 +566,7 @@ class Store {
 	/**
 	 * Does the remote fetching work for fetch()
 	 * @param {String[]} path
-	 * @param {Function} fetchFn If unset (which is unusual), return in-progress or a failed PV
+	 * @param {Function} fetchFn () => promiseOrValue or a PromiseValue. If `fetchFn` is unset (which is unusual), return in-progress or a failed PV.
 	 * @param {?Boolean} messaging
 	 * @param {?Number} cachePeriod
 	 * @returns {!PromiseValue}
@@ -582,7 +582,7 @@ class Store {
 		let promiseOrValue = fetchFn();
 		assert(promiseOrValue!==undefined, "fetchFn passed to DataStore.fetch() should return a promise or a value. Got: undefined. Missing return statement?");
 		// Use PV to standardise the output from fetchFn()
-		let pvPromiseOrValue = new PromiseValue(promiseOrValue);
+		let pvPromiseOrValue = promiseOrValue instanceof PromiseValue? promiseOrValue : new PromiseValue(promiseOrValue);
 		// pvPromiseOrValue.name = "pvPromiseOrValue_"+JSON.stringify(path); // DEBUG HACK
 		// process the result async
 		let promiseWithCargoUnwrap = pvPromiseOrValue.promise.then(res => {
