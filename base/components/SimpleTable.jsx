@@ -26,6 +26,7 @@ import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType, nonce } from '../data/DataClass';
 import Tree from '../data/Tree';
 import PropControl from './PropControl';
+import StyleBlock from './StyleBlock';
 
 const str = printer.str;
 
@@ -107,7 +108,10 @@ class SimpleTable extends React.Component {
 		let {
 			tableName = 'Table', data, dataObject, dataTree, 
 			columns,
-			headerRender, className, csv,
+			headerRender, 			
+			className, // applied to the table element, to allow for BS styles
+			style, 
+			csv,
 			addTotalRow,
 			topRow,
 			bottomRow, 
@@ -166,36 +170,32 @@ class SimpleTable extends React.Component {
 
 		// the html
 		return (
-			<div className="SimpleTable">
+			<div className={space("SimpleTable")} style={style} >
 				{hasFilter? <div className="form-inline">&nbsp;<label>Filter</label>&nbsp;<input className="form-control"
 					value={tableSettings.filter || ''}
 					onChange={filterChange}
 					/></div> : null}
-				<div>
-					<div className={scroller? 'wrapper' : ''}>
-						<div className={scroller? 'scroller' : ''}>
-<table className={space("table",className)}>
-	<thead>
-		<tr>
-			{visibleColumns.map((col, c) => {
-				return <Th table={this} tableSettings={tableSettings} key={c}
-					column={col} c={c} headerRender={headerRender}
-					showSortButtons={showSortButtons} />
-			})
+			
+			<StyleBlock>{`
+			.table-scroll-top {
+				width:100%;
+				overflow-x:hidden;
 			}
-		</tr>
-
-		{topRow? <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} /> : null}
-		{addTotalRow?
-			<tr className="totalRow" >
-				<th>{addTotalRow}</th>
-				{visibleColumns.slice(1).map((col, c) =>
-					<TotalCell dataTree={dataTree} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+				.table-scroll-body {
+					width:100%;
+					height:100%;
+					overflow:scroll;
 				}
-			</tr>
-			: null}
+			`}</StyleBlock>
 
-	</thead>
+				{scroller && <div className="table-scroll-top"><table className={space("table","bg-warning",className)} >
+					<THead {...{visibleColumns, tableSettings, headerRender, showSortButtons, topRow, addTotalRow}} />
+					</table>
+				</div>}
+				{scroller && <LeftColTable />}
+<div className={scroller && "table-scroll-body"}>
+<table className={space("table",className)}>
+	{ ! scroller && <THead {...{visibleColumns, tableSettings, headerRender, showSortButtons, topRow, addTotalRow}} />}
 
 	<tbody>		
 		<Rows 
@@ -211,16 +211,39 @@ class SimpleTable extends React.Component {
 	<TableFoot {...{csv, tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow, numPages, page, setPage}} 
 		colSpan={visibleColumns.length} />
 </table>
-						</div> {/* scroller */}
-					</div>
-				</div>
+	</div>
 			</div>
 		);
 	} // ./ render()
-
 } // ./SimpleTable
-{/* <TableFoot csv={csv} tableName={tableName} visibleColumns, topRow, addTotalRow, dataTree, bottomRow,
-		numPages={numPages} page={page} setPage={setPage} colSpan={visibleColumns.length} /> */}
+
+const LeftColTable = () => {
+	return null; // TODO
+};
+
+const THead = ({visibleColumns, tableSettings, headerRender, showSortButtons, topRow, addTotalRow}) => {
+	return (<thead>
+	<tr>
+		{visibleColumns.map((col, c) => {
+			return <Th table={this} tableSettings={tableSettings} key={c}
+				column={col} c={c} headerRender={headerRender}
+				showSortButtons={showSortButtons} />
+		})
+		}
+	</tr>
+
+	{topRow? <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} /> : null}
+	{addTotalRow?
+		<tr className="totalRow" >
+			<th>{addTotalRow}</th>
+			{visibleColumns.slice(1).map((col, c) =>
+				<TotalCell dataTree={dataTree} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+			}
+		</tr>
+		: null}
+
+</thead>);
+};
 
 const createCSVData = ({visibleColumns, topRow, addTotalRow, dataTree, bottomRow}) => {
 	// No UI buttons
