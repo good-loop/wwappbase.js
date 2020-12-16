@@ -23,7 +23,7 @@ import printer from '../utils/printer';
 import Enum from 'easy-enums';
 import { asNum, space, stopEvent, encURI, asDate } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
-import DataClass, { getClass, getType, nonce } from '../data/DataClass';
+import DataClass, { getClass, getType, Item } from '../data/DataClass';
 import Tree from '../data/Tree';
 import PropControl from './PropControl';
 import StyleBlock from './StyleBlock';
@@ -77,7 +77,7 @@ DataClass.register(Column, "Column");
  */
 class TableSettings {
 	/**
-	 * @type {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
+	 * @type {Boolean} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
 	 */
 	addTotalRow;
 
@@ -101,9 +101,10 @@ class TableSettings {
 	hasCsv;
 
 	/**
-	 * The number of rendered rows (i.e. excludes collapsed tree nodes or other pages, but includes scrolled-off rows)
+	 * @type {Number} The number of rendered rows (i.e. excludes collapsed tree nodes or other pages, but includes scrolled-off rows)
 	 */
 	numRows;
+	/** @type {Number} */
 	numCols;
 	
 	/** @type {Number} */
@@ -162,7 +163,6 @@ class TableSettings {
  * @param {TableSettings} Lots of settings
  * 
  */
-
 const SimpleTable = (props) => {
 	let {
 		data, dataObject, dataTree,
@@ -243,7 +243,13 @@ const SimpleTable = (props) => {
 	);
 } // ./SimpleTable
 
-const THead = ({ visibleColumns, tableSettings, headerRender, topRow, addTotalRow }) => {
+/**
+ * 
+ * @param {Object} params
+ * @param {!Column[]} params.visibleColumns
+ * @param {!TableSettings} params.tableSettings
+ */
+const THead = ({ visibleColumns, tableSettings, headerRender, topRow }) => {
 	// c isn't used but will be off by 1 if scroller is true
 	return (<thead>
 		<tr>
@@ -254,19 +260,25 @@ const THead = ({ visibleColumns, tableSettings, headerRender, topRow, addTotalRo
 			}
 		</tr>
 
-		{topRow ? <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} /> : null}
-		{addTotalRow ?
+		{topRow && <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} />}
+
+		{tableSettings.addTotalRow &&
 			<tr className="totalRow" >
-				<th>{addTotalRow}</th>
+				<th>{tableSettings.addTotalRow}</th>
 				{visibleColumns.slice(1).map((col, c) =>
 					<TotalCell dataTree={dataTree} tableSettings={tableSettings} key={c} column={col} c={c} />)
 				}
-			</tr>
-			: null}
+			</tr>}
 
 	</thead>);
 };
 
+/**
+ * 
+ * @param {Object} params
+ * @param {!Column[]} params.visibleColumns
+ * @param {!TableSettings} params.tableSettings
+ */
 const createCSVData = ({ visibleColumns, topRow, tableSettings, dataTree, bottomRow }) => {
 	// No UI buttons
 	visibleColumns = visibleColumns.filter(c => !c.ui);
@@ -302,11 +314,23 @@ const createCSVData = ({ visibleColumns, topRow, tableSettings, dataTree, bottom
 	return dataArray;
 };
 
+/**
+ * 
+ * @param {Object} params
+ * @param {!Column[]} params.visibleColumns
+ * @param {!Item} params.item
+ */
 const createCSVData2_row = ({ visibleColumns, item }) => {
 	// See Row = (
 	const cells = visibleColumns.map(column => createCSVData3_cell({ item, column }));
 	return cells;
 };
+/**
+ * 
+ * @param {Object} params
+ * @param {!Column} params.column
+ * @param {!Item} params.item
+ */
 const createCSVData3_cell = ({ item, column }) => {
 	// See Cell = (
 	const v = getValue({ item, column });
@@ -605,7 +629,11 @@ const defaultSortMethodForGetter = (a, b, getter, type) => {
 	return (av < bv) ? -1 : (av > bv) ? 1 : 0;
 };
 
+/**
 
+ * @param {!Column} column
+ * @param {any} v
+ */
 const defaultCellRender = (v, column) => {
 	if (v === undefined || Number.isNaN(v)) return null;
 	// by type?
@@ -649,8 +677,13 @@ const defaultCellRender = (v, column) => {
 };
 
 /**
- * @param {Number} row
- * @param {Column} column
+ * @param {Object} p
+ * @param {Number} p.row
+ * @param {Number} p.colNum
+ * @param {Number} p.depth
+ * @param {Column} p.column
+ * @param {Tree} p.node
+ * @param {TableSettings} p.tableSettings
  */
 const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 	const citem = item;
@@ -704,8 +737,10 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 
 /**
  * Custom css for a cell?
- * @param {?Object|function} style if a function, it does (cellValue, item) -> css-style-object
- * @returns (?Object)
+ * @param {Object} p
+ * @param {?Object|function} p.style if a function, it does (cellValue, item) -> css-style-object
+ * @param {Item} p.item
+ * @returns {?Object}
  */
 const calcStyle = ({ style, cellValue, item, row, depth, column }) => {
 	if (typeof (style) === 'function') {
@@ -768,6 +803,7 @@ const Editor = ({ row, column, value, item }) => {
 		saveFn={column.saveFn}
 	/>);
 }; // ./Editor
+
 const CellFormat = new Enum("percent pounds string"); // What does a spreadsheet normally offer??
 
 
