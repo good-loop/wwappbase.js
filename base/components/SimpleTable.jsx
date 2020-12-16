@@ -21,7 +21,7 @@ import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import {asNum, space, stopEvent, encURI, asDate} from '../utils/miscutils';
+import { asNum, space, stopEvent, encURI, asDate } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType, nonce } from '../data/DataClass';
 import Tree from '../data/Tree';
@@ -54,7 +54,7 @@ class Column extends DataClass {
 
 	/** @type {?Object|Function} custom css styling. If a function, it does (cellValue, item, column) -> css-style-object */
 	style;
-	
+
 	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
 	ui;
 	/** @significantDigits {?integer} used used to specify significant digits for numbers */
@@ -70,6 +70,81 @@ class Column extends DataClass {
 };
 DataClass.register(Column, "Column");
 
+
+/**
+ * Let's document the state of this not-really-that-simple-anymore widget.
+ * This is for everything except the data
+ */
+class TableSettings {
+	/**
+	 * @type {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
+	 */
+	addTotalRow;
+
+	/**
+	 * @type {?String} css colour code. This is needed if you use scroller to give frozen headers
+	 */
+	background = "white";
+
+	/** @type {Column[]|String[]} Can mix String and Column */
+	columns;
+
+	/** @type {?String} Filter rows by keyword */
+	filter;
+ 
+	/** @param {?Boolean} If true, offer a filer widget */
+	hasFilter;
+	
+	hasCollapse;
+
+	/** @param {?Boolean} If true, offer csv download */
+	hasCsv;
+
+	/**
+	 * The number of rendered rows (i.e. excludes collapsed tree nodes or other pages, but includes scrolled-off rows)
+	 */
+	numRows;
+	numCols;
+	
+	/** @type {Number} */
+	page = 0;
+
+	/**
+	* @type {Boolean} default true
+	*/
+	showSortButtons = true;
+	
+	/**
+	 * @type {Column}
+	 */
+	sortBy;
+
+	/**
+	 * @type {?Boolean} true for froxen headers and scrolling
+	 */
+	scroller;
+
+	/** @type {?Boolean} If true, hide empty columns */
+	hideEmpty;
+
+	/** @type {?Number} Cap the number of rows shown. This cap is applied after filtering and sorting */ 
+	rowsPerPage;
+
+	
+	/** @type {?String}  Used to name the csv download */ 
+	tableName = 'Table';
+
+	/** @type {?String} Applied to the <table> for e.g. BS styles */ 
+	tableClass;
+
+	/**
+	 * A row Object. Provide an always visible (no filtering) top row, e.g. for totals including extra data.
+	* @type {Item} */
+	topRow
+
+	i=0;
+};
+
 // class ErrorBoundary extends React.Component {
 // https://reactjs.org/docs/error-boundaries.html
 
@@ -83,182 +158,129 @@ DataClass.register(Column, "Column");
  * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items.
  * 
  * @param {Column[]|String[]} columns - Can mix String and Column
- *
- * addTotalRow: {Boolean|String} If set, add a total of the on-screen data. If String, this is the row label (defaults to "Total").
- *
- * topRow: {Item} - A row Object. Provide an always visible (no filtering) top row, e.g. for totals including extra data.
- *
- * showSortButtons {Boolean} default true
- *
- * @param {?Boolean} hideEmpty - If true, hide empty columns
- * @param {?Number} rowsPerPage - Cap the number of rows shown. This cap is applied after filtering and sorting
- * @param {?Boolean} csv If true, offer csv download
- * @param {?String} tableName Used to name the csv download
-
+ * 
+ * @param {TableSettings} Lots of settings
+ * 
  */
-// NB: use a full component for error-handling
-// Also state (though maybe we should use DataStore)
-class SimpleTable extends React.Component {
 
-	constructor(props) {
-		super(props);
+const SimpleTable = (props) => {
+	let {
+		data, dataObject, dataTree,
+		columns,
+		headerRender,
+		topRow,
+		bottomRow,		
+	} = props;
+
+	let [tableSettings, setTableSettings] = useState(new TableSettings());
+	Object.assign(tableSettings, props); // props override any local setting
+	// give settings an update function
+	tableSettings.update = () => {
+		setTableSettings(Object.assign({}, tableSettings)); // pointless shallow copy - to trigger a re-render
+	};
+	tableSettings.i++;	// debug
+	console.log("render Table "+tableSettings.i);
+
+	if (tableSettings.addTotalRow && !_.isString(tableSettings.addTotalRow)) tableSettings.addTotalRow = 'Total';
+
+	// Standardise the possible data inputs as a dataTree (which is the most general format)
+	const originalData = data; // for debug
+	dataTree = standardiseData({ data, dataObject, dataTree })
+	assert(dataTree);
+	assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
+
+	// filter and sort - and add in collapse buttons
+	let { dataTree: fdataTree, visibleColumns } = rowFilter({ dataTree, columns, tableSettings});
+	assert(fdataTree, "SimpleTable.jsx - rowFilter led to null?!", dataTree);
+	dataTree = fdataTree;
+
+	// clip max rows now?
+	let numPages = 1;
+	if (tableSettings.rowsPerPage) {
+		let numRows = Tree.children(dataTree).length;
+		numPages = Math.ceil(numRows / tableSettings.rowsPerPage);
+		// NB: clipping is done later 'cos if we're doing a csv download, which should include all data
 	}
 
-	render() {
-		let {
-			tableName = 'Table', data, dataObject, dataTree, 
-			columns,
-			headerRender, 			
-			className, // applied to the table element, to allow for BS styles
-			style, 
-			csv,
-			addTotalRow,
-			topRow,
-			bottomRow, 
-			hasFilter, hasCollapse,
-			rowsPerPage, 
-			statePath, // Is this used??
-			hideEmpty,
-			scroller, // if true, use fix col-1 scrollbars
-			showSortButtons=true,
-		} = this.props;
+	const filterChange = e => {
+		const v = e.target.value;		
+		tableSettings.filter = v;
+		tableSettings.update();
+	};
+	// scrolling (credit to Irina): uses wrapper & scroller and css
 
-		if (addTotalRow && ! _.isString(addTotalRow)) addTotalRow = 'Total';
+	const onScroll = tableSettings.scroller? e => {
+		console.log("onScroll", e, e.target.scrollLeft, e.target.scrollTop);
+		// How many rows? Which row?
+		tableSettings.scrollLeft = e.target.scrollLeft;
+		tableSettings.scrollTop = e.target.scrollTop;
+		tableSettings.update();
+	} : null;
 
-		// Standardise the possible data inputs as a dataTree (which is the most general format)
-		const originalData = data; // for debug
-		dataTree = standardiseData({data, dataObject, dataTree})
-		assert(dataTree);
-		assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
-
-		// Table settings are stored in widget state by default. @deprecated But can also be linked to a DataStore via statePath
-		let tableSettings = this.state;
-		if (statePath) {
-			tableSettings = DataStore.getValue(statePath);
-			// normalSetState = this.setState;
-			this.setState = ns => {
-				let ts = DataStore.getValue(statePath) || {};
-				ts = Object.assign(ts, ns); // merge with other state settings
-				DataStore.setValue(statePath, ts);
-			};
-		}
-		if ( ! tableSettings) {
-			tableSettings = {nonce:nonce()};
-			_.defer(() => this.setState(tableSettings));
-		}
-		// page?
-		let [page, setPage] = [tableSettings.page || 0, p => this.setState({page:p})]; // useState(0) - not within a Component;
-
-		// filter and sort - and add in collapse buttons
-		let {dataTree:fdataTree,visibleColumns} = rowFilter({dataTree, hasCollapse, columns, tableSettings, hideEmpty, rowsPerPage});
-		assert(fdataTree, "SimpleTable.jsx - rowFilter led to null?!", dataTree);
-		dataTree = fdataTree;
-
-		// clip max rows now?
-		let numPages = 1;
-		if (rowsPerPage) {
-			let numRows = Tree.children(dataTree).length;
-			numPages = Math.ceil(numRows / rowsPerPage);
-			// NB: clipping is done later 'cos if we're doing a csv download, which should include all data
-		}
-
-		const filterChange = e => {
-			const v = e.target.value;
-			this.setState({filter: v});
-		};
-		// scrolling (credit to Irina): uses wrapper & scroller and css
-
-		// the html
-		return (
-			<div className={space("SimpleTable")} style={style} >
-				{hasFilter? <div className="form-inline">&nbsp;<label>Filter</label>&nbsp;<input className="form-control"
-					value={tableSettings.filter || ''}
-					onChange={filterChange}
-					/></div> : null}
-			
-			<StyleBlock>{`
-			.table-scroll-top {
-				width:100%;
-				overflow-x:hidden;
-			}
-				.table-scroll-body {
-					width:100%;
-					height:100%;
-					overflow:scroll;
-				}
-			`}</StyleBlock>
-
-				{scroller && <div className="table-scroll-top"><table className={space("table","bg-warning",className)} >
-					<THead {...{visibleColumns, tableSettings, headerRender, showSortButtons, topRow, addTotalRow}} />
-					</table>
-				</div>}
-				{scroller && <LeftColTable />}
-<div className={scroller && "table-scroll-body"}>
-<table className={space("table",className)}>
-	{ ! scroller && <THead {...{visibleColumns, tableSettings, headerRender, showSortButtons, topRow, addTotalRow}} />}
-
-	<tbody>		
-		<Rows 
-			dataTree={dataTree} 
-			tableSettings={tableSettings} 
-			rowsPerPage={rowsPerPage} 
-			page={page} 
-			visibleColumns={visibleColumns} 
-			hasCollapse={hasCollapse}
-		/>
-		{bottomRow? <Row item={bottomRow} row={-1} columns={visibleColumns} /> : null}
-	</tbody>
-	<TableFoot {...{csv, tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow, numPages, page, setPage}} 
-		colSpan={visibleColumns.length} />
-</table>
-	</div>
+	// the html
+	return (
+		<div className={space("SimpleTable", tableSettings.scroller&&"scroller")}>
+			{tableSettings.hasFilter ? <div className="form-inline">&nbsp;<label>Filter</label>&nbsp;<input className="form-control"
+				value={tableSettings.filter || ''}
+				onChange={filterChange}
+			/></div> : null}
+			<div className='scroll-div' onScroll={onScroll} >
+				<table className={space("table", "position-relative", tableSettings.tableClass)}>
+					<THead {...{ visibleColumns, tableSettings, headerRender, topRow}} />
+					<tbody>
+						<Rows
+							dataTree={dataTree}
+							tableSettings={tableSettings}
+							visibleColumns={visibleColumns}
+						/>
+						{bottomRow ? <Row item={bottomRow} row={-1} columns={visibleColumns} /> : null}
+					</tbody>
+					<TableFoot {...{visibleColumns, topRow, dataTree, bottomRow, numPages, tableSettings }}
+						colSpan={visibleColumns.length} />
+				</table>
 			</div>
-		);
-	} // ./ render()
+		</div>
+	);
 } // ./SimpleTable
 
-const LeftColTable = () => {
-	return null; // TODO
-};
-
-const THead = ({visibleColumns, tableSettings, headerRender, showSortButtons, topRow, addTotalRow}) => {
+const THead = ({ visibleColumns, tableSettings, headerRender, topRow, addTotalRow }) => {
+	// c isn't used but will be off by 1 if scroller is true
 	return (<thead>
-	<tr>
-		{visibleColumns.map((col, c) => {
-			return <Th table={this} tableSettings={tableSettings} key={c}
-				column={col} c={c} headerRender={headerRender}
-				showSortButtons={showSortButtons} />
-		})
-		}
-	</tr>
-
-	{topRow? <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} /> : null}
-	{addTotalRow?
-		<tr className="totalRow" >
-			<th>{addTotalRow}</th>
-			{visibleColumns.slice(1).map((col, c) =>
-				<TotalCell dataTree={dataTree} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
+		<tr>
+			{visibleColumns.map((col, c) => {
+				return <Th tableSettings={tableSettings} key={c} 
+					column={col} c={c} headerRender={headerRender} />
+			})
 			}
 		</tr>
-		: null}
 
-</thead>);
+		{topRow ? <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} /> : null}
+		{addTotalRow ?
+			<tr className="totalRow" >
+				<th>{addTotalRow}</th>
+				{visibleColumns.slice(1).map((col, c) =>
+					<TotalCell dataTree={dataTree} tableSettings={tableSettings} key={c} column={col} c={c} />)
+				}
+			</tr>
+			: null}
+
+	</thead>);
 };
 
-const createCSVData = ({visibleColumns, topRow, addTotalRow, dataTree, bottomRow}) => {
+const createCSVData = ({ visibleColumns, topRow, tableSettings, dataTree, bottomRow }) => {
 	// No UI buttons
-	visibleColumns = visibleColumns.filter(c => ! c.ui);
+	visibleColumns = visibleColumns.filter(c => !c.ui);
 	// build up an array view of the table
 	let dataArray = [];
 	// csv gets the text, never jsx from headerRender!
-	let ths = visibleColumns.map(column => column.Header || column.accessor || str(column)); 
+	let ths = visibleColumns.map(column => column.Header || column.accessor || str(column));
 	dataArray.push(ths);
 	// special top rows
 	if (topRow) {
-		let rowData = createCSVData2_row({visibleColumns, item:topRow});
+		let rowData = createCSVData2_row({ visibleColumns, item: topRow });
 		dataArray.push(rowData);
-	} 
-	if (addTotalRow) {
+	}
+	if (tableSettings.addTotalRow) {
 		console.error("TODO totalRow csv");
 		// let r = [addTotalRow];
 		// visibleColumns.slice(1).map((col, c) <TotalCell dataTree={dataTree} table={this} tableSettings={tableSettings} key={c} column={col} c={c} />)
@@ -267,27 +289,27 @@ const createCSVData = ({visibleColumns, topRow, addTotalRow, dataTree, bottomRow
 	// rows
 	Tree.map(dataTree, (node, parent, depth) => {
 		const item = Tree.value(node);
-		if ( ! item) return;
+		if (!item) return;
 		// <Row>
-		let rowData = createCSVData2_row({visibleColumns, item});
+		let rowData = createCSVData2_row({ visibleColumns, item });
 		dataArray.push(rowData);
 	});
 
 	if (bottomRow) {
-		let rowData = createCSVData2_row({visibleColumns, item:bottomRow});
+		let rowData = createCSVData2_row({ visibleColumns, item: bottomRow });
 		dataArray.push(rowData);
-	} 
+	}
 	return dataArray;
 };
 
-const createCSVData2_row = ({visibleColumns, item}) => {
+const createCSVData2_row = ({ visibleColumns, item }) => {
 	// See Row = (
-	const cells = visibleColumns.map(column => createCSVData3_cell({item, column}));
+	const cells = visibleColumns.map(column => createCSVData3_cell({ item, column }));
 	return cells;
 };
-const createCSVData3_cell = ({item, column}) => {
+const createCSVData3_cell = ({ item, column }) => {
 	// See Cell = (
-	const v = getValue({item, column});
+	const v = getValue({ item, column });
 	return defaultCellRender(v, column);
 };
 
@@ -295,15 +317,15 @@ const createCSVData3_cell = ({item, column}) => {
  * Convert data or dataObject into a tree, as the most general format
  * @returns {!Tree}
  */
-const standardiseData = ({data, dataObject, dataTree}) => {
-	assert([data, dataObject, dataTree].reduce((c,x) => x? c+1 : c, 0) === 1, "Need one and only one data input", [data, dataObject, dataTree]);
+const standardiseData = ({ data, dataObject, dataTree }) => {
+	assert([data, dataObject, dataTree].reduce((c, x) => x ? c + 1 : c, 0) === 1, "Need one and only one data input", [data, dataObject, dataTree]);
 	if (dataTree) return dataTree;
 	if (dataObject) {
 		// flatten an object into rows
-		assert( ! data, "SimpleTable.jsx - data or dataObject - not both");
-		data = Object.keys(dataObject).map(k => { return {key:k, value:dataObject[k]}; });
+		assert(!data, "SimpleTable.jsx - data or dataObject - not both");
+		data = Object.keys(dataObject).map(k => { return { key: k, value: dataObject[k] }; });
 	}
-	assert( ! data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);		
+	assert(!data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);
 	// make a flat root -> all-rows tree
 	dataTree = new Tree();
 	data.forEach(row => Tree.add(dataTree, row));
@@ -314,68 +336,68 @@ const standardiseData = ({data, dataObject, dataTree}) => {
  * Filter columns, rows, and data + sort
  * @returns {dataTree, visibleColumns: Column[]}
  */
-const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) => {
+const rowFilter = ({ dataTree, columns, tableSettings }) => {
 	const originalDataTree = dataTree; // debug
 	// filter?
 	// ...always filter nulls
-	dataTree = Tree.filterByValue(dataTree, item => !! item);
-	if ( ! dataTree) {
+	dataTree = Tree.filterByValue(dataTree, item => !!item);
+	if (!dataTree) {
 		console.warn("SimpleTable.jsx - filter nulls led to empty tree", originalDataTree);
 		dataTree = new Tree(); // empty!
 	}
 	if (tableSettings.filter) {
 		dataTree = Tree.filterByValue(dataTree, item => JSON.stringify(item).indexOf(tableSettings.filter) !== -1);
-		if ( ! dataTree) {
-			console.warn("SimpleTable.jsx - filter string led to empty tree: "+tableSettings.filter, originalDataTree);
+		if (!dataTree) {
+			console.warn("SimpleTable.jsx - filter string led to empty tree: " + tableSettings.filter, originalDataTree);
 			dataTree = new Tree(); // empty!
-		}	
+		}
 	}
-	
+
 	// dataTree - filter out collapsed rows
 	let visibleColumns = [...columns]; // copy for safety against the edits below
-	if (hasCollapse) {
+	if (tableSettings.hasCollapse) {
 		// preserve collapsed setting
 		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
-		if ( ! tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};		
+		if (!tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};
 		// filter by collapsed (which is set on the parent)
 		// Note: collapsed rows DO affect csv creation??
 		let allDataTree = dataTree;
-		dataTree = Tree.filter(dataTree, (node,parent) => {
-			if ( ! parent) return true;
+		dataTree = Tree.filter(dataTree, (node, parent) => {
+			if (!parent) return true;
 			const pnodeid = Tree.id(parent) || JSON.stringify(parent.value);
 			const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
-			return ! ncollapsed;
-		});	
-		assert(dataTree, "SimpleTable.jsx - collapsed to null?!");		
+			return !ncollapsed;
+		});
+		assert(dataTree, "SimpleTable.jsx - collapsed to null?!");
 		// HACK: add a collapse column
 		// ...collapse button
 		const Cell = (v, col, item, node) => {
 			let nodeid = Tree.id(node) || JSON.stringify(item);
 			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
 			// no node or children? no need for a control
-			if ( ! node || ! Tree.children(node).length) {
+			if (!node || !Tree.children(node).length) {
 				// but what if we'd filtered out the children above?
-				if ( ! ncollapsed ) return null;
+				if (!ncollapsed) return null;
 			}
-			return (<button className="btn btn-xs btn-outline-secondary" title={ncollapsed? "click to expand" : "click to collapse"}
-				onClick={e => {tableSettings.collapsed4nodeid[nodeid] = ! ncollapsed; DataStore.update();}}
-			>{ncollapsed? '▷' : '▼'}</button>);
+			return (<button className="btn btn-xs btn-outline-secondary" title={ncollapsed ? "click to expand" : "click to collapse"}
+				onClick={e => { tableSettings.collapsed4nodeid[nodeid] = !ncollapsed; DataStore.update(); }}
+			>{ncollapsed ? '▷' : '▼'}</button>);
 		};
 		// add column, with a collapse/expand all option
-		let allCollapsed = !! tableSettings.collapsed4nodeid.all;
+		let allCollapsed = !!tableSettings.collapsed4nodeid.all;
 		const uiCol = new Column({
-			ui:true, 
-			Header: <button className="btn btn-xs btn-outline-secondary" onClick={e => {				
-				allCollapsed = ! allCollapsed;
+			ui: true,
+			Header: <button className="btn btn-xs btn-outline-secondary" onClick={e => {
+				allCollapsed = !allCollapsed;
 				// NB: unshift so we dont collapse the root node
 				Tree.flatten(allDataTree).slice(1).map(node => {
-					if ( ! Tree.children(node).length) return;
+					if (!Tree.children(node).length) return;
 					let nodeid = Tree.id(node) || JSON.stringify(node.value);
 					tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
 				});
 				tableSettings.collapsed4nodeid.all = allCollapsed;
 				DataStore.update();
-			}} title={'click to collapse/expand all'} ><b>{allCollapsed? '▷' : '▼'}</b></button>, 
+			}} title={'click to collapse/expand all'} ><b>{allCollapsed ? '▷' : '▼'}</b></button>,
 			Cell
 		});
 		let firstCol = visibleColumns.shift();
@@ -391,24 +413,24 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 		let sortFn = column.sortMethod;
 		if ( ! sortFn) {
 			let getter = sortGetter(column);
-			sortFn = (a,b) => defaultSortMethodForGetter(a,b,getter,column.type);
+			sortFn = (a, b) => defaultSortMethodForGetter(a, b, getter, column.type);
 		}
 		if (Tree.depth(dataTree) > 2) {
 			throw new Error("Cannot sort a hierarchical tree", dataTree);
 		}
-		Tree.children(dataTree).sort((na,nb) => sortFn(Tree.value(na), Tree.value(nb)));
+		Tree.children(dataTree).sort((na, nb) => sortFn(Tree.value(na), Tree.value(nb)));
 		if (tableSettings.sortByReverse) {
 			dataTree.children = Tree.children(dataTree).reverse();
 		}
 	} // sort
 
 	// hide columns with no data
-	if (hideEmpty) {
+	if (tableSettings.hideEmpty) {
 		const data = Tree.allValues(dataTree);
 		visibleColumns = visibleColumns.filter(c => {
 			if (c.ui) return true; // preserve UI columns
 			const getter = sortGetter(c);
-			for(let di=0; di<data.length; di++) {
+			for (let di = 0; di < data.length; di++) {
 				let vi = getter(data[di]);
 				if (vi) return true;
 			}
@@ -416,7 +438,7 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 		});
 	}
 	// NB maxRows is done later to support csv-download being all data
-	return {dataTree, visibleColumns};
+	return { dataTree, visibleColumns };
 } // ./filter
 
 
@@ -424,48 +446,49 @@ const rowFilter = ({dataTree, columns, hasCollapse, tableSettings, hideEmpty}) =
 /**
  * The meat of the table! (normally)
  * @param {!Tree} dataTree
+ * 
  */
-const Rows = ({dataTree, visibleColumns, rowsPerPage, page=0, rowNum=0, hasCollapse}) => {
-	if ( ! dataTree) return null;
+const Rows = ({ dataTree, visibleColumns, tableSettings, rowNum = 0 }) => {
+	if (!dataTree) return null;
 	// clip?
-	let min = rowsPerPage? page*rowsPerPage : 0;
-	let max = rowsPerPage? (page+1)*rowsPerPage : Infinity;
+	let min = tableSettings.rowsPerPage ? tableSettings.page * tableSettings.rowsPerPage : 0;
+	let max = tableSettings.rowsPerPage ? (tableSettings.page + 1) * tableSettings.rowsPerPage : Infinity;
 	// build the rows
 	let $rows = [];
 	Tree.map(dataTree, (node, parent, depth) => {
 		const item = Tree.value(node);
-		if ( ! item) return;
+		if (!item) return;
 		// clip from min/max paging?
 		if (rowNum < min || rowNum >= max) {
 			rowNum++;
 			return;
 		}
 		// <Row>
-		let $row = <Row key={'r'+rowNum} item={item} rowNum={rowNum} depth={depth} hasCollapse={hasCollapse}
+		let $row = <Row key={'r' + rowNum} item={item} rowNum={rowNum} depth={depth} tableSettings={tableSettings}
 			columns={visibleColumns}
 			node={node}
-			/>;
+		/>;
 		$rows.push($row);
 		rowNum++;
 	});
 	// filter nulls (due to execute-but-don't-render-hidden behaviour)
-	$rows = $rows.filter(a=>!!a); // NB: Row can return null
+	$rows = $rows.filter(a => !!a); // NB: Row can return null
 	return $rows;
 };
 
 
-const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButtons}) => {
+const Th = ({ column, tableSettings, headerRender }) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
 	let hText;
 	if (headerRender) hText = headerRender(column);
-	else hText = column.Header || column.accessor || str(column);	
+	else hText = column.Header || column.accessor || str(column);
 	// add in a tooltip?
 	if (column.tooltip) {
-		let tooltip = calcStyle({style: column.tooltip, depth:0, column});
+		let tooltip = calcStyle({ style: column.tooltip, depth: 0, column });
 		hText = <div title={tooltip}>{hText}</div>;
 	}
 	// No sorting?
-	if ( ! showSortButtons) return (
+	if ( ! tableSettings.showSortButtons) return (
 		<th>{hText}</th>
 	);
 	// sort UI
@@ -473,24 +496,34 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
 	let onClick = e => {
 		console.warn('sort click', column, sortByMe, tableSettings);
 		if (sortByMe) {
-			table.setState({sortByReverse: ! tableSettings.sortByReverse});
-			// tableSettings.sortByReverse = ! tableSettings.sortByReverse;
+			tableSettings.sortByReverse = ! tableSettings.sortByReverse;
 		} else {
-			// table.setState({sortBy: c});
-			table.setState({sortByReverse: false});
-			// tableSettings.sortByReverse = false;
+			tableSettings.sortByReverse = false;
 		}
-		table.setState({sortBy: column});
-		// tableSettings.sortBy = c;
+		tableSettings.sortBy = column;
+		tableSettings.update();
 	};
-	
+
 	// Sort indicator glyph: point down for descending, point up for ascending, outlined point down for "not sorted on this column"
 	let arrow = null;
 	if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
 	else arrow = <>&#x25BD;</>;
 
+	// keep first row visible
+	let style = null;
+	if (tableSettings.scroller && tableSettings.scrollTop) {
+		style = {
+			top: tableSettings.scrollTop,
+			position:"relative",
+			background:tableSettings.background,
+			borderBottom: "1px solid black",
+			boxShadow: "0 .2rem 0.1rem rgba(0,0,0,0.15) !important", // not working?? Use a class instead??
+			zIndex:20
+		};
+	}
+
 	return (
-		<th>
+		<th style={style} >
 			<div onClick={onClick}>{hText}{arrow}</div>
 		</th>
 	);
@@ -501,30 +534,30 @@ const Th = ({column, table, tableSettings, dataArray, headerRender, showSortButt
  * @param {!Number} rowNum Can be -1 for special rows ??0 or 1 indexed??
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({item, rowNum, node, columns, depth = 0, hasCollapse}) => {
-	const cells = columns.map((col,i) => (
-		<Cell key={i}
-			row={rowNum} depth={depth} 
+const Row = ({ item, rowNum, node, columns, depth = 0, tableSettings}) => {
+	const cells = columns.map((col, i) => (
+		<Cell key={i} colNum={i}
+			row={rowNum} depth={depth}
 			node={node}
 			column={col} item={item}
-			hasCollapse={hasCollapse}
+			tableSettings={tableSettings}
 		/>
 	));
 	let style = item.style;
 	return (
-		<tr className={space("row"+rowNum, rowNum%2? "odd" : "even", "depth"+depth)} style={style}>
+		<tr className={space("row" + rowNum, rowNum % 2 ? "odd" : "even", "depth" + depth)} style={style}>
 			{cells}
 		</tr>
 	);
 };
 
-const getValue = ({item, row, column}) => {
-	if ( ! item) {
+const getValue = ({ item, row, column }) => {
+	if (!item) {
 		console.error("SimpleTable.jsx getValue: null item", column);
 		return undefined;
 	}
 	let accessor = column.accessor || column;
-	let v = _.isFunction(accessor)? accessor(item) : item[accessor];
+	let v = _.isFunction(accessor) ? accessor(item) : item[accessor];
 	return v;
 };
 
@@ -534,7 +567,7 @@ const getValue = ({item, row, column}) => {
  */
 const sortGetter = (column) => {
 	let getter = column.sortAccessor;
-	if ( ! getter) getter = a => getValue({item:a, column:column});
+	if (!getter) getter = a => getValue({ item: a, column: column });
 	return getter;
 }
 
@@ -554,8 +587,8 @@ const defaultSortMethodForGetter = (a, b, getter, type) => {
 	if (av === undefined || av === null) av = "";
 	if (bv === undefined || bv === null) bv = "";
 	// blank = last
-	if (av==="" && bv) return 1;
-	if (bv==="" && av) return -1;
+	if (av === "" && bv) return 1;
+	if (bv === "" && av) return -1;
 	// case insensitive
 	if (_.isString(av)) av = av.toLowerCase();
 	if (_.isString(bv)) bv = bv.toLowerCase();
@@ -564,7 +597,7 @@ const defaultSortMethodForGetter = (a, b, getter, type) => {
 		try {
 			av = new Date(av);
 			bv = new Date(bv);
-		} catch(err) {
+		} catch (err) {
 			console.warn(err);
 		}
 	}
@@ -574,7 +607,7 @@ const defaultSortMethodForGetter = (a, b, getter, type) => {
 
 
 const defaultCellRender = (v, column) => {
-	if (v===undefined || Number.isNaN(v)) return null;
+	if (v === undefined || Number.isNaN(v)) return null;
 	// by type?
 	if (column.type === 'date' && v) {
 		let d = asDate(v);
@@ -583,12 +616,12 @@ const defaultCellRender = (v, column) => {
 	if (column.format) {
 		let significantDigits = 2; // set to the defualt value that was previously hard coded
 		let precision = 2;
-		if (column.precision){ precision = column.precision;}
-		if (column.significantDigits){ significantDigits = column.significantDigits}
+		if (column.precision) { precision = column.precision; }
+		if (column.significantDigits) { significantDigits = column.significantDigits }
 
 		if (CellFormat.ispercent(column.format)) {
 			// 2 sig figs
-			return printer.prettyNumber(100*v, significantDigits) + "%";
+			return printer.prettyNumber(100 * v, significantDigits) + "%";
 		}
 		if (CellFormat.ispounds(column.format)) {
 			// v = printer.prettyNumber(v, significantDigits);
@@ -601,9 +634,9 @@ const defaultCellRender = (v, column) => {
 	}
 	// number or numeric string
 	let nv = asNum(v);
-	if (nv !== undefined && nv !== null && ! Number.isNaN(nv)) {
+	if (nv !== undefined && nv !== null && !Number.isNaN(nv)) {
 		// 1 decimal place
-		nv = Math.round(nv*10)/10;
+		nv = Math.round(nv * 10) / 10;
 		// commas
 		const sv = printer.prettyNumber(nv, 10);
 		return sv;
@@ -619,13 +652,13 @@ const defaultCellRender = (v, column) => {
  * @param {Number} row
  * @param {Column} column
  */
-const Cell = ({item, row, depth, node, column, hasCollapse}) => {
-	const citem = item;	
+const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
+	const citem = item;
 	let clickToEdit = null, clickToEditOff = null;
 	try {
-		const v = getValue({item, row, column});
+		const v = getValue({ item, row, column });
 		let render = column.Cell;
-		if ( ! render) {
+		if (!render) {
 			if (column.editable) {
 				// safety check we can edit this
 				assert(column.path || DataStore.getPathForItem(C.KStatus.DRAFT, item), "SimpleTable.jsx - Cell", item, column);
@@ -636,27 +669,36 @@ const Cell = ({item, row, depth, node, column, hasCollapse}) => {
 		} else {
 			// replace the render function with the built-in editor on-click?
 			if (column.editable) {
-				let [editing,setEditing] = useState();
+				let [editing, setEditing] = useState();
 				clickToEdit = e => setEditing(true);
 				clickToEditOff = e => setEditing(false);
 				if (editing) {
 					render = val => <Editor value={val} row={row} column={column} item={citem} />;
 				}
-			}			
+			}
 		}
 		const cellGuts = render(v, column, item, node);
 		// collapse? Done by an extra column
-		if (hasCollapse && Tree.children(node)) {
-
+		let style = calcStyle({ style: column.style, cellValue: v, item, row, depth, column }) || {};
+		let tooltip = calcStyle({ style: column.tooltip, cellValue: v, item, row, depth, column });
+		
+		// keep first col visible NB first row is a Th
+		if (colNum===0 && tableSettings.scroller && tableSettings.scrollLeft) {
+			style = Object.assign({
+				left: tableSettings.scrollLeft,
+				position:"relative",
+				background:tableSettings.background,
+				borderRight: "1px solid black",
+				zIndex:10
+			}, style);
 		}
-		let style = calcStyle({style: column.style, cellValue:v, item, row, depth, column});
-		let tooltip = calcStyle({style: column.tooltip, cellValue:v, item, row, depth, column});
+
 		// the moment you've been waiting for: a table cell!
-		return <td style={style} title={tooltip} onDoubleClick={clickToEdit} onBlur={clickToEditOff} >{cellGuts}</td>;
-	} catch(err) {
+		return <td style={style} title={tooltip} onDoubleClick={clickToEdit} onBlur={clickToEditOff} ><div>{cellGuts}</div></td>;
+	} catch (err) {
 		// be robust
 		console.error(err);
-		return <td>{str(err)}</td>;
+		return <td><div>{str(err)}</div></td>;
 	}
 };
 
@@ -665,24 +707,24 @@ const Cell = ({item, row, depth, node, column, hasCollapse}) => {
  * @param {?Object|function} style if a function, it does (cellValue, item) -> css-style-object
  * @returns (?Object)
  */
-const calcStyle = ({style, cellValue, item, row, depth, column}) => {
-	if (typeof(style) === 'function') {
-		return style({cellValue, item, row, depth, column});
+const calcStyle = ({ style, cellValue, item, row, depth, column }) => {
+	if (typeof (style) === 'function') {
+		return style({ cellValue, item, row, depth, column });
 	}
 	// an object e.g. {color:"blue"}
 	return style;
 };
 
-const TotalCell = ({dataTree, column}) => {
+const TotalCell = ({ dataTree, column }) => {
 	// sum the data for this column
 	let total = 0;
 	const getter = sortGetter(column);
 	Tree.mapByValue(dataTree, rItem => {
 		const v = getter(rItem);
 		// NB: 1* to force coercion of numeric-strings
-		if ($.isNumeric(v)) total += 1*v;
+		if ($.isNumeric(v)) total += 1 * v;
 	});
-	if ( ! total) return <td></td>;
+	if (!total) return <td></td>;
 	// ??custom cell render might break on a Number. But Money seems to be robust about its input.
 	const render = column.Cell || defaultCellRender;
 	const cellGuts = render(total, column);
@@ -692,10 +734,10 @@ const TotalCell = ({dataTree, column}) => {
 /**
  * Editor for the use-case: each row = a DataStore data item.
  */
-const Editor = ({row, column, value, item}) => {
+const Editor = ({ row, column, value, item }) => {
 	// what DataStore path?
 	let path = column.path;
-	if ( ! path) {
+	if (!path) {
 		try {
 			// we edit draft
 			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
@@ -703,7 +745,7 @@ const Editor = ({row, column, value, item}) => {
 			if (!DataStore.getValue(path)) {
 				DataStore.setValue(path, item, false);
 			}
-		} catch(err) {
+		} catch (err) {
 			console.log("SimpleTable.jsx - cant get path-for-item", item, err);
 		}
 	}
@@ -714,11 +756,11 @@ const Editor = ({row, column, value, item}) => {
 		dummyItem = item || {};
 	} else {
 		// Not a DataStore item? fallback to dummies
-		if ( ! path) path = ['widget', 'SimpleTable', row, str(column)];
-		if ( ! prop) prop = 'value';
+		if (!path) path = ['widget', 'SimpleTable', row, str(column)];
+		if (!prop) prop = 'value';
 		dummyItem = {};
 		let editedValue = DataStore.getValue(path.concat(prop));
-		if (editedValue===undefined || editedValue===null) editedValue = value;
+		if (editedValue === undefined || editedValue === null) editedValue = value;
 		dummyItem[prop] = editedValue;
 	}
 	let type = column.type;
@@ -729,43 +771,45 @@ const Editor = ({row, column, value, item}) => {
 const CellFormat = new Enum("percent pounds string"); // What does a spreadsheet normally offer??
 
 
-const TableFoot = ({csv, tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow, numPages, colSpan, page, setPage}) => {
-	if ( ! csv && numPages < 2) {
+const TableFoot = ({visibleColumns, topRow, dataTree, bottomRow, numPages, colSpan, tableSettings}) => {
+	if ( ! tableSettings.hasCsv && numPages < 2) {
 		return null;
 	}
 	return (<tfoot><tr>
 		<td colSpan={colSpan}>
-			{numPages > 1? <TableFootPager page={page} setPage={setPage} numPages={numPages} /> : null}
-			{csv? <div className="pull-right"><CSVDownload {...{tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow}} /></div> : null}
+			{numPages > 1 ? <TableFootPager tableSettings={tableSettings} numPages={numPages} /> : null}
+			{tableSettings.hasCsv ? <div className="pull-right"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div> : null}
 		</td>
 	</tr></tfoot>);
 };
 
-const TableFootPager = ({page,setPage,numPages}) => {
+const TableFootPager = ({tableSettings, numPages }) => {
 	// TODO https://getbootstrap.com/docs/4.5/components/pagination/
-	return (<div className="pull-left">		
-		Page  
-		&nbsp; {page > 0? <a href='' onClick={e => stopEvent(e) && setPage(page-1)} >&lt;</a> : <span className="disabled">&lt;</span>} 
-		&nbsp; {page+1}
-		&nbsp; {page+1 < numPages? <a href='' onClick={e => stopEvent(e) && setPage(page+1)}>&gt;</a> : <span className="disabled">&gt;</span>}
-		&nbsp; of {numPages} 
+	const page = tableSettings.page;
+	const setPage = p => {tableSettings.page = p; tableSettings.update()};
+	return (<div className="pull-left">
+		Page
+		&nbsp; {page > 0 ? <a href='' onClick={e => stopEvent(e) && setPage(page - 1)} >&lt;</a> : <span className="disabled">&lt;</span>}
+		&nbsp; {page + 1}
+		&nbsp; {page + 1 < numPages ? <a href='' onClick={e => stopEvent(e) && setPage(page + 1)}>&gt;</a> : <span className="disabled">&gt;</span>}
+		&nbsp; of {numPages}
 	</div>);
 };
 
-const CSVDownload = ({tableName, visibleColumns, topRow, addTotalRow, dataTree, bottomRow}) => {
+const CSVDownload = ({tableSettings, visibleColumns, topRow, dataTree, bottomRow }) => {
 	const ref = useRef();
 	// assert(_.isArray(jsonArray), jsonArray);
 	// // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
 	const setupCsv = (e, $a) => {
-		let dataArray = createCSVData({visibleColumns, topRow, addTotalRow, dataTree, bottomRow});
-		let csv = dataArray.map(r => r.join? r.map(cell => csvEscCell(cell)).join(",") : ""+r).join("\r\n");
-		let csvLink = 'data:text/csv;charset=utf-8,'+encURI(csv);	
+		let dataArray = createCSVData({ visibleColumns, topRow, tableSettings, dataTree, bottomRow });
+		let csv = dataArray.map(r => r.join ? r.map(cell => csvEscCell(cell)).join(",") : "" + r).join("\r\n");
+		let csvLink = 'data:text/csv;charset=utf-8,' + encURI(csv);
 		// console.log(e, e.target, $a, ref, csv, csvLink);
 		e.target.setAttribute('href', csvLink);
 	};
 	// NB the entity below is the emoji "Inbox Tray" glyph, U+1F4E5
 	return (
-		<a href='' download={(tableName||'table')+'.csv'} 
+		<a href='' download={(tableSettings.tableName || 'table') + '.csv'}
 			ref={ref}
 			onClick={e => setupCsv(e, this)}
 		>
@@ -775,17 +819,17 @@ const CSVDownload = ({tableName, visibleColumns, topRow, addTotalRow, dataTree, 
 };
 
 const csvEscCell = s => {
-	if ( ! s) return "";
-	assMatch(s, String, "SimpleTable.jsx - csvEscCell not a String "+str(s));
+	if (!s) return "";
+	assMatch(s, String, "SimpleTable.jsx - csvEscCell not a String " + str(s));
 	// do we have to quote?
-	if (s.indexOf('"')===-1 && s.indexOf(',')===-1 && s.indexOf('\r')===-1 && s.indexOf('\n')===-1) {
+	if (s.indexOf('"') === -1 && s.indexOf(',') === -1 && s.indexOf('\r') === -1 && s.indexOf('\n') === -1) {
 		return s;
 	}
 	// quote to double quote
 	s = s.replace(/"/g, '""');
 	// quote it
-	return '"'+s+'"';
+	return '"' + s + '"';
 };
 
 export default SimpleTable;
-export {CellFormat, Column};
+export { CellFormat, Column };
