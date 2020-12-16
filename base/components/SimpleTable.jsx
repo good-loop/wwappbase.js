@@ -511,9 +511,21 @@ const Th = ({ column, tableSettings, headerRender }) => {
 		let tooltip = calcStyle({ style: column.tooltip, depth: 0, column });
 		hText = <div title={tooltip}>{hText}</div>;
 	}
+	// keep first row visible
+	let style = null;
+	if (tableSettings.scroller && tableSettings.scrollTop) {
+		style = {
+			top: tableSettings.scrollTop,
+			position:"relative",
+			background:tableSettings.background,
+			borderBottom: "1px solid black",
+			boxShadow: "0 .2rem 0.1rem rgba(0,0,0,0.15) !important", // not working?? Use a class instead??
+			zIndex:20
+		};
+	}	
 	// No sorting?
 	if ( ! tableSettings.showSortButtons) return (
-		<th>{hText}</th>
+		<th style={style}><div>{hText}</div></th>
 	);
 	// sort UI
 	let sortByMe = _.isEqual(tableSettings.sortBy, column);
@@ -532,19 +544,6 @@ const Th = ({ column, tableSettings, headerRender }) => {
 	let arrow = null;
 	if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
 	else arrow = <>&#x25BD;</>;
-
-	// keep first row visible
-	let style = null;
-	if (tableSettings.scroller && tableSettings.scrollTop) {
-		style = {
-			top: tableSettings.scrollTop,
-			position:"relative",
-			background:tableSettings.background,
-			borderBottom: "1px solid black",
-			boxShadow: "0 .2rem 0.1rem rgba(0,0,0,0.15) !important", // not working?? Use a class instead??
-			zIndex:20
-		};
-	}
 
 	return (
 		<th style={style} >
