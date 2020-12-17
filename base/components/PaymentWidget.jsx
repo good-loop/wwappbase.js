@@ -268,11 +268,9 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 		}).then(({paymentIntent, error}) => {
 			if (paymentIntent) {
 				// The payment went through! Pass the completed intent back to the invoking code.
-				console.log('*********** confirmCardPayment paymentIntent:', paymentIntent);	
 				onToken(paymentIntent);
 			} else {
 				// Something's gone wrong - handle the error.
-				console.log('*********** confirmCardPayment error:', error);
 				// Card errors are safe to show to the end-user.
 				if (error.type === 'card_error') {
 					setErrorMsg(error.message);
