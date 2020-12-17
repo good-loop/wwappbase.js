@@ -1,10 +1,12 @@
 // @Flow
-import React, { Component } from 'react';
-import { Form, FormGroup, Container, Row, Col, Button } from 'reactstrap';
+import React, { useEffect, useState } from 'react';
+import { Form, FormGroup, Row, Col, Button } from 'reactstrap';
 
-import { StripeProvider, Elements, injectStripe,
-	CardNumberElement, CardExpiryElement, CardCVCElement,
-	PaymentRequestButtonElement } from 'react-stripe-elements';
+import { Elements,
+	CardNumberElement, CardExpiryElement, CardCvcElement,
+	PaymentRequestButtonElement,
+	useStripe,
+	useElements} from '@stripe/react-stripe-js';
 
 import C from '../CBase';
 import Money from '../data/Money';
@@ -12,12 +14,16 @@ import Transfer from '../data/Transfer';
 import { assert, assMatch } from '../utils/assert';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
+import { loadStripe } from '@stripe/stripe-js';
+import ServerIO from '../../plumbing/ServerIO';
 
-// falsy value for SERVER_TYPE = production
-const stripeKey = (C.SERVER_TYPE) ?
+// Which Stripe API key to use?
+const stripeKey = (C.SERVER_TYPE) ? // SERVER_TYPE is falsy on production servers
 	'pk_test_RyG0ezFZmvNSP5CWjpl5JQnd' // test
 	: 'pk_live_InKkluBNjhUO4XN1QAkCPEGY'; // live
 
+// Dummy / special tokens for "test: pretend I paid", "pay by credit", "promotional free donation"
+// The server will catch these token IDs and route them appropriately instead of trying to collect from Stripe
 const SKIP_TOKEN = {
 	id: 'skip_token',
 	type: 'card',
@@ -30,8 +36,8 @@ const FREE_TOKEN = {
 	id: 'free_token',
 	type: 'free',
 };
-/** minimal transation amount by currency
-// table copied from https://stripe.com/docs/currencies (31/08/18) */
+
+/** Minimum transaction amount by currency: from https://stripe.com/docs/currencies (31/08/18) */
 const STRIPE_MINIMUM_AMOUNTS = {
 	'GBP': 0.5,
 	'USD': 0.75,
@@ -61,25 +67,39 @@ const STRIPE_MINIMUM_AMOUNTS = {
  * 	The token string is either a Stripe authorisation token, or one of the fixed special values (e.g. credit_token).
  * @param {?Boolean} testOption true/false to show/hide the pretend-I-paid option. Defaults to true on test or local.
  */
-const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, error, testOption}) => {
-	if ( ! amount) {
-		return null; // no amount, no payment
+const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, error, testOption, repeat}) => {
+	if (!amount) return null; // no amount, no payment
+
+	if (testOption === undefined) {
+		testOption = !C.isProduction();
 	}
-	if (testOption===undefined) {
-		testOption = ! C.isProduction();
-	}
+
+	// Promise containing the Stripe object
+	const [stripePromise, setStripePromise] = useState();
+	// Create once and persist so Stripe Elements don't complain about prop change on re-render
+	useEffect(() => setStripePromise(loadStripe(stripeKey)), [stripeKey]);
+
+	// The current PaymentIntent object
+	const [paymentIntent, setPaymentIntent] = useState(null);
+	// Get a new PaymentIntent if we don't have one, or update it if the payment amount changes
+	useEffect(() => {
+		// Stripe takes amount in "smallest unit of currency" - i.e. pence in GBP, cents in USD
+		const data = { action: 'getPaymentIntent', amount: Math.round(Money.value(amount) * 100) };
+		// If a payment intent exists, ask the server to update it with the new payment amount
+		if (paymentIntent) data.id = paymentIntent.id;
+
+		ServerIO.load('/stripe-paymentintent', {data}).then(({cargo}) => setPaymentIntent(cargo));
+		// Set null so form remains locked until we get the new/updated PaymentIntent	
+		setPaymentIntent(null);
+	}, [Money.value(amount)]);
+
 	Money.assIsa(amount, "PaymentWidget.jsx");
 	assMatch(onToken, Function, "PaymentWidget.jsx");
 	assMatch(recipient, String, "PaymentWidget.jsx");
 
-	// Money = £0? Then just a confirm button
+	// Amount to pay = £0? Then just a confirm button.
 	if (Money.value(amount) === 0) {
-		const payNothing = (event) => (
-			onToken({
-				...FREE_TOKEN,
-				email,
-			})
-		);
+		const payNothing = () => onToken({ ...FREE_TOKEN, email,	});
 		return (
 			<div className="PaymentWidget">
 				<button onClick={payNothing} className="btn btn-primary">Confirm Free Purchase</button>
@@ -87,24 +107,17 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 		);
 	} // ./ £0
 
-	// Invoke the callback, with a minimal fake token that the servlet will catch
-	const skipAction = (event) => (
-		onToken({
-			...SKIP_TOKEN,
-			email,
-		})
-	);
-	const payByCredit = (event) => (
-		onToken({
-			...CREDIT_TOKEN,
-			email,
-		})
-	);
+	// Pretend user paid (test only): Invoke the callback, with a minimal fake token that the servlet will catch
+	const skipAction = () => onToken({ ...SKIP_TOKEN, email, });
+
+
 
 	// pay on credit??
 	let credit = Transfer.getCredit(); // ??This is kind of SoGive specific
 	if (credit && Money.value(credit) > 0) {
 		if (Money.value(credit) >= Money.value(amount)) {
+			// 
+			const payByCredit = () =>  onToken({ ...CREDIT_TOKEN, email, });
 			return (
 				<div className="section donation-amount">
 					<p>You have <Misc.Money amount={credit} /> in credit which will pay for this.</p>
@@ -113,25 +126,35 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 			);
 		}
 	} // ./credit
+
+	// We need a PaymentIntent (which we get from the backend) before we can show the credit card form.
+	if (!paymentIntent || !paymentIntent.clientSecret) {
+		return (
+			<div className="section donation-amount">
+				<Misc.Loading text="Preparing your Stripe payment..." />
+			</div>
+		);
+	}
 	
 	return (
 		<div className="section donation-amount">
-			<StripeProvider apiKey={stripeKey}>
-				<Elements>
-					<StripeThings onToken={onToken} amount={amount} credit={credit} recipient={recipient}
-						email={email} usePaymentRequest={usePaymentRequest} serverError={error}
-					/>
-				</Elements>
-			</StripeProvider>
+			<Elements stripe={stripePromise}>
+				<StripeThingsFunctional onToken={onToken} amount={amount} credit={credit} recipient={recipient}
+					email={email} usePaymentRequest={usePaymentRequest} serverError={error}
+					clientSecret={paymentIntent && paymentIntent.clientSecret}
+					repeat={repeat}
+				/>
+			</Elements>
 
-			{error? <div className="alert alert-danger">{error}</div> : null}
+			{error ? <div className="alert alert-danger">{error}</div> : null}
 
-			{testOption? (
+			{testOption ? (
 				<small className="clear">
-					Test card no: 4000008260000000 (use any CVC and any future expiry date).
-					Stolen test card no: 4000000000009979.
-					Or
-					<button onClick={skipAction}>test: pretend I paid</button>
+					Test cards (use any CVC and any future expiry before 2070):<br/>
+					4000008260000000 (normal)<br/>
+					4000002760003184 (3D Secure auth for first transaction)<br/>
+					4000000000009979 (stolen)<br/>
+					Or <button onClick={skipAction}>test: pretend I paid</button>
 				</small>
 			) : null}
 		</div>
@@ -146,30 +169,45 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
  * "we provide the widgets and the host page can't touch your CC data".
  * It's conceivable we could pry that data out, but it's not a good idea.
  */
-class StripeThingsClass extends Component {
-	constructor(props) {
-		super(props);
+const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail, usePaymentRequest, error: serverError, repeat, clientSecret }) => {
+	// Stripe hooks methods, replacing the old-style provider wrappers that injected these as props
+	const stripe = useStripe();
+	const elements = useElements();
 
-		const {amount, credit, onToken, recipient, email} = props;
+	const [canMakePayment, setCanMakePayment] = useState(false);
+	const [paymentRequest, setPaymentRequest] = useState(null);
+	const [email, setEmail] = useState(dfltEmail); // later: allow changing this / setting if not provided
+	const [isSaving, setIsSaving] = useState(serverError); // Don't allow submit while there's an unresolved server error
+	const [errorMsg, setErrorMsg] = useState();
+	
+	const isValidAmount = Money.value(amount) >= STRIPE_MINIMUM_AMOUNTS[amount.currency]
 
+	const errors = {}; // TODO uhhh
+
+	/*
+		Stripe has a widget which can use the Payments API or
+		Google Wallet /	Apple Pay to take payment & turn it into
+		a Stripe payment token.
+		If the API is available and functioning & the invoking
+		component allows its use, skip showing the CC details form
+		and just present a single "Pay" button which will make a
+		browser-native payment request.
+	*/
+	useEffect(() => {
+		// Don't try to use Payments API unless the invoking component requests it.
+		if (!usePaymentRequest) {
+			setPaymentRequest(false)
+			return;
+		}
+
+		// Subtract any SoGive credit from the amount to be paid
 		let residual = amount;
-		// NB dont add on prior debts
 		if (credit && Money.value(credit) > 0) {
 			residual = Money.sub(amount, credit);
 		}
 
-		// Native widget?
-		/* We might be able to forgo the rigmarole of collecting
-		+ submitting CC data ourselves, if the browser supports
-		the generic Payments API or has Google Wallet / Apple Pay
-		integration. Stripe gives us a pre-rolled button which
-		extracts a Stripe payment token from these services.
-		Here, we check if it's available - in render(), if it is,
-		we skip showing the form and just present a flashy "Pay"
-		button. */
-		// ?? Does this widget get stuck on the first amount?
-		// See SoGive bug report: https://issues.soda.sh/stream?tag=148924
-		const paymentRequest = props.stripe.paymentRequest({
+		/* TODO This probably needs updating - but it's dummied out with usePaymentRequest=false anyway */
+		const paymentRequestTemp = stripe.paymentRequest({
 			country: 'GB',
 			currency: (amount.currency || 'gbp').toLowerCase(),
 			total: {
@@ -178,143 +216,142 @@ class StripeThingsClass extends Component {
 			},
 		});
 
-		paymentRequest.on('token', ({complete, token, ...data}) => {
+		paymentRequestTemp.on('token', ({complete, token, ...data}) => {
 			console.log('paymentRequest received Stripe token: ', token);
 			console.log('paymentRequest received customer information: ', data);
 			onToken(token);
 			complete('success');
 		});
 
-		// TODO do this earlier to avoid a redraw glitch
-		paymentRequest.canMakePayment().then(result => {
-			this.setState({canMakePayment: !!result});
+		paymentRequestTemp.canMakePayment().then(result => {
+			if (result) {
+				setPaymentRequest(paymentRequestTemp); // Test succeeded, use Payments API
+			} else {
+				setPaymentRequest(false); // Test failed, fall back to Stripe methods
+			}
 		});
-
-		this.state = {
-			canMakePayment: false,
-			paymentRequest,
-			email
-		};
-	} // ./constructor
+		// Make sure the payment request object reflects current amount etc
+	}, [usePaymentRequest, stripe, Money.value(amount), Money.value(credit)]);
 
 
-	handleSubmit(event) {
+	// If the invoking component says to use Payments API if possible...
+	if (usePaymentRequest) {
+		// We don't know if it's supported yet - show a spinner.
+		if (paymentRequest === null) return <Misc.Loading />;
+		// It's supported and a PaymentRequest has been created - show the button.
+		if (paymentRequest) return <PaymentRequestButtonElement paymentRequest={paymentRequest} />;
+	}
+
+
+	const handleSubmit = (event) => {
 		console.log("PaymentWidget - handleSubmit", event);
-		// Don't submit and cause a pageload!
+		// Don't let the browser submit and cause a pageload!
 		event.preventDefault();
 		// block repeat clicks, and clear old errors
-		this.setState({stripeError: false, errorMsg: '', isSaving: true});
+		setIsSaving(true);
+		setErrorMsg('');
 
-		// Within the context of `Elements`, this call to createToken knows which Element to
-		// tokenize, since there's only one in this group.
-		let tokenInfo = {
-			// name: this.props.username,
-			type: "card"
+		const paymentOptions = {
+			payment_method: {
+				card: elements.getElement(CardNumberElement),
+			},
 		};
-		let ownerInfo = {
-			name: this.props.username,
-			email: this.state.email
-		};
-		// get the token or reusable source from stripe
-		// see https://stripe.com/docs/sources/cards
-		// TODO update to https://stripe.com/docs/payments/payment-intents
-		this.props.stripe.createSource(tokenInfo, ownerInfo)		// Token(tokenInfo)
-			// then call custom processing (e.g. publish donation)
-			.then(({token, source, error, ...data}) => {
-				if (source) {
-					this.props.onToken(source);
-				} else if (token) {
-					this.props.onToken(token);
-				} else {
-					this.setState({stripeError: error, errorMsg: error && error.message, isSaving: false});
-				}
-			})
-			// on abject (eg. network) failure, mark the form as active again
-			.catch(() => this.setState({isSaving: false}));
-	} //./handleSubmit()
 
-
-	render() {
-		if (this.state.canMakePayment && this.props.usePaymentRequest) {
-			return (<PaymentRequestButtonElement paymentRequest={this.state.paymentRequest} />);
+		// For repeating donations, tell Stripe we need off-session authorisation
+		// (i.e. can collect with customer not present) for future charges to this card.
+		if (repeat && repeat.amount && Money.value(repeat.amount) > 0) {
+			paymentOptions.setup_future_usage = 'off_session';
 		}
 
-		const {amount, recipient, credit, repeatAmount, repeatFreq, repeatEnd} = this.props;
-		const {value, currency} = amount;
-		const isSaving = this.state.isSaving && ! this.props.serverError;
-		const isValidAmount = value >= STRIPE_MINIMUM_AMOUNTS[currency]
-		// TODO an email editor if this.props.email is unset
-		return (
-			<Form onSubmit={(event) => this.handleSubmit(event)}>
-				<h4>Payment to {recipient}</h4>
-				<PaymentAmount amount={amount} repeatAmount={repeatAmount} repeatFreq={repeatFreq} repeatEnd={repeatEnd} />
-				{credit && Money.value(credit) > 0?
-					<FormGroup><Col md="12">
-						You have <Misc.Money amount={credit} /> in credit which will be used towards this payment.
-					</Col></FormGroup>
-				: null}
+		stripe.confirmCardPayment(clientSecret, {
+			...paymentOptions
+		}).then(({paymentIntent, error}) => {
+			if (paymentIntent) {
+				// The payment went through! Pass the completed intent back to the invoking code.
+				onToken(paymentIntent);
+			} else {
+				// Something's gone wrong - handle the error.
+				// Card errors are safe to show to the end-user.
+				if (error.type === 'card_error') {
+					setErrorMsg(error.message);
+				}
+				// TODO Take action on other errors
+			}
+			setIsSaving(false);
+		});
+	} //./handleSubmit()
 
-				<Row>
-					<Col md="12">
-						<FormGroup>
-							<label>Card number</label>
-							<div className="form-control">
-								<CardNumberElement placeholder="0000 0000 0000 0000" />
-							</div>
-						</FormGroup>
-					</Col>
-				</Row>
-				<Row>
-					<Col md="6">
-						<FormGroup>
-							<label>Expiry date</label>
-							<div className="form-control">
-								<CardExpiryElement />
-							</div>
-						</FormGroup>
+	
+	// TODO an email editor if email is unset
+	return (
+		<Form onSubmit={(event) => handleSubmit(event)}>
+			<h4>Payment to {recipient}</h4>
+			<PaymentAmount amount={amount} repeat={repeat} />
+			{credit && Money.value(credit) > 0?
+				<FormGroup><Col md="12">
+					You have <Misc.Money amount={credit} /> in credit which will be used towards this payment.
+				</Col></FormGroup>
+			: null}
 
-					</Col>
-					<Col md="6">
-						<FormGroup>
-							<label>CVC</label>
-							<div className="form-control">
-								<CardCVCElement />
-							</div>
-						</FormGroup>
-					</Col>
-				</Row>
+			<Row>
+				<Col md="12">
+					<FormGroup>
+						<label>Card number</label>
+						<div className="form-control">
+							<CardNumberElement placeholder="0000 0000 0000 0000" />
+						</div>
+					</FormGroup>
+				</Col>
+			</Row>
+			<Row>
+				<Col md="6">
+					<FormGroup>
+						<label>Expiry date</label>
+						<div className="form-control">
+							<CardExpiryElement />
+						</div>
+					</FormGroup>
+				</Col>
+				<Col md="6">
+					<FormGroup>
+						<label>CVC</label>
+						<div className="form-control">
+							<CardCvcElement />
+						</div>
+					</FormGroup>
+				</Col>
+			</Row>
 
-				<Button color="primary" size="lg" className="pull-right" type="submit"
-					disabled={isSaving || !isValidAmount}
-					title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency}
-				>
-					Submit Payment
-				</Button>
-				{this.state.errorMsg? <div className="alert alert-danger">{this.state.errorMsg}</div> : null}
-			</Form>
-		);
-	} // ./render()
+			<Button color="primary" size="lg" className="pull-right" type="submit"
+				disabled={isSaving || !isValidAmount}
+				title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency}
+			>
+				Submit Payment
+			</Button>
+			{errors.errorMsg? <div className="alert alert-danger">{errors.errorMsg}</div> : null}
+		</Form>
+	);
 } // ./StripeThingsClass
 
-const PaymentAmount = ({amount, repeatAmount, repeatFreq, repeatEnd}) => {
-	if ( ! repeatAmount) {
+const PaymentAmount = ({amount, repeat = {}}) => {
+	if (!repeat.amount) {
 		return <h4><Misc.Money amount={amount} /></h4>;
 	}
 		// TODO  {repeatEnd}
-	if (Money.value(repeatAmount) === Money.value(amount)) {
+	if (Money.value(repeat.amount) === Money.value(amount)) {
 		return (<>
-			<h4><Misc.Money amount={amount} /> {Donation.strRepeat(repeatFreq)} {repeatEnd}</h4>
+			<h4><Misc.Money amount={amount} /> {Donation.strRepeat(repeat.freq)} {repeatEnd}</h4>
 			<div>The regular payment can be cancelled at any time.</div>
 		</>);
 	}
 	return (<>
 		<h4><Misc.Money amount={amount} /> now.</h4>
-		<h4>Then <Misc.Money amount={repeatAmount} /> {Donation.strRepeat(repeatFreq)}.</h4>
+		<h4>Then <Misc.Money amount={repeat.amount} /> {Donation.strRepeat(repeat.freq)}.</h4>
 		<div>The regular payment can be cancelled at any time.</div>
 	</>);	
 };
 
-const StripeThings = injectStripe(StripeThingsClass);
+// const StripeThings = injectStripe(StripeThingsClass);
 
 export {SKIP_TOKEN};
 export default PaymentWidget;
