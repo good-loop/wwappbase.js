@@ -340,7 +340,7 @@ const PaymentAmount = ({amount, repeat = {}}) => {
 		// TODO  {repeatEnd}
 	if (Money.value(repeat.amount) === Money.value(amount)) {
 		return (<>
-			<h4><Misc.Money amount={amount} /> {Donation.strRepeat(repeat.freq)} {repeatEnd}</h4>
+			<h4><Misc.Money amount={amount} /> {Donation.strRepeat(repeat.freq)} {repeat.end}</h4>
 			<div>The regular payment can be cancelled at any time.</div>
 		</>);
 	}
