@@ -68,6 +68,28 @@ Advert.defaultAdvert();
  */
 Advert.advertiserId = ad => Advert.assIsa(ad) && ad.vertiser;
 
+Advert.campaign = ad => ad.campaign;
+
+/**
+ * This is the DRAFT budget
+ * @param {!Advert} ad 
+ */
+Advert.budget = ad => ad.budget;
+
+/**
+ * @param {!Advert} ad 
+ * @returns {?Date}
+ */
+Advert.start = ad => ad.start && new Date(ad.start);
+
+/**
+ * @param {!Advert} ad 
+ * @returns {?Date}
+ */
+Advert.end = ad => ad.start && new Date(ad.end);
+
+Advert.campaign = ad => ad.campaign;
+
 /**
  * @param {Advert} ad
  * @returns {!NGO[]}
