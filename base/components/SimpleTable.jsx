@@ -150,7 +150,8 @@ class TableSettings {
 // https://reactjs.org/docs/error-boundaries.html
 
 /**
- * @param {?Item[]} data - Each row an item. item.style will set row tr styling
+ * @param {TableSettings} props
+ * @param {?Item[]} props.data - Each row an item. item.style will set row tr styling
  *  *
  * @param {?Object} dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
  * So the columns should use accessors 'key' and 'value'.
@@ -159,8 +160,6 @@ class TableSettings {
  * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items.
  * 
  * @param {Column[]|String[]} columns - Can mix String and Column
- * 
- * @param {TableSettings} Lots of settings
  * 
  */
 const SimpleTable = (props) => {
