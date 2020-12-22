@@ -234,7 +234,6 @@ amxrtb.com, 105199335, DIRECT
 yahoo.com, 56707, DIRECT
 rhythmone.com, 1059622079, RESELLER, a670c89d4a324e47
 contextweb.com, 560606, RESELLER, 89ff185a4c4e857c
-appnexus.com, 7620, RESELLER
 coxmt.com, 2000068026902, DIRECT
 google.com, pub-6396844742497208, RESELLER, f08c47fec0942fa0
 google.com, pub-1966721192709606, RESELLER, f08c47fec0942fa0
@@ -271,4 +270,4 @@ beachfront.com, 9807, RESELLER
 google.com, pub-6898383636837097, DIRECT, f08c47fec0942fa0
 google.com, pub-7363809219244122, RESELLER, f08c47fec0942fa0
 smartyads.com, 5Gz15184rYt7, DIRECT, fd2bde0ff2e62c5d
-appnexus.com, 10562, DIRECT
+appnexus.com, 10562, DIRECT, f5ab79cb980f11d1

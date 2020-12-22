@@ -1,8 +1,8 @@
 import React from 'react';
 import { assert, assMatch } from '../utils/assert';
 import Login from 'you-again';
-import { Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
-import {space} from '../utils/miscutils';
+import { Modal, ModalHeader, ModalBody, ModalFooter, Form } from 'reactstrap';
+import {space, stopEvent} from '../utils/miscutils';
 
 import C from '../CBase';
 import List from '../data/List';
@@ -162,7 +162,7 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea}) => {
 		qpath.push('reply-to-'+parent.id);
 	}
 	const quickTask = e => {
-		e.preventDefault();
+		stopEvent(e);
 		// make
 		let base = DataStore.getValue(qpath);
 		base.tags = tags;
@@ -187,13 +187,13 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea}) => {
 	// NB: the use of `fast` means we cant put disabled={ ! ttext} on the Add button, as it wouldn't update to non-disabled
 	return (
 		<div key={'f'} className={space('QuickTaskMaker flex-row', parent? 'QuickTaskMakerReply' : null)}>
-			<div className='flex-grow'>
+			<Form className='flex-grow' onSubmit={quickTask}>
 				<PropControl className="w-100"
 					type={textarea?"textarea":"text"} path={qpath} prop="text"
 					placeholder={parent? 'Reply / Comment' : 'Make a new task'} 
 					fast />
-			</div>
-			<button className="ml-1 btn btn-primary" type="submit" onClick={quickTask}>Add</button>
+				<button className="ml-1 btn btn-primary" type="submit" >Add</button>
+			</Form>
 		</div>
 	);
 };

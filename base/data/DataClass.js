@@ -15,13 +15,6 @@ This gives you an object-oriented coding style (including inheritance) -- which 
 
  */
 
-// SOme useful Types
-/**
- * @typedef {String} XIdString
- */
-/**
- * @typedef {String} TimeString
- */
 
 /**
  * Standard use
@@ -346,5 +339,12 @@ window.DataClass = DataClass;
 
 const getName = DataClass.getName;
 
-export {getType, getId, getName, getStatus, Meta, nonce, getClass};	
+/**
+ * This is not really a class itself, but a handy marker for data-items
+ */
+class Item extends DataClass {
+
+}
+
+export {getType, getId, getName, getStatus, Meta, nonce, getClass, Item};	
 export default DataClass;

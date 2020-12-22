@@ -404,9 +404,10 @@ Misc.dateTimeTag = (d) => d?
 
 /**
  * Human-readable, unambiguous date string which doesn't depend on toLocaleString support
+ * @param {?Date} date
  */
-Misc.dateTag = (d) => d?
-	<time dateTime={isoDate(d)}>{d.getDate()} {shortMonths[d.getMonth()]} {d.getFullYear()}</time>
+Misc.DateTag = ({date}) => date?
+	<time dateTime={isoDate(date)}>{date.getDate()} {shortMonths[date.getMonth()]} {date.getFullYear()}</time>
 	: null;
 
 Misc.dateStr = d => `${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()}`;
