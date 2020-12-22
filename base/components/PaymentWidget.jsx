@@ -74,6 +74,39 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 		testOption = !C.isProduction();
 	}
 
+	Money.assIsa(amount, "PaymentWidget.jsx");
+	assMatch(onToken, Function, "PaymentWidget.jsx");
+	assMatch(recipient, String, "PaymentWidget.jsx");
+
+	// Amount to pay = £0? Then just a confirm button.
+	if (Money.value(amount) === 0) {
+		return (
+			<div className="PaymentWidget">
+				<button onClick={() => onToken({ ...FREE_TOKEN, email,	})} className="btn btn-primary">
+					Confirm Free Purchase
+				</button>
+			</div>
+		);
+	} // ./ £0
+
+	// pay on credit?
+	let credit = Transfer.getCredit(); // ??This is kind of SoGive specific
+	if (credit && Money.value(credit) > 0) {
+		if (Money.value(credit) >= Money.value(amount)) {
+			return (
+				<div className="section donation-amount">
+					<p>You have <Misc.Money amount={credit} /> in credit which will pay for this.</p>
+					<button onClick={() =>  onToken({ ...CREDIT_TOKEN, email, })} className="btn btn-primary">
+						Send Payment
+					</button>
+				</div>
+			);
+		}
+	} // ./credit
+
+	// OK, the payment is non-zero and the user doesn't have enough credit to cover it.
+	// So we need a payment processor (currently: Stripe) involved.
+
 	// Promise containing the Stripe object
 	const [stripePromise, setStripePromise] = useState();
 	// Create once and persist so Stripe Elements don't complain about prop change on re-render
@@ -89,45 +122,11 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 		if (paymentIntent) data.id = paymentIntent.id;
 
 		ServerIO.load('/stripe-paymentintent', {data}).then(({cargo}) => setPaymentIntent(cargo));
-		// Set null so form remains locked until we get the new/updated PaymentIntent	
+		// Set null so form remains locked until we get the new/updated PaymentIntent
 		setPaymentIntent(null);
 	}, [Money.value(amount)]);
 
-	Money.assIsa(amount, "PaymentWidget.jsx");
-	assMatch(onToken, Function, "PaymentWidget.jsx");
-	assMatch(recipient, String, "PaymentWidget.jsx");
-
-	// Amount to pay = £0? Then just a confirm button.
-	if (Money.value(amount) === 0) {
-		const payNothing = () => onToken({ ...FREE_TOKEN, email,	});
-		return (
-			<div className="PaymentWidget">
-				<button onClick={payNothing} className="btn btn-primary">Confirm Free Purchase</button>
-			</div>
-		);
-	} // ./ £0
-
-	// Pretend user paid (test only): Invoke the callback, with a minimal fake token that the servlet will catch
-	const skipAction = () => onToken({ ...SKIP_TOKEN, email, });
-
-
-
-	// pay on credit??
-	let credit = Transfer.getCredit(); // ??This is kind of SoGive specific
-	if (credit && Money.value(credit) > 0) {
-		if (Money.value(credit) >= Money.value(amount)) {
-			// 
-			const payByCredit = () =>  onToken({ ...CREDIT_TOKEN, email, });
-			return (
-				<div className="section donation-amount">
-					<p>You have <Misc.Money amount={credit} /> in credit which will pay for this.</p>
-					<button onClick={payByCredit} className="btn btn-primary">Send Payment</button>
-				</div>
-			);
-		}
-	} // ./credit
-
-	// We need a PaymentIntent (which we get from the backend) before we can show the credit card form.
+	// Don't show the credit card form until the PaymentIntent is ready.
 	if (!paymentIntent || !paymentIntent.clientSecret) {
 		return (
 			<div className="section donation-amount">
@@ -154,7 +153,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 					4000008260000000 (normal)<br/>
 					4000002760003184 (3D Secure auth for first transaction)<br/>
 					4000000000009979 (stolen)<br/>
-					Or <button onClick={skipAction}>test: pretend I paid</button>
+					Or <button onClick={() => onToken({ ...SKIP_TOKEN, email, })}>test: pretend I paid</button>
 				</small>
 			) : null}
 		</div>
