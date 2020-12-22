@@ -20,11 +20,14 @@ class Branding {
  */
 class Advert extends DataClass {
 	
+	/** @type{String} */
+	vertiser;
+
 	/** @type{Branding} */
 	branding;
 
 	/**
-	 * @param {{vertiser: !string}} base 
+	 * @param {Advert} base 
 	 */
 	constructor(base) {
 		super();

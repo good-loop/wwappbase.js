@@ -10,7 +10,7 @@
 		 td:first-child::before {
 			content:' └ ';
 			// float: right;
-		}		 
+		}
 	 }
 	 tr.depth3 {
 		font-size: 80%;
@@ -18,11 +18,17 @@
 			// float: right;
 			content:' -└- ';
 		}
+		td {
+			padding: 0.5rem;
+		}
 	}
 	tr.depth4, tr.depth5, tr.depth6, tr.depth7 {
-		font-size: 70%;
+		font-size: 75%;
 		td:first-child::before {
 			content:' --└-- ';
+		}
+		td {
+			padding: 0.4rem;
 		}
 	}
 	// For a caller-provided total row

@@ -33,7 +33,7 @@ const str = printer.str;
 class Column extends DataClass {
 	/** @type {?String|Function} Extract the column value from an item. If a string, this is the property name. */
 	accessor;
-	/** @type {?Function} (value, column, item) -> jsx */
+	/** @type {?Function} (value, column, item) -> string|jsx */
 	Cell;
 	/** @type {?String} */
 	Header;
@@ -62,6 +62,10 @@ class Column extends DataClass {
 	/** @precision {?integer} used used to specify precision for numbers (digits after the decimal point) */
 	precision;
 
+	/**
+	 * 
+	 * @param {Column} base 
+	 */
 	constructor(base) {
 		super(base);
 		Object.assign(this, base);
@@ -209,8 +213,7 @@ const SimpleTable = (props) => {
 	// scrolling (credit to Irina): uses wrapper & scroller and css
 
 	const onScroll = tableSettings.scroller? e => {
-		console.log("onScroll", e, e.target.scrollLeft, e.target.scrollTop);
-		// How many rows? Which row?
+		// console.log("onScroll", e, e.target.scrollLeft, e.target.scrollTop);
 		tableSettings.scrollLeft = e.target.scrollLeft;
 		tableSettings.scrollTop = e.target.scrollTop;
 		tableSettings.update();
