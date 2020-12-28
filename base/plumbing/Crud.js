@@ -332,6 +332,8 @@ const startStatusForAction = (action) => {
 		case C.CRUDACTION.unpublish: // is this OK?? It could be applied to either
 		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
+		case C.CRUDACTION.export:
+			return C.KStatus.PUBLISHED;
 	}
 	throw new Error("TODO startStatusForAction "+action);
 };
@@ -346,6 +348,7 @@ const serverStatusForAction = (action) => {
 		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
 		case C.CRUDACTION.publish:
+		case C.CRUDACTION.export:
 			return C.KStatus.PUBLISHED;
 		case C.CRUDACTION.unpublish:
 			return C.KStatus.DRAFT;
@@ -556,6 +559,7 @@ const CRUD = {
 };
 export default CRUD;
 export {
+	crud,
 	saveEdits,
 	publishEdits,
 	errorPath,
