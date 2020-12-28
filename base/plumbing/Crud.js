@@ -109,11 +109,15 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type}) => {
 			let draftItem = _.cloneDeep(freshItem);
 			DataStore.setValue(draftpath, draftItem);
 		}
-		if (action==='save') {
+		if (action==='save') {	
+			// NB: the recent diff handling above should manage the latency issue around setting the draft item
+			DataStore.setValue(draftpath, freshItem);
+
+			// OLD
 			// TODO we want to update DS, but there's a latency issue and we don't want to lose very-recent edits by the user.
 			// HACK: Let's update the status field, as the server owns that (and it avoids the "stuck on published" bug seen in SoGive Oct 2020)
 			// (better: use diffs)
-			DataStore.setValue(draftpath.concat('status'), freshItem.status);
+			// DataStore.setValue(draftpath.concat('status'), freshItem.status);
 		}
 	}
 	// success :)

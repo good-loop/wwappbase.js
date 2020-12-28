@@ -397,7 +397,7 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 		assert(dataTree, "SimpleTable.jsx - collapsed to null?!");
 		// HACK: add a collapse column
 		// ...collapse button
-		const Cell = (v, col, item, node) => {
+		const CellWithCollapse = (v, col, item, node) => {
 			let nodeid = Tree.id(node) || JSON.stringify(item);
 			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
 			// no node or children? no need for a control
@@ -424,7 +424,7 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 				tableSettings.collapsed4nodeid.all = allCollapsed;
 				DataStore.update();
 			}} title={'click to collapse/expand all'} ><b>{allCollapsed ? '▷' : '▼'}</b></button>,
-			Cell
+			Cell: CellWithCollapse
 		});
 		let firstCol = visibleColumns.shift();
 		visibleColumns = [firstCol, uiCol].concat(visibleColumns);
