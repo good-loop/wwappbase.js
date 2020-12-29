@@ -48,6 +48,10 @@ import Cookies from 'js-cookie';
 const COOKIE_PATH = '/';
 /**
  * Convenience to set cookie with path, SameSite=None, secure=true
+ * 
+ * FIXME This quietly fails on localstudio?! Possibly an http vs https thing??
+ * Should we use cookie + localStorage??
+ * 
  * @param {!String} key 
  * @param {String} val 
  */
