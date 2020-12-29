@@ -6,7 +6,6 @@ import _ from 'lodash';
 import {addScript, isoDate, join, space } from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import md5 from 'md5';
-import Login from 'you-again';
 // import I18n from 'easyi18n';
 
 import JSend from '../data/JSend';

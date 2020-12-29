@@ -1,7 +1,7 @@
 /**
  * Provide the data management for ShareWidget
  */
-import Login from 'you-again';
+import Login from '../base/youagain';
 import DataStore from './plumbing/DataStore';
 import {assMatch } from './utils/assert';
 import PromiseValue from 'promise-value';

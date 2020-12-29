@@ -6,7 +6,7 @@ import C from '../CBase';
 import DataStore, { getListPath } from './DataStore';
 import {getId, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
-import Login from 'you-again';
+import Login from '../youagain';
 import {encURI, mapkv, parseHash} from '../utils/miscutils';
 
 import ServerIO from './ServerIOBase';

@@ -5,7 +5,6 @@
 import React, {useState} from 'react';
 
 import { assert, assMatch } from '../utils/assert';
-import Login from 'you-again';
 import printer from '../utils/printer.js';
 import DataStore from '../plumbing/DataStore';
 import C from '../CBase';
@@ -15,8 +14,6 @@ import SimpleTable from './SimpleTable';
 import PropControl from './PropControl';
 import MDText from './MDText';
 import Tree from '../../base/data/Tree';
-
-import PV from 'promise-value';
 
 // 		WARNING:
 // 		CODE HERE MAY BE DELETED WITHOUT NOTICE!
