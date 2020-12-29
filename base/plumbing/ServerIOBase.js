@@ -8,7 +8,7 @@ import { assert, assMatch, setAssertFailed } from '../utils/assert';
 import C from '../CBase.js';
 import {encURI} from '../utils/miscutils';
 
-import Login from 'you-again';
+import Login from '../base/youagain';
 
 // Try to avoid using this for modularity!
 import {notifyUser} from './Messaging';

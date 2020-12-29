@@ -4,7 +4,7 @@ import { assert, assMatch } from '../utils/assert';
 import DataClass, {nonce} from './DataClass';
 import Money from './Money';
 import C from '../CBase';
-import Login from 'you-again';
+import Login from '../base/youagain';
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 

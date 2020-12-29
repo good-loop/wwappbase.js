@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-import Login from 'you-again';
+import Login from '../base/youagain';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
 import { stopEvent, toTitleCase } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';

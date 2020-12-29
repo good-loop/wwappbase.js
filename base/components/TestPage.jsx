@@ -5,7 +5,7 @@
 import React, {useState} from 'react';
 
 import { assert, assMatch } from '../utils/assert';
-import Login from 'you-again';
+import Login from '../base/youagain';
 import printer from '../utils/printer.js';
 import DataStore from '../plumbing/DataStore';
 import C from '../CBase';

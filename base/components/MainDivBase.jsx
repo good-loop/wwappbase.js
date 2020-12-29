@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Login from 'you-again';
+import Login from '../base/youagain';
 
 import { getUrlVars, toTitleCase, modifyHash, yessy } from '../utils/miscutils';
 import { Container } from 'reactstrap';

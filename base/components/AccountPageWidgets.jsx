@@ -1,6 +1,6 @@
 import React from 'react';
 
-import Login from 'you-again';
+import Login from '../base/youagain';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';

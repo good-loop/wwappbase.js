@@ -1,6 +1,6 @@
 import React from 'react';
 import { Nav, NavItem, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-import Login from 'you-again';
+import Login from '../base/youagain';
 
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';

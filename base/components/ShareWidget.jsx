@@ -1,6 +1,6 @@
 import React from 'react';
 import { assert, assMatch } from '../utils/assert';
-import Login from 'you-again';
+import Login from '../base/youagain';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import {uid } from '../utils/miscutils';
 import Cookies from 'js-cookie';
