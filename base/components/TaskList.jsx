@@ -1,6 +1,6 @@
 import React from 'react';
 import { assert, assMatch } from '../utils/assert';
-import Login from '../base/youagain';
+import Login from '../youagain';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Form } from 'reactstrap';
 import {space, stopEvent} from '../utils/miscutils';
 
