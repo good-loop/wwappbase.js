@@ -55,6 +55,9 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
 
+	console.log('insertUnit doc = ', doc);
+
+
 	// No scroll bars!
 	if (docBody) docBody.style = 'overflow: hidden;'; // NB: the if is paranoia - NPE hunt Oct 2019
 
@@ -102,16 +105,28 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, noab, debug}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
-	const [frameLoaded, setFrameLoaded] = useState(false);
 	const [container, setContainer] = useState();
 	const [dummy, redraw] = useState(); // Just use this to provoke a redraw
 
-	const receiveFrame = useCallback(node => setFrame(node), []);
-	const receiveContainer = useCallback(node => setContainer(node), []);
+	const [frameReady, setFrameReady] = useState(false);
 
-	const frameDoc = frame && frame.contentDocument;
-	const frameReady = frameDoc && frameDoc.readyState === 'complete'; // Needed for Chrome as onload doesn't fire on about:blank frames
-	const goodloopframe = frameDoc && frameDoc.querySelector('.goodloopframe');
+	const receiveFrame = useCallback(node => {
+		setFrame(node);
+
+		// The cases below account for subtle DOM element lifecycle differences between Firefox and Chrome.
+
+		if (!node) {
+			setFrameReady(false); // Needs to flip false during element replacement so it triggers the useEffect below
+		} else if (node.contentDocument && node.contentDocument.readyState === 'complete') {
+			// If the iframe's DOM is ready to use when this ref executes, mark it as such.
+			// Do asynchronously so setFrameReady(false) above gets to trigger a render first
+			window.setTimeout(() => setFrameReady(true), 0);
+		} else {
+			// If it's not ready, add an event listener to mark it when it is.
+			node.contentWindow.addEventListener('DOMContentLoaded', () => setFrameReady(true));
+		}
+	}, []);
+	const receiveContainer = useCallback(node => setContainer(node), []);
 
 	// This string is meaningless in itself, but when it changes we need to recreate the iframe & reinsert JS.
 	// It's used as a key on the iframe to break identity so it's replaced instead of updated.
@@ -119,12 +134,12 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
-		if ((frameLoaded || frameReady) && frameDoc) {
+		if (frameReady) {
 			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug});
 			insertAdunitCss({frame, css});
 			return cleanup;
 		}
-	}, [frameLoaded, frameReady, frameDoc, unitKey]);
+	}, [frameReady, unitKey]);
 
 	// Redo CSS when CSS or adunit frame changes
 	useEffect(() => {
@@ -154,8 +169,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
-			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} 
-				onLoad={() => setFrameLoaded(true)} ref={receiveFrame} />
+			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} />
 		</div>
 	);
 };
