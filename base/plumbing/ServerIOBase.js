@@ -35,6 +35,9 @@ ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 ServerIO.PORTAL_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}portal.good-loop.com`;
 // ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
 
+/**
+ * Where uploads go
+ */
 ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = `https://testuploads.good-loop.com/`;
 // ServerIO.MEDIA_ENDPOINT = `https://uploads.good-loop.com/`;

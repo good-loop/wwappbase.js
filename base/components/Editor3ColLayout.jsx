@@ -24,8 +24,8 @@ const Editor3ColLayout = ({children, showAll}) => {
 		{showLeft && <div className='mt-1'><div>{leftNav}</div></div>}
 		{showAll && ! showLeft && <Tray>{leftNav}</Tray>}
 		<Container>{mainPane}</Container>
-		{showRight && <div className='mt-1 flex-grow'><div className='position-fixed'>{rightPane}</div></div>}
-		{showAll && ! showRight && rightPane && <Container style={{overflow:"scroll-y"}}>{rightPane}</Container>}
+		{showRight && <div className='mt-1 flex-grow' style={{overflow:"scroll-y"}}>{rightPane}</div>}
+		{showAll && ! showRight && rightPane && <Container>{rightPane}</Container>}
 	</div>);
 };
 

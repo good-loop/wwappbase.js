@@ -11,7 +11,7 @@ import { space } from '../utils/miscutils';
  * This also provides some robustness via try-catch error handling.
  *
  * You can wrap these cards -- if you do, you MUST pass down misc parameters to enable the CardAccordion wiring to work. e.g.
- * <Foo {...stuff}> => <Misc.Card {...stuff}>
+ * <Foo {...stuff}> => <Card {...stuff}>
  * Note: If you see a card missing collapse controls -- this is probably the issue.
  *
  * @param {String|JSX} title - will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.

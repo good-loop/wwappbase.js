@@ -21,19 +21,20 @@ import ErrorAlert from './ErrorAlert';
  * 	const path = DataStore.getValue(['location','path']);
  * 	const itemId = path[1];
  *
- * @param {C.TYPES} type
- * @param {?String} q - Optional query e.g. advertiser-id=pepsi
+ * @param {Object} p
+ * @param {C.TYPES} p.type
+ * @param {?String} p.q - Optional query e.g. advertiser-id=pepsi
  * Note: that filter can add to this
  * @param {?String} sort -  Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
  * @param {?String} filter - Set a filter. Do NOT use this and canFilter
- * @param {?Boolean} canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
+ * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?boolean} canCreate - If set, show a Create
  * @param {?boolean} filterLocally - If true, do not call the server for filtering
  * @param {?String} status - e.g. "Draft"
  * @param {?String} servlet - @deprecated - use navpage instead
- * @param {?String} navpage - e.g. "publisher" If unset, a default is taken from the url.
+ * @param {?String} p.navpage - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
  * @param ListItem {?React component} if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item.   
@@ -45,7 +46,7 @@ import ErrorAlert from './ErrorAlert';
  * @param {?boolean} hideTotal - If true, don't show the "Total about 17" line
  * @param {?Object} createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
  * @param {?C.KStatus} preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
- * @param hasFilter - deprecated - use canFilter
+ * @param {?Boolean} p.hasFilter - deprecated - use canFilter
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q, 

@@ -3,17 +3,23 @@ import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import { assert, assMatch } from '../utils/assert';
 import { Button } from 'reactstrap';
+import { space } from '../utils/miscutils';
 
-// TODO refactor a la Misc.CardAccordion
-
+/**
+ * 
+ * @param {Object} p
+ * @param {Object[]} p.stages {title} ??
+ * @param {Number} p.stageNum
+ * @param {String[]} p.stagePath whereto store the current stage number
+ */
 const WizardProgressWidget = ({stageNum, stages, stagePath}) => {
 	if ( ! stageNum) stageNum = 0;
 	return (<div className="WizardProgressWidget">
-		{stages.map((stage, i) => <Stage key={i} stage={stage} stageNum={stageNum} i={i} stagePath={stagePath} />)}
+		{stages.map((stage, i) => <Stage key={i} title={stage.title} stageNum={stageNum} i={i} stagePath={stagePath} canJumpAhead={stage.canJumpAhead} />)}
 	</div>);
 };
 
-const Stage = ({i, stage, stageNum, stagePath}) => {
+const Stage = ({i, title, stageNum, stagePath, canJumpAhead}) => {
 	// Display in progress as complete if left of the current page
 	let complete = i < stageNum;
 	// if (stage.complete === false) complete = false; TODO stage.error/warning?
@@ -23,25 +29,39 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
 	} else if (complete) {
 		c = 'complete';
 	}
-
-	const maybeSetStage = () => complete && stagePath && DataStore.setValue(stagePath, i);
+	const canClick = complete || canJumpAhead;
+	const maybeSetStage = () => canClick && stagePath && DataStore.setValue(stagePath, i);
 
 	return (
-		<div className={`Stage ${c}`} onClick={maybeSetStage}>
-			<h5 className="text-center above">{stage.title}</h5>
+		<div className={space('Stage',c)} onClick={maybeSetStage}>
+			<h5 className="text-center above">{title}</h5>
 			<h5 className="graphic">
 				<div className="marker" />
 				<div className="line" />
 			</h5>
-			<h5 className="text-center below">{stage.title}</h5>
+			<h5 className="text-center below">{title}</h5>
 		</div>
 	);
 };
 
+class StageNavStatus {
+	/** @type {Boolean} */
+	next;
+	/** @type {Boolean} */
+	previous;
+	/** @type {Boolean} */
+	sufficient;
+	/** @type {Boolean} */
+	complete;
+};
+
 /**
- * title
- * next, previous, sufficient, complete
- *
+ * @param {Object} p
+ * @param {!String} p.title
+ * next, previous, sufficient, 
+ * @param {?Boolean} p.complete Pass in true when the stage is complete
+ * @param {?Boolean} p.canJumpAhead If set, allow clicking ahead. NB: This prop is copied into the progress bar widget
+ * 
  * NB: these are used by the surrounding widgets - progress & next/prev buttons
  *
  * Also for convenient lazy setting of sufficient/complete, a function is passed to children:
@@ -56,7 +76,7 @@ const Stage = ({i, stage, stageNum, stagePath}) => {
  */
 const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 	sufficient=true, complete=false,
-	title, onNext, onPrev, children}) =>
+	title, onNext, onPrev, children, canJumpAhead}) =>
 {
 	assert(stageNum !==null && stageNum !== undefined);
 	assMatch(maxStage, Number);
@@ -66,6 +86,7 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 
 	// allow sections to set sufficient, complete, next, previous
 	const navStatus = {next, previous, sufficient, complete};
+	/** @param {StageNavStatus} newStatus */
 	const setNavStatus = (newStatus) => {
 		Object.assign(navStatus, newStatus);
 	};
@@ -83,6 +104,7 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 			return React.cloneElement(Kid, {setNavStatus});
 		});
 	}
+	
 	return (<div className="WizardStage">
 		{children}
 		<WizardNavButtons stagePath={stagePath}
@@ -145,9 +167,8 @@ const NextPrevTab = ({stagePath, diff, children, colour = 'secondary', maxStage,
 
 const Wizard = ({widgetName, stagePath, children}) => {
 	// NB: React-BS provides Accordion, but it does not work with modular panel code. So sod that.
-	// TODO manage state
-	const wcpath = stagePath || ['widget', widgetName || 'Wizard', 'stage'];
-	let stageNum = DataStore.getValue(wcpath);
+	if ( ! stagePath) stagePath = ['widget', widgetName || 'Wizard', 'stage'];
+	let stageNum = DataStore.getValue(stagePath);
 	if ( ! stageNum) stageNum = 0; // default to first kid open
 	if ( ! children) {
 		return (<div className="Wizard"></div>);
@@ -198,5 +219,5 @@ const WizardNavButtons = ({stagePath, maxStage, navStatus, onNext, onPrev}) => {
 	</div>);
 };
 
-export {Wizard, WizardStage};
+export {Wizard, WizardStage, WizardProgressWidget};
 export default Wizard;
