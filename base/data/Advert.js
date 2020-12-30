@@ -1,6 +1,6 @@
 /** Data model functions for the Advert data-type. */
 import { assert, assMatch } from '../utils/assert';
-
+import Enum from 'easy-enums';
 import DataClass from './DataClass';
 import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
@@ -114,4 +114,9 @@ Advert.charityList = ad => {
 	return clist; 
 };
 
+const KAdFormat = new Enum("video social banner");
+
 export default Advert;
+export {
+	KAdFormat
+}

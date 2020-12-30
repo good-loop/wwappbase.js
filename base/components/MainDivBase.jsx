@@ -86,7 +86,7 @@ class MainDivBase extends Component {
 		init();
 		let {
 			pageForPath, 
-			navbarPages, navbarChildren,
+			navbarPages, navbarLabels, navbarChildren,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			loginRequired,
 			defaultPage,
@@ -141,7 +141,7 @@ class MainDivBase extends Component {
 		//
 		return (
 			<div>
-				{navbar? <NavBar page={page} pages={navbarPages}></NavBar> : null}
+				{navbar? <NavBar page={page} pages={navbarPages} labels={navbarLabels} ></NavBar> : null}
 				<Container fluid={fluid} >
 					<MessageBar />
 					<div className="page" id={page}>

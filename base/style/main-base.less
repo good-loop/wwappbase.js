@@ -98,29 +98,30 @@ a {
 	margin-bottom: 0px;
 }
 
-// FIXME Why are these rules here? What code (if any) uses them? TODO move them to a more specific place.
-img.logo {
+// FIXME Why are these rules here? TODO move them to a more specific place.
+// TODO prefer BS sizes eg -lg over -large
+.logo {
 	width: 4em;
 	height: 4em;
 }
-img.logo-xsmall {
+.logo-xs, img.logo-xsmall {
 	width: 1em;
 	height: 1em;
 }
-img.logo-small {
+.logo-sm, img.logo-small {
 	width: 2em;
 	height: 2em;
 }
-img.logo-large {
+.logo-lg, img.logo-large {
 	width: 6em;
 	height: 6em;
 }
-img.logo-xlarge {
+.logo-xl, .logo-xlarge {
 	width: 8em;
 	height: 8em;
 }
 img {
-	&.logo, &.logo-xsmall, &.logo-small, &.logo-large, &.logo-xlarge {
+	&.logo, &.logo-xs, &.logo-xsmall, &.logo-sm, &.logo-small, &.logo-lg, &.logo-large, &.logo-xl, &.logo-xlarge {
 		object-fit: contain; // allow square container but keep proportions
 	}
 }

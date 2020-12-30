@@ -228,7 +228,7 @@ const SimpleTable = (props) => {
 			/></div> : null}
 			<div className='scroll-div' onScroll={onScroll} >
 				<table className={space("table", "position-relative", tableSettings.tableClass)}>
-					<THead {...{ visibleColumns, tableSettings, headerRender, topRow}} />
+					<THead {...{ visibleColumns, tableSettings, headerRender, topRow, dataTree}} />
 					<tbody>
 						<Rows
 							dataTree={dataTree}
@@ -251,7 +251,7 @@ const SimpleTable = (props) => {
  * @param {!Column[]} params.visibleColumns
  * @param {!TableSettings} params.tableSettings
  */
-const THead = ({ visibleColumns, tableSettings, headerRender, topRow }) => {
+const THead = ({ visibleColumns, tableSettings, headerRender, topRow, dataTree }) => {
 	// c isn't used but will be off by 1 if scroller is true
 	return (<thead>
 		<tr>

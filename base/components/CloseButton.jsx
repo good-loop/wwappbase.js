@@ -8,10 +8,8 @@ import { space } from '../utils/miscutils';
  * @param {!Function} p.onClick
  * @param {?String} p.size sm|lg
  */
-const CloseButton = ({onClick, size, color}) => {
-	return (<button type="button" className={space("close",color && "bg-"+color, size&&"btn-"+szie)} aria-label="Close" onClick={onClick}>
-	<span aria-hidden="true">&times;</span>
-	</button>);
+const CloseButton = ({onClick, size, color, tooltip}) => {
+	return (<button type="button" className={space("close",color && "bg-"+color, size&&"btn-"+size)} aria-label="Close" onClick={onClick} title={tooltip}><span aria-hidden="true">&times;</span></button>);
 };
 
 export default CloseButton;

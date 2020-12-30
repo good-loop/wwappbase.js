@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import {getScreenSize} from '../utils/miscutils';
+import ErrorBoundary from './ErrorBoundary';
 
 /**
  * @param {JSX[]} children 1 to 3 elements, for left (optional), main, right
@@ -21,9 +22,9 @@ const Editor3ColLayout = ({children, showAll}) => {
 	let showRight = (sz==='lg' || sz==='xl') && rightPane;
 
 	return (<div className='flex-row'>
-		{showLeft && <div className='mt-1'><div>{leftNav}</div></div>}
+		{showLeft && <div className='mt-1'>{leftNav}</div>}
 		{showAll && ! showLeft && <Tray>{leftNav}</Tray>}
-		<Container>{mainPane}</Container>
+		<Container><ErrorBoundary>{mainPane}</ErrorBoundary></Container>
 		{showRight && <div className='mt-1 flex-grow' style={{overflow:"scroll-y"}}>{rightPane}</div>}
 		{showAll && ! showRight && rightPane && <Container>{rightPane}</Container>}
 	</div>);
