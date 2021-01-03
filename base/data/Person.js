@@ -503,6 +503,7 @@ const removeConsent = ({persons, consent}) => {
  * Locally set a claim value (does NOT save -- use `savePersons()` to save)
  */
 const setClaimValue = ({persons, key, value}) => {
+	if ( ! persons.length) console.warn("setClaimValue - no persons :( -- Check profile load is working");
 	let from = Login.getId();
 	let consent = ['dflt']; // the "what is my current default?" setting
 	let claim = new Claim({key,value,from,consent});	

@@ -14,6 +14,12 @@ export default NGO;
 NGO.description = (ngo) => ngo.description;
 
 /**
+ * displayName or name or ID
+ * @param {NGO} ngo 
+ */
+NGO.displayName = ngo => ngo.displayName || ngo.name || ngo.id;
+
+/**
  * @returns {?Number} [0-17] -- see NGO.UNSDGS
  */
 NGO.unsdg = ngo => ngo && ngo.unsdg;

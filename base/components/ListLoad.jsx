@@ -6,7 +6,7 @@ import {modifyHash, space, yessy} from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
-import DataStore from '../plumbing/DataStore';
+import DataStore, { Item, Ref } from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
@@ -47,6 +47,7 @@ import ErrorAlert from './ErrorAlert';
  * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
  * @param {?C.KStatus} p.preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
+ * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q, 
@@ -61,7 +62,8 @@ const ListLoad = ({type, status, servlet, navpage,
 	notALink, itemClassName,
 	preferStatus,
 	hideTotal,
-	pageSize
+	pageSize,
+	unwrapped
 }) =>
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
@@ -129,6 +131,7 @@ const ListLoad = ({type, status, servlet, navpage,
 
 		{items.map( (item, i) => (
 			<ListItemWrapper key={getId(item) || i}
+				unwrapped={unwrapped}
 				item={item}
 				type={type}
 				checkboxes={checkboxes}
@@ -147,6 +150,7 @@ const ListLoad = ({type, status, servlet, navpage,
 				/>
 			</ListItemWrapper>
 		))}
+
 		{pageSize && total > pageSize && <div>
 			<Button className='mr-2' color='secondary' disabled={ ! pageNum} onClick={e => setPageNum(pageNum-1)} ><b>&lt;</b></Button>
 			page {(pageNum+1)} of {Math.ceil(total / pageSize)}
@@ -181,7 +185,7 @@ const MassActionToolbar = ({type, canDelete, items}) => {
 
 /**
  * 
- * @param {?LiteItem[]} hits 
+ * @param {?Ref[]} hits 
  * @returns {Item[]}
  */
 const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) => {
@@ -189,25 +193,24 @@ const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) =>
 		// an ajax call probably just hasn't loaded yet
 		return [];
 	}
-	// HACK: Use-case: you load published items. But the list allows for edits. Those edits need draft items.
-	if (preferStatus) {
-		hits = DataStore.getDataList(hits, preferStatus);
-		// copy published into draft?
-		if (preferStatus===C.KStatus.DRAFT) {
-			hits.forEach(item => {			
-				let dpath = DataStore.getDataPath({status:preferStatus, type, id:getId(item)});
-				let draft = DataStore.getValue(dpath);
-				if ( ! yessy(draft)) {
-					DataStore.setValue(dpath, item, false);
-				}
-			});
-		}
+	// resolve Refs to full Items
+	hits = DataStore.getDataList(hits, preferStatus);
+	// HACK: Use-case: you load published items. But the list allows for edits. Those edits need draft items. So copy pubs into draft
+	if (preferStatus===C.KStatus.DRAFT) {
+		hits.forEach(item => {			
+			let dpath = DataStore.getDataPath({status:C.KStatus.DRAFT, type, id:getId(item)});
+			let draft = DataStore.getValue(dpath);
+			if ( ! yessy(draft)) {
+				DataStore.setValue(dpath, item, false);
+			}
+		});
 	}
 
 	const items = [];
 	const itemForId = {};
 	
-	// client-side filter
+	// client-side filter and de-dupe
+	if ( ! filter) fastFilter = false; // avoid pointless work in the loop
 	hits.forEach(item => {			
 		// fast filter via stringify
 		let sitem = null;
@@ -245,7 +248,10 @@ const onPick = ({event, navpage, id, customParams}) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName}) => {
+const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped}) => {
+	if (unwrapped) {
+		return children;
+	}
 	const id = getId(item);
 	if ( ! id) {
 		console.error("ListLoad.jsx - "+type+" with no id", item);

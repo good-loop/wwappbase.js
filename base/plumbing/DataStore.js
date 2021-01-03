@@ -4,7 +4,7 @@ import C from '../CBase.js';
 import _ from 'lodash';
 import PromiseValue from 'promise-value';
 
-import {getId, getType, getStatus} from '../data/DataClass';
+import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
 import {parseHash, modifyHash, toTitleCase, is, space} from '../utils/miscutils';
 
@@ -660,7 +660,7 @@ class Store {
 	getDataList(listOfRefs, preferStatus) {
 		if ( ! listOfRefs) return [];
 		// ?? if the data item is missing -- what should go into the list?? null / the ref / a promise ??
-		let items = listOfRefs.map(ref => this.resolveRef(ref));
+		let items = listOfRefs.map(ref => this.resolveRef(ref, preferStatus));
 		items = items.filter(i => !!i); // paranoia: no nulls
 		return items;
 	}
@@ -669,7 +669,7 @@ class Store {
 	 * 
 	 * @param {!Ref} ref 
 	 * @param {?string} preferStatus
-	 * @returns {!Item|Ref}
+	 * @returns {!Item|Ref} Robust: fallback to the input ref
 	 */
 	resolveRef(ref, preferStatus) {
 		if ( ! ref) {
@@ -706,11 +706,15 @@ class Ref {
  * Item could be anything - Advert, NGO, Person.
  * This class is to help in defining the DataStore API -- not for actual use.
  */
-class Item {
+class Item extends DataClass {
 	status;
 	type;
 	id;
 	name;
+
+	constructor() {
+		DataClass._init(this, base);		
+	}
 }
 
 const DataStore = new Store();
@@ -788,7 +792,8 @@ export {
 	getPath,
 	getDataPath,
 	getListPath,
-	getValue, setValue
+	getValue, setValue,
+	Ref, Item
 };
 // accessible to debug
 if (typeof(window) !== 'undefined') window.DataStore = DataStore;

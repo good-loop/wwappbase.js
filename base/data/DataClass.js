@@ -27,7 +27,10 @@ class MyType extends DataClass {
 DataClass.register(MyType, "MyType");
 // or
 class MyType extends ParentType {
-
+	constructor(base) {
+		super();
+		DataClass._init(this, base);
+	}
 }
 
 const This = MyType;
@@ -179,9 +182,12 @@ const getType = function(item) {
 	if (type) return type;
 	// Java class from FlexiGson?
 	let klass = item['@class'];
-	if ( ! klass) return null;
-	type = klass.substr(klass.lastIndexOf('.')+1);
-	return type;
+	if (klass) {
+		type = klass.substr(klass.lastIndexOf('.')+1);
+		return type;
+	}
+	// .type? or undefined
+	return item.type;
 };
 
 /**
@@ -339,12 +345,6 @@ window.DataClass = DataClass;
 
 const getName = DataClass.getName;
 
-/**
- * This is not really a class itself, but a handy marker for data-items
- */
-class Item extends DataClass {
 
-}
-
-export {getType, getId, getName, getStatus, Meta, nonce, getClass, Item};	
+export {getType, getId, getName, getStatus, Meta, nonce, getClass};	
 export default DataClass;

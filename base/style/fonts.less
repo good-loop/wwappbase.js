@@ -77,7 +77,11 @@ body code {
 }
 // ??
 
-// BS defines .small for textm and -sm -lg for some widgets, but not .large for text
+/** Opposite of .small 
+NB: BS defines .small for textm and -sm -lg for some widgets, but not .large for text */
 .large {
-	font-size: 1.25rem;
+	font-size: 1.25em;
+	@media @width-xl {
+		font-size: 1.4em;
+	}
 }

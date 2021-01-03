@@ -186,6 +186,7 @@ Misc.Time = ({time}) => {
 
 
 /**
+ * Deprecated - use <Icon />
  * A Logo for a known web service - eg Twitter, Facebook, Instagram, "this app"
  * TODO transparent/opaque (??? -RM)
  * TODO merge with Misc.Icon
@@ -217,6 +218,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 
 
 /**
+ * Deprecated - use <Icon /> from Icon.jsx
  * Font-Awesome or Glyphicon icons. See also Misc.Logo
  * @param {String} fa Font Awesome icon name, e.g. "twitter" or "star"
  * @param {String} prefix Font Awesome v5 prefix e.g. "fab" for brands
