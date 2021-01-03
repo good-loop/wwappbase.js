@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Enum from 'easy-enums';
 import { assert } from "./assert";
 import printer from './printer';
-
+import PromiseValue from 'promise-value';
 
 export const randomPick = function<T>(array : T[]) : T
 {
@@ -532,6 +532,45 @@ export const str = x => printer.str(x)
 export const asDate = (s: String) => {
 	if ( ! s) return null;
 	return new Date(s);
+};
+
+/**
+ * Create a debounced function - which returns a PromiseValue.
+ * This differs from plain debounce which returns null (as the function hasn't been called yet);
+ * Use-case: debounce with promise-style .then() follow-on code
+ * @param fn Do the thing!
+ * @param msecs Milliseconds to wait in debounce
+ */
+export const debouncePV = (fn: Function, msecs: Number) => {
+	let pv = PromiseValue.pending();
+	const rpv = {ref:pv};
+	// debounce and resolve the PV
+	let dfn = _.debounce((...args : any[]) => {
+		try {
+			let p = fn(...args);
+			if ( ! p || ! p.then) {
+				rpv.ref.resolve(p);
+				return;
+			}
+			p.then((res: any) => {
+				rpv.ref.resolve(res);
+				// fresh pv for future calls
+				rpv.ref = PromiseValue.pending();
+			}, (err: any) => {
+				rpv.ref.reject(err);
+				// fresh pv for future calls
+				rpv.ref = PromiseValue.pending();
+			});		
+		} catch (err) {
+			rpv.ref.reject(err);
+		}
+	}, msecs);	
+	// return the PV
+	let dfnpv = (...args : any[]) => {
+		dfn(...args);
+		return rpv.ref;
+	};
+	return dfnpv;
 };
 
 // // DEBUG hack

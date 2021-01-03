@@ -22,7 +22,7 @@ import Claim from '../data/Claim';
 import XId from './XId';
 import md5 from 'md5';
 import PromiseValue from 'promise-value';
-import {mapkv, encURI} from '../utils/miscutils';
+import {mapkv, encURI, debouncePV} from '../utils/miscutils';
 import Cookies from 'js-cookie';
 import Enum from 'easy-enums';
 
@@ -196,8 +196,9 @@ const getProfilesNow = xids => {
  * A debounced save - allows 1 second for batching edits
  * Create UI call for saving claims to back-end
 	@param {Person[]} persons
+	@returns {PromiseValue}
 */ 
-const savePersons = _.debounce(({persons}) => {
+const savePersons = debouncePV(({persons, then}) => {
 	// one save per person ?? TODO batch
 	let pSaves = persons.map(peep => {
 		Person.assIsa(peep);
@@ -217,7 +218,7 @@ const savePersons = _.debounce(({persons}) => {
 	});
 	// join them
 	let pSaveAll = Promise.allSettled(pSaves);
-	return pSaveAll; // wrap in a PV??
+	return pSaveAll;
 }, 1000);
 
 
