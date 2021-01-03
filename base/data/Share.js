@@ -1,6 +1,6 @@
 /**
  * You-Again Share object
- * ??move this into you-again.js??
+ * ??move this into youagain.js??
  */
 
 import DataClass, {getType} from './DataClass';

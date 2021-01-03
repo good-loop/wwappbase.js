@@ -22,30 +22,30 @@ import ErrorAlert from './ErrorAlert';
  * 	const itemId = path[1];
  *
  * @param {Object} p
- * @param {C.TYPES} p.type
+ * @param {!String} p.type from C.TYPES
  * @param {?String} p.q - Optional query e.g. advertiser-id=pepsi
  * Note: that filter can add to this
- * @param {?String} sort -  Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
+ * @param {?String} p.sort -  Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
- * @param {?String} filter - Set a filter. Do NOT use this and canFilter
+ * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
- * @param {?boolean} canCreate - If set, show a Create
- * @param {?boolean} filterLocally - If true, do not call the server for filtering
- * @param {?String} status - e.g. "Draft"
- * @param {?String} servlet - @deprecated - use navpage instead
+ * @param {?boolean} p.canCreate - If set, show a Create
+ * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
+ * @param {?String} p.status - e.g. "Draft"
+ * @param {?String} p.servlet - @deprecated - use navpage instead
  * @param {?String} p.navpage - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
- * @param ListItem {?React component} if set, replaces DefaultListItem.
+ * @param {?JSX} p.ListItem if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item.   
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
  * 	Input props: {type, servlet, navpage, item, sort}
 
- * @param {?boolean} notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
- * @param {?String} itemClassName - If set, overrides the standard ListItem btn css classes
- * @param {?boolean} hideTotal - If true, don't show the "Total about 17" line
- * @param {?Object} createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
- * @param {?C.KStatus} preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
+ * @param {?boolean} p.notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
+ * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
+ * @param {?boolean} p.hideTotal - If true, don't show the "Total about 17" line
+ * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
+ * @param {?C.KStatus} p.preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
  */
 const ListLoad = ({type, status, servlet, navpage,
