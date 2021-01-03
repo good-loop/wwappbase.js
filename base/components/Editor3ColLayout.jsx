@@ -21,13 +21,18 @@ const Editor3ColLayout = ({children, showAll}) => {
 	let showLeft = (sz==='md' || sz==='lg' || sz==='xl') && is3;
 	let showRight = (sz==='lg' || sz==='xl') && rightPane;
 
-	return (<div className='flex-row'>
-		{showLeft && <div className='mt-1'>{leftNav}</div>}
-		{showAll && ! showLeft && <Tray>{leftNav}</Tray>}
-		<Container><ErrorBoundary>{mainPane}</ErrorBoundary></Container>
-		{showRight && <div className='mt-1 flex-grow' style={{overflow:"scroll-y"}}>{rightPane}</div>}
-		{showAll && ! showRight && rightPane && <Container>{rightPane}</Container>}
+	return (<div className='flex-row position-relative'>
+		{children}
 	</div>);
+};
+
+const MainPane = ({children}) => <Container><ErrorBoundary>{children}</ErrorBoundary></Container>
+
+const LeftSidebar = ({children}) => {
+	return <div className='mt-1' style={{maxWidth:"30%", position:"sticky", top:0}} >{children}</div>; // TODO use a slide-out tray if space is limited
+};
+const RightSidebar = ({children}) => {
+	return <div className='mt-1 flex-grow' style={{overflow:"scroll-y"}}><ErrorBoundary>{children}</ErrorBoundary></div>;
 };
 
 /**
@@ -36,5 +41,9 @@ const Editor3ColLayout = ({children, showAll}) => {
 const Tray = ({children}) => {
 	return <div>{children}</div>;
 };
-
+export {
+	LeftSidebar,
+	MainPane,
+	RightSidebar
+}
 export default Editor3ColLayout;
