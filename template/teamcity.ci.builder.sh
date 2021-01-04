@@ -358,4 +358,4 @@ use_npm
 use_webpack
 use_jerbil
 start_service
-catch_JVM_success_or_error
+
