@@ -5,7 +5,7 @@
 # Versions of this script are usually run by TeamCity, in response to a git commit.
 # The script uses ssh remote commands to target a server -- it does not affect the local machine.
 # For testing, the script can also be run from your local computer.
-#Version 1.4.4
+#Version 1.4.5
 # Latest Change -- Adding new dependency checks -- Attempting to create parity with production publisher template script
 
 #####  GENERAL SETTINGS
@@ -248,7 +248,7 @@ function use_bob {
     fi
 }
 
-# NPM -- Evaluate and Use - This Function's Version is 0.01
+# NPM -- Evaluate and Use - This Function's Version is 0.02
 function use_npm {
     if [[ $PROJECT_USES_NPM = 'yes' ]]; then
         BUILD_PROCESS_NAME='npm'
@@ -264,7 +264,7 @@ function use_npm {
             printf "\nEnsuring all NPM Packages are in place on $server ...\n"
             ssh winterwell@$server "cd $PROJECT_ROOT_ON_SERVER && npm i &> $NPM_I_LOGFILE"
             printf "\nChecking for errors while npm was attempting to get packages on $server ...\n"
-            if [[ $(ssh winterwell@$server "grep -i 'error' $NPM_I_LOGFILE") = '' ]]; then
+            if [[ $(ssh winterwell@$server "grep -i 'error ' $NPM_I_LOGFILE") = '' ]]; then
                 printf "\nNPM package installer check : No mention of 'error' in $NPM_I_LOGFILE on $server\n"
             else
                 printf "\nNPM encountered one or more errors while attempting to get node packages. Sending Alert Emails, but Continuing Operation\n"
