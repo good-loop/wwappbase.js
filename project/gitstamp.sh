@@ -3,6 +3,12 @@
 # Use-case: This shows what code the server is running
 
 LOGFILE='web/build/gitlog.txt'
+if [[ ! -d web/build ]]; then
+	mkdir -p web/build
+fi
+if [[ ! -f $LOGFILE ]]; then
+	touch $LOGFILE
+fi
 printf "HOST:\t$HOSTNAME\n" > $LOGFILE
 printf "## $pwd\n" >> $LOGFILE
 printf "$(git status)\n" >> $LOGFILE 
