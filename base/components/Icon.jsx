@@ -1,4 +1,5 @@
 import React from 'react';
+import { space } from '../utils/miscutils';
 
 /**
  * TODO standardise use of icons and emojis
@@ -16,8 +17,8 @@ import React from 'react';
   */
 const Icon = ({name,size,className,color}) => {
 	if (EMOJI[name]) {
-		if (color===true) return EMOJI[name];
-		return <span className={space("emoji",className)}>{EMOJI[name]}</span>; // TODO color off
+		if (color===true) return <span dangerouslySetInnerHTML={{__html:EMOJI[name]}} />;
+		return <span className={space("emoji",className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} />; // TODO color off
 		// color: transparent;  
   		// text-shadow: 0 0 0 red; < bleurgh we'll want a few rules, e.g. the BS colour classes
 	}

@@ -12,6 +12,7 @@ import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
 import ErrorAlert from './ErrorAlert';
+import Icon from './Icon';
 
 /**
  * Provide a list of items of a given type.

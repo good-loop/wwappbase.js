@@ -30,10 +30,10 @@ const Editor3ColLayout = ({children, showAll}) => {
 const MainPane = ({children}) => <Container><ErrorBoundary>{children}</ErrorBoundary></Container>
 
 const LeftSidebar = ({children}) => {
-	return <div className='mt-1 mr-0' style={{maxWidth:"30%", position:"sticky", top:0}} >{children}</div>; // TODO use a slide-out tray if space is limited
+	return <div className='mt-1 mr-0' style={{maxWidth:"30%", position:"sticky",height:"100vh",top:40}} >{children}</div>; // TODO use a slide-out tray if space is limited
 };
-const RightSidebar = ({children}) => {
-	return <div className='mt-1 flex-grow' style={{overflow:"scroll-y"}}><ErrorBoundary>{children}</ErrorBoundary></div>;
+const RightSidebar = ({children,width="40vw"}) => {
+	return <div className='mt-1' style={{position:"sticky",top:40,width,height:"100vh",overflowY:"scroll"}}><ErrorBoundary>{children}</ErrorBoundary></div>;
 };
 
 /**
