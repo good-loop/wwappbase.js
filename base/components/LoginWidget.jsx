@@ -7,7 +7,7 @@ import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
 import ServerIO from '../plumbing/ServerIOBase';
-import ErrorAlert from '../components/ErrorAlert';
+import ErrAlert from './ErrAlert';
 import PropControl from './PropControl';
 import { assMatch } from '../utils/assert';
 
@@ -298,7 +298,7 @@ const EmailReset = ({}) => {
 					{verbButtonLabels[verb]}
 				</Button>
 			</div>
-			<ErrorAlert error={Login.error} />
+			<ErrAlert error={Login.error} />
 		</form>
 	);
 };
@@ -341,7 +341,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 				<SwitchVerb verb={verb} />
 			</div>
 			<ResetLink verb={verb} />
-			<ErrorAlert error={Login.error} />
+			<ErrAlert error={Login.error} />
 		</form>
 	);
 }; // ./EmailSignin

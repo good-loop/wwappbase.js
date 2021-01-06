@@ -11,7 +11,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
-import ErrorAlert from './ErrorAlert';
+import ErrAlert from './ErrAlert';
 import Icon from './Icon';
 
 /**
@@ -158,7 +158,7 @@ const ListLoad = ({type, status, servlet, navpage,
 			<Button color='secondary' onClick={e => setPageNum(pageNum+1)} ><b>&gt;</b></Button>
 		</div>}
 		{pvItemsFiltered.resolved && pvItemsAll.resolved? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
-		<ErrorAlert error={pvItems.error}/>
+		<ErrAlert error={pvItems.error}/>
 	</div>);
 }; // ./ListLoad
 //

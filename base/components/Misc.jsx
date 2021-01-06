@@ -20,7 +20,7 @@ import Money from '../data/Money';
 import PropControl, { FormControl } from './PropControl';
 
 import {getType, getId, nonce} from '../data/DataClass';
-import ErrorAlert from './ErrorAlert';
+import ErrAlert from './ErrAlert';
 import Messaging from '../plumbing/Messaging';
 import XId from '../data/XId';
 
@@ -65,7 +65,7 @@ http://tobiasahlin.com/spinkit/
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	// handle ajax error?
 	if (pv && pv.error) {		
-		return <ErrorAlert error={pv.error} />;
+		return <ErrAlert error={pv.error} />;
 	}
 
 	return (

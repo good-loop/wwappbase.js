@@ -150,7 +150,7 @@ class TableSettings {
 	i=0;
 };
 
-// class ErrorBoundary extends React.Component {
+// class ErrBoundary extends React.Component {
 // https://reactjs.org/docs/error-boundaries.html
 
 /**

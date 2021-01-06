@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Container, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import {getScreenSize} from '../utils/miscutils';
-import ErrorBoundary from './ErrorBoundary';
+import ErrBoundary from './ErrBoundary';
 
 /**
  * @param {JSX[]} children 1 to 3 elements, for left (optional), main, right
@@ -27,13 +27,13 @@ const Editor3ColLayout = ({children, showAll}) => {
 };
 
 // margin-left 0 IF there is a LeftSidebar
-const MainPane = ({children}) => <Container><ErrorBoundary>{children}</ErrorBoundary></Container>
+const MainPane = ({children}) => <Container><ErrBoundary>{children}</ErrBoundary></Container>
 
 const LeftSidebar = ({children}) => {
 	return <div className='mt-1 mr-0' style={{maxWidth:"30%", position:"sticky",height:"100vh",top:40}} >{children}</div>; // TODO use a slide-out tray if space is limited
 };
 const RightSidebar = ({children,width="40vw"}) => {
-	return <div className='mt-1' style={{position:"sticky",top:40,width,height:"100vh",overflowY:"scroll"}}><ErrorBoundary>{children}</ErrorBoundary></div>;
+	return <div className='mt-1' style={{position:"sticky",top:40,width,height:"100vh",overflowY:"scroll"}}><ErrBoundary>{children}</ErrBoundary></div>;
 };
 
 /**
