@@ -1,4 +1,9 @@
 
+/**
+ * 
+ * TODO refactor other select-options-from-a-list controls from PropControl into here
+ * 
+ */
 
 import React from 'react';
 
@@ -40,28 +45,65 @@ const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFro
 		DSsetValue(proppath, newList2);
 		if (saveFn) saveFn({ event: e, path, prop, value: newList2});
 	};
+	const isChecked = x => listValue.includes(x);
+	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn}} />;
+}; // ./radio
+registerControl({type:'checkboxes', $Widget: PropControlCheckboxes});
+registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes});
 
-	return (
+/**
+ * 
+ * @param {Object} p
+ */
+const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn}) => (
 		<Form>
 			{options.map(option => (
-				<FormGroup check inline={inline} key={option}>					
-					<Input type='checkbox' key={`option_${option}`} 
+				<FormGroup check inline={inline} key={option}>
+					<Input type='checkbox' key={`option_${option}`}
 						className="form-check-input"
 						name={prop} value={option}
-						checked={listValue.includes(option)}
-						onChange={onChange}
-					/>
+						checked={ !! isChecked(option)}
+						onChange={onChange} />
 					<Label check>
-						{labelFn(option)}
+						{labelFn(option)} {JSON.stringify(option)}
 					</Label>
 				</FormGroup>
 			))}
 		</Form>
 	);
-}; // ./radio
 
-registerControl({type:'checkboxes', $Widget: PropControlCheckboxes});
+
+/**
+ * A list-of-strings editor, where the strings are drawn as discrete "pills"
+ * @param {Object} p
+ * @param {{String:Boolean}} p.value
+ * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
+ */
+const PropControlCheckboxObject = ({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, inline, fcolor, saveFn}) => {
+	assert(options, `PropControl: no options for radio ${prop}`);
+	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
+
+	const objValue = storeValue || {};
+
+	// Make an option -> nice label function
+	// the labels prop can be a map or a function
+	let labelFn = labeller(options, labels);
+
+	// convert value to String[] for checkboxes
+	const onChange = e => {
+		const val = e && e.target && e.target.value;			
+		// toggle on/off
+		objValue[val] = ! objValue[val];
+		DSsetValue(proppath, objValue, true);
+		if (saveFn) saveFn({ event: e, path, prop, value: objValue});
+	};
+	const isChecked = x => objValue[x];
+
+	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn}} />;
+};
+registerControl({type:'checkboxObject', $Widget: PropControlCheckboxObject});
 
 // This is not really for use
 const PropControlSelection = PropControlCheckboxes;
 export default PropControlSelection;
+
