@@ -27,11 +27,11 @@ export const isMobile = ()  => {
 	return !! _isMobile;
 };
 /**
- * Bootstrap 2-letter screen sizes e.g. "md"
+ * Bootstrap 2/3-letter screen sizes e.g. "md"
  */
-export const KScreenSize = new Enum("xs sm md lg xl");
+export const KScreenSize = new Enum("xs sm md lg xl xxl");
 /**
- * Bootstrap 2-letter screen sizes e.g. "md"
+ * Bootstrap 2/3-letter screen sizes e.g. "md"
  * See https://getbootstrap.com/docs/4.5/layout/overview/#containers
  * @returns {KSreenSize}
  */
@@ -41,7 +41,8 @@ export const getScreenSize = () => {
 	if (w < 768) return KScreenSize.sm;
 	if (w < 992) return KScreenSize.md;
 	if (w < 1200) return KScreenSize.lg;
-	return KScreenSize.xl
+	if (w < 1400) return KScreenSize.xl;
+	return KScreenSize.xxl
 };
 
 /**  */
