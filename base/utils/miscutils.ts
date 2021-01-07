@@ -439,7 +439,7 @@ export const ellipsize = function(s :string, maxLength :number) {
 	if ( ! s) return s;
 	if ( ! maxLength) maxLength = 140;
 	if (s.length <= maxLength) return s;
-	return s.substr(0, maxLength - 2)+' &hellip;';
+	return s.substr(0, maxLength - 1)+'…'; // NB: React doesn't render html entities, so lets use a unicode ellipsis.
 };
 
 /**
