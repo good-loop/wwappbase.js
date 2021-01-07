@@ -17,7 +17,7 @@ import { assert, assMatch } from '../utils/assert';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import JSend from '../data/JSend';
-import {stopEvent, toTitleCase, space, labeller, is} from '../utils/miscutils';
+import {stopEvent, toTitleCase, space, labeller, is, asArray} from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 
 import Misc from './Misc';
@@ -461,7 +461,7 @@ const PropControl2 = (props) => {
 		return <PropControlDate {...acprops} />;
 	}
 
-	if (type === 'radio' || type === 'checkboxes') {
+	if (type === 'radio') {
 		return <PropControlRadio storeValue={storeValue} value={value} {...props} />
 	}
 
@@ -609,8 +609,10 @@ const PropControlMultiSelect = ({storeValue, value, prop, labelFn, options, mode
  * TODO buttons style
  *
  * Radio buttons
- *
- * @param labels {String[] | Function | Object} Optional value-to-string convertor.
+ * 
+ * @param {Object} p
+ * @param {String} p.value
+ * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
  */
 const PropControlRadio = ({ type, prop, storeValue, value, path, saveFn, options, labels, inline, size, rawValue, setRawValue, ...otherStuff }) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
@@ -619,22 +621,23 @@ const PropControlRadio = ({ type, prop, storeValue, value, path, saveFn, options
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
 	let labelFn = labeller(options, labels);
-	// make the options html
-	// FIXME checkboxes should support multiple options -- list of vals
+
+	assert(type==='radio');
+	const inputType = 'radio';
+
 	const onChange = e => {
-		// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
-		const val = e && e.target && e.target.value;
+		console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
+		let val = e && e.target && e.target.value;
 		DSsetValue(path.concat(prop), val);
 		if (saveFn) saveFn({ event: e, path, prop, value: val });
 	};
-
-	const inputType = (type === 'checkboxes') ? 'checkbox' : 'radio';
 
 	return (
 		<Form>
 			{options.map(option => (
 				<FormGroup check inline={inline} key={option}>					
-					<Input type={inputType} key={`option_${option}`} name={prop} value={option}
+					<Input type={inputType} key={`option_${option}`} 
+						name={prop} value={option}
 						checked={option == storeValue}
 						onChange={onChange} {...otherStuff}
 					/>
@@ -1040,7 +1043,7 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-PropControl.KControlType = new Enum("textarea html text search select radio checkboxes password email color checkbox range"
+PropControl.KControlType = new Enum("textarea html text search select radio password email color checkbox range"
 	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
 	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
 	// some Good-Loop data-classes

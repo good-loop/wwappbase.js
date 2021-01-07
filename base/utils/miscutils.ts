@@ -220,6 +220,16 @@ export const asNum = (v :string|number|null) : number|null => {
 	return nv;
 };
 
+/**
+ * Is it an array? undefined? a single value? Whatever -- give me an array.
+ * @param {?any} hm If null/undefined/"", return []
+ * @returns {Object[]} 
+ */
+export const asArray = (hm: any) : Object[] => {
+	if ( ! is(hm) || hm==="") return [];
+	if (_.isArray(hm)) return hm;
+	return [hm];
+};
 
 /**
  * @param {!string} src url for the script
