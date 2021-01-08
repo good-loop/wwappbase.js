@@ -90,9 +90,14 @@ class TableSettings {
 	 */
 	background = "white";
 
+	/**
+	 * @type {{String : Boolean}} Has a special "all" key
+	 */
+	collapsed4nodeid;
+
 	/** @type {Column[]|String[]} Can mix String and Column */
 	columns;
-
+	
 	/** @type {?String} Filter rows by keyword */
 	filter;
  
@@ -100,7 +105,7 @@ class TableSettings {
 	hasFilter;
 	
 	hasCollapse;
-
+	
 	/** @param {?Boolean} If true, offer csv download */
 	hasCsv;
 
@@ -360,6 +365,8 @@ const standardiseData = ({ data, dataObject, dataTree }) => {
 
 /**
  * Filter columns, rows, and data + sort
+ * @param {Object} p
+ * @param {TableSettings} p.tableSettings
  * @returns {dataTree, visibleColumns: Column[]}
  */
 const rowFilter = ({ dataTree, columns, tableSettings }) => {
@@ -382,12 +389,23 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 	// dataTree - filter out collapsed rows
 	let visibleColumns = [...columns]; // copy for safety against the edits below
 	if (tableSettings.hasCollapse) {
-		// preserve collapsed setting
-		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
-		if (!tableSettings.collapsed4nodeid) tableSettings.collapsed4nodeid = {};
-		// filter by collapsed (which is set on the parent)
-		// Note: collapsed rows DO affect csv creation??
 		let allDataTree = dataTree;
+		// (un)collapse all
+		const doCollapseAll = (allCollapsed) => {	
+			// NB: unshift so we dont collapse the root node
+			Tree.flatten(allDataTree).slice(1).map(node => {
+				if (!Tree.children(node).length) return;
+				let nodeid = Tree.id(node) || JSON.stringify(node.value);
+				tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
+			});			
+		};
+		// ...preserve collapsed setting
+		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
+		if ( ! tableSettings.collapsed4nodeid) {
+			tableSettings.collapsed4nodeid = {all:true}; // start collapsed
+			doCollapseAll(true);
+		}
+		// Filter out the collapsed nodes
 		dataTree = Tree.filter(dataTree, (node, parent) => {
 			if (!parent) return true;
 			const pnodeid = Tree.id(parent) || JSON.stringify(parent.value);
@@ -395,7 +413,8 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 			return !ncollapsed;
 		});
 		assert(dataTree, "SimpleTable.jsx - collapsed to null?!");
-		// HACK: add a collapse column
+		// HACK: add a collapse column		
+		// filter by collapsed (which is set on the parent)
 		// ...collapse button
 		const CellWithCollapse = (v, col, item, node) => {
 			let nodeid = Tree.id(node) || JSON.stringify(item);
@@ -415,17 +434,13 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 			ui: true,
 			Header: <button className="btn btn-xs btn-outline-secondary" onClick={e => {
 				allCollapsed = !allCollapsed;
-				// NB: unshift so we dont collapse the root node
-				Tree.flatten(allDataTree).slice(1).map(node => {
-					if (!Tree.children(node).length) return;
-					let nodeid = Tree.id(node) || JSON.stringify(node.value);
-					tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
-				});
+				doCollapseAll(allCollapsed);
 				tableSettings.collapsed4nodeid.all = allCollapsed;
 				DataStore.update();
 			}} title={'click to collapse/expand all'} ><b>{allCollapsed ? '▷' : '▼'}</b></button>,
 			Cell: CellWithCollapse
 		});
+		// ... put it as the 2nd column, after the row-name
 		let firstCol = visibleColumns.shift();
 		visibleColumns = [firstCol, uiCol].concat(visibleColumns);
 	} // ./hasCollapse

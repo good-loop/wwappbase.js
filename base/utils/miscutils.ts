@@ -20,6 +20,9 @@ window.randomPick = randomPick; // debug
 
 export const sum = (array : number[]) : number => array.reduce((acc, a) => acc + a, 0);
 
+/**
+ * @returns true for mobile or tablet
+ */
 export const isMobile = ()  => {		
 	// NB: COPIED FROM ADUNIT'S device.js
 	const userAgent = navigator.userAgent || navigator.vendor || window.opera;

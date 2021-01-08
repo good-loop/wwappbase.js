@@ -55,22 +55,19 @@ registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes});
  * 
  * @param {Object} p
  */
-const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn}) => (
-		<Form>
-			{options.map(option => (
-				<FormGroup check inline={inline} key={option}>
-					<Input type='checkbox' key={`option_${option}`}
-						className="form-check-input"
-						name={prop} value={option}
-						checked={ !! isChecked(option)}
-						onChange={onChange} />
-					<Label check>
-						{labelFn(option)} {JSON.stringify(option)}
-					</Label>
-				</FormGroup>
-			))}
-		</Form>
-	);
+const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn}) => options.map(option => 
+	(
+		<FormGroup check inline={inline} key={option}>
+			<Input type='checkbox' key={`option_${option}`}
+				className="form-check-input"
+				name={prop} value={option}
+				checked={ !! isChecked(option)}
+				onChange={onChange} />
+			<Label check>
+				{labelFn(option)}
+			</Label>
+		</FormGroup>
+	));
 
 
 /**
@@ -80,8 +77,8 @@ const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn}) => (
  * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
  */
 const PropControlCheckboxObject = ({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, inline, fcolor, saveFn}) => {
-	assert(options, `PropControl: no options for radio ${prop}`);
-	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
+	assert(options, `PropControl: no options for ${prop}`);
+	assert(options.map, `PropControl: options for ${prop} not an array: ${options}`);
 
 	const objValue = storeValue || {};
 
