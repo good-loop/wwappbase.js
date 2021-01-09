@@ -226,7 +226,7 @@ const PropControl = ({className, ...props}) => {
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
-	const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : '';
+	const helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
 	const optreq = optional ? <small className="text-muted">optional</small>
 		: required ? <small className={storeValue === undefined ? 'text-danger' : null}>*</small> : null;
 	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
@@ -1238,6 +1238,7 @@ urlSpecs.forEach(spec => registerControl(spec));
 import { specs as uploadSpecs } from './PropControls/PropControlUpload';
 uploadSpecs.forEach(spec => registerControl(spec));
 import { specs as imgSpecs } from './PropControls/PropControlImg';
+import Icon from './Icon';
 imgSpecs.forEach(spec => registerControl(spec));
 
 export {

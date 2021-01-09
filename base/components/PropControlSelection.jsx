@@ -20,7 +20,7 @@ import { asArray, labeller } from '../utils/miscutils';
  * @param {String[]} p.value
  * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
  */
-const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, inline, fcolor, saveFn}) => {
+const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -29,6 +29,7 @@ const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFro
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
 	let labelFn = labeller(options, labels);
+	let tooltipFn = tooltips && labeller(options, tooltips);
 
 	// convert value to String[] for checkboxes
 	const onChange = e => {
@@ -46,7 +47,7 @@ const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFro
 		if (saveFn) saveFn({ event: e, path, prop, value: newList2});
 	};
 	const isChecked = x => listValue.includes(x);
-	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn}} />;
+	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn, tooltipFn}} />;
 }; // ./radio
 registerControl({type:'checkboxes', $Widget: PropControlCheckboxes});
 registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes});
@@ -55,9 +56,9 @@ registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes});
  * 
  * @param {Object} p
  */
-const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn}) => options.map(option => 
+const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn, tooltipFn}) => options.map(option => 
 	(
-		<FormGroup check inline={inline} key={option}>
+		<FormGroup check inline={inline} key={option} title={tooltipFn && tooltipFn(option)}>
 			<Input type='checkbox' key={`option_${option}`}
 				className="form-check-input"
 				name={prop} value={option}
@@ -76,7 +77,7 @@ const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn}) => op
  * @param {{String:Boolean}} p.value
  * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
  */
-const PropControlCheckboxObject = ({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, inline, fcolor, saveFn}) => {
+const PropControlCheckboxObject = ({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
 	assert(options, `PropControl: no options for ${prop}`);
 	assert(options.map, `PropControl: options for ${prop} not an array: ${options}`);
 
@@ -85,6 +86,7 @@ const PropControlCheckboxObject = ({rawValue, storeValue, setRawValue, modelValu
 	// Make an option -> nice label function
 	// the labels prop can be a map or a function
 	let labelFn = labeller(options, labels);
+	let tooltipFn = tooltips && labeller(options, tooltips);
 
 	// convert value to String[] for checkboxes
 	const onChange = e => {
@@ -96,7 +98,7 @@ const PropControlCheckboxObject = ({rawValue, storeValue, setRawValue, modelValu
 	};
 	const isChecked = x => objValue[x];
 
-	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn}} />;
+	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn, tooltipFn}} />;
 };
 registerControl({type:'checkboxObject', $Widget: PropControlCheckboxObject});
 

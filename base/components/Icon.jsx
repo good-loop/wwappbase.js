@@ -6,7 +6,8 @@ import { space } from '../utils/miscutils';
  */
 
  const EMOJI = {
-	 trashcan: "&#x1f5d1;"
+	 trashcan: "🗑", //&#x1f5d1;
+	 info: "🛈", // ℹ or 🛈
  };
  
  /**
@@ -15,10 +16,10 @@ import { space } from '../utils/miscutils';
   * @param {?Boolean} p.color true = use the icon's natural colours if possible
   * @param {?String} p.size xs|sm|lg|xl
   */
-const Icon = ({name,size,className,color}) => {
+const Icon = ({name,size="sm",className,color,...props}) => {
 	if (EMOJI[name]) {
-		if (color===true) return <span dangerouslySetInnerHTML={{__html:EMOJI[name]}} />;
-		return <span className={space("emoji",className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} />; // TODO color off
+		if (color===true) return <span dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
+		return <span className={space("emoji",className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />; // TODO color off
 		// color: transparent;  
   		// text-shadow: 0 0 0 red; < bleurgh we'll want a few rules, e.g. the BS colour classes
 	}
@@ -26,15 +27,15 @@ const Icon = ({name,size,className,color}) => {
 	if (name === C.app.service) {
 		url = C.app.logo;
 	}
-	// Social media - We can handle these services with FontAwesome icons
-	if ('twitter facebook instagram'.indexOf(name !== -1)) {
-		url = '/img/' + service + '-logo.svg';
-		if (service === 'instagram') file = '/img/instagram-logo.png'; // NB (Instagram's mesh gradient can't be done in SVG)
+	// Social media
+	if ('twitter facebook instagram google-sheets'.indexOf(name !== -1)) {
+		url = '/img/gl-logo/external/' + name + '-logo.svg';
+		if (name === 'instagram') file = '/img/gl-logo/external/instagram-logo.png'; // NB (Instagram's mesh gradient can't be done in SVG)
 	}
 
 	let classes = 'rounded logo' + (size ? ' logo-' + size : '');
 	if (url) {
-		return <img alt={service} data-pin-nopin="true" className={classes} src={url} />;
+		return <img alt={name} data-pin-nopin="true" className={classes} src={url} {...props} />;
 	}
 };
 
