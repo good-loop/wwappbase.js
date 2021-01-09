@@ -152,7 +152,7 @@ class TableSettings {
 	* @type {Item} */
 	topRow
 
-	i=0;
+	// i=0; debug counter
 };
 
 // class ErrBoundary extends React.Component {
@@ -186,8 +186,8 @@ const SimpleTable = (props) => {
 	tableSettings.update = () => {
 		setTableSettings(Object.assign({}, tableSettings)); // pointless shallow copy - to trigger a re-render
 	};
-	tableSettings.i++;	// debug
-	console.log("render Table "+tableSettings.i);
+	// tableSettings.i++;	// debug
+	// console.log("render Table "+tableSettings.i);
 
 	if (tableSettings.addTotalRow && !_.isString(tableSettings.addTotalRow)) tableSettings.addTotalRow = 'Total';
 
