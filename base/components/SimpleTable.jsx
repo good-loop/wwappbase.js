@@ -240,7 +240,7 @@ const SimpleTable = (props) => {
 							tableSettings={tableSettings}
 							visibleColumns={visibleColumns}
 						/>
-						{bottomRow ? <Row item={bottomRow} row={-1} columns={visibleColumns} /> : null}
+						{bottomRow ? <Row item={bottomRow} row={-1} columns={visibleColumns} tableSettings={tableSettings} /> : null}
 					</tbody>
 					<TableFoot {...{visibleColumns, topRow, dataTree, bottomRow, numPages, tableSettings }}
 						colSpan={visibleColumns.length} />
@@ -267,7 +267,7 @@ const THead = ({ visibleColumns, tableSettings, headerRender, topRow, dataTree }
 			}
 		</tr>
 
-		{topRow && <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} />}
+		{topRow && <Row className="topRow" item={topRow} row={-1} columns={visibleColumns} tableSettings={tableSettings} />}
 
 		{tableSettings.addTotalRow &&
 			<tr className="totalRow" >
@@ -732,7 +732,7 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 		let tooltip = calcStyle({ style: column.tooltip, cellValue: v, item, row, depth, column });
 		
 		// keep first col visible NB first row is a Th
-		if (colNum===0 && tableSettings.scroller && tableSettings.scrollLeft) {
+		if (colNum===0 && tableSettings && tableSettings.scroller && tableSettings.scrollLeft) {
 			style = Object.assign({
 				left: tableSettings.scrollLeft,
 				position:"relative",
