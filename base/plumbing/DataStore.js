@@ -679,7 +679,7 @@ class Store {
 		const type = getType(ref);
 		const id = getId(ref);
 		if ( ! (status && type && id)) {
-			console.warn("(use without resolve) Bad ref in DataStore list", ref);
+			console.log("(use without resolve if possible) Bad ref in DataStore list - missing status|type|id", ref);
 			return ref;
 		}
 		let item = this.getData({status,type,id});

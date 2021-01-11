@@ -3,7 +3,7 @@ import React, { useState, Fragment } from 'react';
 import { Alert, Card, CardBody, Nav, Button, NavItem, NavLink } from 'reactstrap';
 import { assert, assMatch } from '../utils/assert';
 import _ from 'lodash';
-import {addScript, isoDate, join, space } from '../utils/miscutils';
+import {addScript, getLogo, isoDate, join, space } from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import md5 from 'md5';
 // import I18n from 'easyi18n';
@@ -239,17 +239,12 @@ Misc.Icon = ({glyph, fa, size, className, prefix = 'fa', ...rest}) => {
 };
 
 
+
 /**
  * Try to make a thumbnail image for a data item by checking: logo, img
  */
 Misc.Thumbnail = ({item, className}) => {
-	if ( ! item) return null;
-	// Newer ads store logo under item.branding.logo
-	// Kept old syntax in as back-up so that the #advert page will still show icons for old ads
-	let img = (item.branding && item.branding.logo) || item.logo || item.img || item.photo;
-	if ( ! img) return null;
-	// If its an ImageObject then unwrap it
-	if (img.url) img = img.url;
+	let img = getLogo(item);
 	return <Misc.ImgThumbnail url={img} alt={item.name || item.id} className={className} />;
 };
 

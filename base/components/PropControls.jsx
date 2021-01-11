@@ -7,7 +7,7 @@
 import PropControlAutoComplete from './PropControlAutoComplete';
 import PropControlPills from './PropControlPills';
 import PropControlSelection from './PropControlSelection';
-// import SelectDataItemPropControl from './SelectDataItemPropControl'
+import PropControlDataItem from './PropControlDataItem'
 
 // no real export - use via PropControl
 export default {};
