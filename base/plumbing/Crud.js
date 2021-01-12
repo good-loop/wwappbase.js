@@ -15,6 +15,7 @@ import {notifyUser} from './Messaging';
 import List from '../data/List';
 import * as jsonpatch from 'fast-json-patch';
 import deepCopy from '../utils/deepCopy';
+import KStatus from '../data/KStatus';
 
 
 /**
@@ -450,7 +451,6 @@ const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
 	assMatch(id, String);
 	if ( ! status) status = DataStore.getUrlValue('status') || C.KStatus.PUBLISHED;
 	assert(C.KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
-	// TODO Decide if getPath should take object argument
 	let path = DataStore.getDataPath({status, type, id, domain});
 	return DataStore.fetch(path, () => {
 		return SIO_getDataItem({type, id, status, domain, swallow, action, ...other});

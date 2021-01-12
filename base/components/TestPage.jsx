@@ -13,7 +13,7 @@ import Misc from './Misc';
 import SimpleTable from './SimpleTable';
 import PropControl from './PropControl';
 import MDText from './MDText';
-import Tree from '../../base/data/Tree';
+import Tree from '../base/data/Tree';
 
 // 		WARNING:
 // 		CODE HERE MAY BE DELETED WITHOUT NOTICE!

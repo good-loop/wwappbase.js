@@ -7,6 +7,7 @@ import PromiseValue from 'promise-value';
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
 import {parseHash, modifyHash, toTitleCase, is, space} from '../utils/miscutils';
+import KStatus from '../data/KStatus';
 
 
 /**
@@ -140,9 +141,9 @@ class Store {
 	 * 
 	 * Warning: This does NOT load data from the server.
 	 * @param statusTypeIdObject -- backwards compatible update to named params
-	 * @param status {!C.KStatus}
+	 * @param {!KStatus} status 
 	 * @param type {!C.TYPES}
-	 * @param id {!String}
+	 * @param {!String} id 
 	 * @returns a "data-item", such as a person or document, or undefined.
 	 */
 	getData(statusTypeIdObject, type, id) {
@@ -154,10 +155,10 @@ class Store {
 		if (statusTypeIdObject.id) id = statusTypeIdObject.id;
 		// First arg may be status - but check it's valid & if not, fill in status from item object
 		let status = statusTypeIdObject.status || statusTypeIdObject;
-		if (!status || !C.KStatus.has(status)) status = getStatus(item);
+		if (!status || !KStatus.has(status)) status = getStatus(item);
 		// end hack
 
-		assert(C.KStatus.has(status), "DataStore.getData bad status: "+status);
+		assert(KStatus.has(status), "DataStore.getData bad status: "+status);
 		if ( ! C.TYPES.has(type)) console.warn("DataStore.getData bad type: "+type);
 		assert(id, "DataStore.getData - No id?! getData "+type);
 		const s = this.nodeForStatus(status);
@@ -167,7 +168,7 @@ class Store {
 
 
 	/**
-	 * @param status {?C.KStatus} If unset, use item.status
+	 * @param status {?KStatus} If unset, use item.status
 	 * @param item {!Object}
 	 */
 	setData(statusTypeIdObject, item, update = true) {
@@ -180,7 +181,7 @@ class Store {
 		if (statusTypeIdObject.update !== undefined) update = statusTypeIdObject.update;
 		// First arg may be status - but check it's valid & if not, fill in status from item object
 		let status = statusTypeIdObject.status || statusTypeIdObject;
-		if (!status || !C.KStatus.has(status)) status = getStatus(item);
+		if (!status || !KStatus.has(status)) status = getStatus(item);
 		// end hack
 		
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
@@ -196,7 +197,7 @@ class Store {
 	 */
 	getPathForItem(status, item) {
 		if ( ! status) status = getStatus(item);
-		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
+		assert(KStatus.has(status), "DataStore.getPath bad status: "+status);
 		if ( ! item) {
 			return null;
 		}
@@ -208,14 +209,15 @@ class Store {
 	 * the DataStore path for this item, or null if item is null. 
 	 * You can pass in an item as all the args (but not if it uses `domain` as a prop!)
 	 *  -- But WARNING: editors should always use status DRAFT
-	 * @param status {C.KStatus}
-	 * @param type {!C.TYPES}
-	 * @param id {!String}
-	 * @param domain {?String} Only used by Profiler??
+	 * @param {Object} p
+	 * @param {KStatus} p.status
+	 * @param {!C.TYPES} p.type 
+	 * @param {!String} p.id 
+	 * @param {?String} p.domain Only used by Profiler??
 	 * @returns {String[]}
 	 */
 	getDataPath({status, type, id, domain, ...restOfItem}) {
-		assert(C.KStatus.has(status), "DataStore.getPath bad status: "+status);
+		assert(KStatus.has(status), "DataStore.getPath bad status: "+status);
 		if ( ! type) type = getType(restOfItem);
 		assert(C.TYPES.has(type), "DataStore.js bad type: "+type);
 		assMatch(id, String, "DataStore.js bad id "+id);
@@ -237,7 +239,7 @@ class Store {
 	 * @returns {String[]}
 	 */
 	getDataPathDraft(item) {
-		return getDataPath({status:C.KStatus.DRAFT, type:getType(item), id:getId(item)});
+		return getDataPath({status:KStatus.DRAFT, type:getType(item), id:getId(item)});
 	}
 
 
@@ -255,12 +257,13 @@ class Store {
 	 * @returns {String} the appstate.X node for storing data items of this status.
 	 */
 	nodeForStatus(status) {
-		assert(C.KStatus.has(status), "DataStore bad status: "+status);
+		assert(KStatus.has(status), "DataStore bad status: "+status);
 		switch(status) {
-			case C.KStatus.PUBLISHED: return 'data';
-			case C.KStatus.DRAFT: case C.KStatus.MODIFIED: case C.KStatus.PENDING: case C.KStatus.REQUEST_PUBLISH: case C.KStatus.ARCHIVED:
+			case KStatus.PUBLISHED: return 'data';
+			case KStatus.DRAFT: case KStatus.MODIFIED: case KStatus.PENDING: case KStatus.REQUEST_PUBLISH: case KStatus.ARCHIVED:
+			case KStatus.PUB_OR_DRAFT: // we can't be ambiguous on where to store
 				return 'draft';
-			case C.KStatus.TRASH: return 'trash';
+			case KStatus.TRASH: return 'trash';
 		}
 		throw new Error("DataStore - odd status "+status);
 	}
@@ -760,8 +763,8 @@ const getPath = DataStore.getPath.bind(DataStore);
  * the DataStore path for this item, or null if item is null. 
  * You can pass in an item as all the args (but not if it uses `domain` as a prop!)
  *  -- But WARNING: editors should always use status DRAFT
- * @param status {C.KStatus}
- * @param type {!C.TYPES}
+ * @param {KStatus} status 
+ * @param {!C.TYPES} type 
  * @param id {!String}
  * @param domain {?String} Only used by Profiler??
  * @returns {String[]}

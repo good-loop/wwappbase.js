@@ -111,6 +111,7 @@ class DataClass {
 	}
 
 	/**
+	* @param {?Object} obj
 	* @returns {?String} An instance name, e.g. "Daniel" NOT the class name
 	*
 	* Note: Not all classes or instance have a name. This function is defined here as it is
@@ -120,7 +121,7 @@ class DataClass {
 	* can explain that once.
 	*/
 	static getName(obj) {
-		return obj.name;
+		return obj? obj.name : null;
 	}	
 
 	/**

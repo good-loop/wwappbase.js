@@ -8,6 +8,7 @@ import DataStore from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from './KStatus';
+import PromiseValue from 'promise-value';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -30,6 +31,7 @@ DataClass.register(Campaign, "Campaign");
  * 
  * @param {Advert|Advertiser} advert 
  * @param {?KStatus} status 
+ * @returns {PromiseValue}
  */
 Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 	let cid = Advert.campaign(advert);
