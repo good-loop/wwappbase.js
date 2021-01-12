@@ -2,18 +2,10 @@
  * A convenient place for ad-hoc widget tests.
  * This is not a replacement for proper unit testing - but it is a lot better than debugging via repeated top-level testing.
  */
-import React, {useState} from 'react';
-
-import { assert, assMatch } from '../utils/assert';
-import printer from '../utils/printer.js';
+import React from 'react';
 import DataStore from '../plumbing/DataStore';
-import C from '../CBase';
-import Roles from '../Roles';
-import Misc from './Misc';
 import SimpleTable from './SimpleTable';
-import PropControl from './PropControl';
-import MDText from './MDText';
-import Tree from '../base/data/Tree';
+
 
 // 		WARNING:
 // 		CODE HERE MAY BE DELETED WITHOUT NOTICE!

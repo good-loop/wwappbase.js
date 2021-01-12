@@ -5,9 +5,13 @@ import { space } from '../utils/miscutils';
  * TODO standardise use of icons and emojis
  */
 
+ /**
+  * See https://unicode-table.com/
+  */
  const EMOJI = {
 	 trashcan: "🗑", //&#x1f5d1;
 	 info: "🛈", // ℹ or 🛈
+	 ".txt":"🖹",
  };
  
  /**
