@@ -30,7 +30,11 @@ const Stage = ({i, title, stageNum, stagePath, canJumpAhead}) => {
 		c = 'complete';
 	}
 	const canClick = complete || canJumpAhead;
-	const maybeSetStage = () => canClick && stagePath && DataStore.setValue(stagePath, i);
+	const doTheSwitch = () => {
+		DataStore.setValue(stagePath, i);
+		window.scrollTo(0, 0);
+	};
+	const maybeSetStage = () => canClick && stagePath && doTheSwitch();
 
 	return (
 		<div className={space('Stage',c)} onClick={maybeSetStage}>
@@ -152,6 +156,7 @@ const NextPrevTab = ({stagePath, diff, children, colour = 'secondary', maxStage,
 	const onClick = () => {
 		let n = stage + diff;
 		DataStore.setValue(stagePath, n);
+		window.scrollTo(0,0);
 		if (callback) callback();
 	};
 	
