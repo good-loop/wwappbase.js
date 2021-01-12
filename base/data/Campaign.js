@@ -29,7 +29,7 @@ DataClass.register(Campaign, "Campaign");
 /**
  * 
  * @param {Advert|Advertiser} advert 
- * @param {?String} status 
+ * @param {?KStatus} status 
  */
 Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 	let cid = Advert.campaign(advert);

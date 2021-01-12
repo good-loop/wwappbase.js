@@ -1,4 +1,5 @@
 
+import Enum from 'easy-enums';
 
 /**
  * NB: PUBLISHED -> MODIFIED on edit is set by the server (see AppUtils.java doSaveEdit(), or trace usage of KStatus.MODIFIED)
