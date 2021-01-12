@@ -2,6 +2,7 @@
 import Enum from 'easy-enums';
 import Roles from './Roles';
 import DataStore from './plumbing/DataStore';
+import KStatus from './data/KStatus';
 
 const C = {};
 
@@ -44,7 +45,7 @@ C.isProduction = () => prod;
 /**
  * NB: PUBLISHED -> MODIFIED on edit is set by the server (see AppUtils.java doSaveEdit(), or trace usage of KStatus.MODIFIED)
  */
-C.KStatus = new Enum('DRAFT PUBLISHED MODIFIED REQUEST_PUBLISH PENDING ARCHIVED TRASH ALL_BAR_TRASH PUB_OR_ARC PUB_OR_DRAFT');
+C.KStatus = KStatus;
 
 C.STATUS = new Enum('loading clean dirty saving saveerror'); // 
 
