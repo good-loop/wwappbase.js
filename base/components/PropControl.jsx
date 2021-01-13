@@ -30,7 +30,7 @@ import Money from '../data/Money';
 // // import I18n from 'easyi18n';
 import { getType, getId } from '../data/DataClass';
 import { notifyUser } from '../plumbing/Messaging';
-
+import Icon from './Icon';
 
 /**
  * Set the value and the modified flag in DataStore
@@ -42,30 +42,6 @@ export const DSsetValue = (proppath, value, update) => {
 	DataStore.setModified(proppath);
 	return DataStore.setValue(proppath, value, update);
 	// console.log("set",proppath,value,DataStore.getValue(proppath));
-};
-
-/** Default validator for money values
- * TODO Should this also flag bad, non-empty raw values like £sdfgjklh?
- * @param {?Money} min
- * @param {?Money} max
-*/
-const moneyValidator = (val, min, max) => {
-	// NB: we can get a Money skeleton object with no set value, seen May 2020
-	if (!val || (!val.value && !val.value100p)) {
-		return null;
-	}
-	let nVal = Money.value(val);
-
-	if (!Number.isFinite(nVal)) {
-		return "Invalid number: " + val.raw;
-	}
-	if (!(nVal * 100).toFixed(2).endsWith(".00")) {
-		return "Fractional pence may cause an error later";
-	}
-	if (val.error) return "" + val.error;
-	if (min && Money.compare(min, val) > 0) return "Value is below the minimum " + Money.str(min);
-	if (max && Money.compare(max, val) < 0) return "Value is above the maximum " + Money.str(max);
-	return null;
 };
 
 /** Default validator for date values */
@@ -102,7 +78,7 @@ const dateValidator = (val, rawValue) => {
  * @param {!string} prop The field being edited
  * @param {?Object} dflt default value (this will get set over-riding a null/undefined/'' value in the item)
  * 	NB: "default" is a reserved word, hence the truncated spelling. This CANNOT change from unset to set or React will get upset (with the error "Rendered more hooks than during the previous render.")
- * @param {?Function} modelValueFromInput - inputs: (value, type, eventType) See standardModelValueFromInput.
+ * @param {?Function} modelValueFromInput - inputs: (value, type, event) See standardModelValueFromInput.
  * @param {?boolean} required  If set, this field should be filled in before a form submit.
  * 	TODO mark that somehow
  * @param validator {?(value, rawValue) => String} Generate an error message if invalid
@@ -136,7 +112,7 @@ const PropControl = ({className, ...props}) => {
 	// What is rawValue?
 	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
 	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
-	// rawValue === undefined does not mean "show a blank". BUT rawValue === "" does!
+	// Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
 	const [rawValue, setRawValue] = useState(_.isString(storeValue)? storeValue : null);
 	assMatch(rawValue, "?String", "rawValue must be a string type:"+type+" path:"+path+" prop:"+prop);
 
@@ -168,25 +144,16 @@ const PropControl = ({className, ...props}) => {
 	// TODO generalise this with a validation function
 	if (PropControl.KControlType.isdate(type) && !validator) validator = dateValidator;
 
-	/*
-	// URL and media upload inputs are now plugins & use plug-in validator
-	// Default validator: URL
-	const isUrlInput = (PropControl.KControlType.isurl(type) || PropControl.KControlType.isimg(type) || PropControl.KControlType.isimgUpload(type));
-	if (isUrlInput && !validator) {
-		validator = stuff.https ? urlValidatorSecure : urlValidator;
-	}
-	*/
-
-	// Default validator: Money (NB: not 100% same as the backend)
-	if (PropControl.KControlType.isMoney(type) && !validator && !error) {
-		validator = val => moneyValidator(val, props.min, props.max);
-	}
-
+	/** @type {JSend} */
 	let validatorStatus;
 
 	// validate!
 	if (newValidator) { // safe to override with this if it exists as it won't override explicit validator in props
 		validatorStatus = newValidator({ value: storeValue, props });
+		if (validatorStatus && ! validatorStatus.status) {	// catch bad code
+			console.warn("PropControl.jsx: Odd validator output (please use {status,message}) for "+type, path, validatorStatus);
+			validatorStatus = {status:"warning",message:""+validatorStatus};
+		}
 	} else if (validator) {
 		const tempError = validator(storeValue, rawValue);
 		if (tempError) validatorStatus = { status: 'error', message: tempError };
@@ -276,9 +243,9 @@ const PropControl2 = (props) => {
 			modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
 		}
 	} else {
-		if (!modelValueFromInput) {
+		if ( ! modelValueFromInput) {
 			if (type === 'html') {
-				modelValueFromInput = (_v, type, eventType, target) => standardModelValueFromInput((target && target.innerHTML) || null, type, eventType);
+				modelValueFromInput = (_v, type, event, target) => standardModelValueFromInput((target && target.innerHTML) || null, type, event);
 			} else {
 				modelValueFromInput = standardModelValueFromInput;
 			}
@@ -310,15 +277,17 @@ const PropControl2 = (props) => {
 		onChange = e => {
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur', false); // obsolete??
-			setRawValue(e.target.value);
-			let mv = modelValueFromInput(e.target.value, type, e.type, e.target);
+			// HACK: allow our own ersatz events to avoid calling setRawValue
+			if ( ! e.cooked) {
+				setRawValue(e.target.value);
+			}
+			let mv = modelValueFromInput(e.target.value, type, e, storeValue, props);
 			// console.warn("onChange", e.target.value, mv, e);
 			DSsetValue(proppath, mv, update);
 			if (saveFn) saveFn({ event: e, path, prop, value: mv });
 			// Enable piggybacking custom onChange functionality
 			if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
-			e.preventDefault();
-			e.stopPropagation();
+			stopEvent(e);
 		};
 	}
 
@@ -388,13 +357,6 @@ const PropControl2 = (props) => {
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
 	}
-
-	// £s
-	// NB: This is a bit awkward code -- is there a way to factor it out nicely?? The raw vs parsed/object form annoyance feels like it could be a common case.
-	if (type === 'Money') {
-		let acprops = { prop, storeValue, rawValue, setRawValue, path, proppath, bg, saveFn, modelValueFromInput, ...otherStuff };
-		return <PropControlMoney {...acprops} />;
-	} // ./£
 
 	if (type === 'XId') {
 		let service = otherStuff.service || 'WTF'; // FIXME // Does this actually need fixing? Is there any sensible default?
@@ -559,17 +521,11 @@ const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRa
  */
 const PropControlMultiSelect = ({storeValue, value, prop, labelFn, options, modelValueFromInput, className, type, path, saveFn }) => {
 	assert(!value || value.length !== undefined, "value should be an array", value, prop);
-	// const mvfi = rest.modelValueFromInput;
-	// let modelValueFromInput = (s, type, etype) => {
-	// 	if (mvfi) s = mvfi(s, type, etype);
-	// 	console.warn("modelValueFromInput", s, sv);
-	// 	return [s];
-	// };
 
 	let onChange = e => {
 		const evtVal = e && e.target && e.target.value;
 		const checked = e && e.target && e.target.checked;
-		let mv = modelValueFromInput(evtVal, type, e.type);
+		let mv = modelValueFromInput(evtVal, type, e, storeValue);
 		// console.warn("onChange", val, checked, mv, e);
 
 		let newMvs = checked ? (
@@ -670,77 +626,6 @@ const numFromAnything = v => {
 };
 
 
-/**
- * See also: Money.js
- * @param currency {?String}
- * @param name {?String} (optional) Use this to preserve a name for this money, if it has one.
- */
-const PropControlMoney = ({ prop, name, storeValue, rawValue, setRawValue, currency, path, proppath,
-	bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff }) => {
-	// special case, as this is an object.
-	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
-	// Convert null and numbers into Money objects
-	if ( ! storeValue || _.isString(storeValue) || _.isNumber(storeValue)) {
-		storeValue = new Money({ storeValue });
-	}
-
-	// Prefer raw value (including "" or 0), so numeric substrings which aren't numbers or are "simplifiable", eg "-" or "1.", are preserved while user is in mid-input
-	let v = rawValue===undefined? storeValue.value : rawValue;
-
-	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
-		v = '';
-	}
-	let currencyValue = currency || (storeValue && storeValue.currency) || "GBP";
-	let currLabel = Money.CURRENCY[currencyValue] || currencyValue;
-	//Money.assIsa(value); // type can be blank
-	
-	// handle edits
-	const onMoneyChange = (e, newCurrency) => {
-		let newMoney = storeValue;
-		if (e) {
-			setRawValue(e.target.value);
-			// keep blank as blank (so we can have unset inputs), otherwise convert to number/undefined
-			newMoney = e.target.value === '' ? null : new Money(e.target.value);			
-		}				
-		if (newMoney) {
-			newMoney.name = name; // preserve named Money items			
-			newMoney.currency = newCurrency || currencyValue;
-		}
-		DSsetValue(proppath, newMoney);
-		if (saveFn) saveFn({ event: e, path, prop, newMoney});
-		// call onChange after we do the standard updates TODO make this universal
-		if (onChange) onChange(e);
-	}; // ./onChange()
-
-	let $currency;
-	let changeCurrency = otherStuff.changeCurrency !== false && ! currency;
-	if (changeCurrency) {
-		
-		$currency = (
-			<UncontrolledButtonDropdown addonType="prepend" disabled={otherStuff.disabled} id={'input-dropdown-addon-' + JSON.stringify(proppath)}>
-				<DropdownToggle caret>{currLabel}</DropdownToggle>
-				<DropdownMenu>
-					{Object.keys(Money.CURRENCY).map((c,i) => 
-						<DropdownItem key={i} onClick={e => onMoneyChange(null, c)}>{Money.CURRENCY[c]}</DropdownItem>
-					)}
-				</DropdownMenu>
-			</UncontrolledButtonDropdown>
-		);
-	} else {
-		$currency = <InputGroupAddon addonType="prepend">{currLabel}</InputGroupAddon>;
-	}
-	delete otherStuff.changeCurrency;
-	assert(v === 0 || v || v === '', [v, storeValue]);
-	// make sure all characters are visible
-	let minWidth = (("" + v).length / 1.5) + "em";
-	return (
-		<InputGroup>
-			{$currency}
-			<FormControl name={prop} value={v} onChange={onMoneyChange} {...otherStuff} style={{ minWidth }} />
-			{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
-		</InputGroup>
-	);
-}; // ./£
 
 /**
  * yes/no radio buttons (kind of like a checkbox)
@@ -960,10 +845,10 @@ const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }
 * Convert inputs (probably text) into the model's format (e.g. numerical)
 * @param {?primitive} inputValue - The html value, often a String
 * @param {KControlType} type - The PropControl type, e.g. "text" or "date"
-* @param {String} eventType "change"|"blur" More aggressive edits should only be done on "blur"
+* @param {String} event.type "change"|"blur" More aggressive edits should only be done on "blur"
 * @returns the model value/object to be stored in DataStore
 */
-const standardModelValueFromInput = (inputValue, type, eventType) => {
+const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, props) => {
 	if (!inputValue) return inputValue;
 	// numerical?
 	if (type === 'year') {
@@ -973,7 +858,7 @@ const standardModelValueFromInput = (inputValue, type, eventType) => {
 		return numFromAnything(inputValue);
 	}
 	// url: add in https:// if missing
-	if (type === 'url' && eventType === 'blur') {
+	if (type === 'url' && event.type === 'blur') {
 		if (inputValue.indexOf('://') === -1 && inputValue[0] !== '/' && 'http'.substr(0, inputValue.length) !== inputValue.substr(0, 4)) {
 			inputValue = 'https://' + inputValue;
 		}
@@ -1047,26 +932,9 @@ PropControl.KControlType = new Enum("textarea html text search select radio pass
 	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
 	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
 	// some Good-Loop data-classes
-	+ " Money XId keyvalue");
+	+ " XId keyvalue");
 
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
-
-
-const imgTypes = 'image/jpeg, image/png, image/svg+xml';
-const videoTypes = 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
-const bothTypes = `${imgTypes}, ${videoTypes}`;
-// Accepted MIME types
-const acceptDescs = {
-	imgUpload: 'JPG, PNG, or SVG image',
-	videoUpload: 'video',
-	bothUpload: 'video or image',
-};
-// Human-readable descriptions of accepted types
-const acceptTypes = {
-	imgUpload: imgTypes,
-	videoUpload: videoTypes,
-	bothUpload: bothTypes,
-};
 
 
 
@@ -1214,12 +1082,13 @@ let rawToStoreForType = {};
 
 /**
  * Extend or change support for a type
- * @param {!String} type e.g. "textarea"
- * @param {!JSX} $Widget the widget to render a propcontrol, replacing PropControl2.
- * @param {?Function} validator The validator function for this type. Takes (rawInput, inputProps), returns array of statuses.
- * @param {?Function} rawToStore AKA modelValueFromInput - converts a valid text input to e.g. numeric, date, etc
- * The label, error, help have _already_ been rendered. This widget should do the control guts.
- * ?? what props does it get?? {path, prop, proppath, value, modelValueFromInput}
+ * @param {Object} p
+ * @param {!String} p.type e.g. "textarea"
+ * @param {!JSX} p.$Widget the widget to render a propcontrol, replacing PropControl2.
+ * @param {?Function} p.validator The validator function for this type. Takes ({value, props}), returns JSend.
+ * @param {?Function} p.rawToStore AKA modelValueFromInput - converts a valid text input to e.g. numeric, date, etc
+ * The label, error, help have _already_ been rendered. This widget should do the control guts. 
+ * Inputs: (rawValue, ?type, ?event, ?oldStoreValue, ?props) 
  */
 const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	assMatch(type, String);
@@ -1235,10 +1104,7 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 // Modularised PropControl types: import default types that should always be available
 import { specs as urlSpecs } from './PropControls/PropControlUrl';
 urlSpecs.forEach(spec => registerControl(spec));
-import { specs as uploadSpecs } from './PropControls/PropControlUpload';
-uploadSpecs.forEach(spec => registerControl(spec));
 import { specs as imgSpecs } from './PropControls/PropControlImg';
-import Icon from './Icon';
 imgSpecs.forEach(spec => registerControl(spec));
 
 export {

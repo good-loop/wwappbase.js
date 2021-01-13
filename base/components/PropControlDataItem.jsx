@@ -46,8 +46,21 @@ const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, stor
 
 	// TODO display the name not the ID getName(pvDI.value). But: handling onChange and setting the id value is fiddly
 
+	const showList = e => {
+		// console.log("show"); debug
+		setLL(true);
+	};
+	const hideList = e => {
+		// console.log("hide...");
+		// a moment's delay to allow moving from the text entry to the list??
+		// setTimeout(() => {
+		// 	console.log("...hide"); // Debug - Why is this so slow to close??
+		setLL(false);
+		// }, 100);
+	};
+	// console.log("render");
 	return (
-		<Row onFocus={e => setLL(true)} onBlur={e => setTimeout(() => setLL(false), 500)}>
+		<Row onFocus={showList} onBlur={hideList}>
 			<Col md={8}>
 				<Input type='text' value={rawValue || ''} onChange={onChange} />
 				{ll && <div className='position-relative'><div className='position-absolute' 

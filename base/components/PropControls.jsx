@@ -4,10 +4,14 @@
  * Usage: import this once in app.jsx
  * 
  */
+
+ // Just importing these gets them registered with PropControl
+import PropControlUpload from './PropControls/PropControlUpload'
 import PropControlAutoComplete from './PropControlAutoComplete';
 import PropControlPills from './PropControlPills';
 import PropControlSelection from './PropControlSelection';
 import PropControlDataItem from './PropControlDataItem'
+import PropControlMoney from './PropControlMoney'
 
 // no real export - use via PropControl
 export default {};

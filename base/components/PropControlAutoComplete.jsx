@@ -52,7 +52,7 @@ const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValu
 		// typing sends an event, clicking an autocomplete sends a value
 		const val = e.target ? e.target.value : e;
 		setRawValue(val)
-		let mv = modelValueFromInput(val, type, e.type);
+		let mv = modelValueFromInput(val, type, e, storeValue);
 		DSsetValue(proppath, mv);
 		if (saveFn) saveFn({ event: e, path: path, prop, value: mv });
 		// e.preventDefault();

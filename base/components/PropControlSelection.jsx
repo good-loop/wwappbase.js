@@ -42,7 +42,7 @@ const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFro
 		} else {
 			newList = listValue.concat(val);
 		}
-		let newList2 = modelValueFromInput? modelValueFromInput(newList) : newList;
+		let newList2 = modelValueFromInput? modelValueFromInput(newList, type, e) : newList;
 		DSsetValue(proppath, newList2);
 		if (saveFn) saveFn({ event: e, path, prop, value: newList2});
 	};

@@ -23,7 +23,7 @@ class Money extends DataClass {
 	 * Integer to avoid floating point issues (if a float is input, it will be rounded). */
 	value100p;
 
-	/** @type {?String} raw string version - used during input to support incomplete input */
+	/** @type {?String} raw string version -- potentially for audit trails */
 	raw;
 
 	/** @type {!String} */

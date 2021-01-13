@@ -64,7 +64,7 @@ JSend.status = status;
 
 /**
  * Boolean alternative to status.
- * @return {?Boolean} null if the success is not provided. 
+ * @returns {?Boolean} null if the success is not provided. 
  * status=warning returns true
  */
 JSend.success = jobj => {

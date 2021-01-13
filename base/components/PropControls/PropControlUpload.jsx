@@ -25,6 +25,7 @@ const acceptDescs = {
 	bothUpload: 'video or image',
 };
 
+
 // Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it
 const fakeEvent = {
 	preventDefault: () => null,
@@ -109,15 +110,8 @@ const baseSpec = {
 };
 
 // Externally these are identical - they just sniff their own type internally & change behaviour on that basis.
-// registerControl({ type: 'imgUpload', ...baseSpec });
-// registerControl({ type: 'videoUpload', ...baseSpec });
-// registerControl({ type: 'bothUpload', ...baseSpec });
+registerControl({type: 'imgUpload', ...baseSpec });
+registerControl({ type: 'videoUpload', ...baseSpec });
+registerControl({ type: 'bothUpload', ...baseSpec });
 
-// TODO Is this the Right Way?
-// We can't call registerControl here because - due to a dependency loop - it may not exist yet.
-// So we let PropControl.jsx receive a specification for each new control type & register them itseld.
-export const specs = [
-	{ type: 'imgUpload', ...baseSpec },
-	{ type: 'videoUpload', ...baseSpec },
-	{ type: 'bothUpload', ...baseSpec },
-];
+export default {};
