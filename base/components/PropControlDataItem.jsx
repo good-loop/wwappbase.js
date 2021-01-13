@@ -20,7 +20,7 @@ import { getLogo } from '../utils/miscutils';
  * 
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, storeValue, type, itemType, status=KSt, domain, q, sort, embed }) => {
+const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, storeValue, type, itemType, status=KStatus.DRAFT, domain, q, sort, embed }) => {
 	let pvDI = rawValue ? getDataItem({ type: itemType, id: rawValue, status, domain, swallow: true }) : {};
 
 	assert( ! embed);
