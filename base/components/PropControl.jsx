@@ -137,7 +137,7 @@ const PropControl = ({className, ...props}) => {
 	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
 	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
 	// rawValue === undefined does not mean "show a blank". BUT rawValue === "" does!
-	const [rawValue, setRawValue] = useState();
+	const [rawValue, setRawValue] = useState(_.isString(storeValue)? storeValue : null);
 	assMatch(rawValue, "?String", "rawValue must be a string type:"+type+" path:"+path+" prop:"+prop);
 
 	// old code
