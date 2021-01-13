@@ -1,15 +1,15 @@
 
 import React, { useState } from 'react';
-
 import _ from 'lodash';
-import PropControl, { DSsetValue, registerControl } from './PropControl';
 import { Input, Row, Col } from 'reactstrap';
-import DataStore from '../plumbing/DataStore';
+
+import ListLoad from './ListLoad';
+
+import C from '../CBase';
+import { DSsetValue, registerControl } from './PropControl';
 import ActionMan from '../plumbing/ActionManBase';
-import ListLoad, { DefaultListItem } from './ListLoad';
 import { getDataItem } from '../plumbing/Crud';
 import { getId, getName } from '../data/DataClass';
-import Misc from './Misc';
 import { assert } from '../utils/assert';
 import { getLogo } from '../utils/miscutils';
 /**
@@ -20,7 +20,7 @@ import { getLogo } from '../utils/miscutils';
  * 
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, storeValue, type, itemType, status=KStatus.DRAFT, domain, q, sort, embed }) => {
+const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, storeValue, type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed }) => {
 	let pvDI = rawValue ? getDataItem({ type: itemType, id: rawValue, status, domain, swallow: true }) : {};
 
 	assert( ! embed);
