@@ -23,6 +23,9 @@ import { BasicAccountPage } from './AccountPageWidgets';
 
 import E404Page from './E404Page';
 import { assert } from '../utils/assert';
+import PropControls from './PropControls';
+
+let dummy = PropControls; // keep the PropControls import
 
 // DataStore
 C.setupDataStore();
