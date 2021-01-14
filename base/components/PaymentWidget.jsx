@@ -15,7 +15,7 @@ import { assert, assMatch } from '../utils/assert';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import { loadStripe } from '@stripe/stripe-js';
-import ServerIO from '../plumbing/ServerIO';
+import ServerIO from '../plumbing/ServerIOBase';
 
 // Which Stripe API key to use?
 const stripeKey = (C.SERVER_TYPE) ? // SERVER_TYPE is falsy on production servers
