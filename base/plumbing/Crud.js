@@ -439,18 +439,18 @@ const SIO_getDataItem = function({type, id, status, domain, swallow, ...other}) 
 
 /**
  * get an item from DataStore, or call the backend if not there (and save it into DataStore)
- * @param type {!String} From C.TYPES
- * @param status {?String} From C.KStatus. If in doubt: use PUBLISHED for display, and DRAFT for editors. 
+ * @param {!String} p.type From C.TYPES
+ * @param {?KStatus} status If in doubt: use PUBLISHED for display, and DRAFT for editors. default: check url, then use PUBLISHED
  * 	Default: look for a status= parameter in thre url, or use published.
  * @param {?string} action e.g. `getornew`
- * @returns PromiseValue
+ * @returns PromiseValue(type)
  */
 const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
 	assert(id!=='unset', "ActionMan.getDataItem() "+type+" id:unset?!");
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
 	assMatch(id, String);
-	if ( ! status) status = DataStore.getUrlValue('status') || C.KStatus.PUBLISHED;
-	assert(C.KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
+	if ( ! status) status = DataStore.getUrlValue('status') || KStatus.PUBLISHED;
+	assert(KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
 	let path = DataStore.getDataPath({status, type, id, domain});
 	return DataStore.fetch(path, () => {
 		return SIO_getDataItem({type, id, status, domain, swallow, action, ...other});
