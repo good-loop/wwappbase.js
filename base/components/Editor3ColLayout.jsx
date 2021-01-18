@@ -27,7 +27,7 @@ const Editor3ColLayout = ({children, showAll}) => {
 };
 
 // margin-left 0 IF there is a LeftSidebar
-const MainPane = ({children}) => <Container><ErrBoundary>{children}</ErrBoundary></Container>
+const MainPane = ({className, children}) => <Container className={className}><ErrBoundary>{children}</ErrBoundary></Container>
 
 const LeftSidebar = ({children}) => {
 	return <div className='mt-1 mr-0' style={{maxWidth:"30%", position:"sticky",height:"100vh",top:40}} >{children}</div>; // TODO use a slide-out tray if space is limited
