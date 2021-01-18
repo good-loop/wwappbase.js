@@ -26,6 +26,8 @@ import React, {useState, useRef} from 'react';
 
 /**
  *
+ * @deprecated Use StyleBlock instead -- which plays nicer with VS Code auto-complete / eslint handling.
+ * 
  * @param {String} css
  * 
  * NB: Why an attribute instead of tag-contents? because {}s are special characters for jsx and for css -- using the tag contents isnt so good.
