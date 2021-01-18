@@ -72,7 +72,7 @@ const PropControlMoney = ({ prop, storeValue, rawValue, setRawValue, path, propp
 	// make sure all characters are visible
 	let minWidth = (("" + v).length / 1.5) + "em";
 	return (
-		<InputGroup>
+		<InputGroup size={otherStuff.size} >
 			{$currency}
 			<FormControl name={prop} value={v} onChange={onChange} {...otherStuff} style={{ minWidth }} />
 			{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}

@@ -46,9 +46,24 @@
 
 
 /* checkbox layout vs sizing - BS default looks a bit broken */
+
+// Make small well, _smaller_
 .form-control-sm {
 	height: 1.3em;
 	line-height: 1;
+}
+.form-group {
+	.input-group.input-group-sm { // NB: lots of selectors to beat the BS default rules
+		.form-control {
+			height: calc(1.3em + 0.4rem + 2px);
+			line-height: 1.3;
+			padding-top: 0.5rem;
+		}
+		.input-group-prepend, .input-group-append, .btn {
+			height: calc(1.3em + 0.4rem);
+			line-height: 1.3;
+		}
+	}
 }
 .form-control-lg {
 	height: 1.5em;

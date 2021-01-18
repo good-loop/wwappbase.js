@@ -93,7 +93,7 @@ const dateValidator = (val, rawValue) => {
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = ({className, ...props}) => {
-	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, ...stuff } = props;
+	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
 	if ( ! path) {	// default to using path = the url
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
@@ -205,7 +205,7 @@ const PropControl = ({className, ...props}) => {
 	// NB: label has mr-1 to give a bit of spacing when used in an inline form
 	// NB: reactstrap inline is buggy (Sep 2020) so using className
 	return (
-		<FormGroup check={isCheck} className={space(type, className, inline && ! isCheck && 'form-inline', error&&'has-error')} >
+		<FormGroup check={isCheck} className={space(type, className, inline && ! isCheck && 'form-inline', error&&'has-error')} size={size} >
 			{(label || tooltip) && ! isCheck?
 				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
