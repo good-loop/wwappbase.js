@@ -125,7 +125,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 			// If it's not ready, add an event listener to mark it when it is.
 			// NB: Jan 2021: bugs seen where setFrameReady(true) is never called.
 			// 'DOMContentLoaded' seems to fire too early (see https://developer.mozilla.org/en-US/docs/Web/API/Window/DOMContentLoaded_event)
-			// So trying 'load' instead. This fires! ...Will it display a preview??
+			// So trying 'load' instead... It seems to work. (Jan 2021)
 			node.contentWindow.addEventListener('load', () => setFrameReady(true));
 		}
 	}, []);
