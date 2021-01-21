@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { space } from '../base/utils/miscutils.ts';
+import { space } from '../utils/miscutils.ts';
 import BG from './BG';
 
 /**
