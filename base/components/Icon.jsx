@@ -22,10 +22,9 @@ import { space } from '../utils/miscutils';
   */
 const Icon = ({name,size="sm",className,color,...props}) => {
 	if (EMOJI[name]) {
-		if (color===true) return <span dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
-		return <span className={space("emoji",className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />; // TODO color off
-		// color: transparent;  
-  		// text-shadow: 0 0 0 red; < bleurgh we'll want a few rules, e.g. the BS colour classes
+		if (['black','white'].includes(color)) return <span dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
+		if (color) console.warn("Icon.jsx color not directly supported: "+color);
+		return <span className={space("emoji-"+color,className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
 	}
 	let url;
 	if (name === C.app.service) {
