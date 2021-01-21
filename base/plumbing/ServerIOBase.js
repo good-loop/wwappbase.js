@@ -188,6 +188,7 @@ ServerIO.search = function(type, filter) {
  * @returns {Promise} p response object
  */
 ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
+	console.warn("ServerIO.getDataLogData - old code - switch to DataLog.js getDataLogData")
 	// HACK old calling convention
 	if (filters.dataspace) console.warn("ServerIOBase.js getDataLogData() Old calling pattern - please switch to q, dataspace as top-level", filters);
 	if (q) filters.q = q; if (dataspace) filters.dataspace = dataspace;

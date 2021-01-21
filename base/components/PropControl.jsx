@@ -128,7 +128,9 @@ const PropControl = ({className, ...props}) => {
 	if (dflt) {
 		useEffect(() => {
 			if (storeValue === undefined || storeValue === null || storeValue === '') {
-				DataStore.setValue(proppath, dflt);
+				DataStore.setValue(proppath, dflt, false); // update=false to avoid a nested render, which annoys React
+				storeValue = dflt;
+				value = dflt;
 			}
 		}, []); // 1st time only
 	}
