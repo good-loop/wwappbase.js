@@ -480,14 +480,15 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 
 
 /**
- * @param sort {?String} e.g. "start-desc"
- * @param {?string|Date} start Add a time-filter. Usually unset.
- * @param {?string|Date} end Add a time-filter. Usually unset.
+ * @param {Object} p
+ * @param {?String} p.sort e.g. "start-desc"
+ * @param {?string|Date} p.start Add a time-filter. Usually unset.
+ * @param {?string|Date} p.end Add a time-filter. Usually unset.
  * @returns PromiseValue<{hits: Object[]}>
  * 
  * WARNING: This should usually be run through DataStore.getDataList() before using
+ * Namespace anything fetched from a non-default domain
  */
-// Namespace anything fetched from a non-default domain
 ActionMan.list = ({type, status, q, prefix, start, end, sort, domain}) => {	
 	assert(C.TYPES.has(type), type);
 	const lpath =  getListPath({type,status,q,prefix,start,end,sort,domain});

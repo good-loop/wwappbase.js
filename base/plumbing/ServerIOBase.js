@@ -204,9 +204,7 @@ ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], sta
 };
 
 
-/**
- * NB: Copy-pasta from Portal ServerIO.js
- * 
+/** 
  * @param q {String} e.g. pub:myblog
  * @returns Promise {
  * 	by_cid: {String: Money}
