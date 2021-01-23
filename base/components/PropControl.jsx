@@ -206,6 +206,8 @@ const PropControl = ({className, ...props}) => {
 	const sizeClass = {sm:'small',lg:'large'}[props.size]; // map BS input size to text-size
 	// NB: label has mr-1 to give a bit of spacing when used in an inline form
 	// NB: reactstrap inline is buggy (Sep 2020) so using className
+	// ??Include a css class for styling or hacky code?? "control-"+prop,
+	// focus?? see https://blog.danieljohnson.io/react-ref-autofocus/
 	return (
 		<FormGroup check={isCheck} className={space(type, className, inline && ! isCheck && 'form-inline', error&&'has-error')} size={size} >
 			{(label || tooltip) && ! isCheck?
@@ -462,6 +464,16 @@ const PropControl2 = (props) => {
 	return <FormControl type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;
 }; //./PropControl2
 
+
+const FOCUS_PATH = ["widget","PropControl","focus"];
+
+/**
+ * Status: doesn't work :(
+ * @param {?String[]} proppath 
+ */
+const setFocus = (proppath) => {
+	DataStore.setValue(FOCUS_PATH, proppath? proppath[proppath.length-1] : null); // TODO .join(".")
+}
 
 // /**
 //  * TODO
@@ -877,7 +889,7 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
  * This replaces the react-bootstrap version 'cos we saw odd bugs there.
  * Plus since we're providing state handling, we don't need a full component.
  */
-const FormControl = ({ value, type, required, size, className, prepend, append, ...otherProps }) => {
+const FormControl = ({ value, type, required, size, className, prepend, append, proppath, ...otherProps }) => {
 	if (value === null || value === undefined) value = '';
 
 	if (type === 'color' && !value) {
@@ -902,6 +914,7 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	delete otherProps.setRawValue;
 	delete otherProps.modelValueFromInput;
 	delete otherProps.saveFn;
+	delete otherProps.item;
 
 	// if (otherProps.readonly) { nah, let react complain and the dev can fix the cause
 	// 	otherProps.readonly = otherProps.readOnly;
@@ -910,6 +923,9 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	if (size) {
 		if ( ! ['sm','lg'].includes(size)) console.warn("Odd size",size,otherProps);
 	}
+	// // focus? Doesn't seem to work ?!
+	// const focusPath = DataStore.getValue(FOCUS_PATH)
+	// const autoFocus = otherProps.name===focusPath; // TODO proppath.join(".") === focusPath;
 
 	if (prepend || append) {
 		// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
@@ -1116,7 +1132,8 @@ export {
 	setInputStatus,
 	getInputStatus,
 	getInputStatuses,
-	standardModelValueFromInput
+	standardModelValueFromInput,
+	setFocus
 };
 // should we rename it to Input, or StoreInput, ModelInput or some such??
 export default PropControl;

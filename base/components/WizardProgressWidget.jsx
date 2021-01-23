@@ -80,7 +80,7 @@ class StageNavStatus {
  */
 const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 	sufficient=true, complete=false,
-	title, onNext, onPrev, children, canJumpAhead}) =>
+	title, onNext, onPrev, children, canJumpAhead, navPosition}) =>
 {
 	assert(stageNum !==null && stageNum !== undefined);
 	assMatch(maxStage, Number);
@@ -110,13 +110,14 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 	}
 	
 	return (<div className="WizardStage">
-		{children}
-		<WizardNavButtons stagePath={stagePath}
+		{navPosition !== "top" && children}
+		<WizardNavButtons stagePath={stagePath} navPosition={navPosition} title={title}
 			navStatus={navStatus}
 			maxStage={maxStage}
 			onNext={onNext}
 			onPrev={onPrev}
 		/>
+		{navPosition === "top" && children}
 	</div>);
 };
 
@@ -150,8 +151,12 @@ const NextPrevTab = ({stagePath, diff, children, colour = 'secondary', maxStage,
 	assert(children, 'WizardProgressWidget.js - no button content');
 	const stage = parseInt(DataStore.getValue(stagePath) || 0);
 
-	if (stage === 0 && diff < 0) return null; // no previous on start
-	if (maxStage && stage >= maxStage && diff > 0) return null; // no next on end
+	if (stage === 0 && diff < 0) {
+		return <div></div>; // no previous on start - dummy for flex layout
+	}
+	if (maxStage && stage >= maxStage && diff > 0) {
+		return <div></div>; // no next on end - dummy for flex layout
+	}
 
 	const onClick = () => {
 		let n = stage + diff;
@@ -170,7 +175,7 @@ const NextPrevTab = ({stagePath, diff, children, colour = 'secondary', maxStage,
 	);
 };
 
-const Wizard = ({widgetName, stagePath, children}) => {
+const Wizard = ({widgetName, stagePath, navPosition, children}) => {
 	// NB: React-BS provides Accordion, but it does not work with modular panel code. So sod that.
 	if ( ! stagePath) stagePath = ['widget', widgetName || 'Wizard', 'stage'];
 	let stageNum = DataStore.getValue(stagePath);
@@ -195,7 +200,7 @@ const Wizard = ({widgetName, stagePath, children}) => {
 			return null;
 		}
 		// clone with stageNum/path/key
-		return React.cloneElement(Kid, {stageNum, stagePath, stageKey:i, maxStage});
+		return React.cloneElement(Kid, {stageNum, stagePath, stageKey:i, maxStage, navPosition});
 	});
 	// filter null again (we should now only have the active stage)
 	kids = kids.filter(x => !! x);
@@ -207,18 +212,19 @@ const Wizard = ({widgetName, stagePath, children}) => {
 	</div>);
 };
 
-const WizardNavButtons = ({stagePath, maxStage, navStatus, onNext, onPrev}) => {
+const WizardNavButtons = ({stagePath, maxStage, navStatus, onNext, onPrev, navPosition, title}) => {
 	assert(stagePath, "WizardProgressWidget.jsx - WizardNavButtons: no stagePath");
 	let {next, previous, sufficient, complete} = navStatus;
 	// read from WizardStage props if set, or setNavStatus
 	// navStatus;
 	if (complete) sufficient = true;
 	let msg = ! sufficient? 'Please fill in more of the form' : null;
-	return (<div className="nav-buttons clearfix">
-		{previous===false? null :
+	return (<div className={space("nav-buttons-"+navPosition, "nav-buttons flex-row w-100 justify-content-between")}>
+		{previous===false? <div></div> : // dummy element for flex layout
 			<PrevButton stagePath={stagePath} onPrev={onPrev} />
 		}
-		{next===false? null :
+		{navPosition==="top" && title && <h2>{title}</h2>}
+		{next===false? <div></div> : // dummy for flex layout
 			<NextButton stagePath={stagePath} maxStage={maxStage} disabled={ ! sufficient} complete={complete} title={msg} onNext={onNext} />
 		}
 	</div>);
