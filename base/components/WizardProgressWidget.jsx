@@ -71,12 +71,14 @@ class StageNavStatus {
  * Also for convenient lazy setting of sufficient/complete, a function is passed to children:
  * setNavStatus({sufficient, complete})
  *
- * @param {?Boolean} sufficient default=true
- * @param {?Boolean} complete default=false
+ * @param {?Boolean} p.sufficient default=true
+ * @param {?Boolean} p.complete default=false
  *
  * To get this, the child must have a boolean setNavStatus flag, which gets replaced.
- * @param onNext function called when user interacts with "next" button
- * @param onPrev function called when user interacts with "prev" button
+ * @param {?Function} p.onNext function called when user interacts with "next" button
+ * @param {?Function} p.onPrev function called when user interacts with "prev" button
+ * 
+ * @param {?String} p.navPosition "top" to put the nav buttons at the top
  */
 const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 	sufficient=true, complete=false,
