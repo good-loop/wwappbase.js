@@ -192,13 +192,17 @@ Misc.Time = ({time}) => {
  * TODO transparent/opaque (??? -RM)
  * TODO merge with Misc.Icon
  * @param {String} service e.g. "twitter"
- * @param {?String} url Can be used instead of `service` to provide an img link
+ * @param {?String} url Can be used instead of `service` to provide an img link. 
+ * If service and url are blank, return null.
  * @param {Boolean} color True: Use the service's brand colour as foreground colour
  * @param {Boolean} square True: Put the logo inside a rounded square
  * @param {String} size - e.g. lg (33% bigger) or '2x', '3x' etc
  */
 Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
-	assert(service || url, 'Misc.Logo');
+	if ( ! service && ! url) {
+		console.warn("No Logo");
+		return null;
+	}
 	// Social media - We can handle these services with FontAwesome icons
 	if (service && 'twitter facebook instagram'.indexOf(service) !== -1) {
 		const className = space(className, color? 'color-' + service : null);
