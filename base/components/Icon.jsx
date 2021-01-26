@@ -12,6 +12,7 @@ import { space } from '../utils/miscutils';
 	 trashcan: "🗑", //&#x1f5d1;
 	 info: "🛈", // ℹ or 🛈
 	 ".txt":"🖹",
+	 tick: "✔",
  };
  
  /**
