@@ -18,14 +18,15 @@ import { space } from '../utils/miscutils';
  /**
   * 
   * @param {Object} p
-  * @param {?Boolean} p.color true = use the icon's natural colours if possible
+  * @param {?String} p.color black|white
   * @param {?String} p.size xs|sm|lg|xl
   */
 const Icon = ({name,size="sm",className,color,...props}) => {
 	if (EMOJI[name]) {
-		if (['black','white'].includes(color)) return <span dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
-		if (color) console.warn("Icon.jsx color not directly supported: "+color);
-		return <span className={space("emoji-"+color,className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
+		if (color && ! ['black','white'].includes(color)) {
+			console.warn("Icon.jsx color not directly supported: "+color+" Icons can only reliably use a few set colors cross-device.");
+		}
+		return <span className={space(color&&"emoji-"+color,className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
 	}
 	let url;
 	if (name === C.app.service) {

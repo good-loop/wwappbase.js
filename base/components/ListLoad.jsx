@@ -329,10 +329,10 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 
 
 const DefaultDelete = ({type,id}) => (
-	<Button color="secondary" size="xs" className="pull-right"
+	<Button color="secondary" size="xs" className="pull-right p-1 pt-2"
 		onClick={e => confirm(`Delete this ${type}?`) ? ActionMan.delete(type, id) : null}
 		title="Delete">
-		<Icon name="trashcan" color="white" />		
+		<Icon name="trashcan" color="white"/>		
 	</Button>
 );
 
