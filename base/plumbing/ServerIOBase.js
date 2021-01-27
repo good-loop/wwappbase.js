@@ -86,7 +86,34 @@ ServerIO.checkBase = () => {
 			console.warn(`Using production ${name} Server: ${endpointUrl}`); // Common enough for Datalog
 		}
 	});
+	// HACK -- allow testers to override
+	checkBase2_toggleTestEndpoints();
 }; //./checkBase()
+
+/**
+ * HACK allow using test/production ads, profiler, and datalog if requested
+ */
+const checkBase2_toggleTestEndpoints = () => {
+	const server = DataStore.getUrlValue("server");
+	if (server==="test") {
+		ServerIO.AS_ENDPOINT = 'https://testas.good-loop.com';
+		ServerIO.PORTAL_ENDPOINT = 'https://testportal.good-loop.com';
+		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
+		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
+	}
+	if (server==="local") {	// probably not needed
+		ServerIO.AS_ENDPOINT = 'http://localas.good-loop.com';
+		ServerIO.PORTAL_ENDPOINT = 'http://localportal.good-loop.com';
+		ServerIO.DATALOG_ENDPOINT = 'http://locallg.good-loop.com/data';
+		ServerIO.PROFILER_ENDPOINT = 'http://localprofiler.good-loop.com';
+	}
+	if (server==="production") {
+		ServerIO.AS_ENDPOINT = 'https://as.good-loop.com';
+		ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
+		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
+		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
+	}
+};
 
 
 /**
