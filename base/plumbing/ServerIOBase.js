@@ -112,6 +112,10 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
+		// extra hack for my-loop:
+		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("test")) {
+			ServerIO.APIBASE = ServerIO.APIBASE.replace("test", "");
+		}
 	}
 };
 
