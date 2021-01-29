@@ -19,7 +19,7 @@ import Advert from './Advert';
 class Campaign extends DataClass {
 	
 	/**
-	 * @param {Advert} base 
+	 * @param {Campaign} base 
 	 */
 	constructor(base) {
 		super();
