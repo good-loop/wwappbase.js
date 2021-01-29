@@ -117,7 +117,11 @@ const ListLoad = ({type, status, servlet, navpage,
 	// ...filter / resolve
 	let items = resolveItems({hits, type, status, preferStatus, filter, fastFilter});	
 	// paginate
-	let [pageNum, setPageNum] = pageSize? useState(0) : [];
+	let [pageNum, setPageNum2] = pageSize? useState(0) : [];
+	const setPageNum = n => {		
+		setPageNum2(n);
+		window.scrollTo(0, 0);
+	};
 	items = pageSize? paginate({items, pageNum, pageSize}) : items;
 	let total = pvItems.value && pvItems.value.total;	
 
