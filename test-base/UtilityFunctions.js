@@ -3,7 +3,6 @@ const fs = require('fs');
 // import $ from 'jquery'; no - fails with error: Cannot use import statement outside a module
 const $ = require('./jquery.js');
 const { General, CommonSelectors } = require('./common-selectors');
-const shell = require('shelljs');
 const { hasUncaughtExceptionCaptureCallback } = require('process');
 
 const Credentials = require("./Credentials");
