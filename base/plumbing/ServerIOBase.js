@@ -54,6 +54,7 @@ const endpoints = [
 	{name: 'DataLog', key: 'DATALOG_ENDPOINT', prodValue: 'https://lg.good-loop.com/data'},
 	{name: 'Profiler', key: 'PROFILER_ENDPOINT', prodValue: 'https://profiler.good-loop.com/profile'},
 	{name: 'Ad', key: 'AS_ENDPOINT', prodValue: 'https://as.good-loop.com/'},
+	{name: 'Media', key: 'MEDIA_ENDPOINT', prodValue: 'https://uploads.good-loop.com/'},
 ];
 
 /**
@@ -100,18 +101,21 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.PORTAL_ENDPOINT = 'https://testportal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
+		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com/';
 	}
 	if (server==="local") {	// probably not needed
 		ServerIO.AS_ENDPOINT = 'http://localas.good-loop.com';
 		ServerIO.PORTAL_ENDPOINT = 'http://localportal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'http://locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'http://localprofiler.good-loop.com';
+		ServerIO.MEDIA_ENDPOINT = 'http://localuploads.good-loop.com/';
 	}
 	if (server==="production") {
 		ServerIO.AS_ENDPOINT = 'https://as.good-loop.com';
 		ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
+		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com/';
 		// extra hack for my-loop:
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("test")) {
 			ServerIO.APIBASE = ServerIO.APIBASE.replace("test", "");
