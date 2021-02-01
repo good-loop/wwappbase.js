@@ -35,6 +35,8 @@ ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 ServerIO.PORTAL_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}portal.good-loop.com`;
 // ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
 
+ServerIO.PROFILER_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}profiler.good-loop.com/`;
+
 /**
  * Where uploads go
  */
@@ -52,7 +54,7 @@ ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
 const endpoints = [
 	{name: 'base API', key: 'APIBASE', prodValue: ''},
 	{name: 'DataLog', key: 'DATALOG_ENDPOINT', prodValue: 'https://lg.good-loop.com/data'},
-	{name: 'Profiler', key: 'PROFILER_ENDPOINT', prodValue: 'https://profiler.good-loop.com/profile'},
+	{name: 'Profiler', key: 'PROFILER_ENDPOINT', prodValue: 'https://profiler.good-loop.com'},
 	{name: 'Ad', key: 'AS_ENDPOINT', prodValue: 'https://as.good-loop.com/'},
 ];
 
