@@ -271,3 +271,4 @@ google.com, pub-6898383636837097, DIRECT, f08c47fec0942fa0
 google.com, pub-7363809219244122, RESELLER, f08c47fec0942fa0
 smartyads.com, 5Gz15184rYt7, DIRECT, fd2bde0ff2e62c5d
 appnexus.com, 10562, DIRECT, f5ab79cb980f11d1
+google.com, pub-9448086783562205, DIRECT, f08c47fec0942fa0          # google adsense for T4G
