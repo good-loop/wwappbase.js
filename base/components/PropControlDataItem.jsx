@@ -38,25 +38,29 @@ const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, stor
 	
 	// <PropControlAutoComplete getItemValue={getId} options={options} {...{ path, prop, rawValue, setRawValue, storeValue}}
 	// renderItem={itm => itm && <DefaultListItem key={itm.id} type={itemType} item={itm} />} />
-
+	
 	const SlimListItem = ({type, servlet, navpage, item, sort}) => {
-		return <div style={{border:"1px solid #aaa",margin:0}} onClick={e => {setRawValue(getId(item)); DSsetValue(proppath, getId(item));}}>
+		const onClick = e => {
+			setRawValue(getId(item)); 
+			DSsetValue(proppath, getId(item));
+		};
+		return <div style={{border:"1px solid #aaa",margin:0}} onClick={onClick}>
 			{getLogo(item) && <img src={getLogo(item)} className='logo logo-sm' />} {getName(item)}</div>;
 	};
 
 	// TODO display the name not the ID getName(pvDI.value). But: handling onChange and setting the id value is fiddly
 
 	const showList = e => {
-		// console.log("show"); debug
+		console.log("show"); // debug
 		setLL(true);
 	};
 	const hideList = e => {
-		// console.log("hide...");
+		console.log("hide..."); // debug
 		// a moment's delay to allow moving from the text entry to the list??
-		// setTimeout(() => {
-		// 	console.log("...hide"); // Debug - Why is this so slow to close??
-		setLL(false);
-		// }, 100);
+		setTimeout(() => {
+			console.log("...hide"); // Debug - Why is this so slow to close??
+			setLL(false);
+		}, 100);
 	};
 	// console.log("render");
 	return (
@@ -65,7 +69,7 @@ const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, stor
 				<Input type='text' value={rawValue || ''} onChange={onChange} />
 				{ll && <div className='position-relative'><div className='position-absolute' 
 					style={{top:0, left:0, zIndex:1000, background:"rgba(255,255,255,0.8)", border:"1px solid #80bdff", boxShadow: "0 0 0 0.2rem rgb(0 123 255 / 25%)"}}>
-					<ListLoad hideTotal type={itemType} status={status} domain={domain} q={rawValue} unwrapped sort={sort} ListItem={SlimListItem} />
+					<ListLoad hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem} />
 				</div></div>}
 			</Col>
 			<Col md={4}>{pvDI.value && <SlimListItem type={itemType} item={pvDI.value} />}</Col>

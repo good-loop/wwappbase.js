@@ -24,12 +24,12 @@ import Icon from './Icon';
  *
  * @param {Object} p
  * @param {!String} p.type from C.TYPES
- * @param {?String} p.q - Optional query e.g. advertiser-id=pepsi
+ * @param {?String} p.q - Optional query e.g. advertiser-id=pepsi. See `filter` for prefix search
  * Note: that filter can add to this
  * @param {?String} p.sort -  Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
- * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter
+ * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?boolean} p.canCreate - If set, show a Create
  * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
