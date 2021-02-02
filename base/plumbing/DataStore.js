@@ -259,7 +259,8 @@ class Store {
 	nodeForStatus(status) {
 		assert(KStatus.has(status), "DataStore bad status: "+status);
 		switch(status) {
-			case KStatus.PUBLISHED: return 'data';
+			case KStatus.PUBLISHED: case KStatus.PUB_OR_ARC: // Hack: locally keep _maybe_archived with published
+				return 'data';
 			case KStatus.DRAFT: case KStatus.MODIFIED: case KStatus.PENDING: case KStatus.REQUEST_PUBLISH: case KStatus.ARCHIVED:
 			case KStatus.PUB_OR_DRAFT: // we can't be ambiguous on where to store
 				return 'draft';
