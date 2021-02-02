@@ -28,6 +28,11 @@ class Campaign extends DataClass {
 }
 DataClass.register(Campaign, "Campaign"); 
 
+/** This is the total unlocked across all adverts in this campaign. See also maxDntn.
+ * @returns {?Money}
+ */
+Campaign.dntn = campaign => campaign && campaign.dntn;
+
 /**
  * 
  * @param {Advert} advert 

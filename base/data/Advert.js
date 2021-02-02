@@ -71,6 +71,10 @@ Advert.defaultAdvert();
  */
 Advert.advertiserId = ad => Advert.assIsa(ad) && ad.vertiser;
 
+/**
+ * @param {!Advert} ad 
+ * @returns {String} campaignId
+ */
 Advert.campaign = ad => ad.campaign;
 
 /**
