@@ -50,7 +50,10 @@ const notifyUser2 = (msgOrError) => {
 	}
 	// console
 	if (msgOrError.type==='error') console.error(msgOrError); else console.log(msgOrError);
-
+	// Never display debug messages to the user
+	if (msgOrError.type==='debug') {
+		return;
+	}
 	// Filter the message (default: no filters, allow all)
 	// If any filter returns false, don't post the message
 	const allow = filters.reduce((acc, filterFn) => (acc && filterFn(msg)), true);

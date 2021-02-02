@@ -44,7 +44,7 @@ const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, stor
 			setRawValue(getId(item)); 
 			DSsetValue(proppath, getId(item));
 		};
-		return <div style={{border:"1px solid #aaa",margin:0}} onClick={onClick}>
+		return <div style={{border:"1px solid #aaa",margin:0,cursor:"pointer"}} onClick={onClick}>
 			{getLogo(item) && <img src={getLogo(item)} className='logo logo-sm' />} {getName(item)}</div>;
 	};
 
