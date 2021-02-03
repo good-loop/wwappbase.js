@@ -527,7 +527,9 @@ const addClaim = (peep, claim) => {
 };
 
 /**
- * 
+ * @param {Object} p
+ * @param {?Person[]} p.persons
+ * @param {!String} p.key
  * @returns the "best" claim value or null
  */
 const getClaimValue = ({persons, key}) => {
