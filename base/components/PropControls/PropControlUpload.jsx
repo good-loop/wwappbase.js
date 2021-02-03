@@ -1,11 +1,13 @@
 
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 
 import { FormControl, registerControl } from '../PropControl';
 import Misc from '../Misc';
 import { urlValidator } from './PropControlUrl';
+import { Button } from 'reactstrap';
+import Icon from '../Icon';
 
 /** MIME type sets */
 const imgTypes = 'image/jpeg, image/png, image/svg+xml';
@@ -38,8 +40,11 @@ const fakeEvent = {
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  */
-const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, version="raw", ...otherStuff }) => {
+const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", ...otherStuff }) => {
 	delete otherStuff.https;
+
+	const [collapsed, setCollapsed] = useState(true);
+	const isOpen = ! collapse || ! collapsed;
 
 	// Automatically decide appropriate thumbnail component
 	const Thumbnail = {
@@ -84,17 +89,20 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	if (bg === 'transparent') {
 		bg = '';
 		className = 'stripe-bg';
-	}
+	}	
 
 	return (
 		<div>
-			<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
-			<div className="pull-left">
-				<div className="DropZone" {...getRootProps()}>
-					<input {...getInputProps()} />
-					Drop a {acceptDescs[type]} here
-				</div>
-			</div>
+			{collapse && <Button className="pull-left" title="upload media" onClick={e => setCollapsed( ! collapsed)} color="secondary" size={size}><Icon name="camera" /></Button>}
+			{isOpen && <>
+				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
+				<div className="pull-left">
+					<div className="DropZone" {...getRootProps()}>
+						<input {...getInputProps()} />
+						Drop a {acceptDescs[type]} here
+					</div>
+				</div></>
+			}
 			<div className="pull-right">
 				<Thumbnail className={className} background={bg} url={storeValue} />
 			</div>

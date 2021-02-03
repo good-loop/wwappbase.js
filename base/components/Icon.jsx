@@ -9,6 +9,7 @@ import { space } from '../utils/miscutils';
   * See https://unicode-table.com/
   */
  const EMOJI = {
+	camera: "📷",
 	 trashcan: "🗑", //&#x1f5d1;
 	 info: "🛈", // ℹ or 🛈
 	 ".txt":"🖹",
