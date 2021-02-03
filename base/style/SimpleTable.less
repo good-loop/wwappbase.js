@@ -39,6 +39,10 @@
 .table p {
 	padding-bottom: 0.25em; // (reduced from 1rem)
 }
+// hack: handle a common case that can mess up layout: urls in a table
+.SimpleTable .table a {
+	word-break: break-word;
+}
 
 .SimpleTable.scroller {
 	width:100%;
