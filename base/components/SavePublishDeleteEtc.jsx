@@ -100,7 +100,8 @@ const check = ok => {
  * save buttons
  * @param {Object} p
  * @param {?Boolean} p.hidden If set, hide the control (it will still auto-save)
- * @param {?Boolean} saveAs If set, offer a save-as button which will copy, tweak the ID and the name, then save.
+ * @param {?Boolean} p.autoSave default=true
+ * @param {?Boolean} p.saveAs If set, offer a save-as button which will copy, tweak the ID and the name, then save.
  * @param {?string} p.position fixed|relative
  */
 const SavePublishDeleteEtc = ({
