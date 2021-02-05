@@ -145,7 +145,7 @@ export const parseHash = function (hash = window.location.hash) {
 	let params = getUrlVars(hash);
 	// Pop the # and peel off eg publisher/myblog NB: this works whether or not "?"" is present
 	let page = hash.substring(1).split('?')[0];
-	const path = page.length ? page.split('/') : [];
+	const path = page.length ? page.split('/').map(decURI) : [];
 	return { path, params };
 }
 
@@ -502,7 +502,7 @@ const fIdentity = (x: any) => x;
  * 
  * 1. escape() robust but doesn't handle unicode. 
  * 2. encodeURIComponent() has better unicode handling -- however it doesn't escape 's which makes it dangerous, 
- * and it does unhelpfully encode /s and other legitimate url characters.
+ * and it does (often unhelpfully) encode /s and other legitimate url characters.
  
  This is a super-solid best-of-both.
 */
