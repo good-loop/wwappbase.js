@@ -13,6 +13,7 @@ import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
 import ErrAlert from './ErrAlert';
 import Icon from './Icon';
+import KStatus from '../data/KStatus';
 
 /**
  * Provide a list of items of a given type.
@@ -46,7 +47,7 @@ import Icon from './Icon';
  * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} p.hideTotal - If true, don't show the "Total about 17" line
  * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
- * @param {?C.KStatus} p.preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
+ * @param {?KStatus} p.preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
  * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
  * @param {JSX|String} p.noResults  Message to show if there are no results
@@ -72,9 +73,9 @@ const ListLoad = ({type, status, servlet, navpage,
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
 		console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
-		status = C.KStatus.ALL_BAR_TRASH;
+		status = KStatus.ALL_BAR_TRASH;
 	}
-	assert(C.KStatus.has(status), "ListLoad - odd status " + status);
+	assert(KStatus.has(status), "ListLoad - odd status " + status);
 	// widget settings TODO migrate to useState so we can have multiple overlapping ListLoads
 	// const [foo, setFoo] = useState({});
 	// ??preserves state across q and filter edits -- is that best??
@@ -203,9 +204,9 @@ const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) =>
 	// resolve Refs to full Items
 	hits = DataStore.getDataList(hits, preferStatus);
 	// HACK: Use-case: you load published items. But the list allows for edits. Those edits need draft items. So copy pubs into draft
-	if (preferStatus===C.KStatus.DRAFT) {
+	if (preferStatus===KStatus.DRAFT) {
 		hits.forEach(item => {			
-			let dpath = DataStore.getDataPath({status:C.KStatus.DRAFT, type, id:getId(item)});
+			let dpath = DataStore.getDataPath({status:KStatus.DRAFT, type, id:getId(item)});
 			let draft = DataStore.getValue(dpath);
 			if ( ! yessy(draft)) {
 				DataStore.setValue(dpath, item, false);
@@ -318,7 +319,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
 	if (name.length > 280) name = name.slice(0,280);
-	const status = C.KStatus.isPUBLISHED(item.status)? null : item.status;
+	const status = KStatus.isPUBLISHED(item.status)? null : item.status;
 	return <>
 		<Misc.Thumbnail item={item} />
 		<div className="info">
@@ -326,7 +327,7 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 			<div className="detail small">
 				id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
 				<Misc.Time time={item.created} />
-				{item.status && item.status !== C.KStatus.PUBLISHED? item.status.toLowerCase() : null}
+				{item.status && item.status !== KStatus.PUBLISHED? item.status.toLowerCase() : null}
 			</div>
 			{ button || '' }
 		</div>
@@ -377,8 +378,8 @@ const createBlank = ({type, navpage, base, id, make, saveFn, then}) => {
 	id = getId(newItem);
 	if ( ! getType(newItem)) newItem['@type'] = type;
 	// poke a new blank into DataStore
-	newItem.status = C.KStatus.DRAFT;
-	const path = DataStore.getDataPath({status:C.KStatus.DRAFT, type, id});
+	newItem.status = KStatus.DRAFT;
+	const path = DataStore.getDataPath({status:KStatus.DRAFT, type, id});
 	DataStore.setValue(path, newItem);
 	if (saveFn) {
 		saveFn({type, id, item:newItem});
