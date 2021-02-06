@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import _ from 'lodash';
 import { Input, Row, Col } from 'reactstrap';
 
-import ListLoad from './ListLoad';
+import ListLoad, {CreateButton} from './ListLoad';
 
 import C from '../CBase';
 import { DSsetValue, registerControl } from './PropControl';
@@ -12,6 +12,8 @@ import { getDataItem } from '../plumbing/Crud';
 import { getId, getName } from '../data/DataClass';
 import { assert } from '../utils/assert';
 import { getLogo } from '../utils/miscutils';
+import {saveDraftFn} from './SavePublishDeleteEtc';
+
 /**
  * TODO a picker with auto-complete for e.g. Advertiser, Agency
  */
@@ -20,8 +22,11 @@ import { getLogo } from '../utils/miscutils';
  * 
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, storeValue, type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed }) => {
-	let pvDI = rawValue ? getDataItem({ type: itemType, id: rawValue, status, domain, swallow: true }) : {};
+const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, setRawValue, storeValue, type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed }) => {
+	let pvDI = {};
+	if (rawValue) {
+		pvDI = getDataItem({ type: itemType, id: rawValue, status, domain, swallow: true });
+	} 
 
 	assert( ! embed);
 
@@ -62,6 +67,8 @@ const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, stor
 			setLL(false);
 		}, 100);
 	};
+	// (default create behaviour) the input names the object
+	if (rawValue && ! base) base = {name:rawValue};
 	// console.log("render");
 	return (
 		<Row onFocus={showList} onBlur={hideList}>
@@ -69,10 +76,16 @@ const PropControlDataItem = ({ path, prop, proppath, rawValue, setRawValue, stor
 				<Input type='text' value={rawValue || ''} onChange={onChange} />
 				{ll && <div className='position-relative'><div className='position-absolute' 
 					style={{top:0, left:0, zIndex:1000, background:"rgba(255,255,255,0.8)", border:"1px solid #80bdff", boxShadow: "0 0 0 0.2rem rgb(0 123 255 / 25%)"}}>
-					<ListLoad hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem} />
-				</div></div>}
+					<ListLoad hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem} 
+						noResults={canCreate && rawValue && (pvDI.value? <></> : "Make a new "+itemType+" named "+rawValue+"?")}
+					/>
+				</div></div>}				
 			</Col>
-			<Col md={4}>{pvDI.value && <SlimListItem type={itemType} item={pvDI.value} />}</Col>
+			<Col md={4}>
+				{pvDI.value && <SlimListItem type={itemType} item={pvDI.value} />}
+				{canCreate && rawValue && pvDI.resolved && ! pvDI.value && 
+					<CreateButton type={itemType} base={base} saveFn={saveDraftFn} then={({id}) => setRawValue(id)} />}
+			</Col>			
 		</Row>);
 };
 

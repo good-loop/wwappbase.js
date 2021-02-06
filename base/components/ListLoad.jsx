@@ -49,6 +49,7 @@ import Icon from './Icon';
  * @param {?C.KStatus} p.preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
  * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
+ * @param {JSX|String} p.noResults  Message to show if there are no results
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q, 
@@ -60,6 +61,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	canDelete, canCreate, canFilter,
 	createBase,
 	className,
+	noResults,
 	notALink, itemClassName,
 	preferStatus,
 	hideTotal,
@@ -126,11 +128,11 @@ const ListLoad = ({type, status, servlet, navpage,
 	let total = pvItems.value && pvItems.value.total;	
 
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
-		{canCreate? <CreateButton type={type} base={createBase} navpage={navpage} /> : null}
+		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
 		
-		{canFilter? <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/> : null}
+		{canFilter && <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/>}
 
-		{items.length === 0 ? <>No results found for <code>{space(q, filter) || type}</code></> : null}
+		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 		{total && ! hideTotal? <div>About {total} results in total</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
 
@@ -343,14 +345,15 @@ const DefaultDelete = ({type,id}) => (
 
 /**
  * Make a local blank, and set the nav url
- * Does not save (Crud will probably do that once you make an edit)
- * @param {{
- * 	type: C.TYPES
- * 	base: Object - use to make the blank. This will be copied.
- * 	make: {?Function} use to make the blank. base -> item. If unset, look for a DataClass for type, and use `new` constructor.
- * }}
+ * Does not save (Crud will probably do that once you make an edit) unless a `saveFn` is passed in
+ * @param {Object} p
+ * @param {!String} p.type C.TYPES
+ * @param {?Object} p.base - use to make the blank. This will be copied.
+ * @param {?Function} p.make use to make the blank. base -> item. If unset, look for a DataClass for type, and use `new` constructor. Or just {}.
+ * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
+ * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
  */
-const createBlank = ({type, navpage, base, id, make}) => {
+const createBlank = ({type, navpage, base, id, make, saveFn, then}) => {
 	assert( ! getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) "+type+". Safety hack: Pass in an id param instead");
 	// Call the make?
 	let newItem;
@@ -377,25 +380,33 @@ const createBlank = ({type, navpage, base, id, make}) => {
 	newItem.status = C.KStatus.DRAFT;
 	const path = DataStore.getDataPath({status:C.KStatus.DRAFT, type, id});
 	DataStore.setValue(path, newItem);
-	// set the id
-	if ( ! navpage) {
-		navpage = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
+	if (saveFn) {
+		saveFn({type, id, item:newItem});
 	}
-	onPick({navpage, id});
+	if (then) {
+		then({type, id, item:newItem});
+	} else {
+		// set the id
+		if ( ! navpage) {
+			navpage = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
+		}
+		onPick({navpage, id});
+	}
 	// invalidate lists
 	DataStore.invalidateList(type);
 };
 
 /**
  * A create-new button
- * @param {{
- * 	type: !String
- * 	navpage: ?String - defaults to the curent page from url
- * }}
- * @param {?String} id - Optional id for the new item (otherwise nonce or a prop might be used)
- * @param {?string[]} props - keys of extra props -- this is turned into a form for the user to enter
+ * @param {Object} p
+ * @param {!String} p.type
+ * @param {?String]} p.navpage - defaults to the curent page from url
+ * @param {?String} p.id - Optional id for the new item (otherwise nonce or a prop might be used)
+ * @param {?string[]} p.props - keys of extra props -- this is turned into a form for the user to enter
+ * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
+ * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
  */
-const CreateButton = ({type, props, navpage, base, id, make}) => {
+const CreateButton = ({type, props, navpage, base, id, make, saveFn, then}) => {
 	assert(type);
 	assert( ! base || ! base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) "+type+". You can use top-level `id` instead.");
 	if ( ! navpage) navpage = DataStore.getValue('location', 'path')[0];
@@ -405,7 +416,7 @@ const CreateButton = ({type, props, navpage, base, id, make}) => {
 	// was an ID passed in by editor props? (to avoid copy accidents id is not used from base, so to use it here we must fish it out)
 	if ( ! id) id = base.id; // usually null
 	delete base.id; // NB: this is a copy - the original base is not affected.
-	const $createButton = <Button className='btn-create' onClick={() => createBlank({type,navpage,base,id,make})}><span style={{fontSize:'125%', lineHeight:'1em'}}>+</span> Create</Button>;
+	const $createButton = <Button className='btn-create' onClick={() => createBlank({type,navpage,base,id,make,saveFn,then})}><span style={{fontSize:'125%', lineHeight:'1em'}}>+</span> Create</Button>;
 	if ( ! props) {
 		// simple button
 		return $createButton;
