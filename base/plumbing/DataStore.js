@@ -776,6 +776,8 @@ const getDataPath = DataStore.getDataPath.bind(DataStore);
 /**
  * DataStore path for list
  *  * 	// TODO have a filter-function fot lists, which can dynamically add/remove items
+ * @param {Object} p
+ * @param {?String} p.q search query
  * @param {?String} sort Optional sort e.g. "created-desc"
  * @returns [list, type, status, domain, query+prefix, period, sort]
  */

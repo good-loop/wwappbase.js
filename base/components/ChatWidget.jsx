@@ -7,7 +7,7 @@ import PropControl from "./PropControl";
 import Chat from '../data/Chat';
 
 /**
- * 
+ * Status: sketch
  * @param {Object} p
  * @param {Chat} p.chat
  */

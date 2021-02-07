@@ -8,6 +8,7 @@ import Misc from '../Misc';
 import { urlValidator } from './PropControlUrl';
 import { Button } from 'reactstrap';
 import Icon from '../Icon';
+import LinkOut from '../LinkOut';
 
 /** MIME type sets */
 const imgTypes = 'image/jpeg, image/png, image/svg+xml';
@@ -50,7 +51,8 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	const Thumbnail = {
 		imgUpload: Misc.ImgThumbnail,
 		videoUpload: Misc.VideoThumbnail,
-		bothUpload: storeValue.match(/(png|jpe?g|svg)$/) ? Misc.ImgThumbnail : Misc.VideoThumbnail
+		bothUpload: storeValue.match(/(png|jpe?g|svg)$/) ? Misc.ImgThumbnail : Misc.VideoThumbnail,
+		upload: ({url}) => <LinkOut href={url} />
 	}[type];
 
 	// When file picked/dropped, upload to the media cluster
@@ -121,5 +123,7 @@ const baseSpec = {
 registerControl({type: 'imgUpload', ...baseSpec });
 registerControl({ type: 'videoUpload', ...baseSpec });
 registerControl({ type: 'bothUpload', ...baseSpec });
+// Upload anything!?
+registerControl({ type: 'upload', ...baseSpec });
 
 export default {};

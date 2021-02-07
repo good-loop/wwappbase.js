@@ -599,6 +599,15 @@ export const debouncePV = (fn: Function, msecs: Number) => {
 	return dfnpv;
 };
 
+/**
+ * Convenience to de-dupe and remove falsy from an array
+ * @param {Object[]} array 
+ * @returns {Object[]} copy of array
+ */
+export const uniq = (array : Object[]) : Object[] => {
+	return [... new Set(array.filter(x => x))];
+};
+
 // // DEBUG hack
 // window.miscutils = {
 // };

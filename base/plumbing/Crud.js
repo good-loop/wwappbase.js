@@ -481,6 +481,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 
 /**
  * @param {Object} p
+ * @param {?String} p.q search query string
  * @param {?String} p.sort e.g. "start-desc"
  * @param {?string|Date} p.start Add a time-filter. Usually unset.
  * @param {?string|Date} p.end Add a time-filter. Usually unset.

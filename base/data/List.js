@@ -13,9 +13,11 @@
 import { assert, assMatch } from '../utils/assert';
 import DataClass, {getType, getId, nonce} from './DataClass';
 import C from '../CBase';
+import { Item } from '../plumbing/DataStore';
 
 /**
  * Reference for a data item. Given this, you can get the data item from DataStore.
+ * This can also _be_ a data-item itself.
  */
 class Hit {
 	id;
@@ -23,7 +25,7 @@ class Hit {
 	status;
 }
 
-/** impact utils */
+/** Based on ES, a (maybe partial) List of hits with total */
 class List extends DataClass {
 	/**
 	 * @type {Hit[]}
@@ -33,11 +35,17 @@ class List extends DataClass {
 	/** @type {Number} */
 	total;
 
+	/**
+	 * 
+	 * @param {?Object|Hit[]|Item[]} base If an array, then set hits=base. Otherwise use as a base for {hits, total}
+	 */
 	constructor(base) {
-		super(base);
-		Object.assign(this, base);
+		if (Array.isArray(base)) {
+			this.hits = base;
+			base = null;
+		}
+		DataClass._init(this, base);
 	}
-
 
 	/** more lenient duck typing: does it have a hits array? */
 	static isa(listy) {
@@ -51,8 +59,11 @@ DataClass.register(List, "List");
 const This = List;
 export default List;
 
-
-List.hits = list => List.isa(list) && list.hits;
+/**
+ * @param {?List} list 
+ * @returns {?Item[]}
+ */
+List.hits = list => list && List.assIsa(list) && list.hits;
 /**
  * 
  * @param {List} list 
@@ -76,6 +87,7 @@ List.add = (item, list, index) => {
 	} else {
 		items.push(item);
 	}
+	list.total = items.length;
 	return list;
 };
 

@@ -69,6 +69,8 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 	};
 	// (default create behaviour) the input names the object
 	if (rawValue && ! base) base = {name:rawValue};
+	let baseId = base && base.id;
+	if (baseId) delete base.id; // manage CreateButton's defences
 	// console.log("render");
 	return (
 		<Row onFocus={showList} onBlur={hideList}>
@@ -84,7 +86,7 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 			<Col md={4}>
 				{pvDI.value && <SlimListItem type={itemType} item={pvDI.value} />}
 				{canCreate && rawValue && pvDI.resolved && ! pvDI.value && 
-					<CreateButton type={itemType} base={base} saveFn={saveDraftFn} then={({id}) => setRawValue(id)} />}
+					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFn} then={({id}) => setRawValue(id)} />}
 			</Col>			
 		</Row>);
 };

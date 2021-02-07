@@ -102,7 +102,7 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	} else {
 		// quote the value?
 		let qpropValue = propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"';
-		newq += " AND "+propName+":"+qpropValue;
+		newq  = (newq? newq+" AND " : "") + propName+":"+qpropValue;
 	}
 	// HACK - trim ANDs
 	newq = newq.replace(/ AND +AND /g," AND ");
@@ -115,6 +115,40 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	// done
 	return new SearchQuery(newq.trim());
 }
+
+
+/**
+ * Set several options for a top-level prop, e.g. "vert:foo OR vert:bar"
+ * @param {!SearchQuery} sq
+ * @param {String} propName 
+ * @param {String[]} propValues Must not be empty
+ * @returns a NEW SearchQuery
+ */
+SearchQuery.setPropOr = (sq, propName, propValues) => {	
+	assMatch(propName, String, "searchquery.js - "+propName+" "+propValues);
+	assert(propValues.length, "searchquery.js - "+propName+" Cant OR over nothing "+propValues)
+	// quote the values?
+	let qpropValues = propValues.map(pv => propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"');
+	let qor = propName+":" + qpropValues.join(" OR "+propName+":");
+	if ( ! sq || ! sq.query) {
+		return new SearchQuery(qor);
+	}
+	SearchQuery._init(sq);
+	let newq = sq.query;
+	// HACK out the old value TODO use the parse tree to handle quoting
+	newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
+	newq = newq+" AND ("+qor+")";
+	// HACK - trim ANDs??
+	newq = newq.replace(/ AND +AND /g," AND ");
+	if (newq.substr(0, 5) === " AND ") {
+		newq = newq.substr(5);
+	}
+	if (newq.substr(newq.length-5, newq.length) === " AND ") {
+		newq = newq.substr(0, newq.length - 5);
+	}
+	// done
+	return new SearchQuery(newq.trim());
+};
 
 /**
  * Merge two queries with OR
