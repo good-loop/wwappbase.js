@@ -40,6 +40,7 @@ class List extends DataClass {
 	 * @param {?Object|Hit[]|Item[]} base If an array, then set hits=base. Otherwise use as a base for {hits, total}
 	 */
 	constructor(base) {
+		super();
 		if (Array.isArray(base)) {
 			this.hits = base;
 			base = null;
