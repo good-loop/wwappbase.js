@@ -505,6 +505,7 @@ const removeConsent = ({persons, consent}) => {
  */
 const setClaimValue = ({persons, key, value}) => {
 	if ( ! persons.length) console.warn("setClaimValue - no persons :( -- Check profile load is working");
+	console.log("setClaimValue "+key+" = "+value, persons.map(p => p.id));
 	let from = Login.getId();
 	let consent = ['dflt']; // the "what is my current default?" setting
 	let claim = new Claim({key,value,from,consent});	
