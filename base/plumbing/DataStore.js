@@ -529,19 +529,22 @@ class Store {
 	 * NB: an advantage of this is that the server can return partial data (e.g. search results)
 	 * without over-writing the fuller data.
 	 * 
-	 * @param {String[]} path
-	 * @param {Function} fetchFn () -> Promise/value, which will be wrapped using promise-value.
+	 * @param {Object} p
+	 * @param {!String[]} p.path
+	 * @param {!Function} p.fetchFn () -> Promise/value, which will be wrapped using promise-value.
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
 	 * As a convenience hack, this method will use `JSend` to extract `data` or `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * If unset, the call will return an inprogress PV, but will not do a fresh fetch.
-	 * @param {?Boolean} messaging If true (the default), try to use Messaging.js to notify the user of failures.
-	 * @param {?Number} cachePeriod milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
+	 * @param {?Object} p.options
+	 * @param {?Number} p.options.cachePeriod milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
 	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience.
 	 * 	NB: Cache info is stored in `appstate.transient.fetchDate...`
+	 * @param {?Boolean} p.options.localStorage
 	 * @returns {!PromiseValue} (see promise-value.js)
 	 */
-	fetch(path, fetchFn, messaging=true, cachePeriod) { // TODO allow retry after 10 seconds
+	fetch(path, fetchFn, options={}, cachePeriod) { // TODO allow retry after 10 seconds
+		if (cachePeriod) options.cachePeriod = cachePeriod; // backwards compatability
 		assert(path, "DataStore.js - missing input",path);
 		// in the store?
 		let item = this.getValue(path);
@@ -556,7 +559,9 @@ class Store {
 					console.log("DataStore", "stale vs "+fetchDate+" - fetch fresh", path);
 					const pv = this.fetch2(path, fetchFn, cachePeriod);
 					// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
-					if (pv.resolved) return pv;
+					if (pv.resolved) {
+						return pv;
+					}
 				}
 			}
 			// Note: falsy or an empty list/object is counted as valid. It will not trigger a fresh load
@@ -571,7 +576,6 @@ class Store {
 	 * Does the remote fetching work for fetch()
 	 * @param {String[]} path
 	 * @param {Function} fetchFn () => promiseOrValue or a PromiseValue. If `fetchFn` is unset (which is unusual), return in-progress or a failed PV.
-	 * @param {?Boolean} messaging
 	 * @param {?Number} cachePeriod
 	 * @returns {!PromiseValue}
 	 */
@@ -789,6 +793,7 @@ const getListPath = ({type,status,q,prefix,start,end,sort,domain}) => {
 		space(start, end) || 'whenever', 
 		sort || 'unsorted'];
 };
+
 
 /**
  * @param {String[]} path

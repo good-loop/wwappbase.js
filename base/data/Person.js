@@ -30,6 +30,8 @@ import ServerIO from '../plumbing/ServerIOBase';
 import { sortByDate } from '../utils/SortFn';
 import C from '../CBase';
 import JSend from './JSend';
+import { crud, localSave } from '../plumbing/Crud';
+import KStatus from './KStatus';
 
 
 
@@ -131,45 +133,25 @@ Person.getLinks = (peep, service) => {
  */
 const PURPOSES = new Enum("any email_app email_mailing_list email_marketing cookies cookies_personalization cookies_analytical cookies_marketing cookies_functional personalize_ads");
 
+
 /**
  * Get local or fetch
  * TODO fields 
- * @return {PromiseValue(Person)}
+ * @returns PromiseValue(Person)
  */
-const getProfile = ({xid, fields, status=C.KStatus.PUBLISHED}) => {
+const getProfile = ({xid, fields, status=KStatus.PUBLISHED, localStorage=true, swallow=true}) => {
 	assMatch(xid, String);
-	const dsi = {type:'Person', status, id:xid};
+	const dsi = {type:'Person', status, id:xid};		
 	const dpath = getDataPath(dsi);
 	// Use DS.fetch to avoid spamming the server
 	return DataStore.fetch(dpath, () => {			
-		// Call the server
-		// NB: dont report 404s
-		// NB: the "standard" servlet would be /person but it isnt quite ready yet (at which point we should switch to SIO_getDataItem)
-		const pPeep = ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, {data: {fields, status}, swallow:true});
-		// save to local and DS
-		pPeep.then(jsend => {
-			assert(JSend.success(jsend), "getProfile fail"); // I think failure is handled in ServerIO
-			const peep = JSend.data(jsend);
-			Person.assIsa(peep);
-			localSave(peep);
-			// If we return a local save (see below), then DS.fetch thinks its job is done.
-			// So we better set the DS value here too.
-			// ?? use update instead to merge with any quick local edits??
-			console.log("getProfile - server replacement for "+xid);
-			DataStore.setValue(dpath, peep);
-		});
-		// Do we have a fast local answer?
-		let localPeep = localLoad(xid);
-		if (localPeep) {
-			console.log("getProfile - localLoad for "+xid);
-			return localPeep; 
-			// NB the server load is still going to run in the background
-		}
-		// return server-loading
-		console.log("getProfile - server load for "+xid);
-		return pPeep;
-	}); // ./DS.fetch
+		// domain:ServerIO.dataspace??
+		let p = crud({action:"get", type:'Person', status, id:xid, swallow, localStorage});
+		return p;		
+	}, {cachePeriod}); // ./DS.fetch
 };
+// one hour in msecs DS cache
+const cachePeriod = 1000*60*60;
 
 /**
  * Convenience method:
@@ -193,6 +175,7 @@ const getProfilesNow = xids => {
 
 
 /**
+ * TODO refactor into Crud
  * A debounced save - allows 1 second for batching edits
  * Create UI call for saving claims to back-end
 	@param {Person[]} persons
@@ -202,8 +185,7 @@ const savePersons = debouncePV(({persons, then}) => {
 	// one save per person ?? TODO batch
 	let pSaves = persons.map(peep => {
 		Person.assIsa(peep);
-		// local save
-		localSave(peep);
+		// Proper save
 		let claims = peep.claims;
 		// TODO filter for our new claims, maybe just by date, and send a diff
 		if( _.isEmpty(claims) ) {
@@ -211,50 +193,20 @@ const savePersons = debouncePV(({persons, then}) => {
 			return null;
 		}
 		let xid = Person.getId(peep);
-		return ServerIO.post(
+		let p = ServerIO.post(
 			`${ServerIO.PROFILER_ENDPOINT}/profile/${ServerIO.dataspace}/${encURI(xid)}`, 
 			{claims: JSON.stringify(claims)}
 		);
+		// local save
+		let path = getDataPath({status:KStatus.PUBLISHED, type:"Person", id:peep.id, domain:ServerIO.dataspace});
+		localSave(path, peep);
+		return p;
 	});
 	// join them
 	let pSaveAll = Promise.allSettled(pSaves);
 	return pSaveAll;
 }, 1000);
 
-
-const localSave = person => {
-	if ( ! window.localStorage) return false;
-	Person.assIsa(person);
-	try {
-		let json = JSON.stringify(person);	
-		let xid = Person.getId(person);
-		window.localStorage.setItem(xid, json);
-		return true;
-	} catch(err) {
-		// eg quota exceeded
-		console.error(err);
-		return false;
-	}
-};
-
-/**
- * 
- * @param {!string} xid 
- * @returns {?Person}
- */
-const localLoad = xid => {
-	if ( ! window.localStorage) return null;
-	assMatch(xid, String);
-	try {
-		let json = window.localStorage.getItem(xid);
-		let peep = JSON.parse(json);			
-		return peep;
-	} catch(err) { // paranoia
-		// Can this happen??
-		console.error(err);
-		return null;
-	}
-};
 
 
 /**
@@ -502,11 +454,14 @@ const removeConsent = ({persons, consent}) => {
 
 /**
  * Locally set a claim value (does NOT save -- use `savePersons()` to save)
+ * @param {Object} p
+ * @param {!Person[]} p.persons
+ * @param {!String} p.key
  */
 const setClaimValue = ({persons, key, value}) => {
 	if ( ! persons.length) console.warn("setClaimValue - no persons :( -- Check profile load is working");
 	console.log("setClaimValue "+key+" = "+value, persons.map(p => p.id));
-	let from = Login.getId();
+	let from = Login.getId() || XId.ANON;
 	let consent = ['dflt']; // the "what is my current default?" setting
 	let claim = new Claim({key,value,from,consent});	
 	persons.map(peep => {
@@ -572,9 +527,6 @@ export {
 	requestAnalyzeData,
 	PURPOSES,
 	getEmail,
-
-	// debug only
-	localLoad, localSave,
 
 	// Lets offer some easy ways to edit profile-bundles
 	getClaims, getClaimValue, setClaimValue, savePersons
