@@ -50,7 +50,7 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 			DSsetValue(proppath, getId(item));
 		};
 		return <div style={{border:"1px solid #aaa",margin:0,cursor:"pointer"}} onClick={onClick}>
-			{getLogo(item) && <img src={getLogo(item)} className='logo logo-sm' />} {getName(item)}</div>;
+			{getLogo(item) && <img src={getLogo(item)} className='logo logo-sm' />} {getName(item)} <small>(ID: <code>{getId(item)}</code>)</small></div>;
 	};
 
 	// TODO display the name not the ID getName(pvDI.value). But: handling onChange and setting the id value is fiddly

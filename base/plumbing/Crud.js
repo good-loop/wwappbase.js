@@ -3,7 +3,7 @@
 import _ from 'lodash';
 import { assert, assMatch } from '../utils/assert';
 import C from '../CBase';
-import DataStore, { getListPath } from './DataStore';
+import DataStore, { getDataPath, getListPath } from './DataStore';
 import {getId, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from '../youagain';
@@ -16,25 +16,35 @@ import List from '../data/List';
 import * as jsonpatch from 'fast-json-patch';
 import deepCopy from '../utils/deepCopy';
 import KStatus from '../data/KStatus';
+import Person from '../data/Person';
 
 
 /**
- * @param item {DataItem} can be null, in which case the item is got from DataStore
- * @returns {!Promise}
+ * @param {?Item} p.item can be null, in which case the item is got from DataStore
+ * @param {?KStatus} p.status Usually null
+ * @returns !Promise <Item>
  */
-const crud = ({type, id, action, item, previous}) => {
+const crud = ({type, id, domain, status, action, item, previous, swallow, localStorage=false}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
 	assert(C.TYPES.has(type), type);
 	assert(C.CRUDACTION.has(action), "unrecognised action "+action+" for type "+type);
+	if ( ! status) status = startStatusForAction(action);
+	let localStorageUsed;
 	if ( ! item) { 
-		let status = startStatusForAction(action);
 		item = DataStore.getData({status, type, id});
+		// Do we have a fast local answer?
+		if ( ! item && localStorage) {
+			assert(status===KStatus.PUBLISHED, "Not Supported: localStorage for "+status);		
+			const path = DataStore.getDataPath({status, type, id, domain});
+			item = localLoad(path);
+			localStorageUsed = !! item;
+		}
 	}
 	if ( ! item) {
 		// No item? fine for action=delete. Make a transient dummy here
-		assert(action==='delete', "no item?! "+action+" "+type+" "+id);
+		assert(["delete","get","new","getornew"].includes(action), "no item?! "+action+" "+type+" "+id);
 		item = {id, "@type": type};
 	}
 	if ( ! getId(item)) {
@@ -51,8 +61,7 @@ const crud = ({type, id, action, item, previous}) => {
 		action = 'new';
 	}
 
-	// TODO optimistic local edits
-	// crud2_optimisticLocalEdit()
+	// NB: get getornew COULD return fast if the item is in DS. However this is probably handled already in a DataStore.fetch() wrapper
 
 	// mark the widget as saving (defer 'cos this triggers a react redraw, which cant be done inside a render, where we might be)
 	_.defer(() => DataStore.setLocalEditsStatus(type, id, C.STATUS.saving));
@@ -63,8 +72,8 @@ const crud = ({type, id, action, item, previous}) => {
 	const itemBefore = deepCopy(item);
 
 	// call the server
-	return SIO_crud(type, item, previous, action)
-		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type}) )
+	const p = SIO_crud(type, item, previous, action, {swallow})
+		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage}) )
 		.catch(err => {
 			// bleurgh
 			console.warn(err);
@@ -84,10 +93,88 @@ const crud = ({type, id, action, item, previous}) => {
 			DataStore.setValue(errorPath({type, id, action}), msg);
 			return err;
 		});
+	// fast return for get?
+	if (localStorageUsed) {
+		assert(item);
+		return Promise.resolve(item); 
+		// NB the server load is still going to run in the background
+	}	
+	// return the promise
+	return p;
 }; // ./crud
 ActionMan.crud = crud;
 
-const crud2_processResponse = ({res, item, itemBefore, id, action, type}) => {
+
+const localSave = (path, person) => {
+	if ( ! window.localStorage) return false;
+	try {
+		let json = JSON.stringify(person);	
+		const spath = JSON.stringify(path);
+		window.localStorage.setItem(spath, json);
+		console.log("localSave of "+path, json);
+		return true;
+	} catch(err) {
+		// eg quota exceeded
+		console.error(err);
+		return false;
+	}
+};
+
+/**
+ * 
+ * @param {!String[]} path
+ * @returns {?Item}
+ */
+const localLoad = path => {
+	if ( ! window.localStorage) return null;
+	const spath = JSON.stringify(path);
+	try {
+		let json = window.localStorage.getItem(spath);
+		let peep = JSON.parse(json);			
+		console.log("localLoad of "+path, json);
+		return peep;
+	} catch(err) { // paranoia
+		// Can this happen??
+		console.error(err);
+		return null;
+	}
+};
+
+
+/**
+ * HACK handle Person.claims
+ * @param {*} freshItem 
+ * @param {*} recentLocalDiffs 
+ */
+const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
+	// Normal case
+	if ( ! Person.isa(freshItem)) {
+		jsonpatch.applyPatch(freshItem, recentLocalDiffs);
+		return;
+	}
+	// don't apply diff edits to claims, as this could mangle claims (because: merging by order, not by key)
+	recentLocalDiffs = recentLocalDiffs.filter(d => d.path && d.path.substr(0,7) !== "/claims");
+	// console.log("applyPatch before",JSON.stringify(freshItem));
+	const after = jsonpatch.applyPatch(freshItem, recentLocalDiffs);
+	// console.log("applyPatch after",JSON.stringify(freshItem), after);
+	// preserve modified local claims
+	if ( ! item || ! item.claims) return;
+	// Which claims have been edited?
+	const oldClaims = (itemBefore && itemBefore.claims) || [];
+	let newClaims = item.claims.filter(
+		c => ! oldClaims.find(oc => oc.k===c.k && (""+oc.f)===(""+c.f) && oc.v===c.v)
+	);
+	if ( ! freshItem.claims) freshItem.claims = [];
+	// dont dupe server results
+	newClaims = newClaims.filter(
+		c => ! freshItem.claims.find(oc => oc.k===c.k && (""+oc.f)===(""+c.f) && oc.v===c.v)
+	);		
+	// OK - keep those edits
+	freshItem.claims.push(...newClaims);
+	console.log("applyPatch preserve local new claims",JSON.stringify(newClaims), JSON.stringify(freshItem));	
+};
+
+const crud2_processResponse = ({res, item, itemBefore, id, action, type, localStorage}) => {
 	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
 	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 	const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
@@ -98,8 +185,8 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type}) => {
 		// Preserve very recent local edits (which we haven't yet told the server about)
 		let recentLocalDiffs = jsonpatch.compare(itemBefore, item);
 		if (recentLocalDiffs.length) {
-			console.warn("Race condition! Preserving recent local edits", recentLocalDiffs);
-			jsonpatch.applyPatch(freshItem, recentLocalDiffs);
+			console.warn("Race condition! Preserving recent local edits", recentLocalDiffs, JSON.stringify(itemBefore), JSON.stringify(item));
+			applyPatch(freshItem, recentLocalDiffs, item, itemBefore);
 		}
 
 		if (action==='publish') {				
@@ -113,12 +200,15 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type}) => {
 		if (action==='save') {	
 			// NB: the recent diff handling above should manage the latency issue around setting the draft item
 			DataStore.setValue(draftpath, freshItem);
-
-			// OLD
-			// TODO we want to update DS, but there's a latency issue and we don't want to lose very-recent edits by the user.
-			// HACK: Let's update the status field, as the server owns that (and it avoids the "stuck on published" bug seen in SoGive Oct 2020)
-			// (better: use diffs)
-			// DataStore.setValue(draftpath.concat('status'), freshItem.status);
+		}
+		// save to local and DS?
+		if (localStorage) {
+			assert(action==="get", "TODO carefully roll out further");
+			localSave(pubpath, freshItem);
+			// If we already returned a local save (see crud()), then any surrounding DS.fetch thinks its job is done.
+			// So we better set the DS value here too.
+			console.log("getProfile - server replacement for "+id);
+			DataStore.setValue(pubpath, freshItem);
 		}
 	}
 	// success :)
@@ -334,6 +424,7 @@ const startStatusForAction = (action) => {
 		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
 		case C.CRUDACTION.export:
+		case C.CRUDACTION.get: // get="get the published version"
 			return C.KStatus.PUBLISHED;
 	}
 	throw new Error("TODO startStatusForAction "+action);
@@ -350,6 +441,7 @@ const serverStatusForAction = (action) => {
 			return C.KStatus.DRAFT;
 		case C.CRUDACTION.publish:
 		case C.CRUDACTION.export:
+		case C.CRUDACTION.get: // get="get the published version"
 			return C.KStatus.PUBLISHED;
 		case C.CRUDACTION.unpublish:
 			return C.KStatus.DRAFT;
@@ -361,12 +453,15 @@ const serverStatusForAction = (action) => {
 
 /**
  * ServerIO (ie this does not use our client side datastore) crud call 
+ * @param {Object} p
  * @param {!string} type 
  * @param {Item} item 
  * @param {?Item} previous Optional pre-edit version of item. If supplied, a diff will be sent instead of the full item.
  * @param {!string} action 
+ * @param {?Object} p.params
+ * @param {?Boolean} p.params.swallow
  */
-const SIO_crud = function(type, item, previous, action) {	
+const SIO_crud = function(type, item, previous, action, params={}) {	
 	assert(C.TYPES.has(type), type);
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
@@ -376,29 +471,36 @@ const SIO_crud = function(type, item, previous, action) {
 		status,
 		type, // hm: is this needed?? the stype endpoint should have it		
 	};
-	// diff?
-	if (previous) {
-		let diff = jsonpatch.compare(previous, item);
-		// remove add-null, as the server ignores it
-		diff = diff.filter(op => ! (op.op==="add" && op.value===null));
-		// no edits and action=save? skip save
-		if ( ! diff.length && action==='save') {
-			console.log("crud", "skip no-diff save", item, previous);
-			const jsend = new JSend();
-			return Promise.resolve(jsend); // ?? is this the right thing to return
+	// NB: don't send data for get
+	if (action!==C.CRUDACTION.get) {
+		// diff?
+		if (previous) {
+			let diff = jsonpatch.compare(previous, item);
+			// remove add-null, as the server ignores it
+			diff = diff.filter(op => ! (op.op==="add" && op.value===null));
+			// no edits and action=save? skip save
+			if ( ! diff.length && action==='save') {
+				console.log("crud", "skip no-diff save", item, previous);
+				const jsend = new JSend();
+				return Promise.resolve(jsend); // ?? is this the right thing to return
+			}
+			data.diff = JSON.stringify(diff);
+		} else {
+			data.item = JSON.stringify(item);
 		}
-		data.diff = JSON.stringify(diff);
-	} else {
-		data.item = JSON.stringify(item);
 	}
-	let params = {
-		method: 'POST',
-		data
-	};
+	params.method = 'POST';
+	params.data = data;
+	
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
-	
+	// HACK dont upset the server's anti-ddos defence
+	if (C.CRUDACTION.isget(action)) {
+		params.method = 'GET';
+		delete params.data.action;	
+	}
+
 	// NB: load() includes handle messages
 	let id = getId(item);
 	let url = ServerIO.getUrlForItem({type, id, status});
@@ -425,6 +527,7 @@ ServerIO.archive = function(type, item, previous) {
  * get an item from the backend -- does not save it into DataStore
  * @param {?Boolean} swallow
  */
+// NB: Does not use `crud()` (yet!) as this manages status.
 const SIO_getDataItem = function({type, id, status, domain, swallow, ...other}) {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO - bad type: '+type);
 	if ( ! status) {
@@ -445,6 +548,7 @@ const SIO_getDataItem = function({type, id, status, domain, swallow, ...other}) 
  * @param {?string} action e.g. `getornew`
  * @returns PromiseValue(type)
  */
+// * NB: Does not use `crud()` (yet!) as this manages status.
 const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
 	assert(id!=='unset', "ActionMan.getDataItem() "+type+" id:unset?!");
 	assert(C.TYPES.has(type), 'Crud.js - ActionMan - bad type: '+type);
@@ -568,4 +672,7 @@ export {
 	getDataItem,
 	restId,
 	restIdDataspace,
+
+	localSave, // can be used externally
+	localLoad // for debug only
 };

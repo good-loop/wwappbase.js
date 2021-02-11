@@ -458,9 +458,9 @@ export const getHost = function (url: string): string {
 
 export const getLogo = (item:any) : string => {
 	if (!item) return null;
-	// Newer ads store logo under item.branding.logo
-	// Kept old syntax in as back-up so that the #advert page will still show icons for old ads
-	let img = (item.branding && item.branding.logo) || item.logo || item.img || item.photo;
+	// HACK ads store logo under item.branding.logo
+	// Kept old syntax in as back-up / more generic
+	let img = (item.branding && item.branding.logo) || item.logo || item.img || item.photo || (item.std && item.std.img);
 	if (!img) return null;
 	// If its an ImageObject then unwrap it
 	if (img.url) img = img.url;

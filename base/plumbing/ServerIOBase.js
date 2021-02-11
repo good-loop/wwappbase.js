@@ -35,7 +35,7 @@ ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 ServerIO.PORTAL_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}portal.good-loop.com`;
 // ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
 
-ServerIO.PROFILER_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}profiler.good-loop.com/`;
+ServerIO.PROFILER_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}profiler.good-loop.com`;
 
 /**
  * Where uploads go
@@ -276,7 +276,7 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 		id = normaliseSogiveId(id);
 		return 'https://app.sogive.org/charity/'+encURI(id)+'.json'
 			+(status? '?status='+status : '');
-	}
+	}	
 	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);
 	let url = domain + servlet+'/' 
@@ -363,6 +363,10 @@ ServerIO.getEndpointForType = (type) => {
 	// HACK Change "advertiser" to "vertiser" to dodge some adblocking
 	if (type==='Advertiser') {
 		return '/vertiser';
+	}
+
+	if (type==="Person" && ServerIO.USE_PROFILER) {
+		return ServerIO.PROFILER_ENDPOINT+"/person";
 	}
 	
 	return '/'+type.toLowerCase();

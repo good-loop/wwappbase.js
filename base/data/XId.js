@@ -15,6 +15,11 @@ const This = XId;
 export default XId;
 
 /**
+ * A constant for an unknown person, from an unset service
+ */
+XId.ANON = "anon@unset";
+
+/**
  * @param {?String} xid
  */
 XId.isa = xid => xid && xid.indexOf && xid.indexOf('@') > 0;

@@ -49,7 +49,10 @@ C.KStatus = KStatus;
 
 C.STATUS = new Enum('loading clean dirty saving saveerror'); // 
 
-C.CRUDACTION = new Enum('new getornew save copy publish unpublish discardEdits delete archive export');
+/**
+ * NB: `get` = "get the published version". Editors should explictly request a draft with getDataItem()
+ */
+C.CRUDACTION = new Enum('new getornew get save copy publish unpublish discardEdits delete archive export');
 
 /**
  * Make "standard" DataStore nodes from C.TYPES
