@@ -127,3 +127,30 @@ img {
 		object-fit: contain; // allow square container but keep proportions
 	}
 }
+
+
+// full-width -- Break out of a BS .container
+.full-width {
+	width: 100vw;
+}
+// HACK: use margin-left linked with the BS .container media rules to go full-width in pure css.
+@media (min-width: 576px) {
+	.full-width {
+		margin-left:calc(0.5*(540px - 30px - 100vw))
+	}
+}
+@media (min-width: 768px) {
+	.full-width {
+		margin-left:calc(0.5*(720px - 30px - 100vw))
+	}
+}
+@media (min-width: 992px) {
+	.full-width {
+		margin-left:calc(0.5*(960px - 30px - 100vw))
+	}
+}
+@media (min-width: 1200px) {
+	.full-width {
+		margin-left:calc(0.5*(1140px - 30px - 100vw))
+	}
+}
