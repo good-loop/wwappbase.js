@@ -348,10 +348,11 @@ Misc.RoughDate = ({date}) => {
  * e.g. March - May 2019
  * Only displays duration in months
  */
-Misc.DateDuration = ({startDate, endDate}) => {
+Misc.DateDuration = ({startDate, endDate, invisOnEmpty}) => {
 	if (!startDate && !endDate) {
 		console.warn("No dates provided to DateDuration!");
-		return null;
+		if (!invisOnEmpty) return null;
+		else return <span className="invisible">No date</span>
 	}
 	if (_.isString(startDate) || _.isNumber(startDate)) startDate = new Date(startDate);
 	if (_.isString(endDate) || _.isNumber(endDate)) endDate = new Date(endDate);
