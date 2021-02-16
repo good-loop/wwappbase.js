@@ -110,6 +110,8 @@ const rawToStoreMoney = (rawValue, type, event, oldStoreValue, props) => {
 */
 const moneyValidator = ({value, props}) => {
 	let {min,max} = props;
+	if (typeof(min) === 'number') min = new Money(min);
+	if (typeof(max) === 'number') max = new Money(max);
 	let val = value;
 	// NB: we can get a Money skeleton object with no set value, seen May 2020
 	if (!val || (!val.value && !val.value100p)) {
@@ -117,10 +119,10 @@ const moneyValidator = ({value, props}) => {
 	}
 	let nVal = Money.value(val);
 
-	if (!Number.isFinite(nVal)) {
+	if ( ! Number.isFinite(nVal)) {
 		return "Invalid number: " + val.raw;
 	}
-	if (!(nVal * 100).toFixed(2).endsWith(".00")) {
+	if ( ! (nVal * 100).toFixed(2).endsWith(".00")) {
 		return {status:"warning", message:"Fractional pence may cause an error later"};
 	}
 	if (val.error) return {status:"error", message:val.error}; // ??
