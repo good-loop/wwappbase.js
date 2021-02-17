@@ -353,6 +353,8 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 
 /**
  * e.g. for use in sort()
+ * @param {!Money} a
+ * @param {!Money} b
  * @throws Error if currencies are not the same
  * @returns {!Number} negative if a < b, 0 if equal, positive if a > b
  */
