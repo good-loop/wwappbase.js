@@ -22,7 +22,7 @@ import {saveDraftFn} from './SavePublishDeleteEtc';
  * 
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, setRawValue, storeValue, type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed }) => {
+const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, setRawValue, storeValue, modelValueFromInput, type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed }) => {
 	let pvDI = {};
 	if (rawValue) {
 		pvDI = getDataItem({ type: itemType, id: rawValue, status, domain, swallow: true });
@@ -31,9 +31,14 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 	assert( ! embed);
 
 	let onChange = e => {
-		let id = e.target.value;
+		let id = e.target.value;		
 		setRawValue(id);
-		if (!embed) DSsetValue(proppath, id);
+		if (embed) {
+			// TODO
+			return;
+		}
+		let mv = modelValueFromInput(id, type, e, storeValue);
+		DSsetValue(proppath, mv);
 	};
 
 	let pvItemsAll = ActionMan.list({ type: itemType, status, q: rawValue });
