@@ -189,6 +189,33 @@ Money.CURRENCY_FOR_COUNTRY = {
 }
 
 /**
+ * HACK - estimate conversions to handle adding conflicting currencies
+ * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 Feb 18, 2021 15:58
+ */
+Money.CURRENCY_CONVERSION = {
+	GBP_USD: 1.395,
+	GBP_AUD: 1.800,
+	USD_AUD: 1.290,
+	USD_GBP: 0.717,
+	AUD_GBP: 0.556,
+	AUD_USD: 0.775,
+}
+
+/**
+ * Convert a money value to a different currency
+ * @param {Money} money
+ * @param {String} currencyTo the currency to convert to
+ */
+Money.convertCurrency = (money, currencyTo) => {
+	console.warn("WARNING: Currency conversion is a rough estimate only and intended as a hack. Should be avoided and not relied on for any precision!!");
+	Money.assIsa(Money.CURRENCY[currencyTo]);
+	const currencyConversion = money.currency + "_" + currencyTo;
+	const conversionVal = Money.CURRENCY_CONVERSION[currencyConversion];
+	Money.assIsa(conversionVal);
+	return moneyFromv100p(money.value100p * conversionVal, currencyTo);
+};
+
+/**
  * Convenience for getting the symbol for a Money object
  * @param {?Money} money
  * @returns {?String} e.g. "£" -- which you may need to html encode
@@ -228,7 +255,13 @@ const assCurrencyEq = (a, b, msg) => {
 Money.add = (amount1, amount2) => {
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);
-	assCurrencyEq(amount1, amount2, "add()");
+	//assCurrencyEq(amount1, amount2, "add()");
+	// Ignore if there is an empty currency
+	if (amount1.currency && amount2.currency) {
+		if (amount1.currency.toUpperCase() !== amount2.currency.toUpperCase()) {
+			amount1 = Money.convertCurrency(amount1, amount2.currency);
+		}
+	}
 	const b100p = v100p(amount1) + v100p(amount2);
 	return moneyFromv100p(b100p, amount1.currency || amount2.currency);
 };
