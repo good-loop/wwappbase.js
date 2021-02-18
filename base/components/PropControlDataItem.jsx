@@ -30,8 +30,9 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 		pvDI = getDataItem({ type: itemType, id: rawValue, status, domain, swallow: true });
 	} 
 
-	let pvItemsAll = ActionMan.list({ type: itemType, status, q: rawValue });
-	let options = pvItemsAll.value && pvItemsAll.value.hits || [];
+	// let pvItemsAll = ActionMan.list({ type: itemType, status, q: rawValue });
+	// console.log(rawValue, pvItemsAll);
+	// let options = pvItemsAll.value && pvItemsAll.value.hits || [];
 
 	let onChange = e => {
 		let id = e.target.value;		
@@ -49,8 +50,9 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 		
 	const SlimListItem = ({type, servlet, navpage, item, sort}) => {
 		const onClick = e => {
-			setRawValue(getId(item)); 
-			let mv = embed? Object.assign({}, item) : getId(item);
+			const id = getId(item);
+			setRawValue(id);
+			let mv = embed? Object.assign({}, item) : id;
 			if (modelValueFromInput) mv = modelValueFromInput(mv, type, {}, storeValue);
 			DSsetValue(proppath, mv);
 		};
@@ -68,9 +70,9 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 		console.log("hide..."); // debug
 		// a moment's delay to allow moving from the text entry to the list??
 		setTimeout(() => {
-			console.log("...hide"); // Debug - Why is this so slow to close??
+			console.log("...hide"); // Debug - Why is this so slow to close?? It makes no sense! Is something interfering with setTimeout?!
 			setLL(false);
-		}, 100);
+		}, 1);
 	};
 	// (default create behaviour) the input names the object
 	if (rawValue && ! base) base = {name:rawValue};
