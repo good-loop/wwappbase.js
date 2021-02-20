@@ -520,7 +520,7 @@ export const decURI = function (urlPart: string) {
 }
 
 /**
- * @param d {Date}
+ * @param {Date} d
  * @return {String} iso format e.g. 2020-10-18
  */
 export const isoDate = (d: Date) => d.toISOString().replace(/T.+/, '');
@@ -552,12 +552,13 @@ export const stopEvent = (e: Event) => {
 export const str = x => printer.str(x)
 
 /**
- * @param {?String} s 
+ * @param {?String|Date} s 
  * @returns {?Date}
  */
-export const asDate = (s: String) => {
+export const asDate = (s: String|Date) => {
 	if (!s) return null;
-	return new Date(s);
+	if (typeof(s)==="string") return new Date(s);
+	return s;
 };
 
 /**
