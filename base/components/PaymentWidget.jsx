@@ -16,6 +16,7 @@ import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import { loadStripe } from '@stripe/stripe-js';
 import ServerIO from '../plumbing/ServerIOBase';
+import { space } from '../utils/miscutils';
 
 // Which Stripe API key to use?
 const stripeKey = (C.SERVER_TYPE) ? // SERVER_TYPE is falsy on production servers
@@ -67,7 +68,7 @@ const STRIPE_MINIMUM_AMOUNTS = {
  * 	The token string is either a Stripe authorisation token, or one of the fixed special values (e.g. credit_token).
  * @param {?Boolean} testOption true/false to show/hide the pretend-I-paid option. Defaults to true on test or local.
  */
-const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, error, testOption, repeat}) => {
+const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, error, testOption, repeat, basketId}) => {
 	if (!amount) return null; // no amount, no payment
 
 	if (testOption === undefined) {
@@ -117,7 +118,12 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 	// Get a new PaymentIntent if we don't have one, or update it if the payment amount changes
 	useEffect(() => {
 		// Stripe takes amount in "smallest unit of currency" - i.e. pence in GBP, cents in USD
-		const data = { action: 'getPaymentIntent', amount: Math.round(Money.value(amount) * 100) };
+		const data = {
+			action: 'getPaymentIntent',
+			amount: Math.round(Money.value(amount) * 100),
+			basket: basketId,
+			description: space(basketId,"to",recipient)
+		};
 		// If a payment intent exists, ask the server to update it with the new payment amount
 		if (paymentIntent) data.id = paymentIntent.id;
 
