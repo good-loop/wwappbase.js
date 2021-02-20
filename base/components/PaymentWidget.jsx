@@ -122,7 +122,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 			action: 'getPaymentIntent',
 			amount: Math.round(Money.value(amount) * 100),
 			basket: basketId,
-			description: space(basketId,"to",recipient)
+			description: space("from", email,basketId, "to",recipient,paymentIntent)
 		};
 		// If a payment intent exists, ask the server to update it with the new payment amount
 		if (paymentIntent) data.id = paymentIntent.id;
@@ -174,7 +174,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
  * "we provide the widgets and the host page can't touch your CC data".
  * It's conceivable we could pry that data out, but it's not a good idea.
  */
-const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail, usePaymentRequest, error: serverError, repeat, clientSecret }) => {
+const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail, usePaymentRequest, error: serverError, repeat, clientSecret, disabled }) => {
 	// Stripe hooks methods, replacing the old-style provider wrappers that injected these as props
 	const stripe = useStripe();
 	const elements = useElements();
@@ -184,8 +184,12 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 	const [email, setEmail] = useState(dfltEmail); // later: allow changing this / setting if not provided
 	const [isSaving, setIsSaving] = useState(serverError); // Don't allow submit while there's an unresolved server error
 	const [errorMsg, setErrorMsg] = useState();
+	const [paymentDone, setPaymentDone] = useState(false);
+
+
+	const currency = amount.currency || "GBP";
 	
-	const isValidAmount = Money.value(amount) >= STRIPE_MINIMUM_AMOUNTS[amount.currency]
+	const isValidAmount = Money.value(amount) >= STRIPE_MINIMUM_AMOUNTS[currency]
 
 	const errors = {}; // TODO uhhh
 
@@ -214,7 +218,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 		/* TODO This probably needs updating - but it's dummied out with usePaymentRequest=false anyway */
 		const paymentRequestTemp = stripe.paymentRequest({
 			country: 'GB',
-			currency: (amount.currency || 'gbp').toLowerCase(),
+			currency: currency.toLowerCase(),
 			total: {
 				label: `Payment to ${recipient}`,
 				amount: Math.round(residual.value * 100), // uses pence
@@ -237,6 +241,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 		});
 		// Make sure the payment request object reflects current amount etc
 	}, [usePaymentRequest, stripe, Money.value(amount), Money.value(credit)]);
+	// ./ not used
 
 
 	// If the invoking component says to use Payments API if possible...
@@ -255,6 +260,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 		// block repeat clicks, and clear old errors
 		setIsSaving(true);
 		setErrorMsg('');
+		console.log("Payment handleSubmit isSaving true");
 
 		const paymentOptions = {
 			payment_method: {
@@ -273,6 +279,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 		}).then(({paymentIntent, error}) => {
 			if (paymentIntent) {
 				// The payment went through! Pass the completed intent back to the invoking code.
+				setPaymentDone(true);
 				onToken(paymentIntent);
 			} else {
 				// Something's gone wrong - handle the error.
@@ -282,6 +289,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 				}
 				// TODO Take action on other errors
 			}
+			console.log("Payment isSaving false");
 			setIsSaving(false);
 		});
 	} //./handleSubmit()
@@ -328,7 +336,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 			</Row>
 
 			<Button color="primary" size="lg" className="pull-right" type="submit"
-				disabled={isSaving || !isValidAmount}
+				disabled={paymentDone || isSaving || !isValidAmount}
 				title={isValidAmount ? null : 'Your payment must be at least ' + STRIPE_MINIMUM_AMOUNTS[currency] + currency}
 			>
 				Submit Payment
