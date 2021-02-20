@@ -608,6 +608,19 @@ export const uniq = (array : Object[]) : Object[] => {
 	return [... new Set(array.filter(x => x))];
 };
 
-// // DEBUG hack
-// window.miscutils = {
-// };
+/**
+ * Convenience to de-dupe and remove falsy from an array
+ * @param {Object[]} array 
+ * @param {?Function} keyFn Defaults to .id
+ * @returns {Object[]} copy of array, de-duped by id. Falsy items and falsy ids are filtered out
+ */
+export const uniqById = (array: Object[], keyFn: Function) : Object[] => {
+	if ( ! keyFn) keyFn = item => item && item.id;
+	let item4id = {};
+	array.forEach(item => {
+		let key = keyFn(item);
+		if ( ! key) return;
+		item4id[key] = item;
+	});
+	return Object.values(item4id);
+};

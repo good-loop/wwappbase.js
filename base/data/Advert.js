@@ -7,6 +7,7 @@ import ActionMan from '../plumbing/ActionManBase';
 import DataStore from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
 import { getDataItem } from '../plumbing/Crud';
+import NGO from './NGO';
 
 /**
  * See Branding.java
