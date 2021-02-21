@@ -59,7 +59,7 @@ C.DEFAULT_AD_ID = 'default-advert';
  * Note: race condition on app loading - this will be null for a second.
  */
 Advert.defaultAdvert = () => {
-	const pvAd = ActionMan.getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status:C.KStatus.PUBLISHED});
+	const pvAd = getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status:C.KStatus.PUBLISHED});
 	return pvAd.value;
 };
 
