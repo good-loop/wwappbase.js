@@ -550,6 +550,9 @@ class Store {
 			cachePeriod = options;
 			options = {};
 		}
+		if (typeof(options)==="boolean") {
+			options = {};
+		}
 		if (cachePeriod) {
 			options.cachePeriod = cachePeriod; 
 		}
