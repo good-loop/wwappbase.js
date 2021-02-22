@@ -284,7 +284,7 @@ const moneyFromv100p = (b100p, currency) => {
 
 /**
  * 
- * @param {Money[]} amounts Can include nulls
+ * @param {Money[]} amounts Can include nulls/falsy
  */
 Money.total = amounts => {
 	// assMatch(amounts, "Money[]", "Money.js - total()");
@@ -359,11 +359,13 @@ Money.explain = (money, expln) => {
 };
 
 /**
- * Money span, falsy displays as 0
+ * Money value, falsy displays as 0
  * 
  * Converts monetary value in to properly formatted string (29049 -> 29,049.00)
  * 
- * @param amount {?Money|Number}
+ * @param {Object} p amount + Intl.NumberFormat options
+ * @param {?Money|Number} p.amount
+ * @returns {!String} e.g. £10.7321 to "10.73"
  */
 Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
 	if ( ! amount) amount = 0;
@@ -376,10 +378,16 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 	if (maximumFractionDigits===0) { // because if maximumSignificantDigits is also set, these two can conflict
 		value = Math.round(value);
 	}
-	let snum = new Intl.NumberFormat(Settings.locale,
-		{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
-	).format(value);
-
+	let snum;
+	try {		
+		snum = new Intl.NumberFormat(Settings.locale,
+			{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
+		).format(value);
+	} catch(er) {
+		console.warn("Money.js prettyString",er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
+		snum = ""+x;	
+	}
+	
 	if ( ! minimumFractionDigits) {
 		// remove .0 and .00
 		if (snum.substr(snum.length-2) === '.0') snum = snum.substr(0, snum.length-2);
@@ -393,12 +401,16 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 
 /**
  * e.g. for use in sort()
- * @param {!Money} a
- * @param {!Money} b
+ * @param {?Money} a
+ * @param {?Money} b
  * @throws Error if currencies are not the same
- * @returns {!Number} negative if a < b, 0 if equal, positive if a > b
+ * @returns {!Number} negative if a < b, 0 if equal, positive if a > b.
+ * A falsy input is counted as if minus-infinity.
  */
 Money.compare = (a,b) => {
+	// Treat falsy as ultra-low-value
+	if ( ! a) return b? -1 : 0;
+	if ( ! b) 1;
 	Money.assIsa(a);
 	Money.assIsa(b);
 	assCurrencyEq(a, b, "Money.compare() "+a+" "+b);
@@ -411,5 +423,5 @@ Money.compare = (a,b) => {
  * @returns {boolean} true if a < b
  */
 Money.lessThan = (a,b) => {	
-	return compare(a,b) < 0;
+	return Money.compare(a,b) < 0;
 };

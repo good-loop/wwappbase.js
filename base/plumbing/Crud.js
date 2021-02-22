@@ -111,7 +111,7 @@ const localSave = (path, person) => {
 		let json = JSON.stringify(person);	
 		const spath = JSON.stringify(path);
 		window.localStorage.setItem(spath, json);
-		console.log("localSave of "+path, json);
+		console.log("localSave of "+path, person? person.id+" "+person.name : "falsy?!");
 		return true;
 	} catch(err) {
 		// eg quota exceeded
@@ -130,9 +130,9 @@ const localLoad = path => {
 	const spath = JSON.stringify(path);
 	try {
 		let json = window.localStorage.getItem(spath);
-		let peep = JSON.parse(json);			
-		console.log("localLoad of "+path, json);
-		return peep;
+		let person = JSON.parse(json);			
+		console.log("localLoad of "+path, person? person.id+" "+person.name : "falsy?!");
+		return person;
 	} catch(err) { // paranoia
 		// Can this happen??
 		console.error(err);
