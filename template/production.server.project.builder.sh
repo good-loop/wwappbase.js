@@ -2,8 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.91
-# VERSION_MEANING=script has been written, but never used.
+# VERSION=0.92
 
 ## Warning - This is a bare-bones template file.
 ##     There are no functions written in here to
@@ -183,10 +182,20 @@ function check_for_code_repo_in_bobwarehouse {
     fi
 }
 
-# Cleanup Git -- Ensure a clean and predictable git repo for building - This Function's Version is 0.01
+# Cleanup Git -- Ensure a clean and predictable git repo for building - This Function's Version is 1.01
 function cleanup_repo {
     printf "\nCleaning $HOSTNAME 's local repository...\n"
     git_hard_set_to_master $PROJECT_ROOT_ON_SERVER
+    # If this is a node relient project, kill any existing package-lock.json
+    if [[ $PROJECT_USES_NPM = 'yes' ]]; then
+        # using reverse logic.  if package-lock.json does NOT exist, do nothing.  If it DOES exist, delete it.
+        if [ ! -f $PROJECT_ROOT_ON_SERVER/package-lock.json ]; then
+            printf ""
+        else
+            printf "\nFound a package-lock.json file.  Auto-Removing .\n"
+            rm $PROJECT_ROOT_ON_SERVER/package-lock.json
+        fi
+    fi
 }
 
 # Cleanup wwappbase.js 's repo -- Ensure that this repository is up to date and clean - This Function's Version is 0.01
