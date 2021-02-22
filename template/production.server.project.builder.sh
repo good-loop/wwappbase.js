@@ -2,7 +2,7 @@
 
 
 # Production Server -- Project Builder
-# VERSION=0.92
+# VERSION=0.93
 
 ## Warning - This is a bare-bones template file.
 ##     There are no functions written in here to
@@ -390,31 +390,33 @@ function get_branch_and_print_warning {
     esac
 }
 
-## Checking the immediate logged output for errors or warnings - This Function's Version is 0.01
+## Checking the immediate logged output for errors or warnings - This Function's Version is 0.02
 function catch_JVM_success_or_error {
-    INITIAL_LOG_NUM_LINES=$(wc -l $PROJECT_LOG_FILE | awk '{print $1}')
-    while read -t 10 line; do
-        case "$line" in
-            *"AMain Running"* )
-                printf "\n\t$PROJECT_NAME 's JVM reports a successful startup\n"
-                exit
+    if [[ $PROJECT_USES_BOB = 'yes' ]]; then
+        INITIAL_LOG_NUM_LINES=$(wc -l $PROJECT_LOG_FILE | awk '{print $1}')
+        while read -t 10 line; do
+            case "$line" in
+                *"AMain Running"* )
+                    printf "\n\t$PROJECT_NAME 's JVM reports a successful startup\n"
+                    exit
+                ;;
+                *"ES.init To reindex"* )
+                    printf "\n\t\e[30;41m$PROJECT_NAME reports that at least one ES index will need to be re-indexed and re-aliased\e[0m\n"
+                    printf "You'll need to read the logged output of the JVM in order to see what exactly needs to be changed\n"
+                    exit
+                ;;
+            esac
+        done < <(tail --lines=+$INITIAL_LOG_NUM_LINES -f $PROJECT_LOG_FILE)
+        RETVAL=$?
+        case $RETVAL in
+            0)
+                echo ""
             ;;
-            *"ES.init To reindex"* )
-                printf "\n\t\e[30;41m$PROJECT_NAME reports that at least one ES index will need to be re-indexed and re-aliased\e[0m\n"
-                printf "You'll need to read the logged output of the JVM in order to see what exactly needs to be changed\n"
-                exit
+            *)
+                printf "The JVM was given 10 seconds to report either success or that an elasticsearch index requires a re-index and re-aliasing before it could start. No such indication was received and parsed.  Please check your service and the log file for this project\n"
             ;;
         esac
-    done < <(tail --lines=+$INITIAL_LOG_NUM_LINES -f $PROJECT_LOG_FILE)
-    RETVAL=$?
-    case $RETVAL in
-        0)
-            echo ""
-        ;;
-        *)
-            printf "The JVM was given 10 seconds to report either success or that an elasticsearch index requires a re-index and re-aliasing before it could start. No such indication was received and parsed.  Please check your service and the log file for this project\n"
-        ;;
-    esac
+    fi
 }
 
 
