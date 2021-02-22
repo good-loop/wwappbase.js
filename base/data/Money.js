@@ -8,6 +8,7 @@ import DataClass, {getType} from './DataClass';
 import C from '../CBase';
 import Settings from '../Settings';
 import Enum from 'easy-enums';
+import { compare } from 'fast-json-patch';
 
 /**
  * 
@@ -327,6 +328,12 @@ const mul = (amount, multiplier) => {
 	const b100p = v100p(amount) * multiplier;
 	return moneyFromv100p(b100p, amount.currency);
 };
+
+/** Multiply
+ * @param {Money} amount
+ * @param {Number} multiplier
+ * @return {Money} a fresh object
+*/
 Money.mul = mul;
 
 /**
@@ -396,4 +403,13 @@ Money.compare = (a,b) => {
 	Money.assIsa(b);
 	assCurrencyEq(a, b, "Money.compare() "+a+" "+b);
 	return v100p(a) - v100p(b);
+};
+/**
+ * Is a < b? Convenience for Money.compare()
+ * @param {!Money} a 
+ * @param {!Money} b 
+ * @returns {boolean} true if a < b
+ */
+Money.lessThan = (a,b) => {	
+	return compare(a,b) < 0;
 };

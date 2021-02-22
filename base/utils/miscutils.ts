@@ -192,6 +192,8 @@ let fireHashChangeEvent = function ({ oldURL }) {
  * Map fn across the (key, value) properties of obj.
  * 
  * Or you could just use Object.entries directly -- but IE doesn't support it yet (Jan 2019)
+ * 
+ * @returns {Object[]} array of fn(key, value)
  */
 export const mapkv = function (obj, fn) {
 	return Object.keys(obj).map(k => fn(k, obj[k]));
