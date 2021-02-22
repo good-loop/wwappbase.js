@@ -79,14 +79,24 @@ ServerIO.checkBase = () => {
 		// Production site + production URL, or test site + test/local URL? Everything's fine.
 		if (C.isProduction() === urlIsProd) return;
 
-		if (!urlIsProd) {
+		if ( ! urlIsProd) {
 			// Production site + test/local URL? Forcibly correct the URL.
 			const err = new Error(`ServerIO.js - ServerIO.${key} is using a test setting! Oops: ${endpointUrl} - Resetting to '${prodValue}'`);
 			ServerIO[key] = prodValue;
 			console.warn(err);
 		} else {
-			// Test site + production URL? Post a warning in the console.
-			console.warn(`Using production ${name} Server: ${endpointUrl}`); // Common enough for Datalog
+			// Test site + production URL? 
+
+			// For safety reasons (to prevent accidentally editing live campaigns), you cannot use production APIBASE on the test server
+			// (though server=production can still explicity override this, and local _can_ point to production as that can be handy when fixing stuff)
+			if (C.SERVER_TYPE==="test" && key==="APIBASE") {
+				const err = new Error(`ServerIO.js - ServerIO.${key} is using PRODUCTION setting! Oops: ${endpointUrl} - Resetting to ''`);
+				ServerIO[key] = '';
+				console.warn(err);
+			} else {
+				// Post a warning in the console. This is common enough for e.g. Datalog, or Profiler
+				console.warn(`Using production ${name} Server: ${endpointUrl}`); 
+			}
 		}
 	});
 	// HACK -- allow testers to override
