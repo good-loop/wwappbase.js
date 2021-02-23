@@ -4,6 +4,8 @@ import { assert } from "./assert";
 import printer from './printer';
 import PromiseValue from 'promise-value';
 
+// Should we switch back to .js over .ts??
+
 export const randomPick = function <T>(array: T[]): T {
 	if (!array) {
 		return null;
