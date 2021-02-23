@@ -137,7 +137,7 @@ const setHash = function (unescapedHash: string) {
 	}
 };
 /**
- * Note: params are always string valued, e.g. "1" not 1
+ * Note: params will be string valued EXCEPT "true" and "false", which are coerced to booleans.
  * No path will return as []
  * @returns path:string[], params:Object
  */
