@@ -39,13 +39,12 @@ import KStatus from '../data/KStatus';
  * @param {?String} p.servlet - @deprecated - use navpage instead
  * @param {?String} p.navpage - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
- * @param {?Boolean} notALink Normally list items are links. Set this to switch off the a-tag wrapper
  * @param {?Function} p.ListItem JSX if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item.   
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
  * 	Input props: {type, servlet, navpage, item, sort}
 
- * @param {?boolean} p.notALink - If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
+ * @param {?boolean} p.notALink - Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
  * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} p.hideTotal - If true, don't show the "Total about 17" line
  * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.

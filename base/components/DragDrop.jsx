@@ -22,9 +22,11 @@ class DropInfo {
 	dropzone;	
 	/** @type {String} */
 	draggable;
+	// See https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent for the various x y
 	/** ??x,y of the mouse -- This IGNORES where the mouse is within the draggable! */
 	x;
 	y;
+	// also pageX, pageY
 	screenX;
 	screenY;
 	clientX;
