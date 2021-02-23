@@ -116,8 +116,8 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	let debug = shouldDebug || !C.isProduction();
 	// Allow overriding by URL param
 	const debugParam = DataStore.getUrlValue('gl.debug');
-	if (debug && debugParam === 'false') debug = false;
-	if (!debug && debugParam === 'true') debug = true;
+	if (debug && debugParam === false) debug = false;
+	if (!debug && debugParam === true) debug = true;
 
 	const receiveFrame = useCallback(node => {
 		setFrame(node);
