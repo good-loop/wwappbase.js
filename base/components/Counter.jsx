@@ -61,7 +61,7 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 	const {startTime, displayValue} = state;
 	const ref = useRef();	
 
-	// Number Formatting
+	// Number Formatting (handles money or plain numbers)
 	const options = {};
 	// ...set default value for preservePennies and sigFigs (but not both)
 	if (preservePennies===undefined && ! sigFigs && (amount || currencySymbol)) {
@@ -76,7 +76,11 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 		options.maximumFractionDigits = 2;
 	}
 	const formatNum = x => {		
-		try {
+		if ( ! pretty) return ""+x;
+		if (amount || currencySymbol) {
+			return Money.prettyString(Object.assign({amount:x}, options));
+		}
+		try {			
 			return new Intl.NumberFormat('en-GB', options).format(x);
 		} catch(er) {
 			console.warn("Counter.jsx formatNumber "+er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
@@ -104,10 +108,10 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 		}
 	}
 
-	let disp = pretty? formatNum(displayValue) : displayValue.toString();	
+	let disp = formatNum(displayValue);	
 
 	// Get the total value in pretty penny form too, for preserving the size
-	let totalVal = pretty ? formatNum(value) : value.toString();
+	let totalVal = formatNum(value);
 	
 	// Make sure the display value is no longer than the end size
 	disp = disp.substr(0, totalVal.length);

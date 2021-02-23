@@ -192,6 +192,8 @@ let fireHashChangeEvent = function ({ oldURL }) {
  * Map fn across the (key, value) properties of obj.
  * 
  * Or you could just use Object.entries directly -- but IE doesn't support it yet (Jan 2019)
+ * 
+ * @returns {Object[]} array of fn(key, value)
  */
 export const mapkv = function (obj, fn) {
 	return Object.keys(obj).map(k => fn(k, obj[k]));
@@ -520,7 +522,7 @@ export const decURI = function (urlPart: string) {
 }
 
 /**
- * @param d {Date}
+ * @param {Date} d
  * @return {String} iso format e.g. 2020-10-18
  */
 export const isoDate = (d: Date) => d.toISOString().replace(/T.+/, '');
@@ -552,12 +554,13 @@ export const stopEvent = (e: Event) => {
 export const str = x => printer.str(x)
 
 /**
- * @param {?String} s 
+ * @param {?String|Date} s 
  * @returns {?Date}
  */
-export const asDate = (s: String) => {
+export const asDate = (s: String|Date) => {
 	if (!s) return null;
-	return new Date(s);
+	if (typeof(s)==="string") return new Date(s);
+	return s;
 };
 
 /**
@@ -608,6 +611,19 @@ export const uniq = (array : Object[]) : Object[] => {
 	return [... new Set(array.filter(x => x))];
 };
 
-// // DEBUG hack
-// window.miscutils = {
-// };
+/**
+ * Convenience to de-dupe and remove falsy from an array
+ * @param {Object[]} array 
+ * @param {?Function} keyFn Defaults to .id
+ * @returns {Object[]} copy of array, de-duped by id. Falsy items and falsy ids are filtered out
+ */
+export const uniqById = (array: Object[], keyFn: Function) : Object[] => {
+	if ( ! keyFn) keyFn = item => item && item.id;
+	let item4id = {};
+	array.forEach(item => {
+		let key = keyFn(item);
+		if ( ! key) return;
+		item4id[key] = item;
+	});
+	return Object.values(item4id);
+};

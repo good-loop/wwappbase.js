@@ -111,7 +111,7 @@ const localSave = (path, person) => {
 		let json = JSON.stringify(person);	
 		const spath = JSON.stringify(path);
 		window.localStorage.setItem(spath, json);
-		console.log("localSave of "+path, json);
+		console.log("localSave of "+path, person? person.id+" "+person.name : "falsy?!");
 		return true;
 	} catch(err) {
 		// eg quota exceeded
@@ -130,9 +130,9 @@ const localLoad = path => {
 	const spath = JSON.stringify(path);
 	try {
 		let json = window.localStorage.getItem(spath);
-		let peep = JSON.parse(json);			
-		console.log("localLoad of "+path, json);
-		return peep;
+		let person = JSON.parse(json);			
+		console.log("localLoad of "+path, person? person.id+" "+person.name : "falsy?!");
+		return person;
 	} catch(err) { // paranoia
 		// Can this happen??
 		console.error(err);
@@ -276,10 +276,10 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 
 	// save local
 	DataStore.setData(C.KStatus.DRAFT, newItem);
-	// modify e.g. url
-	if (onChange) onChange(newItem);
 	// save server
 	let p = crud({type, id:newId, action:'copy', item:newItem});
+	// modify e.g. url
+	if (onChange) onChange(newItem);
 	return p;
 };
 
@@ -419,11 +419,13 @@ const startStatusForAction = (action) => {
 	switch(action) {
 		case C.CRUDACTION.publish:
 		case C.CRUDACTION.save:
+		case C.CRUDACTION.copy:
 		case C.CRUDACTION.discardEdits:
 		case C.CRUDACTION.unpublish: // is this OK?? It could be applied to either
 		case C.CRUDACTION.delete: // this one shouldn't matter
 			return C.KStatus.DRAFT;
 		case C.CRUDACTION.export:
+		case C.CRUDACTION.getornew:
 		case C.CRUDACTION.get: // get="get the published version"
 			return C.KStatus.PUBLISHED;
 	}
@@ -597,9 +599,11 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 ActionMan.list = ({type, status, q, prefix, start, end, sort, domain}) => {	
 	assert(C.TYPES.has(type), type);
 	const lpath =  getListPath({type,status,q,prefix,start,end,sort,domain});
-	return DataStore.fetch(lpath, () => {
+	const pv = DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q, prefix, start, end, sort, domain});
-	});
+	});	
+	// console.log("ActionMan.list", q, prefix, pv);
+	return pv;
 };
 
 /*
@@ -620,20 +624,22 @@ ServerIO.list = ({type, status, q, prefix, start, end, sort, domain = ''}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO.list - bad type:' +type);
 	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), 'Crud.js - ServerIO.list - bad status: '+status);
-	// NB '/_list' used to be '/list' until July 2018
+
 	let url = domain + servlet 
-		+ (ServerIO.dataspace? '/'+ServerIO.dataspace : '')
+		+ (ServerIO.dataspace && type!=='NGO'? '/'+ServerIO.dataspace : '')	// HACK: no dataspace for SoGive
 		+ '/_list.json';
 	let params = {
 		data: {status, q, start, end, prefix, sort}
 	};	
-	return ServerIO.load(url, params)
-		.then(res => { // sanity check
-			if (JSend.success(res)) {
-				List.assIsa(JSend.data(res), "Not a List "+url);
-			}
-			return res;
-		});
+	const p = ServerIO.load(url, params);
+		// .then(res => { // sanity check
+		// 	if (JSend.success(res)) {
+		// 		List.assIsa(JSend.data(res), "Not a List "+url);
+		// 	}
+		// 	return res;
+		// });
+	// console.log("ServerIO.list", url, params, p);
+	return p;
 };
 
 /**

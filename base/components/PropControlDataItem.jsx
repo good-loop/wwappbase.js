@@ -22,32 +22,39 @@ import {saveDraftFn} from './SavePublishDeleteEtc';
  * 
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, setRawValue, storeValue, type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed }) => {
+const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, setRawValue, storeValue, modelValueFromInput, 
+	type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed, pageSize=20
+}) => {
 	let pvDI = {};
 	if (rawValue) {
 		pvDI = getDataItem({ type: itemType, id: rawValue, status, domain, swallow: true });
 	} 
 
-	assert( ! embed);
+	// let pvItemsAll = ActionMan.list({ type: itemType, status, q: rawValue });
+	// console.log(rawValue, pvItemsAll);
+	// let options = pvItemsAll.value && pvItemsAll.value.hits || [];
 
 	let onChange = e => {
-		let id = e.target.value;
+		let id = e.target.value;		
 		setRawValue(id);
-		if (!embed) DSsetValue(proppath, id);
+		if (embed) {
+			// if embed, only set on-click
+			return;
+		}
+		let mv = modelValueFromInput? modelValueFromInput(id, type, e, storeValue) : id;
+		DSsetValue(proppath, mv);
 	};
 
-	let pvItemsAll = ActionMan.list({ type: itemType, status, q: rawValue });
-	let options = pvItemsAll.value && pvItemsAll.value.hits || [];
-
+	// show/hide ListLoad
 	let [ll, setLL] = useState();
-	
-	// <PropControlAutoComplete getItemValue={getId} options={options} {...{ path, prop, rawValue, setRawValue, storeValue}}
-	// renderItem={itm => itm && <DefaultListItem key={itm.id} type={itemType} item={itm} />} />
-	
+		
 	const SlimListItem = ({type, servlet, navpage, item, sort}) => {
 		const onClick = e => {
-			setRawValue(getId(item)); 
-			DSsetValue(proppath, getId(item));
+			const id = getId(item);
+			setRawValue(id);
+			let mv = embed? Object.assign({}, item) : id;
+			if (modelValueFromInput) mv = modelValueFromInput(mv, type, {}, storeValue);
+			DSsetValue(proppath, mv);
 		};
 		return <div style={{border:"1px solid #aaa",margin:0,cursor:"pointer"}} onClick={onClick}>
 			{getLogo(item) && <img src={getLogo(item)} className='logo logo-sm' />} {getName(item)} <small>(ID: <code>{getId(item)}</code>)</small></div>;
@@ -63,9 +70,9 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 		console.log("hide..."); // debug
 		// a moment's delay to allow moving from the text entry to the list??
 		setTimeout(() => {
-			console.log("...hide"); // Debug - Why is this so slow to close??
+			console.log("...hide"); // Debug - Why is this so slow to close?? It makes no sense! Is something interfering with setTimeout?!
 			setLL(false);
-		}, 100);
+		}, 1);
 	};
 	// (default create behaviour) the input names the object
 	if (rawValue && ! base) base = {name:rawValue};
@@ -80,6 +87,7 @@ const PropControlDataItem = ({canCreate, base, path, prop, proppath, rawValue, s
 					style={{top:0, left:0, zIndex:1000, background:"rgba(255,255,255,0.8)", border:"1px solid #80bdff", boxShadow: "0 0 0 0.2rem rgb(0 123 255 / 25%)"}}>
 					<ListLoad hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem} 
 						noResults={canCreate && rawValue && (pvDI.value? <></> : "Make a new "+itemType+" named "+rawValue+"?")}
+						pageSize={pageSize}
 					/>
 				</div></div>}				
 			</Col>

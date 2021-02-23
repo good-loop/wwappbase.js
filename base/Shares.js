@@ -138,9 +138,9 @@ const canDo = (type, id, rw) => {
 				return yes;
 			});
 		}, 
-		false,
-		// allow for permissions to change e.g. "Let me share that with you..."
-		CACHE_TIME_MS
+		{
+			cachePeriod: CACHE_TIME_MS // allow for permissions to change e.g. "Let me share that with you..."
+		}
 	);	 // ./fetch
 };
 

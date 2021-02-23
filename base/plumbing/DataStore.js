@@ -543,8 +543,20 @@ class Store {
 	 * @param {?Boolean} p.options.localStorage
 	 * @returns {!PromiseValue} (see promise-value.js)
 	 */
-	fetch(path, fetchFn, options={}, cachePeriod) { // TODO allow retry after 10 seconds
-		if (cachePeriod) options.cachePeriod = cachePeriod; // backwards compatability
+	fetch(path, fetchFn, options, cachePeriod) { // TODO allow retry after 10 seconds
+		if ( ! options) options = {};
+		// backwards compatability Feb 2021
+		if (typeof(options)==="number") {
+			cachePeriod = options;
+			options = {};
+		}
+		if (typeof(options)==="boolean") {
+			options = {};
+		}
+		if (cachePeriod) {
+			options.cachePeriod = cachePeriod; 
+		}
+		// end backwards compatability
 		assert(path, "DataStore.js - missing input",path);
 		// in the store?
 		let item = this.getValue(path);

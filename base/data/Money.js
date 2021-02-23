@@ -8,6 +8,7 @@ import DataClass, {getType} from './DataClass';
 import C from '../CBase';
 import Settings from '../Settings';
 import Enum from 'easy-enums';
+import { compare } from 'fast-json-patch';
 
 /**
  * 
@@ -189,6 +190,33 @@ Money.CURRENCY_FOR_COUNTRY = {
 }
 
 /**
+ * HACK - estimate conversions to handle adding conflicting currencies
+ * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 Feb 18, 2021 15:58
+ */
+Money.CURRENCY_CONVERSION = {
+	GBP_USD: 1.395,
+	GBP_AUD: 1.800,
+	USD_AUD: 1.290,
+	USD_GBP: 0.717,
+	AUD_GBP: 0.556,
+	AUD_USD: 0.775,
+}
+
+/**
+ * Convert a money value to a different currency
+ * @param {Money} money
+ * @param {String} currencyTo the currency to convert to
+ */
+Money.convertCurrency = (money, currencyTo) => {
+	console.warn("WARNING: Currency conversion is a rough estimate only and intended as a hack. Should be avoided and not relied on for any precision!!");
+	Money.assIsa(Money.CURRENCY[currencyTo]);
+	const currencyConversion = money.currency + "_" + currencyTo;
+	const conversionVal = Money.CURRENCY_CONVERSION[currencyConversion];
+	Money.assIsa(conversionVal);
+	return moneyFromv100p(money.value100p * conversionVal, currencyTo);
+};
+
+/**
  * Convenience for getting the symbol for a Money object
  * @param {?Money} money
  * @returns {?String} e.g. "£" -- which you may need to html encode
@@ -228,7 +256,13 @@ const assCurrencyEq = (a, b, msg) => {
 Money.add = (amount1, amount2) => {
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);
-	assCurrencyEq(amount1, amount2, "add()");
+	//assCurrencyEq(amount1, amount2, "add()");
+	// Ignore if there is an empty currency
+	if (amount1.currency && amount2.currency) {
+		if (amount1.currency.toUpperCase() !== amount2.currency.toUpperCase()) {
+			amount1 = Money.convertCurrency(amount1, amount2.currency);
+		}
+	}
 	const b100p = v100p(amount1) + v100p(amount2);
 	return moneyFromv100p(b100p, amount1.currency || amount2.currency);
 };
@@ -250,7 +284,7 @@ const moneyFromv100p = (b100p, currency) => {
 
 /**
  * 
- * @param {Money[]} amounts Can include nulls
+ * @param {Money[]} amounts Can include nulls/falsy
  */
 Money.total = amounts => {
 	// assMatch(amounts, "Money[]", "Money.js - total()");
@@ -294,6 +328,12 @@ const mul = (amount, multiplier) => {
 	const b100p = v100p(amount) * multiplier;
 	return moneyFromv100p(b100p, amount.currency);
 };
+
+/** Multiply
+ * @param {Money} amount
+ * @param {Number} multiplier
+ * @return {Money} a fresh object
+*/
 Money.mul = mul;
 
 /**
@@ -319,11 +359,13 @@ Money.explain = (money, expln) => {
 };
 
 /**
- * Money span, falsy displays as 0
+ * Money value, falsy displays as 0
  * 
  * Converts monetary value in to properly formatted string (29049 -> 29,049.00)
  * 
- * @param amount {?Money|Number}
+ * @param {Object} p amount + Intl.NumberFormat options
+ * @param {?Money|Number} p.amount
+ * @returns {!String} e.g. £10.7321 to "10.73"
  */
 Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
 	if ( ! amount) amount = 0;
@@ -336,10 +378,16 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 	if (maximumFractionDigits===0) { // because if maximumSignificantDigits is also set, these two can conflict
 		value = Math.round(value);
 	}
-	let snum = new Intl.NumberFormat(Settings.locale,
-		{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
-	).format(value);
-
+	let snum;
+	try {		
+		snum = new Intl.NumberFormat(Settings.locale,
+			{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
+		).format(value);
+	} catch(er) {
+		console.warn("Money.js prettyString",er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
+		snum = ""+x;	
+	}
+	
 	if ( ! minimumFractionDigits) {
 		// remove .0 and .00
 		if (snum.substr(snum.length-2) === '.0') snum = snum.substr(0, snum.length-2);
@@ -353,12 +401,27 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 
 /**
  * e.g. for use in sort()
+ * @param {?Money} a
+ * @param {?Money} b
  * @throws Error if currencies are not the same
- * @returns {!Number} negative if a < b, 0 if equal, positive if a > b
+ * @returns {!Number} negative if a < b, 0 if equal, positive if a > b.
+ * A falsy input is counted as if minus-infinity.
  */
 Money.compare = (a,b) => {
+	// Treat falsy as ultra-low-value
+	if ( ! a) return b? -1 : 0;
+	if ( ! b) 1;
 	Money.assIsa(a);
 	Money.assIsa(b);
 	assCurrencyEq(a, b, "Money.compare() "+a+" "+b);
 	return v100p(a) - v100p(b);
+};
+/**
+ * Is a < b? Convenience for Money.compare()
+ * @param {!Money} a 
+ * @param {!Money} b 
+ * @returns {boolean} true if a < b
+ */
+Money.lessThan = (a,b) => {	
+	return Money.compare(a,b) < 0;
 };

@@ -32,13 +32,15 @@ import KStatus from '../data/KStatus';
  * TODO test "" works
  * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
- * @param {?boolean} p.canCreate - If set, show a Create
+ * @param {?Boolean} p.canCreate - If set, show a Create
+ * @param {?Boolean} p.canDelete - If set, show delete buttons
  * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
  * @param {?String} p.status - e.g. "Draft"
  * @param {?String} p.servlet - @deprecated - use navpage instead
  * @param {?String} p.navpage - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
- * @param {?JSX} p.ListItem if set, replaces DefaultListItem.
+ * @param {?Boolean} notALink Normally list items are links. Set this to switch off the a-tag wrapper
+ * @param {?Function} p.ListItem JSX if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item.   
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
  * 	Input props: {type, servlet, navpage, item, sort}

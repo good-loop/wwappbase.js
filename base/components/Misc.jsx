@@ -3,7 +3,7 @@ import React, { useState, Fragment } from 'react';
 import { Alert, Card, CardBody, Nav, Button, NavItem, NavLink } from 'reactstrap';
 import { assert, assMatch } from '../utils/assert';
 import _ from 'lodash';
-import {addScript, getLogo, isoDate, join, space } from '../utils/miscutils';
+import {addScript, asDate, getLogo, isoDate, join, space } from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import md5 from 'md5';
 // import I18n from 'easyi18n';
@@ -348,10 +348,11 @@ Misc.RoughDate = ({date}) => {
  * e.g. March - May 2019
  * Only displays duration in months
  */
-Misc.DateDuration = ({startDate, endDate}) => {
+Misc.DateDuration = ({startDate, endDate, invisOnEmpty}) => {
 	if (!startDate && !endDate) {
 		console.warn("No dates provided to DateDuration!");
-		return null;
+		if (!invisOnEmpty) return null;
+		else return <span className="invisible">No date</span>
 	}
 	if (_.isString(startDate) || _.isNumber(startDate)) startDate = new Date(startDate);
 	if (_.isString(endDate) || _.isNumber(endDate)) endDate = new Date(endDate);
@@ -408,9 +409,11 @@ Misc.dateTimeTag = (d) => d?
  * Human-readable, unambiguous date string which doesn't depend on toLocaleString support
  * @param {?Date} date
  */
-Misc.DateTag = ({date}) => date?
-	<time dateTime={isoDate(date)}>{date.getDate()} {shortMonths[date.getMonth()]} {date.getFullYear()}</time>
-	: null;
+Misc.DateTag = ({date}) => {	
+	if ( ! date) return null;
+	date = asDate(date);	
+	return <time dateTime={isoDate(date)}>{date.getDate()} {shortMonths[date.getMonth()]} {date.getFullYear()}</time>;
+};
 
 Misc.dateStr = d => `${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()}`;
 

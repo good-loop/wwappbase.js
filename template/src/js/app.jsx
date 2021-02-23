@@ -7,6 +7,8 @@ import Misc from './base/components/Misc';
 import MainDiv from './components/MainDiv';
 import ServerIO from './plumbing/ServerIO'; // import to set api endpoints
 
+let dummy1 = ServerIO;
+
 // Import root LESS file so webpack finds & renders it out to main.css
 import '../style/main.less';
 
