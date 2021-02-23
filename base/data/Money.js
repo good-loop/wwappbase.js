@@ -209,10 +209,10 @@ Money.CURRENCY_CONVERSION = {
  */
 Money.convertCurrency = (money, currencyTo) => {
 	console.warn("WARNING: Currency conversion is a rough estimate only and intended as a hack. Should be avoided and not relied on for any precision!!");
-	Money.assIsa(Money.CURRENCY[currencyTo]);
+	assert(Money.CURRENCY[currencyTo]);
 	const currencyConversion = money.currency + "_" + currencyTo;
 	const conversionVal = Money.CURRENCY_CONVERSION[currencyConversion];
-	Money.assIsa(conversionVal);
+	assert(conversionVal);
 	return moneyFromv100p(money.value100p * conversionVal, currencyTo);
 };
 
@@ -260,6 +260,7 @@ Money.add = (amount1, amount2) => {
 	// Ignore if there is an empty currency
 	if (amount1.currency && amount2.currency) {
 		if (amount1.currency.toUpperCase() !== amount2.currency.toUpperCase()) {
+            console.log("Converting currency " + amount1.currency + " to " + amount2.currency);
 			amount1 = Money.convertCurrency(amount1, amount2.currency);
 		}
 	}
