@@ -78,9 +78,10 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 	if (vertId) params.push(`gl.vert=${vertId}`); // If adID isn't specified, we'll get a random ad.
 	if (play) params.push(`gl.play=${play}`)
 	if (endCard) params.push(`gl.variant=tq`);
-	if (debug) params.push(`gl.debug=true`);
 	if (noab) params.push('gl.noab=true');
-	const src = `${ServerIO.AS_ENDPOINT}/unit-debug.js${params.length ? '?' + params.join('&') : ''}`;
+	if (debug) params.push(`gl.debug=true`);
+	const filename = debug ? 'unit-debug.js' : 'unit.js';
+	const src = `${ServerIO.AS_ENDPOINT}/${filename}${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
 
 	// On unmount: empty out iframe's document
@@ -102,13 +103,21 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
  * @param {String} endCard Set truthy to display end-card without running through advert.
  * @param {?Boolean} noab Set true to block any A/B experiments
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, noab, debug}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, noab, debug: shouldDebug}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [container, setContainer] = useState();
 	const [dummy, redraw] = useState(); // Just use this to provoke a redraw
 
 	const [frameReady, setFrameReady] = useState(false);
+
+	// Should we use unit.js or unit-debug.js?
+	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
+	let debug = shouldDebug || C.isProduction();
+	// Allow overriding by URL param
+	const debugParam = DataStore.getUrlValue('gl.debug');
+	if (debug && debugParam === 'false') debug = false;
+	if (!debug && debugParam === 'true') debug = true;
 
 	const receiveFrame = useCallback(node => {
 		setFrame(node);
