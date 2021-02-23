@@ -113,7 +113,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
-	let debug = shouldDebug || C.isProduction();
+	let debug = shouldDebug || !C.isProduction();
 	// Allow overriding by URL param
 	const debugParam = DataStore.getUrlValue('gl.debug');
 	if (debug && debugParam === 'false') debug = false;
