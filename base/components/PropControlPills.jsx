@@ -15,7 +15,7 @@ import { useState } from 'react';
  * (unless modelValueFromInput is used to join it into a string).
  */
 const PropControlPills = ({storeValue, modelValueFromInput, path, prop, proppath, type, fcolor, saveFn}) => {
-	const pills = storeValue || [];
+	let pills = storeValue || [];
 	if (typeof(pills)==="string") {
 		pills = pills.split(/,\s*/).filter(s => s);
 	}
