@@ -946,7 +946,8 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
  * List of types eg textarea
  * TODO allow other jsx files to add to this - for more modular code.
  */
-PropControl.KControlType = new Enum("textarea html text search select radio password email color checkbox range"
+PropControl.KControlType = new Enum(
+	"textarea html text search select radio password email color checkbox range"
 	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
 	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
 	// some Good-Loop data-classes
