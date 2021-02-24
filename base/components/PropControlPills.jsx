@@ -9,9 +9,16 @@ import CloseButton from './CloseButton';
 import { useState } from 'react';
 /**
  * A list-of-strings editor, where the strings are drawn as discrete "pills"
+ * 
+ * @param {Object} p
+ * @param {String[]|String} p.storeValue If a String is passed in, it will be split on commas. The saved value from edits is always String[] 
+ * (unless modelValueFromInput is used to join it into a string).
  */
 const PropControlPills = ({storeValue, modelValueFromInput, path, prop, proppath, type, fcolor, saveFn}) => {
-	let pills = storeValue || [];
+	const pills = storeValue || [];
+	if (typeof(pills)==="string") {
+		pills = pills.split(/,\s*/).filter(s => s);
+	}
 
 	const removeTag = (tg) => {
 		let pills2 = pills.filter(t => t !== tg);
