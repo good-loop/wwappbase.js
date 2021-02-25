@@ -7,18 +7,21 @@ import { space } from '../utils/miscutils';
 
  /**
   * See https://unicode-table.com/
+  * https://www.unicode.org/emoji/charts/full-emoji-list.html
   */
- const EMOJI = {
+const EMOJI = {
 	camera: "📷",
-	 trashcan: "🗑", //&#x1f5d1;
-	 info: "🛈", // ℹ or 🛈
-	 ".txt":"🖹",
-	 tick: "✔",
+	trashcan: "🗑", //&#x1f5d1;
+	info: "🛈", // ℹ or 🛈
+	".txt":"🖹",
+	tick: "✔",
+	memo: "📝",
  };
  
  /**
   * 
   * @param {Object} p
+  * @param {?String} p.name camera|trashcan|memo etc
   * @param {?String} p.color black|white
   * @param {?String} p.size xs|sm|lg|xl
   */
@@ -27,7 +30,7 @@ const Icon = ({name,size="sm",className,color,...props}) => {
 		if (color && ! ['black','white'].includes(color)) {
 			console.warn("Icon.jsx color not directly supported: "+color+" Icons can only reliably use a few set colors cross-device.");
 		}
-		return <span className={space(color&&"emoji-"+color,className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
+		return <span className={space("emoji", color&&"emoji-"+color, className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
 	}
 	let url;
 	if (name === C.app.service) {
