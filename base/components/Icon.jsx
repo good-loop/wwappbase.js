@@ -30,7 +30,7 @@ const Icon = ({name,size="sm",className,color,...props}) => {
 		if (color && ! ['black','white'].includes(color)) {
 			console.warn("Icon.jsx color not directly supported: "+color+" Icons can only reliably use a few set colors cross-device.");
 		}
-		return <span className={space("emoji", color&&"emoji-"+color, className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
+		return <span className={space("emoji", color&&"emoji-"+color, size&&"logo-"+size, className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
 	}
 	let url;
 	if (name === C.app.service) {
