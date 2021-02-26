@@ -64,4 +64,27 @@ Campaign.makeFor = (advert) => {
 	});	
 };
 
+/**
+ * 
+ * @param {!Campaign} campaign 
+ * @returns {?String[]} ids to hide
+ */
+Campaign.hideCharities = campaign => {
+	Campaign.assIsa(campaign);
+	let hc = campaign.hideCharities;
+	if ( ! hc) return null;
+
+	// hideCharities is from a KeySet prop control, so is an object of schema {charity_id : bool}.
+	// We want to convert it instead to a list of charity IDs
+	if (Array.isArray(hc)) {
+		return hc;
+	}
+	// Convert object to array
+	let hideCharitiesArr = Object.keys(hc);
+	// Remove false entries - keySet will not remove charity IDs, but set them to false instead.
+	hideCharitiesArr = hideCharitiesArr.filter(cid => hc[cid]);
+	return hideCharitiesArr;
+};
+
+
 export default Campaign;
