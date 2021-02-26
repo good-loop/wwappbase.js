@@ -56,6 +56,7 @@ const init = () => {
 	Login.verify();
 };
 
+
 /**
 	WARNING: This element will update on changes ...but the calling MainDiv most likely will *not*.
 	So the props will remain fixed.
@@ -130,7 +131,7 @@ class MainDivBase extends Component {
 		}
 		// must login?
 		if (loginRequired && ! Login.isLoggedIn()) {
-			Page = () => <LoginPage />;
+			Page = LoginPage;
 		} else if (securityCheck) {
 			try {
 				securityCheck({page});
