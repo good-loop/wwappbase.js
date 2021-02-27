@@ -7,7 +7,7 @@
 /* Possible TODO MAYBE! use react-spring for smoother, less expensive animations?? Should be default tool?? */
 
 import React, {useState, useEffect, useRef} from 'react';
-import { space } from '../utils/miscutils';
+import { is, space } from '../utils/miscutils';
 import printer from '../utils/printer';
 import {useDoesIfVisible} from './CustomHooks';
 import Money from '../data/Money';
@@ -46,7 +46,7 @@ const bezierSlide = (x = 0) => {
  * @param {Boolean} preservePennies Preserves 2 digits on the pennies count. This overrides sigFigs. True by default for money.
  * @param {Boolean} centerText Centers the text when counting up in the animation.
  */
-const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies, centerText=false}) => 
+const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies, centerText=false}) => 
 {
 	if (amount) {
 		value = Money.value(amount);
@@ -56,6 +56,7 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 		console.warn("Counter - No value or amount");
 		return null;
 	}
+	if ( ! is(initial)) initial = Math.min(1, value*0.01); // default to 1 or 1% to avoid showing 0 (which can be alarming) for a fraction of a second
 	const [state, setState] = useState({displayValue: initial});
 	const [done, setDone] = useState();
 	const {startTime, displayValue} = state;
@@ -67,6 +68,7 @@ const Counter = ({value, amount, initial = 0, animationLength = 3000, fps = 20, 
 	if (preservePennies===undefined && ! sigFigs && (amount || currencySymbol)) {
 		preservePennies = true;				
 	}
+	// preservePennies = true; // for debug, to see the exact amount
 	if (sigFigs===undefined) {
 		sigFigs = preservePennies? false : 3;
 	}
