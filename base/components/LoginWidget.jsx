@@ -242,8 +242,8 @@ const SocialSignin = ({verb, services}) => {
 };
 
 const SocialSignInButton = ({className = "btn signin", children, service, verb = 'login', size}) => {
-	if (!canSignIn[service]) return null;
-	if (!children) children = <>
+	if ( ! canSignIn[service]) return null;
+	if ( ! children) children = <>
 		<Misc.Logo size="xsmall" service={service} color={false} square={false} /> {toTitleCase(displayVerb[verb])} with {toTitleCase(service)}
 	</>;
 	
