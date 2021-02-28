@@ -15,7 +15,7 @@
  */
 
 import { assert, assMatch } from '../utils/assert';
-import DataClass, {getType, getId} from './DataClass';
+import DataClass, {getType, getId, nonce} from './DataClass';
 import DataStore, { getDataPath } from '../plumbing/DataStore';
 import Link from '../data/Link';
 import Claim from '../data/Claim';
@@ -30,7 +30,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 import { sortByDate } from '../utils/SortFn';
 import C from '../CBase';
 import JSend from './JSend';
-import { crud, localSave } from '../plumbing/Crud';
+import { crud, localLoad, localSave } from '../plumbing/Crud';
 import KStatus from './KStatus';
 
 
@@ -139,37 +139,61 @@ const PURPOSES = new Enum("any email_app email_mailing_list email_marketing cook
  * TODO fields 
  * @returns PromiseValue(Person)
  */
-const getProfile = ({xid, fields, status=KStatus.PUBLISHED, localStorage=true, swallow=true}) => {
+const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}) => {
 	assMatch(xid, String);
-	const dsi = {type:'Person', status, id:xid};		
+	// domain:ServerIO.dataspace??
+	const type = 'Person';
+	const dsi = {type, status, id:xid};		
 	const dpath = getDataPath(dsi);
+
+	// To allow immeadiate edits, we return an interim item
+	let interim = DataStore.getData(dsi);
+	if ( ! interim) { // Do we have a fast local answer?
+		interim = localLoad(dpath);
+	}
+	if ( ! interim) { // make a new blank 
+		// NB: note that DS.fetch will cache equivalent requests, so we should be protected against having multiple versions of interim at once.
+		interim = new Person({id:xid, interimId:"i"+nonce()});
+		// console.warn("new interim Person",interim.interimId);
+	}
+
 	// Use DS.fetch to avoid spamming the server
-	return DataStore.fetch(dpath, () => {			
-		// domain:ServerIO.dataspace??
-		let p = crud({action:"get", type:'Person', status, id:xid, swallow, localStorage});
+	let pvProfile = DataStore.fetch(dpath, () => {			
+		// Do it!		
+		let p = crud({action:"get", type:'Person', status, id:xid, item:interim, swallow, localStorage:false});
 		return p;		
 	}, {cachePeriod}); // ./DS.fetch
+
+	// NB: DS.fetch will cache and return a promise, so don't set the new interim if we already had one
+	if ( ! pvProfile.resolved && ! pvProfile.interim) { // NB: crud can sometimes return an instantly resolved PV, in which case an interim would be wrong.
+		// IF ! pvProfile.resolved, then edits to interim will work - crud will detect edits via diff and merge them in when it resolves the promise
+		pvProfile.interim = interim;
+		console.log("interim Person in use "+interim.interimId);
+	}
+	return pvProfile;
 };
+
 // one hour in msecs DS cache
 const cachePeriod = 1000*60*60;
 
 /**
  * Convenience method:
- * Fetch the data for all xids. Return the profiles for those that are loaded.
+ * Fetch the data for all xids. Return profiles which can be a mix of local-loaded, fetched, or blank interim objects (which temporarily support edits via merging).
  * e.g.
  * ```
  * let persons = getProfilesNow(getAllXIds());
  * let value = getClaimValue({persons, key:'name'});
  * ```
  * @param {?String[]} xids Defaults to `getAllXIds()`
- * @returns {Person[]} peeps
+ * @returns {Person[]} peeps The can be loaded, fetched, or interim!
  */
 const getProfilesNow = xids => {
 	if ( ! xids) xids = getAllXIds();
 	assert(_.isArray(xids), "Person.js getProfilesNow "+xids);
-	xids = xids.filter(x => !!x); // no nulls
-	let pvsPeep = xids.map(xid => getProfile({xid}));
-	let peeps = pvsPeep.filter(pvp => pvp.value).map(pvp => pvp.value);
+	xids = xids.filter(x => x); // no nulls
+	let pvsPeep = xids.map(xid => getProfile({xid}));	
+	let peeps = pvsPeep.map(pvp => pvp.value || pvp.interim).filter(x => x);
+	console.log("xids", xids, "pvsPeep", pvsPeep, "peeps", peeps);
 	return peeps;
 };
 
@@ -476,10 +500,12 @@ const addClaim = (peep, claim) => {
 	
 	// Does it replace a claim? - remove overlaps
 	let overlaps = peep.claims.filter(oldClaim => Claim.overlap(claim, oldClaim));
+	// NB: called `newclaims` cos it will replace peep.claims below
 	let newclaims = peep.claims.filter(oldClaim => ! Claim.overlap(claim, oldClaim));
 	// add it
 	newclaims.push(claim);
 	peep.claims = newclaims;
+	console.log("addClaim", peep.id+" interimId: "+peep.interimId, claim);
 };
 
 /**
