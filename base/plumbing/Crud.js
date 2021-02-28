@@ -20,7 +20,7 @@ import Person from '../data/Person';
 
 
 /**
- * @param {?Item} p.item can be null, in which case the item is got from DataStore
+ * @param {?Item} p.item Used for preserving local edits during the crud op. Can be null, in which case the item is got from DataStore
  * @param {?KStatus} p.status Usually null
  * @returns !Promise <Item>
  */
@@ -127,6 +127,7 @@ const localSave = (path, person) => {
  */
 const localLoad = path => {
 	if ( ! window.localStorage) return null;
+	// if (true) return null; // temp nobble for use in testing
 	const spath = JSON.stringify(path);
 	try {
 		let json = window.localStorage.getItem(spath);
