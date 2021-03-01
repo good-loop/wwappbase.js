@@ -55,11 +55,17 @@ SearchQuery.parse = sq => {
 		if (kv) return {[kv[1]]: kv[2]};
 		return bit;
 	});
+	let op = SearchQuery.AND;
+	if (bits.includes("OR")) {
+		op = SearchQuery.OR;
+	}
+	// only one op needed (added below), ie [AND, a, b] not [AND,a,AND,b]
+	bits2 = bits2.filter(v => v !== op);
 	/**
 	 * Return the expression tree, which is a nested array
 	 * E.g. "a OR (b AND near:c)" --> ["OR", "a", ["AND", "b", ["near", "c"]]]
 	 */
-	sq.tree = [SearchQuery.AND, ...bits2];
+	sq.tree = [op, ...bits2];
 }
 
 /**
@@ -192,15 +198,27 @@ SearchQuery.op = (sq1, sq2, op) => {
 	if ( ! sq1) return sq2;
 	if ( ! sq1.query) return sq2;
 	if ( ! sq2.query) return sq1;
+
+	// Same top-level op?
+	if (op === sq1.tree[0] && op === sq2.tree[0]) {
+		let newq = sq1.query+" "+op+" "+sq2.query;	
+		return new SearchQuery(newq);
+	}
+
 	// CRUDE but it should work -- at least for simple cases
-	let newq = sq1.query+" "+op+" "+sq2.query;
+	let newq = bracket(sq1.query)+" "+op+" "+bracket(sq2.query);
 	return new SearchQuery(newq);
 }; 
+/**
+ * Add brackets if needed.
+ * @param {!String} s 
+ */
+const bracket = s => s.includes(" ")? "("+s+")" : s;
 
 /**
  * Merge two queries with AND
  * @param {?String|SearchQuery} sq 
- * @returns a NEW SearchQuery
+ * @returns {SearchQuery} a NEW SearchQuery
  */
 SearchQuery.and = (sq1, sq2) => {
 	return SearchQuery.op(sq1,sq2,SearchQuery.AND);
