@@ -47,7 +47,7 @@ const MessageBarItem = ({message}) => {
 		<div className={alertType}>
 			{text}
 			{Messaging.jsxFromId[message.id]}
-			<div className="hidden">Details {message.details}</div>
+			{ message.details ? <div className="hidden">Details {message.details}</div> : <></> }
 			<CloseButton onClick={ e => { message.closed=true; DataStore.update(); } } />
 		</div>
 	);

@@ -457,9 +457,12 @@ ServerIO.load = function(url, params) {
 			let text = response.status===404? 
 				"404: Sadly that content could not be found."
 				: "Could not load "+params.url+" from the server";
-			if (response.responseText && ! (response.status >= 500)) {
-				// NB: dont show the nginx error page for a 500 server fail
+			if (response.responseText && response.status <= 500) {
 				text = response.responseText;
+			}
+			if (response.statusText && response.status > 500) {
+				// Nginx sets responseText to HTML pages for these, so instead just use statusText (eg 'Bad Gateway').
+				text = response.statusText;
 			}
 			let msg = {
 				id: 'error from '+params.url,
