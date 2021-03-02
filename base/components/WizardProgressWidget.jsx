@@ -15,11 +15,11 @@ import { space } from '../utils/miscutils';
 const WizardProgressWidget = ({stageNum, stages, stagePath}) => {
 	if ( ! stageNum) stageNum = 0;
 	return (<div className="WizardProgressWidget">
-		{stages.map((stage, i) => <Stage key={i} title={stage.title} stageNum={stageNum} i={i} stagePath={stagePath} canJumpAhead={stage.canJumpAhead} />)}
+		{stages.map((stage, i) => <Stage key={i} title={stage.title} stageNum={stageNum} i={i} stagePath={stagePath} canJumpAhead={stage.canJumpAhead} color={stage.color} />)}
 	</div>);
 };
 
-const Stage = ({i, title, stageNum, stagePath, canJumpAhead}) => {
+const Stage = ({i, title, stageNum, stagePath, canJumpAhead, color}) => {
 	// Display in progress as complete if left of the current page
 	let complete = i < stageNum;
 	// if (stage.complete === false) complete = false; TODO stage.error/warning?
@@ -37,7 +37,7 @@ const Stage = ({i, title, stageNum, stagePath, canJumpAhead}) => {
 	const maybeSetStage = () => canClick && stagePath && doTheSwitch();
 
 	return (
-		<div className={space('Stage',c)} onClick={maybeSetStage}>
+		<div className={space('Stage', c, color&&"text-"+color)} onClick={maybeSetStage}>
 			<h5 className="text-center above">{title}</h5>
 			<h5 className="graphic">
 				<div className="marker" />
@@ -187,7 +187,7 @@ const Wizard = ({widgetName, stagePath, navPosition, children}) => {
 	}
 	// filter null, undefined
 	children = children.filter(x => !! x);
-	// get stage info for the progress bar
+	// get stage info for the progress bar {title, color, ...props}
 	let stages = children.map( (kid, i) => {
 		let props = Object.assign({}, kid.props);
 		if ( ! props.title) props.title = 'Step '+i;
