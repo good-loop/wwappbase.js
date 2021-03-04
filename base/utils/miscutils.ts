@@ -319,6 +319,8 @@ export const substr = (mystring: string, _start: number, _end: number) => {
  * Use-case: for parsing urls that may contain adtech macros.
  * @returns a map */
 export const getUrlVars = (url: string, lenient: boolean) => {
+	// Future thought: Could this be replaced with location.search??
+	// Note: location.search doesn't look past a #hash
 	url = url || window.location.href;
 	// url = url.replace(/#.*/, ''); Why was this here?! DW
 	var s = url.indexOf("?");
