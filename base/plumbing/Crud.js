@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { assert, assMatch } from '../utils/assert';
 import C from '../CBase';
 import DataStore, { getDataPath, getListPath } from './DataStore';
-import {getId, getType, nonce} from '../data/DataClass';
+import {getId, getName, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from '../youagain';
 import {encURI, mapkv, parseHash} from '../utils/miscutils';
@@ -668,6 +668,17 @@ const restIdDataspace = () => {
 	return {id, dataspace};
 };
 
+/**
+ * 
+ * @param {DataItem|String} item 
+ */
+const setWindowTitle = item => {
+	window.document.title = item?
+		(_.isString(item)? item 
+			: getType(item)+" "+getName(item))
+		: C.app.name;
+};
+
 const CRUD = {
 };
 export default CRUD;
@@ -679,6 +690,7 @@ export {
 	getDataItem,
 	restId,
 	restIdDataspace,
+	setWindowTitle,
 
 	localSave, // can be used externally
 	localLoad // for debug only
