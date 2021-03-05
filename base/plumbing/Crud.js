@@ -675,7 +675,7 @@ const restIdDataspace = () => {
 const setWindowTitle = item => {
 	window.document.title = item?
 		(_.isString(item)? item 
-			: getType(item)+" "+getName(item))
+			: getType(item)+": "+(getName(item) || getId(item)))
 		: C.app.name;
 };
 
