@@ -88,6 +88,30 @@ Campaign.hideCharities = campaign => {
 };
 
 /**
+ * Get the list of ads that this campaign will hide
+ * Optional: also merge with lists from other campaigns
+ * @param {Campaign} topCampaign 
+ * @param {?Campaign[]} campaigns 
+ * @returns {String[]} hideAdverts
+ */
+Campaign.hideAdverts = (topCampaign, campaigns) => {
+    // Merge all hide advert lists together from all campaigns
+    let hideAdverts = topCampaign.hideAdverts;
+    campaigns && campaigns.forEach(c => {
+        if (c.hideAdverts) {
+            Object.keys(c.hideAdverts).forEach(hideAd => {
+                if (c.hideAdverts[hideAd]) hideAdverts[hideAd] = true;
+            });
+        }
+    });
+    console.log("HIDE ADVERTS: ", hideAdverts);
+    // Convert hideAdverts to array
+    hideAdverts = Object.keys(hideAdverts).map(ad => hideAdverts[ad] && ad).filter(x=>x);
+    console.log("HIDE ADVERTS ARRAY: ", hideAdverts);
+    return hideAdverts;
+}
+
+/**
  * Get a list of adverts that the impact hub should show for this campaign
  * @param {Campaign} topCampaign the subject campaign
  * @param {String} status
@@ -112,7 +136,7 @@ Campaign.advertsToShow = (topCampaign, campaigns, presetAds) => {
         let q = SearchQuery.setProp(new SearchQuery(), "campaign", topCampaign.id).query;
         let pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
         if (pvAds.value) {
-            List.hits(pvAds).forEach(ad => {
+            List.hits(pvAds.value).forEach(ad => {
                 ads.push(ad);
             });
         }
@@ -140,12 +164,12 @@ Campaign.advertsToShow = (topCampaign, campaigns, presetAds) => {
 
     // Filter ads using hide list
     ads = ads.filter(ad => ! topCampaign.hideAdverts[ad.id]);
-	console.log("Hiding: ",campaign && campaign.hideAdverts);
+	console.log("Hiding: ",topCampaign && topCampaign.hideAdverts);
 
     /////////////////////////////////////////////////////////
     // TODO - REMOVE ad by campaign sorting
-    // Maintaining for now until existing pages are adjusted
-    /////////////////////////////////////////////////////////
+    // Maintaining for now until existing pages are adjusted 
+    ///////////////////////////////////////////////////////////
     let sampleAd4Campaign = {};
 	ads.forEach(ad => {
         // Skip never-served ads
@@ -166,7 +190,7 @@ Campaign.advertsToShow = (topCampaign, campaigns, presetAds) => {
 	});
     const sampleAds = Object.values(sampleAd4Campaign);
     
-    return sampleAds;
+    return sampleAds.length ? sampleAds : ads;
 };
 
 /**
