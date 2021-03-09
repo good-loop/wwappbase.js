@@ -215,7 +215,7 @@ const PropControl = ({className, ...props}) => {
 				: null}
 			{inline ? ' ' : null}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
-			{help ? <span className={"help-block mr-2 small"}>{help}</span> : null}
+			{help ? <><br/><span className={"help-block mr-2 small"}>{help}</span></> : null}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
 		</FormGroup>

@@ -631,3 +631,11 @@ export const uniqById = (array: Object[], keyFn: Function) : Object[] => {
 	});
 	return Object.values(item4id);
 };
+
+/**
+ * Convert a keyset {name:bool} type object to an array
+ * @param {Object} keysetObj 
+ */
+export const keysetObjToArray = (keysetObj : Object) => {
+    return Object.keys(keysetObj).filter(item => keysetObj[item]);
+};
