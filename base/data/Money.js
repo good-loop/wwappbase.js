@@ -413,8 +413,14 @@ Money.compare = (a,b) => {
 	if ( ! a) return b? -1 : 0;
 	if ( ! b) 1;
 	Money.assIsa(a);
-	Money.assIsa(b);
-	assCurrencyEq(a, b, "Money.compare() "+a+" "+b);
+    Money.assIsa(b);
+    if (a.currency && b.currency) {
+		if (a.currency.toUpperCase() !== b.currency.toUpperCase()) {
+            console.log("Converting currency " + a.currency + " to " + b.currency);
+			a = Money.convertCurrency(a, b.currency);
+		}
+	}
+	//assCurrencyEq(a, b, "Money.compare() "+a+" "+b);
 	return v100p(a) - v100p(b);
 };
 /**
