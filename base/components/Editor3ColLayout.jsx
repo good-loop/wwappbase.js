@@ -32,8 +32,8 @@ const MainPane = ({className, children}) => <Container className={className}><Er
 const LeftSidebar = ({children}) => {
 	return <div className='mt-1 mr-0' style={{maxWidth:"30%", position:"sticky",height:"100vh",top:40}} >{children}</div>; // TODO use a slide-out tray if space is limited
 };
-const RightSidebar = ({children,width="40vw"}) => {
-	return <div className='mt-1' style={{position:"sticky",top:40,width,height:"100vh",overflowY:"scroll"}}><ErrBoundary>{children}</ErrBoundary></div>;
+const RightSidebar = ({children,width="40vw",height="100vh",overflowY="scroll"}) => {
+	return <div className='mt-1' style={{position:"sticky",top:40,width,height,overflowY}}><ErrBoundary>{children}</ErrBoundary></div>;
 };
 
 /**
