@@ -4,6 +4,7 @@ import Enum from 'easy-enums';
 import DataClass from './DataClass';
 import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
+import SearchQuery from '../../base/searchquery';
 import List from './List';
 import DataStore, { getDataPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
@@ -11,7 +12,7 @@ import { getDataItem, saveEdits } from '../plumbing/Crud';
 import KStatus from './KStatus';
 import PromiseValue from 'promise-value';
 import Advert from './Advert';
-import { keysetObjToArray } from '../utils/miscutils';
+import { keysetObjToArray, uniq } from '../utils/miscutils';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -46,6 +47,56 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 	let pvc = getDataItem({type:"Campaign",status,id:cid});
 	return pvc;
 };
+
+/**
+ * Get the master campaign of a multi campaign object
+ * @param {Advertiser|Agency} multiCampaign 
+ * @returns {Campaign}
+ */
+Campaign.fetchMasterCampaign = (multiCampaign, status=KStatus.DRAFT) => {
+    let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:multiCampaign.campaign});
+    return pvCampaign && pvCampaign.value;
+}
+
+/**
+ * Get all campaigns matchin an advertiser
+ * @param {Advertiser} vertiser
+ * @returns {Campaign[]}
+ */
+Campaign.fetchForAdvertiser = (vertiser, status=KStatus.DRAFT) => {
+    let q = SearchQuery.setProp(new SearchQuery(), "vertiser", vertiser.id).query;
+    let pvVertisers = ActionMan.list({type: C.TYPES.Campaign, status, q});
+    return pvVertisers && pvVertisers.value && pvVertisers.value.hits;
+}
+
+/**
+ * Get all campaigns matchin an advertiser
+ * @param {Agency} agency
+ * @returns {Campaign[]}
+ */
+Campaign.fetchForAgency = (agency, status=KStatus.DRAFT) => {
+    // Aggregate both campaigns with set agencies, and campaigns belonging to advertisers of the agency
+    let campaigns = [];
+    // Campaigns with set agencies
+    let q = SearchQuery.setProp(new SearchQuery(), "agencyId", agency.id).query;
+    let pvAgencies = ActionMan.list({type: C.TYPES.Campaign, status, q});
+    // Campaigns with advertisers belonging to agency
+    let qVertisers = SearchQuery.setProp(new SearchQuery(), "agencyId", agency.id).query;
+    let pvVertisers = ActionMan.list({type: C.TYPES.Advertiser, status, qVertisers});
+
+    if (pvVertisers && pvVertisers.value && pvVertisers.value.hits) {
+        console.log("FETCHFORAGENCY VERTISERS:", pvVertisers.value.hits);
+    }
+
+    // Add all set campaigns
+    pvAgencies && pvAgencies.value && pvAgencies.value.hits && campaigns.push(...pvAgencies.value.hits);
+    // Merge in advertiser results
+    pvVertisers && pvVertisers.value && pvVertisers.value.hits && pvVertisers.value.hits.forEach(vertiser => {
+        let vertiserCampaigns = Campaign.fetchForAdvertiser(vertiser);
+        vertiserCampaigns && campaigns.push(... vertiserCampaigns);
+    });
+    return campaigns;
+}
 
 /**
  * Create a new campaign
