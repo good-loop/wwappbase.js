@@ -12,7 +12,7 @@ import { getDataItem, saveEdits } from '../plumbing/Crud';
 import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
-import { keysetObjToArray, uniq } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq } from '../utils/miscutils';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -229,12 +229,13 @@ Campaign.advertsToShow = (topCampaign, campaigns, presetAds, showNonServed, nosa
 /**
  * Removes ads that have never served from an ad list
  * @param {Advert[]} ads 
- * @param {?Boolean} showNonServed allow non served ads to show - overrides GET paramater of same name if true
+ * @param {?Boolean} showNonServed allow non served ads to show - Defaults to GET url paramater of same name
  * @returns {Advert[]} filtered ads
  */
 Campaign.filterNonServedAds = (ads, showNonServed) => {
-    if (!showNonServed) showNonServed = (DataStore.getValue(['location', 'params']) || {}).showNonServed;
-    return ads.filter(ad => ad.hasServed || ad.serving || showNonServed);
+    if ( ! is(showNonServed)) showNonServed = DataStore.getUrlValue('showNonServed');
+	if (showNonServed) return ads;
+    return ads.filter(ad => ad.hasServed || ad.serving);
 }
 
 /**

@@ -43,7 +43,8 @@ class List extends DataClass {
 		super();
 		if (Array.isArray(base)) {
 			this.hits = base;
-			base = null;
+			this.total = base.length;
+			base = null;			
 		}
 		DataClass._init(this, base);
 	}
@@ -107,5 +108,25 @@ List.remove = (item, list) => {
 	list.hits = h2;
 	return r;
 };
+
+
+/**
+ * @param {List[]} lists Can contain nulls
+ * @returns {!List}
+ */
+List.union = (...lists) => {
+	const ulist = new List([]);
+	lists.forEach(list => {
+		if ( ! list) return;
+		assert( ! Array.isArray(list), "List.union takes List[]");
+		if (list.hits) ulist.hits.push(...list.hits);
+		if (list.total) ulist.total += list.total;
+		else {
+			console.warn("List.union() No total?!",list);
+		}
+	});
+	return ulist;
+};
+
 
 // TODO page cursor logic

@@ -14,6 +14,7 @@ import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
 import ErrAlert from './ErrAlert';
 import Icon from './Icon';
 import KStatus from '../data/KStatus';
+import AThing from '../data/AThing';
 
 /**
  * Provide a list of items of a given type.
@@ -320,15 +321,13 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
 	if (name.length > 280) name = name.slice(0,280);
-	const status = KStatus.isPUBLISHED(item.status)? null : item.status;
+	const status = item.status || "";
 	return <>
 		<Misc.Thumbnail item={item} />
 		<div className="info">
 			<div className="name">{name}</div>
 			<div className="detail small">
-				id: <span className="id">{id}</span> <span className="status">{status}</span> {extraDetail}
-				<Misc.Time time={item.created} />
-				{item.status && item.status !== KStatus.PUBLISHED? item.status.toLowerCase() : null}
+				id: <span className="id">{id}</span> <span className="status">{status.toLowerCase()}</span> {extraDetail} Created: <Misc.RoughDate date={item.created} /> {AThing.lastModified(item) && <>Modified: <Misc.RoughDate date={AThing.lastModified(item)} /></>}
 			</div>
 			{ button || '' }
 		</div>
