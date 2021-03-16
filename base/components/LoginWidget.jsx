@@ -92,7 +92,7 @@ const emailLogin = ({verb, app, email, password, onRegister, onLogin}) => {
 			if(verb === 'register' && onRegister) {
 				onRegister({...res, email});
 			} else {
-				onLogin({...res, email});
+				if (onLogin) onLogin({...res, email});
 				setShowLogin(false);
 			}
 		} else {
