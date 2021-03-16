@@ -4,14 +4,15 @@ import Enum from 'easy-enums';
 import DataClass from './DataClass';
 import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
+import SearchQuery from '../../base/searchquery';
 import List from './List';
 import DataStore, { getDataPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
 import { getDataItem, saveEdits } from '../plumbing/Crud';
-import KStatus from './KStatus';
 import PromiseValue from 'promise-value';
+import KStatus from './KStatus';
 import Advert from './Advert';
-import { is, keysetObjToArray } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq } from '../utils/miscutils';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -46,6 +47,65 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 	let pvc = getDataItem({type:"Campaign",status,id:cid});
 	return pvc;
 };
+
+/**
+ * Get the master campaign of a multi campaign object
+ * @param {Advertiser|Agency} multiCampaign 
+ * @returns PromiseValue(Campaign)
+ */
+Campaign.fetchMasterCampaign = (multiCampaign, status=KStatus.DRAFT) => {
+    if (!multiCampaign.campaign) return null;
+    let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:multiCampaign.campaign});
+    return pvCampaign;
+}
+
+/**
+ * Get all campaigns matchin an advertiser
+ * @param {Advertiser} vertiser
+ * @param {KStatus} status
+ * @returns PromiseValue(Campaign)
+ */
+Campaign.fetchForAdvertiser = (vertiser, status=KStatus.DRAFT) => {
+    let q = SearchQuery.setProp(new SearchQuery(), "vertiser", vertiser.id).query;
+    let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
+    return pvCampaigns;
+}
+
+/**
+ * Get all campaigns matching a set of advertisers
+ * @param {String[]} vertiserIds
+ * @param {KStatus} status
+ * @returns PromiseValue(Campaign)
+ */
+Campaign.fetchForAdvertisers = (vertiserIds, status=KStatus.DRAFT) => {
+    let q = SearchQuery.setPropOr(new SearchQuery(), "vertiser", vertiserIds).query;
+    let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
+    return pvCampaigns;
+}
+
+/**
+ * Get all campaigns matching an agency.
+ * Initially returns [], and fills in array as requests load
+ * @param {String} agencyId
+ * @param {KStatus} status
+ * @returns PromiseValue(Campaign[])
+ */
+Campaign.fetchForAgency = (agencyId, status=KStatus.DRAFT) => {
+    if (!agencyId) return [];
+    // Campaigns with set agencies
+    let agencySQ = new SearchQuery();
+    agencySQ = SearchQuery.setProp(agencySQ, "agencyId", agencyId);
+    //let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
+    // Campaigns with advertisers belonging to agency
+    let pvVertisers = ActionMan.list({type: C.TYPES.Advertiser, status, q:agencySQ.query});
+    let sq = new SearchQuery();
+    if (pvVertisers.value) sq = SearchQuery.setPropOr(sq, "vertiser", List.hits(pvVertisers.value).map(vertiser => vertiser.id));
+    sq = SearchQuery.or(agencySQ, sq);
+
+    let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q:sq.query});
+
+    return pvCampaigns;
+}
 
 /**
  * Create a new campaign
@@ -102,7 +162,6 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
     if (campaigns) campaigns.forEach(campaign => allHideAds.push(... campaign.hideAdverts ? keysetObjToArray(campaign.hideAdverts) : []));
     // Copy array
     const mergedHideAds = allHideAds.slice();
-    console.log("HIDE ADVERTS: ", mergedHideAds);
     return mergedHideAds;
 }
 
@@ -131,11 +190,12 @@ Campaign.fetchAds = (topCampaign, campaigns) => {
     }
     // Get ads for associated campaigns
     campaigns && campaigns.forEach(campaign => {
+        if (!campaign || !campaign.id) return;
         let qOtherAds = SearchQuery.setProp(new SearchQuery(), "campaign", campaign.id).query;
-        let pvOtherAds = ActionMan.list({type: C.TYPES.Advert, status, qOtherAds});
+        let pvOtherAds = ActionMan.list({type: C.TYPES.Advert, status, q:qOtherAds});
         if (pvOtherAds.value) {
-            List.hits(pvOtherAds).forEach(ad => {
-                ads.push(ad);
+            List.hits(pvOtherAds.value).forEach(ad => {
+                if (!ads.includes(ad)) ads.push(ad);
             });
         }
     });
@@ -158,7 +218,6 @@ Campaign.advertsToShow = (topCampaign, campaigns, presetAds, showNonServed, nosa
     // Filter ads using hide list
     const hideAdverts = Campaign.hideAdverts(topCampaign, campaigns);
     ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
-    console.log("Hiding: ",hideAdverts);
     
     // Only show serving ads unless otherwise specified
     ads = Campaign.filterNonServedAds(ads, showNonServed);
