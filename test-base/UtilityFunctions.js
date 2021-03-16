@@ -116,19 +116,15 @@ async function fillInForm({page, Selectors, data}) {
 async function login({browser, page, username, password, Selectors=CommonSelectors, service='email'}) {
 	if(!username || !password) throw new Error('UtilityFunctions -- no username/password provided to login');
 
-    console.log("Awaiting login...");
 	await page.waitForSelector(Selectors.logIn);
 	await page.click(Selectors.logIn);
 	// Wait for CSS transition to complete
 	// Caused puppeteer to click on wrong div sometimes
-    console.log("Clicked login!");
     await page.waitFor(400);
 
 	if (service === 'email') {
         await page.waitForSelector(Selectors.logInEmail);
-        console.log("Found log in email!");
         await page.waitForSelector(Selectors.logInPassword);
-        console.log("Clicked login password!");
 	
 		await page.click(Selectors.logInEmail);
 		await page.keyboard.type(username);
