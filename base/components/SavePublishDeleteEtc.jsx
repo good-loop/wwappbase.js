@@ -110,7 +110,8 @@ const SavePublishDeleteEtc = ({
 	cannotPublish, cannotDelete, canArchive,
 	publishTooltipText = 'Your account cannot publish this.',
 	autoPublish, autoSave = true,
-	saveAs, unpublish,
+    saveAs, unpublish,
+    style,
 	prePublish=T, preDelete=T, preArchive=T, preSaveAs=T
 }) => {
 	// No anon edits
@@ -185,7 +186,7 @@ const SavePublishDeleteEtc = ({
 	};
 
 	return (
-		<div className="SavePublishDeleteEtc SavePublishDiscard" style={{position}} title={item && item.status}>
+		<div className="SavePublishDeleteEtc SavePublishDiscard" style={{position, ...style}} title={item && item.status}>
 			<div><small>Status: {item && item.status} | Unsaved changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div>
 
 			<Button name="save" 
