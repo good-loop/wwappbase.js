@@ -1,7 +1,7 @@
 /** Add "standard crud functions" to ServerIO and ActionMan */
 
 import _ from 'lodash';
-import { assert, assMatch } from '../utils/assert';
+import { assert, assMatch, match } from '../utils/assert';
 import C from '../CBase';
 import DataStore, { getDataPath, getListPath } from './DataStore';
 import {getId, getName, getType, nonce} from '../data/DataClass';
@@ -253,7 +253,7 @@ const saveEdits = ({type, id, item, previous}) => {
 ActionMan.saveEdits = saveEdits;
 
 /**
- * This will modify the ID!
+ * This will modify the ID to a new nonce()!
  * @param onChange {Function: newItem => ()}
  * @returns {Promise}
  */
@@ -273,6 +273,18 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 	if (newItem.name) {
 		// make a probably unique name - use randomness TODO nicer
 		newItem.name += ' v_'+nonce(3);
+	}
+	// set created time to now
+	if (newItem.created) {
+		const now = new Date();
+		// take care with types
+		if (typeof(newItem.created)==="string") {
+			newItem.created = now.toISOString();
+		} else if (match(newItem.created, Date)) {
+			newItem.created = now;
+		} else {
+			console.warn("saveAs - Cannot adjust created", newItem.created);
+		}
 	}
 
 	// save local
