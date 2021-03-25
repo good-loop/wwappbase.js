@@ -21,7 +21,7 @@ const getRoles = () => {
 	// NB: store under user xid so a change in user is fine
 	let shared = DataStore.fetch(['misc', 'roles', uxid],
 		() => {
-			let req = Login.getSharedWith({prefix:"role:*"});
+			let req = Login.getSharedWith({prefix:"role:"});
 			return req.then(function(res) {
 				if ( ! res.success) {
 					console.error(res);
