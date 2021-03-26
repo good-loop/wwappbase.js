@@ -724,9 +724,9 @@ Login.claim = function (thingId) {
  * You are advised to cache this!
  * @returns {Promise<Share[]>}
  */
-Login.getSharedWith = function () {
+Login.getSharedWith = function ({prefix}) {
 	let request = aget(Login.ENDPOINT, {
-		action: 'shared-with'
+		action: 'shared-with', prefix
 	});
 	return request;
 }

@@ -63,7 +63,7 @@ const endpoints = [
  * Call this from ServerIO.js 
  * Safety check - if we deploy test code, it will complain.
  */
-ServerIO.checkBase = () => {
+ServerIO.checkBase = () => {	
 	endpoints.forEach(({name, key, prodValue}) => {
 		const endpointUrl = ServerIO[key]
 		if (!(key in ServerIO)) return; // Not defined, don't check it
@@ -89,7 +89,8 @@ ServerIO.checkBase = () => {
 
 			// For safety reasons (to prevent accidentally editing live campaigns), you cannot use production APIBASE on the test server
 			// (though server=production can still explicity override this, and local _can_ point to production as that can be handy when fixing stuff)
-			if (C.SERVER_TYPE==="test" && key==="APIBASE") {
+			const server = DataStore.getUrlValue("server");
+			if (C.SERVER_TYPE==="test" && key==="APIBASE" && server !== "production") {
 				const err = new Error(`ServerIO.js - ServerIO.${key} is using PRODUCTION setting! Oops: ${endpointUrl} - Resetting to ''`);
 				ServerIO[key] = '';
 				console.warn(err);
@@ -104,7 +105,8 @@ ServerIO.checkBase = () => {
 }; //./checkBase()
 
 /**
- * HACK allow using test/production ads, profiler, and datalog if requested
+ * HACK allow using test/production ads, profiler, and datalog if requested.
+ * To switch 
  */
 const checkBase2_toggleTestEndpoints = () => {
 	const server = DataStore.getUrlValue("server");

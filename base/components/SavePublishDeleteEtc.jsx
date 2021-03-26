@@ -82,7 +82,7 @@ const autoPublishFn = _.debounce(
 const T = () => true;
 
 /**
- * 
+ * Just console log if ! ok
  * @param {Boolean} ok 
  * @returns {Boolean}
  */

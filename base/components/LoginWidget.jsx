@@ -16,7 +16,7 @@ if (window.location.href.match(/login=local/)) {
 	Login.ENDPOINT = 'http://localyouagain.good-loop.com/youagain.json';
 	console.warn('config', `Set you-again Login endpoint to ${Login.ENDPOINT}`);
 } else if (window.location.href.match(/login=test/)) {
-	Login.ENDPOINT = 'https://test.youagain.good-loop.com/youagain.json';
+	Login.ENDPOINT = 'https://testyouagain.good-loop.com/youagain.json';
 	console.warn('config', `Set you-again Login endpoint to ${Login.ENDPOINT}`);
 }
 
@@ -92,7 +92,7 @@ const emailLogin = ({verb, app, email, password, onRegister, onLogin}) => {
 			if(verb === 'register' && onRegister) {
 				onRegister({...res, email});
 			} else {
-				onLogin({...res, email});
+				if (onLogin) onLogin({...res, email});
 				setShowLogin(false);
 			}
 		} else {

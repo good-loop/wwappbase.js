@@ -10,6 +10,7 @@ import { getDataItem } from '../plumbing/Crud';
 import NGO from './NGO';
 import SearchQuery from '../searchquery';
 import { normaliseSogiveId } from '../../base/plumbing/ServerIOBase';
+import KStatus from './KStatus';
 
 /**
  * See Branding.java
@@ -44,7 +45,8 @@ class Advert extends DataClass {
 			Object.keys(dad.advanced).filter(k => k.startsWith("on")).forEach(k => this.advanced[k] = dad.advanced[k]);
 		}
 		// copy branding from the advertiser
-		let pvAdvertiser = getDataItem({type:C.TYPES.Advertiser, id:base.vertiser, status:C.KStatus.PUBLISHED, swallow:true});
+		// NB: draft is more likely to be loaded into mem than published
+		let pvAdvertiser = getDataItem({type:C.TYPES.Advertiser, id:base.vertiser, status:KStatus.DRAFT, swallow:true});
 		if (pvAdvertiser.value && pvAdvertiser.value.branding) {
 			this.branding = deepCopy(pvAdvertiser.value.branding);
 		}
@@ -61,7 +63,7 @@ C.DEFAULT_AD_ID = 'default-advert';
  * Note: race condition on app loading - this will be null for a second.
  */
 Advert.defaultAdvert = () => {
-	const pvAd = getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status:C.KStatus.PUBLISHED});
+	const pvAd = getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status: KStatus.PUBLISHED});
 	return pvAd.value;
 };
 

@@ -120,11 +120,11 @@ async function login({browser, page, username, password, Selectors=CommonSelecto
 	await page.click(Selectors.logIn);
 	// Wait for CSS transition to complete
 	// Caused puppeteer to click on wrong div sometimes
-	await page.waitFor(400);
+    await page.waitFor(400);
 
 	if (service === 'email') {
-		await page.waitForSelector(Selectors.logInEmail);
-		await page.waitForSelector(Selectors.logInPassword);
+        await page.waitForSelector(Selectors.logInEmail);
+        await page.waitForSelector(Selectors.logInPassword);
 	
 		await page.click(Selectors.logInEmail);
 		await page.keyboard.type(username);
