@@ -21,9 +21,10 @@ const LBURL = () => (ServerIO.DATALOG_ENDPOINT || 'https://lg.good-loop.com').re
 const post = ServerIO.load;
 
 /**
- * @deprecated Better to put the img tag directly in the page's html if you can.
+ * Better to put the img tag directly in the page's html if you can.
+ * However: for dynamic pages -- like our react ones -- then it often has to be done dynamically to get the full referer url.
  */
-const track = () => {
+const track = ({}) => {
 	// No exact duplicates
 	try {
 		const dupeKey = "track:" + window.location;
@@ -35,7 +36,9 @@ const track = () => {
 		console.warn(err);
 	}
 	// check the doc for tracking pixels ?? what about more specific tracking?
-	if (document.querySelector(`img[src^="${LBURL()}/pxl"]`)) return;
+	if (document.querySelector(`img[src^="${LBURL()}/pxl"]`)) {
+		return;
+	}
 
 	const img = document.createElement('img');
 	img.src = LBURL() + '/pxl?nonce=' + nonce;
