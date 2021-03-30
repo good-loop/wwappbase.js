@@ -20,47 +20,52 @@ const LBURL = () => (ServerIO.DATALOG_ENDPOINT || 'https://lg.good-loop.com').re
 
 const post = ServerIO.load;
 
+// let prev = document.referrer;
 /**
  * Better to put the img tag directly in the page's html if you can.
  * However: for dynamic pages -- like our react ones -- then it often has to be done dynamically to get the full referer url.
  */
-const track = args => {
-	if (true) {
-		const eventParams = {url: ""+window.location};
-		const logPromise = lgBase("trk", "pxl", eventParams, true);
-		return;
-	}
-	// No exact duplicates
-	try {
-		const dupeKey = "track:" + window.location;
-		if (noDupes[dupeKey]) {
-			return null;
-		}
-		noDupes[dupeKey] = true;
-	} catch(err) { // paranoia
-		console.warn(err);
-	}
-	// check the doc for tracking pixels ?? what about more specific tracking?
-	if (document.querySelector(`img[src^="${LBURL()}/pxl"]`)) {
-		return;
-	}
+const track = args => {	
+	const url = ""+window.location;
+	const eventParams = {url};
+	// if (prev && prev!==url) {
+	// 	eventParams.prev = prev;
+	// }
+	const logPromise = lgBase("trk", "pxl", eventParams, true);
+	// if (prev !==url) prev = url;
+}
 
-	const img = document.createElement('img');
-	img.src = LBURL() + '/pxl?nonce=' + nonce;
-	const style = {
-		'z-index': -1,
-		position: 'absolute',
-		top: '0px',
-		left: '0px',
-		width: 1,
-		height: 1,
-		opacity: 0.1
-	};
+// 	// No exact duplicates
+// 	try {
+// 		const dupeKey = "track:" + window.location;
+// 		if (noDupes[dupeKey]) {
+// 			return null;
+// 		}
+// 		noDupes[dupeKey] = true;
+// 	} catch(err) { // paranoia
+// 		console.warn(err);
+// 	}
+// 	// check the doc for tracking pixels ?? what about more specific tracking?
+// 	if (document.querySelector(`img[src^="${LBURL()}/pxl"]`)) {
+// 		return;
+// 	}
 
-	Object.assign(img.style, style);
+// 	const img = document.createElement('img');
+// 	img.src = LBURL() + '/pxl?nonce=' + nonce;
+// 	const style = {
+// 		'z-index': -1,
+// 		position: 'absolute',
+// 		top: '0px',
+// 		left: '0px',
+// 		width: 1,
+// 		height: 1,
+// 		opacity: 0.1
+// 	};
 
-	document.body.appendChild(img);
-};
+// 	Object.assign(img.style, style);
+
+// 	document.body.appendChild(img);
+// };
 
 
 /**
