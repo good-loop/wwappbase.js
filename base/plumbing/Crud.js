@@ -80,12 +80,14 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 			let msg = JSend.message(err) || 'Error';
 			// HACK remove the stacktrace which our servers put in for debug
 			msg = msg.replace(/<details>[\s\S]*<\/details>/, "").trim();
-			if (!swallow) notifyUser(new Error(action+" failed: "+msg));
-			// If it is a 401 - check the login status
-			if (err.status && err.status===401) {
-				Login.verify().catch(() => {
-					notifyUser(new Error("Your login failed - Perhaps your session has expired. Please try logging in again. If that doesn't help, please contact support."));
-				});
+			if ( ! swallow) {
+				notifyUser(new Error(action+" failed: "+msg));			
+				// If it is a 401 - check the login status
+				if (err.status && err.status===401) {
+					Login.verify().catch(() => {
+						notifyUser(new Error("Your login failed - Perhaps your session has expired. Please try logging in again. If that doesn't help, please contact support."));
+					});
+				}
 			}
 			// mark the object as error
 			DataStore.setLocalEditsStatus(type, id, C.STATUS.saveerror);
