@@ -25,6 +25,11 @@ const post = ServerIO.load;
  * However: for dynamic pages -- like our react ones -- then it often has to be done dynamically to get the full referer url.
  */
 const track = args => {
+	if (true) {
+		const eventParams = {url: ""+window.location};
+		const logPromise = lgBase("trk", "pxl", eventParams, true);
+		return;
+	}
 	// No exact duplicates
 	try {
 		const dupeKey = "track:" + window.location;
