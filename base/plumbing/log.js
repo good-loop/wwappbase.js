@@ -35,38 +35,6 @@ const track = args => {
 	// if (prev !==url) prev = url;
 }
 
-// 	// No exact duplicates
-// 	try {
-// 		const dupeKey = "track:" + window.location;
-// 		if (noDupes[dupeKey]) {
-// 			return null;
-// 		}
-// 		noDupes[dupeKey] = true;
-// 	} catch(err) { // paranoia
-// 		console.warn(err);
-// 	}
-// 	// check the doc for tracking pixels ?? what about more specific tracking?
-// 	if (document.querySelector(`img[src^="${LBURL()}/pxl"]`)) {
-// 		return;
-// 	}
-
-// 	const img = document.createElement('img');
-// 	img.src = LBURL() + '/pxl?nonce=' + nonce;
-// 	const style = {
-// 		'z-index': -1,
-// 		position: 'absolute',
-// 		top: '0px',
-// 		left: '0px',
-// 		width: 1,
-// 		height: 1,
-// 		opacity: 0.1
-// 	};
-
-// 	Object.assign(img.style, style);
-
-// 	document.body.appendChild(img);
-// };
-
 
 /**
  * This will not post an exact duplicate (but any change is enough to qualify for a fresh post)
