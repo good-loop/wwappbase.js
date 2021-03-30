@@ -24,7 +24,7 @@ const post = ServerIO.load;
  * Better to put the img tag directly in the page's html if you can.
  * However: for dynamic pages -- like our react ones -- then it often has to be done dynamically to get the full referer url.
  */
-const track = ({}) => {
+const track = args => {
 	// No exact duplicates
 	try {
 		const dupeKey = "track:" + window.location;

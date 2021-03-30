@@ -358,6 +358,7 @@ const PropControl2 = (props) => {
 		return <PropControlYesNo path={path} prop={prop} value={storeValue} inline={inline} saveFn={saveFn} />
 	}
 
+	// Deprecated - prefer PropControlEntrySet - only known use of this is portal, AdDesignExtraControls
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
 	}
@@ -374,6 +375,7 @@ const PropControl2 = (props) => {
 		);
 	}
 
+	// @deprecated for pills
 	if (type === 'arraytext') {
 		return <PropControlArrayText {...props} />;
 	}
@@ -688,6 +690,7 @@ const PropControlYesNo = ({ path, prop, value, saveFn, className }) => {
 
 
 /**
+ * @Deprecated for pills
  * Display a value as 'a b c' but store as ['a', 'b', 'c']
  * Used to edit variant.style. 
  * 

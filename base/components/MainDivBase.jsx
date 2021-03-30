@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Login from '../youagain';
 
 import { getUrlVars, toTitleCase, modifyHash, yessy } from '../utils/miscutils';
-import { Container } from 'reactstrap';
+import { Alert, Container } from 'reactstrap';
 import { isFunction } from 'lodash';
 // setup Misc.SavePublishDiscard for older code
 import SavePublishDeleteEtc from './SavePublishDeleteEtc';
@@ -112,8 +112,8 @@ class MainDivBase extends Component {
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
 				setTimeout(() => modifyHash([defaultPage]), 1); // let the next render get it
-			}
-			return <Misc.Loading />;
+			}			
+			return <Alert color="warning">No page specified - and the app does not set a default</Alert>;
 		}
 		assert(page);
 
