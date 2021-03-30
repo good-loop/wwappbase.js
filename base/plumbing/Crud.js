@@ -80,7 +80,7 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 			let msg = JSend.message(err) || 'Error';
 			// HACK remove the stacktrace which our servers put in for debug
 			msg = msg.replace(/<details>[\s\S]*<\/details>/, "").trim();
-			notifyUser(new Error(action+" failed: "+msg));
+			if (!swallow) notifyUser(new Error(action+" failed: "+msg));
 			// If it is a 401 - check the login status
 			if (err.status && err.status===401) {
 				Login.verify().catch(() => {
