@@ -50,7 +50,7 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 /**
  * Puts together the unit.json request
  */
-const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug}) => {
+const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug, extraParams}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -80,6 +80,9 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 	if (endCard) params.push(`gl.variant=tq`);
 	if (noab) params.push('gl.noab=true');
 	if (debug) params.push(`gl.debug=true`);
+	if (extraParams) {
+		Object.entries(extraParams).forEach(([k, v]) => params.push(`${k}=${v}`))
+	}
 	const filename = debug ? 'unit-debug.js' : 'unit.js';
 	const src = `${ServerIO.AS_ENDPOINT}/${filename}${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
@@ -102,8 +105,9 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
  * @param {String} play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
  * @param {String} endCard Set truthy to display end-card without running through advert.
  * @param {?Boolean} noab Set true to block any A/B experiments
+ * @param {Object} extraParams A map of extra URL parameters to put on the unit.js URL.
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, noab, debug: shouldDebug}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [container, setContainer] = useState();
@@ -147,7 +151,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
 		if (frameReady) {
-			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug});
+			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug, extraParams});
 			insertAdunitCss({frame, css});
 			return cleanup;
 		}
