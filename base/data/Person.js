@@ -140,7 +140,7 @@ const PURPOSES = new Enum("any email_app email_mailing_list email_marketing cook
  * @returns PromiseValue(Person)
  */
 const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}) => {
-	assMatch(xid, String);
+	assMatch(xid, String,"getProfile - No XId?!");
 	// domain:ServerIO.dataspace??
 	const type = 'Person';
 	const dsi = {type, status, id:xid};		
@@ -493,6 +493,18 @@ const setClaimValue = ({persons, key, value}) => {
 	});
 };
 
+
+/**
+ * Locally delete a claim value (does NOT save -- use `savePersons()` to save)
+ * @param {Object} p
+ * @param {!Person[]} p.persons
+ * @param {!String} p.key
+ */
+const deleteClaim = ({persons, key}) => {
+	setClaimValue({persons, key, value:"DELETED"});
+};
+
+
 const addClaim = (peep, claim) => {
 	Person.assIsa(peep);
 	Claim.assIsa(claim);
@@ -540,6 +552,12 @@ const getClaims = ({persons, key}) => {
 	return keyClaims;
 };
 
+/**
+ * @param {!Person} person 
+ * @returns {!Claim[]} the claims for this person (does not look at linked peeps). Do not edit the returned list.
+ */
+Person.claims = person => person.claims || [];
+
 export {
 	doRegisterEmail,	
 	convertConsents,
@@ -555,5 +573,5 @@ export {
 	getEmail,
 
 	// Lets offer some easy ways to edit profile-bundles
-	getClaims, getClaimValue, setClaimValue, savePersons
+	getClaims, getClaimValue, setClaimValue, savePersons, deleteClaim
 };
