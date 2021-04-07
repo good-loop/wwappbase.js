@@ -282,7 +282,7 @@ const PropControl2 = (props) => {
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur', false); // obsolete??
 			// HACK: allow our own ersatz events to avoid calling setRawValue
-			if ( ! e.cooked) {
+			if (!e.cooked) {
 				setRawValue(e.target.value);
 			}
 			let mv = modelValueFromInput(e.target.value, type, e, storeValue, props);
@@ -446,23 +446,11 @@ const PropControl2 = (props) => {
 		return <PropControlSelect  {...props2} />
 	}
 
-	// Optional fancy colour picker - dummied out for now.
-	/*
 	if (type === 'color') {
-		return (
-			<div>
-				<div className="color-container">
-					<div className="color-bg" />
-					<Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />
-					<div className="color-decoration">Click to pick a colour</div>
-				</div>
-				<Misc.FormControl type="text" name={prop} value={value} onChange={onChange} {...otherStuff} />
-			</div>
-		);
+		return <PropControlColor type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;
 	}
-	*/
+
 	// normal
-	// NB: type=color should produce a colour picker :)
 	return <FormControl type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;
 }; //./PropControl2
 
@@ -858,6 +846,40 @@ const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }
 };
 
 
+/** Add "colour not set" indicator and "remove colour" button to <input type="color"> */
+const PropControlColor = ({onChange, ...props}) => {
+	const luminance = luminanceFromHex(props.value || '#000000')
+	const overlayClass = `form-control overlay ${!props.value ? 'no-color' : ''} ${luminance > 0.5 ? 'light-bg' : ''}`;
+	const overlayText = props.value || 'None';
+
+	// Allow user to clear the colour if present...
+	// but supply a dummy element (so FormControl still makes an input-group) that won't look strange behind the "no colour" overlay if not
+	const clearBtn = props.value ? <Button onClick={() => onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
+
+	// Colour unset? 
+	if (!props.value) {
+		// Give the <input> a dummy value attribute to stop browsers complaining...
+		props.value = '#000000';
+		// ...but this means if the first colour picked is black, onChange won't fire.
+		// So insert a shim to save to DataStore if the user goes straight from "unset" to "#000000"
+		props.onBlur = (e) => e.target.value && onChange(e);
+	}
+
+	// According to best practices, <input type="color"> shouldn't take onChange
+	// (though React normalises it to reliably produce change events)
+	props.onInput = onChange;
+
+	
+
+	return (
+		<div className="color-control">
+			<FormControl append={clearBtn} {...props} />
+			<div className={overlayClass}>{overlayText}</div>
+		</div>
+	);
+};
+
+
 /**
 * Convert inputs (probably text) into the model's format (e.g. numerical)
 * @param {?primitive} inputValue - The html value, often a String
@@ -895,13 +917,6 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
 const FormControl = ({ value, type, required, size, className, prepend, append, proppath, ...otherProps }) => {
 	if (value === null || value === undefined) value = '';
 
-	if (type === 'color' && !value) {
-		// Chrome spits out a console warning about type="color" needing value in format "#rrggbb"
-		// ...but if we omit value, React complains about switching an input between controlled and uncontrolled
-		// So give it a dummy value and set a class to allow us to show a "no colour picked" signifier
-		return <Input className="no-color" value="#000000" type={type} {...otherProps} />;
-	}
-
 	// add css classes for required fields
 	let klass = space(
 		className,
@@ -930,16 +945,14 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	// const focusPath = DataStore.getValue(FOCUS_PATH)
 	// const autoFocus = otherProps.name===focusPath; // TODO proppath.join(".") === focusPath;
 
-	if (prepend || append) {
-		// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
-		return (
-			<InputGroup className={klass} size={size}>
-				{prepend? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
-				<Input type={type} value={value} {...otherProps} />
-				{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
-			</InputGroup>
-		);
-	}
+	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
+	if (prepend || append) return (
+		<InputGroup className={klass} size={size}>
+			{prepend? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
+			<Input type={type} value={value} {...otherProps} />
+			{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
+		</InputGroup>
+	);
 
 	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
 };
@@ -1127,6 +1140,7 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 import { specs as urlSpecs } from './PropControls/PropControlUrl';
 urlSpecs.forEach(spec => registerControl(spec));
 import { specs as imgSpecs } from './PropControls/PropControlImg';
+import { luminanceFromHex } from '../../components/Colour';
 imgSpecs.forEach(spec => registerControl(spec));
 
 export {

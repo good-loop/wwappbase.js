@@ -148,19 +148,31 @@ You can apply it to, well, anything.
 .color-control {
 	position: relative; // use as position ref for the overlay
 
-	.no-color-overlay { // "unset" marker to differentiate no-colour from #000000
+	.overlay {
 		pointer-events: none;
 		position: absolute;
+		z-index: 9; // place in front of the .input-group
 		left: 0;
 		top: 0;
 		height: 100%;
 		width: 100%;
-		color: white;
-		.stripe-bg();
+		
+		background-color: transparent;
 		font-weight: bold;
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		color: white;
 		text-shadow: 1px 1px 1px black;
+		&.light-bg {
+			color: black;
+			text-shadow: 1px 1px 1px white;
+		}
+		&.no-color { // "unset" marker to differentiate no-colour from #000000
+			.stripe-bg();
+		}
 	}
+	
+
+	
 }
