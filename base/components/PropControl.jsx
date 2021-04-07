@@ -772,8 +772,8 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
  * @param {?String} keyName Explanatory placeholder text for entry key
  * @param {?String} valueName Explanatory placeholder text for entry value
  */
-const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value' }) => {
-	const addRemoveKey = (key, val, remove) => {
+const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'Key', valueName = 'Value' }) => {
+	const updateKV = (key, val, remove) => {
 		if (!key) return;
 		const newValue = { ...value };
 		// set false instead of deleting - see rationale/TODO in PropControlKeySet
@@ -786,35 +786,39 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 	}
 
 	const entries = Object.entries(value || {}).filter(([, val]) => (val === '') || val);
-	// pb-3 classes are for vertical alignment with PropControl which has a margin-bottom we can't remove
+	// pb-2 classes are to give some vertical separation between rows
 	const entryElements = entries.length ? (
-		entries.map(([key]) => (
+		entries.map(([key, thisVal]) => (
 			<tr className="entry" key={key}>
-				<td className="pb-3">
-					<Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)} title="Remove this entry">&#10761;</Button>
+				<td className="pb-2">
+					<Button className="remove-entry" onClick={() => updateKV(key, null, true)} title="Remove this entry">&#10761;</Button>
 				</td>
-				<td className="px-2 pb-3">{key}:</td>
-				<td><PropControl type="text" path={proppath} prop={key} /></td>
+				<td className="px-2">{key}:</td>
+				<td className="pb-2"><Input value={thisVal} onChange={(e) => updateKV(key, e.target.value)} /></td>
 			</tr>
 		))
 	) : (
-		<tr><td>(Empty list)</td></tr>
+		<tr><td>(No entries)</td></tr>
 	);
 
+	// No reason for DataStore to know about the state of the "not added yet" textboxes - so manage them internally
 	const [newKey, setNewKey] = useState('');
 	const [newValue, setNewValue] = useState('');
 	
 	const onSubmit = (e) => {
 		stopEvent(e);
 		if (!newKey || !newValue) return;
-		addRemoveKey(newKey, newValue);
+		updateKV(newKey, newValue);
 		setNewKey('');
 		setNewValue('');
 	};
 
 	return (
 		<div className="entryset">
-			<table className="entries"><tbody>{entryElements}</tbody></table>
+			<table className="entries">
+				{entries.length ? <thead><tr><th></th><th>{keyName}</th><th>{valueName}</th></tr></thead> : null}
+				<tbody>{entryElements}</tbody>
+			</table>
 			<Form inline onSubmit={onSubmit} className="mb-2">
 				<FormGroup className="mr-2">
 					<Input value={newKey} placeholder={keyName} onChange={(e) => setNewKey(e.target.value)} />
@@ -822,7 +826,9 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 				<FormGroup className="mr-2">
 					<Input value={newValue} placeholder={valueName} onChange={(e) => setNewValue(e.target.value)} />
 				</FormGroup>
-				<Button type="submit" disabled={!(newKey && newValue)} color="primary">Add this</Button>
+				<FormGroup>
+					<Button type="submit" disabled={!(newKey && newValue)} color="primary">Add this</Button>
+				</FormGroup>
 			</Form>
 		</div>
 	);
