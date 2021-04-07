@@ -31,6 +31,7 @@ import Money from '../data/Money';
 import { getType, getId } from '../data/DataClass';
 import { notifyUser } from '../plumbing/Messaging';
 import Icon from './Icon';
+import { luminanceFromHex } from './Colour';
 
 /**
  * Set the value and the modified flag in DataStore
@@ -1140,7 +1141,6 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 import { specs as urlSpecs } from './PropControls/PropControlUrl';
 urlSpecs.forEach(spec => registerControl(spec));
 import { specs as imgSpecs } from './PropControls/PropControlImg';
-import { luminanceFromHex } from '../../components/Colour';
 imgSpecs.forEach(spec => registerControl(spec));
 
 export {
