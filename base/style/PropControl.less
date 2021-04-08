@@ -6,12 +6,12 @@
 
 // Used to signify "transparent" or "no colour chosen"
 .stripe-bg() {
-	background: repeating-linear-gradient(
-		-45deg,
-		#bbb, #bbb 7px, #555 7px, #555 14px
-	);
+	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOAQMAAAAlhr+SAAAABlBMVEW7u7tVVVXOtErWAAAAM0lEQVQI12P4x8Dwh4XhBw/DBxmGBzYMB2oYGv4wMP5hYP7BwP6Bgf8Bg/wBBvsGhnoGADdeDd7GEVhmAAAAAElFTkSuQmCC);
 }
-
+// Define height of form-compact elements for reuse
+.form-compact-height() {
+	height: calc(1em + 0.7rem + 2px);
+}
 
 /* a more compact form layout than BS standard (see also form-inline) */
 .form-compact {
@@ -26,8 +26,17 @@
 	.form-control:not(.btn-lg,.btn-sm), .btn:not(.btn-lg,.btn-sm) {
 		padding: 0.55rem 0.35rem 0.15rem 0.35rem;
 		line-height: 1;
-		height: calc(1em + 0.7rem + 2px);
-	}	
+		.form-compact-height();
+	}
+
+	// Let the colour box fill the whole form control
+	.form-control[type="color"] {
+		padding: 0;
+	}
+
+	.input-group-append, .input-group-prepend {
+		.form-compact-height();
+	}
 	
 	input.form-check-input {
 		margin-top: 0;
@@ -132,4 +141,38 @@ You can apply it to, well, anything.
 /* aggressively hide filtered inputs! */
 .nomatch {
 	display: none;
+}
+
+
+/* Special styling for colour controls */
+.color-control {
+	position: relative; // use as position ref for the overlay
+
+	.overlay {
+		pointer-events: none;
+		position: absolute;
+		z-index: 9; // place in front of the .input-group
+		left: 0;
+		top: 0;
+		height: 100%;
+		width: 100%;
+		
+		background-color: transparent;
+		font-weight: bold;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		color: white;
+		text-shadow: 1px 1px 1px black;
+		&.light-bg {
+			color: black;
+			text-shadow: 1px 1px 1px white;
+		}
+		&.no-color { // "unset" marker to differentiate no-colour from #000000
+			.stripe-bg();
+		}
+	}
+	
+
+	
 }

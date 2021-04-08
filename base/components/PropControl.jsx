@@ -31,6 +31,7 @@ import Money from '../data/Money';
 import { getType, getId } from '../data/DataClass';
 import { notifyUser } from '../plumbing/Messaging';
 import Icon from './Icon';
+import { luminanceFromHex } from './Colour';
 
 /**
  * Set the value and the modified flag in DataStore
@@ -282,7 +283,7 @@ const PropControl2 = (props) => {
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur', false); // obsolete??
 			// HACK: allow our own ersatz events to avoid calling setRawValue
-			if ( ! e.cooked) {
+			if (!e.cooked) {
 				setRawValue(e.target.value);
 			}
 			let mv = modelValueFromInput(e.target.value, type, e, storeValue, props);
@@ -446,23 +447,11 @@ const PropControl2 = (props) => {
 		return <PropControlSelect  {...props2} />
 	}
 
-	// Optional fancy colour picker - dummied out for now.
-	/*
 	if (type === 'color') {
-		return (
-			<div>
-				<div className="color-container">
-					<div className="color-bg" />
-					<Misc.FormControl type={type} name={prop} value={value} onChange={onChange} {...otherStuff} />
-					<div className="color-decoration">Click to pick a colour</div>
-				</div>
-				<Misc.FormControl type="text" name={prop} value={value} onChange={onChange} {...otherStuff} />
-			</div>
-		);
+		return <PropControlColor type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;
 	}
-	*/
+
 	// normal
-	// NB: type=color should produce a colour picker :)
 	return <FormControl type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;
 }; //./PropControl2
 
@@ -775,8 +764,8 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
  * @param {?String} keyName Explanatory placeholder text for entry key
  * @param {?String} valueName Explanatory placeholder text for entry value
  */
-const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', valueName = 'value' }) => {
-	const addRemoveKey = (key, val, remove) => {
+const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'Key', valueName = 'Value' }) => {
+	const updateKV = (key, val, remove) => {
 		if (!key) return;
 		const newValue = { ...value };
 		// set false instead of deleting - see rationale/TODO in PropControlKeySet
@@ -789,35 +778,39 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 	}
 
 	const entries = Object.entries(value || {}).filter(([, val]) => (val === '') || val);
-	// pb-3 classes are for vertical alignment with PropControl which has a margin-bottom we can't remove
+	// pb-2 classes are to give some vertical separation between rows
 	const entryElements = entries.length ? (
-		entries.map(([key]) => (
+		entries.map(([key, thisVal]) => (
 			<tr className="entry" key={key}>
-				<td className="pb-3">
-					<Button className="remove-entry" onClick={() => addRemoveKey(key, null, true)} title="Remove this entry">&#10761;</Button>
+				<td className="pb-2">
+					<Button className="remove-entry" onClick={() => updateKV(key, null, true)} title="Remove this entry">&#10761;</Button>
 				</td>
-				<td className="px-2 pb-3">{key}:</td>
-				<td><PropControl type="text" path={proppath} prop={key} /></td>
+				<td className="px-2">{key}:</td>
+				<td className="pb-2"><Input value={thisVal} onChange={(e) => updateKV(key, e.target.value)} /></td>
 			</tr>
 		))
 	) : (
-		<tr><td>(Empty list)</td></tr>
+		<tr><td>(No entries)</td></tr>
 	);
 
+	// No reason for DataStore to know about the state of the "not added yet" textboxes - so manage them internally
 	const [newKey, setNewKey] = useState('');
 	const [newValue, setNewValue] = useState('');
 	
 	const onSubmit = (e) => {
 		stopEvent(e);
 		if (!newKey || !newValue) return;
-		addRemoveKey(newKey, newValue);
+		updateKV(newKey, newValue);
 		setNewKey('');
 		setNewValue('');
 	};
 
 	return (
 		<div className="entryset">
-			<table className="entries"><tbody>{entryElements}</tbody></table>
+			<table className="entries">
+				{entries.length ? <thead><tr><th></th><th>{keyName}</th><th>{valueName}</th></tr></thead> : null}
+				<tbody>{entryElements}</tbody>
+			</table>
 			<Form inline onSubmit={onSubmit} className="mb-2">
 				<FormGroup className="mr-2">
 					<Input value={newKey} placeholder={keyName} onChange={(e) => setNewKey(e.target.value)} />
@@ -825,7 +818,9 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'key', v
 				<FormGroup className="mr-2">
 					<Input value={newValue} placeholder={valueName} onChange={(e) => setNewValue(e.target.value)} />
 				</FormGroup>
-				<Button type="submit" disabled={!(newKey && newValue)} color="primary">Add this</Button>
+				<FormGroup>
+					<Button type="submit" disabled={!(newKey && newValue)} color="primary">Add this</Button>
+				</FormGroup>
 			</Form>
 		</div>
 	);
@@ -855,6 +850,40 @@ const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }
 		<div className="pull-right"><i>{datePreview}</i></div>
 		<div className="clearfix" />
 	</div>);
+};
+
+
+/** Add "colour not set" indicator and "remove colour" button to <input type="color"> */
+const PropControlColor = ({onChange, ...props}) => {
+	const luminance = luminanceFromHex(props.value || '#000000')
+	const overlayClass = `form-control overlay ${!props.value ? 'no-color' : ''} ${luminance > 0.5 ? 'light-bg' : ''}`;
+	const overlayText = props.value || 'None';
+
+	// Allow user to clear the colour if present...
+	// but supply a dummy element (so FormControl still makes an input-group) that won't look strange behind the "no colour" overlay if not
+	const clearBtn = props.value ? <Button onClick={() => onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
+
+	// Colour unset? 
+	if (!props.value) {
+		// Give the <input> a dummy value attribute to stop browsers complaining...
+		props.value = '#000000';
+		// ...but this means if the first colour picked is black, onChange won't fire.
+		// So insert a shim to save to DataStore if the user goes straight from "unset" to "#000000"
+		props.onBlur = (e) => e.target.value && onChange(e);
+	}
+
+	// According to best practices, <input type="color"> shouldn't take onChange
+	// (though React normalises it to reliably produce change events)
+	props.onInput = onChange;
+
+	
+
+	return (
+		<div className="color-control">
+			<FormControl append={clearBtn} {...props} />
+			<div className={overlayClass}>{overlayText}</div>
+		</div>
+	);
 };
 
 
@@ -895,13 +924,6 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
 const FormControl = ({ value, type, required, size, className, prepend, append, proppath, ...otherProps }) => {
 	if (value === null || value === undefined) value = '';
 
-	if (type === 'color' && !value) {
-		// Chrome spits out a console warning about type="color" needing value in format "#rrggbb"
-		// ...but if we omit value, React complains about switching an input between controlled and uncontrolled
-		// So give it a dummy value and set a class to allow us to show a "no colour picked" signifier
-		return <Input className="no-color" value="#000000" type={type} {...otherProps} />;
-	}
-
 	// add css classes for required fields
 	let klass = space(
 		className,
@@ -930,16 +952,14 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	// const focusPath = DataStore.getValue(FOCUS_PATH)
 	// const autoFocus = otherProps.name===focusPath; // TODO proppath.join(".") === focusPath;
 
-	if (prepend || append) {
-		// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
-		return (
-			<InputGroup className={klass} size={size}>
-				{prepend? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
-				<Input type={type} value={value} {...otherProps} />
-				{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
-			</InputGroup>
-		);
-	}
+	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
+	if (prepend || append) return (
+		<InputGroup className={klass} size={size}>
+			{prepend? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
+			<Input type={type} value={value} {...otherProps} />
+			{append? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
+		</InputGroup>
+	);
 
 	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
 };

@@ -664,14 +664,17 @@ const defaultCellRender = (v, column) => {
 		if (column.significantDigits) { significantDigits = column.significantDigits }
 
 		if (CellFormat.ispercent(column.format)) {
-			// 2 sig figs
-			return printer.prettyNumber(100 * v, significantDigits) + "%";
+			// Use precision if supplied - else default to 2 sig figs
+			if (column.precision) return (100 * v).toFixed(precision) + '%';
+			return printer.prettyNumber(100 * v, significantDigits) + '%';
 		}
+
 		if (CellFormat.ispounds(column.format)) {
 			// v = printer.prettyNumber(v, significantDigits);
 			v = v.toFixed(precision).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 			return "£" + v;
 		}
+		
 		if (CellFormat.isstring(column.format)) {
 			return str(v); // Even if it looks like a number
 		}
