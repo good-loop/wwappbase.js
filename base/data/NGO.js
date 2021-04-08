@@ -1,6 +1,8 @@
 /** Data model functions for the NGO data-type. */
 
 import DataClass from './DataClass';
+import { normaliseSogiveId } from '../plumbing/ServerIOBase';
+import ActionMan from '../plumbing/ActionManBase';
 
 class NGO extends DataClass {
 	constructor(base) {
