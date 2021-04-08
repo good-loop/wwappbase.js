@@ -173,7 +173,7 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
 
     // Merge all hide advert lists together from all campaigns
     let allHideAds = topCampaign.hideAdverts ? keysetObjToArray(topCampaign.hideAdverts) : [];
-    if (campaigns) campaigns.forEach(campaign => allHideAds.push(... campaign.hideAdverts ? keysetObjToArray(campaign.hideAdverts) : []));
+    if (campaigns && campaigns.length) campaigns.forEach(campaign => allHideAds.push(... campaign.hideAdverts ? keysetObjToArray(campaign.hideAdverts) : []));
     // Copy array
     const mergedHideAds = allHideAds.slice();
     return mergedHideAds;
@@ -190,7 +190,7 @@ Campaign.fetchAds = (topCampaign, campaigns) => {
     const status = getStatus();
 
     let sq = SearchQuery.setProp(new SearchQuery(), "campaign", topCampaign.id);
-    if (campaigns) {
+    if (campaigns && campaigns.length) {
         let sq2 = SearchQuery.setPropOr(new SearchQuery(), "campaign", campaigns.map(c => c && c.id).filter(x => x));
         sq = SearchQuery.or(sq, sq2);
     }
