@@ -298,4 +298,320 @@ const campaignNameForAd = ad => {
 	return ad.campaign;
 };
 
+
+
+////////////////////////////////////////////////////////////////////
+////                     CHARITY LOGIC                           ///
+////////////////////////////////////////////////////////////////////
+
+
+
+
+/**
+ * Get the donation total for a campaign.
+ * @param {Campaign} campaign 
+ * @param {?Object} dntn4charity optionally specify a donation data set to use instead of fetching a new one
+ */
+ Campaign.donationTotal = (campaign, dntn4charity) => {
+    let donationTotal = Money.value(campaign.dntn) && campaign.dntn;
+    if (!donationTotal) {
+        const donationData = dntn4charity || Campaign.donation4charity(campaign);
+        donationTotal = donationData.total;
+    }
+    return donationTotal;
+};
+
+/**
+ * Get the donation for charity list of a campaign
+ * @param {Campaign} topCampaign
+ * @param {?Campaign[]} otherCampaigns extra associated campaigns
+ * @param {?Advert[]} extraAds ads that are associated but have no campaign
+ * @param {KStatus} status
+ */
+Campaign.dntn4charity = (topCampaign, otherCampaigns, extraAds, status=KStatus.DRAFT) => {
+    const pvAds = Campaign.fetchAds(topCampaign, null, status);
+    const ads = pvAds.value ? List.hits(pvAds.value) : [];
+    // initial donation record
+    const donation4charity = yessy(topCampaign.dntn4charity)? Object.assign({}, topCampaign.dntn4charity) : {};
+    // augment with fetched data
+    const fetchedDonationData = fetchDonationData(ads);
+    Object.keys(fetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = fetchedDonationData[cid]});
+
+    otherCampaigns && otherCampaigns.forEach(campaign => {
+        const pvMoreAds = Campaign.fetchAds(campaign, null, status);
+        const moreAds = pvMoreAds.value ? List.hits(pvMoreAds.value) : [];
+        // get inherent and fetched data from campaign
+        const otherDntn4charity = yessy(campaign.dntn4charity)? campaign.dntn4charity : {};
+        const otherFetchedDonationData = fetchDonationData(moreAds);
+        // augment master list with data, never overwriting
+        Object.keys(otherDntn4charity).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = otherDntn4charity[cid]});
+        Object.keys(otherFetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = otherFetchedDonationData[cid]});
+    });
+
+    // Augment in data for extra dangling ads
+    const extraFetchedDonationData = fetchDonationData(extraAds);
+    Object.keys(extraFetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = extraFetchedDonationData[cid]});
+
+    // Normalise all charity ids
+    const allCharities = Object.keys(donation4charity);
+    allCharities.forEach(cid => {
+        const sogiveCid = normaliseSogiveId(cid);
+        if (!donation4charity[sogiveCid]) {
+            donation4charity[sogiveCid] = donation4charity[cid];
+            delete donation4charity[cid];
+        }
+    });
+
+    return donation4charity;
+};
+
+/**
+ * Get a list of charities for a campaign
+ * @param {Campaign} topCampaign 
+ * @param {?Campaign[]} campaigns associated campaigns, if any
+ * @param {?Advert[]} extraAds additional ads with no assigned campaigns
+ * @param {KStatus} status
+ */
+Campaign.charities = (topCampaign, campaigns, extraAds, status=KStatus.DRAFT) => {
+    let pvAds = Campaign.fetchAds(topCampaign, campaigns, status);
+    let ads = [];
+    if (pvAds.value) ads = [...ads, ...List.hits(pvAds.value)];
+    extraAds && extraAds.forEach(ad => {
+        if (!ads.includes(ad)) ads.push(ad);
+    });
+    // individual charity data, attaching ad ID
+	let charities = uniqById(_.flatten(ads.map(ad => {
+        if (!ad.charities) return [];
+        const clist = (ad.charities && ad.charities.list).slice() || [];
+		return clist.map(c => {
+			if ( ! c) return null; // bad data paranoia						
+			if ( ! c.id || c.id==="unset" || c.id==="undefined" || c.id==="null" || c.id==="total") { // bad data paranoia						
+				console.error("Campaign.js charities - Bad charity ID", c.id, c);
+				return null;
+			}
+			const id2 = normaliseSogiveId(c.id);
+			if (id2 !== c.id) {
+				c.id = id2;
+			}
+			c.adId = ad.id; // for Advert Editor dev button so sales can easily find which ad contains which charity
+			return c;
+		});
+    })));
+    return charities;
+};
+
+/**
+ * Get a list of stray charities added to the campaign but not sourced from any ads
+ * @param {Campaign} campaign 
+ * @param {KStatus} status
+ * @returns {NGO[]}
+ */
+Campaign.strayCharities = (campaign, status=KStatus.DRAFT) => {
+    let strays = [];
+    const charities = Campaign.charities(campaign, null, null, status);
+    // Use top campaign dntn4charity only - merging other campaign stray charities would be confusing
+	if (campaign.dntn4charity) {
+		let cids = Object.keys(campaign.dntn4charity);
+		let clistIds = charities.map(getId);
+		cids.forEach(cid => {
+			cid = normaliseSogiveId(cid);
+			if ( ! clistIds.includes(cid) && cid !== "total") {
+				const c = new NGO({id:cid});
+				strays.push(c);
+			}
+		});
+    }
+    return strays;
+}
+
+/**
+ * This may fetch data from the server. It returns instantly, but that can be with some blanks.
+ * 
+ * ??Hm: This is an ugly long method with a server-side search-aggregation! Should we do these as batch calculations on the server??
+ * 
+ * @param {!Advert[]} ads
+ * @returns {cid:Money} donationForCharity, with a .total property for the total
+ */
+const fetchDonationData = ads => {
+	const donationForCharity = {};
+	if (!ads.length) return donationForCharity; // paranoia
+	// things
+	let adIds = ads.map(ad => ad.id);
+    let campaignIds = ads.map(ad => ad.campaign);
+    // Filter bad IDs
+    campaignIds = campaignIds.filter(x=>x);
+	let charityIds = _.flatten(ads.map(Advert.charityList));
+
+	// Campaign level per-charity info?	
+	let campaignsWithoutDonationData = [];
+	for (let i = 0; i < ads.length; i++) {
+		const ad = ads[i];
+		const cp = ad.campaignPage;
+		// FIXME this is old!! Need to work with new campaigns objects
+		// no per-charity data? (which is normal)
+		if (!cp || !cp.dntn4charity || Object.values(cp.dntn4charity).filter(x => x).length === 0) {
+			if (ad.campaign) {
+				campaignsWithoutDonationData.push(ad.campaign);
+			} else {
+				console.warn("Advert with no campaign: " + ad.id);
+			}
+			continue;
+		}
+
+		Object.keys(cp.dntn4charity).forEach(cid => {
+			let dntn = cp.dntn4charity[cid];
+			if (!dntn) return;
+			if (donationForCharity[cid]) {
+				dntn = Money.add(donationForCharity[cid], dntn);
+			}
+			assert(cid !== 'total', cp); // paranoia
+			donationForCharity[cid] = dntn;
+		});
+	};
+	// Done?
+	if (donationForCharity.total && campaignsWithoutDonationData.length === 0) {
+		console.log("Using ad data for donations");
+		return donationForCharity;
+	}
+
+	// Fetch donations data	
+	// ...by campaign or advert? campaign would be nicer 'cos we could combine different ad variants... but its not logged reliably
+	// (old data) Loop.Me have not logged vert, only campaign. But elsewhere vert is logged and not campaign.
+    let sq1 = adIds.map(id => "vert:" + id).join(" OR ");
+	// NB: quoting for campaigns if they have a space (crude not 100% bulletproof ??use SearchQuery.js instead) 
+	let sq2 = campaignIds.map(id => "campaign:" + (id.includes(" ") ? '"' + id + '"' : id)).join(" OR ");
+	let sqDon = SearchQuery.or(sq1, sq2);
+
+	// load the community total for the ad
+	let pvDonationsBreakdown = DataStore.fetch(['widget', 'CampaignPage', 'communityTotal', sqDon.query], () => {
+		return ServerIO.getDonationsData({ q: sqDon.query });
+	}, {}, true, 5 * 60 * 1000);
+	if (pvDonationsBreakdown.error) {
+		console.error("pvDonationsBreakdown.error", pvDonationsBreakdown.error);
+		return donationForCharity;
+	}
+	if (!pvDonationsBreakdown.value) {
+		return donationForCharity; // loading
+	}
+
+	let lgCampaignTotal = pvDonationsBreakdown.value.total;
+	// NB don't override a campaign page setting
+	if (!donationForCharity.total) {
+		donationForCharity.total = new Money(lgCampaignTotal);
+	}
+
+	// set the per-charity numbers
+	let donByCid = pvDonationsBreakdown.value.by_cid;
+	Object.keys(donByCid).forEach(cid => {
+		let dntn = donByCid[cid];
+		if (!dntn) return;
+		if (donationForCharity[cid]) {
+			dntn = Money.add(donationForCharity[cid], dntn);
+		}
+		assert(cid !== 'total', cid); // paranoia
+		donationForCharity[cid] = dntn;
+    });
+    console.log("Using queried data for donations");
+	// done	
+	return donationForCharity;
+}; // ./fetchDonationData()
+
+
+/**
+ * @param {Object} p
+ * @param {?Money} p.donationTotal
+ * @param {NGO[]} p.charities From adverts (not SoGive)
+ * @param {Object} p.donation4charity scaled (so it can be compared against donationTotal)
+ * @returns {NGO[]}
+ */
+Campaign.filterLowDonations = (charities, campaign, donationTotal, donation4charity) => {
+
+	// Low donation filtering data is represented as only 2 controls for portal simplicity
+	// lowDntn = the threshold at which to consider a charity a low donation
+	// hideCharities = a list of charity IDs to explicitly hide - represented by keySet as an object (explained more below line 103)
+
+    console.log("[FILTER]", "Filtering with dntn4charity", donation4charity);
+
+	// Filter nulls
+	charities = charities.filter(x => x);
+
+	if (campaign.hideCharities) {
+		let hc = Campaign.hideCharities(campaign);
+        const charities2 = charities.filter(c => ! hc.includes(getId(c)));
+        console.log("[FILTER]","HIDDEN CHARITIES: ",hc);
+		charities = charities2;
+	}
+
+	let lowDntn = campaign.lowDntn;	
+	if ( ! lowDntn || ! Money.value(lowDntn)) {
+		if ( ! donationTotal) {
+			return charities;
+		}
+		// default to 0	
+		lowDntn = new Money(donationTotal.currencySymbol + "0");
+	}
+	console.warn("[FILTER]","Low donation threshold for charities set to " + lowDntn);
+
+	/**
+	 * @param {!NGO} c 
+	 * @returns {?Money}
+	 */
+	const getDonation = c => {
+		let d = donation4charity[c.id] || donation4charity[c.originalId]; // TODO sum if the ids are different
+		return d;
+	};
+
+	charities = charities.filter(charity => {
+        const dntn = getDonation(charity);
+        let include = dntn && Money.lessThan(lowDntn, dntn);
+        if (!include) console.log("[FILTER]","BELOW LOW DONATION: ",charity, dntn);
+		return include;
+    });
+	return charities;
+} // ./filterLowDonations
+
+/**
+ * Scale a list of charities to match the money total.
+ * This will scale so that sum(donations to `charities`) = donationTotal
+ * Warning: If a charity isn't on the list, it is assumed that donations to it are noise, to be reallocated.
+ * 
+ * @param {Campaign} campaign 
+ * @param {Money} donationTotal 
+ * @param {Object} donation4charityUnscaled
+ * @returns {Object} donation4charityScaled
+ */
+Campaign.scaleCharityDonations = (campaign, donationTotal, donation4charityUnscaled, charities) => {
+    let { scale } = DataStore.getValue(['location', 'params']) || {};
+    if (!scale) return donation4charityUnscaled;
+	// Campaign.assIsa(campaign); can be {}
+	//assMatch(charities, "NGO[]");	- can contain dummy objects from strays
+	if (campaign.dntn4charity) {
+		if (campaign.dntn4charity === donation4charityUnscaled) return campaign.dntn4charity; // If explicilty set with no changes, return
+	}
+	if ( ! Money.value(donationTotal)) {
+		console.warn("Donation total is 0 - cannot scale");
+		return Object.assign({}, donation4charityUnscaled); // paranoid copy
+	}
+	Money.assIsa(donationTotal);
+    // NB: only count donations for the charities listed
+    let monies = charities.map(c => getId(c) !== "unset" ? donation4charityUnscaled[getId(c)] : null);
+    monies = monies.filter(x=>x);
+	let totalDntnByCharity = Money.total(monies);
+	if ( ! Money.value(totalDntnByCharity)) {
+		console.warn("Donation total is 0 - cannot scale");
+		return Object.assign({}, donation4charityUnscaled); // paranoid copy
+	}
+	// scale up (or down)
+	let ratio = Money.divide(donationTotal, totalDntnByCharity);
+	const donation4charityScaled = {};
+	mapkv(donation4charityUnscaled, (k,v) => {
+        // Skip any special values or any explicitly set donations
+        if (k==="total" || k==="unset") return null;
+        if (campaign.dntn4charity && campaign.dntn4charity[k]) donation4charityScaled[k] = donation4charityUnscaled[k];
+        else donation4charityScaled[k] = Money.mul(donation4charityUnscaled[k], ratio);
+    });
+    return donation4charityScaled;
+};
+
+
 export default Campaign;
