@@ -12,7 +12,7 @@ import { getDataItem, saveEdits } from '../plumbing/Crud';
 import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
-import { is, keysetObjToArray, uniq, yessy } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq, uniqById, yessy } from '../utils/miscutils';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
