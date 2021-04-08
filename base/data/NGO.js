@@ -124,3 +124,47 @@ NGO.CATEGORY = {
 	]
 };
 		
+
+/**
+ * Augment charities with sogive data
+ * @param {NGO[]} charities 
+ * @returns {NGO[]}
+ */
+ NGO.fetchSogiveData = charities => {
+	let dupeIds = [];
+	let sogiveCharities = charities.map(charityOriginal => {
+		// Shallow copy charity obj
+		let charity = Object.assign({}, charityOriginal);
+		const sogiveId = normaliseSogiveId(charity.id);
+		if ( ! sogiveId) {
+			console.warn("Charity without an id?!", charity);
+			return charity;
+		}
+		// Remove duplicates
+		if (dupeIds.includes(sogiveId)) {
+			return;
+		}
+        dupeIds.push(sogiveId);
+        if (!sogiveId || sogiveId === "unset") return null;
+		// NB: the lower-level ServerIOBase.js helps patch mismatches between GL and SoGive ids
+        const pvCharity = ActionMan.getDataItem({ type: C.TYPES.NGO, id: sogiveId, status: C.KStatus.PUBLISHED, swallow:true});
+        if (pvCharity.resolved && pvCharity.error) {
+            charity.noSogiveMatch = true;
+        }
+		if ( ! pvCharity.value) {
+			return charity; // no extra data yet
+        }
+		// merge, preferring SoGive data
+		// Prefer SoGive for now as the page is designed to work with generic info - and GL data is often campaign/player specific
+		// TODO: review this
+		// NB: This merge is a shallow copy, so the objects can then be shallow edited without affecting other components
+		charity = Object.assign(charity, pvCharity.value);
+		// HACK: charity objs have conflicting IDs, force NGO to use id instead of @id
+		charity['@id'] = undefined;
+		charity.originalId = charityOriginal.id; // preserve for donation look-up
+		return charity;
+	});
+	// Remove null entries
+    sogiveCharities = sogiveCharities.filter(x => x);
+	return sogiveCharities;
+};
