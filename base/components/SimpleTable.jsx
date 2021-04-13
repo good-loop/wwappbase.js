@@ -101,7 +101,7 @@ class TableSettings {
 	/** @type {?String} Filter rows by keyword */
 	filter;
  
-	/** @param {?Boolean} If true, offer a filer widget */
+	/** @param {?Boolean|String[]} If truthy, offer a filter widget. If String[], then store the filter at this datastore path. */
 	hasFilter;
 	
 	hasCollapse;
@@ -197,6 +197,18 @@ const SimpleTable = (props) => {
 	assert(dataTree);
 	assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 
+	// Filter settings
+	if (tableSettings.hasFilter && tableSettings.hasFilter.length) {
+		tableSettings.filter = DataStore.getValue(tableSettings.hasFilter);
+	}
+	const filterChange = e => {
+		const v = e.target.value;		
+		tableSettings.filter = v;
+		if (tableSettings.hasFilter && tableSettings.hasFilter.length) {
+			DataStore.setValue(tableSettings.hasFilter, v);
+		}
+		tableSettings.update();
+	};
 	// filter and sort - and add in collapse buttons
 	let { dataTree: fdataTree, visibleColumns } = rowFilter({ dataTree, columns, tableSettings});
 	assert(fdataTree, "SimpleTable.jsx - rowFilter led to null?!", dataTree);
@@ -210,13 +222,7 @@ const SimpleTable = (props) => {
 		// NB: clipping is done later 'cos if we're doing a csv download, which should include all data
 	}
 
-	const filterChange = e => {
-		const v = e.target.value;		
-		tableSettings.filter = v;
-		tableSettings.update();
-	};
-	// scrolling (credit to Irina): uses wrapper & scroller and css
-
+	// scrolling
 	const onScroll = tableSettings.scroller? e => {
 		// console.log("onScroll", e, e.target.scrollLeft, e.target.scrollTop);
 		tableSettings.scrollLeft = e.target.scrollLeft;
