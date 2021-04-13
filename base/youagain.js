@@ -3,7 +3,7 @@ youagain.js - Login and authentication (oauth)
 Uses json web tokens
 
 Assumes:
-	jquery, SJTest, cookie-js
+	jquery, cookie-js
 
 	Depends on an external web-server (login.soda.sh). 
 	Depends on you-againServlet.java

@@ -48,6 +48,9 @@ const bezierSlide = (x = 0) => {
  */
 const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies, centerText=false}) => 
 {
+
+    let {noround} = DataStore.getValue(['location', 'params']) || {};
+
 	if (amount) {
 		value = Money.value(amount);
 		currencySymbol = Money.currencySymbol(amount);
@@ -72,7 +75,7 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 	if (sigFigs===undefined) {
 		sigFigs = preservePennies? false : 3;
 	}
-	if (sigFigs) options.maximumSignificantDigits = sigFigs;
+	if (sigFigs && !noround) options.maximumSignificantDigits = sigFigs;
 	if (preservePennies) {
 		options.minimumFractionDigits = 2;
 		options.maximumFractionDigits = 2;

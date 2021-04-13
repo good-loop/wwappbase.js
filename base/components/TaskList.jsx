@@ -192,7 +192,7 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea}) => {
 					type={textarea?"textarea":"text"} path={qpath} prop="text"
 					placeholder={parent? 'Reply / Comment' : 'Make a new task'} 
 					fast />
-				<button className="ml-1 btn btn-primary" type="submit" onClick={quickTask} >Add</button>
+				<div><button className="ml-1 btn btn-primary" type="submit" onClick={quickTask} >Add</button></div>
 			</Form>
 		</div>
 	);

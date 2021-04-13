@@ -1,8 +1,8 @@
 /** Functions used to calculate colour contrast ratio
  *  Similar project: https://github.com/LeaVerou/contrast-ratio
  */
-import { assMatch } from "sjtest";
 import React from 'react';
+import { assMatch } from '../utils/assert';
 
 /**
  * @param hex String '#f3f3f3'/'f3f3f3' must be in 6 character format (#fff won't work properly)
