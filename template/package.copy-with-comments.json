@@ -28,7 +28,7 @@
     "react-scroll": "^1.7.12",	// Where do we use this??
     "react-spring": "^8.0.27",	// Where do we use this??
     "reactstrap": "^8.4.1",
-    "sjtest": "^0.4.9",
+    // "sjtest": "^0.4.9", mostly replaced by assert.js 
     "you-again": "^0.8.8"
 	// Please do NOT put test modules, like jest and yargs, here. They go in devDependencies below.
   },
