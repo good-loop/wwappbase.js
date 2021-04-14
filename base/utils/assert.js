@@ -291,3 +291,5 @@ let str = function(obj) {
 export {
 	assert, match, isa, assMatch, str, setAssertFailed
 }
+if ( ! window.assert) window.assert = assert;
+if ( ! window.str) window.str = str;
