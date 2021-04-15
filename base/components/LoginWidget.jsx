@@ -170,7 +170,7 @@ const RegisteredThankYou = () => {
 	@param render {?JSX} default: LoginWidgetGuts
 	@param logo {?String} image url. If unset, guess via app.service
 */
-const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services, onLogin, onRegister}) => {
+const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services, onLogin, onRegister, noRegister}) => {
 	const show = getShowLogin();
 	
 	// Login widget will vanish when an in-page navigation is made
@@ -214,7 +214,7 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services,
 			<ModalBody>
 				{showThankyou ?
 					<RegisteredThankYou />
-				: <Guts services={services} onLogin={onLogin} onRegister={registerCallback} />}
+				: <Guts services={services} onLogin={onLogin} onRegister={registerCallback} noRegister={noRegister} />}
 			</ModalBody>
 		</Modal>
 	);
@@ -308,10 +308,16 @@ const EmailReset = ({}) => {
  * @param onLogin called after user has successfully logged in
  * @param onRegister called after the user has successfully registered
  */
-const EmailSignin = ({verb, onLogin, onRegister}) => {
+const EmailSignin = ({verb, onLogin, onRegister, noRegister}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
+	}
+
+	// Registration disabled? Enforce it, out of paranoia
+	if (noRegister && verb === 'register') {
+		setLoginVerb('login');
+		verb = 'login';
 	}
 
 	// we need a place to stash form info. Maybe appstate.widget.LoginWidget.name etc would be better?
@@ -338,7 +344,7 @@ const EmailSignin = ({verb, onLogin, onRegister}) => {
 				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
 					{verbButtonLabels[verb]}
 				</Button>
-				<SwitchVerb verb={verb} />
+				{noRegister ? null : <SwitchVerb verb={verb} />}
 			</div>
 			<ResetLink verb={verb} />
 			<ErrAlert error={Login.error} />
@@ -396,7 +402,7 @@ const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
 	);
 };
 
-const LoginWidgetGuts = ({services, verb, onLogin, onRegister}) => {
+const LoginWidgetGuts = ({services, verb, onLogin, onRegister, noRegister}) => {
 	if (!verb) verb = DataStore.getValue(VERB_PATH) || 'login';
 	return (
 		<div className="login-guts container-fluid">
@@ -406,6 +412,7 @@ const LoginWidgetGuts = ({services, verb, onLogin, onRegister}) => {
 						verb={verb}
 						onLogin={onLogin}
 						onRegister={onRegister}
+						noRegister={noRegister}
 					/>
 				</div>
 				<div className="login-social col-sm-6">

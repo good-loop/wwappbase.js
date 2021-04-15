@@ -95,7 +95,8 @@ class MainDivBase extends Component {
 			loginRequired,
 			defaultPage,
 			navbar=true, // false for no navbar!
-			fullWidthPages
+			fullWidthPages,
+			noRegister
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -152,7 +153,7 @@ class MainDivBase extends Component {
 						<Page />
 					</div>
 				</Container>
-				<LoginWidget title={`Welcome to ${C.app.name}`} />
+				<LoginWidget title={`Welcome to ${C.app.name}`} noRegister={noRegister} services={noRegister ? [] : undefined}/>
 			</div>
 		);
 	} // ./render()
