@@ -572,6 +572,17 @@ Misc.Tabs = ({children, path}) => {
 };
 
 
+Misc.CheckAccess = ({can = 'edit'}) => {
+	const canEdit = Roles.iCan(can).value;
+	if (canEdit === false) {
+		return <><h1>Access Denied</h1><p>You do not have sufficient permissions to view this page. If you think you should have access, please contact an administrator.</p></>
+	} else if (!canEdit) {
+		return <Misc.Loading text="Checking your access permissions..." />;
+	}
+	return null;
+}
+
+
 Misc.LoginToSee = ({desc}) => <div>Please log in to see {desc||'this'}. <LoginLink className="btn btn-secondary" /></div>;
 
 export default Misc;
