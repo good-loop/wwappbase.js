@@ -157,7 +157,7 @@ Campaign.hideCharities = campaign => {
  * @returns {String[]} hideAdverts
  */
 Campaign.hideAdverts = (topCampaign, campaigns) => {
-    
+    Campaign.assIsa(topCampaign);
     // Merge all hide advert lists together from all campaigns
     let allHideAds = topCampaign.hideAdverts ? keysetObjToArray(topCampaign.hideAdverts) : [];
     if (campaigns) campaigns.forEach(campaign => allHideAds.push(... campaign.hideAdverts ? keysetObjToArray(campaign.hideAdverts) : []));
@@ -174,7 +174,7 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
  * @returns PromiseValue(Advert[])
  */
 Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT) => {
-
+    Campaign.assIsa(topCampaign);
     let sq = SearchQuery.setProp(new SearchQuery(), "campaign", topCampaign.id);
     if (campaigns) {
         let sq2 = SearchQuery.setPropOr(new SearchQuery(), "campaign", campaigns.map(c => c && c.id).filter(x => x));
