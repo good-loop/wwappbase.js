@@ -153,7 +153,7 @@ Campaign.hideCharities = campaign => {
  * Optional: also merge with lists from other campaigns
  * @param {Campaign} topCampaign 
  * @param {?Campaign[]} campaigns 
- * @returns {String[]} hideAdverts
+ * @returns {String[]} hideAdverts IDs
  */
 Campaign.hideAdverts = (topCampaign, campaigns) => {
     
@@ -222,7 +222,9 @@ Campaign.filterNonServedAds = (ads, showNonServed) => {
 }
 
 /**
- * Get a list of adverts that the impact hub will hide for this campaign
+ * Get a list of adverts that the impact hub will hide for this campaign.
+ * Use case: for Portal, so the controls for hidden ad objects can show ad info
+ * 
  * @param {Campaign} topCampaign the subject campaign
  * @param {?Campaign[]} campaigns any other campaigns with data to use (for advertisers or agencies)
  * @param {?KStatus} status
@@ -230,16 +232,15 @@ Campaign.filterNonServedAds = (ads, showNonServed) => {
  */
 Campaign.advertsToHide = (topCampaign, campaigns, status=KStatus.DRAFT) => {
     
-    let ads = Campaign.fetchAds(topCampaign, campaigns);
-
-    // Filter ads using hide list - but reversed
+    // Filter ads using hide list - but reversed: _load_ the hide list
     const hideAdverts = Campaign.hideAdverts(topCampaign, campaigns);
-    if (yessy(hideAdverts)) {
-        let q = SearchQuery.setPropOr(new SearchQuery(), "id", hideAdverts).query;
-        let pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
-        // No serving or sampling filter - we want a direct list of ads marked as HIDE
-        return pvAds;
-    } else return null;
+    if ( ! yessy(hideAdverts)) {
+		return null;
+	}
+	let q = SearchQuery.setPropOr(new SearchQuery(), "id", hideAdverts).query;
+	let pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
+	// No serving or sampling filter - we want a direct list of ads marked as HIDE
+	return pvAds;
 };
 
 /**
