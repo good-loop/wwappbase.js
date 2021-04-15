@@ -12,7 +12,7 @@ import { getDataItem, saveEdits } from '../plumbing/Crud';
 import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
-import { is, keysetObjToArray, uniq } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq, uniqById, yessy } from '../utils/miscutils';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -65,8 +65,8 @@ Campaign.fetchMasterCampaign = (multiCampaign, status=KStatus.DRAFT) => {
  * @param {KStatus} status
  * @returns PromiseValue(Campaign)
  */
-Campaign.fetchForAdvertiser = (vertiser, status=KStatus.DRAFT) => {
-    let q = SearchQuery.setProp(new SearchQuery(), "vertiser", vertiser.id).query;
+ Campaign.fetchForAdvertiser = (vertiserId, status=KStatus.DRAFT) => {
+    let q = SearchQuery.setProp(new SearchQuery(), "vertiser", vertiserId).query;
     let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
     return pvCampaigns;
 }
@@ -169,38 +169,20 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
  * Get all ads associated with the given campaigns
  * @param {Campaign} topCampaign 
  * @param {?Campaign[]} campaigns 
- * @returns {Advert[]}
+ * @param {?KStatus} status
+ * @returns PromiseValue(Advert[])
  */
-Campaign.fetchAds = (topCampaign, campaigns) => {
-    
-    let {
-        status,
-        'gl.status': glStatus
-    } = DataStore.getValue(['location', 'params']) || {};
-    if ( ! status) status = (glStatus || C.KStatus.PUB_OR_ARC);
+Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT) => {
 
-    let ads = [];
-    // Get ads for top campaign
-    let q = SearchQuery.setProp(new SearchQuery(), "campaign", topCampaign.id).query;
-    let pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
-    if (pvAds.value) {
-        List.hits(pvAds.value).forEach(ad => {
-            ads.push(ad);
-        });
+    let sq = SearchQuery.setProp(new SearchQuery(), "campaign", topCampaign.id);
+    if (campaigns) {
+        let sq2 = SearchQuery.setPropOr(new SearchQuery(), "campaign", campaigns.map(c => c && c.id).filter(x => x));
+        sq = SearchQuery.or(sq, sq2);
     }
-    // Get ads for associated campaigns
-    campaigns && campaigns.forEach(campaign => {
-        if (!campaign || !campaign.id) return;
-        let qOtherAds = SearchQuery.setProp(new SearchQuery(), "campaign", campaign.id).query;
-        let pvOtherAds = ActionMan.list({type: C.TYPES.Advert, status, q:qOtherAds});
-        if (pvOtherAds.value) {
-            List.hits(pvOtherAds.value).forEach(ad => {
-                if (!ads.includes(ad)) ads.push(ad);
-            });
-        }
-    });
+    const q = sq.query;
+    const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
 
-    return ads;
+    return pvAds;
 }
 
 /**
@@ -208,13 +190,14 @@ Campaign.fetchAds = (topCampaign, campaigns) => {
  * @param {Campaign} topCampaign the subject campaign
  * @param {?Campaign[]} campaigns any other campaigns with data to use (for advertisers or agencies)
  * @param {?Advert[]} presetAds use a preset list of ads instead of fetching ourselves
- *  * @param {?Boolean} showNonServed show ads that have never served - overrides GET parameter of same name if true
+ * @param {?Boolean} showNonServed show ads that have never served - overrides GET parameter of same name if true
  * @param {?Boolean} nosample disable automatic sampling - overrides GET parameter of same name if true
  * @returns {Advert[]} adverts to show
  */
-Campaign.advertsToShow = (topCampaign, campaigns, presetAds, showNonServed, nosample) => {
+Campaign.advertsToShow = (topCampaign, campaigns, status=KStatus.DRAFT, presetAds, showNonServed, nosample) => {
 
-    let ads = presetAds || Campaign.fetchAds(topCampaign, campaigns);
+    const pvAds = Campaign.fetchAds(topCampaign, campaigns, status);
+    let ads = presetAds || (pvAds.value && List.hits(pvAds.value)) || [];
     // Filter ads using hide list
     const hideAdverts = Campaign.hideAdverts(topCampaign, campaigns);
     ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
@@ -242,19 +225,21 @@ Campaign.filterNonServedAds = (ads, showNonServed) => {
  * Get a list of adverts that the impact hub will hide for this campaign
  * @param {Campaign} topCampaign the subject campaign
  * @param {?Campaign[]} campaigns any other campaigns with data to use (for advertisers or agencies)
- * @returns {Advert[]} adverts to hide
+ * @param {?KStatus} status
+ * @returns PromiseValue(Advert[]) adverts to hide - returns null if no hide adverts
  */
-Campaign.advertsToHide = (topCampaign, campaigns) => {
+Campaign.advertsToHide = (topCampaign, campaigns, status=KStatus.DRAFT) => {
     
     let ads = Campaign.fetchAds(topCampaign, campaigns);
 
     // Filter ads using hide list - but reversed
     const hideAdverts = Campaign.hideAdverts(topCampaign, campaigns);
-    ads = ads.filter(ad => hideAdverts.includes(ad.id));
-    console.log("Hiding: ",hideAdverts);
-
-    // No serving or sampling filter - we want a direct list of ads marked as HIDE
-    return ads;
+    if (yessy(hideAdverts)) {
+        let q = SearchQuery.setPropOr(new SearchQuery(), "id", hideAdverts).query;
+        let pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
+        // No serving or sampling filter - we want a direct list of ads marked as HIDE
+        return pvAds;
+    } else return null;
 };
 
 /**
