@@ -14,6 +14,7 @@ import KStatus from './KStatus';
 import Advert from './Advert';
 import {normaliseSogiveId} from '../plumbing/ServerIOBase';
 import { is, keysetObjToArray, uniq, uniqById, yessy } from '../utils/miscutils';
+import { getId } from './DataClass';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
