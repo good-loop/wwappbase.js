@@ -284,7 +284,7 @@ ServerIO.getDonationsData = ({q, start, end, name}) => {
  */
 ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	// HACK route charity requests to SoGive
-	if (type==='NGO' && C.app.service !== 'sogive') {
+	if (type==='NGO' && C.app.id !== 'sogive') {
 		id = normaliseSogiveId(id);
 		return 'https://app.sogive.org/charity/'+encURI(id)+'.json'
 			+(status? '?status='+status : '');
@@ -357,14 +357,14 @@ ServerIO.getEndpointForType = (type) => {
 	// Future: refactor to be pluggable (but this is simpler and clearer for now)
 	// HACK route NGO=Charity, and go to sogive
 	if (type==='NGO') {
-		if (C.app.service === 'sogive') {
+		if (C.app.id === 'sogive') {
 			return '/charity';
 		} else {
 			return ServerIO.ENDPOINT_NGO;
 		}
 	}
 	// HACK route Task to calstat
-	if (type==='Task' && C.app.service !== 'calstat') {
+	if (type==='Task' && C.app.id !== 'calstat') {
 		return ServerIO.ENDPOINT_TASK;
 	}
 	// HACK Change "advert" to "vert" to dodge some adblocking

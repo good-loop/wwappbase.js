@@ -41,7 +41,13 @@ const init = () => {
 	if (initFlag) return;
 	initFlag = true;
 
-	Login.app = C.app.service;
+	// HACK old setup (id is preferred to match App.java)
+	if ( ! C.app.id) C.app.id = C.app.service;
+	if (C.app.id) {
+		C.app.service = C.app.id;
+	}
+
+	Login.app = C.app.id;
 
 	Login.change(() => {
 		// ?? should we store and check for "Login was attempted" to guard this??
