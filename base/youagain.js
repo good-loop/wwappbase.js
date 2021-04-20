@@ -85,6 +85,8 @@ class _Login {
 	version = "0.9.0";
 	/** This app, as known by you-again. You MUST set this! */
 	app;
+	/** aka `issuer` Allows for grouping several apps under one banner. */
+	dataspace;
 	/** 
 	 * @type {User[]} An array of user-info objects. E.g. you might have a Twitter id and an email id.
 	You could even have a couple of email ids. Always includes Login.user. */
@@ -397,9 +399,8 @@ const login2 = function (loginInfo) {
 	clear();
 	// now try to login
 	let pLogin = aget(Login.ENDPOINT, loginInfo);
-	pLogin = pLogin.then(setStateFromServerResponse)
-		.fail(function (res) {
-			Login.error = { id: res.statusCode, text: res.statusText };
+	pLogin = pLogin.then(setStateFromServerResponse, res => {
+			Login.error = { id: res.statusCode, text: res.responseText || res.statusText };
 		});
 	return pLogin;
 };
@@ -569,6 +570,7 @@ Login.setPassword = function (email, currentPassword, newPassword) {
 const aget = function (url, data, type) {
 	assert(Login.app, "You must set Login.app = my-app-name-as-registered-with-you-again");
 	data.app = Login.app;
+	data.d = Login.dataspace;
 	data.withCredentials = true; // let the server know this is a with-credentials call
 	data.caller = "" + document.location; // provide some extra info
 	// add in local cookie auth

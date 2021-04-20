@@ -48,6 +48,7 @@ const init = () => {
 	}
 
 	Login.app = C.app.id;
+	Login.dataspace = C.app.dataspace;
 
 	Login.change(() => {
 		// ?? should we store and check for "Login was attempted" to guard this??

@@ -9,6 +9,7 @@ import { assert, assMatch } from './utils/assert';
 const getRoles = () => {
 	// HACK: This is set elsewhere - but there can be an init ordering issue
 	if ( ! Login.app) Login.app = C.app.id || C.app.service;
+	if ( ! Login.dataspace) Login.dataspace = C.app.dataspace;
 
 	if ( ! Login.isLoggedIn()) {
 		return new PromiseValue([]);
