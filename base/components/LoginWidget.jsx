@@ -197,7 +197,7 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services,
 
 	const registerCallback = () => {
 		setThankyou(true);
-		onRegister();
+		if (onRegister) onRegister();
 	}
 
 	return (
