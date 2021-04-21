@@ -398,6 +398,7 @@ const login2 = function (loginInfo) {
 	logout2();
 	clear();
 	// now try to login
+	loginInfo.nonce = guid();
 	let pLogin = aget(Login.ENDPOINT, loginInfo);
 	pLogin = pLogin.then(setStateFromServerResponse, res => {
 			Login.error = { id: res.statusCode, text: res.responseText || res.statusText };
