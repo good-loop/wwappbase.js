@@ -602,10 +602,15 @@ const getClaimValue = ({person, persons, key, from}) => {
 	return claims[0].v;
 };
 
+/**
+ * 
+ * @param {*} param0 
+ * @returns ?PromiseValue
+ */
 const getPVClaimValue = ({xid, key}) => {
 	assMatch(key, String, "getPVClaimValue no key");
 	if ( ! xid) xid = Login.getId();
-	if ( ! xid) return new PromiseValue(null);
+	if ( ! xid) return null;
 	let pvPeep = getProfile({xid});
 	const pvc = PromiseValue.then(pvPeep, person => {
 		return getClaimValue({person, key});
