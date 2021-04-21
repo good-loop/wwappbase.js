@@ -214,7 +214,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 	// The rest we have to use images for (Instagram's mesh gradient can't be done in SVG)
 	let file = url || '/img/' + service + '-logo.svg';
 	if (service === 'instagram') file = '/img/instagram-logo.png';
-	else if (service === C.app.service) file = C.app.logo;
+	else if (service === C.app.id) file = C.app.logo;
 
 	let classes = 'rounded logo' + (size ? ' logo-' + size : '');
 

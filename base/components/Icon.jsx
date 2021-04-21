@@ -33,7 +33,7 @@ const Icon = ({name,size="sm",className,color,...props}) => {
 		return <span className={space("emoji", color&&"emoji-"+color, size&&"logo-"+size, className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
 	}
 	let url;
-	if (name === C.app.service) {
+	if (name === C.app.id) {
 		url = C.app.logo;
 	}
 	// Social media

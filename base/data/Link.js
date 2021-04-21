@@ -2,7 +2,14 @@
 // Link just uses Claim
 
 import Claim from './Claim';
+import XId from './XId';
 
 const Link = Claim; //new DataClass('Link', Claim);
-Link.to = (linkArray, link) => link.v ? linkArray.concat(link.v) : linkArray;
+
+/**
+ * @param {Link} link 
+ * @returns {XId}
+ */
+Link.to = (link) => link.v;
+
 export default Link;

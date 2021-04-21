@@ -168,7 +168,7 @@ const RegisteredThankYou = () => {
 	Log In or Register (one widget)
 	See SigninScriptlet
 	@param render {?JSX} default: LoginWidgetGuts
-	@param logo {?String} image url. If unset, guess via app.service
+	@param logo {?String} image url. If unset, guess via app.id
 */
 const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services, onLogin, onRegister, noRegister}) => {
 	const show = getShowLogin();
@@ -197,7 +197,7 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services,
 
 	const registerCallback = () => {
 		setThankyou(true);
-		onRegister();
+		if (onRegister) onRegister();
 	}
 
 	return (
@@ -208,7 +208,7 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services,
 			size="lg"
 		>
 			<ModalHeader toggle={() => setShowLogin(!show)}>
-				<Misc.Logo service={C.app.service} url={logo} transparent={false} className="pull-left m-r1" />
+				<Misc.Logo service={C.app.id} url={logo} transparent={false} className="pull-left m-r1" />
 				{' '}{title}
 			</ModalHeader>
 			<ModalBody>
