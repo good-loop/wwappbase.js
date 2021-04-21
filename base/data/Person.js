@@ -619,10 +619,13 @@ const getPVClaimValue = ({xid, key}) => {
 }
 
 /**
- * @param {Person[]} persons
+ * @param {Object} p
+ * @param {?Person} p.person For one profile - why not use `Person.claims()` instead?
+ * @param {?Person[]} p.persons
  * @returns {!Claim[]}
  */
-const getClaims = ({persons, key}) => {
+const getClaims = ({person, persons, key}) => {
+	if (person) persons = [person];
 	assMatch(key, String);
 	let allClaims = [];
 	persons.forEach(peep => allClaims.push(...peep.claims));	
