@@ -41,7 +41,14 @@ const init = () => {
 	if (initFlag) return;
 	initFlag = true;
 
-	Login.app = C.app.service;
+	// HACK old setup (id is preferred to match App.java)
+	if ( ! C.app.id) C.app.id = C.app.service;
+	if (C.app.id) {
+		C.app.service = C.app.id;
+	}
+
+	Login.app = C.app.id;
+	Login.dataspace = C.app.dataspace;
 
 	Login.change(() => {
 		// ?? should we store and check for "Login was attempted" to guard this??
@@ -95,7 +102,8 @@ class MainDivBase extends Component {
 			loginRequired,
 			defaultPage,
 			navbar=true, // false for no navbar!
-			fullWidthPages
+			fullWidthPages,
+			noRegister
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -152,7 +160,7 @@ class MainDivBase extends Component {
 						<Page />
 					</div>
 				</Container>
-				<LoginWidget title={`Welcome to ${C.app.name}`} />
+				<LoginWidget title={`Welcome to ${C.app.name}`} noRegister={noRegister} services={noRegister ? [] : undefined}/>
 			</div>
 		);
 	} // ./render()

@@ -4,11 +4,13 @@ import { assert, assMatch } from '../utils/assert';
 import DataClass from './DataClass';
 
 
-class Line {
-	/** @type {String} "user" */
+class ChatLine {
+	/** @type {String} XId or "user" */
 	from;
 	/** @type {String} */
 	text;
+	
+	created;
 }
 
 /**
@@ -17,7 +19,7 @@ class Line {
 class Chat extends DataClass {
 
 	/**
-	 * @type {Line[]} 
+	 * @type {ChatLine[]} 
 	*/
 	lines = [];
 
@@ -30,3 +32,8 @@ class Chat extends DataClass {
 	}
 }
 DataClass.register(Chat, "Chat"); 
+
+export default Chat;
+export {
+	ChatLine
+};

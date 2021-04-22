@@ -3,7 +3,13 @@
 @sticky-col-width: 200px;
 
 .SimpleTable {	
-	 
+
+	/** by default, dont allow too big columns */
+	td {
+		max-width: 33vw;
+		overflow: auto;
+	}
+
 	/* styling for tree children */
 	 tr.depth2 {
 		 font-size: 90%;

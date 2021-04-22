@@ -73,14 +73,6 @@ export default Person;
  */
 Person.getId = peep => peep.id;
 
-/**
- * Who is this person linked to?
- * @return {String[]} never null (empty list if unset)
- */
-// (30/01/19) use filter instead of map to patch bug where Link.to returned undefined
-// filter only adds value to return array if it is not falsy
-Person.linkedIds = peep => peep.links? peep.links.reduce(Link.to, []) : [];
-
 Person.img = peep => {
 	if ( ! peep) return null;
 	if (peep.img) return peep.img;
@@ -109,22 +101,54 @@ Person.getLink = (peep, service) => {
 /**
  * 
  * @param {Person} peep 
- * @param {String} service
- * @returns {?Link[]} all matching links, or null if none
+ * @param {?String} service If not provided, return all links
+ * @returns {?Link[]} all matching links, or falsy if none
  */
 Person.getLinks = (peep, service) => {
 	Person.assIsa(peep);
-	assMatch(service, String);
+	const links = [];
 	// is the XId a match?
 	const xid = Person.id(peep);
-	if (XId.service(xid) === service) {
-		return new Link({key:"link", value:xid, from:[xid], consent:['public'], w:1});
+	if ( ! service || XId.service(xid) === service) {
+		links.push(new Link({key:"link", value:xid, from:[xid], w:1}));
 	}
 	// links
-	if ( ! peep.links) return null;	
+	if ( ! peep.links) {
+		return links.length && links;
+	}
 	// NB: Test claims too? No - lets enforce clean data for ourselves
-	let matchedLinks = peep.links.filter(link => XId.service(link.v) === service);	
-	return matchedLinks.length !== 0? matchedLinks : null;
+	// ??filter old trks?
+	let matchedLinks = peep.links; //.filter(link => link.v && XId.service(link.v) !== "trk" || link.t);	
+	if (service) {
+		matchedLinks = peep.links.filter(link => link.v && XId.service(link.v) === service);	
+	}	
+	links.push(...matchedLinks);
+	return links.length && links;
+};
+
+
+/**
+ * 
+ * @param {?Person} person If unset return false
+ * @param {!String} app 
+ */
+Person.hasApp = (person, app) => {
+	if ( ! person) return false;
+	Person.assIsa(person, "hasApp");
+	const cv = getClaimValue({person, key:"app:"+app, from:person.id});
+	return !! cv;
+};
+
+/**
+ * Set and save
+ * @param {!Person} person 
+ * @param {!String} app 
+ */
+Person.setHasApp = (person, app) => {
+	Person.assIsa(person, "setHasApp");
+	assMatch(app,String);
+	setClaimValue({person, key:"app:"+app, value:true});
+	savePersons({person});
 };
 
 
@@ -136,11 +160,16 @@ const PURPOSES = new Enum("any email_app email_mailing_list email_marketing cook
 
 /**
  * Get local or fetch
+ * @param {?Object} p 
+ * @param {?String} p.xid If unset, use Login.getId()
  * TODO fields 
- * @returns PromiseValue(Person)
+ * @returns !PromiseValue(Person)
  */
-const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}) => {
-	assMatch(xid, String,"getProfile - No XId?!");
+const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) => {
+	if ( ! xid) xid = Login.getId();
+	if ( ! xid) {
+		return new PromiseValue(null);
+	}
 	// domain:ServerIO.dataspace??
 	const type = 'Person';
 	const dsi = {type, status, id:xid};		
@@ -173,6 +202,24 @@ const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}) => {
 	return pvProfile;
 };
 
+/**
+ * 
+ * @param {Object} p
+ * @returns PromiseValue(Person)
+ */
+const getProfileFor = ({xid,service}) => {
+	const pvPeep = getProfile({xid});
+	if ( ! pvPeep.resolved) return pvPeep; // HACK not quite correct! e.g. If you attach a then!	
+	if (XId.service(xid) === service) {
+		return pvPeep;
+	}
+	const link = Person.getLink(pvPeep.value, service);
+	if ( ! link) return new PromiseValue(null);
+	const sxid = Link.to(link);
+	const pvPeep2 = getProfile({sxid});
+	return pvPeep2;
+};
+
 // one hour in msecs DS cache
 const cachePeriod = 1000*60*60;
 
@@ -202,10 +249,15 @@ const getProfilesNow = xids => {
  * TODO refactor into Crud
  * A debounced save - allows 1 second for batching edits
  * Create UI call for saving claims to back-end
+ *  @param {Person} persons
 	@param {Person[]} persons
-	@returns {PromiseValue}
+	@returns PromiseValue
 */ 
-const savePersons = debouncePV(({persons, then}) => {
+const savePersons = debouncePV(({person, persons}) => {
+	if (person) {
+		assert( ! persons);
+		persons = [person];
+	}	
 	// one save per person ?? TODO batch
 	let pSaves = persons.map(peep => {
 		Person.assIsa(peep);
@@ -418,10 +470,11 @@ const getAllXIds2 = (all, agendaXIds) => {
 	// It can be considered done when DataStore holds a profile for each xid
 	pvsPeep.filter(pvp => pvp.value).forEach(pvp => {
 		let peep = pvp.value;
-		let linkedIds = Person.linkedIds(peep);	
+		let linkedIds = Person.getLinks(peep).map(Link.to);	
 		if ( ! linkedIds) return;
 		// loop test (must not already be in all) and recurse
-		linkedIds.filter(li => ! all.has(li)).forEach(li => {
+		let newIds = linkedIds.filter(li => li && ! all.has(li));
+		newIds.forEach(li => {
 			all.add(li);
 			getAllXIds2(all, [li]);					
 		});
@@ -482,7 +535,8 @@ const removeConsent = ({persons, consent}) => {
  * @param {!Person[]} p.persons
  * @param {!String} p.key
  */
-const setClaimValue = ({persons, key, value}) => {
+const setClaimValue = ({person, persons, key, value}) => {
+	if (person) persons = [person];
 	if ( ! persons.length) console.warn("setClaimValue - no persons :( -- Check profile load is working");
 	console.log("setClaimValue "+key+" = "+value, persons.map(p => p.id));
 	let from = Login.getId() || XId.ANON;
@@ -522,13 +576,20 @@ const addClaim = (peep, claim) => {
 
 /**
  * @param {Object} p
+ * @param {?Person} p.person
  * @param {?Person[]} p.persons
  * @param {!String} p.key
+ * @param {?String} p.from If set only return claims by this claimant
  * @returns {?Claim} the "best" claim value or null
  */
-const getClaimValue = ({persons, key}) => {
+const getClaimValue = ({person, persons, key, from}) => {
+	if (person) persons = [person];
 	if ( ! persons) return null;
 	let claims = getClaims({persons, key});
+	// filter by from?
+	if (from) {
+		claims = claims.filter(c => c.f && c.f.includes(from));
+	}
 	if ( ! claims.length) return null;
 	// HACK pick the best!
 	if (claims.length > 1) {
@@ -540,11 +601,31 @@ const getClaimValue = ({persons, key}) => {
 	}
 	return claims[0].v;
 };
+
 /**
- * @param {Person[]} persons
+ * 
+ * @param {*} param0 
+ * @returns ?PromiseValue
+ */
+const getPVClaimValue = ({xid, key}) => {
+	assMatch(key, String, "getPVClaimValue no key");
+	if ( ! xid) xid = Login.getId();
+	if ( ! xid) return null;
+	let pvPeep = getProfile({xid});
+	const pvc = PromiseValue.then(pvPeep, person => {
+		return getClaimValue({person, key});
+	});
+	return pvc;
+}
+
+/**
+ * @param {Object} p
+ * @param {?Person} p.person For one profile - why not use `Person.claims()` instead?
+ * @param {?Person[]} p.persons
  * @returns {!Claim[]}
  */
-const getClaims = ({persons, key}) => {
+const getClaims = ({person, persons, key}) => {
+	if (person) persons = [person];
 	assMatch(key, String);
 	let allClaims = [];
 	persons.forEach(peep => allClaims.push(...peep.claims));	
@@ -562,8 +643,7 @@ export {
 	doRegisterEmail,	
 	convertConsents,
 	getAllXIds,
-	getProfile,
-	getProfilesNow,
+	getProfile, getProfileFor,
 	getConsents, hasConsent,
 	setConsents,
 	addConsent, removeConsent,
@@ -573,5 +653,6 @@ export {
 	getEmail,
 
 	// Lets offer some easy ways to edit profile-bundles
-	getClaims, getClaimValue, setClaimValue, savePersons, deleteClaim
+	getClaims, getClaimValue, setClaimValue, savePersons, deleteClaim,
+	getPVClaimValue
 };

@@ -214,7 +214,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 	// The rest we have to use images for (Instagram's mesh gradient can't be done in SVG)
 	let file = url || '/img/' + service + '-logo.svg';
 	if (service === 'instagram') file = '/img/instagram-logo.png';
-	else if (service === C.app.service) file = C.app.logo;
+	else if (service === C.app.id) file = C.app.logo;
 
 	let classes = 'rounded logo' + (size ? ' logo-' + size : '');
 
@@ -570,6 +570,17 @@ Misc.Tabs = ({children, path}) => {
 		<div>{ activeChild }</div>
 	</>;
 };
+
+
+Misc.CheckAccess = ({can = 'edit'}) => {
+	const canEdit = Roles.iCan(can).value;
+	if (canEdit === false) {
+		return <><h1>Access Denied</h1><p>You do not have sufficient permissions to view this page. If you think you should have access, please contact an administrator.</p></>
+	} else if (!canEdit) {
+		return <Misc.Loading text="Checking your access permissions..." />;
+	}
+	return null;
+}
 
 
 Misc.LoginToSee = ({desc}) => <div>Please log in to see {desc||'this'}. <LoginLink className="btn btn-secondary" /></div>;

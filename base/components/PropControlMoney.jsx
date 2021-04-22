@@ -19,6 +19,7 @@ import DropdownToggle from 'reactstrap/lib/DropdownToggle';
 import DropdownMenu from 'reactstrap/lib/DropdownMenu';
 import DropdownItem from 'reactstrap/lib/DropdownItem';
 import Money from '../data/Money';
+import { assert } from '../utils/assert';
 
 /**
  * A list-of-strings editor, where the strings are drawn as discrete "pills"

@@ -37,7 +37,7 @@ import AThing from '../data/AThing';
  * @param {?Boolean} p.canDelete - If set, show delete buttons
  * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
  * @param {?String} p.status - e.g. "Draft"
- * @param {?String} p.servlet - @deprecated - use navpage instead
+ * @param {?String} p.servlet - Deprecated - use navpage instead
  * @param {?String} p.navpage - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
  * @param {?Function} p.ListItem JSX if set, replaces DefaultListItem.

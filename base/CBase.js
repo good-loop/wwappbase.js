@@ -11,9 +11,14 @@ const C = {};
  * app config
  * Best practice: Set this in your app.jsx file, from values in a GLAppManifest file.
  */
-C.app = {
+C.app = 
+{
 	name: "MyApp",
-	service: "myapp",
+	/**
+	 * id is as used by YouAgain
+	 */
+	id: "myapp",
+	dataspace: null,
 	logo: "/img/logo.png"
 };
 

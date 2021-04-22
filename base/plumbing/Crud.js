@@ -134,7 +134,7 @@ const localLoad = path => {
 	try {
 		let json = window.localStorage.getItem(spath);
 		let person = JSON.parse(json);			
-		console.log("localLoad of "+path, person? person.id+" "+person.name : "falsy?!");
+		//console.log("localLoad of "+path, person? person.id+" "+person.name : "falsy?!");
 		return person;
 	} catch(err) { // paranoia
 		// Can this happen??
@@ -592,7 +592,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 			if (res.success) {
 				console.log("refreshed", type, id);
 				let item = res.cargo;
-				DataStore.setData(status, item);
+				DataStore.setData({status, type, id, item});
 			} else {
 				console.warn("refresh-failed", res, type, id);
 			}

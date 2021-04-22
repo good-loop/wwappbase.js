@@ -1,7 +1,36 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { assMatch } from '../utils/assert';
 import Misc from './Misc';
+import gfm from 'remark-gfm';
+import { is } from '../utils/miscutils';
+import { Input, Label } from 'reactstrap';
+
+const MDCheckbox = ({setSource, source, checked, ...args}) => {
+	console.warn(args);
+	if ( ! is(checked)) {
+		return ReactMarkdown.renderers.listItem(args);
+	}
+	// args = Object.assign({}, args);
+	// args.checked = null;
+	// return <><input type="radio" />kids: {args.children} render: {ReactMarkdown.renderers.listItem(args)}</>;
+	// const [isChecked, setChecked] = useState(args.checked);
+	const onChange = e => {
+		const posn = args.node.position;
+		let lis = source.slice(posn.start.offset, posn.end.offset);
+		let newLis = checked? lis.replace("[x]","[ ]") : lis.replace("[ ]","[x]");
+		let newSource = source.slice(0,posn.start.offset)+newLis+source.slice(posn.end.offset);
+		console.log("task tick :)", newSource, args, e);
+		setSource(newSource);
+	};
+	return (<li>
+		<Input type='checkbox' 
+				className="form-check-input"				
+				checked={checked}
+				onChange={onChange} />
+			<Label check>{args.children}</Label>
+		</li>);
+};
 
 /**
  * Remove non-standard characters and render Markdown.
@@ -9,8 +38,9 @@ import Misc from './Misc';
  * @param {?Object} renderers node-type: React-component. This is merged with the default renderers.
  * The props passed to the component varies based on the type of node.
  * @param {?boolean} escapeHtml By default we render html (with just an anti-script-injection check). Set true to block html.
+ * @param {Function} setSource newText => Function to make changes to the text source. If provided, then checkboxes can be clicked on/off.
  */
-const MDText = ({source, renderers, escapeHtml = false}) => {
+const MDText = ({source, renderers={}, escapeHtml = false, setSource}) => {
 	if ( ! source) {
 		return null;
 	}
@@ -27,8 +57,13 @@ const MDText = ({source, renderers, escapeHtml = false}) => {
 		}
 		escapeHtml = true;
 	}
+	
+	// tasks
+	if (setSource) {
+		renderers.listItem = args => <MDCheckbox source={source} setSource={setSource} {...args} />;
+	}
 
-	return <ReactMarkdown escapeHtml={escapeHtml} source={nsource} renderers={renderers} />;
+	return <ReactMarkdown plugins={[gfm]} escapeHtml={escapeHtml} source={nsource} renderers={renderers} />;
 };
 
 export default MDText;

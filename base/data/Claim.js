@@ -4,6 +4,8 @@ import { is } from '../utils/miscutils';
 import DataClass from './DataClass';
 import XId from './XId';
 
+const DEFAULT_CONSENT = "dflt";
+
 /** impact utils */
 class Claim extends DataClass {
 	/**
@@ -37,8 +39,8 @@ class Claim extends DataClass {
 		// Converting from internally held true/false to something
 		// That the back-end can understand
 		if ( ! is(c)) c = consent;
+		if ( ! is(c)) c = [DEFAULT_CONSENT];
 		if ( typeof c === 'boolean' ) c = c ? ['public'] : ['private']
-		assMatch(c, 'String[]');
 
 		let base = {
 			c,
