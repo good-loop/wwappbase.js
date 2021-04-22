@@ -175,7 +175,7 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
 Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT, query) => {
 
     let sq = SearchQuery.setProp(new SearchQuery(), "campaign", topCampaign.id);
-    if (campaigns) {
+    if (yessy(campaigns)) {
         let sq2 = SearchQuery.setPropOr(new SearchQuery(), "campaign", campaigns.map(c => c && c.id).filter(x => x));
         sq = SearchQuery.or(sq, sq2);
     }
