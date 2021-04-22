@@ -172,14 +172,16 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
  * @param {?KStatus} status
  * @returns PromiseValue(Advert[])
  */
-Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT) => {
+Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT, query) => {
 
     let sq = SearchQuery.setProp(new SearchQuery(), "campaign", topCampaign.id);
     if (campaigns) {
         let sq2 = SearchQuery.setPropOr(new SearchQuery(), "campaign", campaigns.map(c => c && c.id).filter(x => x));
         sq = SearchQuery.or(sq, sq2);
     }
+    if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
     const q = sq.query;
+    console.log("QUERY", q);
     const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
 
     return pvAds;
@@ -194,10 +196,11 @@ Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT) => {
  * @param {?Boolean} nosample disable automatic sampling - overrides GET parameter of same name if true
  * @returns {Advert[]} adverts to show
  */
-Campaign.advertsToShow = (topCampaign, campaigns, status=KStatus.DRAFT, presetAds, showNonServed, nosample) => {
+Campaign.advertsToShow = (topCampaign, campaigns, status=KStatus.DRAFT, presetAds, showNonServed, nosample, query) => {
 
-    const pvAds = Campaign.fetchAds(topCampaign, campaigns, status);
+    const pvAds = Campaign.fetchAds(topCampaign, campaigns, status, query);
     let ads = presetAds || (pvAds.value && List.hits(pvAds.value)) || [];
+    console.log("SHOWING FROM ADS:",ads);
     // Filter ads using hide list
     const hideAdverts = Campaign.hideAdverts(topCampaign, campaigns);
     ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
