@@ -262,7 +262,6 @@ ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], sta
  * @returns Promise {
  * 	by_cid: {String: Money}
  * 	total: {Money},
- * 	stats: {}
  * }
  * @param {?String} name Just for debugging - makes it easy to spot in the network tab 
  */
