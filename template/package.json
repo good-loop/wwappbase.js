@@ -10,7 +10,7 @@
   "homepage": "https://github.com/good-loop#readme",
   "license": "MIT",
   "dependencies": {
-    "chart.js": "^2.9.3",
+    "chart.js": "^2.9.4",
     "easy-enums": "^1.1.8",
     "fast-json-patch": "^3.0.0-1",
     "hashmap": "^2.4.0",
@@ -25,10 +25,10 @@
     "react-chartjs2": "^1.2.1",
     "react-dom": "^16.13.1",
     "react-dropzone": "^11.1.0",
-    "react-markdown": "^4.3.1",
+    "react-markdown": "^5.0.3",
     "react-spring": "^8.0.27",
-    "reactstrap": "^8.5.1",
-    "sjtest": "^0.4.9"
+    "reactstrap": "^8.8.1",
+    "remark-gfm": "^1.0.0"
   },
   "scripts": {
     "compile": "webpack --config $PWD/webpack.config.js --progress --colors && ./gitstamp.sh",
