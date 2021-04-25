@@ -13,6 +13,7 @@ import { Badge, Form, FormGroup, Input, Label } from 'reactstrap';
 import CloseButton from './CloseButton';
 import { useState } from 'react';
 import { asArray, labeller } from '../utils/miscutils';
+import { assert } from '../utils/assert';
 
 /**
  * A list-of-strings editor, where the strings are drawn as discrete "pills"

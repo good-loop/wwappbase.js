@@ -281,3 +281,4 @@ if (typeof module !== 'undefined') {
 }	
 // for debug
 if ( ! window.printer) window.printer = printer;
+if ( ! window.str) window.str = printer.str;
