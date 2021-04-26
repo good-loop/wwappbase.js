@@ -106,6 +106,8 @@ Advert.end = ad => ad.start && new Date(ad.end);
 
 Advert.campaign = ad => ad.campaign;
 
+Advert.tags = ad => ad.tags;
+
 /**
  * @param {Advert} ad
  * @returns {!NGO[]}
