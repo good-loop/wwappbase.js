@@ -125,7 +125,7 @@ module.exports = {
 		"prefer-arrow-callback": "off",
 		"prefer-const": "off",
 		"prefer-destructuring": "off",
-		"prefer-object-spread": "warn",
+		"prefer-object-spread": "off",
 		"prefer-promise-reject-errors": "warn",
 		"prefer-template": "off",
 		"quote-props": "warn",
