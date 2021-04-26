@@ -321,7 +321,7 @@ const campaignNameForAd = ad => {
  Campaign.donationTotal = (campaign, dntn4charity) => {
     let donationTotal = Money.value(campaign.dntn) && campaign.dntn;
     if (!donationTotal) {
-        const donationData = dntn4charity || Campaign.donation4charity(campaign);
+        const donationData = dntn4charity || Campaign.dntn4charity(campaign);
         donationTotal = donationData.total;
     }
     return donationTotal;
