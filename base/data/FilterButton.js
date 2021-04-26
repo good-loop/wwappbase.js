@@ -8,12 +8,7 @@ class FilterButton {
 		this.query = "";
 		this.displayName = "";
 		this.imgUrl = "";
-		this.dataState = "active";
 	}
 }
-
-FilterButton.remove = (filter) => {
-	filter.dataState = "removed";
-};
 
 export default FilterButton;
