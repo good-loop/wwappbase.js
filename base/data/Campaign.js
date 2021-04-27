@@ -191,14 +191,15 @@ Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT, query) => {
 
 /**
  * Get a list of adverts that the impact hub should show for this campaign
- * @param {Campaign} topCampaign the subject campaign
- * @param {?Campaign[]} campaigns any other campaigns with data to use (for advertisers or agencies)
- * @param {?Advert[]} presetAds use a preset list of ads instead of fetching ourselves
- * @param {?Boolean} showNonServed show ads that have never served - overrides GET parameter of same name if true
- * @param {?Boolean} nosample disable automatic sampling - overrides GET parameter of same name if true
+ * @param {Object} p
+ * @param {Campaign} p.topCampaign the subject campaign
+ * @param {?Campaign[]} p.campaigns any other campaigns with data to use (for advertisers or agencies)
+ * @param {?Advert[]} p.presetAds use a preset list of ads instead of fetching ourselves
+ * @param {?Boolean} p.showNonServed show ads that have never served - overrides GET parameter of same name if true
+ * @param {?Boolean} p.nosample disable automatic sampling - overrides GET parameter of same name if true
  * @returns {Advert[]} adverts to show
  */
-Campaign.advertsToShow = (topCampaign, campaigns, status=KStatus.DRAFT, presetAds, showNonServed, nosample, query) => {
+Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, presetAds, showNonServed, nosample, query}) => {
 
     const pvAds = Campaign.fetchAds(topCampaign, campaigns, status, query);
     let ads = presetAds || (pvAds.value && List.hits(pvAds.value)) || [];
