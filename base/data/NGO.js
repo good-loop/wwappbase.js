@@ -3,6 +3,9 @@
 import DataClass from './DataClass';
 import { normaliseSogiveId } from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
+import SearchQuery from '../searchquery';
+import C from '../CBase';
+import Campaign from './Campaign';
 
 class NGO extends DataClass {
 	constructor(base) {
@@ -128,6 +131,101 @@ NGO.CATEGORY = {
 		
 
 /**
+ * This may fetch data from the server. It returns instantly, but that can be with some blanks.
+ * 
+ * ??Hm: This is an ugly long method with a server-side search-aggregation! Should we do these as batch calculations on the server??
+ * 
+ * @param {!Advert[]} ads
+ * @returns {cid:Money} donationForCharity, with a .total property for the total
+ */
+NGO.fetchDonationData = ads => {
+	const donationForCharity = {};
+	if (!ads.length) return donationForCharity; // paranoia
+	// things
+	let adIds = ads.map(ad => ad.id);
+    let campaignIds = ads.map(ad => ad.campaign);
+    // Filter bad IDs
+    campaignIds = campaignIds.filter(x=>x);
+	let charityIds = _.flatten(ads.map(Advert.charityList));
+
+	// Campaign level per-charity info?	
+	let campaignsWithoutDonationData = [];
+	for (let i = 0; i < ads.length; i++) {
+		const ad = ads[i];
+		const cp = ad.campaignPage;
+		// FIXME this is old!! Need to work with new campaigns objects
+		// no per-charity data? (which is normal)
+		if (!cp || !cp.dntn4charity || Object.values(cp.dntn4charity).filter(x => x).length === 0) {
+			if (ad.campaign) {
+				campaignsWithoutDonationData.push(ad.campaign);
+			} else {
+				console.warn("Advert with no campaign: " + ad.id);
+			}
+			continue;
+		}
+
+		Object.keys(cp.dntn4charity).forEach(cid => {
+			let dntn = cp.dntn4charity[cid];
+			if (!dntn) return;
+			if (donationForCharity[cid]) {
+				dntn = Money.add(donationForCharity[cid], dntn);
+			}
+			assert(cid !== 'total', cp); // paranoia
+			donationForCharity[cid] = dntn;
+		});
+	};
+	// Done?
+	if (donationForCharity.total && campaignsWithoutDonationData.length === 0) {
+		console.log("Using ad data for donations");
+		return donationForCharity;
+	}
+
+	// Fetch donations data	
+	// ...by campaign or advert? campaign would be nicer 'cos we could combine different ad variants... but its not logged reliably
+	// (old data) Loop.Me have not logged vert, only campaign. But elsewhere vert is logged and not campaign.
+    let sq1 = adIds.map(id => "vert:" + id).join(" OR ");
+	// NB: quoting for campaigns if they have a space (crude not 100% bulletproof ??use SearchQuery.js instead) 
+	let sq2 = campaignIds.map(id => "campaign:" + (id.includes(" ") ? '"' + id + '"' : id)).join(" OR ");
+	let sqDon = SearchQuery.or(sq1, sq2);
+
+	// load the community total for the ad
+	let pvDonationsBreakdown = DataStore.fetch(['widget', 'CampaignPage', 'communityTotal', sqDon.query], () => {
+		return ServerIO.getDonationsData({ q: sqDon.query });
+	}, {}, true, 5 * 60 * 1000);
+	if (pvDonationsBreakdown.error) {
+		console.error("pvDonationsBreakdown.error", pvDonationsBreakdown.error);
+		return donationForCharity;
+	}
+	if (!pvDonationsBreakdown.value) {
+		return donationForCharity; // loading
+	}
+
+	let lgCampaignTotal = pvDonationsBreakdown.value.total;
+	// NB don't override a campaign page setting
+	if (!donationForCharity.total) {
+		donationForCharity.total = new Money(lgCampaignTotal);
+	}
+
+	// set the per-charity numbers
+	let donByCid = pvDonationsBreakdown.value.by_cid;
+	Object.keys(donByCid).forEach(cid => {
+		let dntn = donByCid[cid];
+		if (!dntn) return;
+		if (donationForCharity[cid]) {
+			dntn = Money.add(donationForCharity[cid], dntn);
+		}
+		assert(cid !== 'total', cid); // paranoia
+		donationForCharity[cid] = dntn;
+    });
+    console.log("Using queried data for donations");
+	// done	
+	return donationForCharity;
+}; // ./fetchDonationData()
+
+
+
+
+/**
  * Augment charities with sogive data
  * @param {NGO[]} charities 
  * @returns {NGO[]}
@@ -170,3 +268,4 @@ NGO.CATEGORY = {
     sogiveCharities = sogiveCharities.filter(x => x);
 	return sogiveCharities;
 };
+

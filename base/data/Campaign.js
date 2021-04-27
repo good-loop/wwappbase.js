@@ -15,6 +15,7 @@ import Advert from './Advert';
 import {normaliseSogiveId} from '../plumbing/ServerIOBase';
 import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv } from '../utils/miscutils';
 import { getId } from './DataClass';
+import NGO from './NGO';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -339,7 +340,7 @@ Campaign.dntn4charity = (topCampaign, otherCampaigns, extraAds, status=KStatus.D
     // initial donation record
     const donation4charity = yessy(topCampaign.dntn4charity)? Object.assign({}, topCampaign.dntn4charity) : {};
     // augment with fetched data
-    const fetchedDonationData = fetchDonationData(ads);
+    const fetchedDonationData = NGO.fetchDonationData(ads);
     Object.keys(fetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = fetchedDonationData[cid]});
 
     otherCampaigns && otherCampaigns.forEach(campaign => {
@@ -347,14 +348,14 @@ Campaign.dntn4charity = (topCampaign, otherCampaigns, extraAds, status=KStatus.D
         const moreAds = pvMoreAds.value ? List.hits(pvMoreAds.value) : [];
         // get inherent and fetched data from campaign
         const otherDntn4charity = yessy(campaign.dntn4charity)? campaign.dntn4charity : {};
-        const otherFetchedDonationData = fetchDonationData(moreAds);
+        const otherFetchedDonationData = NGO.fetchDonationData(moreAds);
         // augment master list with data, never overwriting
         Object.keys(otherDntn4charity).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = otherDntn4charity[cid]});
         Object.keys(otherFetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = otherFetchedDonationData[cid]});
     });
 
     // Augment in data for extra dangling ads
-    const extraFetchedDonationData = fetchDonationData(extraAds);
+    const extraFetchedDonationData = NGO.fetchDonationData(extraAds);
     Object.keys(extraFetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = extraFetchedDonationData[cid]});
 
     // Normalise all charity ids
@@ -429,98 +430,6 @@ Campaign.strayCharities = (campaign, status=KStatus.DRAFT) => {
     return strays;
 }
 
-/**
- * This may fetch data from the server. It returns instantly, but that can be with some blanks.
- * 
- * ??Hm: This is an ugly long method with a server-side search-aggregation! Should we do these as batch calculations on the server??
- * 
- * @param {!Advert[]} ads
- * @returns {cid:Money} donationForCharity, with a .total property for the total
- */
-const fetchDonationData = ads => {
-	const donationForCharity = {};
-	if (!ads.length) return donationForCharity; // paranoia
-	// things
-	let adIds = ads.map(ad => ad.id);
-    let campaignIds = ads.map(ad => ad.campaign);
-    // Filter bad IDs
-    campaignIds = campaignIds.filter(x=>x);
-	let charityIds = _.flatten(ads.map(Advert.charityList));
-
-	// Campaign level per-charity info?	
-	let campaignsWithoutDonationData = [];
-	for (let i = 0; i < ads.length; i++) {
-		const ad = ads[i];
-		const cp = ad.campaignPage;
-		// FIXME this is old!! Need to work with new campaigns objects
-		// no per-charity data? (which is normal)
-		if (!cp || !cp.dntn4charity || Object.values(cp.dntn4charity).filter(x => x).length === 0) {
-			if (ad.campaign) {
-				campaignsWithoutDonationData.push(ad.campaign);
-			} else {
-				console.warn("Advert with no campaign: " + ad.id);
-			}
-			continue;
-		}
-
-		Object.keys(cp.dntn4charity).forEach(cid => {
-			let dntn = cp.dntn4charity[cid];
-			if (!dntn) return;
-			if (donationForCharity[cid]) {
-				dntn = Money.add(donationForCharity[cid], dntn);
-			}
-			assert(cid !== 'total', cp); // paranoia
-			donationForCharity[cid] = dntn;
-		});
-	};
-	// Done?
-	if (donationForCharity.total && campaignsWithoutDonationData.length === 0) {
-		console.log("Using ad data for donations");
-		return donationForCharity;
-	}
-
-	// Fetch donations data	
-	// ...by campaign or advert? campaign would be nicer 'cos we could combine different ad variants... but its not logged reliably
-	// (old data) Loop.Me have not logged vert, only campaign. But elsewhere vert is logged and not campaign.
-    let sq1 = adIds.map(id => "vert:" + id).join(" OR ");
-	// NB: quoting for campaigns if they have a space (crude not 100% bulletproof ??use SearchQuery.js instead) 
-	let sq2 = campaignIds.map(id => "campaign:" + (id.includes(" ") ? '"' + id + '"' : id)).join(" OR ");
-	let sqDon = SearchQuery.or(sq1, sq2);
-
-	// load the community total for the ad
-	let pvDonationsBreakdown = DataStore.fetch(['widget', 'CampaignPage', 'communityTotal', sqDon.query], () => {
-		return ServerIO.getDonationsData({ q: sqDon.query });
-	}, {}, true, 5 * 60 * 1000);
-	if (pvDonationsBreakdown.error) {
-		console.error("pvDonationsBreakdown.error", pvDonationsBreakdown.error);
-		return donationForCharity;
-	}
-	if (!pvDonationsBreakdown.value) {
-		return donationForCharity; // loading
-	}
-
-	let lgCampaignTotal = pvDonationsBreakdown.value.total;
-	// NB don't override a campaign page setting
-	if (!donationForCharity.total) {
-		donationForCharity.total = new Money(lgCampaignTotal);
-	}
-
-	// set the per-charity numbers
-	let donByCid = pvDonationsBreakdown.value.by_cid;
-	Object.keys(donByCid).forEach(cid => {
-		let dntn = donByCid[cid];
-		if (!dntn) return;
-		if (donationForCharity[cid]) {
-			dntn = Money.add(donationForCharity[cid], dntn);
-		}
-		assert(cid !== 'total', cid); // paranoia
-		donationForCharity[cid] = dntn;
-    });
-    console.log("Using queried data for donations");
-	// done	
-	return donationForCharity;
-}; // ./fetchDonationData()
-
 
 /**
  * @param {Object} p
@@ -529,7 +438,7 @@ const fetchDonationData = ads => {
  * @param {Object} p.donation4charity scaled (so it can be compared against donationTotal)
  * @returns {NGO[]}
  */
-Campaign.filterLowDonations = (charities, campaign, donationTotal, donation4charity) => {
+Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4charity}) => {
 
 	// Low donation filtering data is represented as only 2 controls for portal simplicity
 	// lowDntn = the threshold at which to consider a charity a low donation
@@ -537,6 +446,7 @@ Campaign.filterLowDonations = (charities, campaign, donationTotal, donation4char
 
     console.log("[FILTER]", "Filtering with dntn4charity", donation4charity);
 
+	console.log("[FILTER]", charities);
 	// Filter nulls
 	charities = charities.filter(x => x);
 
