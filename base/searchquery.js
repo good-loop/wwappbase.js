@@ -135,10 +135,13 @@ SearchQuery.setPropOr = (sq, propName, propValues) => {
 	assert(propValues.length, "searchquery.js - "+propName+" Cant OR over nothing "+propValues)
 	// quote the values?
 	let qpropValues = propValues.map(propValue => propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"');
-	let qor = propName+":" + qpropValues.join(" OR "+propName+":");
+	// join by OR
+	let qor = propName+":" + qpropValues.join(" OR "+propName+":");	
+	// no need to merge into a bigger query? Then we're done
 	if ( ! sq || ! sq.query) {
 		return new SearchQuery(qor);
 	}
+	
 	SearchQuery._init(sq);
 	let newq = sq.query;
 	// HACK out the old value TODO use the parse tree to handle quoting
