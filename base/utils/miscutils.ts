@@ -639,3 +639,12 @@ export const uniqById = (array: Object[], keyFn: Function) : Object[] => {
 export const keysetObjToArray = (keysetObj : Object) => {
     return Object.keys(keysetObj).filter(item => keysetObj[item]);
 };
+
+/**
+ * Convert an array of objects with ids to a list of ids
+ * @param {Array} idObjArray 
+ */
+export const idList = (idObjArray : Object[]) => {
+	return idObjArray ? idObjArray.map(obj => obj.id) : [];
+};
+

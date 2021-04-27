@@ -13,7 +13,7 @@ import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
 import {normaliseSogiveId} from '../plumbing/ServerIOBase';
-import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList } from '../utils/miscutils';
 import { getId } from './DataClass';
 import NGO from './NGO';
 
@@ -190,6 +190,58 @@ Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT, query) => {
 }
 
 /**
+ * Get the Impact Hub status of all ads
+ * Status types:
+ * SHOWING
+ * HIDDEN
+ * AUTO FILTERED
+ * NON SERVING
+ * NO CAMPAIGN
+ * UNKNOWN
+ * @param {Object} p
+ * @param {Campaign} p.topCampaign the subject campaign
+ * @param {?Campaign[]} p.campaigns any other campaigns with data to use (for advertisers or agencies)
+ * @param {?Advert[]} p.extraAds additional associated adverts with no relevant campaign
+ * @param {?Boolean} p.showNonServed show ads that have never served - overrides GET parameter of same name if true
+ * @param {?Boolean} p.nosample disable automatic sampling - overrides GET parameter of same name if true
+ * @param {?String} p.query attach a custom query to the ad search
+ * @returns Advert[] with attached status as advert.ihStatus
+ */
+Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.DRAFT, showNonServed, nosample, query}) => {
+	// Get raw list of ads
+	let allButExplicitlyHidAds = Campaign.advertsToShow({topCampaign, campaigns, status, showNonServed:true, nosample:true});
+	// Get all ads not filtered with non serving
+	let adsWithNonServingApplied = Campaign.advertsToShow({topCampaign, campaigns, status, presetAds:allButExplicitlyHidAds, showNonServed, nosample:true});
+	// Invert list of non serving ads
+	let adsFilteredByNonServing = allButExplicitlyHidAds.filter(ad => !idList(adsWithNonServingApplied).includes(ad.id));
+	// Apply sampling
+	let whatAdsWillShow = Campaign.advertsToShow({topCampaign, campaigns, status, presetAds:adsWithNonServingApplied, showNonServed, nosample});
+	// Invert list of sampled ads by comparing to list just before sampling step
+	let adsFilteredByAutoSampler = adsWithNonServingApplied.filter(ad => !idList(whatAdsWillShow).includes(ad.id));
+	// Get explicitly hidden ads
+	const pvHideAds = Campaign.advertsToHide(topCampaign, null, status);
+	let whatAdsWillHide = pvHideAds && pvHideAds.value ? List.hits(pvHideAds.value) : [];
+
+	const getAdStatus = (ad) => {
+		if (idList(whatAdsWillShow).includes(ad.id)) return "SHOWING";
+		if (idList(whatAdsWillHide).includes(ad.id)) return "HIDDEN";
+		if (idList(adsFilteredByAutoSampler).includes(ad.id)) return "AUTO FILTERED";
+		if (idList(adsFilteredByNonServing).includes(ad.id)) return "NON SERVING";
+		if (idList(extraAds).includes(ad.id)) return "NO CAMPAIGN";
+		return "UNKNOWN";
+	};
+
+	const pvAds = Campaign.fetchAds(topCampaign, campaigns, status, query);
+	let ads = (pvAds.value && List.hits(pvAds.value)) || [];
+	let allAds = uniqById([...ads, ...extraAds]);
+	allAds.forEach(ad => {
+		ad.ihStatus = getAdStatus(ad);
+	});
+
+	return allAds;
+}
+
+/**
  * Get a list of adverts that the impact hub should show for this campaign
  * @param {Object} p
  * @param {Campaign} p.topCampaign the subject campaign
@@ -197,13 +249,13 @@ Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT, query) => {
  * @param {?Advert[]} p.presetAds use a preset list of ads instead of fetching ourselves
  * @param {?Boolean} p.showNonServed show ads that have never served - overrides GET parameter of same name if true
  * @param {?Boolean} p.nosample disable automatic sampling - overrides GET parameter of same name if true
+ * @param {?String} p.query attach a custom query to the ad search
  * @returns {Advert[]} adverts to show
  */
 Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, presetAds, showNonServed, nosample, query}) => {
 
-    const pvAds = Campaign.fetchAds(topCampaign, campaigns, status, query);
+    const pvAds = !presetAds && Campaign.fetchAds(topCampaign, campaigns, status, query);
     let ads = presetAds || (pvAds.value && List.hits(pvAds.value)) || [];
-    console.log("SHOWING FROM ADS:",ads);
     // Filter ads using hide list
     const hideAdverts = Campaign.hideAdverts(topCampaign, campaigns);
     ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
