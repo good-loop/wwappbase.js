@@ -225,9 +225,9 @@ Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.D
 	const getAdStatus = (ad) => {
 		if (idList(whatAdsWillShow).includes(ad.id)) return "SHOWING";
 		if (idList(whatAdsWillHide).includes(ad.id)) return "HIDDEN";
-		if (idList(adsFilteredByAutoSampler).includes(ad.id)) return "AUTO FILTERED";
-		if (idList(adsFilteredByNonServing).includes(ad.id)) return "NON SERVING";
 		if (idList(extraAds).includes(ad.id)) return "NO CAMPAIGN";
+		if (idList(adsFilteredByNonServing).includes(ad.id)) return "NON SERVING";
+		if (idList(adsFilteredByAutoSampler).includes(ad.id)) return "AUTO FILTERED";
 		return "UNKNOWN";
 	};
 
@@ -257,7 +257,7 @@ Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, presetA
     const pvAds = !presetAds && Campaign.fetchAds(topCampaign, campaigns, status, query);
     let ads = presetAds || (pvAds.value && List.hits(pvAds.value)) || [];
     // Filter ads using hide list
-    const hideAdverts = Campaign.hideAdverts(topCampaign, campaigns);
+    const hideAdverts = Campaign.hideAdverts(topCampaign);
     ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
     
     // Only show serving ads unless otherwise specified
