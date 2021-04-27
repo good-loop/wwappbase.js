@@ -637,7 +637,7 @@ export const uniqById = (array: Object[], keyFn: Function) : Object[] => {
  * @param {Object} keysetObj 
  */
 export const keysetObjToArray = (keysetObj : Object) => {
-    return Object.keys(keysetObj).filter(item => keysetObj[item]);
+	return Object.keys(keysetObj).filter(item => keysetObj[item]);
 };
 
 /**
@@ -648,3 +648,10 @@ export const idList = (idObjArray : Object[]) => {
 	return idObjArray ? idObjArray.map(obj => obj.id) : [];
 };
 
+/**
+ * Gives the appropriate indefinite article for an English noun.
+ * Wrote this because I was sick of seeing the advert list tell me "To create a Advert, first pick a Advertiser". -Roscoe
+ * @param {Object} noun An object which will be coerced to a string and checked for an initial vowel
+ * @returns {String} "a" or "an", as appropriate for the supplied noun.
+ */
+export const article = (noun: Object) => ('aeiou'.indexOf(String(noun).toLowerCase()[0]) >= 0) ? 'an' : 'a';
