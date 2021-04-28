@@ -21,6 +21,7 @@ XId.ANON = "anon@unset";
 
 /**
  * @param {?String} xid
+ * TODO check ! isEmail()
  */
 XId.isa = xid => xid && xid.indexOf && xid.indexOf('@') > 0;
 

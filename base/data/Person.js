@@ -203,6 +203,28 @@ const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) =>
 };
 
 /**
+ * HACK
+ * @param {Person} person 
+ * @returns {?String} email
+ */
+Person.getEmail = person => {
+	if ( ! person) return null;
+	let id = Person.getId(person);	
+	let e = XId.name(id);
+	if (isEmail(e)) {
+		return e;
+	}
+	// links
+	let elinks = Person.getLinks(person, "email");
+	if (elinks.length) {
+		const el0 = elinks[0];
+		e = Link.to(el0);
+		return e;
+	}
+	return null;
+};
+
+/**
  * 
  * @param {Object} p
  * @returns PromiseValue(Person)
@@ -406,6 +428,7 @@ const setConsents = ({person, consents}) => {
 };
 
 /**
+ * @deprecated confusion with Person.getEmail()
  * Convenience for "find a linked profile for email, or null"
  * @returns {?string} email
  */

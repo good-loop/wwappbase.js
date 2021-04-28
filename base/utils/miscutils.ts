@@ -368,8 +368,8 @@ const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0
 	@param string A string which may or may not be an email address
 	@returns True if the input is a string & a (probably) legitimate email address.
 */
-function isEmail(string: string) {
-	return !!("string" == typeof (string).toLowerCase() && string.match(emailRegex));
+export const isEmail = function (s: string): boolean {
+	return !! ("string" === typeof(s) && s.match(emailRegex));
 }
 
 
