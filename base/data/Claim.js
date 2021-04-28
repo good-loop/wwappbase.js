@@ -27,6 +27,7 @@ class Claim extends DataClass {
 	 *  then 'from' should contain 'myloop@app'
 	 * @param {Object} p
 	 * @param {!String} p.key
+	 * @param {!String|Number|Boolean} p.value
 	 * @param {!XId|XId[]} p.from
 	 * @param {String[]|boolean} c - e.g. ['public']
 	 * @param {String[]|boolean} consent - Same as c!
@@ -34,6 +35,7 @@ class Claim extends DataClass {
 	*/
 	constructor({key, value, from, c, consent}) {
 		super(); // no base passed into super 'cos its handled below
+		assMatch(value, "String|Number|Boolean"); // Only primitive values allowed
 		// convert a single XId to an array?
 		if ( ! Array.isArray(from)) from = [from];
 		// Converting from internally held true/false to something

@@ -58,6 +58,7 @@ class Advert extends DataClass {
 DataClass.register(Advert, "Advert"); 
 
 C.DEFAULT_AD_ID = 'default-advert';
+
 /**
  * @returns {Advert}
  * Note: race condition on app loading - this will be null for a second.
@@ -67,8 +68,10 @@ Advert.defaultAdvert = () => {
 	return pvAd.value;
 };
 
-// trigger a data fetch
-Advert.defaultAdvert();
+// HACK: trigger a data fetch if on Portal
+if (window.location.hostname.includes("portal.good-loop.com")) {
+	Advert.defaultAdvert();
+}
 
 /**
  * @param {!Advert} ad
