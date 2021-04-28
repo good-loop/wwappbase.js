@@ -16,6 +16,7 @@ import {normaliseSogiveId} from '../plumbing/ServerIOBase';
 import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList } from '../utils/miscutils';
 import { getId } from './DataClass';
 import NGO from './NGO';
+import Money from './Money';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -153,9 +154,10 @@ Campaign.hideCharities = campaign => {
 
 /**
  * Get the list of ad IDs that this campaign will hide
- * Optional: also merge with lists from other campaigns
+ * NB: While you can merge the hideAds list with other campaigns, this is not used within the Impact Hub,
+ * for simplicity of only having one list to manage instead of multiple across multiple campaigns
  * @param {Campaign} topCampaign 
- * @param {?Campaign[]} campaigns 
+ * @param {?Campaign[]} campaigns other campaigns to merge with
  * @returns {String[]} hideAdverts IDs
  */
 Campaign.hideAdverts = (topCampaign, campaigns) => {
@@ -359,6 +361,7 @@ const campaignNameForAd = ad => {
 
 
 
+
 ////////////////////////////////////////////////////////////////////
 ////                     CHARITY LOGIC                           ///
 ////////////////////////////////////////////////////////////////////
@@ -368,16 +371,19 @@ const campaignNameForAd = ad => {
 
 /**
  * Get the donation total for a campaign.
- * @param {Campaign} campaign 
- * @param {?Object} dntn4charity optionally specify a donation data set to use instead of fetching a new one
+ * @param {Campaign} topCampaign
+ * @param {?Campaign[]} campaigns
+ * @param {Object} dntn4charity
  */
- Campaign.donationTotal = (campaign, dntn4charity) => {
-    let donationTotal = Money.value(campaign.dntn) && campaign.dntn;
-    if (!donationTotal) {
-        const donationData = dntn4charity || Campaign.dntn4charity(campaign);
-        donationTotal = donationData.total;
+ Campaign.donationTotal = (topCampaign, campaigns, dntn4charity, forceScaleTotal) => {
+    const allCampaignDntns = [topCampaign.dntn, ...(campaigns ? campaigns.map(c => c.dntn).filter(x=>x) : [])];
+    const summed = Money.total(allCampaignDntns);
+	let donationTotal = Money.value(summed)? summed : dntn4charity.total;
+    if (forceScaleTotal) {
+        const moneys = Object.values(dntn4charity).filter(x=>x);
+        donationTotal = moneys.length ? Money.total(moneys) : 0;
     }
-    return donationTotal;
+	return donationTotal;
 };
 
 /**
@@ -403,13 +409,13 @@ Campaign.dntn4charity = (topCampaign, otherCampaigns, extraAds, status=KStatus.D
         const otherDntn4charity = yessy(campaign.dntn4charity)? campaign.dntn4charity : {};
         const otherFetchedDonationData = NGO.fetchDonationData(moreAds);
         // augment master list with data, never overwriting
-        Object.keys(otherDntn4charity).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = otherDntn4charity[cid]});
-        Object.keys(otherFetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = otherFetchedDonationData[cid]});
+        Object.keys(otherDntn4charity).forEach(cid => {if (!donation4charity[cid]) donation4charity[cid] = otherDntn4charity[cid]});
+        Object.keys(otherFetchedDonationData).forEach(cid => {if (!donation4charity[cid] || !Money.value(donation4charity[cid])) donation4charity[cid] = otherFetchedDonationData[cid]});
     });
 
     // Augment in data for extra dangling ads
-    const extraFetchedDonationData = NGO.fetchDonationData(extraAds);
-    Object.keys(extraFetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = extraFetchedDonationData[cid]});
+    const extraFetchedDonationData = extraAds ? NGO.fetchDonationData(extraAds) : {};
+    Object.keys(extraFetchedDonationData).forEach(cid => {if (!donation4charity[cid] || !Money.value(donation4charity[cid])) donation4charity[cid] = extraFetchedDonationData[cid]});
 
     // Normalise all charity ids
     const allCharities = Object.keys(donation4charity);
@@ -443,7 +449,7 @@ Campaign.charities = (topCampaign, campaigns, extraAds, status=KStatus.DRAFT) =>
         if (!ad.charities) return [];
         const clist = (ad.charities && ad.charities.list).slice() || [];
 		return clist.map(c => {
-			if ( ! c) return null; // bad data paranoia						
+			if ( ! c) return null; // bad data paranoia
 			if ( ! c.id || c.id==="unset" || c.id==="undefined" || c.id==="null" || c.id==="total") { // bad data paranoia						
 				console.error("Campaign.js charities - Bad charity ID", c.id, c);
 				return null;
@@ -551,7 +557,7 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 Campaign.scaleCharityDonations = (campaign, donationTotal, donation4charityUnscaled, charities) => {
     // Campaign.assIsa(campaign); can be {}
 	//assMatch(charities, "NGO[]");	- can contain dummy objects from strays
-    let {forceScaleDonations} = DataStore.getValue(['location', 'params']);
+    let {forceScaleDonations} = campaign;
 	if (!Campaign.isDntn4CharityEmpty(campaign) && !forceScaleDonations) {
 		// NB: donation4charityUnscaled will contain all data for campaigns, including data not in campaign.dntn4charity
         //assert(campaign.dntn4charity === donation4charityUnscaled);
