@@ -8,7 +8,7 @@ const C = {};
 
 /// Apps Should Set These Things :)
 /**
- * app config
+ * app config (these settings will likely be overridden and lost)
  * Best practice: Set this in your app.jsx file, from values in a GLAppManifest file.
  */
 C.app = 
@@ -17,7 +17,10 @@ C.app =
 	/**
 	 * id is as used by YouAgain
 	 */
-	id: "myapp",
+	id: window.location.hostname,
+	/**
+	 * this is the issuer for YouAgain, which can group logins. e.g. "good-loop"
+	 */
 	dataspace: null,
 	logo: "/img/logo.png"
 };

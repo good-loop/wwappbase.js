@@ -47,7 +47,7 @@ const init = () => {
 		C.app.service = C.app.id;
 	}
 
-	Login.app = C.app.id;
+	Login.app = C.app.id || C.app.service;
 	Login.dataspace = C.app.dataspace;
 
 	Login.change(() => {

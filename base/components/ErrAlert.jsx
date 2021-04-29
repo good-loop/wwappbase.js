@@ -12,12 +12,14 @@ import { space } from '../utils/miscutils';
 const ErrAlert =({error,color}) => {
 	if ( ! error) return null;
 	// NB: error.text is used by You-Again Login.error. error.message is used by JSend
-	let emsg = _.isString(error)? error : space(error.status, error.statusText, error.message || error.text);
-	let edetails = space(error.id, error.responseText, error.details, error.stack);
+	let emsg = _.isString(error)? error : space(error.status, error.statusText, error.message || error.text);		
+	let edetails = space(error.id, error.responseText, error.details, error.stack);	
 	if ( ! emsg) {
 		console.warn("ErrAlert - blank?",error);
 		return null;
 	}
+	// strip details if sent by our servers
+	emsg = emsg.replace(/<details>[\s\S]*<\/details>/, "").trim();
 	return <Alert color={color||'danger'}>
 		{emsg}
 		{isDev() && edetails && <p><small>Dev details: {edetails}</small></p>}
