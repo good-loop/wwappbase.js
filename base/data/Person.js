@@ -186,7 +186,7 @@ const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) =>
 	const dpath = getPersonDataPath({id:xid,status});
 
 	// To allow immeadiate edits, we return an interim item
-	let interim = DataStore.getData(dsi);
+	let interim = DataStore.getValue(dpath);
 	if ( ! interim) { // Do we have a fast local answer?
 		interim = localLoad(dpath);
 	}
