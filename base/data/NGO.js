@@ -3,6 +3,7 @@
 import DataClass from './DataClass';
 import { normaliseSogiveId } from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
+import DataStore from '../plumbing/DataStore';
 import SearchQuery from '../searchquery';
 import C from '../CBase';
 
