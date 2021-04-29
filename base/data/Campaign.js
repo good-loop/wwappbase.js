@@ -204,20 +204,21 @@ Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT, query) => {
  * @param {Campaign} p.topCampaign the subject campaign
  * @param {?Campaign[]} p.campaigns any other campaigns with data to use (for advertisers or agencies)
  * @param {?Advert[]} p.extraAds additional associated adverts with no relevant campaign
- * @param {?Boolean} p.showNonServed show ads that have never served - overrides GET parameter of same name if true
- * @param {?Boolean} p.nosample disable automatic sampling - overrides GET parameter of same name if true
  * @param {?String} p.query attach a custom query to the ad search
  * @returns Advert[] with attached status as advert.ihStatus
  */
-Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.DRAFT, showNonServed, nosample, query}) => {
+Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.DRAFT, query}) => {
+
+	const {showNonServed, nosample} = topCampaign;
+
 	// Get raw list of ads
 	let allButExplicitlyHidAds = Campaign.advertsToShow({topCampaign, campaigns, status, showNonServed:true, nosample:true});
 	// Get all ads not filtered with non serving
-	let adsWithNonServingApplied = Campaign.advertsToShow({topCampaign, campaigns, status, presetAds:allButExplicitlyHidAds, showNonServed, nosample:true});
+	let adsWithNonServingApplied = Campaign.advertsToShow({topCampaign, campaigns, status, presetAds:allButExplicitlyHidAds, nosample:true});
 	// Invert list of non serving ads
 	let adsFilteredByNonServing = allButExplicitlyHidAds.filter(ad => !idList(adsWithNonServingApplied).includes(ad.id));
 	// Apply sampling
-	let whatAdsWillShow = Campaign.advertsToShow({topCampaign, campaigns, status, presetAds:adsWithNonServingApplied, showNonServed, nosample});
+	let whatAdsWillShow = Campaign.advertsToShow({topCampaign, campaigns, status, presetAds:adsWithNonServingApplied});
 	// Invert list of sampled ads by comparing to list just before sampling step
 	let adsFilteredByAutoSampler = adsWithNonServingApplied.filter(ad => !idList(whatAdsWillShow).includes(ad.id));
 	// Get explicitly hidden ads
@@ -249,12 +250,15 @@ Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.D
  * @param {Campaign} p.topCampaign the subject campaign
  * @param {?Campaign[]} p.campaigns any other campaigns with data to use (for advertisers or agencies)
  * @param {?Advert[]} p.presetAds use a preset list of ads instead of fetching ourselves
- * @param {?Boolean} p.showNonServed show ads that have never served - overrides GET parameter of same name if true
- * @param {?Boolean} p.nosample disable automatic sampling - overrides GET parameter of same name if true
+ * @param {?Boolean} p.showNonServed override campaign setting
+ * @param {?Boolean} p.nosample override campaign setting
  * @param {?String} p.query attach a custom query to the ad search
  * @returns {Advert[]} adverts to show
  */
-Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, presetAds, showNonServed, nosample, query}) => {
+Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, showNonServed, nosample, presetAds, query}) => {
+
+	if (!is(showNonServed)) showNonServed = topCampaign.showNonServed;
+	if (!is(nosample)) nosample = topCampaign.nosample;
 
     const pvAds = !presetAds && Campaign.fetchAds(topCampaign, campaigns, status, query);
     let ads = presetAds || (pvAds.value && List.hits(pvAds.value)) || [];
@@ -272,11 +276,9 @@ Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, presetA
 /**
  * Removes ads that have never served from an ad list
  * @param {Advert[]} ads 
- * @param {?Boolean} showNonServed allow non served ads to show - Defaults to GET url paramater of same name
  * @returns {Advert[]} filtered ads
  */
 Campaign.filterNonServedAds = (ads, showNonServed) => {
-    if ( ! is(showNonServed)) showNonServed = DataStore.getUrlValue('showNonServed');
 	if (showNonServed) return ads;
     return ads.filter(ad => ad.hasServed || ad.serving);
 }
@@ -317,7 +319,6 @@ Campaign.sampleAds = (ads, nosample) => {
     // Use "nosample=true" parameter to disable sampling
     ///////////////////////////////////////////////////////////
     let sampleAds = ads;
-    if (!nosample) nosample = (DataStore.getValue(['location', 'params']) || {}).nosample;
 
     if (!nosample) {
     let sampleAd4Campaign = {};
