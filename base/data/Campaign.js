@@ -359,7 +359,35 @@ const campaignNameForAd = ad => {
 	return ad.campaign;
 };
 
-
+/**
+ * Get the viewcount for a set of campaigns
+ * @param {Object} p
+ * @param {Campaign} p.topCampaign the master campaign
+ * @param {?Campaign[]} campaigns other associated campaigns
+ * @param {?Advert[]} extraAds any other associated ads
+ * @returns {Number}
+ */
+Campaign.viewcount = ({topCampaign, campaigns, extraAds}) => {
+	console.log("[VIEWCOUNT]","Num people?", topCampaign.numPeople);
+	if (topCampaign.numPeople) return topCampaign.numPeople;
+	const pvAllAds = Campaign.fetchAds(topCampaign, campaigns);
+	const allAds = pvAllAds.value ? List.hits(pvAllAds.value) : [];
+	extraAds = extraAds ? extraAds.filter(ad => !idList(allAds).includes(ad.id)) : [];
+	const allAdsIncludingNonCampaign = Campaign.advertStatusList({topCampaign, campaigns, extraAds});
+	const viewcount4campaign = Advert.viewcountByCampaign(allAdsIncludingNonCampaign);
+	console.log("[VIEWCOUNT]","viewcount4campaign", viewcount4campaign);
+	let viewcount = 0;
+	const alreadyAddedCampaigns = [];
+	console.log("[VIEWCOUNT]", "Using ads:", allAdsIncludingNonCampaign);
+	allAdsIncludingNonCampaign.forEach(ad => {
+		if (viewcount4campaign[ad.campaign] && !alreadyAddedCampaigns.includes(ad.campaign)) {
+			viewcount += viewcount4campaign[ad.campaign];
+			alreadyAddedCampaigns.push(ad.campaign);
+		}
+	});
+	console.log("[VIEWCOUNT]", "Viewcount:", viewcount);
+	return viewcount;
+};
 
 
 ////////////////////////////////////////////////////////////////////

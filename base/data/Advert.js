@@ -9,7 +9,7 @@ import deepCopy from '../utils/deepCopy';
 import { getDataItem } from '../plumbing/Crud';
 import NGO from './NGO';
 import KStatus from './KStatus';
-import { getDataLogData, pivotDataLogData } from '../../base/plumbing/DataLog';
+import { getDataLogData, pivotDataLogData } from '../plumbing/DataLog';
 import SearchQuery from '../searchquery';
 
 /**
