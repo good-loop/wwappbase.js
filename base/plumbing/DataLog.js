@@ -2,10 +2,10 @@
 
 // See also log.js for data input
 
+import pivot from 'data-pivot';
 import md5 from 'md5';
 import { assert } from '../utils/assert';
 import { encURI } from '../utils/miscutils';
-import pivot from 'data-pivot';
 
 /**
  * @param {Object} p
@@ -66,4 +66,5 @@ const pivotDataLogData = (data, breakdowns) => {
 
 export {
 	getDataLogData, pivotDataLogData
-}
+};
+

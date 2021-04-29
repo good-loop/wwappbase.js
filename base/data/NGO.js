@@ -5,7 +5,6 @@ import { normaliseSogiveId } from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import SearchQuery from '../searchquery';
 import C from '../CBase';
-import Campaign from './Campaign';
 
 class NGO extends DataClass {
 	constructor(base) {
