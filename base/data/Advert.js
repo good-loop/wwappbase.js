@@ -9,6 +9,8 @@ import deepCopy from '../utils/deepCopy';
 import { getDataItem } from '../plumbing/Crud';
 import NGO from './NGO';
 import KStatus from './KStatus';
+import { getDataLogData, pivotDataLogData } from '../../base/plumbing/DataLog';
+import SearchQuery from '../searchquery';
 
 /**
  * See Branding.java
@@ -130,6 +132,20 @@ Advert.charityList = ad => {
 		ad.charities.list = clist;
 	}
 	return clist; 
+};
+
+Advert.viewcountByCampaign = ads => {
+	// Get ad viewing data
+	let sq = new SearchQuery("evt:minview");
+	let qads = ads.map(({ id }) => `vert:${id}`).join(' OR ');
+	sq = SearchQuery.and(sq, qads);
+
+	let pvViewData = getDataLogData({q:sq.query, breakdowns:['campaign'], start:'2017-01-01', end:'now', name:"view-data",dataspace:'gl'});
+	let viewcount4campaign = {};
+	if (pvViewData.value) {
+		viewcount4campaign = pivotDataLogData(pvViewData.value, ["campaign"]);
+	}
+	return viewcount4campaign;
 };
 
 const KAdFormat = new Enum("video social banner");
