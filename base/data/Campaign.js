@@ -404,6 +404,7 @@ Campaign.viewcount = ({topCampaign, campaigns, extraAds}) => {
  * @param {Object} dntn4charity
  */
  Campaign.donationTotal = (topCampaign, campaigns, dntn4charity, forceScaleTotal) => {
+	if (topCampaign.dntn) return topCampaign.dntn;
     const allCampaignDntns = [topCampaign.dntn, ...(campaigns ? campaigns.map(c => c.dntn).filter(x=>x) : [])];
     const summed = Money.total(allCampaignDntns);
 	let donationTotal = Money.value(summed)? summed : dntn4charity.total;
