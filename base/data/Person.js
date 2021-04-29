@@ -22,7 +22,7 @@ import Claim from '../data/Claim';
 import XId from './XId';
 import md5 from 'md5';
 import PromiseValue from 'promise-value';
-import {mapkv, encURI, debouncePV} from '../utils/miscutils';
+import {mapkv, encURI, debouncePV, isEmail} from '../utils/miscutils';
 import Cookies from 'js-cookie';
 import Enum from 'easy-enums';
 
@@ -157,6 +157,17 @@ Person.setHasApp = (person, app) => {
  */
 const PURPOSES = new Enum("any email_app email_mailing_list email_marketing cookies cookies_personalization cookies_analytical cookies_marketing cookies_functional personalize_ads");
 
+/**
+ * Sets dataspace and type
+ * @returns {!String[]}
+ */
+const getPersonDataPath = ({id,status=KStatus.PUBLISHED}) => {
+	assert(id, "getPersonDataPath() no `id`");
+	let domain = C.app.dataspace || ServerIO.dataspace;
+	const dsi = {type:"Person", status, id, domain};
+	const dpath = getDataPath(dsi);	
+	return dpath;
+};
 
 /**
  * Get local or fetch
@@ -172,8 +183,7 @@ const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) =>
 	}
 	// domain:ServerIO.dataspace??
 	const type = 'Person';
-	const dsi = {type, status, id:xid};		
-	const dpath = getDataPath(dsi);
+	const dpath = getPersonDataPath({id:xid,status});
 
 	// To allow immeadiate edits, we return an interim item
 	let interim = DataStore.getData(dsi);
@@ -210,7 +220,7 @@ const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) =>
 Person.getEmail = person => {
 	if ( ! person) return null;
 	let id = Person.getId(person);	
-	let e = XId.name(id);
+	let e = XId.id(id);
 	if (isEmail(e)) {
 		return e;
 	}
@@ -296,7 +306,7 @@ const savePersons = debouncePV(({person, persons}) => {
 			{claims: JSON.stringify(claims)}
 		);
 		// local save
-		let path = getDataPath({status:KStatus.PUBLISHED, type:"Person", id:peep.id, domain:ServerIO.dataspace});
+		let path = getPersonDataPath({status:KStatus.PUBLISHED, id:peep.id});
 		localSave(path, peep);
 		return p;
 	});
