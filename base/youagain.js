@@ -46,6 +46,7 @@ import Cookies from 'js-cookie';
  * make cookies widely available across the site
  */
 const COOKIE_PATH = '/';
+const COOKIE_DOMAINS = [null,'.good-loop.com']; // HACK this site + You-Again and Profiler
 /**
  * Convenience to set cookie with path, SameSite=None, secure=true
  * 
@@ -62,11 +63,19 @@ const setCookie = (key, val) => {
 		removeCookie(key);
 		return;
 	}
-	Cookies.set(key, val, { path: COOKIE_PATH, sameSite: 'None', secure: true });
+	COOKIE_DOMAINS.forEach(
+		domain => Cookies.set(key, val, { path: COOKIE_PATH, sameSite: 'None', secure: true, domain})
+	);
+	
 };
 const getCookie = key => Cookies.get(key);
 // NB: the remove path MUST match the set path or remove fails
-const removeCookie = key => Cookies.remove(key, { path: COOKIE_PATH });
+const removeCookie = key => {
+	COOKIE_DOMAINS.forEach(
+		domain => Cookies.remove(key, { path: COOKIE_PATH, domain })
+	);
+	
+}
 
 // Does the url reuqest that we set a first party cookie? The server sets a redirect parameter, and we set a my-site cookie
 try {
@@ -82,7 +91,7 @@ try {
 
 class _Login {
 	/** You-Again version. Should match package.json */
-	version = "0.9.0";
+	version = "0.9.1";
 	/** This app, as known by you-again. You MUST set this! */
 	app;
 	/** aka `issuer` Allows for grouping several apps under one banner. */
@@ -603,7 +612,7 @@ const logout2 = function () {
 	for (let c in cookies) {
 		if (c.substr(0, cbase.length) === cbase) {
 			console.log("remove cookie " + c);
-			Cookies.remove(c, { path: COOKIE_PATH });
+			removeCookie(c);
 		}
 	}
 	removeCookie(COOKIE_UXID);
