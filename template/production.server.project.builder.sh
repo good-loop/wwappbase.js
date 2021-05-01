@@ -436,10 +436,10 @@ cleanup_repo
 cleanup_wwappbasejs_repo
 cleanup_bobwarehouse_repos
 git_checkout_release_branch
-stop_service
 use_bob
 use_npm
 use_webpack
 use_jerbil
+stop_service
 start_service
 catch_JVM_success_or_error
