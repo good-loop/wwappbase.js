@@ -179,7 +179,9 @@ Money.CURRENCY = {
 	GBP: "£",
 	USD: "$",
 	AUD: "A$",
-	EUR: "€"
+	EUR: "€",
+	MXN: "MX$",
+	JPY: "¥"
 };
 /**
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
