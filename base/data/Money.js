@@ -178,7 +178,8 @@ Money.eq = (a, b) => {
 Money.CURRENCY = {
 	GBP: "£",
 	USD: "$",
-	AUD: "A$"
+	AUD: "A$",
+	EUR: "€"
 };
 /**
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
