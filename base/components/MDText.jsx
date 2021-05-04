@@ -63,7 +63,7 @@ const MDText = ({source, renderers={}, escapeHtml = false, setSource}) => {
 		renderers.listItem = args => <MDCheckbox source={source} setSource={setSource} {...args} />;
 	}
 
-	return <ReactMarkdown plugins={[gfm]} escapeHtml={escapeHtml} source={nsource} renderers={renderers} />;
+	return <ReactMarkdown plugins={[gfm]} escapeHtml={escapeHtml} children={nsource} renderers={renderers} />;
 };
 
 export default MDText;
