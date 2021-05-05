@@ -90,8 +90,8 @@ try {
 }
 
 class _Login {
-	/** You-Again version. Should match package.json */
-	version = "0.9.1";
+	/** You-Again version */
+	version = "0.9.2";
 	/** This app, as known by you-again. You MUST set this! */
 	app;
 	/** aka `issuer` Allows for grouping several apps under one banner. */
@@ -616,6 +616,7 @@ const logout2 = function () {
 		}
 	}
 	removeCookie(COOKIE_UXID);
+	removeCookie(COOKIE_JWT);
 	// local vars
 	Login.user = null;
 	Login.aliases = null;
