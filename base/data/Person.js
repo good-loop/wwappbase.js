@@ -570,6 +570,7 @@ const removeConsent = ({persons, consent}) => {
  */
 const setClaimValue = ({person, persons, key, value}) => {
 	if (person) persons = [person];
+	assert(persons, "Person.js setClaimValue() - No person or persons input! key: "+key);
 	if ( ! persons.length) console.warn("setClaimValue - no persons :( -- Check profile load is working");
 	console.log("setClaimValue "+key+" = "+value, persons.map(p => p.id));
 	let from = Login.getId() || XId.ANON;
