@@ -195,6 +195,7 @@ Money.CURRENCY_FOR_COUNTRY = {
 /**
  * HACK - estimate conversions to handle adding conflicting currencies
  * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 Feb 18, 2021 15:58
+ * EUROS sourced from https://www.google.com/search?q=euro+to+pound&oq=euro+to+pound May 6, 2021 18:15
  */
 Money.CURRENCY_CONVERSION = {
 	GBP_USD: 1.395,
@@ -203,6 +204,12 @@ Money.CURRENCY_CONVERSION = {
 	USD_GBP: 0.717,
 	AUD_GBP: 0.556,
 	AUD_USD: 0.775,
+	EUR_GBP: 0.87,
+	GBP_EUR: 1.15,
+	EUR_AUD: 1.55,
+	AUD_EUR: 0.64,
+	EUR_USD: 1.21,
+	USD_EUR: 0.83
 }
 
 /**
