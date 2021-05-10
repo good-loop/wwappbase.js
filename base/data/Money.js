@@ -354,7 +354,14 @@ Money.mul = mul;
 Money.divide = (total, part) => {
 	Money.assIsa(total);
 	Money.assIsa(part);
-	assCurrencyEq(total, part);
+	//assCurrencyEq(total, part);
+	// Ignore if there is an empty currency
+	if (total.currency && part.currency) {
+		if (total.currency.toUpperCase() !== part.currency.toUpperCase()) {
+            console.log("Converting currency " + total.currency + " to " + part.currency);
+			part = Money.convertCurrency(part, total.currency);
+		}
+	}
 	return Money.value(total) / Money.value(part);
 };
 
