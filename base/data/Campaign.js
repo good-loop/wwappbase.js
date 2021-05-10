@@ -48,6 +48,7 @@ Campaign.dntn = campaign => campaign && campaign.dntn;
  */
 Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 	let cid = Advert.campaign(advert);
+	if (!cid) return new PromiseValue(Promise.resolve(null));
 	let pvc = getDataItem({type:"Campaign",status,id:cid});
 	return pvc;
 };
