@@ -513,6 +513,7 @@ Campaign.strayCharities = (campaign, status=KStatus.DRAFT) => {
 			cid = normaliseSogiveId(cid);
 			if ( ! clistIds.includes(cid) && cid !== "total") {
 				const c = new NGO({id:cid});
+				c.stray = true;
 				strays.push(c);
 			}
 		});
