@@ -46,7 +46,7 @@ const bezierSlide = (x = 0) => {
  * @param {Boolean} preservePennies Preserves 2 digits on the pennies count. This overrides sigFigs. True by default for money.
  * @param {Boolean} centerText Centers the text when counting up in the animation.
  */
-const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies, centerText=false}) => 
+const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies, noPennies, centerText=false}) => 
 {
 
     let {noround} = DataStore.getValue(['location', 'params']) || {};
@@ -79,6 +79,10 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 	if (preservePennies) {
 		options.minimumFractionDigits = 2;
 		options.maximumFractionDigits = 2;
+	}
+	if (noPennies) {
+		options.minimumFractionDigits = 0;
+		options.maximumFractionDigits = 0;
 	}
 	const formatNum = x => {		
 		if ( ! pretty) return ""+x;
