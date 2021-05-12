@@ -309,6 +309,7 @@ const normaliseSogiveId = id => {
 	const canonId = id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
 	// manual id matching, only needed for ids that don't follow the rule: _ --> -
 	let sid = {
+		'alder-hey-': 'alder-hey',
 		'art-fund': 'national-art-collections-fund',
 		'bbct': 'bumblebee-conservation-trust',
 		'bdfa': 'batten-disease-family-association',
