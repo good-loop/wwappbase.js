@@ -110,6 +110,7 @@ ServerIO.checkBase = () => {
  */
 const checkBase2_toggleTestEndpoints = () => {
 	const server = DataStore.getUrlValue("server");
+	if ( ! server) return;
 	if (server==="test") {
 		ServerIO.AS_ENDPOINT = 'https://testas.good-loop.com';
 		ServerIO.PORTAL_ENDPOINT = 'https://testportal.good-loop.com';
@@ -120,6 +121,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("local")) {
 			ServerIO.APIBASE = ServerIO.APIBASE.replace("local", "test");
 		}		
+		return;
 	}
 	if (server==="local") {	// probably not needed
 		ServerIO.AS_ENDPOINT = 'http://localas.good-loop.com';
@@ -127,6 +129,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'http://locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'http://localprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'http://localuploads.good-loop.com/';
+		return;
 	}
 	if (server==="production") {
 		ServerIO.AS_ENDPOINT = 'https://as.good-loop.com';
@@ -138,7 +141,9 @@ const checkBase2_toggleTestEndpoints = () => {
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("test")) {
 			ServerIO.APIBASE = ServerIO.APIBASE.replace("test", "");
 		}
+		return;
 	}
+	console.warn("ServerIOBase.js - Unrecognised server setting",server);
 };
 
 
