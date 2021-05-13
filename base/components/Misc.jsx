@@ -441,10 +441,10 @@ Misc.AvatarImg = ({peep, ...props}) => {
 
 
 /**
- * @param d {Date}
- * @return {String} iso format
+ * @param {?Date} d
+ * @return {?String} iso format (date only, no time-of-day part)
  */
-Misc.isoDate = (d) => d.toISOString().replace(/T.+/, '');
+Misc.isoDate = (d) => d && d.toISOString().replace(/T.+/, '');
 
 
 /**
