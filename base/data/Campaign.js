@@ -237,6 +237,8 @@ Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.D
 
 	const pvAds = Campaign.fetchAds(topCampaign, campaigns, status, query);
 	let ads = (pvAds.value && List.hits(pvAds.value)) || [];
+	let adIds = ads && ads.map(ad => ad.id);
+	extraAds = extraAds && adIds ? extraAds.filter(ad => !adIds.includes(ad.id)) : extraAds;
 	let allAds = uniqById([...ads, ...extraAds]);
 	allAds.forEach(ad => {
 		ad.ihStatus = getAdStatus(ad);
@@ -260,6 +262,11 @@ Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, showNon
 
 	if (!is(showNonServed)) showNonServed = topCampaign.showNonServed;
 	if (!is(nosample)) nosample = topCampaign.nosample;
+
+	if (!is(showNonServed) && !is(nosample)) {
+		console.log("AD STATUS SETTINGS?? showNonServed:", showNonServed, "nosample:", nosample);
+		console.log("AD STATUS campaign:", topCampaign);
+	}
 
     const pvAds = !presetAds && Campaign.fetchAds(topCampaign, campaigns, status, query);
     let ads = presetAds || (pvAds.value && List.hits(pvAds.value)) || [];
