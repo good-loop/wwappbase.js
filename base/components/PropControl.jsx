@@ -225,7 +225,8 @@ const PropControl = ({className, ...props}) => {
 
 
 /**
- * The main part - the actual input
+ * The main part - the actual input.
+ * @param {?String} props.rawValue Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
  */
 const PropControl2 = (props) => {
 	// track if the user edits, so we can preserve user-set-null/default vs initial-null/default
@@ -831,6 +832,9 @@ const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
 	// NB: parsing incomplete dates causes NaNs
 	let datePreview = null;
+	if ( ! is(rawValue) && storeValue) {
+		rawValue = Misc.isoDate(storeValue);
+	}
 	if (rawValue) {
 		try {
 			let date = new Date(rawValue);
