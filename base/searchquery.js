@@ -1,6 +1,7 @@
 
 import { assert, assMatch } from './utils/assert';
 import DataClass from './data/DataClass';
+import { is } from './utils/miscutils';
 
 /**
  * Manipulate search query strings like a boss.
@@ -90,10 +91,12 @@ SearchQuery.prop = (sq, propName) => {
  * Set a top-level prop, e.g. vert:foo
  * @param {!SearchQuery} sq
  * @param {String} propName 
- * @param {?string} propValue If unset (null,undefined, or "" -- but not false or 0!), clear the prop
+ * @param {?String} propValue If unset (null,undefined, or "" -- but not false or 0!), clear the prop. The caller is responsible for converting non-strings to strings - apart from boolean which thie method will handle, 'cos we're nice like that.
  * @returns a NEW SearchQuery
  */
 SearchQuery.setProp = (sq, propName, propValue) => {	
+	// boolean has gotchas, so lets handle it. But not number, as the caller should decide on e.g. rounding
+	if (typeof(propValue) === "boolean") propValue = ""+propValue; // true/false
 	assMatch(propName, String, "searchquery.js - "+propName+" "+propValue);
 	// renove the old
 	SearchQuery._init(sq);
