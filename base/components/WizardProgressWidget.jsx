@@ -78,11 +78,11 @@ class StageNavStatus {
  * @param {?Function} p.onNext function called when user interacts with "next" button
  * @param {?Function} p.onPrev function called when user interacts with "prev" button
  * 
- * @param {?String} p.navPosition "top" to put the nav buttons at the top
+ * @param {?String} p.navPosition "top"|"bottom"|"both" Defaults to bottom. Usually set by parent Wizard tag
  */
 const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 	sufficient=true, complete=false,
-	title, onNext, onPrev, children, canJumpAhead, navPosition}) =>
+	title, onNext, onPrev, children, canJumpAhead, navPosition="bottom"}) =>
 {
 	assert(stageNum !==null && stageNum !== undefined);
 	assMatch(maxStage, Number);
@@ -111,15 +111,16 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 		});
 	}
 	
-	return (<div className="WizardStage">
-		{navPosition !== "top" && children}
-		<WizardNavButtons stagePath={stagePath} navPosition={navPosition} title={title}
-			navStatus={navStatus}
-			maxStage={maxStage}
-			onNext={onNext}
-			onPrev={onPrev}
-		/>
-		{navPosition === "top" && children}
+	return (<div className="WizardStage">		
+		{navPosition === "top" || navPosition === "both" && <WizardNavButtons stagePath={stagePath} title={title} navStatus={navStatus} maxStage={maxStage}
+			onNext={onNext} onPrev={onPrev}
+			navPosition={navPosition}
+		/>}
+		{children}
+		{navPosition === "bottom" || navPosition === "both" && <WizardNavButtons stagePath={stagePath} title={title} navStatus={navStatus} maxStage={maxStage}
+			onNext={onNext} onPrev={onPrev}
+			navPosition={navPosition}
+		/>}		
 	</div>);
 };
 
@@ -177,6 +178,11 @@ const NextPrevTab = ({stagePath, diff, children, colour = 'secondary', maxStage,
 	);
 };
 
+/**
+ * @param {Object} p
+ * @param {?String} p.navPosition "top"|"bottom"|"both" Defaults to bottom
+ * @returns 
+ */
 const Wizard = ({widgetName, stagePath, navPosition, children}) => {
 	// NB: React-BS provides Accordion, but it does not work with modular panel code. So sod that.
 	if ( ! stagePath) stagePath = ['widget', widgetName || 'Wizard', 'stage'];

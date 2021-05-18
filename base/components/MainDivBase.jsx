@@ -103,7 +103,7 @@ class MainDivBase extends Component {
 			defaultPage,
 			navbar=true, // false for no navbar!
 			fullWidthPages,
-			noRegister
+			noRegister,			
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.

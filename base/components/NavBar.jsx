@@ -8,13 +8,27 @@ import { labeller } from '../utils/miscutils';
 
 
 /**
+ * 
+ * @param {Object} props 
+ * @param {?String} props.brandLink
+ * @param {?String} props.brandLogo
+ */
+export const setNavProps = (props) => {
+	DataStore.setValue(['widget','NavBar'], props, false);
+};
+
+/**
  * rendered within BS.Nav
  */
-const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle}) => (
+const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName}) => {
+	return (
 	<Container>
 		<NavbarBrand title="Dashboard" href={homelink || '/'}>
 			<img className='logo-sm' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 		</NavbarBrand>
+		{brandLink && (brandLogo || brandName) && <NavbarBrand className="nav-brand" title={brandName} href={brandLink}>
+			{brandLogo? <img className='logo-sm' alt={brandName} src={brandLogo} /> : brandName}
+		</NavbarBrand>}
 		<NavbarToggler onClick={toggle}/>
 		<Collapse isOpen={isOpen} navbar>
 			<Nav navbar>
@@ -24,7 +38,8 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 			<AccountMenu active={currentPage === 'account'} />
 		</Collapse>
 	</Container>
-);
+	);
+	};
 
 
 /**
@@ -35,6 +50,11 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?String[]|Function|Object} labels Map options to nice strings.
  */
 const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
+	// see setNavProps()
+	const dsProps = DataStore.getValue(["widget","NavBar"]);
+	if (dsProps) {
+		props = Object.assign({}, props, dsProps);
+	}
 	let {currentPage, pages, labels} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
 	const labelFn = labeller(pages, labels);
 
