@@ -878,13 +878,13 @@ const PropControlColor = ({onChange, ...props}) => {
 
 	// According to best practices, <input type="color"> shouldn't take onChange
 	// (though React normalises it to reliably produce change events)
+	// Dan: React complains (noisily but harmlessly) if there isn't an onChange. MDN says onChange and onInput are both fine https://developer.mozilla.org/en-US/docs/Web/HTML/Element/Input/color#tracking_color_changes
+	// Supply both? Tested in studio, and seems to work fine. May 2021
 	props.onInput = onChange;
-
-	
 
 	return (
 		<div className="color-control">
-			<FormControl append={clearBtn} {...props} />
+			<FormControl append={clearBtn} {...props} onChange={onChange} />
 			<div className={overlayClass}>{overlayText}</div>
 		</div>
 	);
