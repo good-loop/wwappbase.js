@@ -573,13 +573,16 @@ Misc.Tabs = ({children, path}) => {
 
 
 Misc.CheckAccess = ({can = 'edit'}) => {
-	const canEdit = Roles.iCan(can).value;
-	if (canEdit === false) {
-		return <><h1>Access Denied</h1><p>You do not have sufficient permissions to view this page. If you think you should have access, please contact an administrator.</p></>
-	} else if (!canEdit) {
+	let pvCan = Roles.iCan(can);
+	if ( ! pvCan.resolved) {
 		return <Misc.Loading text="Checking your access permissions..." />;
+	}	
+	const canEdit = pvCan.value;	
+	if (canEdit) return null;
+	if (pvCan.error) {
+		return <ErrAlert error={pvCan.error} color="danger" />;
 	}
-	return null;
+	return <><h1>Access Denied</h1><p>You do not have sufficient permissions to view this page. If you think you should have access, please contact an administrator.</p></>;
 }
 
 

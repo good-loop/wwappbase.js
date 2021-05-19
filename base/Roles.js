@@ -4,7 +4,7 @@ import PromiseValue from 'promise-value';
 import { assert, assMatch } from './utils/assert';
 
 /**
- * @returns {PromiseValue<String[]>}
+ * @returns PromiseValue<String[]>
  */
 const getRoles = () => {
 	// HACK: This is set elsewhere - but there can be an init ordering issue
@@ -80,11 +80,9 @@ const iCan = (capability) => {
 		}
 		return new PromiseValue(false);
 	}
-	// ajax...
-	// ?? is this a PV?? isnt this a promise??
-	return proles.promise.then(
-		res => iCan(capability)
-	);
+	// wait...
+	const pvCan = PromiseValue.then(proles, _whatever => iCan(capability));
+	return pvCan;
 };
 
 const cans4role = {};

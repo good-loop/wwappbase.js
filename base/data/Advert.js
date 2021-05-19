@@ -32,6 +32,7 @@ class Advert extends DataClass {
 
 	/**
 	 * @param {Advert} base 
+	 * @param {!String} base.vertiser Advertiser id
 	 */
 	constructor(base) {
 		super();
