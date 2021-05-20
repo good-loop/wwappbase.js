@@ -168,19 +168,22 @@ class Store {
 
 
 	/**
-	 * @param status {?KStatus} If unset, use item.status
-	 * @param item {!Object}
+	 * @param {Object} p
+	 * @param {KStatus} p.status
+	 * @param {!String} p.type
+	 * @param {!Object} p.item
+	 * @param {?Boolean} p.update
 	 */
-	setData(statusTypeIdObject, item, update = true) {
-		assert(statusTypeIdObject, "setData - no path input?! "+statusTypeIdObject, item);
+	setData(statusTypeItemUpdateObject, item, update = true) {
+		assert(statusTypeItemUpdateObject, "setData - no path input?! "+statusTypeItemUpdateObject, item);
 		// HACK to allow old code for setData(status, item, update = true) to still work - May 2019
-		if (statusTypeIdObject.item) item = statusTypeIdObject.item;
+		if (statusTypeItemUpdateObject.item) item = statusTypeItemUpdateObject.item;
 		else {
-			console.warn("DataStore.setData - old inputs - please upgrade to named {status, item, update}", statusTypeIdObject, item);
+			console.warn("DataStore.setData - old inputs - please upgrade to named {status, item, update}", statusTypeItemUpdateObject, item);
 		}
-		if (statusTypeIdObject.update !== undefined) update = statusTypeIdObject.update;
+		if (statusTypeItemUpdateObject.update !== undefined) update = statusTypeItemUpdateObject.update;
 		// First arg may be status - but check it's valid & if not, fill in status from item object
-		let status = statusTypeIdObject.status || statusTypeIdObject;
+		let status = statusTypeItemUpdateObject.status || statusTypeItemUpdateObject;
 		if (!status || !KStatus.has(status)) status = getStatus(item);
 		// end hack
 		
@@ -217,7 +220,10 @@ class Store {
 	 * @returns {String[]}
 	 */
 	getDataPath({status, type, id, domain, ...restOfItem}) {
-		assert(KStatus.has(status), "DataStore.getPath bad status: "+status);
+		if ( ! KStatus.has(status)) {
+			console.warn("DataStore.getPath bad status: "+status+" (treat as DRAFT)");
+			status=KStatus.DRAFT;
+		} 
 		if ( ! type) type = getType(restOfItem);
 		assert(C.TYPES.has(type), "DataStore.js bad type: "+type);
 		assMatch(id, String, "DataStore.js bad id "+id);
