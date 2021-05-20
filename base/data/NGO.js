@@ -6,6 +6,7 @@ import ActionMan from '../plumbing/ActionManBase';
 import DataStore from '../plumbing/DataStore';
 import SearchQuery from '../searchquery';
 import C from '../CBase';
+import { yessy } from '../utils/miscutils';
 
 class NGO extends DataClass {
 	constructor(base) {
@@ -228,9 +229,10 @@ NGO.fetchDonationData = ads => {
 /**
  * Augment charities with sogive data
  * @param {NGO[]} charities 
+ * @param {Campaign?} campaign - get local charity data
  * @returns {NGO[]}
  */
- NGO.fetchSogiveData = charities => {
+ NGO.fetchSogiveData = (charities, campaign) => {
 	let dupeIds = [];
 	let sogiveCharities = charities.map(charityOriginal => {
 		// Shallow copy charity obj
@@ -262,6 +264,17 @@ NGO.fetchDonationData = ads => {
 		// HACK: charity objs have conflicting IDs, force NGO to use id instead of @id
 		charity['@id'] = undefined;
 		charity.originalId = charityOriginal.id; // preserve for donation look-up
+
+		// Add local overrides from campaign
+		if (campaign && campaign.localCharities) {
+			if (campaign.localCharities[charity.id]) {
+				Object.keys(campaign.localCharities[charity.id]).forEach(key => {
+					if (yessy(campaign.localCharities[charity.id][key])) {
+						charity[key] = campaign.localCharities[charity.id][key];
+					}
+				});
+			}
+		}
 		return charity;
 	});
 	// Remove null entries
