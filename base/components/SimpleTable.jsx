@@ -664,6 +664,9 @@ const defaultCellRender = (v, column) => {
 		return Misc.dateStr(d);
 	}
 	if (column.format) {
+		if (typeof column.format === 'function') {
+			return column.format(v);
+		}
 		let significantDigits = 2; // set to the defualt value that was previously hard coded
 		let precision = 2;
 		if (column.precision) { precision = column.precision; }
