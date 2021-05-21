@@ -192,7 +192,7 @@ const PropControl = ({className, ...props}) => {
 	}
 
 	// Hack: Checkbox has a different html layout :( -- handled below
-	const isCheck = PropControl.KControlType.ischeckbox(type) || PropControl.KControlType.isradio(type);
+	const isCheck = PropControl.KControlType.ischeckbox(type); // || PropControl.KControlType.isradio(type);
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
@@ -597,7 +597,7 @@ const PropControlRadio = ({ type, prop, storeValue, value, path, saveFn, options
 	return (
 		<Form>
 			{options.map(option => (
-				<FormGroup check inline={inline} key={option}>					
+				<FormGroup check inline={inline} key={option}>
 					<Input type={inputType} key={`option_${option}`} 
 						name={prop} value={option}
 						checked={option == storeValue}
