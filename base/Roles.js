@@ -87,9 +87,7 @@ const iCan = (capability) => {
 		return new PromiseValue(false);
 	}
 	// wait...
-	const pvCan = new PromiseValue(new Promise((resolve, reject) => {
-		proles.promise.then(proles, _whatever => resolve(iCan(capability)));
-	}));
+	const pvCan = PromiseValue.then(proles, _whatever => resolve(iCan(capability)));
 	return pvCan;
 };
 
