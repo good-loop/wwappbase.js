@@ -266,9 +266,12 @@ NGO.fetchDonationData = ads => {
 		charity.originalId = charityOriginal.id; // preserve for donation look-up
 
 		// Add local overrides from campaign
+		// Not using Object.assign - that will override data with empty local edits, e.g. "" will override "the actual description"
 		if (campaign && campaign.localCharities) {
 			if (campaign.localCharities[charity.id]) {
 				Object.keys(campaign.localCharities[charity.id]).forEach(key => {
+					// Exempt keys we should never overwrite
+					if (key === "id" || key === "@id" || key === "@class" || key === "created") return;
 					if (yessy(campaign.localCharities[charity.id][key])) {
 						charity[key] = campaign.localCharities[charity.id][key];
 					}
