@@ -95,7 +95,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 
 	return (
 		<div>
-			{collapse && <Button className="pull-left" title="upload media" onClick={e => setCollapsed( ! collapsed)} color="secondary" size={size}><Icon name="camera" /></Button>}
+			{collapse && <Button className="pull-left" title="upload media" onClick={e => setCollapsed( ! collapsed)} color="secondary" size={size}><Icon color="white" name="outtray" /></Button>}
 			{isOpen && <>
 				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
 				<div className="pull-left">
