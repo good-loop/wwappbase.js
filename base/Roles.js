@@ -48,6 +48,12 @@ const getRoles = () => {
 const addRole = (uxid, role) => {
 	assert(uxid.indexOf('@') !== -1, "Roles.js - addRole no user-xid");
 	assert(cans4role[role], "Roles.js - addRole() unknown role: "+role);
+	// optimistice set??
+	let roles = getRoles();
+	if (roles.value && ! roles.value.includes(role)) {
+		roles.value.push(role);
+	}
+	// share role
 	return Login.shareThing("role:"+role, uxid);
 };
 
@@ -81,7 +87,7 @@ const iCan = (capability) => {
 		return new PromiseValue(false);
 	}
 	// wait...
-	const pvCan = PromiseValue.then(proles, _whatever => iCan(capability));
+	const pvCan = PromiseValue.then(proles, _whatever => resolve(iCan(capability)));
 	return pvCan;
 };
 

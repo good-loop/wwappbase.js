@@ -590,8 +590,15 @@ const aget = function (url, data, type) {
 		if (c.substr(0, cbase.length) === cbase) {
 			let cv = getCookie(c);
 			data[c] = cv;
+			data["src"+c] = "js-cookie";
 		}
 	}
+	// auth on the user?
+	if ( ! data.jwt && Login.user && Login.user.jwt) {
+		data.jwt = Login.user.jwt;
+		data["srcjwt"] = "Login.user";
+	}
+	// replace without jquery? - but beware of fetch's cookie etc handling
 	if (!$ || !$.ajax) {
 		console.error("YouAgain requires jQuery or other $.ajax"); l
 		return Promise.reject("no $");
@@ -606,7 +613,7 @@ const aget = function (url, data, type) {
 };
 
 const logout2 = function () {
-	console.log('logout2 - clear stuff');
+	console.warn('logout2 - clear stuff'); // use warn so we get a stacktrace
 	const cookies = Cookies.get();
 	let cbase = cookieBase();
 	for (let c in cookies) {
@@ -687,7 +694,7 @@ Login.shareLogin = function (puppetXId, personXId, bothWays, message) {
 		'equiv': bothWays,
 		'message': message
 	});
-	request = request.then(setStateFromServerResponse);
+	// request = request.then(setStateFromServerResponse); ??
 	return request;
 };
 
@@ -701,7 +708,7 @@ Login.deleteShare = function (thingId, personXId) {
 		'entity': thingId,
 		'shareWith': personXId
 	}); // NB: jQuery turns delete into options, no idea why, which upsets the server, 'DELETE');
-	request = request.then(setStateFromServerResponse);
+	// request = request.then(setStateFromServerResponse);
 	return request;
 };
 

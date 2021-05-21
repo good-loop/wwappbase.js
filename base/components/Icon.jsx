@@ -10,6 +10,8 @@ import { space } from '../utils/miscutils';
   * https://www.unicode.org/emoji/charts/full-emoji-list.html
   */
 const EMOJI = {
+	outtray: "📤",
+	intray: "📥",
 	camera: "📷",
 	trashcan: "🗑", //&#x1f5d1;
 	info: "🛈", // ℹ or 🛈
