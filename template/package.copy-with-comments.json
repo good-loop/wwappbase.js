@@ -12,7 +12,7 @@
   "dependencies": {
     "chart.js": "^2.8.0",	// Where do we use this??
     "easy-enums": "^1.1.7",
-    "hashmap": "^2.4.0",	// Where do we use this??
+    // "hashmap": "^2.4.0",	// Replaced by native Map
     "intl": "^1.2.5",
     "jquery": "^3.5.1",
     "js-cookie": "^2.2.1",
