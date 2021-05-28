@@ -569,6 +569,7 @@ class Store {
 		if (item!==null && item!==undefined) {
 			// out of date?
 			if (cachePeriod) {
+				assert(cachePeriod > 1000, "DataStore.fetch too short cachePeriod", cachePeriod, path);
 				const now = new Date();
 				const epath = ['transient', 'fetchDate'].concat(path);
 				let fetchDate = this.getValue(epath);
