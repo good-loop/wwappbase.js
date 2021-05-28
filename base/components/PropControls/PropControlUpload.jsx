@@ -6,9 +6,10 @@ import { useDropzone } from 'react-dropzone';
 import { FormControl, registerControl } from '../PropControl';
 import Misc from '../Misc';
 import { urlValidator } from './PropControlUrl';
-import { Button } from 'reactstrap';
+import { Button, FormGroup, Label } from 'reactstrap';
 import Icon from '../Icon';
 import LinkOut from '../LinkOut';
+import { luminanceFromHex } from '../Colour';
 
 /** MIME type sets */
 const imgTypes = 'image/jpeg, image/png, image/svg+xml';
@@ -40,8 +41,9 @@ const fakeEvent = {
  * image or video upload. Uses Dropzone
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
+ * @param {?Boolean} cacheControls Show extra controls for adding hash-warts to control caching/resizing
  */
-const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", ...otherStuff }) => {
+const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", cacheControls, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
@@ -91,7 +93,32 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	if (bg === 'transparent') {
 		bg = '';
 		className = 'stripe-bg';
-	}	
+	}
+
+	// For images which will be retrieved via Good-Loop media cache: allow user to mark as "always fetch original size"
+	let extraControls = [];
+	if (type === 'imgUpload' && cacheControls) {
+		const toggleWart = (wart, state) => {
+			const imgUrl = new URL(storeValue);
+			const hash = imgUrl.hash;
+			const already = hash.match(/\bnoscale\b/);
+			if (state && !already) {
+				const newPrefix = hash ? '#noscale_' : 'noscale';
+				imgUrl.hash = hash.replace(/^#?/, newPrefix);
+			} else if (!state && already) {
+				imgUrl.hash = hash.replace(/[_]?noscale_?/g, '');
+			}
+			let newVal = imgUrl.toString().replace(/\#$/, ''); // Render URL and strip empty hash
+			onChange && onChange({...fakeEvent, target: { value: newVal }});
+		}
+		const checked = storeValue && storeValue.match(/\#.*\bnoscale\b/);
+		extraControls.push(
+			<FormGroup inline check>
+				<FormControl name="noscale" type="checkbox" onChange={event => toggleWart('noscale', event.target.checked)} checked={checked} />
+				<Label for="noscale" check>No auto-scale</Label>
+			</FormGroup>
+		);
+	}
 
 	return (
 		<div>
@@ -108,6 +135,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 			<div className="pull-right">
 				<Thumbnail className={className} background={bg} url={storeValue} />
 			</div>
+			{extraControls}
 			<div className="clearfix" />
 		</div>
 	);
