@@ -104,7 +104,7 @@ Campaign.fetchForAgency = (agencyId, status=KStatus.DRAFT) => {
     // Campaigns with advertisers belonging to agency
     let pvVertisers = ActionMan.list({type: C.TYPES.Advertiser, status, q:agencySQ.query});
     let sq = new SearchQuery();
-    if (pvVertisers.value) sq = SearchQuery.setPropOr(sq, "vertiser", List.hits(pvVertisers.value).map(vertiser => vertiser.id));
+    if (pvVertisers.value && pvVertisers.value.hits && pvVertisers.value.hits.length) sq = SearchQuery.setPropOr(sq, "vertiser", List.hits(pvVertisers.value).map(vertiser => vertiser.id));
     sq = SearchQuery.or(agencySQ, sq);
 
     let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q:sq.query});
