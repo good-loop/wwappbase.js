@@ -100,7 +100,7 @@ const match = function(value, matcher) {
 	// simple
 	if (value == matcher) return true;
 	if (matcher === undefined) {
-		console.warn("SJTest: no matcher?!", value);
+		console.warn("assert.js match(): no matcher?!", value);
 		return value===null || value===undefined; // probably an error, but they might be testing for is-value-undefined
 	}
 	let sValue = ""+value;
@@ -250,7 +250,7 @@ function typeMatch(value, matcher) {
 			let yeh = matcher.isa(value);
 			return yeh;
 		} catch(err) {
-			console.warn("SJTest typeMatch - isa error: "+err+" for "+value+" "+matcher);
+			console.warn("typeMatch - isa error: "+err+" for "+value+" "+matcher);
 			// oh well
 		}
 	}
