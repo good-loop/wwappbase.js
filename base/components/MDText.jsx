@@ -6,10 +6,11 @@ import gfm from 'remark-gfm';
 import { is } from '../utils/miscutils';
 import { Input, Label } from 'reactstrap';
 
-const MDCheckbox = ({setSource, source, checked, ...args}) => {
+const MDCheckbox = ({setSource, source, checked, className, ...args}) => {
 	console.warn(args);
 	if ( ! is(checked)) {
-		return ReactMarkdown.renderers.listItem(args);
+		return (<li className={className}>{args.children}</li>);	
+		// return ReactMarkdown.renderers.listItem(args);
 	}
 	// args = Object.assign({}, args);
 	// args.checked = null;
@@ -23,7 +24,7 @@ const MDCheckbox = ({setSource, source, checked, ...args}) => {
 		console.log("task tick :)", newSource, args, e);
 		setSource(newSource);
 	};
-	return (<li>
+	return (<li className={className}>
 		<Input type='checkbox' 
 				className="form-check-input"				
 				checked={checked}
@@ -60,10 +61,10 @@ const MDText = ({source, renderers={}, escapeHtml = false, setSource}) => {
 	
 	// tasks
 	if (setSource) {
-		renderers.listItem = args => <MDCheckbox source={source} setSource={setSource} {...args} />;
+		renderers.li = args => <MDCheckbox source={source} setSource={setSource} {...args} />;
 	}
 
-	return <ReactMarkdown plugins={[gfm]} escapeHtml={escapeHtml} children={nsource} renderers={renderers} />;
+	return <ReactMarkdown remarkPlugins={[gfm]} escapeHtml={escapeHtml} children={nsource} components={renderers} />;
 };
 
 export default MDText;
