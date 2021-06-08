@@ -575,7 +575,7 @@ const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
 	let path = DataStore.getDataPath({status, type, id, domain});
 	return DataStore.fetch(path, () => {
 		return SIO_getDataItem({type, id, status, domain, swallow, action, ...other});
-	}, ! swallow);
+	});
 };
 ActionMan.getDataItem = getDataItem;
 

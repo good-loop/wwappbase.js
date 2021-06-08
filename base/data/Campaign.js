@@ -176,7 +176,7 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
  * @param {Campaign} topCampaign 
  * @param {?Campaign[]} campaigns 
  * @param {?KStatus} status
- * @returns PromiseValue(Advert[])
+ * @returns PromiseValue(List(Advert))
  */
 Campaign.fetchAds = (topCampaign, campaigns, status=KStatus.DRAFT, query) => {
     Campaign.assIsa(topCampaign);
@@ -562,7 +562,7 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 			return charities;
 		}
 		// default to 0	
-		lowDntn = new Money(donationTotal.currencySymbol + "0");
+		lowDntn = new Money({currency:donationTotal.currency, value:0});
 	}
 	console.warn("[FILTER]","Low donation threshold for charities set to " + lowDntn);
     
@@ -597,8 +597,8 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 Campaign.scaleCharityDonations = (campaign, donationTotal, donation4charityUnscaled, charities) => {
     // Campaign.assIsa(campaign); can be {}
 	//assMatch(charities, "NGO[]");	- can contain dummy objects from strays
-    let {forceScaleDonations} = campaign;
-	if (!Campaign.isDntn4CharityEmpty(campaign) && !forceScaleDonations) {
+    let forceScaleDonations = campaign.forceScaleDonations;
+	if ( ! Campaign.isDntn4CharityEmpty(campaign) && !forceScaleDonations) {
 		// NB: donation4charityUnscaled will contain all data for campaigns, including data not in campaign.dntn4charity
         //assert(campaign.dntn4charity === donation4charityUnscaled);
 		return donation4charityUnscaled; // explicitly set, so don't change it
