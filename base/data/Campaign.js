@@ -240,7 +240,6 @@ Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.D
 	let adIds = ads && ads.map(ad => ad.id);
 	extraAds = extraAds && adIds ? extraAds.filter(ad => !adIds.includes(ad.id)) : extraAds;
 	let allAds = uniqById([...ads, ...extraAds]);
-	console.log("AD STATUS:: ADS", ads, "EXTRA ADS", extraAds, "ALL ADS", allAds);
 	allAds.forEach(ad => {
 		ad.ihStatus = getAdStatus(ad);
 	});
@@ -260,12 +259,6 @@ Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.D
  * @returns {Advert[]} adverts to show
  */
 Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, showNonServed, nosample, presetAds, query}) => {
-
-	if (!is(showNonServed) && !is(nosample)) {
-		console.log("AD STATUS SETTINGS?? showNonServed:", topCampaign.showNonServed, "nosample:", topCampaign.nosample);
-		console.log("AD STATUS campaign:", topCampaign);
-	}
-
 	if (!is(showNonServed)) showNonServed = topCampaign.showNonServed;
 	if (!is(nosample)) nosample = topCampaign.nosample;
 
@@ -378,24 +371,20 @@ const campaignNameForAd = ad => {
  * @returns {Number}
  */
 Campaign.viewcount = ({topCampaign, campaigns, extraAds, status}) => {
-	console.log("[VIEWCOUNT]","Num people?", topCampaign.numPeople);
 	if (topCampaign.numPeople) return topCampaign.numPeople;
 	const pvAllAds = Campaign.fetchAds(topCampaign, campaigns, status);
 	const allAds = pvAllAds.value ? List.hits(pvAllAds.value) : [];
 	extraAds = extraAds ? extraAds.filter(ad => !idList(allAds).includes(ad.id)) : [];
 	const allAdsIncludingNonCampaign = Campaign.advertStatusList({topCampaign, campaigns, extraAds, status});
 	const viewcount4campaign = Advert.viewcountByCampaign(allAdsIncludingNonCampaign);
-	console.log("[VIEWCOUNT]","viewcount4campaign", viewcount4campaign);
 	let viewcount = 0;
 	const alreadyAddedCampaigns = [];
-	console.log("[VIEWCOUNT]", "Using ads:", allAdsIncludingNonCampaign);
 	allAdsIncludingNonCampaign.forEach(ad => {
 		if (viewcount4campaign[ad.campaign] && !alreadyAddedCampaigns.includes(ad.campaign)) {
 			viewcount += viewcount4campaign[ad.campaign];
 			alreadyAddedCampaigns.push(ad.campaign);
 		}
 	});
-	console.log("[VIEWCOUNT]", "Viewcount:", viewcount);
 	return viewcount;
 };
 
@@ -543,16 +532,12 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 	// lowDntn = the threshold at which to consider a charity a low donation
 	// hideCharities = a list of charity IDs to explicitly hide - represented by keySet as an object (explained more below line 103)
 
-    console.log("[FILTER]", "Filtering with dntn4charity", donation4charity);
-
-	console.log("[FILTER]", charities);
 	// Filter nulls
 	charities = charities.filter(x => x);
 
 	if (campaign.hideCharities) {
 		let hc = Campaign.hideCharities(campaign);
         const charities2 = charities.filter(c => ! hc.includes(normaliseSogiveId(getId(c))));
-        console.log("[FILTER]","HIDDEN CHARITIES: ",hc);
 		charities = charities2;
 	}
 	
@@ -564,7 +549,6 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 		// default to 0	
 		lowDntn = new Money({currency:donationTotal.currency, value:0});
 	}
-	console.warn("[FILTER]","Low donation threshold for charities set to " + lowDntn);
     
 	/**
 	 * @param {!NGO} c 
@@ -578,7 +562,6 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 	charities = charities.filter(charity => {
         const dntn = getDonation(charity);
         let include = dntn && Money.lessThan(lowDntn, dntn);
-        if (!include) console.log("[FILTER]","BELOW LOW DONATION: ",charity, dntn);
 		return include;
     });
 	return charities;
