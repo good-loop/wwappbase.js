@@ -83,8 +83,10 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 	if (extraParams) {
 		Object.entries(extraParams).forEach(([k, v]) => params.push(`${k}=${v}`))
 	}
+	// TODO ...legacy code? get the Advert and check for legacyUnitBranch
+	let legacy = ""; //"legacy-units/gl-release-2020-07-29/"; // TODO
 	const filename = debug ? 'unit-debug.js' : 'unit.js';
-	const src = `${ServerIO.AS_ENDPOINT}/${filename}${params.length ? '?' + params.join('&') : ''}`;
+	const src = `${ServerIO.AS_ENDPOINT}/${legacy}${filename}${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
 
 	// On unmount: empty out iframe's document
