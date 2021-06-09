@@ -26,7 +26,7 @@ import Cookies from 'js-cookie';
 // Code for if used outside of npm
 // // MUST have js-cookie and SHOULD have assert
 // if (typeof (assert) === 'undefined') {
-// 	console.warn("Login: creating assert. Recommended: import SJTest");
+// 	console.warn("Login: creating assert. Recommended: import assert");
 // 	window.assert = function (betrue, msg) {
 // 		if (!betrue) throw new Error("assert-failed: " + msg);
 // 	};

@@ -31,7 +31,7 @@ class Money extends DataClass {
 	currency = 'GBP'; // default
 
 	/**
-	 * @param {?Money|String|Number} base
+	 * @param {?Money|String|Number|Money} base
 	 */
 	constructor(base) {
 		// allow `new Money("£10")`
@@ -222,7 +222,7 @@ Money.convertCurrency = (money, currencyTo) => {
 	assert(Money.CURRENCY[currencyTo]);
 	const currencyConversion = money.currency + "_" + currencyTo;
 	const conversionVal = Money.CURRENCY_CONVERSION[currencyConversion];
-	assert(conversionVal);
+	assert(conversionVal, "Cannot convert - rate unset for "+currencyConversion);
 	return moneyFromv100p(money.value100p * conversionVal, currencyTo);
 };
 
@@ -431,7 +431,9 @@ Money.compare = (a,b) => {
 	if ( ! b) 1;
 	Money.assIsa(a);
     Money.assIsa(b);
-    if (a.currency && b.currency) {
+    if (a.currency && b.currency 
+		&& v100p(a) && v100p(b)) // NB: no need to convert to compare 0
+	{
 		if (a.currency.toUpperCase() !== b.currency.toUpperCase()) {
             console.log("Converting currency " + a.currency + " to " + b.currency);
 			a = Money.convertCurrency(a, b.currency);
