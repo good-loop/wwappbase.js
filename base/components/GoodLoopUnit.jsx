@@ -106,17 +106,17 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
  * @param {?String} p.unitJson Optional: String with contents of a unit.json serve. 
  * 	Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
  * Format: {vert, charities, pub, etc} - see the UnitHttpServlet.java
- * @param {?String} p.legacyUnitBranch
+ * @param {?Advert} p.advert Used for legacyUnitBranch
  * @param {String} p.play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
  * @param {String} p.endCard Set truthy to display end-card without running through advert.
  * @param {?Boolean} p.noab Set true to block any A/B experiments
  * @param {Object} p.extraParams A map of extra URL parameters to put on the unit.js URL.
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, legacyUnitBranch, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
-	if (unitJson && ! legacyUnitBranch) {
-		let advertPlus = JSON.parse(unitJson).vert;
-		legacyUnitBranch = advertPlus && advertPlus.legacyUnitBranch;
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, advert, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
+	if (unitJson && ! advert) {
+		advert = JSON.parse(unitJson).vert;
 	}
+	legacyUnitBranch = advert && advert.legacyUnitBranch;
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [container, setContainer] = useState();
