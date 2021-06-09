@@ -50,7 +50,7 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 /**
  * Puts together the unit.json request
  */
-const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug, extraParams}) => {
+const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug, legacyUnitBranch, extraParams}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -83,8 +83,8 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 	if (extraParams) {
 		Object.entries(extraParams).forEach(([k, v]) => params.push(`${k}=${v}`))
 	}
-	// TODO ...legacy code? get the Advert and check for legacyUnitBranch
-	let legacy = ""; //"legacy-units/gl-release-2020-07-29/"; // TODO
+	// ...legacy code?
+	let legacy = legacyUnitBranch? "legacy-units/"+legacyUnitBranch+"/" : "";
 	const filename = debug ? 'unit-debug.js' : 'unit.js';
 	const src = `${ServerIO.AS_ENDPOINT}/${legacy}${filename}${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
@@ -98,18 +98,25 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 /**
  * TODO doc
  * ??How does this interact with the server vs on-client datastore??
- * @param {String} vertId ID of advert to show. Will allow server to pick if omitted.
- * @param {String} css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
- * @param {String} size Defaults to "landscape".
- * @param {String} status Defaults to PUBLISHED if omitted.
- * @param {String} unitJson Optional: String with contents of a unit.json serve. 
+ * @param {Object} p
+ * @param {String} p.vertId ID of advert to show. Will allow server to pick if omitted.
+ * @param {String} p.css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
+ * @param {String} p.size Defaults to "landscape".
+ * @param {String} p.status Defaults to PUBLISHED if omitted.
+ * @param {?String} p.unitJson Optional: String with contents of a unit.json serve. 
  * 	Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
- * @param {String} play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
- * @param {String} endCard Set truthy to display end-card without running through advert.
- * @param {?Boolean} noab Set true to block any A/B experiments
- * @param {Object} extraParams A map of extra URL parameters to put on the unit.js URL.
+ * Format: {vert, charities, pub, etc} - see the UnitHttpServlet.java
+ * @param {?String} p.legacyUnitBranch
+ * @param {String} p.play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
+ * @param {String} p.endCard Set truthy to display end-card without running through advert.
+ * @param {?Boolean} p.noab Set true to block any A/B experiments
+ * @param {Object} p.extraParams A map of extra URL parameters to put on the unit.js URL.
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, legacyUnitBranch, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
+	if (unitJson && ! legacyUnitBranch) {
+		let advertPlus = JSON.parse(unitJson).vert;
+		legacyUnitBranch = advertPlus && advertPlus.legacyUnitBranch;
+	}
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [container, setContainer] = useState();
@@ -153,7 +160,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play =
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
 		if (frameReady) {
-			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug, extraParams});
+			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug, legacyUnitBranch, extraParams});
 			insertAdunitCss({frame, css});
 			return cleanup;
 		}
