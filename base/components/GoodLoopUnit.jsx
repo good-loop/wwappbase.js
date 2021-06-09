@@ -98,18 +98,25 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 /**
  * TODO doc
  * ??How does this interact with the server vs on-client datastore??
- * @param {String} vertId ID of advert to show. Will allow server to pick if omitted.
- * @param {String} css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
- * @param {String} size Defaults to "landscape".
- * @param {String} status Defaults to PUBLISHED if omitted.
- * @param {String} unitJson Optional: String with contents of a unit.json serve. 
+ * @param {Object} p
+ * @param {String} p.vertId ID of advert to show. Will allow server to pick if omitted.
+ * @param {String} p.css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
+ * @param {String} p.size Defaults to "landscape".
+ * @param {KStatus} p.status Defaults to PUBLISHED if omitted.
+ * @param {String} p.unitJson Optional: String with contents of a unit.json serve. 
  * 	Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
- * @param {String} play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
- * @param {String} endCard Set truthy to display end-card without running through advert.
- * @param {?Boolean} noab Set true to block any A/B experiments
- * @param {Object} extraParams A map of extra URL parameters to put on the unit.js URL.
+ * Format: {vert, charities, pub, etc} - see the UnitHttpServlet.java
+ * @param {?Advert} p.advert Used for legacyUnitBranch
+ * @param {String} p.play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
+ * @param {String} p.endCard Set truthy to display end-card without running through advert.
+ * @param {?Boolean} p.noab Set true to block any A/B experiments
+ * @param {Object} p.extraParams A map of extra URL parameters to put on the unit.js URL.
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, advert, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
+	if (unitJson && ! advert) {
+		advert = JSON.parse(unitJson).vert;
+	}
+	legacyUnitBranch = advert && advert.legacyUnitBranch;
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
 	const [container, setContainer] = useState();
