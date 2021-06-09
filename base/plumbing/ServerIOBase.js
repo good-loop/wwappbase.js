@@ -348,7 +348,8 @@ const normaliseSogiveId = id => {
 		'gosh':'great-ormond-street-hospital-childrens-charity',
 		'tommys':'tommy-s',
 		'amnesty':'amnesty-international',
-		'regenboog':'de-regenboog-groep'
+		'regenboog':'de-regenboog-groep',
+		'weforest':'we-forest'
 	}[canonId];
 
 	return sid || canonId;	
