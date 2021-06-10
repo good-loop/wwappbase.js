@@ -318,6 +318,7 @@ export const substr = (mystring: string, _start: number, _end: number) => {
  * @param {?Boolean} lenient If true, if a decoding error is hit, it is swallowed and the raw string is used.
  * Use-case: for parsing urls that may contain adtech macros.
  * @returns a map */
+// NB: new UrlSearchParams(searchFragment) can now do much of this
 export const getUrlVars = (url: string, lenient: boolean) => {
 	// Future thought: Could this be replaced with location.search??
 	// Note: location.search doesn't look past a #hash
