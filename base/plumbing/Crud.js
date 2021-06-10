@@ -611,11 +611,11 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  * WARNING: This should usually be run through DataStore.getDataList() before using
  * Namespace anything fetched from a non-default domain
  */
-ActionMan.list = ({type, status, q, prefix, start, end, sort, domain}) => {	
+ActionMan.list = ({type, status, q, prefix, start, end, size, sort, domain}) => {	
 	assert(C.TYPES.has(type), type);
-	const lpath =  getListPath({type,status,q,prefix,start,end,sort,domain});
+	const lpath =  getListPath({type,status,q,prefix,start,end,size,sort,domain});
 	const pv = DataStore.fetch(lpath, () => {
-		return ServerIO.list({type, status, q, prefix, start, end, sort, domain});
+		return ServerIO.list({type, status, q, prefix, start, end, size, sort, domain});
 	});	
 	// console.log("ActionMan.list", q, prefix, pv);
 	return pv;
@@ -635,7 +635,7 @@ ActionMan.list = ({type, status, q, prefix, start, end, sort, domain}) => {
  * @returns promise(List) 
  * List has form {hits: Object[], total: Number} -- see List.js
  */
-ServerIO.list = ({type, status, q, prefix, start, end, sort, domain = ''}) => {
+ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = ''}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO.list - bad type:' +type);
 	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), 'Crud.js - ServerIO.list - bad status: '+status);
@@ -644,7 +644,7 @@ ServerIO.list = ({type, status, q, prefix, start, end, sort, domain = ''}) => {
 		+ (ServerIO.dataspace && type!=='NGO'? '/'+ServerIO.dataspace : '')	// HACK: no dataspace for SoGive
 		+ '/_list.json';
 	let params = {
-		data: {status, q, start, end, prefix, sort}
+		data: {status, q, start, end, prefix, sort, size}
 	};	
 	const p = ServerIO.load(url, params);
 		// .then(res => { // sanity check
