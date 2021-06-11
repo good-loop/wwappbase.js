@@ -76,9 +76,9 @@ const iCan = (capability) => {
 	assMatch(capability, String);
 	let proles = getRoles();
 	if (proles.value) {
-		for(let i=0; i<proles.value.length; i++) {
+		for (let i = 0; i < proles.value.length; i++) {
 			let cans = cans4role[proles.value[i]];
-			if ( ! cans) {
+			if (!cans) {
 				console.error("Roles.js - unknown role: "+proles.value[i]);
 				continue;
 			}
@@ -86,8 +86,8 @@ const iCan = (capability) => {
 		}
 		return new PromiseValue(false);
 	}
-	// wait...
-	const pvCan = PromiseValue.then(proles, _whatever => resolve(iCan(capability)));
+	// Wait for "fetch user roles" promise to resolve before resolving "check user capability"
+	const pvCan = PromiseValue.then(proles, () => iCan(capability));
 	return pvCan;
 };
 

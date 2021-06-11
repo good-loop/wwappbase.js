@@ -102,7 +102,7 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
  * @param {String} p.vertId ID of advert to show. Will allow server to pick if omitted.
  * @param {String} p.css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
  * @param {String} p.size Defaults to "landscape".
- * @param {String} p.status Defaults to PUBLISHED if omitted.
+ * @param {?KStatus} p.status Defaults to PUBLISHED if omitted.
  * @param {?String} p.unitJson Optional: String with contents of a unit.json serve. 
  * 	Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
  * Format: {vert, charities, pub, etc} - see the UnitHttpServlet.java
