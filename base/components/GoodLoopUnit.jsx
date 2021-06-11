@@ -49,8 +49,12 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 
 /**
  * Puts together the unit.json request
+ * TODO To seamlessly load legacy units without loading advert twice:
+ * Load unit.json with given params, check for legacy unit param, and put contents in a div with ID #preloaded-unit-json.
+ * Insert unit.js raw.
+ * BehaviourLoadUnit in the adunit will find that div and extract the JSON from it.
  */
-const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug, extraParams}) => {
+const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug, legacyUnitBranch, extraParams}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -83,8 +87,8 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
 	if (extraParams) {
 		Object.entries(extraParams).forEach(([k, v]) => params.push(`${k}=${v}`))
 	}
-	// TODO ...legacy code? get the Advert and check for legacyUnitBranch
-	let legacy = ""; //"legacy-units/gl-release-2020-07-29/"; // TODO
+	// ...legacy code?
+	let legacy = legacyUnitBranch? "legacy-units/"+legacyUnitBranch+"/" : "";
 	const filename = debug ? 'unit-debug.js' : 'unit.js';
 	const src = `${ServerIO.AS_ENDPOINT}/${legacy}${filename}${params.length ? '?' + params.join('&') : ''}`;
 	appendEl(doc, {tag: 'script', src, async: true});
@@ -102,8 +106,8 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
  * @param {String} p.vertId ID of advert to show. Will allow server to pick if omitted.
  * @param {String} p.css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
  * @param {String} p.size Defaults to "landscape".
- * @param {KStatus} p.status Defaults to PUBLISHED if omitted.
- * @param {String} p.unitJson Optional: String with contents of a unit.json serve. 
+ * @param {?KStatus} p.status Defaults to PUBLISHED if omitted.
+ * @param {?String} p.unitJson Optional: String with contents of a unit.json serve. 
  * 	Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
  * Format: {vert, charities, pub, etc} - see the UnitHttpServlet.java
  * @param {?Advert} p.advert Used for legacyUnitBranch
@@ -160,7 +164,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, advert
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
 		if (frameReady) {
-			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug, extraParams});
+			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug, legacyUnitBranch, extraParams});
 			insertAdunitCss({frame, css});
 			return cleanup;
 		}
