@@ -49,6 +49,10 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 
 /**
  * Puts together the unit.json request
+ * TODO To seamlessly load legacy units without loading advert twice:
+ * Load unit.json with given params, check for legacy unit param, and put contents in a div with ID #preloaded-unit-json.
+ * Insert unit.js raw.
+ * BehaviourLoadUnit in the adunit will find that div and extract the JSON from it.
  */
 const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug, legacyUnitBranch, extraParams}) => {
 	if (!frame) return;
