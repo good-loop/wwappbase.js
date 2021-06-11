@@ -112,12 +112,12 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 	}
 	
 	return (<div className="WizardStage">		
-		{navPosition === "top" || navPosition === "both" && <WizardNavButtons stagePath={stagePath} title={title} navStatus={navStatus} maxStage={maxStage}
+		{(navPosition === "top" || navPosition === "both") && <WizardNavButtons stagePath={stagePath} title={title} navStatus={navStatus} maxStage={maxStage}
 			onNext={onNext} onPrev={onPrev}
 			navPosition={navPosition}
 		/>}
 		{children}
-		{navPosition === "bottom" || navPosition === "both" && <WizardNavButtons stagePath={stagePath} title={title} navStatus={navStatus} maxStage={maxStage}
+		{(navPosition === "bottom" || navPosition === "both") && <WizardNavButtons stagePath={stagePath} title={title} navStatus={navStatus} maxStage={maxStage}
 			onNext={onNext} onPrev={onPrev}
 			navPosition={navPosition}
 		/>}		
