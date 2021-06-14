@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useCallback } from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
+import Misc from './Misc';
 
 
 /**
@@ -47,52 +48,81 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 	cssEls.forEach(node => node.parentElement.removeChild(node));
 }
 
+
+/** Get the URL for an ad file (eg unit.js, unit.json, vast.xml) with appropriate server type and parameters */
+export const getAdUrl = ({file = 'unit.js', unitBranch, params}) => {
+	const isUnitJs = (file === 'unit.js');
+
+	// Special overrides for unit.js
+	if (isUnitJs) {
+		// Override to unit(-debug).js
+		if (params['gl.debug'] !== 'false' && isUnitJs) {
+			file = 'unit-debug.js';
+		}
+		// Use custom/legacy unit branch
+		if (unitBranch) {
+			file = `legacy-units/${unitBranch}/${file}`;
+		}
+	}
+
+	const url = new URL(`${ServerIO.AS_ENDPOINT}/${file}`);
+
+	// append all gl.* parameters
+	if (params) {
+		Object.entries(params).forEach(([name, value]) => {
+			if (name.match(/^gl\./) && value) url.searchParams.set(name, value);
+		});
+	}
+	return url.toString();
+};
+
+
+/**
+ * Turn the props passed to <GoodLoopUnit> into the gl.* URL params used when requesting adunits */
+const normaliseParams = ({ endCard, ...params }) => {
+	let normParams = {};
+
+	if (endCard) params['gl.variant'] = 'tq';
+
+	Object.entries(params).forEach(([key, val]) => {
+		if (val === undefined) return;
+		const normKey = key.match(/^gl\.\w+/) ? key : `gl.${key}`;
+		normParams[normKey] = val;
+	});
+
+	return normParams;
+}
+
 /**
  * Puts together the unit.json request
+ * TODO To seamlessly load legacy units without loading advert twice:
+ * Load unit.json with given params, check for legacy unit param, and put contents in a div with ID #preloaded-unit-json.
+ * Insert unit.js raw.
+ * BehaviourLoadUnit in the adunit will find that div and extract the JSON from it.
  */
-const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab, debug, extraParams}) => {
+const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
 
-	console.log('insertUnit doc = ', doc);
-
-
 	// No scroll bars!
 	if (docBody) docBody.style = 'overflow: hidden;'; // NB: the if is paranoia - NPE hunt Oct 2019
 
-	// Insert preloaded unit.json, if we have it
-	// ??is unitJson json or html?
+	// Preloaded unit.json? Insert contents inside a <script> tag for the adunit to find
 	if (unitJson) {
-		appendEl(doc, {tag: 'div', id: 'preloaded-unit-json', innerHTML: unitJson});
+		appendEl(doc, {tag: 'script', type: 'application/json', id: 'preloaded-unit-json', innerHTML: unitJson});
 	}
 
 	// Insert the element the unit goes in at the top of the document
 	// Keep it simple: Tell the unit it's already isolated in an iframe and doesn't need to create another.
-	appendEl(doc, {tag: 'div', className:'goodloopad-frameless'}, true);
-	
-	// Insert unit.js
-	let params = []
-	if (status) params.push(`gl.status=${status}`); // show published version unless otherwise specified
-	if (size) params.push(`gl.size=${size}`); // If size isn't specified, the unit will pick a player-type to fit the container
-	if (vertId) params.push(`gl.vert=${vertId}`); // If adID isn't specified, we'll get a random ad.
-	if (play) params.push(`gl.play=${play}`)
-	if (endCard) params.push(`gl.variant=tq`);
-	if (noab) params.push('gl.noab=true');
-	if (debug) params.push(`gl.debug=true`);
-	if (extraParams) {
-		Object.entries(extraParams).forEach(([k, v]) => params.push(`${k}=${v}`))
-	}
-	// TODO ...legacy code? get the Advert and check for legacyUnitBranch
-	let legacy = ""; //"legacy-units/gl-release-2020-07-29/"; // TODO
-	const filename = debug ? 'unit-debug.js' : 'unit.js';
-	const src = `${ServerIO.AS_ENDPOINT}/${legacy}${filename}${params.length ? '?' + params.join('&') : ''}`;
+	appendEl(doc, {tag: 'div', className: 'goodloopad-frameless'}, true);
+
+	// Generate the unit.js URL and insert the <script> tag
+	const src = getAdUrl({ file: 'unit.js', unitBranch, params: glParams });
 	appendEl(doc, {tag: 'script', src, async: true});
 
 	// On unmount: empty out iframe's document
-	return () => {
-		doc ? doc.documentElement.innerHTML = '' : null;
-	};
+	return () => doc ? doc.documentElement.innerHTML = '' : null;
 };
 
 /**
@@ -102,28 +132,14 @@ const insertUnit = ({frame, unitJson, vertId, status, size, play, endCard, noab,
  * @param {String} p.vertId ID of advert to show. Will allow server to pick if omitted.
  * @param {String} p.css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
  * @param {String} p.size Defaults to "landscape".
- * @param {KStatus} p.status Defaults to PUBLISHED if omitted.
- * @param {String} p.unitJson Optional: String with contents of a unit.json serve. 
- * 	Allows a previously loaded ad to be redisplayed elsewhere without hitting the server.
- * Format: {vert, charities, pub, etc} - see the UnitHttpServlet.java
+ * @param {?KStatus} p.status Defaults to PUBLISHED if omitted.
  * @param {?Advert} p.advert Used for legacyUnitBranch
  * @param {String} p.play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
  * @param {String} p.endCard Set truthy to display end-card without running through advert.
  * @param {?Boolean} p.noab Set true to block any A/B experiments
  * @param {Object} p.extraParams A map of extra URL parameters to put on the unit.js URL.
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, advert, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
-	if (unitJson && ! advert) {
-		advert = JSON.parse(unitJson).vert;
-	}
-	legacyUnitBranch = advert && advert.legacyUnitBranch;
-	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
-	const [frame, setFrame] = useState();
-	const [container, setContainer] = useState();
-	const [dummy, redraw] = useState(); // Just use this to provoke a redraw
-
-	const [frameReady, setFrameReady] = useState(false);
-
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug || !C.isProduction();
@@ -131,6 +147,29 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, advert
 	const debugParam = DataStore.getUrlValue('gl.debug');
 	if (debug && debugParam === false) debug = false;
 	if (!debug && debugParam === true) debug = true;
+
+	// Generate gl.* URL parameter list
+	const glParams = normaliseParams({vert: vertId, status, size, play, endCard, noab, debug, ...extraParams});
+
+	// Load the ad
+	const [unitJson, setUnitJson] = useState(null); // Preloaded unit.json
+	const [unitBranch, setUnitBranch] = useState(false); // vert.legacyUnitBranch from the above
+
+	// Fetch the advert from *as.good-loop.com so we can check if it has a legacy branch
+	useEffect(() => {
+		fetch(getAdUrl({file: 'unit.json', params: glParams}))
+		.then(res => res.json())
+		.then(unitObj => {
+			setUnitBranch(unitObj.vert.legacyUnitBranch || '');
+			setUnitJson(JSON.stringify(unitObj));
+		});
+	}, [vertId]);
+
+	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
+	const [frame, setFrame] = useState();
+	const [container, setContainer] = useState();
+	const [dummy, redraw] = useState(); // Just use this to provoke a redraw
+	const [frameReady, setFrameReady] = useState(false);
 
 	const receiveFrame = useCallback(node => {
 		setFrame(node);
@@ -159,12 +198,12 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, advert
 
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
-		if (frameReady) {
-			const cleanup = insertUnit({frame, unitJson, vertId, status, size, play, endCard, noab, debug, extraParams});
+		if (frameReady && unitJson && unitBranch !== false) {
+			const cleanup = insertUnit({frame, unitJson, unitBranch, glParams});
 			insertAdunitCss({frame, css});
 			return cleanup;
 		}
-	}, [frameReady, unitKey]);
+	}, [frameReady, unitKey, unitJson, unitBranch]);
 
 	// Redo CSS when CSS or adunit frame changes
 	useEffect(() => {
@@ -191,7 +230,6 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, unitJson, advert
 		else if (size === 'portrait') dims.width = `${height * 0.5625}px`;
 	}
 
-	
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
 			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} />

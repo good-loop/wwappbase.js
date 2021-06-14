@@ -21,11 +21,12 @@ window.ServerIO = ServerIO;
 // Allow for local to point at live for debugging
 ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for testing
 
-/** HACK
- * Set to true for test servers that's don't run an API.
- * use-case?? 
- * */
-ServerIO.NO_API_AT_THIS_HOST; 
+/**
+ * ServerIO.checkBase expects sites to have their own backend at the same domain
+ * - so ServerIO.APIBASE === '' is prod on a prod server, test on a test server, local on local.
+ * Basically: set this true for "empty APIBASE isn't the correct value for prod"
+ */
+ServerIO.NO_API_AT_THIS_HOST;
 
 // HACK our special micro-services
 ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
@@ -71,7 +72,7 @@ ServerIO.checkBase = () => {
 		// Normally a URL that doesn't say "test" or "local" (empty string included) is production...
 		let urlIsProd = !(endpointUrl.match(/(test|local)/));
 		// ...but APIBASE is special - it's normally empty for "this host" (except for My-Loop, which doesn't have its own backend)
-		// So for APIBASE on non-production servers with their own API, an empty string signifies NOT prod
+		// So empty APIBASE (on non-production servers, with their own API) signifies NOT prod
 		if (key === 'APIBASE' && !C.isProduction() && !ServerIO.NO_API_AT_THIS_HOST && !endpointUrl) {
 			urlIsProd = false;
 		}
@@ -79,7 +80,7 @@ ServerIO.checkBase = () => {
 		// Production site + production URL, or test site + test/local URL? Everything's fine.
 		if (C.isProduction() === urlIsProd) return;
 
-		if ( ! urlIsProd) {
+		if (!urlIsProd) {
 			// Production site + test/local URL? Forcibly correct the URL.
 			const err = new Error(`ServerIO.js - ServerIO.${key} is using a test setting! Oops: ${endpointUrl} - Resetting to '${prodValue}'`);
 			ServerIO[key] = prodValue;
@@ -90,7 +91,7 @@ ServerIO.checkBase = () => {
 			// For safety reasons (to prevent accidentally editing live campaigns), you cannot use production APIBASE on the test server
 			// (though server=production can still explicity override this, and local _can_ point to production as that can be handy when fixing stuff)
 			const server = DataStore.getUrlValue("server");
-			if (C.SERVER_TYPE==="test" && key==="APIBASE" && server !== "production") {
+			if (C.SERVER_TYPE === "test" && key === "APIBASE" && server !== "production") {
 				const err = new Error(`ServerIO.js - ServerIO.${key} is using PRODUCTION setting! Oops: ${endpointUrl} - Resetting to ''`);
 				ServerIO[key] = '';
 				console.warn(err);

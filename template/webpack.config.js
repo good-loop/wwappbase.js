@@ -12,7 +12,7 @@ const webDir = process.env.OUTPUT_WEB_DIR || 'web';
 
 const baseConfig = {
 	// NB When editing keep the "our code" entry point last in this list - makeConfig override depends on this position.
-	entry: ['@babel/polyfill', './src/js/app.jsx'],
+	entry: ['core-js', './src/js/app.jsx'],
 	output: {
 		path: path.resolve(__dirname, './' + webDir + '/build/'), // NB: this should include js and css outputs
 		// filename: is left undefined and filled in by makeConfig
@@ -31,6 +31,7 @@ const baseConfig = {
 				options: {
 					presets: [
 						['@babel/preset-typescript', { targets: { ie: "11" }, loose: true }],
+						["@babel/preset-env", { targets: { ie: "11" }, loose: true }],
 						'@babel/react'
 					],
 					plugins: [
@@ -50,6 +51,8 @@ const baseConfig = {
 					],
 					plugins: [
 						'@babel/plugin-proposal-class-properties',
+						'@babel/plugin-proposal-private-methods',
+						'@babel/plugin-proposal-private-property-in-object',
 						'@babel/plugin-transform-react-jsx',
 					]
 				}
