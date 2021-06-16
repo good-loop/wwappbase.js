@@ -568,15 +568,17 @@ class Store {
 		let item = this.getValue(path);
 		if (item!==null && item!==undefined) {
 			// out of date?
-			if (cachePeriod) {
-				assert(cachePeriod > 1000, "DataStore.fetch too short cachePeriod", cachePeriod, path);
+			if (options.cachePeriod) {
+				if (options.cachePeriod < 1000) { // quietly avoid too short caches
+					options.cachePeriod = 1000;
+				}
 				const now = new Date();
 				const epath = ['transient', 'fetchDate'].concat(path);
 				let fetchDate = this.getValue(epath);
-				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - cachePeriod) {
+				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - options.cachePeriod) {
 					// fetch a fresh copy
 					console.log("DataStore", "stale vs "+fetchDate+" - fetch fresh", path);
-					const pv = this.fetch2(path, fetchFn, cachePeriod);
+					const pv = this.fetch2(path, fetchFn, options.cachePeriod);
 					// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
 					if (pv.resolved) {
 						return pv;
@@ -587,7 +589,7 @@ class Store {
 			return new PromiseValue(item);
 		}
 		// Fetch it
-		return this.fetch2(path, fetchFn, cachePeriod);
+		return this.fetch2(path, fetchFn, options.cachePeriod);
 	} // ./fetch()
 
 
