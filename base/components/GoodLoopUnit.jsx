@@ -48,7 +48,7 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 	cssEls.forEach(node => node.parentElement.removeChild(node));
 }
 
-
+// TODO copy-pasted from demo/test site - move to shared location?
 /** Get the URL for an ad file (eg unit.js, unit.json, vast.xml) with appropriate server type and parameters */
 export const getAdUrl = ({file = 'unit.js', unitBranch, params}) => {
 	const isUnitJs = (file === 'unit.js');
@@ -148,8 +148,8 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	if (debug && debugParam === false) debug = false;
 	if (!debug && debugParam === true) debug = true;
 
-	// Generate gl.* URL parameter list
-	const glParams = normaliseParams({vert: vertId, status, size, play, endCard, noab, debug, ...extraParams});
+	// Generate gl.* URL parameter list - add gl.delivery=direct as shim for "adunit overwrites variant.delivery" issue
+	const glParams = normaliseParams({vert: vertId, status, size, play, endCard, noab, debug, delivery: 'direct', ...extraParams});
 
 	// Load the ad
 	const [unitJson, setUnitJson] = useState(null); // Preloaded unit.json
