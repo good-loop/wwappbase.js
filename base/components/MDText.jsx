@@ -7,7 +7,6 @@ import { is } from '../utils/miscutils';
 import { Input, Label } from 'reactstrap';
 
 const MDCheckbox = ({setSource, source, checked, ...args}) => {
-	console.warn(args);
 	if ( ! is(checked)) {
 		return ReactMarkdown.renderers.listItem(args);
 	}
