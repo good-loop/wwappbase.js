@@ -260,18 +260,20 @@ const assCurrencyEq = (a, b, msg) => {
 	assert(a.currency.toUpperCase() === b.currency.toUpperCase(), m);
 };
 
-/** Will fail if not called on 2 Moneys of the same currency
- * @return {Money} a fresh object
+/** 
+ * @return {Money} a fresh object.
+ * Currency conflicts will trigger a conversion.
  */
 Money.add = (amount1, amount2) => {
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);
-	//assCurrencyEq(amount1, amount2, "add()");
-	// Ignore if there is an empty currency
+	// currency conflict? - ignore if there is an empty currency
 	if (amount1.currency && amount2.currency) {
 		if (amount1.currency.toUpperCase() !== amount2.currency.toUpperCase()) {
-            console.log("Converting currency " + amount1.currency + " to " + amount2.currency);
-			amount1 = Money.convertCurrency(amount1, amount2.currency);
+			// conflict! Prefer amount1, unless it is a zero
+			let preferredCurrency = v100p(amount1)? amount1.currency : amount2.currency;            
+			if (amount1.currency !== preferredCurrency) amount1 = Money.convertCurrency(amount1, preferredCurrency);
+			if (amount2.currency !== preferredCurrency) amount2 = Money.convertCurrency(amount2, preferredCurrency);
 		}
 	}
 	const b100p = v100p(amount1) + v100p(amount2);

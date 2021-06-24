@@ -204,7 +204,7 @@ const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) =>
 		return [];
 	}
 	// resolve Refs to full Items
-	hits = DataStore.getDataList(hits, preferStatus);
+	hits = DataStore.resolveDataList(hits, preferStatus);
 	// HACK: Use-case: you load published items. But the list allows for edits. Those edits need draft items. So copy pubs into draft
 	if (preferStatus===KStatus.DRAFT) {
 		hits.forEach(item => {			

@@ -6,7 +6,10 @@ import ActionMan from '../plumbing/ActionManBase';
 import DataStore from '../plumbing/DataStore';
 import SearchQuery from '../searchquery';
 import C from '../CBase';
-import { yessy } from '../utils/miscutils';
+import { uniq, yessy } from '../utils/miscutils';
+import { getDataItem, getDataList } from '../plumbing/Crud';
+import Campaign from './Campaign';
+import KStatus from './KStatus';
 
 class NGO extends DataClass {
 	constructor(base) {
@@ -132,98 +135,141 @@ NGO.CATEGORY = {
 		
 
 /**
+ * TODO move this GL campaign specific code into Campaign.js?
  * This may fetch data from the server. It returns instantly, but that can be with some blanks.
  * 
  * ??Hm: This is an ugly long method with a server-side search-aggregation! Should we do these as batch calculations on the server??
  * 
- * @param {!Advert[]} ads
- * @returns {cid:Money} donationForCharity, with a .total property for the total
+ * @param {!Advert[]} ads ??refactor to be by camapigns instead??
+ * @returns {cid:Money} donationForCharity, with a .total property for the total, and unreadyCampaignIds for debug
  */
-NGO.fetchDonationData = ads => {
+NGO.fetchDonationData = ({ads, status=KStatus.PUBLISHED, totalOnly}) => {
+	// Debug: allow the user to switch manual settings off with realtime=true
+	const realtime = DataStore.getUrlValue("realtime");
 	const donationForCharity = {};
-	if (!ads.length) return donationForCharity; // paranoia
+	let READY = 0; // debug info
+	let total = new Money(0);
+	const unreadyCampaignIds = [];
+	donationForCharity.unreadyCampaignIds = unreadyCampaignIds;
+	if ( ! ads.length) {
+		return donationForCharity; // paranoia
+	}
 	// things
 	let adIds = ads.map(ad => ad.id);
-    let campaignIds = ads.map(ad => ad.campaign);
-    // Filter bad IDs
-    campaignIds = campaignIds.filter(x=>x);
-	let charityIds = _.flatten(ads.map(Advert.charityList));
-
-	// Campaign level per-charity info?	
-	let campaignsWithoutDonationData = [];
-	for (let i = 0; i < ads.length; i++) {
-		const ad = ads[i];
-		const cp = ad.campaignPage;
-		// FIXME this is old!! Need to work with new campaigns objects
-		// no per-charity data? (which is normal)
-		if (!cp || !cp.dntn4charity || Object.values(cp.dntn4charity).filter(x => x).length === 0) {
-			if (ad.campaign) {
-				campaignsWithoutDonationData.push(ad.campaign);
-			} else {
-				console.warn("Advert with no campaign: " + ad.id);
+	// campaign IDs (filter any bad IDs)
+    let campaignIds = uniq(ads.map(ad => ad.campaign).filter(x=>x));
+	// get the campaigns 
+	let pvCampaigns = getDataList({type:"Campaign", ids:campaignIds, status});
+	if ( ! pvCampaigns.resolved) {
+		return {READY, total, unreadyCampaignIds:campaignIds};
+	}
+	// The total for each campaign
+	const total4campaignId = {};
+	const campaigns = List.hits(pvCampaigns.value);
+	{	// total data
+		let campaignsWithoutDonationData = [];	
+		for(let ci=0; ci<campaigns.length; ci++) {
+			const campaign = campaigns[ci];		
+			let cdntn = Campaign.dntn(campaign);		
+			if ( ! cdntn || realtime) {			
+				campaignsWithoutDonationData.push(campaign);
+				continue;
 			}
+			READY++;
+			total = Money.add(total, cdntn);
+			total4campaignId[campaign.id] = cdntn;
+		}
+		// fill in the realtime data
+		if (campaignsWithoutDonationData.length) {
+			for(let ci =0; ci<campaignsWithoutDonationData.length; ci++) {
+				let campaign = campaignsWithoutDonationData[ci];
+				// Fetch donations data	
+				let pvDonationsBreakdown = fetchDonationData2({ads, campaign});
+				if ( ! pvDonationsBreakdown.value)	{
+					unreadyCampaignIds.push(campaign.id);
+					continue; // NB: request the others in parallel
+				}
+				let cdntn = pvDonationsBreakdown.value.total;
+				total4campaignId[campaign.id] = cdntn;
+				total = Money.add(total, cdntn);
+				READY++;			
+			};
+		}	
+	} // ./ total data
+	// We have a total
+	donationForCharity.total = total;
+	// Done?
+	if (totalOnly) {		
+		return donationForCharity;
+	}
+
+	// The breakdown for each campaign
+
+	// ...Scaled manually set £s
+	let campaignsWithoutBreakdownData = [];	
+	const scaledBreakdown4campaignId = {};	
+	for(let ci=0; ci<campaigns.length; ci++) {
+		const campaign = campaigns[ci];
+		if (unreadyCampaignIds.includes(campaign.id)) {
 			continue;
 		}
-
-		Object.keys(cp.dntn4charity).forEach(cid => {
-			let dntn = cp.dntn4charity[cid];
-			if (!dntn) return;
-			if (donationForCharity[cid]) {
-				dntn = Money.add(donationForCharity[cid], dntn);
-			}
-			assert(cid !== 'total', cp); // paranoia
-			donationForCharity[cid] = dntn;
-		});
-	};
-	// Done?
-	if (donationForCharity.total && campaignsWithoutDonationData.length === 0) {
-		console.log("Using ad data for donations");
-		return donationForCharity;
-	}
-
-	// Fetch donations data	
-	// ...by campaign or advert? campaign would be nicer 'cos we could combine different ad variants... but its not logged reliably
-	// (old data) Loop.Me have not logged vert, only campaign. But elsewhere vert is logged and not campaign.
-    let sq1 = adIds.map(id => "vert:" + id).join(" OR ");
-	// NB: quoting for campaigns if they have a space (crude not 100% bulletproof ??use SearchQuery.js instead) 
-	let sq2 = campaignIds.map(id => "campaign:" + (id.includes(" ") ? '"' + id + '"' : id)).join(" OR ");
-	let sqDon = SearchQuery.or(sq1, sq2);
-
-	// load the community total for the ad
-	let pvDonationsBreakdown = DataStore.fetch(['widget', 'CampaignPage', 'communityTotal', sqDon.query], () => {
-		return ServerIO.getDonationsData({ q: sqDon.query });
-	}, {cachePeriod: 5 * 60 * 1000});
-	if (pvDonationsBreakdown.error) {
-		console.error("pvDonationsBreakdown.error", pvDonationsBreakdown.error);
-		return donationForCharity;
-	}
-	if (!pvDonationsBreakdown.value) {
-		return donationForCharity; // loading
-	}
-
-	let lgCampaignTotal = pvDonationsBreakdown.value.total;
-	// NB don't override a campaign page setting
-	if (!donationForCharity.total) {
-		donationForCharity.total = new Money(lgCampaignTotal);
-	}
-
-	// set the per-charity numbers
-	let donByCid = pvDonationsBreakdown.value.by_cid;
-	Object.keys(donByCid).forEach(cid => {
-		let dntn = donByCid[cid];
-		if (!dntn) return;
-		if (donationForCharity[cid]) {
-			dntn = Money.add(donationForCharity[cid], dntn);
+		let cdntn4charity = campaign.dntn4charity;
+		if ( ! cdntn4charity || realtime) {			
+			campaignsWithoutBreakdownData.push(campaign);
+			continue;
 		}
-		assert(cid !== 'total', cid); // paranoia
-		donationForCharity[cid] = dntn;
-    });
-    console.log("Using queried data for donations");
-	// done	
+		scaledBreakdown4campaignId[campaign.id] = cdntn4charity;
+	}
+	// ...Unscaled realtime voting
+	for(let ci =0; ci<campaignsWithoutBreakdownData.length; ci++) {
+		let campaign = campaignsWithoutBreakdownData[ci];
+		// Fetch donations data	(NB: _some_ of which will be in cache now)
+		let pvDonationsBreakdown = fetchDonationData2({ads, campaign});
+		if ( ! pvDonationsBreakdown.value)	{
+			unreadyCampaignIds.push(campaign.id);
+			continue; // NB: request the others in parallel
+		}
+		let cTotal = total4campaignId[campaign.id];
+		let totalUnscaled = pvDonationsBreakdown.value.total;
+		let unscaledDntn4Charity = pvDonationsBreakdown.value.by_cid;
+		// scale it
+		let cdntn4charity = {};
+		for (const [charityId, unscaledCharityDntn] of Object.entries(unscaledDntn4Charity)) {
+			let fraction = Money.divide(unscaledCharityDntn, totalUnscaled);
+			let scaledAmnt = Money.mul(cTotal, fraction);
+			cdntn4charity[charityId] = scaledAmnt;
+		}
+		scaledBreakdown4campaignId[campaign.id] = cdntn4charity;
+	};
+	// add it all in
+	for (const [cid, dntn4charity] of Object.entries(scaledBreakdown4campaignId)) {
+		for (const [charityId, scaledCharityDntn] of Object.entries(dntn4charity)) {
+			let amnt = donationForCharity[charityId] || new Money(0);
+			let amnt2 = Money.add(amnt, scaledCharityDntn);
+			donationForCharity[charityId] = amnt2;
+		}	
+	}
+
 	return donationForCharity;
 }; // ./fetchDonationData()
 
-
+/**
+ * 
+ * @returns PV({charity:Money}) from ServerIO.getDonationsData()
+ */
+const fetchDonationData2 = ({ads, campaign}) => {
+	// ...by campaign or advert? campaign would be nicer 'cos we could combine different ad variants... but its not logged reliably
+	// (old data) Loop.Me have not logged vert, only campaign. But elsewhere vert is logged and not campaign.
+	let cadIds = ads.filter(ad => ad.campaign===campaign.id).map(ad => ad.id);
+	let sq1 = SearchQuery.setProp(null, "campaign", campaign.id);
+	let sq2 = SearchQuery.setPropOr(null, "vert", cadIds);			
+	let sqDon = SearchQuery.or(sq1, sq2);
+	// load the community total for the ad
+	let pvDonationsBreakdown = DataStore.fetch(['widget', 'CampaignPage', 'communityTotal', campaign.id], () => {
+		return ServerIO.getDonationsData({ q: sqDon.query });
+	}, {cachePeriod: 5 * 60 * 1000}); // 5 minute cache so realtime updates
+	return pvDonationsBreakdown;
+};
 
 
 /**

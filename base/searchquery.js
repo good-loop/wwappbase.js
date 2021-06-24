@@ -89,7 +89,7 @@ SearchQuery.prop = (sq, propName) => {
 
 /**
  * Set a top-level prop, e.g. vert:foo
- * @param {!SearchQuery} sq
+ * @param {?SearchQuery} sq
  * @param {String} propName 
  * @param {?String} propValue If unset (null,undefined, or "" -- but not false or 0!), clear the prop. The caller is responsible for converting non-strings to strings - apart from boolean which thie method will handle, 'cos we're nice like that.
  * @returns a NEW SearchQuery
@@ -98,15 +98,21 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	// boolean has gotchas, so lets handle it. But not number, as the caller should decide on e.g. rounding
 	if (typeof(propValue) === "boolean") propValue = ""+propValue; // true/false
 	assMatch(propName, String, "searchquery.js - "+propName+" "+propValue);
-	// renove the old
-	SearchQuery._init(sq);
-	// top level only??
-	let newq = sq.query;
-	// if (prop) { // HACK out the old value TODO use the parse tree to handle quoting
-	newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
-	// }
+	let newq = "";
+	// remove the old
+	if (sq) {
+		SearchQuery._init(sq);
+		// top level only??	
+		let newq = sq.query;
+		// if (prop) { // HACK out the old value TODO use the parse tree to handle quoting
+		newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
+	}
 	// unset? (but do allow prop:false and x:0)
 	if (propValue===null || propValue===undefined || propValue==="") {
+		if ( ! newq) {
+			console.warn("SearchQuery.js null + null!",sq,propName,propValue);
+			return new SearchQuery();
+		}
 		// already removed the old
 	} else {
 		// quote the value?
@@ -128,23 +134,25 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 
 /**
  * Set several options for a top-level prop, e.g. "vert:foo OR vert:bar"
- * @param {?SearchQuery} sq
- * @param {String} propName 
- * @param {String[]} propValues Must not be empty
+ * @param {?SearchQuery} sq If set, this is combined via AND!
+ * @param {!String} propName 
+ * @param {!String[]} propValues Must not be empty
  * @returns a NEW SearchQuery
  */
 SearchQuery.setPropOr = (sq, propName, propValues) => {	
 	assMatch(propName, String, "searchquery.js - "+propName+" "+propValues);
 	assert(propValues.length, "searchquery.js - "+propName+" Cant OR over nothing "+propValues)
-	// quote the values?
+	// quote the values? HACK if they have a space
 	let qpropValues = propValues.map(propValue => propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"');
 	// join by OR
 	let qor = propName+":" + qpropValues.join(" OR "+propName+":");	
-	// no need to merge into a bigger query? Then we're done
+
+	// no need to merge into a bigger query? Then we're done :)
 	if ( ! sq || ! sq.query) {
 		return new SearchQuery(qor);
 	}
-	
+
+	// AND merge...
 	SearchQuery._init(sq);
 	let newq = sq.query;
 	// HACK out the old value TODO use the parse tree to handle quoting
