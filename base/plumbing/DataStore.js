@@ -617,10 +617,10 @@ class Store {
 		let promiseWithCargoUnwrap = pvPromiseOrValue.promise.then(res => {
 			if ( ! res) return res;
 			// HACK handle WW standard json wrapper: unwrap cargo
-			// NB: success/fail is checked at the ajax level in in ServerIOBase
+			// NB: success/fail is checked at the ajax level in ServerIOBase
 			// TODO let's make unwrap a configurable setting
 			if (JSend.isa(res)) {
-				console.log("unwrapping cargo to store at "+path, res);
+				// console.log("unwrapping cargo to store at "+path, res);
 				res = JSend.data(res) || res; // HACK: stops login widget forcing rerender on each key stroke
 			}
 			return res;
