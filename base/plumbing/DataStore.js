@@ -679,6 +679,13 @@ class Store {
 		this.setValue(ppath, null, false);
 	}
 
+	/**
+	 * @deprecated
+	 */	
+	getDataList(listOfRefs, preferStatus) {
+		console.warn("Switch to resolveDataList");
+		return resolveDataList(listOfRefs, preferStatus);
+	}
 
 	/**
 	 * Resolve a list against the data/draft node to get the data items.
@@ -686,7 +693,7 @@ class Store {
 	 * @param {?string} preferStatus e.g. DRAFT to ask for drafts if possible -- which will give you the being-edited items
 	 * @returns {Item[]}
 	 */
-	getDataList(listOfRefs, preferStatus) {
+	resolveDataList(listOfRefs, preferStatus) {
 		if ( ! listOfRefs) return [];
 		// ?? if the data item is missing -- what should go into the list?? null / the ref / a promise ??
 		let items = listOfRefs.map(ref => this.resolveRef(ref, preferStatus));

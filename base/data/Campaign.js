@@ -327,6 +327,7 @@ Campaign.sampleAds = (ads, nosample) => {
         ads.forEach(ad => {
             let cname = campaignNameForAd(ad);
             if (sampleAd4Campaign[cname]) {
+				// FIXME ad.campaignPage is deprecated code that gets nulled out - and so this is likely buggy
                 let showcase = ad.campaignPage && ad.campaignPage.showcase;
                 // Prioritise ads with a start and end time attached
                 let startProvided = !sampleAd4Campaign[cname].start && ad.start;
@@ -427,7 +428,7 @@ Campaign.dntn4charity = (topCampaign, otherCampaigns, extraAds, status=KStatus.D
     // initial donation record
     const donation4charity = yessy(topCampaign.dntn4charity)? Object.assign({}, topCampaign.dntn4charity) : {};
     // augment with fetched data
-    const fetchedDonationData = NGO.fetchDonationData(ads);
+    const fetchedDonationData = NGO.fetchDonationData({ads});
     Object.keys(fetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = fetchedDonationData[cid]});
 
     otherCampaigns && otherCampaigns.forEach(campaign => {
@@ -435,14 +436,14 @@ Campaign.dntn4charity = (topCampaign, otherCampaigns, extraAds, status=KStatus.D
         const moreAds = pvMoreAds.value ? List.hits(pvMoreAds.value) : [];
         // get inherent and fetched data from campaign
         const otherDntn4charity = yessy(campaign.dntn4charity)? campaign.dntn4charity : {};
-        const otherFetchedDonationData = NGO.fetchDonationData(moreAds);
+        const otherFetchedDonationData = NGO.fetchDonationData({ads:moreAds});
         // augment master list with data, never overwriting
         Object.keys(otherDntn4charity).forEach(cid => {if (!donation4charity[cid]) donation4charity[cid] = otherDntn4charity[cid]});
         Object.keys(otherFetchedDonationData).forEach(cid => {if (!donation4charity[cid] || !Money.value(donation4charity[cid])) donation4charity[cid] = otherFetchedDonationData[cid]});
     });
 
     // Augment in data for extra dangling ads
-    const extraFetchedDonationData = extraAds ? NGO.fetchDonationData(extraAds) : {};
+    const extraFetchedDonationData = extraAds ? NGO.fetchDonationData({ads:extraAds}) : {};
     Object.keys(extraFetchedDonationData).forEach(cid => {if (!donation4charity[cid] || !Money.value(donation4charity[cid])) donation4charity[cid] = extraFetchedDonationData[cid]});
 
     // Normalise all charity ids

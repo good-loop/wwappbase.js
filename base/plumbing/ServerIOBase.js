@@ -427,7 +427,7 @@ ServerIO.load = function(url, params) {
 	// console.log("ServerIO.load", url, params);
 	params = ServerIO.addDefaultParams(params);
 	// sanity check: no Objects except arrays
-	_.values(params.data).map(
+	Object.values(params.data).map(
 		v => assert( ! _.isObject(v) || _.isArray(v), v)
 	);
 	// sanity check: status

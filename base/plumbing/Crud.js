@@ -603,16 +603,20 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 /**
  * @param {Object} p
  * @param {?String} p.q search query string
+ * @param {?String[]} p.ids Convenience for a common use-case: batch fetching a set of IDs
  * @param {?String} p.sort e.g. "start-desc"
  * @param {?string|Date} p.start Add a time-filter. Usually unset.
  * @param {?string|Date} p.end Add a time-filter. Usually unset.
  * @returns PromiseValue<{hits: Object[]}>
  * 
- * WARNING: This should usually be run through DataStore.getDataList() before using
+ * WARNING: This should usually be run through DataStore.resolveDataList() before using
  * Namespace anything fetched from a non-default domain
  */
-ActionMan.list = ({type, status, q, prefix, start, end, size, sort, domain}) => {	
+ const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain}) => {	
 	assert(C.TYPES.has(type), type);
+	if (ids) {
+		q = SearchQuery.setPropOr(q, "id", ids).query;
+	}
 	const lpath =  getListPath({type,status,q,prefix,start,end,size,sort,domain});
 	const pv = DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q, prefix, start, end, size, sort, domain});
@@ -621,14 +625,8 @@ ActionMan.list = ({type, status, q, prefix, start, end, size, sort, domain}) => 
 	return pv;
 };
 
-/*
-{
-	vert: {
-		...adverts
-	}
-	portal.good-loop.com: {verty}
-}
-*/
+ActionMan.list = getDataList;
+
 
 /**
  * 
@@ -693,6 +691,7 @@ const setWindowTitle = item => {
 		: C.app.name;
 };
 
+
 const CRUD = {
 };
 export default CRUD;
@@ -702,6 +701,7 @@ export {
 	publishEdits,
 	errorPath,
 	getDataItem,
+	getDataList,
 	restId,
 	restIdDataspace,
 	setWindowTitle,
