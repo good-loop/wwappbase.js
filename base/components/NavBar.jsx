@@ -48,6 +48,8 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?String} homelink Relative url for the home-page. Defaults to "/"
  * @param {String[]} pages
  * @param {?String[]|Function|Object} labels Map options to nice strings.
+ * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
+ * @param {?String} backgroundColour Background colour for the nav bar.
  */
 const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	// see setNavProps()
@@ -55,7 +57,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	if (dsProps) {
 		props = Object.assign({}, props, dsProps);
 	}
-	let {currentPage, pages, labels} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
+	let {currentPage, pages, labels, darkTheme, backgroundColour} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
 	const labelFn = labeller(pages, labels);
 
 	// Handle nav toggling
@@ -79,7 +81,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	));
 
 	return (
-		<Navbar sticky="top" dark color="dark" expand="md" className='p-1'>
+		<Navbar sticky="top" dark={darkTheme} color={backgroundColour} expand="md" className='p-1'>
 			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} />
 		</Navbar>
 	);

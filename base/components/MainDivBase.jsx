@@ -71,6 +71,8 @@ const init = () => {
 	props:
 	pageForPath: {String:JSX}
 	navbarPages: String[]|() => String[]
+	navbarDarkTheme: {?boolean}
+	navbarBackgroundColour: {?String}
 	loginRequired: {?boolean}
 	securityCheck: ({page}) => throw error / return true
 	SecurityFailPage: ?JSX
@@ -102,6 +104,8 @@ class MainDivBase extends Component {
 			loginRequired,
 			defaultPage,
 			navbar=true, // false for no navbar!
+			navbarDarkTheme=true,
+			navbarBackgroundColour="dark",
 			fullWidthPages,
 			noRegister,			
 		} = this.props;
@@ -153,7 +157,7 @@ class MainDivBase extends Component {
 		//
 		return (
 			<div>
-				{navbar? <NavBar page={page} pages={navbarPages} labels={navbarLabels} ></NavBar> : null}
+				{navbar? <NavBar page={page} pages={navbarPages} labels={navbarLabels} darkTheme={navbarDarkTheme} backgroundColour={navbarBackgroundColour} ></NavBar> : null}
 				<Container fluid={fluid} >
 					<MessageBar />
 					<div className="page" id={page}>
