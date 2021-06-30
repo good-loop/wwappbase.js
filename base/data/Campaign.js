@@ -568,6 +568,9 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 	return charities;
 } // ./filterLowDonations
 
+/** donation4charityUnscaled has some entries which shouldn't be transferred into donation4charityScaled */
+const ignoreD4CKeys = [ 'total', 'unset', 'unreadyCampaignIds'];
+
 /**
  * Scale a list of charities to match the money total.
  * This will scale so that sum(donations to `charities`) = donationTotal
@@ -599,15 +602,17 @@ Campaign.scaleCharityDonations = (campaign, donationTotal, donation4charityUnsca
 	let totalDntnByCharity = Money.total(monies);
 	if ( ! Money.value(totalDntnByCharity)) {
 		console.log("[DONATION4CHARITY]","Scale donations - cant scale up 0");
-		return Object.assign({}, donation4charityUnscaled); // paranoid copy
+		return {...donation4charityUnscaled}; // paranoid copy
 	}
 	// scale up (or down)	
 	let ratio = Money.divide(donationTotal, totalDntnByCharity);
 	const donation4charityScaled = {};
-	mapkv(donation4charityUnscaled, (k,v) => 
-		k==="total" || k==="unset"? null : donation4charityScaled[k] = Money.mul(donation4charityUnscaled[k], ratio));
+	Object.entries(donation4charityUnscaled).forEach(([key, value]) => {
+		if (ignoreD4CKeys.includes(key)) return;
+		donation4charityScaled[key] = Money.mul(value, ratio);
+	});
 	console.log("[DONATION4CHARITY]","Scale donations from", donation4charityUnscaled, "to", donation4charityScaled);
-    return donation4charityScaled;
+	return donation4charityScaled;
 };
 
 Campaign.isDntn4CharityEmpty = (campaign) => {
