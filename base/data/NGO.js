@@ -225,7 +225,7 @@ NGO.fetchDonationData = ({ads, status=KStatus.PUBLISHED, totalOnly}) => {
 		let campaign = campaignsWithoutBreakdownData[ci];
 		// Fetch donations data	(NB: _some_ of which will be in cache now)
 		let pvDonationsBreakdown = fetchDonationData2({ads, campaign});
-		if ( ! pvDonationsBreakdown.value)	{
+		if ( ! pvDonationsBreakdown.value) {
 			unreadyCampaignIds.push(campaign.id);
 			continue; // NB: request the others in parallel
 		}
