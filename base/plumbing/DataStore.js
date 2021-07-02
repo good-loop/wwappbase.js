@@ -684,7 +684,7 @@ class Store {
 	 */	
 	getDataList(listOfRefs, preferStatus) {
 		console.warn("Switch to resolveDataList");
-		return resolveDataList(listOfRefs, preferStatus);
+		return this.resolveDataList(listOfRefs, preferStatus);
 	}
 
 	/**

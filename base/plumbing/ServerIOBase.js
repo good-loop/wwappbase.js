@@ -121,7 +121,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		// extra hack for my-loop:
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("local")) {
 			ServerIO.APIBASE = ServerIO.APIBASE.replace("local", "test");
-		}		
+		}
 		return;
 	}
 	if (server==="local") {	// probably not needed
