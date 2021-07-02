@@ -36,6 +36,26 @@ const fakeEvent = {
 	stopPropagation: () => null,
 };
 
+const hashWart = (rawUrl, wartMatcher, newWart) => {
+	const url = new URL(rawUrl);
+	// Turn "#wart1_wart2" into ["wart1", "wart2"]
+	let hashBits = url.hash.replace(/^#/, '').split('_');
+	// Replace existing or append new wart
+	let replaced = false;
+	hashBits = hashBits.map(bit => {
+		if (bit.match(wartMatcher)) {
+			replaced = true;
+			return newWart;
+		}
+		return bit;
+	}).filter(a => !!a);
+	if (!replaced) hashBits.push(newWart);
+	url.hash = hashBits.join('_');
+
+	let newUrl = url.toString().replace(/#$/, ''); // Render URL and strip empty hash or trailing underscore
+
+	return newUrl;
+}
 
 /**
  * image or video upload. Uses Dropzone
@@ -43,7 +63,7 @@ const fakeEvent = {
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show extra controls for adding hash-warts to control caching/resizing
  */
-const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", cacheControls, ...otherStuff }) => {
+const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", cacheControls, circleCrop, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
@@ -98,24 +118,33 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	// For images which will be retrieved via Good-Loop media cache: allow user to mark as "always fetch original size"
 	let extraControls = [];
 	if (type === 'imgUpload' && cacheControls) {
-		const toggleWart = (wart, state) => {
-			const imgUrl = new URL(storeValue);
-			const hash = imgUrl.hash;
-			const already = hash.match(/\bnoscale\b/);
-			if (state && !already) {
-				const newPrefix = hash ? '#noscale_' : 'noscale';
-				imgUrl.hash = hash.replace(/^#?/, newPrefix);
-			} else if (!state && already) {
-				imgUrl.hash = hash.replace(/[_]?noscale_?/g, '');
-			}
-			let newVal = imgUrl.toString().replace(/\#$/, ''); // Render URL and strip empty hash
-			onChange && onChange({...fakeEvent, target: { value: newVal }});
+		const toggleWart = (state) => {
+			// Add or remove 'noscale' hash-wart
+			const newUrl = hashWart(storeValue, /noscale/, state ? 'noscale' : null);
+			onChange && onChange({...fakeEvent, target: { value: newUrl }});
 		}
 		const checked = storeValue && storeValue.match(/\#.*\bnoscale\b/);
 		extraControls.push(
 			<FormGroup inline check>
-				<FormControl name="noscale" type="checkbox" onChange={event => toggleWart('noscale', event.target.checked)} checked={checked} />
+				<FormControl name="noscale" type="checkbox" onChange={event => toggleWart(event.target.checked)} checked={checked} />
 				<Label for="noscale" check>No auto-scale</Label>
+			</FormGroup>
+		);
+	}
+
+	// For images which might be displayed in a circle: allow user to mark as "scale to XX% size to fit in circle"
+	if (type == 'imgUpload' && circleCrop) {
+		const updateWart = (percent) => {
+			const newWart = (percent === 100) ? '' : `ccrop:${percent}`;
+			const newUrl = hashWart(storeValue, /ccrop:\d+/, newWart);
+			onChange && onChange({...fakeEvent, target: { value: newUrl }});
+		}
+		const wart = storeValue && storeValue.match(/#.*ccrop:(\d+)/);
+		const value = (wart && wart[1]) || 100;
+		extraControls.push(
+			<FormGroup inline>
+				<Label for="ccrop">Circle crop:</Label>{' '}
+				<FormControl style={{width: '4em'}} name="ccrop" type="number" onChange={event => updateWart(event.target.value)} value={value} />
 			</FormGroup>
 		);
 	}
