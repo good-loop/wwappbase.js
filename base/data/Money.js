@@ -181,7 +181,7 @@ Money.CURRENCY = {
 	AUD: "A$",
 	EUR: "€",
 	MXN: "MX$",
-	JPY: "¥"
+	JPY: "JP¥"
 };
 /**
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
