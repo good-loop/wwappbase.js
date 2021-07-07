@@ -656,3 +656,13 @@ export const idList = (idObjArray : Object[]) => {
  * @returns {String} "a" or "an", as appropriate for the supplied noun.
  */
 export const article = (noun: Object) => ('aeiou'.indexOf(String(noun).toLowerCase()[0]) >= 0) ? 'an' : 'a';
+
+/**
+ * 
+ * @param {?String} text 
+ * @returns {!String} lowercase, trim, strip punctuation and other non-letters, and compact whitespace.
+ */
+export const toCanonical = (text: String) => {
+	if ( ! text) return "";
+	return text.trim().toLowerCase().replaceAll(/\W+/g, " ");
+};

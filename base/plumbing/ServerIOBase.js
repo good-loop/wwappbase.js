@@ -292,8 +292,7 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	// HACK route charity requests to SoGive
 	if (type==='NGO' && C.app.id !== 'sogive') {
 		id = normaliseSogiveId(id);
-		return 'https://app.sogive.org/charity/'+encURI(id)+'.json'
-			+(status? '?status='+status : '');
+		return ServerIO.ENDPOINT_NGO+"/"+encURI(id)+'.json'+(status? '?status='+status : '');
 	}	
 	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);

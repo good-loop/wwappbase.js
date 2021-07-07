@@ -36,6 +36,14 @@ const fakeEvent = {
 	stopPropagation: () => null,
 };
 
+/**
+ * Warts are processed within AdUnit -- ccrop is done by local css, whilst noscale switches off the use of media.gl.com's scaling
+ * 
+ * @param {!String} rawUrl
+ * @param {Regex} wartMatcher e.g. /ccrop:\d+/ 
+ * @param newWart e.g. ccrop:90
+ * @returns url with/without newWart
+ */
 const hashWart = (rawUrl, wartMatcher, newWart) => {
 	const url = new URL(rawUrl);
 	// Turn "#wart1_wart2" into ["wart1", "wart2"]
