@@ -253,7 +253,7 @@ const SocialSignInButton = ({className = "btn signin", children, service, verb =
 
 	className += ' ' + service
 	// Add service-specific colours
-	if ({facebook: 1, twitter: 1, instagram: 1}[service]) className += (' border border-white white bg-' + service);
+	if ({facebook: 1, twitter: 1, instagram: 1}[service]) className += (' btn-' + service);
 	if (size) className += (' btn-' + size);
 
 	return (
