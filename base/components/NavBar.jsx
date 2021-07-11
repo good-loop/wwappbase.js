@@ -47,6 +47,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?String} currentPage e.g. 'account' Read from window.location via DataStore if unset.
  * @param {?String} homelink Relative url for the home-page. Defaults to "/"
  * @param {String[]} pages
+ * @param {?Object} externalLinks Map page names to external links.
  * @param {?String[]|Function|Object} labels Map options to nice strings.
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
@@ -57,7 +58,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	if (dsProps) {
 		props = Object.assign({}, props, dsProps);
 	}
-	let {currentPage, pages, labels, darkTheme, backgroundColour} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
+	let {currentPage, pages, labels, externalLinks, darkTheme, backgroundColour} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
 	const labelFn = labeller(pages, labels);
 
 	// Handle nav toggling
@@ -72,13 +73,15 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	}
 	
 	// make the page links
-	const pageLinks = pages.map(page => (
-		<NavItem key={`navitem_${page}`} active={page === currentPage}>
-			<NavLink href={`#${page}`} onClick={close} >
+	const pageLinks = pages.map(page => {
+		let pageLink = `#${page}`;
+		if (externalLinks && page in externalLinks) pageLink = externalLinks[page];
+		return( <NavItem key={`navitem_${page}`} active={page === currentPage}>
+			<NavLink href={pageLink} onClick={close} >
 				{labelFn(page)}
 			</NavLink>
-		</NavItem>
-	));
+		</NavItem>)
+	});
 
 	return (
 		<Navbar sticky="top" dark={darkTheme} color={backgroundColour} expand="md" className='p-1'>
