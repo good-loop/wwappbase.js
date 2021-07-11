@@ -69,6 +69,8 @@ const init = () => {
 	So the props will remain fixed.
 
 	props:
+
+	homelink: {String} - Relative url for the home-page. Defaults to "/"
 	pageForPath: {String:JSX}
 	navbarPages: String[]|() => String[]
 	navbarExternalLinks: {?Object}
@@ -99,6 +101,7 @@ class MainDivBase extends Component {
 	render() {
 		init();
 		let {
+			homeLink,
 			pageForPath, 
 			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
@@ -164,6 +167,7 @@ class MainDivBase extends Component {
             pages={navbarPages}
             labels={navbarLabels}
             externalLinks={navbarExternalLinks}
+			homelink={homeLink}
             darkTheme={navbarDarkTheme}
             backgroundColour={navbarBackgroundColour}
           ></NavBar>
