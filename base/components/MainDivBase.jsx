@@ -69,8 +69,11 @@ const init = () => {
 	So the props will remain fixed.
 
 	props:
+
+	homelink: {String} - Relative url for the home-page. Defaults to "/"
 	pageForPath: {String:JSX}
 	navbarPages: String[]|() => String[]
+	navbarExternalLinks: {?Object}
 	navbarDarkTheme: {?boolean}
 	navbarBackgroundColour: {?String}
 	loginRequired: {?boolean}
@@ -98,8 +101,9 @@ class MainDivBase extends Component {
 	render() {
 		init();
 		let {
+			homeLink,
 			pageForPath, 
-			navbarPages, navbarLabels, navbarChildren,
+			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			loginRequired,
 			defaultPage,
@@ -156,17 +160,31 @@ class MainDivBase extends Component {
 		let fluid = (fullWidthPages && fullWidthPages.includes(page)) || window.fullWidthPage;
 		//
 		return (
-			<div>
-				{navbar? <NavBar page={page} pages={navbarPages} labels={navbarLabels} darkTheme={navbarDarkTheme} backgroundColour={navbarBackgroundColour} ></NavBar> : null}
-				<Container fluid={fluid} >
-					<MessageBar />
-					<div className="page" id={page}>
-						<Page />
-					</div>
-				</Container>
-				<LoginWidget title={`Welcome to ${C.app.name}`} noRegister={noRegister} services={noRegister ? [] : undefined}/>
-			</div>
-		);
+      <div>
+        {navbar ? (
+          <NavBar
+            page={page}
+            pages={navbarPages}
+            labels={navbarLabels}
+            externalLinks={navbarExternalLinks}
+			homelink={homeLink}
+            darkTheme={navbarDarkTheme}
+            backgroundColour={navbarBackgroundColour}
+          ></NavBar>
+        ) : null}
+        <Container fluid={fluid}>
+          <MessageBar />
+          <div className="page" id={page}>
+            <Page />
+          </div>
+        </Container>
+        <LoginWidget
+          title={`Welcome to ${C.app.name}`}
+          noRegister={noRegister}
+          services={noRegister ? [] : undefined}
+        />
+      </div>
+    );
 	} // ./render()
 } // ./MainDiv
 
