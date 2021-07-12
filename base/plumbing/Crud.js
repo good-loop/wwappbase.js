@@ -685,10 +685,12 @@ const restIdDataspace = () => {
  * @param {DataItem|String} item 
  */
 const setWindowTitle = item => {
-	window.document.title = item?
-		(_.isString(item)? item 
-			: getType(item)+": "+(getName(item) || getId(item)))
-		: C.app.name;
+	let title = C.app.name;
+	if (item) {
+		title = _.isString(item)? item 
+			: getType(item)+": "+(getName(item) || getId(item));
+	}
+	window.document.title = title;
 };
 
 
