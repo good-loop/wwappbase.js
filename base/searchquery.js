@@ -101,11 +101,7 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	let newq = "";
 	// remove the old
 	if (sq) {
-		SearchQuery._init(sq);
-		// top level only??	
-		let newq = sq.query;
-		// if (prop) { // HACK out the old value TODO use the parse tree to handle quoting
-		newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
+		newq = snipProp(sq, propName);
 	}
 	// unset? (but do allow prop:false and x:0)
 	if (propValue===null || propValue===undefined || propValue==="") {
@@ -131,6 +127,19 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	return new SearchQuery(newq.trim());
 }
 
+/**
+ * 
+ * @param {!SearchQuery} sq 
+ * @param {!String} propName 
+ * @returns  {!String}
+ */
+const snipProp = (sq, propName) => {
+	SearchQuery._init(sq);
+	// Cut out the old value (use the parse tree to handle quoting)
+	let tree2 = sq.tree.filter(bit => ! is(bit[propName]));
+	let newq = unparse(tree2);
+	return newq;
+};
 
 /**
  * Set several options for a top-level prop, e.g. "vert:foo OR vert:bar"
@@ -153,10 +162,7 @@ SearchQuery.setPropOr = (sq, propName, propValues) => {
 	}
 
 	// AND merge...
-	SearchQuery._init(sq);
-	let newq = sq.query;
-	// HACK out the old value TODO use the parse tree to handle quoting
-	newq = newq.replace(new RegExp(propName+":\\S+"), "").trim();
+	let newq = snipProp(sq, propName);
 	newq = newq+" AND ("+qor+")";
 	// HACK - trim ANDs??
 	newq = newq.replace(/ AND +AND /g," AND ");
