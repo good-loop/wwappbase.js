@@ -78,8 +78,9 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 		};
 		return (<div style={{border:"1px solid #aaa",margin:0,cursor:"pointer"}} onClick={onClick} 
 			onMouseOver={e => pickme(id)} onMouseOut={e => pickmenot(id)}
+			title={"ID: "+id}
 			>
-			{getLogo(item) && <img src={getLogo(item)} className='logo logo-sm' />} {getName(item)} <small>(ID: <code>{getId(item)}</code>)</small>
+			{getLogo(item) && <img src={getLogo(item)} className='logo logo-sm' />} {getName(item)} 			
 			</div>);
 	};
 
