@@ -32,6 +32,7 @@ import AThing from '../data/AThing';
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
  * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
+ * @param {?Function} p.filterFn - A local filter function. Can be combined with filter/canFilter
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?Boolean} p.canCreate - If set, show a Create
  * @param {?Boolean} p.canDelete - If set, show delete buttons
@@ -58,7 +59,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	q, 
 	start, end,
 	sort = 'created-desc',
-	filter, hasFilter, filterLocally,
+	filter, filterFn, hasFilter, filterLocally,
 	ListItem,
 	checkboxes, 
 	canDelete, canCreate, canFilter,
@@ -120,7 +121,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	let hits = pvItems.value && pvItems.value.hits;
 	const fastFilter = ! pvItemsFiltered.value;
 	// ...filter / resolve
-	let items = resolveItems({hits, type, status, preferStatus, filter, fastFilter});	
+	let items = resolveItems({hits, type, status, preferStatus, filter, filterFn, fastFilter});	
 	// paginate
 	let [pageNum, setPageNum2] = pageSize? useState(0) : [];
 	const setPageNum = n => {		
@@ -128,7 +129,8 @@ const ListLoad = ({type, status, servlet, navpage,
 		window.scrollTo(0, 0);
 	};
 	items = pageSize? paginate({items, pageNum, pageSize}) : items;
-	let total = pvItems.value && pvItems.value.total;	
+	let total = pvItems.value && pvItems.value.total; // FIXME this ignores local filtering
+	if (filterFn || fastFilter) hideTotal = true; // NB: better to show nothing than incorrect info
 
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
@@ -198,7 +200,7 @@ const MassActionToolbar = ({type, canDelete, items}) => {
  * @param {?Ref[]} hits 
  * @returns {Item[]}
  */
-const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) => {
+const resolveItems = ({hits, type, status, preferStatus, filter, filterFn, fastFilter}) => {
 	if ( ! hits) {
 		// an ajax call probably just hasn't loaded yet
 		return [];
@@ -220,8 +222,13 @@ const resolveItems = ({hits, type, status, preferStatus, filter, fastFilter}) =>
 	const itemForId = {};
 	
 	// client-side filter and de-dupe
+	// ...filterFn?
+	if (filterFn) {
+		hits = hits.filter(filterFn);
+	}
+	// ...string filter, dedupe, and ad
 	if ( ! filter) fastFilter = false; // avoid pointless work in the loop
-	hits.forEach(item => {			
+	hits.forEach(item => {
 		// fast filter via stringify
 		let sitem = null;
 		if (fastFilter) {
