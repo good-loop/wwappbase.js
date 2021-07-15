@@ -4,21 +4,54 @@ import { Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Collapse, Nav, Co
 import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
-import { labeller } from '../utils/miscutils';
+import { encURI, labeller } from '../utils/miscutils';
+import { getDataItem } from '../plumbing/Crud';
+import KStatus from '../data/KStatus';
 
+
+class NavProps {
+	pageLinks;	
+	currentPage; 
+	children;
+	/**
+	 * @type {?Boolean}
+	 */
+	darkTheme;
+	/**
+	 * @type {?String} a BS colour
+	 */
+	backgroundColour;
+	homelink; 
+	isOpen; 
+	toggle; 
+
+	/**
+	 * @type {?String} url for 2nd brand home page
+	 */
+	brandLink; 
+	/**
+	 * @type {?String} logo for 2nd brand
+	 */
+	brandLogo; 
+	/**
+	 * @type {?String} name for 2nd brand
+	 */
+	brandName;
+};
 
 /**
  * 
- * @param {Object} props 
- * @param {?String} props.brandLink
- * @param {?String} props.brandLogo
+ * @param {NavProps} props 
  */
 export const setNavProps = (props) => {
 	DataStore.setValue(['widget','NavBar'], props, false);
 };
 
+const getNavProps = () => DataStore.getValue(['widget','NavBar']) || DataStore.setValue(['widget','NavBar'], {}, false);
+
 /**
  * rendered within BS.Nav
+ * @param {NavProps} p
  */
 const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName}) => {
 	return (
@@ -26,9 +59,11 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 		<NavbarBrand title="Dashboard" href={homelink || '/'}>
 			<img className='logo-sm' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 		</NavbarBrand>
-		{brandLink && (brandLogo || brandName) && <NavbarBrand className="nav-brand" title={brandName} href={brandLink}>
-			{brandLogo? <img className='logo-sm' alt={brandName} src={brandLogo} /> : brandName}
-		</NavbarBrand>}
+		{brandLink && (brandLogo || brandName) && // a 2nd brand?
+			<NavbarBrand className="nav-brand" title={brandName} href={brandLink}>
+				{brandLogo? <img className='logo-sm' alt={brandName} src={brandLogo} /> : brandName}
+			</NavbarBrand>
+		}
 		<NavbarToggler onClick={toggle}/>
 		<Collapse isOpen={isOpen} navbar>
 			<Nav navbar>
@@ -43,7 +78,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 
 
 /**
- *
+ * @param {NavProps} props
  * @param {?String} currentPage e.g. 'account' Read from window.location via DataStore if unset.
  * @param {?String} homelink Relative url for the home-page. Defaults to "/"
  * @param {String[]} pages
@@ -53,10 +88,10 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
 const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
-	// see setNavProps()
-	const dsProps = DataStore.getValue(["widget","NavBar"]);
-	if (dsProps) {
-		props = Object.assign({}, props, dsProps);
+	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
+	const navProps = getNavProps();
+	if (navProps) {
+		props = Object.assign({}, props, navProps);
 	}
 	let {currentPage, pages, labels, externalLinks, darkTheme, backgroundColour} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
 	const labelFn = labeller(pages, labels);
@@ -92,4 +127,38 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 // ./NavBar
 
 
+const CONTEXT = {};
+
+export const setNavContext = (type, id, processLogo) => {
+	CONTEXT[type] = id;
+	if ( ! processLogo) return;
+	// process for 2nd logo
+	let pvAdvertiser = id && getDataItem({type, id, status:KStatus.PUB_OR_DRAFT, swallow:true});
+	const advertiser = pvAdvertiser && pvAdvertiser.value;	
+	if ( ! advertiser) {		
+		setNavProps({brandLink:null,brandLogo:null,brandName:null}); // reset blank
+		return;
+	}
+
+	let nprops = { // advertiser link and logo
+		brandLink:'/#'+type.toLowerCase()+'/'+encURI(id), // HACK assumes our #type url layout
+		brandLogo: (advertiser.branding && advertiser.branding.logo) || advertiser.logo, // HACK assumes branding object
+		brandName: advertiser.name || id
+	};
+	setNavProps(nprops);
+
+};
+
+/**
+ * 
+ * @param {C.TYPES} type 
+ * @returns {?String} id
+ */
+export const getNavContext = (type) => {
+	return CONTEXT[type];
+};
+
 export default NavBar;
+export {
+	NavProps
+}

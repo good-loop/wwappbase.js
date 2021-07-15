@@ -133,7 +133,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		}
 		const checked = storeValue && storeValue.match(/\#.*\bnoscale\b/);
 		extraControls.push(
-			<FormGroup inline check>
+			<FormGroup inline check key='cacheControls'>
 				<FormControl name="noscale" type="checkbox" onChange={event => toggleWart(event.target.checked)} checked={checked} />
 				<Label for="noscale" check>No auto-scale</Label>
 			</FormGroup>
@@ -150,7 +150,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		const wart = storeValue && storeValue.match(/#.*ccrop:(\d+)/);
 		const value = (wart && wart[1]) || 100;
 		extraControls.push(
-			<FormGroup inline>
+			<FormGroup inline key='circleCrop'>
 				<Label for="ccrop">Circle crop:</Label>{' '}
 				<FormControl style={{width: '4em'}} name="ccrop" type="number" onChange={event => updateWart(event.target.value)} value={value} />
 			</FormGroup>
