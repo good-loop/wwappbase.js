@@ -142,11 +142,11 @@ export const setNavContext = (type, id, processLogo) => {
 
 	let nprops = { // advertiser link and logo
 		brandLink:'/#'+type.toLowerCase()+'/'+encURI(id), // HACK assumes our #type url layout
-		brandLogo: (advertiser.branding && advertiser.branding.logo) || advertiser.logo, // HACK assumes branding object
+		// prefer white silhouette for safe colours vs backdrop
+		brandLogo: (advertiser.branding && (advertiser.branding.logo_white || advertiser.branding.logo)) || advertiser.logo, // HACK assumes branding object
 		brandName: advertiser.name || id
 	};
 	setNavProps(nprops);
-
 };
 
 /**
