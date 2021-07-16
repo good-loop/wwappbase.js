@@ -67,6 +67,8 @@ const hashWart = (rawUrl, wartMatcher, newWart) => {
 
 /**
  * image or video upload. Uses Dropzone
+ * @param {Object} p
+ * @param {Boolean} p.collapse ??
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show extra controls for adding hash-warts to control caching/resizing

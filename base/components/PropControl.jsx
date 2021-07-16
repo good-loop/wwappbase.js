@@ -214,9 +214,11 @@ const PropControl = ({className, ...props}) => {
 			{(label || tooltip) && ! isCheck?
 				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
-			{inline ? ' ' : null}
+			{inline && ' '}
+			{help && ! inline && <span className={"help-block mr-2 small"}>{help}</span>}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
-			{help ? <span className={"help-block mr-2 small"}>{help}</span> : null /* there was a <br/> before help which seemed unwanted - May 2021 */}
+			{inline && ' '}
+			{help && inline && <span className={"help-block mr-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
 		</FormGroup>

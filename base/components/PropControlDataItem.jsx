@@ -130,10 +130,11 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 				<Input type='text' value={rawValue || ''} onChange={onChange} />
 				{ll && <div className='position-relative'><div className='position-absolute' // NB: the two divs are needed to "float" the element (float itself doesnt seem to work here)
 					style={{float:"left", opacity:ll==="..."?0.25:"inherit", top:0, left:0, zIndex:1000, background:"rgba(255,255,255,0.9)", border:"1px solid #80bdff", boxShadow: "0 0 0 0.2rem rgb(0 123 255 / 25%)"}}>
-					<ListLoad hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem} 
-						noResults={canCreate && rawValue && (pvDI.value? <></> : "Make a new "+itemType+" named "+rawValue+"?")}
+					{rawValue && <ListLoad hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem} 
+						// TODO allow ListLoad to show if there are only a few options
+						noResults={canCreate && rawValue && " "} // this was confusing with the create button too (pvDI.value? <></> : "A new "+itemType+" named "+rawValue+" will be made.")}
 						pageSize={pageSize}
-					/>
+					/>}
 				</div></div>}
 			</Col>
 			<Col md={4}>
