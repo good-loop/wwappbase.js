@@ -17,8 +17,15 @@ const EMOJI = {
 	info: "🛈", // ℹ or 🛈
 	".txt":"🖹",
 	tick: "✔",
-	memo: "📝",
+	memo: "📝"
  };
+/**
+ * Hack: list a few icons here.
+ * We should prob standardise on an icon font - see https://getbootstrap.com/docs/5.0/extend/icons/#bootstrap-icons
+ */
+ const ICONS = {
+	download: "https://icons.getbootstrap.com/assets/icons/download.svg"
+ }
  
  /**
   * 
@@ -39,10 +46,11 @@ const Icon = ({name,size="sm",className,color,...props}) => {
 		url = C.app.logo;
 	}
 	// Social media
-	if ('twitter facebook instagram chrome google-sheets'.indexOf(name !== -1)) {
+	if ('twitter facebook instagram chrome google-sheets'.indexOf(name) !== -1) {
 		url = '/img/gl-logo/external/' + name + '-logo.svg';
 		if (name === 'instagram') url = '/img/gl-logo/external/instagram-logo.png'; // NB (Instagram's mesh gradient can't be done in SVG)
 	}
+	if ( ! url) url = ICONS[name];
 
 	let classes = 'rounded logo' + (size ? ' logo-' + size : '');
 	if (url) {
