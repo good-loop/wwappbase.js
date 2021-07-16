@@ -215,7 +215,7 @@ const PropControl = ({className, ...props}) => {
 				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
 				: null}
 			{inline && ' '}
-			{help && ! inline && <span className={"help-block mr-2 small"}>{help}</span>}
+			{help && ! inline && <span className={"help-block ml-2 mr-2 small"}>{help}</span>}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
 			{help && inline && <span className={"help-block mr-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
