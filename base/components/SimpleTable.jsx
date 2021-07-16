@@ -21,7 +21,7 @@ import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import { asNum, space, stopEvent, encURI, asDate } from '../utils/miscutils';
+import { asNum, space, stopEvent, encURI, asDate, isNumeric } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType, Item } from '../data/DataClass';
 import Tree from '../data/Tree';
@@ -785,7 +785,7 @@ const TotalCell = ({ dataTree, column }) => {
 	Tree.mapByValue(dataTree, rItem => {
 		const v = getter(rItem);
 		// NB: 1* to force coercion of numeric-strings
-		if ($.isNumeric(v)) total += 1 * v;
+		if (isNumeric(v)) total += 1 * v;
 	});
 	if (!total) return <td></td>;
 	// ??custom cell render might break on a Number. But Money seems to be robust about its input.

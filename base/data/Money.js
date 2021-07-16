@@ -3,7 +3,7 @@
 	TODO It'd be nice to make this immutable (can we use Object.freeze to drive that thrgough??)
 */
 import { assert, assMatch } from '../utils/assert';
-import {asNum} from '../utils/miscutils';
+import {asNum, isNumeric} from '../utils/miscutils';
 import DataClass, {getType} from './DataClass';
 import C from '../CBase';
 import Settings from '../Settings';
@@ -78,10 +78,7 @@ export default Money;
 }
 
 */
-// ref: https://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric
-const isNumeric = value => {
-	return ! isNaN(value - parseFloat(value));
-};
+
 
 /**
  * 

@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import { assert } from "./assert";
+import { assert, assMatch } from "./assert";
 import printer from './printer';
 import PromiseValue from 'promise-value';
 
@@ -20,6 +20,16 @@ export const randomPick = function <T>(array: T[]): T {
 window.randomPick = randomPick; // debug
 
 export const sum = (array: number[]): number => array.reduce((acc, a) => acc + a, 0);
+
+/**
+ * Is this a number or number-like?
+ * @param {?String|NUmber} value 
+ * @returns {Boolean}
+ */
+// ref: https://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric
+export const isNumeric = value => {
+	return ! isNaN(value - parseFloat(value));
+};
 
 /**
  * @returns true for mobile or tablet
@@ -358,6 +368,16 @@ export const getUrlVars = (url: string, lenient: boolean) => {
 	}
 
 	return urlVars;
+};
+
+export const setUrlParameter = (url: string, key: string, value: any) => {	
+	assMatch(url, String, "setUrlParameter null url key:"+key);
+	if ( ! is(value)) {
+		return url;
+	}
+	let newUrl = url.includes("?")? url+"&" : url+"?";
+	newUrl += encURI(key)+"="+encURI(value);
+	return newUrl;
 };
 
 const emailRegex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
