@@ -21,6 +21,9 @@ const baseConfig = {
 	resolve: {
 		extensions: ['.ts', '.tsx', '.js', '.jsx'],
 		symlinks: false
+		alias: { querystring: "querystring-es3",
+                         util: 'util'
+                }
 	},
 	module: {
 		rules: [
