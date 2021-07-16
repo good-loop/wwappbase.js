@@ -282,16 +282,15 @@ const PropControl2 = (props) => {
 			// text based
 		onChange = e => {
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-			DataStore.setValue(['transient', 'doFetch'], e.type === 'blur', false); // obsolete??
 			// HACK: allow our own ersatz events to avoid calling setRawValue
-			if (!e.cooked) {
+			if ( ! e.cooked) {
 				setRawValue(e.target.value);
 			}
 			let mv = modelValueFromInput(e.target.value, type, e, storeValue, props);
 			// console.warn("onChange", e.target.value, mv, e);
 			DSsetValue(proppath, mv, update);
 			if (saveFn) saveFn({ event: e, path, prop, value: mv });
-			// Enable piggybacking custom onChange functionality
+			// Enable piggybacking custom onChange functionality ??use-case vs saveFn??
 			if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
 			stopEvent(e);
 		};

@@ -46,9 +46,6 @@ const PropControlAutocomplete = ({ prop, storeValue, value, rawValue, setRawValu
 
 	// NB: typing sends e = an event, clicking an autocomplete sends e = a value
 	const onChange2 = (e) => {
-		// console.log("event", e, e.type, optItem);
-		// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
-		DataStore.setValue(['transient', 'doFetch'], e.type === 'blur');
 		// typing sends an event, clicking an autocomplete sends a value
 		const val = e.target ? e.target.value : e;
 		setRawValue(val)
