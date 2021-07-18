@@ -67,6 +67,7 @@ module.exports = {
 		"import/prefer-default-export": "warn",
 		indent: ["warn", "tab"],
 		"no-case-declarations": "off",
+		"no-console": "off",
 		"no-extra-semi": "warn",
 
 		"jsx-a11y/alt-text": "warn",
