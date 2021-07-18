@@ -119,7 +119,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	});
 
 	return (
-		<Navbar sticky="top" dark={darkTheme} color={backgroundColour} expand="md" className='p-1'>
+		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand="md" className='p-1'>
 			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} />
 		</Navbar>
 	);
