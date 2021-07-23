@@ -46,7 +46,7 @@ const Icon = ({name,size="sm",className,color,...props}) => {
 		url = C.app.logo;
 	}
 	// Social media
-	if ('twitter facebook instagram chrome google-sheets'.indexOf(name) !== -1) {
+	if ('twitter facebook instagram chrome google-sheets linkedin'.indexOf(name) !== -1) {
 		url = '/img/gl-logo/external/' + name + '-logo.svg';
 		if (name === 'instagram') url = '/img/gl-logo/external/instagram-logo.png'; // NB (Instagram's mesh gradient can't be done in SVG)
 	}
