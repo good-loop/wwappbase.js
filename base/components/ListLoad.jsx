@@ -119,7 +119,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	// filter out duplicate-id (paranoia: this should already have been done server side)
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let hits = pvItems.value && pvItems.value.hits;
-	const fastFilter = ! pvItemsFiltered.value;
+	const fastFilter = ! pvItemsFiltered.resolved;
 	// ...filter / resolve
 	let items = resolveItems({hits, type, status, preferStatus, filter, filterFn, fastFilter});	
 	// paginate
@@ -130,8 +130,9 @@ const ListLoad = ({type, status, servlet, navpage,
 	};
 	items = pageSize? paginate({items, pageNum, pageSize}) : items;
 	let total = pvItems.value && pvItems.value.total; // FIXME this ignores local filtering
-	if (filterFn || fastFilter) hideTotal = true; // NB: better to show nothing than incorrect info
-
+	if (filterFn || fastFilter) { // fastFilter => we're waiting on the server for full data
+		hideTotal = true; // NB: better to show nothing than incorrect info
+	}
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
 		
