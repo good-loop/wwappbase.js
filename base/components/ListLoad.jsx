@@ -130,7 +130,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	};
 	items = pageSize? paginate({items, pageNum, pageSize}) : items;
 	let total = pvItems.value && pvItems.value.total; // FIXME this ignores local filtering
-	if (filterFn || fastFilter) { // fastFilter => we're waiting on the server for full data
+	if (filterFn || fastFilter) { // NB: fastFilter => we're waiting on the server for full data
 		hideTotal = true; // NB: better to show nothing than incorrect info
 	}
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
