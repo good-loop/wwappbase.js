@@ -78,7 +78,7 @@ module.exports = {
 		"jsx-a11y/label-has-for": "warn",
 		"jsx-a11y/media-has-caption": "warn",
 		"jsx-a11y/no-static-element-interactions": "warn",
-		"jsx-a11y/control-has-associated-label":"warn",
+		"jsx-a11y/control-has-associated-label":"off", // triggers for <a> tags?! Seen Jul 2021
 		"jsx-a11y/accessible-emoji":"off",
 
 		"jsx-quotes": ["warn", "prefer-double"],
