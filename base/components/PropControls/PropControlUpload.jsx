@@ -71,7 +71,8 @@ const hashWart = (rawUrl, wartMatcher, newWart) => {
  * @param {Boolean} p.collapse ??
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
- * @param {?Boolean} cacheControls Show extra controls for adding hash-warts to control caching/resizing
+ * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
+ * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart checkbox
  */
 const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", cacheControls, circleCrop, ...otherStuff }) => {
 	delete otherStuff.https;
