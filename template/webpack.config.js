@@ -40,7 +40,8 @@ const baseConfig = {
 					plugins: [
 						'@babel/plugin-transform-typescript',
 						'@babel/plugin-proposal-object-rest-spread',
-						'babel-plugin-const-enum'
+						'babel-plugin-const-enum',
+						'@babel/plugin-proposal-private-methods'
 					]
 				}
 			},
