@@ -663,7 +663,7 @@ export const keysetObjToArray = (keysetObj : Object) => {
 
 /**
  * Convert an array of objects with ids to a list of ids
- * @param {Array} idObjArray 
+ * @param {?Array} idObjArray 
  */
 export const idList = (idObjArray : Object[]) => {
 	return idObjArray ? idObjArray.map(obj => obj.id) : [];

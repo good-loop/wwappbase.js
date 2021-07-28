@@ -13,7 +13,7 @@ import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
 import {normaliseSogiveId} from '../plumbing/ServerIOBase';
-import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum } from '../utils/miscutils';
 import { getId } from './DataClass';
 import NGO from './NGO';
 import Money from './Money';
@@ -372,21 +372,19 @@ const campaignNameForAd = ad => {
  * @returns {Number}
  */
 Campaign.viewcount = ({topCampaign, campaigns, extraAds, status}) => {
-	if (topCampaign.numPeople) return topCampaign.numPeople;
+	// manually set?
+	if (topCampaign.numPeople) {
+		return topCampaign.numPeople;
+	}
 	const pvAllAds = Campaign.fetchAds(topCampaign, campaigns, status);
-	const allAds = pvAllAds.value ? List.hits(pvAllAds.value) : [];
-	extraAds = extraAds ? extraAds.filter(ad => !idList(allAds).includes(ad.id)) : [];
-	const allAdsIncludingNonCampaign = Campaign.advertStatusList({topCampaign, campaigns, extraAds, status});
-	const viewcount4campaign = Advert.viewcountByCampaign(allAdsIncludingNonCampaign);
-	let viewcount = 0;
-	const alreadyAddedCampaigns = [];
-	allAdsIncludingNonCampaign.forEach(ad => {
-		if (viewcount4campaign[ad.campaign] && !alreadyAddedCampaigns.includes(ad.campaign)) {
-			viewcount += viewcount4campaign[ad.campaign];
-			alreadyAddedCampaigns.push(ad.campaign);
-		}
-	});
-	return viewcount;
+	let allAds = pvAllAds.value ? List.hits(pvAllAds.value) : [];
+	// add extras?
+	if (extraAds) {
+		allAds = uniqById(allAds.concat(extraAds));
+	}	
+	const viewcount4campaign = Advert.viewcountByCampaign(allAds);
+	let totalViewCount = sum(Object.values(viewcount4campaign));
+	return totalViewCount;
 };
 
 
