@@ -89,12 +89,15 @@ SearchQuery.prop = (sq, propName) => {
 
 /**
  * Set a top-level prop, e.g. vert:foo
- * @param {?SearchQuery} sq
+ * @param {?SearchQuery|string} sq
  * @param {String} propName 
  * @param {?String} propValue If unset (null,undefined, or "" -- but not false or 0!), clear the prop. The caller is responsible for converting non-strings to strings - apart from boolean which thie method will handle, 'cos we're nice like that.
- * @returns a NEW SearchQuery
+ * @returns a NEW SearchQuery. Use .query to get the string
  */
 SearchQuery.setProp = (sq, propName, propValue) => {	
+	if (_.isString(sq)) {
+		sq = new SearchQuery(sq);
+	}
 	// boolean has gotchas, so lets handle it. But not number, as the caller should decide on e.g. rounding
 	if (typeof(propValue) === "boolean") propValue = ""+propValue; // true/false
 	assMatch(propName, String, "searchquery.js - "+propName+" "+propValue);

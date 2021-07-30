@@ -17,7 +17,6 @@ export const randomPick = function <T>(array: T[]): T {
 	assert(r < array.length, array);
 	return array[r];
 };
-window.randomPick = randomPick; // debug
 
 export const sum = (array: number[]): number => array.reduce((acc, a) => acc + a, 0);
 
