@@ -9,7 +9,8 @@ import PropControl from './PropControl';
 import DataStore, { Item, Ref } from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
-import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
+import {CRUD_copy, getDataItem, saveAs} from '../plumbing/Crud';
+import DataClass, {getType, getId, nonce, getClass, getStatus} from '../data/DataClass';
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
 import ErrAlert from './ErrAlert';
 import Icon from './Icon';
@@ -62,7 +63,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	filter, filterFn, hasFilter, filterLocally,
 	ListItem,
 	checkboxes, 
-	canDelete, canCreate, canFilter,
+	canDelete, canCopy, canCreate, canFilter,
 	createBase,
 	className,
 	noResults,
@@ -148,7 +149,9 @@ const ListLoad = ({type, status, servlet, navpage,
 				item={item}
 				type={type}
 				checkboxes={checkboxes}
-				canDelete={canDelete}
+				canCopy={canCopy}
+				list={pvItems.value}
+				canDelete={canDelete}				
 				servlet={servlet}
 				navpage={navpage}
 				notALink={notALink}
@@ -266,7 +269,7 @@ const onPick = ({event, navpage, id, customParams}) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped}) => {
+const ListItemWrapper = ({item, type, checkboxes, canCopy, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped}) => {
 	if (unwrapped) {
 		return children;
 	}
@@ -300,13 +303,14 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	return (
 		<div className="ListItemWrapper clearfix">
 			{checkbox}
-			{canDelete? <DefaultDelete type={type} id={id} /> : null }
 			<A href={itemUrl} key={'A'+id} notALink={notALink}
 				onClick={event => onPick({ event, navpage, id })}
 				className={itemClassName || `ListItem btn-default btn btn-outline-secondary status-${item.status}`}
 			>
 				{children}
 			</A>
+			{canDelete? <DefaultDelete type={type} id={id} /> : null }
+			{canCopy? <DefaultCopy type={type} id={id} item={item} list={list} /> : null }
 		</div>
 	);
 };
@@ -344,12 +348,40 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 
 
 const DefaultDelete = ({type,id}) => (
-	<Button color="secondary" size="xs" className="pull-right p-1 pt-2"
+	<Button color="outline-danger" size="xs" className="pull-right p-1 pt-2 ml-2"
 		onClick={e => confirm(`Delete this ${type}?`) ? ActionMan.delete(type, id) : null}
 		title="Delete">
-		<Icon name="trashcan" color="white"/>		
+		<Icon name="trashcan" />		
 	</Button>
 );
+
+const DefaultCopy = ({type,id,item,list}) => {
+	let [isCopying, setIsCopying] = useState();
+	return (<Button color="secondary" size="xs" className="pull-right p-1 pt-2 ml-2"	
+		disabled={isCopying}
+		onClick={e => {
+			let ok = confirm(`Copy this ${type}?`);
+			if ( ! ok) return;
+			setIsCopying(true);
+			// loads the item if needed
+			let pvItem = getDataItem({type,id,status:getStatus(item)||KStatus.ALL_BAR_TRASH});
+			pvItem.promise.then(p => {
+				saveAs({type,id})
+					.then(newItem => {
+						setIsCopying(false);
+						// show the item in the list
+						if (list && list.hits) {
+							let i = Math.max(list.hits.indexOf(item), 0);
+							list.hits.splice(i, 0, newItem);
+							DataStore.update();
+						}
+					});
+			});
+		}}
+		title="Copy">
+		<Icon name="copy" color="white"/>		
+	</Button>);
+};
 
 
 /**
