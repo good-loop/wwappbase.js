@@ -54,7 +54,7 @@ import AThing from '../data/AThing';
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
  * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
  * @param {JSX|String} p.noResults  Message to show if there are no results
- * @param {?Object} p.other Optional extra params to pass to ActionMan.list() and on to the server.
+ * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
  */
 const ListLoad = ({type, status, servlet, navpage,
 	q, 
@@ -73,7 +73,7 @@ const ListLoad = ({type, status, servlet, navpage,
 	hideTotal,
 	pageSize,
 	unwrapped,
-	...other
+	otherParams={}
 }) =>
 {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
@@ -113,8 +113,8 @@ const ListLoad = ({type, status, servlet, navpage,
 	// Load via ActionMan -- both filtered and un-filtered
 	// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 	// while fetching from the backedn using the filter)
-	let pvItemsFiltered = filter && ! filterLocally? ActionMan.list({type, status, q, start, end, prefix:filter, sort, ...other}) : {resolved:true};
-	let pvItemsAll = ActionMan.list({type, status, q, start, end, sort, ...other});
+	let pvItemsFiltered = filter && ! filterLocally? ActionMan.list({type, status, q, start, end, prefix:filter, sort, ...otherParams}) : {resolved:true};
+	let pvItemsAll = ActionMan.list({type, status, q, start, end, sort, ...otherParams});
 	let pvItems = pvItemsFiltered.value? pvItemsFiltered : pvItemsAll;
 	if ( ! ListItem) {
 		ListItem = DefaultListItem;

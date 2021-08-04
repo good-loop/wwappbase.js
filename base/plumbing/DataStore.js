@@ -821,7 +821,7 @@ const getListPath = ({type,status,q,prefix,start,end,size,sort,domain, ...other}
 		space(q, prefix) || 'all', 
 		space(start, end) || 'whenever', 
 		size || '1k',
-		yessy(other) && JSON.stringify(other) || 'normal',
+		yessy(other)? JSON.stringify(other) : 'normal',
 		sort || 'unsorted'
 	];
 };
