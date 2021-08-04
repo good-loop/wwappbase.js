@@ -302,6 +302,9 @@ ActionMan.saveEdits = saveEdits;
 	DataStore.setData(C.KStatus.DRAFT, newItem);
 	// save server
 	let pv = crud({type, id:newId, action:'copy', item:newItem});
+	pv.promise.then(x => {
+		DataStore.invalidateList(type); // ?? this may be a bit jumpy
+	});
 	// modify e.g. url
 	if (onChange) onChange(newItem);
 	return pv;
