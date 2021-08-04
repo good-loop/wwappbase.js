@@ -6,7 +6,7 @@ import PromiseValue from 'promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
-import {parseHash, modifyHash, toTitleCase, is, space} from '../utils/miscutils';
+import {parseHash, modifyHash, toTitleCase, is, space, yessy} from '../utils/miscutils';
 import KStatus from '../data/KStatus';
 
 
@@ -813,14 +813,17 @@ const getDataPath = DataStore.getDataPath.bind(DataStore);
  * @param {?String} sort Optional sort e.g. "created-desc"
  * @returns [list, type, status, domain, query+prefix, period, sort]
  */
-const getListPath = ({type,status,q,prefix,start,end,size,sort,domain}) => {
+const getListPath = ({type,status,q,prefix,start,end,size,sort,domain, ...other}) => {
 	// NB: we want fixed length paths, to avoid stored results overlapping with paths fragments.
-	return ['list', type, status, 
+	return [
+		'list', type, status, 
 		domain || 'nodomain', 
 		space(q, prefix) || 'all', 
 		space(start, end) || 'whenever', 
 		size || '1k',
-		sort || 'unsorted'];
+		yessy(other) && JSON.stringify(other) || 'normal',
+		sort || 'unsorted'
+	];
 };
 
 
