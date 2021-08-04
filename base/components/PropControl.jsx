@@ -211,14 +211,14 @@ const PropControl = ({className, ...props}) => {
 	// focus?? see https://blog.danieljohnson.io/react-ref-autofocus/
 	return (
 		<FormGroup check={isCheck} className={space(type, className, inline && ! isCheck && 'form-inline', error&&'has-error')} size={size} >
-			{(label || tooltip) && ! isCheck?
-				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>
-				: null}
+			{(label || tooltip) && ! isCheck &&
+				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
-			{help && ! inline && <span className={"help-block ml-2 mr-2 small"}>{help}</span>}
+			{help && ! inline && ! isCheck && 
+				<span className={"help-block ml-2 mr-2 small"}>{help}</span>}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
-			{help && inline && <span className={"help-block mr-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
+			{help && (inline || isCheck) && <span className={"help-block ml-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
 		</FormGroup>
