@@ -16,6 +16,7 @@ import ErrAlert from './ErrAlert';
 import Icon from './Icon';
 import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
+import { Col } from 'reactstrap/lib';
 
 /**
  * Provide a list of items of a given type.
@@ -301,7 +302,7 @@ const ListItemWrapper = ({item, type, checkboxes, canCopy, list, canDelete, serv
 	// ??Is there a nicer way to do this?
 
 	return (
-		<div className="ListItemWrapper clearfix">
+		<div className="ListItemWrapper clearfix flex-row">
 			{checkbox}
 			<A href={itemUrl} key={'A'+id} notALink={notALink}
 				onClick={event => onPick({ event, navpage, id })}
@@ -309,8 +310,10 @@ const ListItemWrapper = ({item, type, checkboxes, canCopy, list, canDelete, serv
 			>
 				{children}
 			</A>
-			{canDelete? <DefaultDelete type={type} id={id} /> : null }
-			{canCopy? <DefaultCopy type={type} id={id} item={item} list={list} /> : null }
+			<div className="flex-column">
+				{canDelete? <DefaultDelete type={type} id={id} /> : null }
+				{canCopy? <DefaultCopy type={type} id={id} item={item} list={list} /> : null }
+			</div>
 		</div>
 	);
 };

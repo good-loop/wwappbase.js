@@ -315,7 +315,7 @@ ActionMan.saveAs = saveAs;
  * 
  * @returns PromiseValue(DataItem)
  */
-unpublish = ({type, id}) => {	
+const unpublish = ({type, id}) => {	
 	assMatch(type, String);
 	assMatch(id, String, "Crud.js no id to unpublish "+type);	
 	// TODO optimistic list mod
