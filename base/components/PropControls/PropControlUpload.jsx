@@ -65,6 +65,12 @@ const hashWart = (rawUrl, wartMatcher, newWart) => {
 	return newUrl;
 }
 
+
+/** CSS for the circle overlaid on the thumbnail while editing circle-crop to show its effect */
+/* Margin rule is to match the default on the Bootstrap img-thumbnail property */
+const circleStyle = { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', borderRadius: '50%', border: '1px dashed silver', overflow: 'visible', zIndex: '1', margin: '5px'};
+
+
 /**
  * image or video upload. Uses Dropzone
  * @param {Object} p
@@ -72,13 +78,14 @@ const hashWart = (rawUrl, wartMatcher, newWart) => {
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
- * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart checkbox
+ * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
 const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", cacheControls, circleCrop, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
 	const isOpen = ! collapse || ! collapsed;
+	const [previewCrop, setPreviewCrop] = useState(false); // Draw a circle around the image to preview the effect of circle-crop
 
 	// Automatically decide appropriate thumbnail component
 	const Thumbnail = {
@@ -134,7 +141,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 			const newUrl = hashWart(storeValue, /noscale/, state ? 'noscale' : null);
 			onChange && onChange({...fakeEvent, target: { value: newUrl }});
 		}
-		const checked = storeValue && storeValue.match(/\#.*\bnoscale\b/);
+		const checked = storeValue && storeValue.match(/\#(.*_)?noscale\b/);
 		extraControls.push(
 			<FormGroup inline check key='cacheControls'>
 				<FormControl name="noscale" type="checkbox" onChange={event => toggleWart(event.target.checked)} checked={checked} />
@@ -146,18 +153,32 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	// For images which might be displayed in a circle: allow user to mark as "scale to XX% size to fit in circle"
 	if (type == 'imgUpload' && circleCrop) {
 		const updateWart = (percent) => {
-			const newWart = (percent === 100) ? '' : `ccrop:${percent}`;
+			const newWart = (percent == 100) ? '' : `ccrop:${percent}`;
 			const newUrl = hashWart(storeValue, /ccrop:\d+/, newWart);
 			onChange && onChange({...fakeEvent, target: { value: newUrl }});
 		}
 		const wart = storeValue && storeValue.match(/#.*ccrop:(\d+)/);
 		const value = (wart && wart[1]) || 100;
+
+		const events = {
+			onChange: event => updateWart(event.target.value),
+			onFocus: () => setPreviewCrop(true),
+			onBlur: () => setPreviewCrop(false),
+		};
 		extraControls.push(
 			<FormGroup inline key='circleCrop'>
-				<Label for="ccrop">Circle crop:</Label>{' '}
-				<FormControl style={{width: '4em'}} name="ccrop" type="number" onChange={event => updateWart(event.target.value)} value={value} />
+				<Label for="ccrop">Scale in circle:</Label>{' '}
+				<FormControl style={{width: '4em', display: 'inline'}} name="ccrop" type="number" value={value} {...events} /> %
 			</FormGroup>
 		);
+	}
+
+	// While the circle-crop control is focused, preview its effects by overlaying a scaled circle
+	let circleOverlay = null;
+	if (previewCrop) {
+		const wart = storeValue && storeValue.match(/#.*ccrop:(\d+)/);
+		const ccVal = (wart && wart[1]) || 100;
+		circleOverlay = <div style={{...circleStyle, width: `${10000/ccVal}%`, height: `${10000/ccVal}%`}} />;
 	}
 
 	return (
@@ -172,8 +193,9 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 					</div>
 				</div></>
 			}
-			<div className="pull-right">
+			<div className="pull-right" style={{ width: '100px', height: '100px', position: 'relative' }}>
 				<Thumbnail className={className} background={bg} url={storeValue} />
+				{circleOverlay}
 			</div>
 			{extraControls}
 			<div className="clearfix" />
