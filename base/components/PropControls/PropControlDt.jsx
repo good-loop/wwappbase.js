@@ -17,24 +17,22 @@ const fakeEvent = {
 };
 
 
-const PropControlDt = ({path, prop, value, storeValue, onChange, ...rest}) => {
-	const onChangeInner = ({ newN, newUnit }) => {
+const PropControlDt = ({storeValue, onChange}) => {
+	const onChangeInner = ({ n, unit }) => {
 		const newVal = { ...storeValue };
-		if (newN) newVal.n = newN;
-		if (newUnit) newVal.unit = newUnit;
-		
+		if (n) newVal.n = n;
+		if (unit) newVal.unit = unit;
+
 		onChange({...fakeEvent, target: { value: newVal }});
 	};
 
-
 	return <InputGroup inline>
-		<Input type="number" name={`${prop}-n`} value={storeValue.n} onChange={(e) => onChangeInner({newN: e.target.value})} />
-		<Input type="select" name={`${prop}-unit`} value={storeValue.unit} onChange={(e) => onChangeInner({newUnit: e.target.value})} default="SECONDS">
+		<Input type="number" name={`${prop}-n`} value={storeValue.n} onChange={(e) => onChangeInner({n: e.target.value})} />
+		<Input type="select" name={`${prop}-unit`} value={storeValue.unit} onChange={(e) => onChangeInner({unit: e.target.value})} default="SECONDS">
 			{domOptions}
 		</Input>
 	</InputGroup>;
 };
-
 
 
 registerControl({type: 'dt', $Widget: PropControlDt});
