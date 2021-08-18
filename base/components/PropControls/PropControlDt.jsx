@@ -17,7 +17,7 @@ const fakeEvent = {
 };
 
 
-const PropControlDt = ({storeValue, onChange}) => {
+const PropControlDt = ({prop, storeValue, onChange}) => {
 	const onChangeInner = ({ n, unit }) => {
 		const newVal = { ...storeValue };
 		if (n) newVal.n = n;
