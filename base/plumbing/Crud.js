@@ -264,20 +264,25 @@ const saveEdits = ({type, id, item, previous}) => {
 ActionMan.saveEdits = saveEdits;
 
 /**
+ * AKA copy!
+ * 
  * This will modify the ID to a new nonce()!
+ * @param {?String} id DEPRECATED use oldId
+ * @param {!String} oldId The item which is being copied
  * @param onChange {Function: newItem => ()}
  * @returns PromiseValue(DataItem)
  */
- const saveAs = ({type, id, item, onChange}) => {
-	if ( ! item) item = DataStore.getData(KStatus.DRAFT, type, id);
-	if ( ! item) item = DataStore.getData(KStatus.PUBLISHED, type, id);
-	assert(item, "Crud.js no item "+type+" "+id);	
-	if ( ! id) id = getId(item);
+ const saveAs = ({type, id, oldId, item, onChange}) => {
+	oldId = id = (oldId || id); // bridge to old code
+	if ( ! item) item = DataStore.getData(KStatus.DRAFT, type, oldId);
+	if ( ! item) item = DataStore.getData(KStatus.PUBLISHED, type, oldId);
+	assert(item, "Crud.js no item "+type+" "+oldId);	
+	if ( ! oldId) oldId = getId(item);
 	// deep copy
 	let newItem = JSON.parse(JSON.stringify(item));
 	newItem.status = C.KStatus.DRAFT; // ensure its a draft 
 	// parentage
-	newItem.parent = id;
+	newItem.parent = oldId;
 	// modify
 	const newId = nonce();	
 	newItem.id = newId;
@@ -376,11 +381,13 @@ const preCrudListMod = ({type, id, item, action}) => {
 	// delete => optimistic remove
 	if (C.CRUDACTION.isdelete(action)) {
 		if ( ! item) item = {type, id};
-		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
+		[C.KStatus.PUBLISHED, C.KStatus.DRAFT, C.KStatus.ALL_BAR_TRASH].forEach(status => {
 			// NB: see getListPath for format, which is [list, type, status, domain, query, sort]
-			let domainQuerySortList = DataStore.getValue('list', type, status);
-			recursivePruneFromTreeOfLists(item, domainQuerySortList);
+			let domainQuerySortList = DataStore.getValue('list', type, status); 
+			let cnt = recursivePruneFromTreeOfLists(item, domainQuerySortList);
+			console.log("Removed", cnt, item);
 		});
+		DataStore.update();
 	} // ./action=delete
 
 	if (action === 'archive') {
@@ -393,16 +400,22 @@ const preCrudListMod = ({type, id, item, action}) => {
 };
 
 /**
- * @param treeOfLists Must have no cycles!
+ * @param {!Object} treeOfLists Must have no cycles!
+ * @returns {Number} removals made
  */
 const recursivePruneFromTreeOfLists = (item, treeOfLists) => {
+	let cnt = 0;
 	if ( ! treeOfLists) return;
 	mapkv(treeOfLists, (k, kid) => {
+		if ( ! kid) return;
 		if (List.isa(kid)) {
-			return;
+			const rm = List.remove(item, kid);
+			if (rm) cnt++;
+		} else {
+			cnt += recursivePruneFromTreeOfLists(item, kid);
 		}
-		recursivePruneFromTreeOfLists(item, kid);
 	});
+	return cnt;
 };
 
 ActionMan.discardEdits = (type, id) => {
