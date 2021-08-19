@@ -12,8 +12,10 @@ import { space } from '../utils/miscutils';
 const EMOJI = {
 	outtray: "📤",
 	globe: "🌍",
+	hourglass: "⏳",
 	intray: "📥",
 	camera: "📷",
+	copy: "⎘",
 	trashcan: "🗑", //&#x1f5d1;
 	info: "🛈", // ℹ or 🛈
 	".txt":"🖹",

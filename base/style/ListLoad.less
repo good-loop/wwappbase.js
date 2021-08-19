@@ -5,6 +5,11 @@
 		padding-bottom: 0.5em;
 		border-bottom: 1px solid #333;
 	}
+
+	.LL-buttons {
+		justify-content: space-evenly;
+		margin: 0.5em;
+	}
 }
 
 
@@ -21,7 +26,7 @@
 .ListItem {
 	display: inline-flex;
 	flex-direction: row;	
-	width: calc(100% - 3em); //25em;
+	width: calc(100% - 4em); // HACK: leave some space for buttons
 
 	> *:not(:first-child) {
 		margin-left: 0.5em;

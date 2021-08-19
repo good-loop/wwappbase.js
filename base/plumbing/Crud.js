@@ -17,12 +17,12 @@ import * as jsonpatch from 'fast-json-patch';
 import deepCopy from '../utils/deepCopy';
 import KStatus from '../data/KStatus';
 import Person from '../data/Person';
-
+import PromiseValue from 'promise-value';
 
 /**
  * @param {?Item} p.item Used for preserving local edits during the crud op. Can be null, in which case the item is got from DataStore
  * @param {?KStatus} p.status Usually null
- * @returns !Promise <Item>
+ * @returns PromiseValue(DataItem)
  */
 const crud = ({type, id, domain, status, action, item, previous, swallow, localStorage=false}) => {
 	if ( ! type) type = getType(item);
@@ -101,8 +101,7 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 		return Promise.resolve(item); 
 		// NB the server load is still going to run in the background
 	}	
-	// return the promise
-	return p;
+	return new PromiseValue(p);
 }; // ./crud
 ActionMan.crud = crud;
 
@@ -177,6 +176,11 @@ const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
 	console.log("applyPatch preserve local new claims",JSON.stringify(newClaims), JSON.stringify(freshItem));	
 };
 
+/**
+ * 
+ * @param {Object} p 
+ * @returns ?DataItem null on error
+ */
 const crud2_processResponse = ({res, item, itemBefore, id, action, type, localStorage}) => {
 	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
 	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
@@ -236,7 +240,7 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 	DataStore.setLocalEditsStatus(type, id, C.STATUS.clean);
 	// and any error
 	DataStore.setValue(errorPath({type, id, action}), null);
-	return res;
+	return freshItem;
 };
 
 /**
@@ -246,6 +250,11 @@ const errorPath = ({type, id, action}) => {
 	return ['transient', type, id, action, 'error'];
 };
 
+/**
+ * 
+ * @param {Object} p
+ * @returns PromiseValue(DataItem)
+ */
 const saveEdits = ({type, id, item, previous}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
@@ -255,20 +264,25 @@ const saveEdits = ({type, id, item, previous}) => {
 ActionMan.saveEdits = saveEdits;
 
 /**
+ * AKA copy!
+ * 
  * This will modify the ID to a new nonce()!
+ * @param {?String} id DEPRECATED use oldId
+ * @param {!String} oldId The item which is being copied
  * @param onChange {Function: newItem => ()}
- * @returns {Promise}
+ * @returns PromiseValue(DataItem)
  */
-ActionMan.saveAs = ({type, id, item, onChange}) => {
-	if ( ! item) item = DataStore.getData(C.KStatus.DRAFT, type, id);
-	if ( ! item) item = DataStore.getData(C.KStatus.PUBLISHED, type, id);
-	assert(item, "Crud.js no item "+type+" "+id);	
-	if ( ! id) id = getId(item);
+ const saveAs = ({type, id, oldId, item, onChange}) => {
+	oldId = id = (oldId || id); // bridge to old code
+	if ( ! item) item = DataStore.getData(KStatus.DRAFT, type, oldId);
+	if ( ! item) item = DataStore.getData(KStatus.PUBLISHED, type, oldId);
+	assert(item, "Crud.js no item "+type+" "+oldId);	
+	if ( ! oldId) oldId = getId(item);
 	// deep copy
 	let newItem = JSON.parse(JSON.stringify(item));
 	newItem.status = C.KStatus.DRAFT; // ensure its a draft 
 	// parentage
-	newItem.parent = id;
+	newItem.parent = oldId;
 	// modify
 	const newId = nonce();	
 	newItem.id = newId;
@@ -292,25 +306,34 @@ ActionMan.saveAs = ({type, id, item, onChange}) => {
 	// save local
 	DataStore.setData(C.KStatus.DRAFT, newItem);
 	// save server
-	let p = crud({type, id:newId, action:'copy', item:newItem});
+	let pv = crud({type, id:newId, action:'copy', item:newItem});
+	pv.promise.then(x => {
+		DataStore.invalidateList(type); // ?? this may be a bit jumpy
+	});
 	// modify e.g. url
 	if (onChange) onChange(newItem);
-	return p;
+	return pv;
 };
+ActionMan.saveAs = saveAs;
 
-ActionMan.unpublish = (type, id) => {	
+/**
+ * 
+ * @returns PromiseValue(DataItem)
+ */
+const unpublish = ({type, id}) => {	
 	assMatch(type, String);
 	assMatch(id, String, "Crud.js no id to unpublish "+type);	
 	// TODO optimistic list mod
 	// preCrudListMod({type, id, action:'unpublish'});
 	// call the server
 	return crud({type, id, action:'unpublish'})
-		.catch(err => {
+		.promise.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return err;
 		}); // ./then	
 };
+ActionMan.unpublish = (type, id) => unpublish({type,id});
 
 /**
  * Thiss will save and publish
@@ -329,7 +352,7 @@ const publishEdits = (type, id, item) => {
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
 	return crud({type, id, action: 'publish', item})
-		.catch(err => {
+		.promise.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return err;
@@ -358,11 +381,13 @@ const preCrudListMod = ({type, id, item, action}) => {
 	// delete => optimistic remove
 	if (C.CRUDACTION.isdelete(action)) {
 		if ( ! item) item = {type, id};
-		[C.KStatus.PUBLISHED, C.KStatus.ALL_BAR_TRASH].forEach(status => {
+		[C.KStatus.PUBLISHED, C.KStatus.DRAFT, C.KStatus.ALL_BAR_TRASH].forEach(status => {
 			// NB: see getListPath for format, which is [list, type, status, domain, query, sort]
-			let domainQuerySortList = DataStore.getValue('list', type, status);
-			recursivePruneFromTreeOfLists(item, domainQuerySortList);
+			let domainQuerySortList = DataStore.getValue('list', type, status); 
+			let cnt = recursivePruneFromTreeOfLists(item, domainQuerySortList);
+			console.log("Removed", cnt, item);
 		});
+		DataStore.update();
 	} // ./action=delete
 
 	if (action === 'archive') {
@@ -375,16 +400,22 @@ const preCrudListMod = ({type, id, item, action}) => {
 };
 
 /**
- * @param treeOfLists Must have no cycles!
+ * @param {!Object} treeOfLists Must have no cycles!
+ * @returns {Number} removals made
  */
 const recursivePruneFromTreeOfLists = (item, treeOfLists) => {
+	let cnt = 0;
 	if ( ! treeOfLists) return;
 	mapkv(treeOfLists, (k, kid) => {
+		if ( ! kid) return;
 		if (List.isa(kid)) {
-			return;
+			const rm = List.remove(item, kid);
+			if (rm) cnt++;
+		} else {
+			cnt += recursivePruneFromTreeOfLists(item, kid);
 		}
-		recursivePruneFromTreeOfLists(item, kid);
 	});
+	return cnt;
 };
 
 ActionMan.discardEdits = (type, id) => {
@@ -395,26 +426,27 @@ ActionMan.discardEdits = (type, id) => {
  * 
  * @param {*} type 
  * @param {*} pubId 
- * @returns {!Promise}
+ * @returns {!PromiseValue}
  */
 ActionMan.delete = (type, pubId) => {
 	// optimistic list mod
 	preCrudListMod({type, id:pubId, action:'delete'});
 	// ?? put a safety check in here??
-	return crud({type, id:pubId, action:'delete'})
-		.then(e => {
-			console.warn("deleted!", type, pubId, e);
-			// remove the local versions
-			DataStore.setValue(getDataPath({status: C.KStatus.PUBLISHED, type, id: pubId}), null);
-			DataStore.setValue(getDataPath({status: C.KStatus.DRAFT, type, id: pubId}), null);
-			// invalidate any cached list of this type
-			DataStore.invalidateList(type);
-			return e;
-		});
+	const pv = crud({type, id:pubId, action:'delete'});
+	return PromiseValue.then(pv, e => {
+		console.warn("deleted!", type, pubId, e);
+		// remove the local versions
+		DataStore.setValue(getDataPath({status: C.KStatus.PUBLISHED, type, id: pubId}), null);
+		DataStore.setValue(getDataPath({status: C.KStatus.DRAFT, type, id: pubId}), null);
+		// invalidate any cached list of this type
+		DataStore.invalidateList(type);
+		return e;
+	});
 };
 
 /**
  * Archive this item
+ * @returns PromiseValue(DataItem)
  */
 // ?? should we put a confirm in here, and in delete()? But what if we are doing a batch operation?
 // -- let's not -- but be sure to put it in calling functions
@@ -477,6 +509,7 @@ const serverStatusForAction = (action) => {
  * @param {!string} action 
  * @param {?Object} p.params
  * @param {?Boolean} p.params.swallow
+ * @returns {Promise} from ServerIO.load()
  */
 const SIO_crud = function(type, item, previous, action, params={}) {	
 	assert(C.TYPES.has(type), type);
@@ -699,6 +732,7 @@ const CRUD = {
 export default CRUD;
 export {
 	crud,
+	saveAs,
 	saveEdits,
 	publishEdits,
 	errorPath,
