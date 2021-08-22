@@ -52,7 +52,7 @@ SearchQuery.parse = sq => {
 	// HACK just space separate and crude key:value for now!
 	let bits = sq.query.split(" ");
 	let bits2 = bits.map(bit => {
-		let kv = bit.match(/^([a-z]+):(.+)/);
+		let kv = bit.match(/^([a-zA-Z_0-9]+):(.+)/);
 		if (kv) return {[kv[1]]: kv[2]};
 		return bit;
 	});
@@ -101,6 +101,7 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	let newq = "";
 	// remove the old
 	if (sq) {
+		assMatch(sq, SearchQuery);
 		newq = snipProp(sq, propName);
 	}
 	// unset? (but do allow prop:false and x:0)
@@ -134,7 +135,9 @@ SearchQuery.setProp = (sq, propName, propValue) => {
  * @returns  {!String}
  */
 const snipProp = (sq, propName) => {
+	assMatch(sq, SearchQuery);
 	SearchQuery._init(sq);
+	assMatch(propName,String);
 	// Cut out the old value (use the parse tree to handle quoting)
 	let tree2 = sq.tree.filter(bit => ! is(bit[propName]));
 	let newq = unparse(tree2);
