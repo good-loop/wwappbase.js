@@ -456,10 +456,10 @@ Misc.isoDate = (d) => d? asDate(d).toISOString().replace(/T.+/, '') : null;
  * }
  * @return {JSX}
  */
-Misc.ImgThumbnail = ({url, alt, background, style, className = '', ...props}) => {
+Misc.ImgThumbnail = ({url, alt, background, style, className = ''}) => {
 	if (!url) return null;
 	// add in base (NB this works with style=null)
-	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain'}, style);
+	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain', padding: 0}, style);
 	if (background) style.background = background;
 	return <img className={space('img-thumbnail',className)} style={style} alt={alt || 'thumbnail'} src={url} />;
 };

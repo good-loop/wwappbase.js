@@ -321,6 +321,23 @@ export const substr = (mystring: string, _start: number, _end: number) => {
 	return mystring.substring(start, end);
 };
 
+/**
+ * 
+ * @param {?String} url Defaults to window.location.hostname
+ * @returns {!String} e.g. "bbc.co.uk", "google.com", etc.
+ */
+export const getDomain = (url) => {
+	if ( ! url) url = window.location.hostname;
+	let m = url.match(/^(?:.*?\.)?([a-zA-Z0-9\-_]{3,}\.(?:\w{2,8}|\w{2,4}\.\w{2,4}))$/);
+	if ( ! m) {	// safety / paranoia
+		console.error("getDomain() error for "+url);
+		return url;
+	}
+	return m[1];
+};
+
+
+
 
 /** Parse url arguments
  * @param {?string} url Optional, the string to be parsed, will default to window.location when not provided.

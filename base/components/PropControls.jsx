@@ -10,8 +10,9 @@ import PropControlUpload from './PropControls/PropControlUpload'
 import PropControlAutoComplete from './PropControlAutoComplete';
 import PropControlPills from './PropControlPills';
 import PropControlSelection from './PropControlSelection';
-import PropControlDataItem from './PropControlDataItem'
-import PropControlMoney from './PropControlMoney'
+import PropControlDataItem from './PropControlDataItem';
+import PropControlMoney from './PropControlMoney';
+import PropControlDt from './PropControls/PropControlDt';
 
 // no real export - use via PropControl
 export default {};

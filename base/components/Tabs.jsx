@@ -3,11 +3,11 @@ import { Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import { space } from '../utils/miscutils';
 
 /**
- * @param {!string} tabId NB: this is what BS calls it
+ * @param {string} tabId NB: this is what BS calls it. Will use the title if unset
  * @param {string} title This will be the tab label
  */
 const Tab = ({tabId, title, children}) => {
-	return <TabPane tabId={tabId} title={title}>
+	return <TabPane tabId={tabId || title} title={title}>
 		{children}
 	</TabPane>
 };
@@ -29,6 +29,7 @@ const Tabs = ({activeTabId, setActiveTabId, defaultTabId, children, ...props}) =
 	let $activeTab = null;
 	const $navItems = React.Children.map(children, (childTab) => {
 		let {props: {tabId, title}} = childTab; // extract the info
+		if ( ! tabId) tabId = title;
 		if ( ! tabId) console.error("Tabs.jsx - Tab without an ID",title);
 		if ( ! _activeTabId) _activeTabId = tabId; // default to the first if unset
 		const active = (_activeTabId === tabId);

@@ -2,19 +2,21 @@ import React, { useState } from 'react';
 
 import { assert, assMatch } from '../utils/assert';
 
-import {modifyHash, space, yessy} from '../utils/miscutils';
+import { modifyHash, space, stopEvent, yessy } from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
 import DataStore, { Item, Ref } from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
-import DataClass, {getType, getId, nonce, getClass} from '../data/DataClass';
+import { CRUD_copy, getDataItem, saveAs } from '../plumbing/Crud';
+import DataClass, { getType, getId, nonce, getClass, getStatus } from '../data/DataClass';
 import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
 import ErrAlert from './ErrAlert';
 import Icon from './Icon';
 import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
+import { Col } from 'reactstrap/lib';
 
 /**
  * Provide a list of items of a given type.
@@ -54,27 +56,29 @@ import AThing from '../data/AThing';
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
  * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
  * @param {JSX|String} p.noResults  Message to show if there are no results
+ * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
  */
-const ListLoad = ({type, status, servlet, navpage,
-	q, 
+const ListLoad = ({ type, status, servlet, navpage,
+	q,
 	start, end,
 	sort = 'created-desc',
 	filter, filterFn, hasFilter, filterLocally,
 	ListItem,
-	checkboxes, 
-	canDelete, canCreate, canFilter,
+	checkboxes,
+	canDelete, canCopy, canCreate, canFilter,
 	createBase,
 	className,
 	noResults,
-	notALink, itemClassName,
+	notALink,
+	itemClassName,
 	preferStatus,
 	hideTotal,
 	pageSize,
-	unwrapped
-}) =>
-{
+	unwrapped,
+	otherParams = {}
+}) => {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
-	if ( ! status) {
+	if (!status) {
 		console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
 		status = KStatus.ALL_BAR_TRASH;
 	}
@@ -82,79 +86,81 @@ const ListLoad = ({type, status, servlet, navpage,
 	// widget settings TODO migrate to useState so we can have multiple overlapping ListLoads
 	// const [foo, setFoo] = useState({});
 	// ??preserves state across q and filter edits -- is that best??
-	const widgetPath = ['widget','ListLoad',type,status];	
-	if (servlet && ! navpage) {
+	const widgetPath = ['widget', 'ListLoad', type, status];
+	if (servlet && !navpage) {
 		console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");
 	}
-	if ( ! canFilter) canFilter = hasFilter; // for old code
-	if ( ! navpage) navpage = servlet || DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
-	if ( ! servlet) servlet = navpage;
-	if ( ! servlet) {
-		console.warn("ListLoad - no servlet? type="+type);
+	if (!canFilter) canFilter = hasFilter; // for old code
+	if (!navpage) navpage = servlet || DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
+	if (!servlet) servlet = navpage;
+	if (!servlet) {
+		console.warn("ListLoad - no servlet? type=" + type);
 		return null;
 	}
 	assMatch(servlet, String);
 	assMatch(navpage, String);
-	assert(navpage && navpage[0] !== '#', "ListLoad.jsx - navpage should be a 'word' ["+navpage+"]");
+	assert(navpage && navpage[0] !== '#', "ListLoad.jsx - navpage should be a 'word' [" + navpage + "]");
 	// store the lists in a separate bit of appstate
 	// from data.
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
 	// NB: case-insentive filtering
 	if (canFilter) {
-		assert( ! filter, "ListLoad.jsx - Do NOT use filter and canFilter props");
+		assert(!filter, "ListLoad.jsx - Do NOT use filter and canFilter props");
 		filter = DataStore.getValue(widgetPath.concat('filter'));
 	}
 	if (filter) filter = filter.toLowerCase(); // normalise
-	
+
 	// Load via ActionMan -- both filtered and un-filtered
 	// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 	// while fetching from the backedn using the filter)
-	let pvItemsFiltered = filter && ! filterLocally? ActionMan.list({type, status, q, start, end, prefix:filter, sort}) : {resolved:true};
-	let pvItemsAll = ActionMan.list({type, status, q, start, end, sort});
-	let pvItems = pvItemsFiltered.value? pvItemsFiltered : pvItemsAll;
-	if ( ! ListItem) {
+	let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: filter, sort, ...otherParams }) : { resolved: true };
+	let pvItemsAll = ActionMan.list({ type, status, q, start, end, sort, ...otherParams });
+	let pvItems = pvItemsFiltered.value ? pvItemsFiltered : pvItemsAll;
+	if (!ListItem) {
 		ListItem = DefaultListItem;
 	}
 	// filter out duplicate-id (paranoia: this should already have been done server side)
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let hits = pvItems.value && pvItems.value.hits;
-	const fastFilter = ! pvItemsFiltered.resolved;
+	const fastFilter = !pvItemsFiltered.resolved;
 	// ...filter / resolve
-	let items = resolveItems({hits, type, status, preferStatus, filter, filterFn, fastFilter});	
+	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter });
 	// paginate
-	let [pageNum, setPageNum2] = pageSize? useState(0) : [];
-	const setPageNum = n => {		
+	let [pageNum, setPageNum2] = pageSize ? useState(0) : [];
+	const setPageNum = n => {
 		setPageNum2(n);
 		window.scrollTo(0, 0);
 	};
-	items = pageSize? paginate({items, pageNum, pageSize}) : items;
+	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;
 	let total = pvItems.value && pvItems.value.total; // FIXME this ignores local filtering
 	if (filterFn || fastFilter) { // NB: fastFilter => we're waiting on the server for full data
 		hideTotal = true; // NB: better to show nothing than incorrect info
 	}
-	return (<div className={space('ListLoad', className, ListItem === DefaultListItem? 'DefaultListLoad' : null)} >
+	return (<div className={space('ListLoad', className, ListItem === DefaultListItem ? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
-		
-		{canFilter && <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter"/>}
 
-		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
-		{total && ! hideTotal? <div>About {total} results in total</div> : null}
+		{canFilter && <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter" />}
+
+		{!items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
+		{total && !hideTotal ? <div>About {total} results in total</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
 
-		{items.map( (item, i) => (
+		{items.map((item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				unwrapped={unwrapped}
 				item={item}
 				type={type}
 				checkboxes={checkboxes}
+				canCopy={canCopy}
+				list={pvItems.value}
 				canDelete={canDelete}
 				servlet={servlet}
 				navpage={navpage}
 				notALink={notALink}
 				itemClassName={itemClassName}
 			>
-				<ListItem key={'li'+(getId(item) || i)}
+				<ListItem key={'li' + (getId(item) || i)}
 					type={type}
 					servlet={servlet}
 					navpage={navpage}
@@ -165,32 +171,32 @@ const ListLoad = ({type, status, servlet, navpage,
 		))}
 
 		{pageSize && total > pageSize && <div>
-			<Button className='mr-2' color='secondary' disabled={ ! pageNum} onClick={e => setPageNum(pageNum-1)} ><b>&lt;</b></Button>
-			page {(pageNum+1)} of {Math.ceil(total / pageSize)}
-			<Button className='ml-2' color='secondary' disabled={pageNum+1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum+1)} ><b>&gt;</b></Button>
+			<Button className='mr-2' color='secondary' disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b>&lt;</b></Button>
+			page {(pageNum + 1)} of {Math.ceil(total / pageSize)}
+			<Button className='ml-2' color='secondary' disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b>&gt;</b></Button>
 		</div>}
-		{pvItemsFiltered.resolved && pvItemsAll.resolved? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
-		<ErrAlert error={pvItems.error}/>
+		{pvItemsFiltered.resolved && pvItemsAll.resolved ? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
+		<ErrAlert error={pvItems.error} />
 	</div>);
 }; // ./ListLoad
 //
 
 
-const paginate = ({items, pageNum, pageSize}) => {
+const paginate = ({ items, pageNum, pageSize }) => {
 	assert(pageSize, "paginate");
-	return items.slice(pageNum*pageSize, (pageNum+1)*pageSize);
+	return items.slice(pageNum * pageSize, (pageNum + 1) * pageSize);
 };
 
 /**
  * TODO
  * @param {boolean} canDelete 
  */
-const MassActionToolbar = ({type, canDelete, items}) => {
+const MassActionToolbar = ({ type, canDelete, items }) => {
 	// checked count
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let checked4id = DataStore.getValue(checkedPath);
 	let checkCnt = 0 // TODO
-	if ( ! checkCnt) return null; // TODO
+	if (!checkCnt) return null; // TODO
 	return (<div class="btn-toolbar" role="toolbar" aria-label="Toolbar for checked items">
 		{checkCnt} checked of {items.length}
 	</div>);
@@ -201,19 +207,19 @@ const MassActionToolbar = ({type, canDelete, items}) => {
  * @param {?Ref[]} hits 
  * @returns {Item[]}
  */
-const resolveItems = ({hits, type, status, preferStatus, filter, filterFn, fastFilter}) => {
-	if ( ! hits) {
+const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, fastFilter }) => {
+	if (!hits) {
 		// an ajax call probably just hasn't loaded yet
 		return [];
 	}
 	// resolve Refs to full Items
 	hits = DataStore.resolveDataList(hits, preferStatus);
 	// HACK: Use-case: you load published items. But the list allows for edits. Those edits need draft items. So copy pubs into draft
-	if (preferStatus===KStatus.DRAFT) {
-		hits.forEach(item => {			
-			let dpath = DataStore.getDataPath({status:KStatus.DRAFT, type, id:getId(item)});
+	if (preferStatus === KStatus.DRAFT) {
+		hits.forEach(item => {
+			let dpath = DataStore.getDataPath({ status: KStatus.DRAFT, type, id: getId(item) });
 			let draft = DataStore.getValue(dpath);
-			if ( ! yessy(draft)) {
+			if (!yessy(draft)) {
 				DataStore.setValue(dpath, item, false);
 			}
 		});
@@ -221,14 +227,14 @@ const resolveItems = ({hits, type, status, preferStatus, filter, filterFn, fastF
 
 	const items = [];
 	const itemForId = {};
-	
+
 	// client-side filter and de-dupe
 	// ...filterFn?
 	if (filterFn) {
 		hits = hits.filter(filterFn);
 	}
 	// ...string filter, dedupe, and ad
-	if ( ! filter) fastFilter = false; // avoid pointless work in the loop
+	if (!filter) fastFilter = false; // avoid pointless work in the loop
 	hits.forEach(item => {
 		// fast filter via stringify
 		let sitem = null;
@@ -248,43 +254,31 @@ const resolveItems = ({hits, type, status, preferStatus, filter, filterFn, fastF
 		itemForId[id] = item;
 	});
 
-	return items;	
+	return items;
 };
 
 /**
  * 
  * @param {?Object} customParams - Not used! allows passing extra params through the click
  */
-const onPick = ({event, navpage, id, customParams}) => {
-	if (event) {
-		event.stopPropagation();
-		event.preventDefault();
-	}
-	customParams ? modifyHash([navpage,null],customParams) : modifyHash([navpage,id]);
+const onPick = ({ event, navpage, id, customParams }) => {
+	stopEvent(event);
+	modifyHash([navpage, id], customParams);
 };
 
 /**
  * checkbox, delete, on-click a wrapper
  */
-const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped}) => {
+const ListItemWrapper = ({ item, type, checkboxes, canCopy, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped }) => {
 	if (unwrapped) {
 		return children;
 	}
 	const id = getId(item);
-	if ( ! id) {
-		console.error("ListLoad.jsx - "+type+" with no id", item);
+	if (!id) {
+		console.error("ListLoad.jsx - " + type + " with no id", item);
 		return null;
 	}
-	let itemUrl = modifyHash([servlet, id], null, true);	
-
-	// // TODO refactor this Portal specific code out of here.
-	// // for the Impact Hub campaign page we want to manipulate the url to modify the vert/vertiser params
-	// // that means both modifying href and onClick definitions
-	// let customParams;
-	// if (servlet==="campaign") {
-	// 	itemUrl = modifyHash([servlet,null], {'gl.vertiser':null, 'gl.vert':id}, true);
-	// 	customParams = {'gl.vertiser':null, 'gl.vert':id};
-	// }
+	let itemUrl = modifyHash([servlet, id], null, true);
 
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 
@@ -298,21 +292,24 @@ const ListItemWrapper = ({item, type, checkboxes, canDelete, servlet, navpage, c
 	// ??Is there a nicer way to do this?
 
 	return (
-		<div className="ListItemWrapper clearfix">
+		<div className="ListItemWrapper clearfix flex-row">
 			{checkbox}
-			{canDelete? <DefaultDelete type={type} id={id} /> : null }
-			<A href={itemUrl} key={'A'+id} notALink={notALink}
+			<A href={itemUrl} key={'A' + id} notALink={notALink}
 				onClick={event => onPick({ event, navpage, id })}
 				className={itemClassName || `ListItem btn-default btn btn-outline-secondary status-${item.status}`}
 			>
 				{children}
 			</A>
+			{(canDelete || canCopy) && <div className="flex-column LL-buttons">
+				{canDelete && <DefaultDelete type={type} id={id} />}
+				{canCopy && <DefaultCopy type={type} id={id} item={item} list={list} onCopy={newId => onPick({ navpage, id: newId })} />}
+			</div>}
 		</div>
 	);
 };
 
 
-const A = ({notALink, children, ...stuff}) => notALink? <div {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
+const A = ({ notALink, children, ...stuff }) => notALink ? <div {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
 
 /**
  * These can be clicked or control-clicked
@@ -323,12 +320,12 @@ const A = ({notALink, children, ...stuff}) => notALink? <div {...stuff} >{childr
  * 	TODO If it's of a data type which has getName(), default to that
  * @param extraDetail {Element} e.g. used on AdvertPage to add a marker to active ads
  */
-const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, nameFn, extraDetail, button}) => {
-	if ( ! navpage) navpage = servlet;
+const DefaultListItem = ({ type, servlet, navpage, item, checkboxes, canDelete, nameFn, extraDetail, button }) => {
+	if (!navpage) navpage = servlet;
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
-	if (name.length > 280) name = name.slice(0,280);
+	if (name.length > 280) name = name.slice(0, 280);
 	const status = item.status || "";
 	return <>
 		<Misc.Thumbnail item={item} />
@@ -337,19 +334,61 @@ const DefaultListItem = ({type, servlet, navpage, item, checkboxes, canDelete, n
 			<div className="detail small">
 				id: <span className="id">{id}</span> <span className="status">{status.toLowerCase()}</span> {extraDetail} Created: <Misc.RoughDate date={item.created} /> {AThing.lastModified(item) && <>Modified: <Misc.RoughDate date={AThing.lastModified(item)} /></>}
 			</div>
-			{ button || '' }
+			{button || ''}
 		</div>
 	</>;
 };
 
 
-const DefaultDelete = ({type,id}) => (
-	<Button color="secondary" size="xs" className="pull-right p-1 pt-2"
-		onClick={e => confirm(`Delete this ${type}?`) ? ActionMan.delete(type, id) : null}
-		title="Delete">
-		<Icon name="trashcan" color="white"/>		
-	</Button>
-);
+const DefaultDelete = ({ type, id }) => {
+	return (
+		<Button color="outline-danger" size="xs" className="pull-right p-1 pt-2 ml-2"
+			onClick={e => confirm(`Delete this ${type}?`) && ActionMan.delete(type, id)}
+			title="Delete">
+			<Icon name="trashcan" />
+		</Button>);
+};
+
+
+/**
+ 
+ * @param {?Function} p.onCopy newId -> any Respond to the new item e.g. by opening an editor
+ * @returns 
+ */
+const DefaultCopy = ({ type, id, item, list, onCopy }) => {
+	let [isCopying, setIsCopying] = useState();
+
+	const doCopy = () => {
+		let ok = confirm(`Copy this ${type}?`);
+		if (!ok) return;
+		setIsCopying(true);
+		// loads the item if needed
+		let pvItem = getDataItem({ type, id, status: getStatus(item) || KStatus.ALL_BAR_TRASH });
+		pvItem.promise.then(p => {
+			saveAs({ type, oldId: id })
+				.promise.then(newItem => {
+					setIsCopying(false);
+					// ?? show the item in the list - saveAs should invalidate the list though with the same effect
+					// if (list && list.hits) {
+					// 	let i = Math.max(list.hits.indexOf(item), 0);
+					// 	list.hits.splice(i, 0, newItem);
+					// 	DataStore.update();
+					// }
+					// navigate to the new item
+					if (onCopy && getId(newItem)) {
+						onCopy(getId(newItem));
+					}
+				});
+		});
+	};
+
+	return (<Button color="outline-secondary" size="xs" className="pull-right p-1 pt-2 ml-2"
+		disabled={isCopying}
+		onClick={e => stopEvent(e) && doCopy()}
+		title="Copy">
+		{isCopying ? <Icon name="hourglass" /> : <Icon name="copy" />}
+	</Button>);
+};
 
 
 /**
@@ -362,8 +401,8 @@ const DefaultDelete = ({type,id}) => (
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
  * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
  */
-const createBlank = ({type, navpage, base, id, make, saveFn, then}) => {
-	assert( ! getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) "+type+". Safety hack: Pass in an id param instead");
+const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
+	assert(!getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) " + type + ". Safety hack: Pass in an id param instead");
 	// Call the make?
 	let newItem;
 	if (make) {
@@ -376,30 +415,30 @@ const createBlank = ({type, navpage, base, id, make, saveFn, then}) => {
 			if (klass._name) newItem['@type'] = klass._name;	// NB: dont forget the DataClass type, which is lost by the bind
 		}
 	}
-	if ( ! newItem) newItem = Object.assign({}, base);
+	if (!newItem) newItem = Object.assign({}, base);
 	// specify the id?
 	if (id) newItem.id = id;
 	// make an id? (make() might have done it)
-	if ( ! getId(newItem)) {
+	if (!getId(newItem)) {
 		newItem.id = nonce(8);
 	}
 	id = getId(newItem);
-	if ( ! getType(newItem)) newItem['@type'] = type;
+	if (!getType(newItem)) newItem['@type'] = type;
 	// poke a new blank into DataStore
 	newItem.status = KStatus.DRAFT;
-	const path = DataStore.getDataPath({status:KStatus.DRAFT, type, id});
+	const path = DataStore.getDataPath({ status: KStatus.DRAFT, type, id });
 	DataStore.setValue(path, newItem);
 	if (saveFn) {
-		saveFn({type, id, item:newItem});
+		saveFn({ type, id, item: newItem });
 	}
 	if (then) {
-		then({type, id, item:newItem});
+		then({ type, id, item: newItem });
 	} else {
 		// set the id
-		if ( ! navpage) {
+		if (!navpage) {
 			navpage = DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
 		}
-		onPick({navpage, id});
+		onPick({ navpage, id });
 	}
 	// invalidate lists
 	DataStore.invalidateList(type);
@@ -409,7 +448,7 @@ const createBlank = ({type, navpage, base, id, make, saveFn, then}) => {
  * A create-new button
  * @param {Object} p
  * @param {!String} p.type
- * @param {?JSX} p.children Normally null. If set, this provides the button text contents
+ * @param {?JSX} p.children Normally null (defaults to "+ Create"). If set, this provides the button text contents
  * @param {?String]} p.navpage - defaults to the curent page from url
  * @param {?String} p.id - Optional id for the new item (otherwise nonce or a prop might be used)
  * @param {?string[]} p.props - keys of extra props -- this is turned into a form for the user to enter
@@ -418,13 +457,13 @@ const createBlank = ({type, navpage, base, id, make, saveFn, then}) => {
  */
 const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, children}) => {
 	assert(type);
-	assert( ! base || ! base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) "+type+". You can use top-level `id` instead.");
-	if ( ! navpage) navpage = DataStore.getValue('location', 'path')[0];
+	assert(!base || !base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) " + type + ". You can use top-level `id` instead.");
+	if (!navpage) navpage = DataStore.getValue('location', 'path')[0];
 	// merge any form props into the base
-	const cpath = ['widget','CreateButton'];
+	const cpath = ['widget', 'CreateButton'];
 	base = Object.assign({}, base, DataStore.getValue(cpath));
 	// was an ID passed in by editor props? (to avoid copy accidents id is not used from base, so to use it here we must fish it out)
-	if ( ! id) id = base.id; // usually null
+	if (!id) id = base.id; // usually null
 	delete base.id; // NB: this is a copy - the original base is not affected.
 	if ( ! children) {
 		children = <><span style={{fontSize:'125%', lineHeight:'1em'}}>+</span> Create</>;
@@ -438,7 +477,7 @@ const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, child
 	return (<Card><CardBody><Form inline>
 		{props.map(prop => <PropControl key={prop} label={prop} prop={prop} path={cpath} inline className="mr-2" />)}
 		{$createButton}
-		</Form></CardBody></Card>);
+	</Form></CardBody></Card>);
 };
 
 export { CreateButton, DefaultListItem, createBlank };
