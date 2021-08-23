@@ -448,13 +448,14 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
  * A create-new button
  * @param {Object} p
  * @param {!String} p.type
+ * @param {?JSX} p.children Normally null (defaults to "+ Create"). If set, this provides the button text contents
  * @param {?String]} p.navpage - defaults to the curent page from url
  * @param {?String} p.id - Optional id for the new item (otherwise nonce or a prop might be used)
  * @param {?string[]} p.props - keys of extra props -- this is turned into a form for the user to enter
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
  * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
  */
-const CreateButton = ({ type, props, navpage, base, id, make, saveFn, then }) => {
+const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, children}) => {
 	assert(type);
 	assert(!base || !base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) " + type + ". You can use top-level `id` instead.");
 	if (!navpage) navpage = DataStore.getValue('location', 'path')[0];
@@ -464,8 +465,11 @@ const CreateButton = ({ type, props, navpage, base, id, make, saveFn, then }) =>
 	// was an ID passed in by editor props? (to avoid copy accidents id is not used from base, so to use it here we must fish it out)
 	if (!id) id = base.id; // usually null
 	delete base.id; // NB: this is a copy - the original base is not affected.
-	const $createButton = <Button className='btn-create' onClick={() => createBlank({ type, navpage, base, id, make, saveFn, then })}><span style={{ fontSize: '125%', lineHeight: '1em' }}>+</span> Create</Button>;
-	if (!props) {
+	if ( ! children) {
+		children = <><span style={{fontSize:'125%', lineHeight:'1em'}}>+</span> Create</>;
+	}
+	const $createButton = <Button className='btn-create' onClick={() => createBlank({type,navpage,base,id,make,saveFn,then})}>{children}</Button>;
+	if ( ! props) {
 		// simple button
 		return $createButton;
 	}

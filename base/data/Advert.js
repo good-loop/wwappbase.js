@@ -37,9 +37,9 @@ class Advert extends DataClass {
 	constructor(base) {
 		super();
 		assMatch(base.vertiser, String, "Advert.js make() - no vertiser ID", base);		
-		// copy CTA, variant info, and onX pixels (but nothing else, eg id name etc) from the default
+		// copy CTA??, legacyUnitBranch, variant info, and onX pixels (but nothing else, eg id name etc) from the default
 		let dad = Advert.defaultAdvert();
-		Object.assign(this, {variantSpec: deepCopy(dad.variantSpec)});
+		Object.assign(this, {legacyUnitBranch:dad.legacyUnitBranch, variantSpec: deepCopy(dad.variantSpec)});
 		// ..copy default onX pixels
 		if (dad.advanced) {
 			if ( ! this.advanced) this.advanced = {};
