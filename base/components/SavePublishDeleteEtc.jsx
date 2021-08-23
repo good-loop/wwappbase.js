@@ -171,7 +171,7 @@ const SavePublishDeleteEtc = ({
 		let ok = check(preDelete({item, action:C.CRUDACTION.delete}));
 		if ( ! ok) return;
 		const pDel = ActionMan.delete(type, id);
-		pDel.then(() => {
+		pDel.promise.then(() => {
 			Messaging.notifyUser(type+" "+id+" deleted");
 		})
 		// To be extra safe we'll redirect back to the origin, preserving any params already present
