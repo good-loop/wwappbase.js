@@ -622,13 +622,15 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 	assMatch(id, String);
 	return SIO_getDataItem({type, id, status, domain, ...other})
 		.then(res => {
+			let item = null;
 			if (res.success) {
 				console.log("refreshed", type, id);
-				let item = res.cargo;
+				item = res.cargo;
 				DataStore.setData({status, type, id, item});
 			} else {
 				console.warn("refresh-failed", res, type, id);
 			}
+			return item;
 		});
 };
 
