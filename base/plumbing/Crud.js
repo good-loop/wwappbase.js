@@ -20,7 +20,9 @@ import Person from '../data/Person';
 import PromiseValue from 'promise-value';
 
 /**
+ * @param {Object} p
  * @param {?Item} p.item Used for preserving local edits during the crud op. Can be null, in which case the item is got from DataStore
+ * @param {?Item} p.previous If provided, do a diff based save
  * @param {?KStatus} p.status Usually null
  * @returns PromiseValue(DataItem)
  */
