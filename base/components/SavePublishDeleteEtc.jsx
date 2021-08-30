@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import {Button} from 'reactstrap';
 
@@ -103,6 +103,7 @@ const check = ok => {
  * @param {?Boolean} p.autoSave default=true
  * @param {?Boolean} p.saveAs If set, offer a save-as button which will copy, tweak the ID and the name, then save.
  * @param {?string} p.position fixed|relative
+ * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites
  */
 const SavePublishDeleteEtc = ({
 	type, id, 
@@ -111,7 +112,8 @@ const SavePublishDeleteEtc = ({
 	publishTooltipText = 'Your account cannot publish this.',
 	autoPublish, autoSave = true,
 	saveAs, unpublish,
-	prePublish=T, preDelete=T, preArchive=T, preSaveAs=T
+	prePublish=T, preDelete=T, preArchive=T, preSaveAs=T,
+	sendDiff
 }) => {
 	// No anon edits
 	if (!Login.isLoggedIn()) {
@@ -128,18 +130,26 @@ const SavePublishDeleteEtc = ({
 	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData({status, type, id});
 
+	// If "sendDiff" is true, this will store an unchanged-from-server snapshot of the item
+	const [previous, setPrevious] = useState(null);
+	// Any time the target object status becomes "exists" and "unchanged from server", take a snapshot
+	if (sendDiff) {
+		useEffect(() => {
+			if (item && !isdirty) setPrevious(_.cloneDeep(item));
+		}, [item, isdirty])
+	}
+
 	// request a save/publish?
-	if (isdirty && ! isSaving) {
+	if (isdirty && !isSaving) {
 		if (autoPublish) {
-			autoPublishFn({type, id, item});
+			autoPublishFn({type, id, item, previous});
 		} else if (autoSave) {
-			saveDraftFn({type,id,item});
+			saveDraftFn({type, id, item, previous});
 		}
 	}
 
 	// Sometimes we just want to autosave drafts!
 	if (hidden) return <span />;
-
 
 	// if nothing has been edited, then we can't publish, save, or discard
 	// ??this no longer works as we force the item to be pulled from "DRAFT"
