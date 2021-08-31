@@ -4,7 +4,7 @@ import Login from '../youagain';
 import { getUrlVars, toTitleCase, modifyHash, yessy } from '../utils/miscutils';
 import { Alert, Container } from 'reactstrap';
 import { isFunction } from 'lodash';
-// setup Misc.SavePublishDiscard for older code
+// setup Misc.SavePublishDeleteEtc for older code
 import SavePublishDeleteEtc from './SavePublishDeleteEtc';
 
 // Plumbing

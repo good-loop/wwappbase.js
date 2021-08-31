@@ -55,11 +55,11 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	const pickme = id => {
 		if (id===meid) return;
 		setMeid(id);
-		console.log("pickme", meid, id);
+		// console.log("pickme", meid, id);
 	};
 	const pickmenot = id => {		
 		if (meid===id) setMeid(null);
-		console.log("pickmenot", meid, id);
+		// console.log("pickmenot", meid, id);
 	};
 
 	const doSet = id => {
