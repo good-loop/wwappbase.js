@@ -577,7 +577,7 @@ class Store {
 				let fetchDate = this.getValue(epath);
 				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - options.cachePeriod) {
 					// fetch a fresh copy
-					console.log("DataStore", "stale vs "+fetchDate+" - fetch fresh", path);
+					// console.log("DataStore", "stale vs "+fetchDate+" - fetch fresh", path);
 					const pv = this.fetch2(path, fetchFn, options.cachePeriod);
 					// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
 					if (pv.resolved) {
@@ -594,7 +594,8 @@ class Store {
 
 
 	/**
-	 * Does the remote fetching work for fetch()
+	 * Does the remote fetching work for fetch(). 
+	 * Can be called repeatedly, and it will cache and return the same PromiseValue.
 	 * @param {String[]} path
 	 * @param {Function} fetchFn () => promiseOrValue or a PromiseValue. If `fetchFn` is unset (which is unusual), return in-progress or a failed PV.
 	 * @param {?Number} cachePeriod
@@ -604,7 +605,9 @@ class Store {
 		// only ask once
 		const fpath = ['transient', 'PromiseValue'].concat(path);
 		const prevpv = this.getValue(fpath);
-		if (prevpv) return prevpv;
+		if (prevpv) {
+			return prevpv;
+		}
 		if ( ! fetchFn) {
 			return new PromiseValue(null); // nothing in-progress, so return a reject PV
 		}
