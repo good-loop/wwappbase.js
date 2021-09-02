@@ -51,17 +51,20 @@ const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
 	assMatch(dataspace, String, "log.js No dataspace:"+dataspace+" evt:"+eventTag);
 	assMatch(eventTag, String, "log.js dataspace:"+dataspace+" No evt:"+eventTag);
 	eventTag = eventTag.toLowerCase();
+	if ( ! eventParams) eventParams = {};
 
 	// Pull "count" and "gby" out of eventParams if present (promoting them to Real Params)
 	let count, gby, site;
-	if (eventParams) {
-		count = eventParams.count;
-		gby = eventParams.gby;
-		site = eventParams.site;
-		delete eventParams.count;
-		delete eventParams.gby;
-	}
+	count = eventParams.count;
+	gby = eventParams.gby;
+	site = eventParams.site;
+	delete eventParams.count;
+	delete eventParams.gby;
+	
 	if ( ! site) site = ""+window.location;
+
+	// user info if logged in
+	eventParams.user = Login.getId();
 
 	const data = {
 		d: dataspace,
