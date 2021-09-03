@@ -55,11 +55,11 @@ export const getAdUrl = ({file = 'unit.js', unitBranch, params}) => {
 
 	// Special overrides for unit.js
 	if (isUnitJs) {
-		// Override to unit(-debug).js
-		if (params['gl.debug'] !== 'false' && isUnitJs) {
+		// Switch to unit-debug.js?
+		if (params['gl.debug'] === 'true' || params['gl.debug'] === true) {
 			file = 'unit-debug.js';
 		}
-		// Use custom/legacy unit branch
+		// Use custom/legacy unit branch?
 		if (unitBranch) {
 			file = `legacy-units/${unitBranch}/${file}`;
 		}
