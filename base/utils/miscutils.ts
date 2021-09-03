@@ -415,6 +415,7 @@ export const isEmail = function (s: string): boolean {
 Like truthy, but "false", {}, [] and [''] are also false alongside '', 0 and false.
 */
 export const yessy = function (val: any): boolean {
+	// any falsy value returns false
 	if (!val) return false;
 	if (typeof (val) === 'number' || typeof (val) === 'boolean') {
 		return true;
