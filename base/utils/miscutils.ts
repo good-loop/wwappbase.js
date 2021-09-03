@@ -412,7 +412,7 @@ export const isEmail = function (s: string): boolean {
 
 
 /**
-Like truthy, but {}, [] amd [''] are also false alongside '', 0 and false.
+Like truthy, but "false", {}, [] and [''] are also false alongside '', 0 and false.
 */
 export const yessy = function (val: any): boolean {
 	if (!val) return false;
@@ -426,10 +426,15 @@ export const yessy = function (val: any): boolean {
 	if (val.length === 0) {
 		return false;
 	}
+	if (val === "false") {
+		return false;
+	}
+	// array|string?
 	if (val.length) {
 		for (let i = 0; i < val.length; i++) {
 			if (val[i]) return true;
 		}
+		// array of falsy
 		return false;
 	}
 	return true;
