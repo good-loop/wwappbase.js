@@ -73,6 +73,7 @@ const init = () => {
 	homelink: {String} - Relative url for the home-page. Defaults to "/"
 	pageForPath: {String:JSX}
 	navbarPages: String[]|() => String[]
+	navbarChildren: ?JSX
 	navbarExternalLinks: {?Object}
 	navbarDarkTheme: {?boolean}
 	navbarBackgroundColour: {?String}
@@ -170,6 +171,7 @@ class MainDivBase extends Component {
 			homelink={homeLink}
             darkTheme={navbarDarkTheme}
             backgroundColour={navbarBackgroundColour}
+            children={navbarChildren}
           ></NavBar>
         ) : null}
         <Container fluid={fluid}>
