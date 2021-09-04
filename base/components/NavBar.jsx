@@ -4,7 +4,7 @@ import { Navbar, NavbarBrand, NavbarToggler, NavItem, NavLink, Collapse, Nav, Co
 import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
-import { encURI, labeller } from '../utils/miscutils';
+import { encURI, equals, labeller } from '../utils/miscutils';
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
 
@@ -44,7 +44,11 @@ class NavProps {
  * @param {NavProps} props 
  */
 export const setNavProps = (props) => {
-	DataStore.setValue(['widget','NavBar'], props, false);
+	// NB: update if not equals, which avoids the infinite loop bug of default update behaviour
+	if (equals(getNavProps(), props)) {
+		return; // no-op
+	}
+	DataStore.setValue(['widget','NavBar'], props);
 };
 
 const getNavProps = () => DataStore.getValue(['widget','NavBar']) || DataStore.setValue(['widget','NavBar'], {}, false);

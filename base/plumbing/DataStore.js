@@ -117,16 +117,18 @@ class Store {
 	 * @returns {boolean} `true` for convenience - can be chained with &&
 	 */
 	update(newState) {
-		// console.log('update', newState);
 		// set a flag to detect update loops
-		if (this.updating) {
-			console.error("DataStore.js update - nested call", new Error());
-		}
+		const loopy = this.updating;
 		this.updating = true;
 		try {
 			// merge in the new state
 			if (newState) {
 				_.merge(this.appstate, newState);
+			}
+			if (loopy) {
+				console.log("DataStore.js update - nested call - deferred", new Error());
+				_.defer(() => this.update()); // do the callbacks (again) once we exit the loop
+				return;
 			}
 			// callbacks (e.g. React render)
 			this.callbacks.forEach(fn => fn(this.appstate));

@@ -476,6 +476,16 @@ export const uid = function () {
 	return uuid;
 };
 
+/**
+ * Test for deep equals
+ * @param a 
+ * @param b 
+ */
+export const equals = (a: any, b: any) => {
+	return JSON.stringify(a) === JSON.stringify(b);
+};
+// window.equals = equals; // debug
+
 //** String related functions */
 
 /** Uppercase the first letter, lowercase the rest -- e.g. "dan" to "Daniel" */
