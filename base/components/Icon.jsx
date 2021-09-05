@@ -19,6 +19,7 @@ const EMOJI = {
 	trashcan: "🗑", //&#x1f5d1;
 	info: "🛈", // ℹ or 🛈
 	".txt":"🖹",
+	search: "🔍",
 	tick: "✔",
 	memo: "📝"
  };

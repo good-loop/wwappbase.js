@@ -64,7 +64,12 @@ const dateValidator = (val, rawValue) => {
 
 /**
  * Input bound to DataStore.
- * aka Misc.PropControl
+ * 
+// NB: PropControl or Input + useState?   
+// PropControl is best if the data is shared with other components, 
+or if the data should be maintained across page changes (which might destroy and recreate the widget), 
+or if extras like help and error text are wanted. 
+// useState is best for purely local state.
  *
  * @param {?Function} saveFn inputs: `{path, prop, value, event}`
  * This gets called at the end of onChange.
