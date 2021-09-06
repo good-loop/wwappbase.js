@@ -51,6 +51,10 @@ class Advert extends DataClass {
 		if (pvAdvertiser.value && pvAdvertiser.value.branding) {
 			this.branding = deepCopy(pvAdvertiser.value.branding);
 		}
+
+		// Are we currently running a release branch? Lock the new advert to the current branch.
+		if (process.env.RELEASE_BRANCH) this.legacyUnitBranch = process.env.RELEASE_BRANCH;
+
 		// NB: Don't copy campaign-page -- that gets dynamically sorted out by the My.GL ImpactHub
 		// Now add in base
 		DataClass._init(this, base);
