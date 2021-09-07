@@ -46,7 +46,7 @@ export const KScreenSize = new Enum("xs sm md lg xl xxl");
 /**
  * Bootstrap 2/3-letter screen sizes e.g. "md"
  * See https://getbootstrap.com/docs/4.5/layout/overview/#containers
- * @returns {KSreenSize}
+ * @returns {KSreenSize} xs sm md lg xl xxl
  */
 export const getScreenSize = () => {
 	const w = window.innerWidth;
