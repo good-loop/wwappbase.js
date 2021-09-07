@@ -35,14 +35,15 @@ const EMOJI = {
   * 
   * @param {Object} p
   * @param {?String} p.name camera|trashcan|memo etc
-  * @param {?String} p.color black|white
+  * @param {?String} p.color black|white|grey
   * @param {?String} p.size xs|sm|lg|xl
   */
 const Icon = ({name,size="sm",className,color,...props}) => {
 	if (EMOJI[name]) {
-		if (color && ! ['black','white'].includes(color)) {
+		if (color && ! ['black','white','grey'].includes(color)) {
 			console.warn("Icon.jsx color not directly supported: "+color+" Icons can only reliably use a few set colors cross-device.");
 		}
+		// see Icon.less
 		return <span className={space("emoji", color&&"emoji-"+color, size&&"logo-"+size, className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
 	}
 	let url;
