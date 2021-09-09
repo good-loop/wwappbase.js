@@ -49,7 +49,7 @@ export const KScreenSize = new Enum("xs sm md lg xl xxl");
  * @returns {KSreenSize} xs sm md lg xl xxl
  */
 export const getScreenSize = () => {
-	const w = window.innerWidth;
+	const w = window.outerWidth;
 	if (w < 576) return KScreenSize.xs;
 	if (w < 768) return KScreenSize.sm;
 	if (w < 992) return KScreenSize.md;

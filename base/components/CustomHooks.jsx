@@ -2,13 +2,18 @@ import React, {useRef, useEffect, useState} from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
 
 
-/** Takes React element reference. Calculates if div is visible to user or not */
+/** Takes React element reference. Calculates if div is visible to user or not 
+ * 
+ * TEST: possible bug if the document is wider than the screen
+ * 
+*/
 const doIfVisible = props => {
 	const {elementReference, fn} = props;
 	if (!elementReference) return; // race conditions (?) can make reference undefined
 	
 	const {top, left, bottom, right} = elementReference.getBoundingClientRect();
 
+	// ?? is window.innerWidth right? It can be bigger than the viewing area!
 	const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
 	const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
 
