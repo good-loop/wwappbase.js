@@ -1,45 +1,52 @@
 import React, { useState } from 'react';
-import { Container, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
-import {getScreenSize} from '../utils/miscutils';
+import { Button, Container, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
+import DataStore from '../plumbing/DataStore';
+import { getScreenSize, space, stopEvent } from '../utils/miscutils';
 import ErrBoundary from './ErrBoundary';
 
 /**
- * @param {JSX[]} children 1 to 3 elements, for left (optional), main, right
+ * @param {JSX[]} children 1 to 3 elements, for left (optional), main, right. Use LeftSidebar, MainPaine, RightSidebar
  * @param {?Boolean} showAll If true, then all panes are always shown -- on small devices: left as slide-out nav (TODO), right underneath.
  */
-const Editor3ColLayout = ({children, showAll}) => {
-	const sz = getScreenSize();
+const Editor3ColLayout = ({ children, showAll }) => {
 	if (children.length > 3) {
 		console.error("Editor3ColLayout - Too many children", children);
 	}
-	// const is3 = children.length > 2;
-	// const leftNav = is3? children[0] : null;
-	// const mainPane = is3? children[1] : children[0];
-	// const rightPane = is3? children[2] : children[1];
-
-	// // ?? make left also no-vertical scroll (but I think this is not as easy as for right)
-	// let showLeft = (sz==='md' || sz==='lg' || sz==='xl') && is3;
-	// let showRight = (sz==='lg' || sz==='xl') && rightPane;
-
-	return (<div className='flex-row position-relative'>
+	return (<div className='Editor3ColLayout flex-row position-relative'>
 		{children}
 	</div>);
 };
 
 // margin-left 0 IF there is a LeftSidebar
-const MainPane = ({className, children}) => <Container className={className}><ErrBoundary>{children}</ErrBoundary></Container>
+const MainPane = ({ className, children }) => <Container className={className}><ErrBoundary>{children}</ErrBoundary></Container>;
 
-const LeftSidebar = ({children}) => {
-	return <div className='mt-1 mr-0' style={{maxWidth:"30%", position:"sticky",height:"100vh",top:40}} >{children}</div>; // TODO use a slide-out tray if space is limited
+const LeftSidebar = ({ children }) => {
+	const sz = getScreenSize();
+	if (sz === "sm" || sz === "xs") {
+		let show = DataStore.getValue(['widget', 'LeftSidebar', 'show']);
+		const toggle = e => stopEvent(e) && DataStore.setValue(['widget', 'LeftSidebar', 'show'], ! show);
+		return (<>
+			{!show && 
+				<Button className="offcanvas-toggle" onClick={toggle} color="secondary">&gt;&gt;</Button>
+			}
+			<div className={space('offcanvas offcanvas-start', show && "show")}>
+				<div className="offcanvas-header">
+					<Button className="offcanvas-toggle" onClick={toggle} color="secondary" aria-label="Close">&lt;&lt;</Button>
+				</div>
+				<div className="offcanvas-body">{show && children}</div>
+			</div>
+		</>);
+	}
+	return <div className='mt-1 mr-0' style={{ maxWidth: "30%", position: "sticky", height: "100vh", top: 40 }} >{children}</div>; // TODO use a slide-out tray if space is limited
 };
-const RightSidebar = ({children,width="40vw",height="100vh",overflowY="scroll"}) => {
-	return <div className='mt-1' style={{position:"sticky",top:40,width,height,overflowY}}><ErrBoundary>{children}</ErrBoundary></div>;
+const RightSidebar = ({ children, width = "40vw", height = "100vh", overflowY = "scroll" }) => {
+	return <div className='mt-1' style={{ position: "sticky", top: 40, width, height, overflowY }}><ErrBoundary>{children}</ErrBoundary></div>;
 };
 
 /**
  * TODO a slide-out tray, typically for in-page nav
  */
-const Tray = ({children}) => {
+const Tray = ({ children }) => {
 	return <div>{children}</div>;
 };
 export {
