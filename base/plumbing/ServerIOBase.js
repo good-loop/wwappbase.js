@@ -142,6 +142,10 @@ const checkBase2_toggleTestEndpoints = () => {
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("test")) {
 			ServerIO.APIBASE = ServerIO.APIBASE.replace("test", "");
 		}
+		// SoGive hack
+		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("sogive.org")) {
+			ServerIO.APIBASE = "app.sogive.org";
+		}
 		return;
 	}
 	console.warn("ServerIOBase.js - Unrecognised server setting",server);
