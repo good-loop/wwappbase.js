@@ -123,7 +123,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	// filter out duplicate-id (paranoia: this should already have been done server side)
 	// NB: this prefers the 1st occurrence and preserves the list order.
 	let hits = pvItems.value && pvItems.value.hits;
-	const fastFilter = !pvItemsFiltered.resolved;
+	const fastFilter = ! pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
 	// ...filter / resolve
 	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter });
 	// paginate
