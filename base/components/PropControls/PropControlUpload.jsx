@@ -65,6 +65,35 @@ const hashWart = (rawUrl, wartMatcher, newWart) => {
 	return newUrl;
 }
 
+/** Bytes to human-readable b/kb/mb/gb. TODO Put in utils? */
+const bytes = b => {
+	if (b < 1024) return `${b} bytes`;
+	if (b < 1024000) return `${(b/1024).toFixed(1)}KB`
+	if (b < 1024000000) return `${(b/1024000).toFixed(1)}MB`;
+	return `${(b/1024000000).toFixed(1)}GB`;
+}
+
+/**
+ * Print size of file in progress, percent done, estimated time remaining.
+ * @param {Number} start UTC timestamp of upload start (msec)
+ * @param {Number} loaded Bytes sent so far
+ * @param {Number} total Total size of file in bytes
+ */
+const UploadProgress = ({ start, loaded = 0, total }) => {
+	if (!start) return null;
+	if (!total) return 'Starting upload...';
+
+	const elapsed = new Date().getTime() - start;
+	const fraction = loaded / total;
+	const until = (elapsed / fraction) - elapsed;
+
+	return <div>
+		Size: {bytes(total)}<br/>
+		{Math.floor(fraction * 100)}% done<br/>
+		{Math.ceil(until / 1000)}s remaining
+	</div>;
+};
+
 
 /** CSS for the circle overlaid on the thumbnail while editing circle-crop to show its effect */
 /* Margin rule is to match the default on the Bootstrap img-thumbnail property */
@@ -87,6 +116,8 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	const isOpen = ! collapse || ! collapsed;
 	const [previewCrop, setPreviewCrop] = useState(false); // Draw a circle around the image to preview the effect of circle-crop
 
+	const [uploading, setUploading] = useState(false);
+
 	// Automatically decide appropriate thumbnail component
 	const Thumbnail = {
 		imgUpload: Misc.ImgThumbnail,
@@ -97,8 +128,11 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 
 	// When file picked/dropped, upload to the media cluster
 	const onDrop = (accepted, rejected) => {
-		const progress = (event) => console.log('UPLOAD PROGRESS', event.loaded);
-		const load = (event) => console.log('UPLOAD SUCCESS', event);
+		// Update progress readout - use updater function to merge start time into new object
+		const progress = ({ loaded, total }) => setUploading(({start}) => ({ start, loaded, total }));
+		// Upload complete = delete progress readout
+		const load = () => setUploading(false);
+
 		accepted.forEach(file => {
 			ServerIO.upload(file, progress, load)
 				.done(response => {
@@ -116,6 +150,8 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 					onChange && onChange({...fakeEvent, target: { value: url }});
 				})
 				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
+				// Record start time of current upload
+				setUploading({start: new Date().getTime()}); 
 		});
 		rejected.forEach(file => {
 			// TODO Inform the user that their file had a Problem
@@ -194,11 +230,14 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 				</div></>
 			}
 			<div className="pull-right" style={{ width: '100px', height: '100px', position: 'relative' }}>
-				<Thumbnail className={className} background={bg} url={storeValue} />
-				{circleOverlay}
+				{uploading ? <UploadProgress {...uploading} /> : <>
+					<Thumbnail className={className} background={bg} url={storeValue} />
+					{circleOverlay}
+				</>}
 			</div>
 			{extraControls}
 			<div className="clearfix" />
+			
 		</div>
 	);
 }; // ./imgUpload

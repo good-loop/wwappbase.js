@@ -61,7 +61,7 @@ const endpoints = [
 ];
 
 /**
- * Call this from ServerIO.js 
+ * Call this from app-specific ServerIO.js 
  * Safety check - if we deploy test code, it will complain.
  */
 ServerIO.checkBase = () => {	
@@ -195,18 +195,18 @@ if (C.isProduction()) {
 
 ServerIO.upload = function(file, progress, load) {
 	// Provide a pre-constructed XHR so we can insert progress/load callbacks
-	const xhr = () => {
-		const request = $.ajaxSettings.xhr();
-		request.onProgress = progress;
-		request.onLoad = load; // ??@Roscoe - Any particular reason for using onLoad instead of .then? ^Dan
-		return request;
+	const makeXHR = () => {
+		const xhr = $.ajaxSettings.xhr(); //new window.XMLHttpRequest();
+		xhr.upload.addEventListener('progress', progress);
+		xhr.addEventListener('load', load, false); // ??@Roscoe - Any particular reason for using onLoad instead of .then? ^Dan
+		return xhr;
 	};
 
 	const data = new FormData(); // This is a browser native thing: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 	data.append('upload', file);
 
 	return ServerIO.load(ServerIO.MEDIA_ENDPOINT, {
-		xhr,
+		xhr: makeXHR,
 		data,
 		type: 'POST',
 		contentType: false,
@@ -253,7 +253,9 @@ ServerIO.search = function(type, filter) {
 ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], start = '1 month ago', end = 'now', name}) => {
 	console.warn("ServerIO.getDataLogData - old code - switch to DataLog.js getDataLogData")
 	// HACK old calling convention
-	if (filters.dataspace) console.warn("ServerIOBase.js getDataLogData() Old calling pattern - please switch to q, dataspace as top-level", filters);
+	if (filters.dataspace) {
+		console.warn("ServerIOBase.js getDataLogData() Old calling pattern - please switch to q, dataspace as top-level", filters);
+	}
 	if (q) filters.q = q; if (dataspace) filters.dataspace = dataspace;
 	if ( ! filters.dataspace) console.warn("No dataspace?!", filters);
 	filters.breakdown = breakdowns; // NB: the server doesnt want an -s
