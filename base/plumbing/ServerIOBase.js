@@ -197,7 +197,11 @@ ServerIO.upload = function(file, progress, load) {
 	// Provide a pre-constructed XHR so we can insert progress/load callbacks
 	const makeXHR = () => {
 		const xhr = $.ajaxSettings.xhr(); //new window.XMLHttpRequest();
-		xhr.upload.addEventListener('progress', progress);
+		// Event listeners on the upload object mean the XHR makes a preflight OPTIONS request,
+		// and fail if ACAO and ACAC headers aren't set on the response. Not all our servers have this.
+		if (ServerIO.UPLOAD_PROGRESS_SUPPORT) {
+			xhr.upload.addEventListener('progress', progress);
+		}
 		xhr.addEventListener('load', load, false); // ??@Roscoe - Any particular reason for using onLoad instead of .then? ^Dan
 		return xhr;
 	};
