@@ -492,6 +492,101 @@ Campaign.charities = (topCampaign, campaigns, extraAds, status=KStatus.DRAFT) =>
     return charities;
 };
 
+
+Campaign.masterFor = campaign => {
+	if (campaign.vertiser) return {type:C.TYPES.Advertiser, id:campaign.vertiser};
+	if (campaign.agencyId) return {type:C.TYPES.Agency, id:campaign.agencyId};
+	return null;
+};
+
+/**
+ * Get a list of charities for a campaign
+ * @param {Object} p 
+ * @param {Campaign} p.campaign 
+ * @param {KStatus} p.status
+ * @returns PromiseValue<NGO[]>
+ */
+ Campaign.pvCharities = ({campaign, status}) => {
+	Campaign.assIsa(campaign);
+	assert(status);
+	// What status to request for child objects?
+	let subStatus = KStatus.isDRAFT(status)? KStatus.PUB_OR_DRAFT : KStatus.PUBLISHED;
+	// listed charities
+	let charityIds = campaign.strayCharities || [];
+	charityIds = [Object.keys(campaign.dntn4charity), ...charityIds];
+	const pvc = PromiseValue.pending();
+	// Is it a master campaign?
+	if (campaign.master) {
+		let {id, type} = Campaign.masterFor(campaign);
+		// fetch leaf campaigns	
+		let sq;
+		if (C.TYPES.isAdvertiser(type)) {
+			// campaigns for this advertiser
+			sq = SearchQuery.setProp(null, "vertiser", id);
+		} else {
+			// campaigns for this agency
+			assert(type==="Agency", type);
+			sq = SearchQuery.setProp(null, "agencyId", id);
+		}
+		const pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status:subStatus, q});
+		PromiseValue.then(pvCampaigns, listc => {
+			let campaigns = List.hits(listc);
+			Promise.all ??
+			??foo = campaigns.map(leafCampaign => {
+				Campaign.pvCharities({campaign:leafCampaign, status});
+			});
+		});
+		return pvc;
+	}
+
+	// fetch ads
+	let sq = SearchQuery.setProp(, "campaign", topCampaign.id);
+	if (yessy(campaigns)) {
+		let sq2 = SearchQuery.setPropOr(new SearchQuery(), "campaign", campaigns.map(c => c && c.id).filter(x => x));
+		sq = SearchQuery.or(sq, sq2);
+	}
+	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
+	const q = sq.query;
+	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
+
+	return pvAds;
+
+	}
+	charityIds = uniq(charityIds);
+	
+
+	localCharities
+
+	??
+
+
+    let pvAds = Campaign.fetchAds(topCampaign, campaigns, status);
+    let ads = [];
+    if (pvAds.value) ads = [...ads, ...List.hits(pvAds.value)];
+    extraAds && extraAds.forEach(ad => {
+        if (!ads.includes(ad)) ads.push(ad);
+    });
+    // individual charity data, attaching ad ID
+	let charities = uniqById(_.flatten(ads.map(ad => {
+        if (!ad.charities) return [];
+        const clist = (ad.charities && ad.charities.list).slice() || [];
+		return clist.map(c => {
+			if ( ! c) return null; // bad data paranoia
+			if ( ! c.id || c.id==="unset" || c.id==="undefined" || c.id==="null" || c.id==="total") { // bad data paranoia						
+				console.error("Campaign.js charities - Bad charity ID", c.id, c);
+				return null;
+			}
+			const id2 = normaliseSogiveId(c.id);
+			if (id2 !== c.id) {
+				c.id = id2;
+			}
+			c.adId = ad.id; // for Advert Editor dev button so sales can easily find which ad contains which charity
+			return c;
+		});
+    })));
+    return charities;
+};
+
 /**
  * Get a list of stray charities added to the campaign but not sourced from any ads
  * @param {Campaign} campaign 

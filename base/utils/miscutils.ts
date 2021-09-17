@@ -665,7 +665,8 @@ export const debouncePV = (fn: Function, msecs: Number) => {
  * @returns {Object[]} copy of array
  */
 export const uniq = (array : Object[]) : Object[] => {
-	return [... new Set(array.filter(x => x))];
+	const set = new Set(array.filter(x => x));
+	return Array.from(set); // NB: There's an odd error with [...set] in chrome, http://localmy.good-loop.com/#campaign?agency=late_aug_2021_agency, Sept 2021
 };
 
 /**

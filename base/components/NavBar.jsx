@@ -156,7 +156,7 @@ export const setNavContext = (type, id, processLogo) => {
 /**
  * 
  * @param {C.TYPES} type 
- * @returns {?String} id
+ * @returns {?String} id E.g. an advertiser id
  */
 export const getNavContext = (type) => {
 	return CONTEXT[type];

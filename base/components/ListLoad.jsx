@@ -393,7 +393,7 @@ const DefaultCopy = ({ type, id, item, list, onCopy }) => {
 
 /**
  * Make a local blank, and set the nav url
- * Does not save (Crud will probably do that once you make an edit) unless a `saveFn` is passed in
+ * Does not save (Crud will probably do that once you make an edit) unless a `saveFn` or `then` is passed in to do so
  * @param {Object} p
  * @param {!String} p.type C.TYPES
  * @param {?Object} p.base - use to make the blank. This will be copied.
@@ -445,14 +445,14 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
 };
 
 /**
- * A create-new button
+ * A create-new button. This does NOT save the newly created object (unless a save function is passed in as `then`).
  * @param {Object} p
  * @param {!String} p.type
  * @param {?JSX} p.children Normally null (defaults to "+ Create"). If set, this provides the button text contents
  * @param {?String]} p.navpage - defaults to the curent page from url
  * @param {?String} p.id - Optional id for the new item (otherwise nonce or a prop might be used)
  * @param {?string[]} p.props - keys of extra props -- this is turned into a form for the user to enter
- * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
+ * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn Deprecated - prefer `then`
  * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
  */
 const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, children}) => {

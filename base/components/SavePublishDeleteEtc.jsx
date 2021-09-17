@@ -37,7 +37,9 @@ const confirmUserAction = ({ item, action }) => {
  */
 const DEBOUNCE_MSECS = 2000;
 
-/** Hack: a debounced auto-save function for the save/publish widget
+/** 
+ * Hack: a debounced auto-save function for the save/publish widget.
+ * WARNING: If two of these are active on the same page -- they will overlap and one item might not get saved!
  * @param {type, id, item, previous}
 */
 const saveDraftFn = _.debounce(

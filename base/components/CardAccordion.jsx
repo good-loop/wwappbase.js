@@ -14,7 +14,9 @@ import { space } from '../utils/miscutils';
  * <Foo {...stuff}> => <Card {...stuff}>
  * Note: If you see a card missing collapse controls -- this is probably the issue.
  *
- * @param {String|JSX} title - will be wrapper in h3 If this is null and titleChildren are null -- then there is no card header.
+ * @param {String|JSX} title - will be wrapped in h3 If this is null and titleChildren are null -- then there is no card header.
+ * @param {?String} icon used with Misc.Icon
+ * @param {?String} logo Url for a logo
  * @param {any} error - If set, colour the card red
  * @param {?string} warning - If set, colour the card yellow
  * @param {?String} className - Added to the BS panel classes
@@ -35,7 +37,7 @@ class Card extends React.Component {
 		// ??HACK expose this card to its innards via a global
 		// Card.current = this;
 
-		let { title, glyph, icon, children, className, onHeaderClick, collapse, warning, error } = this.props;
+		let { title, glyph, icon, logo, children, className, onHeaderClick, collapse, warning, error } = this.props;
 		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.
 		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
 		if (!children) return null;
@@ -68,8 +70,9 @@ class Card extends React.Component {
 		return (
 			<BSCard color={color} outline className={space(className, 'mb-3')}>
 				<CardHeader className={space(headerClasses)} onClick={onHeaderClick} title={titleText}>
-					{(glyph || icon) ? <Misc.Icon glyph={glyph} fa={icon} className="mr-2"/> : null}
-					{title ? <span className="mr-2">{title}</span> : null}
+					{(glyph || icon) && <Misc.Icon glyph={glyph} fa={icon} className="mr-2"/>}
+					{title && <span className="mr-2">{title}</span>}
+					{logo && <img className="logo-sm rounded" src={logo} />}
 					{alert}
 					{caret}
 				</CardHeader>
