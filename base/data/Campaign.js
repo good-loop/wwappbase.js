@@ -500,7 +500,7 @@ Campaign.masterFor = campaign => {
 };
 
 /**
- * Get a list of charities for a campaign
+ * FIXME Get a list of charities for a campaign
  * @param {Object} p 
  * @param {Campaign} p.campaign 
  * @param {KStatus} p.status
@@ -531,8 +531,7 @@ Campaign.masterFor = campaign => {
 		const pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status:subStatus, q});
 		PromiseValue.then(pvCampaigns, listc => {
 			let campaigns = List.hits(listc);
-			Promise.all ??
-			??foo = campaigns.map(leafCampaign => {
+			campaigns.map(leafCampaign => {
 				Campaign.pvCharities({campaign:leafCampaign, status});
 			});
 		});
@@ -540,7 +539,7 @@ Campaign.masterFor = campaign => {
 	}
 
 	// fetch ads
-	let sq = SearchQuery.setProp(, "campaign", topCampaign.id);
+	let sq = SearchQuery.setProp(null, "campaign", topCampaign.id);
 	if (yessy(campaigns)) {
 		let sq2 = SearchQuery.setPropOr(new SearchQuery(), "campaign", campaigns.map(c => c && c.id).filter(x => x));
 		sq = SearchQuery.or(sq, sq2);
@@ -550,41 +549,37 @@ Campaign.masterFor = campaign => {
 	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
 
 	return pvAds;
-
-	}
-	charityIds = uniq(charityIds);
+	
+	// charityIds = uniq(charityIds);
 	
 
-	localCharities
+	// localCharities; // ??
 
-	??
-
-
-    let pvAds = Campaign.fetchAds(topCampaign, campaigns, status);
-    let ads = [];
-    if (pvAds.value) ads = [...ads, ...List.hits(pvAds.value)];
-    extraAds && extraAds.forEach(ad => {
-        if (!ads.includes(ad)) ads.push(ad);
-    });
-    // individual charity data, attaching ad ID
-	let charities = uniqById(_.flatten(ads.map(ad => {
-        if (!ad.charities) return [];
-        const clist = (ad.charities && ad.charities.list).slice() || [];
-		return clist.map(c => {
-			if ( ! c) return null; // bad data paranoia
-			if ( ! c.id || c.id==="unset" || c.id==="undefined" || c.id==="null" || c.id==="total") { // bad data paranoia						
-				console.error("Campaign.js charities - Bad charity ID", c.id, c);
-				return null;
-			}
-			const id2 = normaliseSogiveId(c.id);
-			if (id2 !== c.id) {
-				c.id = id2;
-			}
-			c.adId = ad.id; // for Advert Editor dev button so sales can easily find which ad contains which charity
-			return c;
-		});
-    })));
-    return charities;
+    // let pvAds = Campaign.fetchAds(topCampaign, campaigns, status);
+    // let ads = [];
+    // if (pvAds.value) ads = [...ads, ...List.hits(pvAds.value)];
+    // extraAds && extraAds.forEach(ad => {
+    //     if (!ads.includes(ad)) ads.push(ad);
+    // });
+    // // individual charity data, attaching ad ID
+	// let charities = uniqById(_.flatten(ads.map(ad => {
+    //     if (!ad.charities) return [];
+    //     const clist = (ad.charities && ad.charities.list).slice() || [];
+	// 	return clist.map(c => {
+	// 		if ( ! c) return null; // bad data paranoia
+	// 		if ( ! c.id || c.id==="unset" || c.id==="undefined" || c.id==="null" || c.id==="total") { // bad data paranoia						
+	// 			console.error("Campaign.js charities - Bad charity ID", c.id, c);
+	// 			return null;
+	// 		}
+	// 		const id2 = normaliseSogiveId(c.id);
+	// 		if (id2 !== c.id) {
+	// 			c.id = id2;
+	// 		}
+	// 		c.adId = ad.id; // for Advert Editor dev button so sales can easily find which ad contains which charity
+	// 		return c;
+	// 	});
+    // })));
+    // return charities;
 };
 
 /**
