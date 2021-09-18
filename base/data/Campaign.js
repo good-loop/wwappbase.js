@@ -459,12 +459,11 @@ Campaign.dntn4charity = (topCampaign, otherCampaigns, extraAds, status=KStatus.D
 
 /**
  * Get a list of charities for a campaign
- * @param {Campaign} topCampaign 
- * @param {?Campaign[]} campaigns associated campaigns, if any
- * @param {?Advert[]} extraAds additional ads with no assigned campaigns
+ * @param {Campaign} campaign 
  * @param {KStatus} status
  */
-Campaign.charities = (topCampaign, campaigns, extraAds, status=KStatus.DRAFT) => {
+Campaign.charities = (campaign, status=KStatus.DRAFT) => {
+	??
     let pvAds = Campaign.fetchAds(topCampaign, campaigns, status);
     let ads = [];
     if (pvAds.value) ads = [...ads, ...List.hits(pvAds.value)];
