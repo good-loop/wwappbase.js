@@ -338,10 +338,29 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
 	return pvCampaigns;
 };
 
-Campaign.dntn4charity = () => {
 
+Campaign.dntn4charity = (campaign) => {
+	// hard set values
+	let d4c = campaign.dntn4charity || {};
+	// are any missing?
+	let charities = Campaign.charities(campaign);
+	let missingNGOs = charities.filter(ngo => ! d4c[ngo.id]);
+	if ( ! missingNGOs.length) {
+		return d4c;
+	}
+	if (campaign.master) {
+		// TODO sum leaf campaigns
+		let pvSubs = Campaign.pvSubCampaigns({campaign});
+		if ( ! pvSubs.value) {
+			return d4c;
+		}
+		return ??;
+	}
+	// TODO 
 	??
+	return d4c;
 }
+
 
 /**
  * FIXME Get a list of charities for a campaign
