@@ -556,5 +556,4 @@ Campaign.isDntn4CharityEmpty = (campaign) => {
 	return empty;
 }
 
-
 export default Campaign;
