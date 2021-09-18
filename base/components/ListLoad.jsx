@@ -17,6 +17,7 @@ import Icon from './Icon';
 import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
 import { Col } from 'reactstrap/lib';
+import List from '../data/List';
 
 /**
  * Provide a list of items of a given type.
@@ -35,6 +36,7 @@ import { Col } from 'reactstrap/lib';
  * TODO test "" works
  * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
  * @param {?Function} p.filterFn - A local filter function. Can be combined with filter/canFilter
+ * @param {?List} p.list No loading - just use this list of hits
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?Boolean} p.canCreate - If set, show a Create
  * @param {?Boolean} p.canDelete - If set, show delete buttons
@@ -63,6 +65,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	start, end,
 	sort = 'created-desc',
 	filter, filterFn, hasFilter, filterLocally,
+	list,
 	ListItem,
 	checkboxes,
 	canDelete, canCopy, canCreate, canFilter,
@@ -110,20 +113,32 @@ const ListLoad = ({ type, status, servlet, navpage,
 		filter = DataStore.getValue(widgetPath.concat('filter'));
 	}
 	if (filter) filter = filter.toLowerCase(); // normalise
-
-	// Load via ActionMan -- both filtered and un-filtered
-	// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
-	// while fetching from the backedn using the filter)
-	let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: filter, sort, ...otherParams }) : { resolved: true };
-	let pvItemsAll = ActionMan.list({ type, status, q, start, end, sort, ...otherParams });
-	let pvItems = pvItemsFiltered.value ? pvItemsFiltered : pvItemsAll;
-	if (!ListItem) {
+	if ( ! ListItem) {
 		ListItem = DefaultListItem;
 	}
-	// filter out duplicate-id (paranoia: this should already have been done server side)
-	// NB: this prefers the 1st occurrence and preserves the list order.
-	let hits = pvItems.value && pvItems.value.hits;
-	const fastFilter = ! pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
+
+	let fastFilter, isLoading, error;
+	if ( ! list) { // Load!
+		// Load via ActionMan -- both filtered and un-filtered
+		// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
+		// while fetching from the backedn using the filter)
+		let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: filter, sort, ...otherParams }) : { resolved: true };
+		let pvItemsAll = ActionMan.list({ type, status, q, start, end, sort, ...otherParams });
+		let pvItems = pvItemsFiltered.value ? pvItemsFiltered : pvItemsAll;
+		// filter out duplicate-id (paranoia: this should already have been done server side)
+		// NB: this prefers the 1st occurrence and preserves the list order.
+		list = pvItems.value;
+		fastFilter = ! pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
+		isLoading = pvItemsFiltered.resolved && pvItemsAll.resolved;
+		error = pvItems.error;
+	} else {
+		total = List.totallist.length;
+		fastFilter = true;
+		isLoading = false;
+	}
+	const hits = List.hits(list);
+	const total = list && List.total(list); // FIXME this ignores local filtering
+	
 	// ...filter / resolve
 	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter });
 	// paginate
@@ -132,8 +147,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		setPageNum2(n);
 		window.scrollTo(0, 0);
 	};
-	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;
-	let total = pvItems.value && pvItems.value.total; // FIXME this ignores local filtering
+	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;	
 	if (filterFn || fastFilter) { // NB: fastFilter => we're waiting on the server for full data
 		hideTotal = true; // NB: better to show nothing than incorrect info
 	}
@@ -153,7 +167,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 				type={type}
 				checkboxes={checkboxes}
 				canCopy={canCopy}
-				list={pvItems.value}
+				list={list}
 				canDelete={canDelete}
 				servlet={servlet}
 				navpage={navpage}
@@ -175,8 +189,8 @@ const ListLoad = ({ type, status, servlet, navpage,
 			page {(pageNum + 1)} of {Math.ceil(total / pageSize)}
 			<Button className='ml-2' color='secondary' disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b>&gt;</b></Button>
 		</div>}
-		{pvItemsFiltered.resolved && pvItemsAll.resolved ? null : <Misc.Loading text={type.toLowerCase() + 's'} />}
-		<ErrAlert error={pvItems.error} />
+		{isLoading && <Misc.Loading text={type.toLowerCase() + 's'} />}
+		<ErrAlert error={error} />
 	</div>);
 }; // ./ListLoad
 //
