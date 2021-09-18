@@ -437,7 +437,7 @@ ServerIO.load = function(url, params) {
 	params = ServerIO.addDefaultParams(params);
 	// sanity check: no Objects except arrays
 	Object.values(params.data).map(
-		v => assert( ! _.isObject(v) || _.isArray(v), v)
+		v => assert( ! _.isObject(v) || _.isArray(v), "Cannot add non-primitive parameter to "+url, v)
 	);
 	// sanity check: status
 	assert( ! params.data.status || C.KStatus.has(params.data.status), params.data.status);

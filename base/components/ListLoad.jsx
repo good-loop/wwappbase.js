@@ -81,8 +81,8 @@ const ListLoad = ({ type, status, servlet, navpage,
 	otherParams = {}
 }) => {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
-	if (!status) {
-		console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
+	if ( ! status) {
+		if (!list) console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
 		status = KStatus.ALL_BAR_TRASH;
 	}
 	assert(KStatus.has(status), "ListLoad - odd status " + status);
@@ -132,7 +132,6 @@ const ListLoad = ({ type, status, servlet, navpage,
 		isLoading = pvItemsFiltered.resolved && pvItemsAll.resolved;
 		error = pvItems.error;
 	} else {
-		total = List.totallist.length;
 		fastFilter = true;
 		isLoading = false;
 	}

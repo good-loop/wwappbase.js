@@ -25,6 +25,12 @@ import Money from './Money';
  */
 class Campaign extends DataClass {
 	
+	/** @type{String} */
+	agencyId;
+
+	/** @type{String} */
+	vertiser;
+
 	/**
 	 * @param {Campaign} base 
 	 */
@@ -173,113 +179,57 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
 
 
 /**
- * Get all ads associated with the given campaign. This will apply hide-list and never-served filters 
- * @param Campaign campaign 
- * @param {?KStatus} status
- * @param {?String} query Filter by whatever you want, eg data
+ * Get (and cache) all ads associated with the given campaign. This will apply hide-list and never-served filters 
+* @param {Object} p 
+ * @param {Campaign} p.campaign 
+ * @param {?KStatus} p.status
+ * @param {?String} p.query Filter by whatever you want, eg data
+ * @param {Object} adshiddenById TODO
  * @returns PromiseValue(List(Advert))
  */
-Campaign.pvAds = ({campaign, status=KStatus.DRAFT, query}) => {
+Campaign.pvAds = ({campaign,status=KStatus.DRAFT,query,adshiddenById}) => {
+	return DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
+		return pAds2({campaign,status,query,adshiddenById});
+	});
+};
+
+/**
+ * NB: This function does chained promises, so we use async + await for convenience.
+ * @returns Promise List(Advert)
+ */
+const pAds2 = async function({campaign, status, query, adshiddenById}) {
 	Campaign.assIsa(campaign);
-	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
-    if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
-    const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
-	// filter
-	let pvAds2 = PromiseValue.then(pvAds, adl => {
-		let ads = List.hits(adl);
-		// Filter ads using hide list
-		const hideAdverts = Campaign.hideAdverts(campaign);
-		ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
-		// Only show serving ads unless otherwise specified
-		ads = Campaign.filterNonServedAds(ads, campaign.showNonServed);
+	if (campaign.master) {
+		// Assume no direct ads
+		// recurse
+		const pvSubs = Campaign.pvSubCampaigns({campaign});
+		let subsl = await pvSubs.promise;
+		let subs = List.hits(subsl);
+		let AdListPs = subs.map(sub => {
+			let pSubAds = pAds2({campaign:sub, status:KStatus.PUBLISHED, query, adshiddenById});
+			return pSubAds;
+		});
+		let adLists = await Promise.all(AdListPs);
+		let ads = [];
+		adLists.forEach(adl => ads.push(...List.hits(adl)));
 		return new List(ads);
-	});
-    return pvAds2;
+	}
+
+	// leaf campaign
+	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
+	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
+	// filter
+	let adl = await pvAds.promise;
+	let ads = List.hits(adl);
+	// Filter ads using hide list
+	const hideAdverts = Campaign.hideAdverts(campaign);
+	ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
+	// Only show serving ads unless otherwise specified
+	ads = Campaign.filterNonServedAds(ads, campaign.showNonServed);
+	return new List(ads);
 };
 
-/**
- * Get the Impact Hub status of all ads
- * Status types:
- * SHOWING
- * HIDDEN
- * AUTO FILTERED
- * NON SERVING
- * NO CAMPAIGN
- * UNKNOWN
- * @param {Object} p
- * @param {Campaign} p.topCampaign the subject campaign
- * @param {?Campaign[]} p.campaigns any other campaigns with data to use (for advertisers or agencies)
- * @param {?Advert[]} p.extraAds additional associated adverts with no relevant campaign
- * @param {?String} p.query attach a custom query to the ad search
- * @returns Advert[] with attached status as advert.ihStatus
- */
-Campaign.advertStatusList = ({topCampaign, campaigns, extraAds, status=KStatus.DRAFT, query}) => {
-
-	const {showNonServed, nosample} = topCampaign;
-
-	// Get raw list of ads
-	let allButExplicitlyHidAds = Campaign.advertsToShow({topCampaign, campaigns, status, showNonServed:true, nosample:true});
-	// Get all ads not filtered with non serving
-	let adsWithNonServingApplied = Campaign.advertsToShow({topCampaign, campaigns, status, presetAds:allButExplicitlyHidAds, nosample:true});
-	// Invert list of non serving ads
-	let adsFilteredByNonServing = allButExplicitlyHidAds.filter(ad => !idList(adsWithNonServingApplied).includes(ad.id));
-	// Apply sampling
-	let whatAdsWillShow = Campaign.advertsToShow({topCampaign, campaigns, status, presetAds:adsWithNonServingApplied});
-	// Invert list of sampled ads by comparing to list just before sampling step
-	let adsFilteredByAutoSampler = adsWithNonServingApplied.filter(ad => !idList(whatAdsWillShow).includes(ad.id));
-	// Get explicitly hidden ads
-	const pvHideAds = Campaign.advertsToHide(topCampaign, null, status);
-	let whatAdsWillHide = pvHideAds && pvHideAds.value ? List.hits(pvHideAds.value) : [];
-
-	const getAdStatus = (ad) => {
-		if (idList(whatAdsWillShow).includes(ad.id)) return "SHOWING";
-		if (idList(whatAdsWillHide).includes(ad.id)) return "HIDDEN";
-		if (idList(extraAds).includes(ad.id)) return "NO CAMPAIGN";
-		if (idList(adsFilteredByNonServing).includes(ad.id)) return "NON SERVING";
-		if (idList(adsFilteredByAutoSampler).includes(ad.id)) return "AUTO FILTERED";
-		return "UNKNOWN";
-	};
-
-	const pvAds = Campaign.fetchAds(topCampaign, campaigns, status, query);
-	let ads = (pvAds.value && List.hits(pvAds.value)) || [];
-	let adIds = ads && ads.map(ad => ad.id);
-	extraAds = extraAds && adIds ? extraAds.filter(ad => !adIds.includes(ad.id)) : extraAds;
-	let allAds = uniqById([...ads, ...extraAds]);
-	allAds.forEach(ad => {
-		ad.ihStatus = getAdStatus(ad);
-	});
-
-	return allAds;
-}
-
-/**
- * DEPRECATED switch to pvAds + sampleAds
- * Get a list of adverts that the impact hub should show for this campaign
- * @param {Object} p
- * @param {Campaign} p.topCampaign the subject campaign
- * @param {?Campaign[]} p.campaigns any other campaigns with data to use (for advertisers or agencies)
- * @param {?Advert[]} p.presetAds use a preset list of ads instead of fetching ourselves
- * @param {?Boolean} p.showNonServed override campaign setting
- * @param {?Boolean} p.nosample override campaign setting
- * @param {?String} p.query attach a custom query to the ad search
- * @returns {Advert[]} adverts to show
- */
-Campaign.advertsToShow = ({topCampaign, campaigns, status=KStatus.DRAFT, showNonServed, nosample, presetAds, query}) => {
-	if (!is(showNonServed)) showNonServed = topCampaign.showNonServed;
-	if (!is(nosample)) nosample = topCampaign.nosample;
-
-    const pvAds = ! presetAds && Campaign.pvAds({campaigns, status, query});
-    let ads = presetAds || (pvAds.value && List.hits(pvAds.value)) || [];
-    // Filter ads using hide list
-    const hideAdverts = Campaign.hideAdverts(topCampaign);
-    ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
-    
-    // Only show serving ads unless otherwise specified
-    ads = Campaign.filterNonServedAds(ads, showNonServed);
-
-    // Auto sampling
-    return Campaign.sampleAds(ads, nosample);
-};
 
 /**
  * Removes ads that have never served from an ad list
@@ -314,45 +264,6 @@ Campaign.advertsToHide = (topCampaign, campaigns, status=KStatus.DRAFT) => {
 	return pvAds;
 };
 
-/**
- * Get an automatic sample of ads from campaigns
- * @param {Advert[]} ads 
- * @param {?Boolean} nosample override GET paramater of same name if true
- * @param {?Boolean} returnFiltered if true, will return what ads were discarded instead of what were kept
- * @returns {Advert[]} sampleAds
- */
-Campaign.sampleAds = (ads, nosample) => {
-    /////////////////////////////////////////////////////////
-    // TODO - REMOVE ad by campaign sorting
-    // Maintaining for now until existing pages are adjusted
-    // Use "nosample=true" parameter to disable sampling
-    ///////////////////////////////////////////////////////////
-    let sampleAds = ads;
-
-    if (!nosample) {
-    let sampleAd4Campaign = {};
-        ads.forEach(ad => {
-            let cname = campaignNameForAd(ad);
-            if (sampleAd4Campaign[cname]) {
-				// FIXME ad.campaignPage is deprecated code that gets nulled out - and so this is likely buggy
-                let showcase = ad.campaignPage && ad.campaignPage.showcase;
-                // Prioritise ads with a start and end time attached
-                let startProvided = !sampleAd4Campaign[cname].start && ad.start;
-                let endProvided = !sampleAd4Campaign[cname].end && ad.end;
-                // If the ad cannot provide a new value for start or end, skip it
-                if (!startProvided && !endProvided && !showcase) {
-                    return;
-                }
-            }
-            //if (!ad.videos || !ad.videos[0].url) return;
-            sampleAd4Campaign[cname] = ad;
-        });
-        sampleAds = Object.values(sampleAd4Campaign);
-    }
-    
-    return sampleAds.length ? sampleAds : ads;
-}
-
 const tomsCampaigns = /(josh|sara|ella)/; // For matching TOMS campaign names needing special treatment
 
 /**
@@ -373,22 +284,16 @@ const campaignNameForAd = ad => {
 /**
  * Get the viewcount for a set of campaigns
  * @param {Object} p
- * @param {Campaign} p.topCampaign the master campaign
- * @param {?Campaign[]} campaigns other associated campaigns
- * @param {?Advert[]} extraAds any other associated ads
+ * @param {Campaign} p.campaign 
  * @returns {Number}
  */
-Campaign.viewcount = ({topCampaign, campaigns, extraAds, status}) => {
+Campaign.viewcount = ({campaign, status}) => {
 	// manually set?
-	if (topCampaign.numPeople) {
-		return topCampaign.numPeople;
+	if (campaign.numPeople) {
+		return campaign.numPeople;
 	}
-	const pvAllAds = Campaign.fetchAds(topCampaign, campaigns, status);
-	let allAds = pvAllAds.value ? List.hits(pvAllAds.value) : [];
-	// add extras?
-	if (extraAds) {
-		allAds = uniqById(allAds.concat(extraAds));
-	}	
+	const pvAllAds = Campaign.pvAds({campaign, status});
+	let allAds = List.hits(pvAllAds.value) || [];
 	const viewcount4campaign = Advert.viewcountByCampaign(allAds);
 	let totalViewCount = sum(Object.values(viewcount4campaign));
 	return totalViewCount;
@@ -399,82 +304,17 @@ Campaign.viewcount = ({topCampaign, campaigns, extraAds, status}) => {
 ////                     CHARITY LOGIC                           ///
 ////////////////////////////////////////////////////////////////////
 
-
-
-
-/**
- * Get the donation total for a campaign.
- * @param {Campaign} topCampaign
- * @param {?Campaign[]} campaigns
- * @param {Object} dntn4charity
- */
- Campaign.donationTotal = (topCampaign, campaigns, dntn4charity, forceScaleTotal) => {
-	if (topCampaign.dntn) return topCampaign.dntn;
-	const allCampaignDntns = (campaigns ? campaigns.map(c => c.dntn).filter(x=>x) : []);
-	const summed = Money.total(allCampaignDntns);
-	let donationTotal = Money.value(summed)? summed : dntn4charity.total;
-	if (forceScaleTotal) {
-		const moneys = Object.values(dntn4charity).filter(x=>x);
-		donationTotal = moneys.length ? Money.total(moneys) : 0;
-	}
-	return donationTotal;
-};
-
-/**
- * Get the donation for charity list of a campaign
- * @param {Campaign} topCampaign
- * @param {?Campaign[]} otherCampaigns extra associated campaigns
- * @param {?Advert[]} extraAds ads that are associated but have no campaign
- * @param {KStatus} status
- */
-Campaign.dntn4charity = (topCampaign, otherCampaigns, extraAds, status=KStatus.DRAFT) => {
-    const pvAds = Campaign.fetchAds(topCampaign, null, status);
-    const ads = pvAds.value ? List.hits(pvAds.value) : [];
-    // initial donation record
-    const donation4charity = yessy(topCampaign.dntn4charity)? Object.assign({}, topCampaign.dntn4charity) : {};
-    // augment with fetched data
-    const fetchedDonationData = NGO.fetchDonationData({ads});
-    Object.keys(fetchedDonationData).forEach(cid => {if (!Object.keys(donation4charity).includes(cid)) donation4charity[cid] = fetchedDonationData[cid]});
-
-    otherCampaigns && otherCampaigns.forEach(campaign => {
-        const pvMoreAds = Campaign.fetchAds(campaign, null, status);
-        const moreAds = pvMoreAds.value ? List.hits(pvMoreAds.value) : [];
-        // get inherent and fetched data from campaign
-        const otherDntn4charity = yessy(campaign.dntn4charity)? campaign.dntn4charity : {};
-        const otherFetchedDonationData = NGO.fetchDonationData({ads:moreAds});
-        // augment master list with data, never overwriting
-        Object.keys(otherDntn4charity).forEach(cid => {if (!donation4charity[cid]) donation4charity[cid] = otherDntn4charity[cid]});
-        Object.keys(otherFetchedDonationData).forEach(cid => {if (!donation4charity[cid] || !Money.value(donation4charity[cid])) donation4charity[cid] = otherFetchedDonationData[cid]});
-    });
-
-    // Augment in data for extra dangling ads
-    const extraFetchedDonationData = extraAds ? NGO.fetchDonationData({ads:extraAds}) : {};
-    Object.keys(extraFetchedDonationData).forEach(cid => {if (!donation4charity[cid] || !Money.value(donation4charity[cid])) donation4charity[cid] = extraFetchedDonationData[cid]});
-
-    // Normalise all charity ids
-    const allCharities = Object.keys(donation4charity);
-    allCharities.forEach(cid => {
-        const sogiveCid = normaliseSogiveId(cid);
-        if (!donation4charity[sogiveCid]) {
-            donation4charity[sogiveCid] = donation4charity[cid];
-            delete donation4charity[cid];
-        }
-    });
-
-    return donation4charity;
-};
-
-
 /**
  * 
  * @param {!Campaign} campaign 
- * @returns {?Object} {type, id} the master agency/advertiser or null
+ * @returns {?Object} {type, id} the master agency/advertiser or {}. 
+ * NB: advertiser takes precedence, so you can usefully call this on a leaf campaign.
  */
 Campaign.masterFor = campaign => {
 	Campaign.assIsa(campaign);
 	if (campaign.vertiser) return {type:C.TYPES.Advertiser, id:campaign.vertiser};
 	if (campaign.agencyId) return {type:C.TYPES.Agency, id:campaign.agencyId};
-	return null;
+	return {}; // NB: this is to support `let {type, id} = Campaign.masterFor()` without an NPE
 };
 
 /**
@@ -483,17 +323,25 @@ Campaign.masterFor = campaign => {
  * @param {?KStatus} status 
  * @returns PV(List<Campaign>)
  */
-Campaign.pvSubCampaigns = (campaign, status=KStatus.DRAFT) => {
+Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
+	Campaign.assIsa(campaign);
 	if ( ! campaign.master) {
 		return new PromiseValue(new List([]));
 	}
 	// fetch leaf campaigns	
 	let {id, type} = Campaign.masterFor(campaign);
 	// campaigns for this advertiser / agency
-	let sq = SearchQuery.setProp(null, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
-	const pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status:subStatus, q});
+	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
+	sq = SearchQuery.and(sq, "-id:"+campaign.id); // exclude this
+	const pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query}); 
+	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
 	return pvCampaigns;
 };
+
+Campaign.dntn4charity = () => {
+
+	??
+}
 
 /**
  * FIXME Get a list of charities for a campaign
@@ -525,7 +373,7 @@ Campaign.pvSubCampaigns = (campaign, status=KStatus.DRAFT) => {
 	}
 
 	// Master campaign
-	let pvSubCampaigns = Campaign.pvSubCampaigns(campaign, status); // ??if we request draft and there is only published, what happens??
+	let pvSubCampaigns = Campaign.pvSubCampaigns({campaign, status}); // ??if we request draft and there is only published, what happens??
 	let subCharities = [];
 	if (pvSubCampaigns.value) {
 		const scs = List.hits(pvSubCampaigns.value);
@@ -539,12 +387,12 @@ const charities2 = (campaign, charityIds, charities) => {
 	// fetch NGOs
 	if (yessy(charityIds)) {
 		let q = SearchQuery.setPropOr(null, "id", charityIds).query;
-		let pvCharities = ActionMan.list({type: C.TYPES.NGO, q});
+		let pvCharities = ActionMan.list({type: C.TYPES.NGO, status:KStatus.PUBLISHED, q});
 		if (pvCharities.value) {
 			charities.push(List.hits(pvCharities.value));
 		}
 	}
-	// merge
+	// merge and de-dupe
 	let charityForId = {};
 	if (campaign.localCharities) {
 		Object.entries(campaign.localCharities).map(([k,v]) => {
@@ -567,7 +415,7 @@ const charitiesFromAds = (ads) => {
 		return clist.map(c => {
 			if ( ! c) return null; // bad data paranoia
 			if ( ! c.id || c.id==="unset" || c.id==="undefined" || c.id==="null" || c.id==="total") { // bad data paranoia						
-				console.error("Campaign.js charities - Bad charity ID", c.id, c);
+				// console.error("Campaign.js charities - Bad charity ID", c.id, c);
 				return null;
 			}
 			const id2 = normaliseSogiveId(c.id);
