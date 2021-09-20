@@ -68,6 +68,7 @@ module.exports = {
 		indent: ["off", "tab"],
 		"no-case-declarations": "off",
 		"no-console": "off",
+		"no-else-return": "warn",
 		"no-extra-semi": "warn",
 
 		"jsx-a11y/alt-text": "warn",

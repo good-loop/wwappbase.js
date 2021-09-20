@@ -52,7 +52,7 @@ Campaign.dntn = campaign => {
 	if ( ! campaign.master) {
 		// Ask the backend
 		let q = SearchQuery.setProp(null, "campaign", campaign);
-		let pvDntnData = DataStore.fetch(['misc','donations',campaign], () => ServerIO.getDonationsData({q, name:"campaign-donations"}), {cachePeriod:300*1000});
+		let pvDntnData = DataStore.fetch(['misc','donations',campaign], () => ServerIO.getDonationsData({t:'dntnblock', q, name:"campaign-donations"}), {cachePeriod:300*1000});
 	}
 	// recurse
 	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
@@ -66,6 +66,7 @@ Campaign.dntn = campaign => {
 	let total = Money.total(dntns);
 	return total;
 };
+
 
 /**
  * 
