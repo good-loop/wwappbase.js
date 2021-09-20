@@ -178,8 +178,8 @@ Money.CURRENCY = {
 	AUD: "A$",
 	EUR: "€",
 	MXN: "MX$",
-	JPY: "JP¥",
-	CNY: "CN¥" // is this right for Yuan? Note the shared symbol with Yen
+	JPY: "¥",
+	CNY: "¥" // Same symbol with Yen
 };
 /**
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
