@@ -51,10 +51,12 @@ Campaign.dntn = campaign => {
 	if (campaign.dntn) return campaign.dntn;
 	if ( ! campaign.master) {
 		// Ask the backend
-		ServerIO.load(ServerIO.PORTAL_ENDPOINT+"/data");
-		throw new Error("TODO dynamic data");		
+		let q = SearchQuery.setProp(null, "campaign", campaign);
+		let pvDntnData = DataStore.fetch(['misc','donations',campaign], () => ServerIO.getDonationsData({q, name:"campaign-donations"}), {cachePeriod:300*1000});
 	}
 	// recurse
+	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
+	// TODO: make it so datalog reconciles with that, so we can do batched requests
 	let pvSubs = Campaign.pvSubCampaigns({campaign});
 	if ( ! pvSubs.value) {
 		return null;

@@ -65,6 +65,14 @@ const endpoints = [
  * Safety check - if we deploy test code, it will complain.
  */
 ServerIO.checkBase = () => {	
+	// Setup endpoint etc overrides given in host-specific config file
+	const ServerIOOverrides = process.env.SERVERIO_OVERRIDES; // NB: see webpack.config.js for how this is set
+	if (ServerIOOverrides) {
+		Object.entries(ServerIOOverrides).forEach(([key, val]) => {
+			ServerIO[key] = val;
+		});
+	}
+
 	endpoints.forEach(({name, key, prodValue}) => {
 		const endpointUrl = ServerIO[key]
 		if (!(key in ServerIO)) return; // Not defined, don't check it
@@ -274,7 +282,7 @@ ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], sta
 
 
 /** 
- * @param q {String} e.g. pub:myblog
+ * @param q {String} e.g. pub:myblog cid:mycharity campaign:mycampaign
  * @returns Promise {
  * 	by_cid: {String: Money}
  * 	total: {Money},
