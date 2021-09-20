@@ -12,7 +12,7 @@ import { getDataItem, saveEdits } from '../plumbing/Crud';
 import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
-import {normaliseSogiveId} from '../plumbing/ServerIOBase';
+import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
 import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum } from '../utils/miscutils';
 import { getId } from './DataClass';
 import NGO from './NGO';
@@ -50,6 +50,8 @@ Campaign.dntn = campaign => {
 	Campaign.assIsa(campaign);
 	if (campaign.dntn) return campaign.dntn;
 	if ( ! campaign.master) {
+		// Ask the backend
+		ServerIO.load(ServerIO.PORTAL_ENDPOINT+"/data");
 		throw new Error("TODO dynamic data");		
 	}
 	// recurse
@@ -371,11 +373,9 @@ Campaign.dntn4charity = (campaign) => {
 		if ( ! pvSubs.value) {
 			return d4c;
 		}
-		return ??;
+		throw new Error("TODO");
 	}
-	// TODO 
-	??
-	return d4c;
+	throw new Error("TODO");
 }
 
 
