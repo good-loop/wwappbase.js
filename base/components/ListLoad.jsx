@@ -129,7 +129,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		// NB: this prefers the 1st occurrence and preserves the list order.
 		list = pvItems.value;
 		fastFilter = ! pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
-		isLoading = pvItemsFiltered.resolved && pvItemsAll.resolved;
+		isLoading = ! (pvItemsFiltered.resolved && pvItemsAll.resolved);
 		error = pvItems.error;
 	} else {
 		fastFilter = true;

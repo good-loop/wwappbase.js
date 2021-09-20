@@ -25,11 +25,14 @@ import Money from './Money';
  */
 class Campaign extends DataClass {
 	
-	/** @type{String} */
+	/** @type{?String} */
 	agencyId;
 
-	/** @type{String} */
+	/** @type{?String} */
 	vertiser;
+
+	/** @type{?Money} */
+	dntn;
 
 	/**
 	 * @param {Campaign} base 
@@ -51,8 +54,10 @@ Campaign.dntn = campaign => {
 	if (campaign.dntn) return campaign.dntn;
 	if ( ! campaign.master) {
 		// Ask the backend
-		let q = SearchQuery.setProp(null, "campaign", campaign);
-		let pvDntnData = DataStore.fetch(['misc','donations',campaign], () => ServerIO.getDonationsData({t:'dntnblock', q, name:"campaign-donations"}), {cachePeriod:300*1000});
+		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
+			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
+			{cachePeriod:300*1000});
 	}
 	// recurse
 	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
@@ -360,26 +365,59 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
 	return pvCampaigns;
 };
 
-
+/**
+ * Recursive and fetches dynamic data.
+ 
+ * @param {!Campaign} campaign 
+ * @returns {!Object} {cid: Money} Values may change as data loads
+ * @see Campaign.dntn
+ */
 Campaign.dntn4charity = (campaign) => {
-	// hard set values
-	let d4c = campaign.dntn4charity || {};
-	// are any missing?
-	let charities = Campaign.charities(campaign);
-	let missingNGOs = charities.filter(ngo => ! d4c[ngo.id]);
-	if ( ! missingNGOs.length) {
-		return d4c;
-	}
-	if (campaign.master) {
-		// TODO sum leaf campaigns
-		let pvSubs = Campaign.pvSubCampaigns({campaign});
-		if ( ! pvSubs.value) {
+	Campaign.assIsa(campaign);
+	if ( ! campaign.master) {
+		// leaf
+		// hard set values?
+		const d4c = Object.assign({}, campaign.dntn4charity); // defensive copy, never null
+		// are any missing?
+		let charities = Campaign.charities(campaign);
+		let missingNGOs = charities.filter(ngo => ! d4c[ngo.id]);
+		if ( ! missingNGOs.length) {
 			return d4c;
 		}
-		throw new Error("TODO");
+		// Ask the backend
+		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
+			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
+			{cachePeriod:300*1000});
+		if ( ! pvDntnData.value) {
+			return d4c;
+		}		
+		let by_cid = pvDntnData.value.by_cid;
+		// merge with top-level
+		let alld4c = Object.assign({}, by_cid, d4c);
+		return alld4c;
+	} // ./leaf
+	// master - recurse - sum leaf campaigns
+	// NB: Ignore master.dntn4charity - it should not be set for masters 'cos it can confuse sums for e.g. reporting by-charity in T4G
+	let pvSubs = Campaign.pvSubCampaigns({campaign});
+	if ( ! pvSubs.value) {
+		return {};
 	}
-	throw new Error("TODO");
-}
+	let subs = List.hits(pvSubs.value);
+	let dntn4charitys = subs.map(Campaign.dntn4charity);
+	// merge + sum subs
+	let subtotal4c = {};
+	for(let i=0; i<dntn4charitys.length; i++) {
+		const subd4c = dntn4charitys[i];
+		mapkv(subd4c, (k,v) => {
+			let old = subtotal4c[k];
+			subtotal4c[k] = old? Money.add(old, v) : v;
+		});
+	}
+	return subtotal4c;
+};
+
+
 
 
 /**
@@ -482,8 +520,8 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 	// lowDntn = the threshold at which to consider a charity a low donation
 	// hideCharities = a list of charity IDs to explicitly hide - represented by keySet as an object (explained more below line 103)
 
-	// Filter nulls
-	charities = charities.filter(x => x);
+	// Filter nulls and null-ID bad data
+	charities = charities.filter(x => x && x.id);
 
 	if (campaign.hideCharities) {
 		let hc = Campaign.hideCharities(campaign);
@@ -568,12 +606,10 @@ Campaign.scaleCharityDonations = (campaign, donationTotal, donation4charityUnsca
 };
 
 Campaign.isDntn4CharityEmpty = (campaign) => {
-	let empty = true;
-	if (!campaign.dntn4charity) return true;
-	Object.keys(campaign.dntn4charity).forEach(charity => {
-		if (campaign.dntn4charity[charity] && Money.value(campaign.dntn4charity[charity])) empty = false;
-	});
-	return empty;
+	let d4c = Campaign.dntn4charity(campaign);
+	if ( ! d4c) return true;
+	let nonEmpty = Object.values(d4c).find(v => v && Money.value(v));
+	return ! nonEmpty;
 }
 
 export default Campaign;
