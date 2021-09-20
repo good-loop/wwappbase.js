@@ -42,9 +42,26 @@ class Campaign extends DataClass {
 DataClass.register(Campaign, "Campaign"); 
 
 /** This is the total unlocked across all adverts in this campaign. See also maxDntn.
+ * FIXME This does NOT do sub-campaigns or dynamic data fetch
  * @returns {?Money}
  */
-Campaign.dntn = campaign => campaign && campaign.dntn;
+Campaign.dntn = campaign => {
+	if ( ! campaign) return null;
+	Campaign.assIsa(campaign);
+	if (campaign.dntn) return campaign.dntn;
+	if ( ! campaign.master) {
+		throw new Error("TODO dynamic data");		
+	}
+	// recurse
+	let pvSubs = Campaign.pvSubCampaigns({campaign});
+	if ( ! pvSubs.value) {
+		return null;
+	}
+	let subs = List.hits(pvSubs.value);
+	let dntns = subs.map(Campaign.dntn);
+	let total = Money.total(dntns);
+	return total;
+};
 
 /**
  * 
@@ -386,7 +403,7 @@ Campaign.dntn4charity = (campaign) => {
 		}
 		let ads = List.hits(pvAds.value);
 		// individual charity data, attaching ad ID
-		let vcharitiesFromAds = charitiesFromAds(ads);
+		let vcharitiesFromAds = charities2_fromAds(ads);
 		// apply local edits
 		return charities2(campaign, charityIds, vcharitiesFromAds);
 	}
@@ -426,7 +443,7 @@ const charities2 = (campaign, charityIds, charities) => {
 };
 
 
-const charitiesFromAds = (ads) => {
+const charities2_fromAds = (ads) => {
 	// individual charity data, attaching ad ID
 	let charities = _.flatten(ads.map(ad => {
 		if (!ad.charities) return [];
