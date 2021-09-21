@@ -37,18 +37,36 @@ const confirmUserAction = ({ item, action }) => {
  */
 const DEBOUNCE_MSECS = 2000;
 
+/**
+Problem: we can't keep making fresh copies 'cos that breaks debounce. But we can't share a fn either!
+Solution TODO cache versions of it.
+ */
+const _saveDraftFn4typeid = {};
+
 /** 
  * Hack: a debounced auto-save function for the save/publish widget.
- * WARNING: If two of these are active on the same page -- they will overlap and one item might not get saved!
- * @param {type, id, item, previous}
+ * @param {Object} p
+ * @param {!String} p.type
+ * @param {!String} p.key
+ * @returns {Function}
 */
-const saveDraftFn = _.debounce(
-	({ type, id, item, previous }) => {
-		// console.log("...saveDraftFn :)");
-		ActionMan.saveEdits({ type, id, item, previous });
-		return true;
-	}, DEBOUNCE_MSECS
-);
+const saveDraftFnFactory = ({type,key}) => {
+	assMatch(type,String);
+	assMatch(key,String);
+	const k = type+key;
+	let sdfn = _saveDraftFn4typeid[k];
+	if ( ! sdfn) {
+		sdfn = _.debounce(
+			({ type, id, item, previous }) => {
+				// console.log("...saveDraftFn :)");
+				ActionMan.saveEdits({ type, id, item, previous });
+				return true;
+			}, DEBOUNCE_MSECS
+		);
+		_saveDraftFn4typeid[k] = sdfn;
+	}
+	return sdfn;
+};
 
 
 /**
@@ -291,11 +309,10 @@ const Spinner = ({ vis }) => <span className="fa fa-circle-notch spinning" style
 // backwards compatibility
 Misc.SavePublishDiscard = SavePublishDeleteEtc;
 Misc.publishDraftFn = autoPublishFn;
-Misc.saveDraftFn = saveDraftFn;
 
 export default SavePublishDeleteEtc;
 export {
 	confirmUserAction,
 	autoPublishFn as publishDraftFn,
-	saveDraftFn
+	saveDraftFnFactory
 }
