@@ -243,18 +243,19 @@ const pAds2 = async function({campaign, status, query, adshiddenById}) {
 	}
 
 	// leaf campaign
+	// fetch ads
 	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
 	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
 	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
-	// filter
 	let adl = await pvAds.promise;
+	List.assIda(adl);
 	let ads = List.hits(adl);
 	// Filter ads using hide list
 	const hideAdverts = Campaign.hideAdverts(campaign);
-	ads = ads.filter(ad => ! hideAdverts.includes(ad.id));
+	let ads2 = ads.filter(ad => ! hideAdverts.includes(ad.id));
 	// Only show serving ads unless otherwise specified
-	ads = Campaign.filterNonServedAds(ads, campaign.showNonServed);
-	return new List(ads);
+	let ads3 = Campaign.filterNonServedAds(ads2, campaign.showNonServed);
+	return new List(ads3);
 };
 
 
