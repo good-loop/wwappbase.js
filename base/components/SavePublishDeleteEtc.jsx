@@ -177,7 +177,7 @@ const SavePublishDeleteEtc = ({
 		if (autoPublish) {
 			autoPublishFn({ type, id, item, previous });
 		} else if (autoSave) {
-			// console.log("saveDraftFn previous", previous);
+			const saveDraftFn = saveDraftFnFactory({type, key:id});
 			saveDraftFn({ type, id, item, previous });
 		}
 	}

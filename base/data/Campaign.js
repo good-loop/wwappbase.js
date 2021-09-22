@@ -192,13 +192,15 @@ Campaign.hideCharities = campaign => {
  * for simplicity of only having one list to manage instead of multiple across multiple campaigns
  * @param {Campaign} topCampaign 
  * @param {?Campaign[]} campaigns other campaigns to merge with
- * @returns {String[]} hideAdverts IDs
+ * @returns {!String[]} hideAdverts IDs
  */
 Campaign.hideAdverts = (topCampaign, campaigns) => {
     Campaign.assIsa(topCampaign);
     // Merge all hide advert lists together from all campaigns
     let allHideAds = topCampaign.hideAdverts ? keysetObjToArray(topCampaign.hideAdverts) : [];
-    if (campaigns) campaigns.forEach(campaign => allHideAds.push(... campaign.hideAdverts ? keysetObjToArray(campaign.hideAdverts) : []));
+    if (campaigns) {
+		campaigns.forEach(campaign => allHideAds.push(... campaign.hideAdverts ? keysetObjToArray(campaign.hideAdverts) : []));
+	}
     // Copy array
     const mergedHideAds = allHideAds.slice();
     return mergedHideAds;
@@ -211,20 +213,20 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
  * @param {Campaign} p.campaign 
  * @param {?KStatus} p.status
  * @param {?String} p.query Filter by whatever you want, eg data
- * @param {Object} adshiddenById TODO
- * @returns PromiseValue(List(Advert))
+ * @returns PromiseValue(List(Advert)) HACK Adverts get `_hidden` added if they're excluded.
  */
-Campaign.pvAds = ({campaign,status=KStatus.DRAFT,query,adshiddenById}) => {
-	return DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
-		return pAds2({campaign,status,query,adshiddenById});
+Campaign.pvAds = ({campaign,status=KStatus.DRAFT,query}) => {
+	let pv = DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
+		return pAds2({campaign,status,query});
 	});
+	return pv;
 };
 
 /**
  * NB: This function does chained promises, so we use async + await for convenience.
- * @returns Promise List(Advert)
+ * @returns Promise List(Advert) All ads -- hidden ones are marked with a truthy `_hidden` prop
  */
-const pAds2 = async function({campaign, status, query, adshiddenById}) {
+const pAds2 = async function({campaign, status, query}) {
 	Campaign.assIsa(campaign);
 	if (campaign.master) {
 		// Assume no direct ads
@@ -233,13 +235,14 @@ const pAds2 = async function({campaign, status, query, adshiddenById}) {
 		let subsl = await pvSubs.promise;
 		let subs = List.hits(subsl);
 		let AdListPs = subs.map(sub => {
-			let pSubAds = pAds2({campaign:sub, status:KStatus.PUBLISHED, query, adshiddenById});
+			let pSubAds = pAds2({campaign:sub, status:KStatus.PUBLISHED, query});
 			return pSubAds;
 		});
 		let adLists = await Promise.all(AdListPs);
 		let ads = [];
 		adLists.forEach(adl => ads.push(...List.hits(adl)));
-		return new List(ads);
+		const list = new List(ads);
+		return list;
 	}
 
 	// leaf campaign
@@ -248,12 +251,18 @@ const pAds2 = async function({campaign, status, query, adshiddenById}) {
 	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
 	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
 	let adl = await pvAds.promise;
-	List.assIda(adl);
+	List.assIsa(adl);
 	let ads = List.hits(adl);
-	// Filter ads using hide list
+	// Label ads using hide list
 	const hideAdverts = Campaign.hideAdverts(campaign);
-	let ads2 = ads.filter(ad => ! hideAdverts.includes(ad.id));
-	// Only show serving ads unless otherwise specified
+	for (let hi = 0; hi < hideAdverts.length; hi++) {
+		const hadid = hideAdverts[hi];
+		const ad = ads.find(ad => ad.id === hadid);
+		if (ad) {
+			ad._hidden = campaign.id; // truthy + tracks why it's hidden
+		}
+	}
+	// FIXME Only show serving ads unless otherwise specified
 	let ads3 = Campaign.filterNonServedAds(ads2, campaign.showNonServed);
 	return new List(ads3);
 };
@@ -269,45 +278,8 @@ Campaign.filterNonServedAds = (ads, showNonServed) => {
     return ads.filter(ad => ad.hasServed || ad.serving);
 }
 
-/**
- * @DEPRECATED
- * Get a list of adverts that the impact hub will hide for this campaign.
- * Use case: for Portal, so the controls for hidden ad objects can show ad info
- * 
- * @param {Campaign} topCampaign the subject campaign
- * @param {?Campaign[]} campaigns any other campaigns with data to use (for advertisers or agencies)
- * @param {?KStatus} status
- * @returns PromiseValue(Advert[]) adverts to hide - returns null if no hide adverts
- */
-Campaign.advertsToHide = (topCampaign, campaigns, status=KStatus.DRAFT) => {
-    
-    // Filter ads using hide list - but reversed: _load_ the hide list
-    const hideAdverts = Campaign.hideAdverts(topCampaign, campaigns);
-    if ( ! yessy(hideAdverts)) {
-		return null;
-	}
-	let q = SearchQuery.setPropOr(new SearchQuery(), "id", hideAdverts).query;
-	let pvAds = ActionMan.list({type: C.TYPES.Advert, status, q});
-	// No serving or sampling filter - we want a direct list of ads marked as HIDE
-	return pvAds;
-};
-
 const tomsCampaigns = /(josh|sara|ella)/; // For matching TOMS campaign names needing special treatment
 
-/**
- * @param {!Advert} ad 
- * @returns {!string} Can be "unknown" to fill in for no-campaign odd data items
- */
-const campaignNameForAd = ad => {
-	if (!ad.campaign) return "unknown";
-	// HACK FOR TOMS 2019 The normal code returns 5 campaigns where there are 3 synthetic campaign groups
-	// Dedupe on "only the first josh/sara/ella campaign" instead
-	if (ad.vertiser === 'bPe6TXq8' && ad.campaign && ad.campaign.match(tomsCampaigns)) {
-		let cname = ad.campaign.match(tomsCampaigns)[0];
-		return cname;
-	}
-	return ad.campaign;
-};
 
 /**
  * Get the viewcount for a set of campaigns
