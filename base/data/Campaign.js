@@ -239,8 +239,10 @@ const pAds2 = async function({campaign, status, query}) {
 			return pSubAds;
 		});
 		let adLists = await Promise.all(AdListPs);
-		let ads = [];
+		let ads = [];		
 		adLists.forEach(adl => ads.push(...List.hits(adl)));
+		// adds can be hidden at leaf or master
+		pAds3_labelHidden({campaign, ads});
 		const list = new List(ads);
 		return list;
 	}
@@ -254,6 +256,13 @@ const pAds2 = async function({campaign, status, query}) {
 	List.assIsa(adl);
 	let ads = List.hits(adl);
 	// Label ads using hide list
+	pAds3_labelHidden({campaign, ads});
+	// FIXME Only show serving ads unless otherwise specified
+	let ads3 = Campaign.filterNonServedAds(ads, campaign.showNonServed);
+	return new List(ads3);
+};
+
+const pAds3_labelHidden = ({campaign, ads}) => {
 	const hideAdverts = Campaign.hideAdverts(campaign);
 	for (let hi = 0; hi < hideAdverts.length; hi++) {
 		const hadid = hideAdverts[hi];
@@ -262,9 +271,6 @@ const pAds2 = async function({campaign, status, query}) {
 			ad._hidden = campaign.id; // truthy + tracks why it's hidden
 		}
 	}
-	// FIXME Only show serving ads unless otherwise specified
-	let ads3 = Campaign.filterNonServedAds(ads2, campaign.showNonServed);
-	return new List(ads3);
 };
 
 
@@ -433,6 +439,13 @@ Campaign.dntn4charity = (campaign) => {
 	return charities2(campaign, charityIds, subCharities);
 }; // ./charities()
 
+/**
+ * 
+ * @param {*} campaign 
+ * @param {*} charityIds 
+ * @param {*} charities 
+ * @returns {NGO[]}
+ */
 const charities2 = (campaign, charityIds, charities) => {
 	// fetch NGOs
 	if (yessy(charityIds)) {
@@ -453,6 +466,12 @@ const charities2 = (campaign, charityIds, charities) => {
 		charityForId[c.id] = Object.assign({}, c, charityForId[C.id]); // NB: defensive copies, localCharities settings take priority
 	});
 	let cs = Object.values(charityForId);
+	// tag with campaign info (helpful when tracing)
+	charities.map(c => {
+		let cMerged = charityForId[c.id];
+		let allCampaigns = (cMerged._campaigns || []).concat(c._campaigns).concat(campaign.id);
+		cMerged._campaigns = uniq(allCampaigns);
+	});
 	return cs;
 };
 

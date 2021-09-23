@@ -5,6 +5,9 @@ import { assert, assMatch } from '../utils/assert';
 
 /** datalog.js: the log-to-server calls
  * 
+ * E.g.
+ * `lg("myevent", {count:10})`
+ * 
  * Events can only be logged once per window pane.
  * See also DataLog.js for using the data
  */
