@@ -119,7 +119,7 @@ Money.setValue = (m, newVal) => {
 };
 
 /**
- * @param m If null, return 0. The canonical field is `value100p` but this method will also read `value`
+ * @param {?Money} m If null, return 0. The canonical field is `value100p` but this method will also read `value`
  * @return {Number} in hundredth of a penny. Defaults to 0.
  */
 const v100p = m => {

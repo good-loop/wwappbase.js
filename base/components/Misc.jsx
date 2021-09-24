@@ -64,8 +64,11 @@ http://tobiasahlin.com/spinkit/
 */
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	// handle ajax error?
-	if (pv && pv.error) {		
-		return <ErrAlert error={pv.error} />;
+	if (pv) {		
+		if (pv.error) {
+			return <ErrAlert error={pv.error} />;
+		}
+		if (pv.value) return null;
 	}
 
 	return (
