@@ -174,7 +174,7 @@ const getPersonDataPath = ({id,status=KStatus.PUBLISHED}) => {
  * @param {?Object} p 
  * @param {?String} p.xid If unset, use Login.getId()
  * TODO fields 
- * @returns !PromiseValue(Person)
+ * @returns !PromiseValue(Person) This will _always_ have either .value or .interim set.
  */
 const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) => {
 	if ( ! xid) xid = Login.getId();
