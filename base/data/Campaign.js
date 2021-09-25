@@ -549,12 +549,6 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 	return charities;
 } // ./filterLowDonations
 
-/** donation4charityUnscaled has some entries which shouldn't be transferred into donation4charityScaled */
-// TODO huge sweeping refactor which will fix the spaghetti nightmare where unreadyCampaignIds
-// is added in NGO.fetchDonationData - but then "normalised" to "unreadycampaignids" by use of normaliseSogiveId
-// so my prospective fix needed this second lower-case hedging value jammed in to work properly -- RM Jun 2021
-const ignoreD4CKeys = [ 'total', 'unset', 'unreadyCampaignIds', 'unreadycampaignids'];
-
 /**
  * Scale a list of charities to match the money total.
  * This will scale so that sum(donations to `charities`) = donationTotal
