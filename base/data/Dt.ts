@@ -1,3 +1,4 @@
+import Enum from 'easy-enums';
 
 class Dt {
 
@@ -19,5 +20,7 @@ Dt.msecs = function(dt : Dt) : Number {
 	}
 	return null;
 };
+
+export const TUnit = new Enum("MILLISECOND SECOND MINUTE HOUR DAY WEEK MONTH YEAR");
 
 export default Dt;

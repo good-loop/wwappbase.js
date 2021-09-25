@@ -3,7 +3,7 @@ import { Input, InputGroup } from 'reactstrap';
 
 import { registerControl } from '../PropControl';
 
-
+// See TUnit
 const options = {MILLISECOND: 'msec', SECOND: 'sec', MINUTE: 'min', HOUR: 'hour', DAY: 'day', WEEK: 'week', MONTH: 'month', YEAR: 'year'};
 
 const domOptions = Object.entries(options).map(([option, label]) => <option key={option} value={option}>{label}</option>)
