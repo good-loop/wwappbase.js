@@ -45,7 +45,7 @@ class Campaign extends DataClass {
 DataClass.register(Campaign, "Campaign"); 
 
 /** This is the total unlocked across all adverts in this campaign. See also maxDntn.
- * FIXME This does NOT do sub-campaigns or dynamic data fetch
+ * Warning: This will change as data loads!!
  * @returns {?Money}
  */
 Campaign.dntn = campaign => {
@@ -58,6 +58,8 @@ Campaign.dntn = campaign => {
 		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
 			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
 			{cachePeriod:300*1000});
+		let total = pvDntnData.value && pvDntnData.value.total;
+		return total;
 	}
 	// recurse
 	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
