@@ -119,7 +119,7 @@ Money.setValue = (m, newVal) => {
 };
 
 /**
- * @param m If null, return 0. The canonical field is `value100p` but this method will also read `value`
+ * @param {?Money} m If null, return 0. The canonical field is `value100p` but this method will also read `value`
  * @return {Number} in hundredth of a penny. Defaults to 0.
  */
 const v100p = m => {
@@ -178,8 +178,8 @@ Money.CURRENCY = {
 	AUD: "A$",
 	EUR: "€",
 	MXN: "MX$",
-	JPY: "JP¥",
-	CNY: "CN¥" // is this right for Yuan? Note the shared symbol with Yen
+	JPY: "¥",
+	CNY: "¥" // Same symbol with Yen
 };
 /**
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
@@ -192,22 +192,22 @@ Money.CURRENCY_FOR_COUNTRY = {
 
 /**
  * HACK - estimate conversions to handle adding conflicting currencies
- * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 Feb 18, 2021 15:58
- * EUROS sourced from https://www.google.com/search?q=euro+to+pound&oq=euro+to+pound May 6, 2021 18:15
+ * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 Sep 20, 2021 16:43
+ * EUROS sourced from https://www.google.com/search?q=euro+to+pound&oq=euro+to+pound Sep 20, 2021 16:46
  */
 Money.CURRENCY_CONVERSION = {
-	GBP_USD: 1.395,
-	GBP_AUD: 1.800,
-	USD_AUD: 1.290,
-	USD_GBP: 0.717,
-	AUD_GBP: 0.556,
-	AUD_USD: 0.775,
-	EUR_GBP: 0.87,
-	GBP_EUR: 1.15,
-	EUR_AUD: 1.55,
-	AUD_EUR: 0.64,
-	EUR_USD: 1.21,
-	USD_EUR: 0.83
+	GBP_USD: 1.365,
+	GBP_AUD: 1.885,
+	USD_AUD: 1.380,
+	USD_GBP: 0.732,
+	AUD_GBP: 0.530,
+	AUD_USD: 0.724,
+	EUR_GBP: 0.86,
+	GBP_EUR: 1.16,
+	EUR_AUD: 1.62,
+	AUD_EUR: 0.62,
+	EUR_USD: 1.17,
+	USD_EUR: 0.85
 }
 
 /**

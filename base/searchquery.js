@@ -90,16 +90,18 @@ SearchQuery.prop = (sq, propName) => {
 /**
  * Set a top-level prop, e.g. vert:foo
  * @param {?SearchQuery|string} sq
- * @param {String} propName 
- * @param {?String} propValue If unset (null,undefined, or "" -- but not false or 0!), clear the prop. The caller is responsible for converting non-strings to strings - apart from boolean which thie method will handle, 'cos we're nice like that.
+ * @param {!String} propName 
+ * @param {?String|Boolean} propValue If unset (null,undefined, or "" -- but not false or 0!), clear the prop. The caller is responsible for converting non-strings to strings - apart from boolean which thie method will handle, 'cos we're nice like that.
  * @returns a NEW SearchQuery. Use .query to get the string
  */
 SearchQuery.setProp = (sq, propName, propValue) => {	
+	assMatch(propName, String);
 	if (_.isString(sq)) {
 		sq = new SearchQuery(sq);
 	}
 	// boolean has gotchas, so lets handle it. But not number, as the caller should decide on e.g. rounding
 	if (typeof(propValue) === "boolean") propValue = ""+propValue; // true/false
+	assMatch(propValue, "?String");
 	assMatch(propName, String, "searchquery.js - "+propName+" "+propValue);
 	let newq = "";
 	// remove the old
@@ -193,8 +195,8 @@ SearchQuery.or = (sq1, sq2) => {
 
 /**
  * 
- * @param {string|SearchQuery} sq1 
- * @param {string|SearchQuery} sq2 
+ * @param {?string|SearchQuery} sq1 
+ * @param {?string|SearchQuery} sq2 
  * @param {!string} op 
  * @returns {SearchQuery} Can be null if both inputs are null
  */
@@ -220,6 +222,7 @@ SearchQuery.op = (sq1, sq2, op) => {
 		return newsq;
 	}
 	
+	// one is falsy? then just return the other
 	if ( ! sq2) return sq1;
 	if ( ! sq1) return sq2;
 	if ( ! sq1.query) return sq2;

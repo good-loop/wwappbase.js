@@ -65,7 +65,7 @@ export default List;
  * @param {?List} list 
  * @returns {?Item[]}
  */
-List.hits = list => list && List.assIsa(list) && list.hits;
+List.hits = list => list? (List.assIsa(list) && list.hits) : null;
 /**
  * 
  * @param {List} list 

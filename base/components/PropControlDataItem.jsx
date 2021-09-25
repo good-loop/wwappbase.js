@@ -12,7 +12,7 @@ import { getDataItem } from '../plumbing/Crud';
 import { getId, getName } from '../data/DataClass';
 import { assert } from '../utils/assert';
 import { encURI, getLogo } from '../utils/miscutils';
-import {saveDraftFn} from './SavePublishDeleteEtc';
+import {saveDraftFnFactory} from './SavePublishDeleteEtc';
 import { doShareThing } from '../Shares';
 
 /**
@@ -145,7 +145,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 					)
 				}
 				{canCreate && rawValue && pvDI.resolved && ! pvDI.value && 
-					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFn} then={createThen} />}
+					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={createThen} />}
 			</Col>			
 		</Row>);
 };

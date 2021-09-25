@@ -651,6 +651,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  */
  const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {	
 	assert(C.TYPES.has(type), type);
+	if (q) assMatch(q, String); // NB: q should not be a SearchQuery
 	if (ids) {
 		q = SearchQuery.setPropOr(q, "id", ids).query;
 	}
@@ -672,6 +673,7 @@ ActionMan.list = getDataList;
  */
 ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', ...other}) => {
 	assert(C.TYPES.has(type), 'Crud.js - ServerIO.list - bad type:' +type);
+	assert( ! other.query, "Use q not query");
 	let servlet = ServerIO.getEndpointForType(type);
 	assert(C.KStatus.has(status), 'Crud.js - ServerIO.list - bad status: '+status);
 
