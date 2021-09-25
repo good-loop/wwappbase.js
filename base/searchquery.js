@@ -157,7 +157,8 @@ const snipProp = (sq, propName) => {
  * @returns a NEW SearchQuery
  */
 SearchQuery.setPropOr = (sq, propName, propValues) => {	
-	assMatch(propName, String, "searchquery.js - "+propName+" "+propValues);
+	assMatch(propName, String, "searchquery.js "+propName+": "+propValues);
+	assMatch(propValues, "String[]", "searchquery.js "+propName, propValues);
 	assert(propValues.length, "searchquery.js - "+propName+" Cant OR over nothing "+propValues)
 	// quote the values? HACK if they have a space
 	let qpropValues = propValues.map(propValue => propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"');

@@ -405,7 +405,7 @@ Campaign.dntn4charity = (campaign) => {
  * FIXME Get a list of charities for a campaign
  * @param {Object} p 
  * @param {Campaign} p.campaign 
- * @param {KStatus} p.status
+ * @param {KStatus} p.status The status of ads and sub-campaigns to fetch
  * @returns {NGO[]} May change over time as things load!
  */
  Campaign.charities = (campaign, status=KStatus.DRAFT) => {
@@ -413,9 +413,9 @@ Campaign.dntn4charity = (campaign) => {
 	KStatus.assert(status);
 	// charities listed here
 	let charityIds = [];
-	if (campaign.strayCharities) charityIds.push(campaign.strayCharities);
-	if (campaign.dntn4charity) charityIds.push(Object.keys(campaign.dntn4charity));
-	if (campaign.localCharities) charityIds.push(Object.keys(campaign.localCharities));	
+	if (campaign.strayCharities) charityIds.push(...campaign.strayCharities);
+	if (campaign.dntn4charity) charityIds.push(...Object.keys(campaign.dntn4charity));
+	if (campaign.localCharities) charityIds.push(...Object.keys(campaign.localCharities));	
 
 	// Leaf campaign?
 	if ( ! campaign.master) {
@@ -424,6 +424,7 @@ Campaign.dntn4charity = (campaign) => {
 			return charities2(campaign, charityIds, []);
 		}
 		let ads = List.hits(pvAds.value);
+		if ( ! ads.length) console.warn("No Ads?!", campaign, status);
 		// individual charity data, attaching ad ID
 		let vcharitiesFromAds = charities2_fromAds(ads);
 		// apply local edits
@@ -443,18 +444,20 @@ Campaign.dntn4charity = (campaign) => {
 
 /**
  * 
- * @param {*} campaign 
- * @param {*} charityIds 
- * @param {*} charities 
+ * @param {!Campaign} campaign 
+ * @param {?String[]} charityIds 
+ * @param {!NGO[]} charities 
  * @returns {NGO[]}
  */
 const charities2 = (campaign, charityIds, charities) => {
+	Campaign.assIsa(campaign);	
 	// fetch NGOs
 	if (yessy(charityIds)) {
+		assMatch(charityIds, "String[]");
 		let q = SearchQuery.setPropOr(null, "id", charityIds).query;
 		let pvCharities = ActionMan.list({type: C.TYPES.NGO, status:KStatus.PUBLISHED, q});
 		if (pvCharities.value) {
-			charities.push(List.hits(pvCharities.value));
+			charities.push(...List.hits(pvCharities.value));
 		}
 	}
 	// merge and de-dupe
@@ -465,7 +468,13 @@ const charities2 = (campaign, charityIds, charities) => {
 		});
 	}
 	charities.map(c => {
-		charityForId[c.id] = Object.assign({}, c, charityForId[C.id]); // NB: defensive copies, localCharities settings take priority
+		NGO.assIsa(c);
+		charityForId[c.id] = Object.assign({}, c, charityForId[c.id]); // NB: defensive copies, localCharities settings take priority
+	});
+	// any missing? Put in a blank
+	charityIds.forEach(cid => {
+		if (charityForId[cid]) return;
+		charityForId[cid] = new NGO({id:cid}); 
 	});
 	let cs = Object.values(charityForId);
 	// tag with campaign info (helpful when tracing)
@@ -473,7 +482,7 @@ const charities2 = (campaign, charityIds, charities) => {
 		let cMerged = charityForId[c.id];
 		let allCampaigns = (cMerged._campaigns || []).concat(c._campaigns).concat(campaign.id);
 		cMerged._campaigns = uniq(allCampaigns);
-	});
+	});	
 	return cs;
 };
 

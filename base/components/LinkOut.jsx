@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
+import { space } from '../utils/miscutils';
 
 /**
  * Just a convenience for an `<a>` tag to an external (potentially untrustworthy e.g. it might do referrer tracking) web page, which opens in a new tab.
- * @param {?string} href
+ * @param {Object} p
+ * @param {?string} p.href If unset, return a `span` not an `a`
  */
-const LinkOut = ({href, disabled, children, ...props}) => 
-	(disabled || ! href)? <span className="text-muted" {...props}>{children}</span>
-	: <a href={href} target="_blank" rel="noopener" rel="noreferrer" {...props} >{ children }</a>;
+const LinkOut = ({href, disabled, children, className, ...props}) => 
+	(disabled || ! href)? <span className={space(disabled&&"text-muted",className)} {...props}>{children}</span>
+	: <a href={href} target="_blank" rel="noopener" rel="noreferrer" className={className} {...props} >{ children }</a>;
 
 let citeCnt = 1;
 /**
