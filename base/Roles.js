@@ -119,11 +119,31 @@ const isDev = () => {
 	return false;
 };
 
+/**
+ * Convenience for "is this a test user (i.e. a Good-Loop staff member)?"
+ * @returns Boolean
+ */
+ const isTester = () => {
+	const cand = iCan('test');
+	if (cand.value) return true;
+	// HACK Good-Loop?
+	const uxid = Login.getId();
+	if (uxid && uxid.includes("@good-loop.com")) {
+		return true; // security note: this is not a security issue (its client side and only used to hide ugly bits)
+	}
+	if (isDev()) { // dev => tester
+		return true;
+	}
+	return false;
+};
+
+
 const Roles = {
 	iCan,
 	defineRole,
 	getRoles,
-	isDev
+	isDev,
+	isTester
 };
 window.Roles = Roles; // debug hack
 
@@ -132,6 +152,6 @@ export {
 	defineRole,
 	iCan,
 	getRoles,
-	isDev,
+	isDev, isTester,
 	addRole
 }
