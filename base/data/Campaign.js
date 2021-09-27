@@ -48,11 +48,11 @@ DataClass.register(Campaign, "Campaign");
  * Warning: This will change as data loads!!
  * @returns {?Money}
  */
-Campaign.dntn = campaign => {
+Campaign.dntn = (campaign, isSub) => {
 	if ( ! campaign) return null;
 	Campaign.assIsa(campaign);
 	if (campaign.dntn) return campaign.dntn;
-	if ( ! campaign.master) {
+	if ( ! campaign.master || isSub) {
 		// Ask the backend
 		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
 		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
@@ -69,7 +69,7 @@ Campaign.dntn = campaign => {
 		return null;
 	}
 	let subs = List.hits(pvSubs.value);
-	let dntns = subs.map(Campaign.dntn);
+	let dntns = subs.map(sub => Campaign.dntn(sub, true));
 	let total = Money.total(dntns);
 	return total;
 };
@@ -228,16 +228,16 @@ Campaign.pvAds = ({campaign,status=KStatus.DRAFT,query}) => {
  * NB: This function does chained promises, so we use async + await for convenience.
  * @returns Promise List(Advert) All ads -- hidden ones are marked with a truthy `_hidden` prop
  */
-const pAds2 = async function({campaign, status, query}) {
+const pAds2 = async function({campaign, status, query, isSub}) {
 	Campaign.assIsa(campaign);
-	if (campaign.master) {
+	if (campaign.master && ! isSub) { // NB: a poorly configured campaign can be a master and a leaf
 		// Assume no direct ads
 		// recurse
 		const pvSubs = Campaign.pvSubCampaigns({campaign});
 		let subsl = await pvSubs.promise;
 		let subs = List.hits(subsl);
 		let AdListPs = subs.map(sub => {
-			let pSubAds = pAds2({campaign:sub, status:KStatus.PUBLISHED, query});
+			let pSubAds = pAds2({campaign:sub, status:KStatus.PUBLISHED, query, isSub:true});
 			return pSubAds;
 		});
 		let adLists = await Promise.all(AdListPs);
@@ -257,14 +257,13 @@ const pAds2 = async function({campaign, status, query}) {
 	let adl = await pvAds.promise;
 	List.assIsa(adl);
 	let ads = List.hits(adl);
-	// Label ads using hide list
+	// Label ads using hide list and non-served
 	pAds3_labelHidden({campaign, ads});
-	// FIXME Only show serving ads unless otherwise specified
-	let ads3 = Campaign.filterNonServedAds(ads, campaign.showNonServed);
-	return new List(ads3);
+	return adl;
 };
 
 const pAds3_labelHidden = ({campaign, ads}) => {
+	// manually hidden
 	const hideAdverts = Campaign.hideAdverts(campaign);
 	for (let hi = 0; hi < hideAdverts.length; hi++) {
 		const hadid = hideAdverts[hi];
@@ -273,18 +272,17 @@ const pAds3_labelHidden = ({campaign, ads}) => {
 			ad._hidden = campaign.id; // truthy + tracks why it's hidden
 		}
 	}
+	// non served
+	if (campaign.showNonServed) {
+		return;
+	}
+	ads.forEach(ad => {
+		if ( ! ad.hasServed && ! ad.serving) {
+			ad._hidden = "non-served";
+		}
+	});
 };
 
-
-/**
- * Removes ads that have never served from an ad list
- * @param {Advert[]} ads 
- * @returns {Advert[]} filtered ads
- */
-Campaign.filterNonServedAds = (ads, showNonServed) => {
-	if (showNonServed) return ads;
-    return ads.filter(ad => ad.hasServed || ad.serving);
-}
 
 const tomsCampaigns = /(josh|sara|ella)/; // For matching TOMS campaign names needing special treatment
 
@@ -329,7 +327,7 @@ Campaign.masterFor = campaign => {
  * 
  * @param {!Campaign} campaign 
  * @param {?KStatus} status 
- * @returns PV(List<Campaign>)
+ * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
  */
 Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
 	Campaign.assIsa(campaign);
@@ -340,7 +338,8 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
 	let {id, type} = Campaign.masterFor(campaign);
 	// campaigns for this advertiser / agency
 	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
-	sq = SearchQuery.and(sq, "-id:"+campaign.id); // exclude this
+	// exclude this? No: some (poorly configured) master campaigns are also leaves
+	// sq = SearchQuery.and(sq, "-id:"+campaign.id); 
 	const pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query}); 
 	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
 	return pvCampaigns;
@@ -353,9 +352,9 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
  * @returns {!Object} {cid: Money} Values may change as data loads
  * @see Campaign.dntn
  */
-Campaign.dntn4charity = (campaign) => {
+Campaign.dntn4charity = (campaign, isSub) => {
 	Campaign.assIsa(campaign);
-	if ( ! campaign.master) {
+	if ( ! campaign.master || isSub) {
 		// leaf
 		// hard set values?
 		const d4c = Object.assign({}, campaign.dntn4charity); // defensive copy, never null
@@ -385,7 +384,7 @@ Campaign.dntn4charity = (campaign) => {
 		return {};
 	}
 	let subs = List.hits(pvSubs.value);
-	let dntn4charitys = subs.map(Campaign.dntn4charity);
+	let dntn4charitys = subs.map(sub => Campaign.dntn4charity(sub, true));
 	// merge + sum subs
 	let subtotal4c = {};
 	for(let i=0; i<dntn4charitys.length; i++) {
@@ -408,7 +407,7 @@ Campaign.dntn4charity = (campaign) => {
  * @param {KStatus} p.status The status of ads and sub-campaigns to fetch
  * @returns {NGO[]} May change over time as things load!
  */
- Campaign.charities = (campaign, status=KStatus.DRAFT) => {
+ Campaign.charities = (campaign, status=KStatus.DRAFT, isSub) => {
 	Campaign.assIsa(campaign);
 	KStatus.assert(status);
 	// charities listed here
@@ -418,7 +417,7 @@ Campaign.dntn4charity = (campaign) => {
 	if (campaign.localCharities) charityIds.push(...Object.keys(campaign.localCharities));	
 
 	// Leaf campaign?
-	if ( ! campaign.master) {
+	if ( ! campaign.master || isSub) {
 		let pvAds = Campaign.pvAds({campaign, status});
 		if ( ! pvAds.value) {
 			return charities2(campaign, charityIds, []);
@@ -436,7 +435,7 @@ Campaign.dntn4charity = (campaign) => {
 	let subCharities = [];
 	if (pvSubCampaigns.value) {
 		const scs = List.hits(pvSubCampaigns.value);
-		subCharities = _.flatten(scs.map(subCampaign => Campaign.charities(subCampaign, status)));
+		subCharities = _.flatten(scs.map(subCampaign => Campaign.charities(subCampaign, status, true)));
 		subCharities = uniqById(subCharities);
 	}
 	return charities2(campaign, charityIds, subCharities);
