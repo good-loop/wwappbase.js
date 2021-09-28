@@ -436,6 +436,10 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
 		newItem.id = nonce(8);
 	}
 	id = getId(newItem);
+
+	// Mark the new item as DIRTY - i.e. "not matching copy on server", because it doesn't exist there yet.
+	DataStore.setLocalEditsStatus(type, id, C.STATUS.dirty, false);
+
 	if (!getType(newItem)) newItem['@type'] = type;
 	// poke a new blank into DataStore
 	newItem.status = KStatus.DRAFT;
