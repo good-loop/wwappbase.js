@@ -513,7 +513,7 @@ const charities2_fromAds = (ads) => {
  * @param {Object} p
  * @param {?Money} p.donationTotal
  * @param {NGO[]} p.charities From adverts (not SoGive)
- * @param {Object} p.donation4charity scaled (so it can be compared against donationTotal)
+ * @param {Object} p.donation4charity 
  * @returns {NGO[]}
  */
 Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4charity}) => {
