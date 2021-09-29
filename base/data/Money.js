@@ -45,6 +45,8 @@ class Money extends DataClass {
 		// normal new
 		super(base);
 		Object.assign(this, base);
+		// avoid currency:"" - falsy should be unset
+		if ( ! this.currency) delete this.currency;
 		this['@type'] = 'Money';
 		Money.value(this); // init v100p from value
 	};
@@ -212,12 +214,17 @@ Money.CURRENCY_CONVERSION = {
 
 /**
  * Convert a money value to a different currency
- * @param {Money} money
- * @param {String} currencyTo the currency to convert to
+ * @param {!Money} money
+ * @param {?String} currencyTo the currency to convert to
  */
 Money.convertCurrency = (money, currencyTo) => {
+	if ( ! currencyTo) {
+		console.warn("Money.convertCurrency - no-op, unset currencyTo");
+		return money;
+	}
 	console.warn("WARNING: Currency conversion is a rough estimate only and intended as a hack. Should be avoided and not relied on for any precision!!");
-	assert(Money.CURRENCY[currencyTo]);
+	assert(Money.CURRENCY[currencyTo], "Bad currency: "+currencyTo);
+	Money.assIsa(money);
 	const currencyConversion = money.currency + "_" + currencyTo;
 	const conversionVal = Money.CURRENCY_CONVERSION[currencyConversion];
 	assert(conversionVal, "Cannot convert - rate unset for "+currencyConversion);
