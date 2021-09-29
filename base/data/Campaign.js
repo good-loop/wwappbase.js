@@ -13,7 +13,7 @@ import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
 import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
-import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars } from '../utils/miscutils';
 import { getId } from './DataClass';
 import NGO from './NGO';
 import Money from './Money';
@@ -43,36 +43,6 @@ class Campaign extends DataClass {
 	}
 }
 DataClass.register(Campaign, "Campaign"); 
-
-/** This is the total unlocked across all adverts in this campaign. See also maxDntn.
- * Warning: This will change as data loads!!
- * @returns {?Money}
- */
-Campaign.dntn = (campaign, isSub) => {
-	if ( ! campaign) return null;
-	Campaign.assIsa(campaign);
-	if (campaign.dntn) return campaign.dntn;
-	if ( ! campaign.master || isSub) {
-		// Ask the backend
-		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
-		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
-			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
-			{cachePeriod:300*1000});
-		let total = pvDntnData.value && pvDntnData.value.total;
-		return total;
-	}
-	// recurse
-	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
-	// TODO: make it so datalog reconciles with that, so we can do batched requests
-	let pvSubs = Campaign.pvSubCampaigns({campaign});
-	if ( ! pvSubs.value) {
-		return null;
-	}
-	let subs = List.hits(pvSubs.value);
-	let dntns = subs.map(sub => Campaign.dntn(sub, true));
-	let total = Money.total(dntns);
-	return total;
-};
 
 
 /**
@@ -345,6 +315,38 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
 	return pvCampaigns;
 };
 
+
+/** This is the total unlocked across all adverts in this campaign. See also maxDntn.
+ * Warning: This will change as data loads!!
+ * @returns {?Money}
+ */
+ Campaign.dntn = (campaign, isSub) => {
+	if ( ! campaign) return null;
+	Campaign.assIsa(campaign);
+	if (campaign.dntn) return campaign.dntn;
+	if ( ! campaign.master || isSub) {
+		// Ask the backend
+		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
+			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
+			{cachePeriod:300*1000});
+		let total = pvDntnData.value && pvDntnData.value.total;
+		return total;
+	}
+	// recurse
+	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
+	// TODO: make it so datalog reconciles with that, so we can do batched requests
+	let pvSubs = Campaign.pvSubCampaigns({campaign});
+	if ( ! pvSubs.value) {
+		return null;
+	}
+	let subs = List.hits(pvSubs.value);
+	let dntns = subs.map(sub => Campaign.dntn(sub, true));
+	let total = Money.total(dntns);
+	return total;
+};
+
+
 /**
  * Recursive and fetches dynamic data.
  
@@ -353,11 +355,16 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
  * @see Campaign.dntn
  */
 Campaign.dntn4charity = (campaign, isSub) => {
+	assert( ! isSub || isSub===true, isSub);
 	Campaign.assIsa(campaign);
 	if ( ! campaign.master || isSub) {
 		// leaf
 		// hard set values?
-		const d4c = Object.assign({}, campaign.dntn4charity); // defensive copy, never null
+		let d4c = Object.assign({}, campaign.dntn4charity); // defensive copy, never null
+		// HACK realtime=true forces a realtime fetch
+		if (getUrlVars().realtime) {
+			d4c = {};
+		}
 		// are any missing?
 		let charities = Campaign.charities(campaign);
 		let missingNGOs = charities.filter(ngo => ! d4c[ngo.id]);
@@ -367,7 +374,7 @@ Campaign.dntn4charity = (campaign, isSub) => {
 		// Ask the backend
 		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
 		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
-			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
+			() => ServerIO.getDonationsData({q:sq.query, name:"campaign-donations"}), 
 			{cachePeriod:300*1000});
 		if ( ! pvDntnData.value) {
 			return d4c;
@@ -377,8 +384,10 @@ Campaign.dntn4charity = (campaign, isSub) => {
 		let alld4c = Object.assign({}, by_cid, d4c);
 		return alld4c;
 	} // ./leaf
-	// master - recurse - sum leaf campaigns
-	// NB: Ignore master.dntn4charity - it should not be set for masters 'cos it can confuse sums for e.g. reporting by-charity in T4G
+	// Master - recurse - sum leaf campaigns
+	if ( ! isDntn4CharityEmpty(campaign)) {
+		console.warn("Ignoring master.dntn4charity - it should not be set for masters 'cos it can confuse sums for e.g. reporting by-charity in T4G", campaign);
+	}
 	let pvSubs = Campaign.pvSubCampaigns({campaign});
 	if ( ! pvSubs.value) {
 		return {};
@@ -558,7 +567,7 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 } // ./filterLowDonations
 
 
-Campaign.isDntn4CharityEmpty = (campaign) => {
+const isDntn4CharityEmpty = (campaign) => {
 	let d4c = Campaign.dntn4charity(campaign);
 	if ( ! d4c) return true;
 	let nonEmpty = Object.values(d4c).find(v => v && Money.value(v));
