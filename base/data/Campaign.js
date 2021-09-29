@@ -371,6 +371,10 @@ Campaign.dntn4charity = (campaign, isSub) => {
 		if ( ! missingNGOs.length) {
 			return d4c;
 		}
+		// HACK realtime off??
+		if (getUrlVars().realtime === false) {
+			return d4c
+		}
 		// Ask the backend
 		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
 		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
