@@ -323,7 +323,12 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
  Campaign.dntn = (campaign, isSub) => {
 	if ( ! campaign) return null;
 	Campaign.assIsa(campaign);
-	if (campaign.dntn) return campaign.dntn;
+	if (campaign.dntn) {
+		// HACK realtime=true forces a realtime fetch
+		if ( ! getUrlVars().realtime) {
+			return campaign.dntn;
+		}
+	}
 	if ( ! campaign.master || isSub) {
 		// Ask the backend
 		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
