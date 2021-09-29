@@ -558,49 +558,6 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 	return charities;
 } // ./filterLowDonations
 
-/**
- * Scale a list of charities to match the money total.
- * This will scale so that sum(donations to `charities`) = donationTotal
- * Warning: If a charity isn't on the list, it is assumed that donations to it are noise, to be reallocated.
- * 
- * @param {Campaign} campaign 
- * @param {Money} donationTotal 
- * @param {Object} donation4charityUnscaled
- * @returns {Object} donation4charityScaled
- */
-Campaign.scaleCharityDonations = (campaign, donationTotal, donation4charityUnscaled, charities) => {
-    // Campaign.assIsa(campaign); can be {}
-	//assMatch(charities, "NGO[]");	- can contain dummy objects from strays
-    let forceScaleDonations = campaign.forceScaleDonations;
-	if ( ! Campaign.isDntn4CharityEmpty(campaign) && !forceScaleDonations) {
-		// NB: donation4charityUnscaled will contain all data for campaigns, including data not in campaign.dntn4charity
-        //assert(campaign.dntn4charity === donation4charityUnscaled);
-		return donation4charityUnscaled; // explicitly set, so don't change it
-	}
-
-	if ( ! Money.value(donationTotal)) {
-		console.log("[DONATION4CHARITY]","Scale donations - dont scale to 0");
-		return Object.assign({}, donation4charityUnscaled); // paranoid copy
-	}
-	Money.assIsa(donationTotal);
-    // NB: only count donations for the charities listed
-    let monies = charities.map(c => getId(c) !== "unset" ? donation4charityUnscaled[getId(c)] : null);
-    monies = monies.filter(x=>x);
-	let totalDntnByCharity = Money.total(monies);
-	if ( ! Money.value(totalDntnByCharity)) {
-		console.log("[DONATION4CHARITY]","Scale donations - cant scale up 0");
-		return {...donation4charityUnscaled}; // paranoid copy
-	}
-	// scale up (or down)	
-	let ratio = Money.divide(donationTotal, totalDntnByCharity);
-	const donation4charityScaled = {};
-	Object.entries(donation4charityUnscaled).forEach(([key, value]) => {
-		if (ignoreD4CKeys.includes(key)) return;
-		donation4charityScaled[key] = Money.mul(value, ratio);
-	});
-	console.log("[DONATION4CHARITY]","Scale donations from", donation4charityUnscaled, "to", donation4charityScaled);
-	return donation4charityScaled;
-};
 
 Campaign.isDntn4CharityEmpty = (campaign) => {
 	let d4c = Campaign.dntn4charity(campaign);
