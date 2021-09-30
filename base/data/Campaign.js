@@ -481,12 +481,13 @@ const charities2 = (campaign, charityIds, charities) => {
 	let charityForId = {};
 	if (campaign.localCharities) {
 		Object.entries(campaign.localCharities).map(([k,v]) => {
+			if ( ! v.id) v.id = k; // No Id?! Seen Sep 2021
 			charityForId[k] = v;
 		});
 	}
 	charities.map(c => {
 		NGO.assIsa(c);
-		charityForId[c.id] = Object.assign({}, c, charityForId[c.id]); // NB: defensive copies, localCharities settings take priority
+		charityForId[getId(c)] = Object.assign({}, c, charityForId[getId(c)]); // NB: defensive copies, localCharities settings take priority
 	});
 	// any missing? Put in a blank
 	charityIds.forEach(cid => {
@@ -494,9 +495,8 @@ const charities2 = (campaign, charityIds, charities) => {
 		charityForId[cid] = new NGO({id:cid}); 
 	});
 	let cs = Object.values(charityForId);
-	// tag with campaign info (helpful when tracing)
-	charities.map(c => {
-		let cMerged = charityForId[c.id];
+	// tag with campaign info (helpful when tracing, overlaps may mean this isnt the full list)
+	cs.map(cMerged => {
 		let allCampaigns = (cMerged._campaigns || []).concat(c._campaigns).concat(campaign.id);
 		cMerged._campaigns = uniq(allCampaigns);
 	});	
@@ -511,12 +511,13 @@ const charities2_fromAds = (ads) => {
 		const clist = (ad.charities && ad.charities.list).slice() || [];
 		return clist.map(c => {
 			if ( ! c) return null; // bad data paranoia
-			if ( ! c.id || c.id==="unset" || c.id==="undefined" || c.id==="null" || c.id==="total") { // bad data paranoia						
+			const cid = getId(c);
+			if ( ! cid || cid==="unset" || cid==="undefined" || cid==="null" || cid==="total") { // bad data paranoia						
 				// console.error("Campaign.js charities - Bad charity ID", c.id, c);
 				return null;
 			}
-			const id2 = normaliseSogiveId(c.id);
-			if (id2 !== c.id) {
+			const id2 = normaliseSogiveId(cid);
+			if (id2 !== cid) {
 				c.id = id2;
 			}
 			c._adId = ad.id; // for Advert Editor dev button so sales can easily find which ad contains which charity
