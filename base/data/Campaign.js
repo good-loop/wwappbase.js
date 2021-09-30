@@ -497,7 +497,7 @@ const charities2 = (campaign, charityIds, charities) => {
 	let cs = Object.values(charityForId);
 	// tag with campaign info (helpful when tracing, overlaps may mean this isnt the full list)
 	cs.map(cMerged => {
-		let allCampaigns = (cMerged._campaigns || []).concat(c._campaigns).concat(campaign.id);
+		let allCampaigns = (cMerged._campaigns || []).concat(cMerged._campaigns).concat(campaign.id);
 		cMerged._campaigns = uniq(allCampaigns);
 	});	
 	return cs;
