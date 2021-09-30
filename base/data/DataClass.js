@@ -198,6 +198,7 @@ const getType = function(item) {
  */
 const getId = (item) => {
 	if ( ! item) return null;
+	assert(typeof(item)==="object", "Not a DataItem",typeof(item),item);
 	if (item.id && item['@id'] && item.id !== item['@id']) {
 		console.warn("conflicting id/@id item ids "+item.id+" vs "+item['@id'], item);
 	}
