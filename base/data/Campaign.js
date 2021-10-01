@@ -504,11 +504,15 @@ const charities2 = (campaign, charityIds, charities) => {
 	// fetch NGOs
 	if (yessy(charityIds)) {
 		assMatch(charityIds, "String[]");
-		let q = SearchQuery.setPropOr(null, "id", charityIds).query;
-		let pvCharities = ActionMan.list({type: C.TYPES.NGO, status:KStatus.PUBLISHED, q});
-		if (pvCharities.value) {
-			charities.push(...List.hits(pvCharities.value));
-		}
+		// TODO SoGive stores id as @id, which messes this up :(
+		// @id is the thing.org "standard", but sod that, its daft - We should switch SoGive to `id`
+		charityIds.forEach(cid => {
+			let pvSoGiveCharity = getDataItem({type: C.TYPES.NGO, status:KStatus.PUBLISHED, id:cid});
+			// Add them as they load (assume this function gets called repeatedly)
+			if (pvSoGiveCharity.value) {
+				charities.push(pvSoGiveCharity.value);
+			}	
+		});
 	}
 	// merge and de-dupe
 	let charityForId = {};

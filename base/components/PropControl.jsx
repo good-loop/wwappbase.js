@@ -27,7 +27,6 @@ import ServerIO from '../plumbing/ServerIOBase';
 import printer from '../utils/printer';
 import C from '../CBase';
 import Money from '../data/Money';
-// // import I18n from 'easyi18n';
 import { getType, getId } from '../data/DataClass';
 import { notifyUser } from '../plumbing/Messaging';
 import Icon from './Icon';
