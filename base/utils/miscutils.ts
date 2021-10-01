@@ -611,7 +611,8 @@ export const stopEvent = (e: Event) => {
 export const str = x => printer.str(x)
 
 /**
- * @param {?String|Date} s 
+ * Make sure it's a Date not a String
+ * @param {?String|Date} s falsy returns null
  * @returns {?Date}
  */
 export const asDate = (s: String|Date) => {

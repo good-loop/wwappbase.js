@@ -13,7 +13,7 @@ import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
 import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
-import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars, asDate } from '../utils/miscutils';
 import { getId } from './DataClass';
 import NGO from './NGO';
 import Money from './Money';
@@ -34,6 +34,9 @@ class Campaign extends DataClass {
 	/** @type{?Money} */
 	dntn;
 
+	/** @type{?LineItem} */
+	topLineItem;
+
 	/**
 	 * @param {Campaign} base 
 	 */
@@ -44,6 +47,36 @@ class Campaign extends DataClass {
 }
 DataClass.register(Campaign, "Campaign"); 
 
+/**
+ * This is the DRAFT budget
+ * @returns {?Budget}
+ */
+Campaign.budget = item => {
+	let tli = item.topLineItem;
+	return tli? tli.budget : null;
+}
+/**
+ * @returns {?Date}
+ */
+Campaign.start = item => {
+	let tli = item.topLineItem;
+	return tli? asDate(tli.start) : null;
+}
+/**
+ * @returns {?Date}
+ */
+ Campaign.end = item => {
+	let tli = item.topLineItem;
+	return tli? asDate(tli.end) : null;
+}
+Campaign.isOngoing = campaign => {
+	let end = Campaign.end(campaign);
+	if (end) {
+		return end.getTime() > new Date().getTime();
+	}
+	// old data?
+	return campaign.ongoing;
+};
 
 /**
  * 
