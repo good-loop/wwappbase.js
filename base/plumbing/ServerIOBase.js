@@ -29,7 +29,9 @@ ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for
 ServerIO.NO_API_AT_THIS_HOST;
 
 // HACK our special micro-services
-ServerIO.ENDPOINT_NGO = 'https://app.sogive.org/charity';
+// also HACK: SoGive subdomains don't match the standard pattern & we don't want devs on local to need their own sogive server too
+const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test' }[C.SERVER_TYPE];
+ServerIO.ENDPOINT_NGO = `${C.HTTPS}://${SOGIVE_SUBDOMAIN}.sogive.org/charity`;
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
 
