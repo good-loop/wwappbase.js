@@ -63,7 +63,6 @@ const init = () => {
 	Login.verify();
 };
 
-
 /**
 	WARNING: This element will update on changes ...but the calling MainDiv most likely will *not*.
 	So the props will remain fixed.
@@ -90,6 +89,8 @@ class MainDivBase extends Component {
 		// redraw on change
 		const updateReact = (mystate) => this.setState({});
 		DataStore.addListener(updateReact);
+		// Scroll to top after hashchage (From my-loop MainDiv)
+		window.addEventListener("hashchange", () => window.scrollTo(0,0))
 	}
 
 	componentDidCatch(error, info) {
