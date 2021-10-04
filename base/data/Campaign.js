@@ -427,7 +427,7 @@ Campaign.dntn4charity = (campaign, isSub) => {
 		return alld4c;
 	} // ./leaf
 	// Master - recurse - sum leaf campaigns
-	if ( ! isDntn4CharityEmpty(campaign)) {
+	if ( ! isDntn4CharityEmpty(campaign.dntn4charity)) {
 		console.warn("Ignoring master.dntn4charity - it should not be set for masters 'cos it can confuse sums for e.g. reporting by-charity in T4G", campaign);
 	}
 	let pvSubs = Campaign.pvSubCampaigns({campaign});
@@ -614,8 +614,12 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 } // ./filterLowDonations
 
 
-const isDntn4CharityEmpty = (campaign) => {
-	let d4c = Campaign.dntn4charity(campaign);
+/**
+ * 
+ * @param {Object} d4c {charity-id: Money}
+ * @returns 
+ */
+const isDntn4CharityEmpty = (d4c) => {
 	if ( ! d4c) return true;
 	let nonEmpty = Object.values(d4c).find(v => v && Money.value(v));
 	return ! nonEmpty;
