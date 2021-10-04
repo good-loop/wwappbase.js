@@ -152,7 +152,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		}
 		// SoGive hack
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("sogive.org")) {
-			ServerIO.APIBASE = "app.sogive.org";
+			ServerIO.APIBASE = "https://app.sogive.org";
 		}
 		return;
 	}
