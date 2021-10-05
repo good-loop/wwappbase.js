@@ -21,6 +21,7 @@ import { doShareThing } from '../Shares';
 
 /**
  * @param {Object} p
+ * @param {!String} p.itemType
  * @param {?String} p.createProp If a new item is created -- what property should the typed value set? Defaults to "id"
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
