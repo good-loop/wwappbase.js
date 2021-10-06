@@ -603,12 +603,12 @@ const PropControlRadio = ({ type, prop, storeValue, value, path, saveFn, options
 		<Form>
 			{options.map(option => (
 				<FormGroup check inline={inline} key={option}>
-					<Input type={inputType} key={`option_${option}`} 
-						name={prop} value={option}
-						checked={option == storeValue}
-						onChange={onChange} {...otherStuff}
-					/>
 					<Label check>
+						<Input type={inputType} key={`option_${option}`} 
+							name={prop} value={option}
+							checked={option == storeValue}
+							onChange={onChange} {...otherStuff}
+						/>
 						{labelFn(option)}
 					</Label>
 				</FormGroup>
