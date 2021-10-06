@@ -28,7 +28,7 @@ const PropControlDt = ({prop, storeValue, onChange}) => {
 
 	return <InputGroup inline>
 		<Input type="number" name={`${prop}-n`} value={storeValue.n} onChange={(e) => onChangeInner({n: e.target.value})} />
-		<Input type="select" name={`${prop}-unit`} value={storeValue.unit} onChange={(e) => onChangeInner({unit: e.target.value})} default="SECONDS">
+		<Input type="select" name={`${prop}-unit`} value={storeValue.unit} onChange={(e) => onChangeInner({unit: e.target.value})} default="SECOND">
 			{domOptions}
 		</Input>
 	</InputGroup>;
