@@ -68,12 +68,13 @@ export default List;
 List.hits = list => list? (List.assIsa(list) && list.hits) : null;
 /**
  * 
- * @param {List} list 
- * @returns {Number}
+ * @param {?List} list 
+ * @returns {?Number}
+ * WARNING total can double count if type=all-bar-trash
  */
 List.total = list => {
-	return list.hits.length;
-	// list.total; TODO total can double count if type=all-bar-trash
+	if ( ! list) return null;
+	return list.total || list.hits.length;
 }
 
 /**
