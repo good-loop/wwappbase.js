@@ -958,6 +958,7 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 		if ( ! ['sm','lg'].includes(size)) console.warn("Odd size",size,otherProps);
 	}
 	// // focus? Doesn't seem to work ?!
+	let focus = otherProps.focus;
 	// const focusPath = DataStore.getValue(FOCUS_PATH)
 	// const autoFocus = otherProps.name===focusPath; // TODO proppath.join(".") === focusPath;
 

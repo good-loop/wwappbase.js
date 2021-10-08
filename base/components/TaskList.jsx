@@ -153,7 +153,7 @@ const TaskList = ({}) => {
  * @param parent {Task}
  * @param items {?List} If provided, optimistic add to this. Useful for filtered lists.
  */
-const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea}) => {
+const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea, focus}) => {
 	if ( ! Login.isLoggedIn()) {
 		return null;
 	}
@@ -192,7 +192,7 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea}) => {
 				<PropControl className="w-100"
 					type={textarea?"textarea":"text"} path={qpath} prop="text"
 					placeholder={parent? 'Reply / Comment' : 'Make a new task'} 
-					fast />
+					fast focus={focus}/>
 				<div><button className="ml-1 btn btn-primary" type="submit" onClick={quickTask} >Add</button></div>
 			</Form>
 		</div>
@@ -228,7 +228,7 @@ const TaskEditorDialog = () => {
 	}
 
 	return (
-		<Modal show={show} className="TaskEditorModal" onHide={() => DataStore.setValue(taskEditorDialogPath.concat('show'), false)} >
+		<Modal isOpen={show} className="TaskEditorModal" onHide={() => DataStore.setValue(taskEditorDialogPath.concat('show'), false)} >
 			<ModalHeader closeButton>Edit Task</ModalHeader>
 			<ModalBody>
 				{/* Would like this to be an actual editable field */}
