@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { assert, assMatch } from '../utils/assert';
 
-import { modifyHash, space, stopEvent, yessy } from '../utils/miscutils';
+import { ellipsize, modifyHash, space, stopEvent, yessy } from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
@@ -303,17 +303,17 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, list, canDelete, ser
 
 	// use a or div?
 	// ??Is there a nicer way to do this?
-
+	const hasButtons = canDelete || canCopy;
 	return (
 		<div className="ListItemWrapper clearfix flex-row">
 			{checkbox}
 			<A href={itemUrl} key={'A' + id} notALink={notALink}
 				onClick={event => onPick({ event, navpage, id })}
-				className={itemClassName || `ListItem btn-default btn btn-outline-secondary status-${item.status}`}
+				className={itemClassName || space(`ListItem btn-default btn btn-outline-secondary status-${item.status}`, hasButtons && "btn-space")}
 			>
 				{children}
 			</A>
-			{(canDelete || canCopy) && <div className="flex-column LL-buttons">
+			{hasButtons && <div className="flex-column LL-buttons">
 				{canDelete && <DefaultDelete type={type} id={id} />}
 				{canCopy && <DefaultCopy type={type} id={id} item={item} list={list} onCopy={newId => onPick({ navpage, id: newId })} />}
 			</div>}
@@ -352,6 +352,28 @@ const DefaultListItem = ({ type, servlet, navpage, item, checkboxes, canDelete, 
 	</>;
 };
 
+/**
+ * Like DefaultListItem, but with less details unless dev/debug=dev
+ */
+ export const SimplePrettyListItem = ({ type, servlet, navpage, item, checkboxes, canDelete, nameFn, extraDetail, button }) => {
+	if (!navpage) navpage = servlet;
+	const id = getId(item);
+	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
+	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
+	if (name.length > 280) name = name.slice(0, 280);
+	const status = item.status || "";
+	return <>
+		<Misc.Thumbnail item={item} />
+		<div className="info">
+			<div className="name">{name}</div>
+			{item.desc && <small>{ellipsize(item.desc, 140)}</small>}
+			{Roles.isDev() && <div className="detail small">
+				id: <span className="id">{id}</span> <span className="status">{status.toLowerCase()}</span> {extraDetail} Created: <Misc.RoughDate date={item.created} /> {AThing.lastModified(item) && <>Modified: <Misc.RoughDate date={AThing.lastModified(item)} /></>}
+			</div>}
+			{button || ''}
+		</div>
+	</>;
+};
 
 const DefaultDelete = ({ type, id }) => {
 	return (

@@ -26,14 +26,16 @@
 .ListItem {
 	display: inline-flex;
 	flex-direction: row;	
-	width: calc(100% - 4em); // HACK: leave some space for buttons
-
+	width: 100%;
 	> *:not(:first-child) {
 		margin-left: 0.5em;
 	}
 	.id {
 		font-family: monospace;
 	}
+}
+.ListItem.btn-space {
+	width: calc(100% - 4em); // HACK: leave some space for buttons
 }
 
 .TaskList {

@@ -104,7 +104,7 @@ const defineRole = (role, cans) => {
 };
 
 /**
- * Convenience for "is this a developer/admin?"
+ * Convenience for "is this a developer/admin?" You can also switch on debug via the url parameter debug=dev
  * @returns Boolean
  */
 const isDev = () => {
