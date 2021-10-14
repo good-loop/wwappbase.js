@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { assert, assMatch } from '../utils/assert';
 
-import { ellipsize, modifyHash, space, stopEvent, yessy } from '../utils/miscutils';
+import { ellipsize, is, modifyHash, space, stopEvent, yessy } from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
@@ -131,15 +131,25 @@ const ListLoad = ({ type, status, servlet, navpage,
 		fastFilter = ! pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
 		isLoading = ! (pvItemsFiltered.resolved && pvItemsAll.resolved);
 		error = pvItems.error;
+		if (filterFn || ! pvItemsFiltered.resolved) {
+			if ( ! is(hideTotal)) hideTotal = true; // NB: better to show nothing than incorrect info. Unless the caller explicitly asked for hideTotal=false
+		}
 	} else {
 		fastFilter = true;
 		isLoading = false;
+		if (filterFn && ! is(hideTotal)) {
+			hideTotal = true;
+		}
 	}
 	const hits = List.hits(list);
-	const total = list && List.total(list); // FIXME this ignores local filtering
+	let total = list && List.total(list); // FIXME this ignores local filtering
 	
 	// ...filter / resolve
 	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter });
+	if (items && hits && items.length < hits.length) {
+		// filtered out locally - reduce the total
+		total = items.length;
+	}
 	// paginate
 	let [pageNum, setPageNum2] = pageSize ? useState(0) : [];
 	const setPageNum = n => {
@@ -147,9 +157,6 @@ const ListLoad = ({ type, status, servlet, navpage,
 		window.scrollTo(0, 0);
 	};
 	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;	
-	if (filterFn || fastFilter) { // NB: fastFilter => we're waiting on the server for full data
-		hideTotal = true; // NB: better to show nothing than incorrect info
-	}
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem ? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
 
