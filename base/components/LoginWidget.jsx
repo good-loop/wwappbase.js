@@ -278,13 +278,14 @@ const EmailReset = ({}) => {
 			return;
 		}		
 		assMatch(email, String);
-		let call = Login.reset(email).then(res => {
+		let call = Login.reset(email).done(res => {
 			if (res.success) {
 				DataStore.setValue(['widget', 'LoginWidget', 'reset-requested'], true);
 				if (onLogin) onLogin(res);
-			} else {
-				DataStore.update({}); // The error will be in state, provoke a redraw to display it
 			}
+			return res;
+		}).fail(() => {
+			DataStore.update({}); // The error will be in state, provoke a redraw to display it
 		});
 	};
 
@@ -297,7 +298,7 @@ const EmailReset = ({}) => {
 				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
 					{verbButtonLabels[verb]}
 				</Button>
-			</div>
+			</div> 
 			<ErrAlert error={Login.error} />
 		</form>
 	);

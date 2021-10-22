@@ -545,14 +545,14 @@ Login.reset = function (email) {
 		action: 'reset'
 	}
 	let request = aget(Login.ENDPOINT, params)
-		.then(function (res) {
-			if (res.errors && res.errors.length) {
+		.fail(function (req) {
+			if (req.responseText) {
 				// stash the error for showing to the user
-				console.error("#login.state", res.errors[0]);
-				Login.error = res.errors[0];
-				return res;
+				console.error("#login.state", req.responseText.split('\n')[0]);
+				if (req.status == 404) Login.error = 'This account does not exist. Please check that you have typed your email address correctly.';
+				else Login.error = req.responseText;
 			}
-			return res;
+			return req;
 		});
 	return request;
 };
