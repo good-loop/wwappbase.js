@@ -236,7 +236,7 @@ Person.getEmail = person => {
 
 /**
  * 
- * @param {Object} p
+ * @param {Person|PersonLite} p
  * @returns PromiseValue(Person)
  */
 const getProfileFor = ({xid,service}) => {

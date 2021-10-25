@@ -69,7 +69,8 @@ const endpoints = [
  */
 ServerIO.checkBase = () => {	
 	// Setup endpoint etc overrides given in host-specific config file
-	const ServerIOOverrides = process.env.SERVERIO_OVERRIDES; // NB: see webpack.config.js for how this is set
+	// HACK: process undefined is showing up in studio.good-loop.com, Oct 2021 ^Dan
+	const ServerIOOverrides = typeof(process)!=="undefined" && process && process.env.SERVERIO_OVERRIDES; // NB: see webpack.config.js for how this is set
 	if (ServerIOOverrides) {
 		Object.entries(ServerIOOverrides).forEach(([key, val]) => {
 			ServerIO[key] = val;
