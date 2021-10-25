@@ -15,6 +15,7 @@ Assumes:
 	@property {?string} name 
 	@property {!string} service e.g. "twitter"
 	@property {?string} img 
+	@property {?string} jwt
 	@property {?string} externalUrl 
  */
 
