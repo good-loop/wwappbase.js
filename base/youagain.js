@@ -91,7 +91,7 @@ try {
 
 class _Login {
 	/** You-Again version */
-	version = "0.9.2";
+	version = "0.9.3";
 	/** This app, as known by you-again. You MUST set this! */
 	app;
 	/** aka `issuer` Allows for grouping several apps under one banner. */
