@@ -40,13 +40,13 @@ const bezierSlide = (x = 0) => {
  * @param {Number} initial Value to start counting from
  * @param {Number} animationLength Time (msec) to reach final number
  * @param {Number} fps frames per second
- * @param {String} currencySymbol
+ * @param {String} currencySymbol @deprecated - Use amount:Money instead
  * @param {Money} amount - Convenient way to set value + currencySymbol
  * @param {Number} sigFigs Round value. 3 by default for non-Money inputs.
  * @param {Boolean} preservePennies Preserves 2 digits on the pennies count. This overrides sigFigs. True by default for money.
  * @param {Boolean} centerText Centers the text when counting up in the animation.
  */
-const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, currencySymbol = '', pretty = true, sigFigs, preservePennies, noPennies, centerText=false}) => 
+const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, currencySymbol, pretty = true, sigFigs, preservePennies, noPennies, centerText=false}) => 
 {
 
     let {noround} = DataStore.getValue(['location', 'params']) || {};
@@ -54,7 +54,11 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 	if (amount) {
 		value = Money.value(amount);
 		currencySymbol = Money.currencySymbol(amount);
-	}
+		if ( ! currencySymbol) {
+			console.warn("Counter.jsx - No currency (using £ as default)",amount)
+			currencySymbol = currencySymbol="£";
+		}
+	}	
 	if ( ! value) {	// paranoia
 		console.warn("Counter - No value or amount");
 		return null;
@@ -132,8 +136,8 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 	// When centerText is set, the container div gets some extra horizontal padding to stop text overflow
 	return (
 		<div className="position-relative d-inline-block" style={{padding: "0 " + (centerText ? "0.1rem" : "0")}}>
-			<span className="invisible text-center" style={{width: centerText ? "100%" : "auto"}}>{currencySymbol + totalVal}</span>
-			<span className="position-absolute text-center" style={{right: 0, width: centerText ? "100%" : "auto"}} ref={ref}>{currencySymbol + disp}</span>
+			<span className="invisible text-center" style={{width: centerText ? "100%" : "auto"}}>{currencySymbol}{totalVal}</span>
+			<span className="position-absolute text-center" style={{right: 0, width: centerText ? "100%" : "auto"}} ref={ref}>{currencySymbol}{disp}</span>
 		</div>
 	);
 };
