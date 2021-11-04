@@ -298,7 +298,7 @@ const SavePublishDeleteEtc = ({
 					<Icon name="trashcan" /> <Spinner vis={vis} />
 				</Button>
 			}
-			<div><small>Status: {item && item.status} | Unsaved changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div>
+			{/* <div><small>Status: {item && item.status} | Unsaved changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div> */}
 		</div>
 	);
 };
