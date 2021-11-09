@@ -153,7 +153,7 @@ const TaskList = ({}) => {
  * @param parent {Task}
  * @param items {?List} If provided, optimistic add to this. Useful for filtered lists.
  */
-const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea, focus}) => {
+const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea, focus, advanced}) => {
 	if ( ! Login.isLoggedIn()) {
 		return null;
 	}
@@ -195,8 +195,19 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea, focus}) 
 					fast focus={focus}/>
 				<div><button className="ml-1 btn btn-primary" type="submit" onClick={quickTask} >Add</button></div>
 			</Form>
-		</div>
+		</div>		
 	);
+	// TODO advanced offers
+// 	<div className="form-compact form-inline">
+// 	<Assignment item={item} path={path} />
+// 	<Priority item={item} path={path} />
+// 	<Tags item={item} path={path} />
+// 	<Deadline item={item} path={path} />
+// </div>
+/* <Col md="3"><div className="flex-row">
+{media.map(m => <a key={m} href={m} target="_blank" className="pull-left"><Misc.ImgThumbnail url={m} /></a>)}
+<PropControl collapse path={path.concat('media')} type='imgUpload' prop={media.length} version="mobile" />
+</div></Col> */
 };
 
 /**
