@@ -527,9 +527,7 @@ const SIO_crud = function(type, item, previous, action, params={}) {
 	if (action!==C.CRUDACTION.get) {
 		// diff?
 		if (previous) {
-			let diff = jsonpatch.compare(previous, item);
-			// remove add-null, as the server ignores it
-			diff = diff.filter(op => ! (op.op==="add" && op.value===null));
+			let diff = jsonDiff(previous, item);
 			// no edits and action=save? skip save
 			if ( ! diff.length && action==='save') {
 				console.log("crud", "skip no-diff save", item, previous);
@@ -561,6 +559,19 @@ const SIO_crud = function(type, item, previous, action, params={}) {
 };
 // debug hack
 window.SIO_crud = SIO_crud;
+
+/**
+ * Wrap jsonpatch and clean-up null handling
+ * @param {*} previous 
+ * @param {*} item 
+ * @returns JsonPatchOp[]
+ */
+export const jsonDiff = (previous, item) => {
+	let diff = jsonpatch.compare(previous, item);
+	// remove add-null, as the server ignores it
+	diff = diff.filter(op => ! (op.op==="add" && op.value===null));
+	return diff;
+};
 
 ServerIO.saveEdits = function(type, item, previous) {
 	return SIO_crud(type, item, previous, 'save');
