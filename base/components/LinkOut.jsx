@@ -4,11 +4,12 @@ import { space } from '../utils/miscutils';
 /**
  * Just a convenience for an `<a>` tag to an external (potentially untrustworthy e.g. it might do referrer tracking) web page, which opens in a new tab.
  * @param {Object} p
- * @param {?string} p.href If unset, return a `span` not an `a`
+ * @param {?string} p.href If unset, return a `span` not an `a`. 
+ * Convenience HACK: If this is a domain name, e.g. "bbc.co.uk", patch it by adding "https://"
  */
 const LinkOut = ({href, disabled, children, className, ...props}) => 
 	(disabled || ! href)? <span className={space(disabled&&"text-muted",className)} {...props}>{children}</span>
-	: <a href={href} target="_blank" rel="noopener" rel="noreferrer" className={className} {...props} >{ children }</a>;
+	: <a href={href.includes("://")? href : "https://"+href} target="_blank" rel="noopener" rel="noreferrer" className={className} {...props} >{ children }</a>;
 
 let citeCnt = 1;
 /**
