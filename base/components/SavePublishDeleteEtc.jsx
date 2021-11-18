@@ -134,7 +134,8 @@ const check = ok => {
  */
 const SavePublishDeleteEtc = ({
 	type, id,
-	hidden, position, className = "SavePublishDeleteEtc", size,
+	hidden, position, className = "SavePublishDeleteEtc", 
+	size,
 	cannotPublish, cannotDelete, canArchive, canDiscard,
 	publishTooltipText = 'Your account cannot publish this.',
 	autoPublish, autoSave = true,
@@ -249,9 +250,9 @@ const SavePublishDeleteEtc = ({
 			{ ! saveAs && <SaveEditsButton />}
 
 			{saveAs &&
-				<ButtonDropdown size="lg" isOpen={isSaveButtonDropdownOpen} toggle={() => setSaveButtonDropdownOpen( ! isSaveButtonDropdownOpen)}>
+				<ButtonDropdown size={size} isOpen={isSaveButtonDropdownOpen} toggle={() => setSaveButtonDropdownOpen( ! isSaveButtonDropdownOpen)}>
 					<SaveEditsButton />
-					<DropdownToggle split size="lg" color="secondary" />
+					<DropdownToggle split size={size} color="secondary" />
 					<DropdownMenu>
 						<Button name="save-as" color="secondary" size={size}
 							disabled={isSaving}
