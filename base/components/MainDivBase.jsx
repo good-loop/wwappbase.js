@@ -10,7 +10,7 @@ import SavePublishDeleteEtc from './SavePublishDeleteEtc';
 // Plumbing
 import DataStore from '../plumbing/DataStore';
 import Roles from '../Roles';
-import C from '../../C';
+import C from '../CBase';
 import Misc from './Misc';
 import Share from '../data/Share';
 import ServerIO from '../plumbing/ServerIOBase';
