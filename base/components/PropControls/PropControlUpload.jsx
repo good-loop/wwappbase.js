@@ -11,22 +11,34 @@ import Icon from '../Icon';
 import LinkOut from '../LinkOut';
 import { luminanceFromHex } from '../Colour';
 
+
 /** MIME type sets */
 const imgTypes = 'image/jpeg, image/png, image/svg+xml';
 const videoTypes = 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
+const fontTypes = 'font/ttf, font/otf, font/woff, font/woff2';
+
+
+/** Uploader types which take a 100x100 square thumbnail */
+const typesWithThumbnail = { imgUpload: true, videoUpload: true, bothUpload: true };
+/** Style block for a 100x100 square thumbnail */
+const thumbnailStyle = { width: '100px', height: '100px', position: 'relative' };
+
 
 /** Accepted MIME types for input types*/
 const acceptTypes = {
 	imgUpload: imgTypes,
 	videoUpload: videoTypes,
 	bothUpload: `${imgTypes}, ${videoTypes}`,
+	fontUpload: fontTypes
 };
+
 
 /** Human-readable descriptions of accepted types */
 const acceptDescs = {
 	imgUpload: 'JPG, PNG, or SVG image',
 	videoUpload: 'video',
 	bothUpload: 'video or image',
+	fontUpload: 'font'
 };
 
 
@@ -35,6 +47,7 @@ const fakeEvent = {
 	preventDefault: () => null,
 	stopPropagation: () => null,
 };
+
 
 /**
  * Warts are processed within AdUnit -- ccrop is done by local css, whilst noscale switches off the use of media.gl.com's scaling
@@ -65,6 +78,7 @@ const hashWart = (rawUrl, wartMatcher, newWart) => {
 	return newUrl;
 }
 
+
 /** Bytes to human-readable b/kb/mb/gb. TODO Put in utils? */
 const bytes = b => {
 	if (b < 1024) return `${b} bytes`;
@@ -72,6 +86,7 @@ const bytes = b => {
 	if (b < 1024000000) return `${(b/1024000).toFixed(1)}MB`;
 	return `${(b/1024000000).toFixed(1)}GB`;
 }
+
 
 /**
  * Print size of file in progress, percent done, estimated time remaining.
@@ -100,6 +115,22 @@ const UploadProgress = ({ start, loaded = 0, total }) => {
 const circleStyle = { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', borderRadius: '50%', border: '1px dashed silver', overflow: 'visible', zIndex: '1', margin: '5px'};
 
 
+/** Wrap the LinkOut component to rename its "href" prop so it can be used in place of a Thumbnail component */
+const LinkThumbnail = ({url}) => <LinkOut href={url}>{url}</LinkOut>;
+
+
+/** Display a sampler of the uploaded font, if present */
+const FontThumbnail = ({url}) => {
+	if (!url) return null;
+	return <>
+		<style>{`@font-face { font-family: "Font-Upload-Test"; src: url("${url}") format("woff"); }`}</style>
+		<p className="my-1" style={{fontFamily: 'Font-Upload-Test'}} contentEditable suppressContentEditableWarning>
+			The quick brown fox jumps over the lazy dog.
+		</p>
+	</>
+};
+
+
 /**
  * image or video upload. Uses Dropzone
  * @param {Object} p
@@ -123,7 +154,8 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		imgUpload: Misc.ImgThumbnail,
 		videoUpload: Misc.VideoThumbnail,
 		bothUpload: storeValue.match(/(png|jpe?g|svg)$/) ? Misc.ImgThumbnail : Misc.VideoThumbnail,
-		upload: ({url}) => <LinkOut href={url} />
+		fontUpload: FontThumbnail,
+		upload: LinkThumbnail
 	}[type];
 
 	// When file picked/dropped, upload to the media cluster
@@ -222,14 +254,13 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 			{collapse && <Button className="pull-left" title="upload media" onClick={e => setCollapsed( ! collapsed)} color="secondary" size={size}><Icon color="white" name="outtray" /></Button>}
 			{isOpen && <>
 				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
-				<div className="pull-left">
-					<div className="DropZone" {...getRootProps()}>
-						<input {...getInputProps()} />
-						Drop a {acceptDescs[type]} here
-					</div>
-				</div></>
+				<div className="DropZone pull-left my-1 p-1" {...getRootProps()}>
+					<input {...getInputProps()} />
+					Drop a {acceptDescs[type]} here
+				</div>
+				</>
 			}
-			<div className="pull-right" style={{ width: '100px', height: '100px', position: 'relative' }}>
+			<div className="pull-right" style={typesWithThumbnail[type] && thumbnailStyle}>
 				{uploading ? <UploadProgress {...uploading} /> : <>
 					<Thumbnail className={className} background={bg} url={storeValue} />
 					{circleOverlay}
@@ -252,6 +283,8 @@ const baseSpec = {
 registerControl({type: 'imgUpload', ...baseSpec });
 registerControl({ type: 'videoUpload', ...baseSpec });
 registerControl({ type: 'bothUpload', ...baseSpec });
+// Fonts!
+registerControl({ type: 'fontUpload', ...baseSpec });
 // Upload anything!?
 registerControl({ type: 'upload', ...baseSpec });
 
