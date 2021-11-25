@@ -44,11 +44,12 @@ ServerIO.PROFILER_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}profiler.good-loop.co
 /**
  * Where uploads go
  */
-ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com/`;
-// ServerIO.MEDIA_ENDPOINT = `https://testuploads.good-loop.com/`;
-// ServerIO.MEDIA_ENDPOINT = `https://uploads.good-loop.com/`;
+ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com`;
+// ServerIO.MEDIA_ENDPOINT = `https://testuploads.good-loop.com`;
+// ServerIO.MEDIA_ENDPOINT = `https://uploads.good-loop.com`;
 // Copy into ServerIO.js use UploadServlet instead of media.good-loop.com
 // ServerIO.MEDIA_ENDPOINT = '/upload.json';
+
 
 
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
@@ -59,8 +60,8 @@ const endpoints = [
 	{name: 'base API', key: 'APIBASE', prodValue: ''},
 	{name: 'DataLog', key: 'DATALOG_ENDPOINT', prodValue: 'https://lg.good-loop.com/data'},
 	{name: 'Profiler', key: 'PROFILER_ENDPOINT', prodValue: 'https://profiler.good-loop.com'},
-	{name: 'Ad', key: 'AS_ENDPOINT', prodValue: 'https://as.good-loop.com/'},
-	{name: 'Media', key: 'MEDIA_ENDPOINT', prodValue: 'https://uploads.good-loop.com/'},
+	{name: 'Ad', key: 'AS_ENDPOINT', prodValue: 'https://as.good-loop.com'},
+	{name: 'Media', key: 'MEDIA_ENDPOINT', prodValue: 'https://uploads.good-loop.com'},
 ];
 
 /**
@@ -129,7 +130,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.PORTAL_ENDPOINT = 'https://testportal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
-		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com/';
+		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
 		// extra hack for my-loop:
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("local")) {
 			ServerIO.APIBASE = ServerIO.APIBASE.replace("local", "test");
@@ -141,7 +142,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.PORTAL_ENDPOINT = 'http://localportal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'http://locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'http://localprofiler.good-loop.com';
-		ServerIO.MEDIA_ENDPOINT = 'http://localuploads.good-loop.com/';
+		ServerIO.MEDIA_ENDPOINT = 'http://localuploads.good-loop.com';
 		return;
 	}
 	if (server==="production") {
@@ -149,7 +150,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
-		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com/';
+		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
 		// extra hack for my-loop:
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("test")) {
 			ServerIO.APIBASE = ServerIO.APIBASE.replace("test", "");
