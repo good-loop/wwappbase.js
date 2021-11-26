@@ -12,6 +12,8 @@ import PropControl from './PropControl'; // Hack: this is here to poke Input int
 import XId from '../data/XId';
 import {LoginLink} from './LoginWidget';
 import {setTaskTags} from './TaskList';
+import AboutPage from './AboutPage';
+import { Card } from 'reactstrap';
 
 const BasicAccountPage = () => {
 	if (!Login.isLoggedIn()) {
@@ -24,6 +26,10 @@ const BasicAccountPage = () => {
 			<h1>My Account</h1>
 			<LoginCard />
 			<RolesCard />
+			
+			{/* minor todo <Card>
+				<AboutPage />
+			</Card> */}
 		</div>
 	);
 };
