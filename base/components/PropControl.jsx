@@ -441,7 +441,9 @@ const PropControl2 = (props) => {
 	}
 
 	if (type === 'select') {
-		let props2 = { onChange, storeValue, value, modelValueFromInput, ...props };
+		let props2 = { onChange, storeValue, value, modelValueFromInput, title, ...props };
+		props2["aria-label"] = props2.title;
+		if (!props2.title || !props2.title.length) console.warn("Select PropControl with no accessible name! Add a title or aria-label for accessibility");
 		return <PropControlSelect {...props2} />
 	}
 
