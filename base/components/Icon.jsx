@@ -21,7 +21,8 @@ const EMOJI = {
 	".txt":"🖹",
 	search: "🔍",
 	tick: "✔",
-	memo: "📝"
+	memo: "📝",
+	plus: "⨁" // ⊕
  };
 /**
  * Hack: list a few icons here.
