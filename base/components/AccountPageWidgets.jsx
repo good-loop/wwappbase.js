@@ -14,6 +14,7 @@ import {LoginLink} from './LoginWidget';
 import {setTaskTags} from './TaskList';
 import AboutPage from './AboutPage';
 import { Card } from 'reactstrap';
+import ShareWidget, { ShareLink } from './ShareWidget';
 
 const BasicAccountPage = () => {
 	if (!Login.isLoggedIn()) {
@@ -51,7 +52,11 @@ const RolesCard = () => {
 }
 
 
-const RoleLine = ({role}) => <div className="badge badge-pill badge-info">{role}</div>;
+const RoleLine = ({role}) => {
+	return <div className="badge badge-pill badge-info">{role}
+		{(Roles.isDev() || Roles.iCan("admin")) && <><ShareLink shareId={"role:"+role}/><ShareWidget key={role} shareId={"role:"+role} /></>}
+	</div>;
+}
 
 export {
 	BasicAccountPage,
