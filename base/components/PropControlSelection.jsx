@@ -19,6 +19,7 @@ import { assert } from '../utils/assert';
  * A list-of-strings editor, where the strings are drawn as discrete "pills"
  * @param {Object} p
  * @param {String[]} p.value
+ * @param {Object[]} p.options 
  * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
  */
 const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
