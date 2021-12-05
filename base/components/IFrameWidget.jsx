@@ -85,7 +85,8 @@ const insertJson = ({ frame, json }) => {
 
 
 /**
- * A widget to insert an iframe
+ * A widget to insert an iframe.
+ * Usage: ??
  * @param {Object} p
  * @param {String} p.url
  * @param {?String} p.css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.

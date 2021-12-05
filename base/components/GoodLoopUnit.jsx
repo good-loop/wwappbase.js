@@ -121,6 +121,9 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
 	const src = getAdUrl({ file: 'unit.js', unitBranch, params: glParams });
 	appendEl(doc, {tag: 'script', src, async: true});
 
+	// insert wysiwyg xray code
+	appendEl(doc, {tag: 'script', src:"/build/js/xray.js" , async: true});
+	
 	// On unmount: empty out iframe's document
 	return () => doc ? doc.documentElement.innerHTML = '' : null;
 };
@@ -138,8 +141,9 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
  * @param {String} p.endCard Set truthy to display end-card without running through advert.
  * @param {?Boolean} p.noab Set true to block any A/B experiments
  * @param {Object} p.extraParams A map of extra URL parameters to put on the unit.js URL.
+ * @param {?JSX} p.Editor added right after the iframe
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug || !C.isProduction();
@@ -222,7 +226,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	}, []);
 
 	// Calculate dimensions every render because it's cheap and KISS
-	const dims = {};
+	const dims = {position:"relative"}; // allow Editor to position elements
 	if (container) {
 		const { width, height } = container.getBoundingClientRect();
 		// 16:9 --> 100% width, proportional height; 9:16 --> 100% height, proportional width
@@ -233,6 +237,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
 			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} />
+			{Editor && <Editor />}
 		</div>
 	);
 };
