@@ -10,19 +10,20 @@ import { space } from '../utils/miscutils';
   * https://www.unicode.org/emoji/charts/full-emoji-list.html
   */
 const EMOJI = {
-	outtray: "📤",
-	globe: "🌍",
-	hourglass: "⏳",
-	intray: "📥",
 	camera: "📷",
 	copy: "⎘",
-	trashcan: "🗑", //&#x1f5d1;
+	clipboard: "📋",
+	globe: "🌍",
+	hourglass: "⏳",
 	info: "🛈", // ℹ or 🛈
-	".txt":"🖹",
+	intray: "📥",
+	memo: "📝",
+	outtray: "📤",
+	plus: "⨁", // ⊕
 	search: "🔍",
 	tick: "✔",
-	memo: "📝",
-	plus: "⨁" // ⊕
+	trashcan: "🗑", //&#x1f5d1;
+	".txt":"🖹",
  };
 /**
  * Hack: list a few icons here.
