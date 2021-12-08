@@ -190,7 +190,9 @@ const LoginWidget = ({showDialog, logo, title, Guts = LoginWidgetGuts, services,
 	// The widget shouldn't get stuck showing the thankyou, so reset it once it closes
 	if (!show && showThankyou) setThankyou(false);
 
-	if (!services) services = ['twitter', 'facebook'];
+	if ( ! services) {
+		services = [C.app.twitterAppId&&'twitter', C.app.facebookAppId&&'facebook'].filter(x => x);
+	}
 	let verb = DataStore.getValue(VERB_PATH) || 'login';
 
 	if (!title) title = `Welcome ${(verb === 'login') ? '(back)' : ''} to ${C.app.name}`;
