@@ -11,24 +11,17 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
-import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, UncontrolledButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
-
-import { assert, assMatch } from '../utils/assert';
+import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap';
 import _ from 'lodash';
 import Enum from 'easy-enums';
+
+import { assert, assMatch } from '../utils/assert';
 import JSend from '../data/JSend';
-import {stopEvent, toTitleCase, space, labeller, is, asArray} from '../utils/miscutils';
-import PromiseValue from 'promise-value';
+import {stopEvent, toTitleCase, space, labeller, is  } from '../utils/miscutils';
+
 
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
-import ServerIO from '../plumbing/ServerIOBase';
-// import ActionMan from '../plumbing/ActionManBase';
-import printer from '../utils/printer';
-import C from '../CBase';
-import Money from '../data/Money';
-import { getType, getId } from '../data/DataClass';
-import { notifyUser } from '../plumbing/Messaging';
 import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
 
@@ -241,9 +234,9 @@ const PropControl2 = (props) => {
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
 	let { bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
-	assert(!type || PropControl.KControlType.has(type), 'Misc.PropControl: ' + type);
-	assert(path && _.isArray(path), 'Misc.PropControl: path is not an array: ' + path + " prop:" + prop);
-	assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'Misc.PropControl: null in path ' + path + " prop:" + prop);
+	assert(!type || PropControl.KControlType.has(type), 'PropControl: ' + type);
+	assert(path && _.isArray(path), 'PropControl: path is not an array: ' + path + " prop:" + prop);
+	assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'PropControl: null in path ' + path + " prop:" + prop);
 	// update is undefined by default, false if fast. See DataStore.update()
 	let update;
 	if (fast) update = false;
@@ -492,8 +485,8 @@ const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRa
 	// NB inline does nothing here?
 	// NB: pull off internal attributes so the select is happy with rest
 	const { className, recursing, modelValueFromInput, ...rest } = otherStuff;
-	assert(options, 'Misc.PropControl: no options for select ' + [prop, otherStuff]);
-	assert(options.map, 'Misc.PropControl: options not an array ' + options);
+	assert(options, 'PropControl: no options for select ' + [prop, otherStuff]);
+	assert(options.map, 'PropControl: options not an array ' + options);
 	options = _.uniq(options);
 	const labelFn = labeller(options, labels);
 
@@ -1153,11 +1146,6 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	if (rawToStore) rawToStoreForType[type] = rawToStore;
 };
 
-// Modularised PropControl types: import default types that should always be available
-import { specs as urlSpecs } from './PropControls/PropControlUrl';
-urlSpecs.forEach(spec => registerControl(spec));
-import { specs as imgSpecs } from './PropControls/PropControlImg';
-imgSpecs.forEach(spec => registerControl(spec));
 
 export {
 	registerControl,

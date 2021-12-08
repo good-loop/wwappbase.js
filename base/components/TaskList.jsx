@@ -6,14 +6,12 @@ import {space, stopEvent} from '../utils/miscutils';
 
 import C from '../CBase';
 import List from '../data/List';
-import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 
 import ListLoad from './ListLoad';
 import Task from '../data/Task';
 // init basic stuff
 import ActionMan from '../plumbing/ActionManBase';
-import Crud from '../plumbing/Crud';
 import MDText from './MDText';
 import PropControl from './PropControl';
 import { publishDraftFn } from './SavePublishDeleteEtc';
@@ -36,7 +34,7 @@ const TaskListItem = ({item}) => {
 	return (
 		<div>
 			<div className="pull-left">
-				<Misc.PropControl path={path}
+				<PropControl path={path}
 					prop="closed" type="checkbox"
 					saveFn={() => publishDraftFn({type:'Task', id:item.id})}
 				/>
