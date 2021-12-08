@@ -79,6 +79,8 @@ const baseConfig = {
 				}
 			}, {
 				test: /\.less$/,
+				// If we use css-loader with default options it will try to inline any url('/img/whatever.png') rules it finds.
+				// We don't want this (plus the URLs don't resolve correctly, throwing an error on compile) so {url: false} disables it.
 				use: [MiniCssExtractPlugin.loader, {loader: 'css-loader', options: {url: false}}, 'less-loader'],
 			}
 		],
