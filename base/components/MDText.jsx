@@ -61,6 +61,7 @@ const MDText = ({source, renderers={}, escapeHtml = false, setSource}) => {
 	if (setSource) {
 		renderers.listItem = args => <MDCheckbox source={source} setSource={setSource} {...args} />;
 	}
+	// TODO linkOut vs a
 
 	return <div className="MDText"><ReactMarkdown plugins={[gfm]} escapeHtml={escapeHtml} children={nsource} renderers={renderers} /></div>;
 };
