@@ -65,7 +65,8 @@ export const getAdUrl = ({file = 'unit.js', unitBranch, params}) => {
 		}
 	}
 
-	const url = new URL(`${ServerIO.AS_ENDPOINT}/${file}`);
+	const host = ServerIO.UNIT_ENDPOINT || ServerIO.AS_ENDPOINT;
+	const url = new URL(`${host}/${file}`);
 
 	// append all gl.* parameters
 	if (params) {
@@ -143,7 +144,7 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
  * @param {Object} p.extraParams A map of extra URL parameters to put on the unit.js URL.
  * @param {?JSX} p.Editor added right after the iframe
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug || !C.isProduction();
@@ -186,6 +187,9 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 			// If the iframe's DOM is ready to use when this ref executes, mark it as such.
 			// Do asynchronously so setFrameReady(false) above gets to trigger a render first
 			window.setTimeout(() => setFrameReady(true), 0);
+			if (iframeCallback) {
+				iframeCallback(node);
+			}
 		} else {
 			// If it's not ready, add an event listener to mark it when it is.
 			// NB: Jan 2021: bugs seen where setFrameReady(true) is never called.
