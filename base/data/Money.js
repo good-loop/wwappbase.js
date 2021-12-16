@@ -231,6 +231,36 @@ Money.convertCurrency = (money, currencyTo) => {
 	return moneyFromv100p(money.value100p * conversionVal, currencyTo);
 };
 
+Money.convertCurrencyAPI = (money, currencyTo) => {
+	if (! currencyTo) {
+		console.warn("Money.convertCurrency - no-op, unset currencyTo");
+		return money;	
+	}
+
+	let pvRate = DataStore.fetch(['rates'], () => {
+		let got = $.get('https://api.exchangerate.host/latest?base=GBP');
+		return got;
+	});
+
+	let rate = 1;
+	if (pvRate.value && pvRate.value.rates) {
+		try {
+			rate = pvRate.value.rates[currencyTo];
+		} catch(err) {
+			console.error(err);
+		}
+	}
+
+	if (rate == 1) {
+		console.error("Failed to fetch currency rate from API");
+		return money;
+	}
+
+	assert(Money.CURRENCY[currencyTo], "Bad currency: "+currencyTo);
+	Money.assIsa(money);
+	return moneyFromv100p(money.value100p * rate, currencyTo);
+}
+
 /**
  * Convenience for getting the symbol for a Money object
  * @param {?Money} money
