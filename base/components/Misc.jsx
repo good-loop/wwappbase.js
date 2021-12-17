@@ -1,33 +1,29 @@
 import React, { useState, Fragment } from 'react';
 
 import { Alert, Card, CardBody, Nav, Button, NavItem, NavLink } from 'reactstrap';
-import { assert, assMatch } from '../utils/assert';
-import _ from 'lodash';
-import {addScript, asDate, getLogo, isoDate, join, space } from '../utils/miscutils';
 import PromiseValue from 'promise-value';
 import md5 from 'md5';
+import _ from 'lodash';
+
+import { assert, assMatch } from '../utils/assert';
+import { asDate, getLogo, isoDate, space } from '../utils/miscutils';
 
 import JSend from '../data/JSend';
 
 import DataStore from '../plumbing/DataStore';
 import ServerIO from '../plumbing/ServerIOBase';
-import ActionMan from '../plumbing/ActionManBase';
 import printer from '../utils/printer';
 import {LoginLink} from './LoginWidget';
 import C from '../CBase';
 import Money from '../data/Money';
-import PropControl, { FormControl } from './PropControl';
 
-import {getType, getId, nonce} from '../data/DataClass';
+import { getId} from '../data/DataClass';
 import ErrAlert from './ErrAlert';
-import Messaging from '../plumbing/Messaging';
 import XId from '../data/XId';
 
 
 const Misc = {};
 
-Misc.FormControl = FormControl;
-Misc.PropControl = PropControl;
 
 /**
  * Normalise unicode characters which have ascii equivalents (e.g. curly quotes), to avoid many annoying issues.

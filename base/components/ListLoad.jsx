@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 
+import { Button, Card, CardBody, Form } from 'reactstrap';
+
 import { assert, assMatch } from '../utils/assert';
 
 import { ellipsize, is, modifyHash, space, stopEvent, yessy } from '../utils/miscutils';
@@ -7,16 +9,14 @@ import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
 import DataStore, { Item, Ref } from '../plumbing/DataStore';
-import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
-import { CRUD_copy, getDataItem, saveAs } from '../plumbing/Crud';
-import DataClass, { getType, getId, nonce, getClass, getStatus } from '../data/DataClass';
-import { Button, Card, CardBody, Form, Alert } from 'reactstrap';
+import { getDataItem, saveAs } from '../plumbing/Crud';
+import { getType, getId, nonce, getClass, getStatus } from '../data/DataClass';
+
 import ErrAlert from './ErrAlert';
 import Icon from './Icon';
 import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
-import { Col } from 'reactstrap/lib';
 import List from '../data/List';
 
 /**
@@ -304,7 +304,7 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, list, canDelete, ser
 
 	const checkbox = checkboxes ? (
 		<div className="pull-left">
-			<Misc.PropControl title="Select for mass actions" path={checkedPath} type="checkbox" prop={id} />
+			<PropControl title="Select for mass actions" path={checkedPath} type="checkbox" prop={id} />
 		</div>
 	) : null;
 
