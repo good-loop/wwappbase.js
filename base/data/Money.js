@@ -247,9 +247,6 @@ Money.convertCurrencyAPI = (money, currencyTo) => {
 		let got = $.get("https://api.exchangerate.host/latest?base="+money.currency);
 		return got;
 	});
-	if ( ! pvRate.value) {
-		return money;
-	}
 	
 	let rate = 1;
 	if (pvRate.value && pvRate.value.rates) {
