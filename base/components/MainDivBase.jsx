@@ -113,7 +113,8 @@ class MainDivBase extends Component {
 			navbarDarkTheme=true,
 			navbarBackgroundColour="dark",
 			fullWidthPages,
-			noRegister,			
+			noRegister,
+			loginService			
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -184,7 +185,8 @@ class MainDivBase extends Component {
         <LoginWidget
           title={`Welcome to ${C.app.name}`}
           noRegister={noRegister}
-          services={noRegister ? [] : undefined}
+		  loginService={loginService}
+          services={noRegister ? [] : loginService}
         />
       </div>
     );
