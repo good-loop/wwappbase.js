@@ -231,23 +231,33 @@ Money.convertCurrency = (money, currencyTo) => {
 	return moneyFromv100p(money.value100p * conversionVal, currencyTo);
 };
 
+/**
+ * Convert a money value to a different currency using external API
+ * @param {*} money 
+ * @param {*} currencyTo 
+ * @returns {!Money} plus an extra property of money.date for when this was fetched, which is unset if the default was returned
+ */
 Money.convertCurrencyAPI = (money, currencyTo) => {
 	if (! currencyTo) {
 		console.warn("Money.convertCurrency - no-op, unset currencyTo");
 		return money;	
 	}
 
-	let pvRate = DataStore.fetch(['rates'], () => {
-		let got = $.get('https://api.exchangerate.host/latest?base=GBP');
+	let pvRate = DataStore.fetch(['misc','rates'], () => {
+		let got = $.get("https://api.exchangerate.host/latest?base="+money.currency);
 		return got;
 	});
-
+	if ( ! pvRate.value) {
+		return money;
+	}
+	
 	let rate = 1;
 	if (pvRate.value && pvRate.value.rates) {
 		try {
 			rate = pvRate.value.rates[currencyTo];
-		} catch(err) {
-			console.error(err);
+			console.warn(currencyTo+"currencyTo"+rate, pvRate.value);
+		} catch(err) {	// paranoia (bugs, Nov 2021)
+			console.error(err); // swallow it
 		}
 	}
 
@@ -258,7 +268,9 @@ Money.convertCurrencyAPI = (money, currencyTo) => {
 
 	assert(Money.CURRENCY[currencyTo], "Bad currency: "+currencyTo);
 	Money.assIsa(money);
-	return moneyFromv100p(money.value100p * rate, currencyTo);
+	let m = moneyFromv100p(money.value100p * rate, currencyTo);
+	m.date = new Date();
+	return m;
 }
 
 /**
