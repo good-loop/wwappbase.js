@@ -239,8 +239,8 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	}
 
 	return (
-		<div className="goodLoopContainer" style={dims} ref={receiveContainer}>
-			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} />
+		<div className="goodLoopContainer" style={dims} ref={receiveContainer} id={vertId}>
+			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} aria-label="Good-Loop ad"/>
 			{Editor && <Editor />}
 		</div>
 	);
