@@ -2,14 +2,13 @@
 
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { Button, FormGroup, Label } from 'reactstrap';
 
 import { FormControl, registerControl } from '../PropControl';
 import Misc from '../Misc';
-import { urlValidator } from './PropControlUrl';
-import { Button, FormGroup, Label } from 'reactstrap';
+import { urlValidator } from './validators';
 import Icon from '../Icon';
 import LinkOut from '../LinkOut';
-import { luminanceFromHex } from '../Colour';
 
 
 /** MIME type sets */

@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { FormControl, registerControl } from '../PropControl';
-import { urlValidator } from './PropControlUrl';
+import { urlValidator } from './validators';
 import Misc from '../Misc';
 
 
@@ -15,19 +15,10 @@ const PropControlImg = ({prop, storeValue, onChange, bg, ...rest}) => (
 );
 
 
-// registerControl({
-// 	type: 'img',
-// 	$Widget: PropControlImg,
-// 	validator: urlValidator
-// });
+registerControl({
+	type: 'img',
+	$Widget: PropControlImg,
+	validator: urlValidator
+});
 
-// TODO Is this the Right Way?
-// We can't call registerControl here because - due to a dependency loop - it may not exist yet.
-// So we let PropControl.jsx receive a specification for each new control type & register them itseld.
-export const specs = [
-	{
-		type: 'img',
-		$Widget: PropControlImg,
-		validator: urlValidator
-	}
-];
+export default {};
