@@ -101,7 +101,7 @@ const normaliseParams = ({ endCard, ...params }) => {
  * Insert unit.js raw.
  * BehaviourLoadUnit in the adunit will find that div and extract the JSON from it.
  */
-const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
+const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -123,8 +123,10 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
 	appendEl(doc, {tag: 'script', src, async: true});
 
 	// insert wysiwyg xray code
-	appendEl(doc, {tag: 'script', src:"/build/js/xray.js" , async: true});
-	
+	if (xray) {
+		appendEl(doc, {tag: 'script', src:"/build/js/xray.js" , async: true});
+	}
+
 	// On unmount: empty out iframe's document
 	return () => doc ? doc.documentElement.innerHTML = '' : null;
 };
@@ -207,7 +209,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
 		if (frameReady && unitJson && unitBranch !== false) {
-			const cleanup = insertUnit({frame, unitJson, unitBranch, glParams});
+			const cleanup = insertUnit({frame, unitJson, unitBranch, glParams, xray:!!Editor});
 			insertAdunitCss({frame, css});
 			return cleanup;
 		}
