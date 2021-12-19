@@ -13,20 +13,21 @@ import Icon from './Icon';
 /**
  * A list-of-objects editor
  * @param {Object} p
+ * @param {?String} p.itemType Used for labels
  */
-const PropControlList = ({rawValue, storeValue, Viewer, Editor, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
+const PropControlList = ({rawValue, storeValue, Viewer, Editor, itemType, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
 	const listValue = asArray(storeValue);
 
 	return (<>
 		<ul>
 		{listValue.map((item,i) => 
 			<li key={i} >{is(item)? <Viewer item={item} i={i} /> : "_"} 
-				<AddButton arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} /> 
+				<AddOrEditButton arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} itemType={itemType} /> 
 				<DeleteButton arrayPath={proppath} i={i} listValue={listValue} /> 
 				{item && item.error && <Badge color="danger" title={item.error.detailMessage || item.error.message || JSON.stringify(item.error)}>!</Badge>}
 			</li>
 		)}
-		<li><AddButton arrayPath={proppath} Editor={Editor} listValue={listValue} /></li>
+		<li><AddOrEditButton size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue} itemType={itemType} /></li>
 	</ul>
 	</>);
 
@@ -35,8 +36,7 @@ const PropControlList = ({rawValue, storeValue, Viewer, Editor, setRawValue, mod
 }; // ./radio
 registerControl({type:'list', $Widget: PropControlList});
 
-
-const AddButton = ({arrayPath, i=-1, listValue, Editor}) => {
+const AddOrEditButton = ({arrayPath, i=-1, listValue, Editor, itemType}) => {
 	let [show, setShow] = useState();
 	let epath = i===-1? ['widget','AddButton'].concat(...arrayPath) : arrayPath.concat(i);
 	const doAdd = e => {
@@ -45,13 +45,14 @@ const AddButton = ({arrayPath, i=-1, listValue, Editor}) => {
 		DataStore.setValue(epath, null);
 		setShow(false);
 	};
+	const onClick = e => { DataStore.update(); setShow(true); }
 	return (<>		
 		{i===-1?
-			<Button onClick={e => setShow(true)}><Icon name="add" /><Icon name="plus" /> Add</Button>
-			: <><Button size="sm" className="ml-1" color="outline-secondary" onClick={e => setShow(true)}><Icon name="memo"/></Button></>
+			<Button onClick={onClick}><Icon name="add" /><Icon name="plus" /> Add</Button>
+			: <><Button size="sm" className="ml-1" color="outline-secondary" onClick={onClick}><Icon name="memo"/></Button></>
 		}
 		<Modal isOpen={show} toggle={() => setShow( ! show)} >
-			<ModalHeader toggle={() => setShow( ! show)} >Add Export to Google Sheets</ModalHeader>
+			<ModalHeader toggle={() => setShow( ! show)} >Add {itemType}</ModalHeader>
 			<ModalBody>
 				<Editor path={epath} />
 			</ModalBody>

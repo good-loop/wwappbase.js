@@ -63,7 +63,8 @@ or if the data should be maintained across page changes (which might destroy and
 or if extras like help and error text are wanted. 
 // useState is best for purely local state.
  *
- * @param {?Function} saveFn inputs: `{path, prop, value, event}`
+ * @param {Object} p
+ * @param {?Function} p.saveFn inputs: `{path, prop, value, event}`
  * This gets called at the end of onChange.
  * You are advised to wrap this with e.g. _.debounce(myfn, 500).
  * NB: we cant debounce here, cos it'd be a different debounce fn each time.
