@@ -148,6 +148,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'http://locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'http://localprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'http://localuploads.good-loop.com';
+		ServerIO.APIBASE = ''; // lets assume you're on local
 		return;
 	}
 	if (server==="production") {
