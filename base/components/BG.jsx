@@ -6,6 +6,9 @@ import ImageObject from '../data/ImageObject';
 /**
  * Drops a background image behind the children.
  * See: https://studio.good-loop.com/#bg
+ * 
+ * See also: BGImg in AdUnit
+ * 
  * @param {Object} p
  * @param {?ImageObject|string} p.image If image.author is provided, a (cc) credit is shown in the bottom-right.
  * @param {?boolean} p.fullscreen
