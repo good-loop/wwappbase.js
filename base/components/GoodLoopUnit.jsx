@@ -65,7 +65,8 @@ export const getAdUrl = ({file = 'unit.js', unitBranch, params}) => {
 		}
 	}
 
-	const url = new URL(`${ServerIO.AS_ENDPOINT}/${file}`);
+	const host = ServerIO.UNIT_ENDPOINT || ServerIO.AS_ENDPOINT;
+	const url = new URL(`${host}/${file}`);
 
 	// append all gl.* parameters
 	if (params) {
@@ -100,7 +101,7 @@ const normaliseParams = ({ endCard, ...params }) => {
  * Insert unit.js raw.
  * BehaviourLoadUnit in the adunit will find that div and extract the JSON from it.
  */
-const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
+const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 	if (!frame) return;
 	const doc = frame.contentDocument;
 	const docBody = doc && doc.body;
@@ -121,6 +122,11 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
 	const src = getAdUrl({ file: 'unit.js', unitBranch, params: glParams });
 	appendEl(doc, {tag: 'script', src, async: true});
 
+	// insert wysiwyg xray code
+	if (xray) {
+		appendEl(doc, {tag: 'script', src:"/build/js/xray.js" , async: true});
+	}
+
 	// On unmount: empty out iframe's document
 	return () => doc ? doc.documentElement.innerHTML = '' : null;
 };
@@ -138,8 +144,9 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams}) => {
  * @param {String} p.endCard Set truthy to display end-card without running through advert.
  * @param {?Boolean} p.noab Set true to block any A/B experiments
  * @param {Object} p.extraParams A map of extra URL parameters to put on the unit.js URL.
+ * @param {?JSX} p.Editor added right after the iframe
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug || !C.isProduction();
@@ -182,6 +189,9 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 			// If the iframe's DOM is ready to use when this ref executes, mark it as such.
 			// Do asynchronously so setFrameReady(false) above gets to trigger a render first
 			window.setTimeout(() => setFrameReady(true), 0);
+			if (iframeCallback) {
+				iframeCallback(node);
+			}
 		} else {
 			// If it's not ready, add an event listener to mark it when it is.
 			// NB: Jan 2021: bugs seen where setFrameReady(true) is never called.
@@ -199,7 +209,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	// Load/Reload the adunit when vert-ID, unit size, skip-to-end-card, or iframe container changes
 	useEffect(() => {
 		if (frameReady && unitJson && unitBranch !== false) {
-			const cleanup = insertUnit({frame, unitJson, unitBranch, glParams});
+			const cleanup = insertUnit({frame, unitJson, unitBranch, glParams, xray:!!Editor});
 			insertAdunitCss({frame, css});
 			return cleanup;
 		}
@@ -222,7 +232,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	}, []);
 
 	// Calculate dimensions every render because it's cheap and KISS
-	const dims = {};
+	const dims = {position:"relative"}; // allow Editor to position elements
 	if (container) {
 		const { width, height } = container.getBoundingClientRect();
 		// 16:9 --> 100% width, proportional height; 9:16 --> 100% height, proportional width
@@ -233,6 +243,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	return (
 		<div className="goodLoopContainer" style={dims} ref={receiveContainer} id={vertId}>
 			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} aria-label="Good-Loop ad"/>
+			{Editor && <Editor />}
 		</div>
 	);
 };

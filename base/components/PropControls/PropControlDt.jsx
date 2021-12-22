@@ -28,7 +28,7 @@ const PropControlDt = ({prop, storeValue, onChange, unitOptions}) => {
 	if ( ! unitOptions) unitOptions = Object.keys(label4TUnit);
 
 	// Minor todo: this could look a bit prettier with a BS input append
-	return <InputGroup inline>
+	return <InputGroup>
 		<Input type="number" name={`${prop}-n`} value={storeValue.n} onChange={(e) => onChangeInner({n: e.target.value})} />
 		{unitOptions.length > 1?
 			<Input type="select" name={`${prop}-unit`} value={storeValue.unit} onChange={(e) => onChangeInner({unit: e.target.value})} default="SECOND">
