@@ -27,7 +27,8 @@ const Tabs = ({activeTabId, setActiveTabId, defaultTabId, children, ...props}) =
 
 	// Pull tab key and title out of child Tab items & construct clickable headers
 	let $activeTab = null;
-	const $navItems = React.Children.map(children, (childTab) => {
+	let kids = children.filter(x => x); // remove nulls
+	const $navItems = React.Children.map(kids, (childTab) => {
 		let {props: {tabId, title}} = childTab; // extract the info
 		if ( ! tabId) tabId = title;
 		if ( ! tabId) console.error("Tabs.jsx - Tab without an ID",title);

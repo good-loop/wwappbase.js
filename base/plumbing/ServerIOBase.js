@@ -53,7 +53,7 @@ const endpoints = [
 endpoints.forEach(e => {
 	if (e.base) {
 		ServerIO[e.key] = `${C.HTTPS}://${C.SERVER_TYPE}${e.base}`;
-		e.prodValue = 'https://'+base;	
+		e.prodValue = 'https://'+e.base;	
 	} else {
 		ServerIO[e.key] = e.prodValue;
 	}
