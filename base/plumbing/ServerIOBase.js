@@ -6,7 +6,7 @@ import _ from 'lodash';
 import $ from 'jquery';
 import { assert, assMatch, setAssertFailed } from '../utils/assert';
 import C from '../CBase.js';
-import {encURI} from '../utils/miscutils';
+import {encURI, is} from '../utils/miscutils';
 
 import Login from '../youagain';
 
@@ -36,33 +36,28 @@ ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}.sogive.org/cha
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
 
-ServerIO.PORTAL_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}portal.good-loop.com`;
-// ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
-
-ServerIO.PROFILER_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}profiler.good-loop.com`;
-
-/**
- * Where uploads go
- */
-ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}uploads.good-loop.com`;
-// ServerIO.MEDIA_ENDPOINT = `https://testuploads.good-loop.com`;
-// ServerIO.MEDIA_ENDPOINT = `https://uploads.good-loop.com`;
-// Copy into ServerIO.js use UploadServlet instead of media.good-loop.com
-// ServerIO.MEDIA_ENDPOINT = '/upload.json';
-
-
-
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
 // "prodValue" is the expected / forcibly-reset-to-this value that production servers should have.
  */ 
 const endpoints = [
 	{name: 'base API', key: 'APIBASE', prodValue: ''},
-	{name: 'DataLog', key: 'DATALOG_ENDPOINT', prodValue: 'https://lg.good-loop.com/data'},
-	{name: 'Profiler', key: 'PROFILER_ENDPOINT', prodValue: 'https://profiler.good-loop.com'},
-	{name: 'Ad', key: 'AS_ENDPOINT', prodValue: 'https://as.good-loop.com'},
-	{name: 'Media', key: 'MEDIA_ENDPOINT', prodValue: 'https://uploads.good-loop.com'},
+	{name: 'DataLog', key: 'DATALOG_ENDPOINT', base: 'lg.good-loop.com/data'},
+	{name: 'Profiler', key: 'PROFILER_ENDPOINT', base: 'profiler.good-loop.com'},
+	{name: 'Ad', key: 'AS_ENDPOINT', base: 'as.good-loop.com'},
+	/** Where uploads go */
+	{name: 'Media', key: 'MEDIA_ENDPOINT', base: 'uploads.good-loop.com'},
+	{name: 'Portal', key: 'PORTAL_ENDPOINT', base: 'portal.good-loop.com'},
 ];
+// set defaults
+endpoints.forEach(e => {
+	if (e.base) {
+		ServerIO[e.key] = `${C.HTTPS}://${C.SERVER_TYPE}${e.base}`;
+		e.prodValue = 'https://'+base;	
+	} else {
+		ServerIO[e.key] = e.prodValue;
+	}
+});
 
 /**
  * Call this from app-specific ServerIO.js 
