@@ -461,6 +461,7 @@ const getStackTrace = function () {
 
 /**
  * @return {string} a unique ID
+ * For a smaller nonce, use DataClass.js nonce
  */
 export const uid = function () {
 	// A Type 4 RFC 4122 UUID, via http://stackoverflow.com/a/873856/346629

@@ -137,7 +137,9 @@ Tree.depth = node => {
  * NB: Consider also `Tree.flatten(tree).map()`
  * 
  * @param {!Tree} tree
- * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / new-value / null. depth starts at 0 for the root.
+ * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / new-value / null. 
+ * 	depth starts at 0 for the root.
+ * 	returning null will skip this node in the returned copy.
  * @returns {?Tree} A copy (if fn returns new-nodes / values-for-nodes). 
  * 	NB: Callers may also ignore the return value, using this as a forEach.
  * 
@@ -159,7 +161,7 @@ Tree.map = (tree, fn, parent=null, depth=0) => {
 		// 	fkids.push(fKid);
 		// }
 		if (t2) {
-			t2.children = fkids;
+			t2.children = fkids.filter(kid => kid); // NB: filter nulls from if fn() returns a null
 		}
 	}
 	return t2;
