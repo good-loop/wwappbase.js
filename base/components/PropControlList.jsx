@@ -24,7 +24,7 @@ const PropControlList = ({rawValue, storeValue, Viewer, Editor, itemType, setRaw
 			<li key={i} >{is(item)? <Viewer item={item} i={i} /> : "_"} 
 				<AddOrEditButton arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} itemType={itemType} /> 
 				<DeleteButton arrayPath={proppath} i={i} listValue={listValue} /> 
-				{item && item.error && <Badge color="danger" title={item.error.detailMessage || item.error.message || JSON.stringify(item.error)}>!</Badge>}
+				{item && item.error && <Badge pill color="danger" title={getItemErrorMessage(item)}> 🐛 </Badge>}
 			</li>
 		)}
 		<li><AddOrEditButton size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue} itemType={itemType} /></li>
@@ -35,6 +35,12 @@ const PropControlList = ({rawValue, storeValue, Viewer, Editor, itemType, setRaw
 	return 
 }; // ./radio
 registerControl({type:'list', $Widget: PropControlList});
+
+const getItemErrorMessage = item => {
+	if ( ! item) return null;
+	if (typeof(item.error)==="string" && item.error) return item.error;	
+	return item.error.detailMessage || item.error.message || JSON.stringify(item.error);
+};
 
 const AddOrEditButton = ({arrayPath, i=-1, listValue, Editor, itemType}) => {
 	let [show, setShow] = useState();
