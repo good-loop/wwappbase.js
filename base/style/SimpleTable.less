@@ -10,26 +10,38 @@
 		overflow: auto;
 	}
 
+	tr.depth2, tr.depth3, tr.depth4, tr.depth5, tr.depth6, tr.depth7 {
+		td:first-child { /* make the before content sit to the left of the text without a linebreak */
+			flex-direction: row;
+			display: flex;	
+		}
+		td:first-child::before {
+			margin-right:0.2rem;
+		}
+	}
 	/* styling for tree children */
 	 tr.depth2 {
 		 font-size: 90%;
 		 td:first-child::before {
-			content:' └ ';
+			margin-left:0.1rem;
+			content:'└';
 		}
 	 }
 	 tr.depth3 {
 		font-size: 80%;
 		td:first-child::before {
-			content:' -└- ';
+			margin-left:0.45rem; // NB: includes counteracting the reduced padding
+			content:'┴';
 		}
 		td {
-			padding: 0.5rem;
+			padding: 0.5rem; // NB: down from 0.75rem BS standard for table cells
 		}
 	}
 	tr.depth4, tr.depth5, tr.depth6, tr.depth7 {
 		font-size: 75%;
 		td:first-child::before {
-			content:' --└-- ';
+			margin-left:0.65rem; // NB: includes counteracting the reduced padding
+			content:'┴';
 		}
 		td {
 			padding: 0.4rem;

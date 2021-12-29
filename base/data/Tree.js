@@ -140,28 +140,36 @@ Tree.depth = node => {
  * @param {Function} fn (node,parent,depth) -> new-node (which should be childless!) / new-value / null. 
  * 	depth starts at 0 for the root.
  * 	returning null will skip this node in the returned copy.
+ * @param {?Object} options {
+ * 	onNull: "break|snip" for where fn returns null - 
+ * 		unset = recurse but dont include in the returned tree, 
+ * 		break = do not recurse into child nodes, 
+ * 		snip = recurse and children can be included (snipping out the null) in the returned tree
+ * }
  * @returns {?Tree} A copy (if fn returns new-nodes / values-for-nodes). 
  * 	NB: Callers may also ignore the return value, using this as a forEach.
  * 
  */
-Tree.map = (tree, fn, parent=null, depth=0) => {
+Tree.map = (tree, fn, options={}, parent=null, depth=0) => {
 	let t2 = fn(tree, parent, depth);
+	if (t2===null && options.onNull==="break") {
+		return null;
+	}
 	// wrap the return into a tree node?
 	if (t2 && ! Tree.isa(t2)) {
 		t2 = new Tree({value:t2});
 	}
 	if (tree.children) {
 		// recurse
-		let fkids = tree.children.map(kid => Tree.map(kid, fn, tree, depth+1));
-		// support an early break?? what should the return behaviour be?
-		// for(let i=0; i<tree.children.length; i++) {
-		// 	let kid = tree.children[i];
-		// 	let fKid = Tree.map(kid, fn, tree, depth+1);
-		// 	if (fKid===Tree.BREAK) break;
-		// 	fkids.push(fKid);
-		// }
+		let fkids = tree.children.map(kid => Tree.map(kid, fn, options, tree, depth+1));
+		// NB: filter nulls from if fn() returns a null
+		fkids = fkids.filter(kid => kid);
 		if (t2) {
-			t2.children = fkids.filter(kid => kid); // NB: filter nulls from if fn() returns a null
+			// NB: flatten to handle returns from onNull=snip
+			const fkids2 = fkids.flat();
+			t2.children = fkids2;
+		} else if (options.onNull==="snip") {
+			return fkids;
 		}
 	}
 	return t2;
