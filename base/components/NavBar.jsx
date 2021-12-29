@@ -61,11 +61,11 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 	return (
 	<Container>
 		<NavbarBrand title="Dashboard" href={homelink || '/'}>
-			<img className='logo-sm' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+			<img className='logo' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 		</NavbarBrand>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
 			<NavbarBrand className="nav-brand" title={brandName} href={brandLink}>
-				{brandLogo? <img className='logo-sm' alt={brandName} src={brandLogo} /> : brandName}
+				{brandLogo? <img className='logo' alt={brandName} src={brandLogo} /> : brandName}
 			</NavbarBrand>
 		}
 		<NavbarToggler onClick={toggle}/>
