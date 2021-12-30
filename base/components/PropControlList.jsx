@@ -54,7 +54,7 @@ const AddOrEditButton = ({arrayPath, i=-1, listValue, Editor, itemType}) => {
 	const onClick = e => { DataStore.update(); setShow(true); }
 	return (<>		
 		{i===-1?
-			<Button onClick={onClick}><Icon name="add" /><Icon name="plus" /> Add</Button>
+			<Button onClick={onClick}><Icon name="plus" /> Add</Button>
 			: <><Button size="sm" className="ml-1" color="outline-secondary" onClick={onClick}><Icon name="memo"/></Button></>
 		}
 		<Modal isOpen={show} toggle={() => setShow( ! show)} >
