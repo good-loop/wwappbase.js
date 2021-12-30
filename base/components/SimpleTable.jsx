@@ -252,6 +252,7 @@ const SimpleTable = (props) => {
 						colSpan={visibleColumns.length} />
 				</table>
 			</div>
+			{/* NB outside scroller */ tableSettings.hasCsv && <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div>}
 		</div>
 	);
 } // ./SimpleTable
@@ -836,13 +837,12 @@ const CellFormat = new Enum("percent pounds string"); // What does a spreadsheet
 
 
 const TableFoot = ({visibleColumns, topRow, dataTree, bottomRow, numPages, colSpan, tableSettings}) => {
-	if ( ! tableSettings.hasCsv && numPages < 2) {
+	if ( ! numPages || numPages < 2) {
 		return null;
 	}
 	return (<tfoot><tr>
 		<td colSpan={colSpan}>
 			{numPages > 1 ? <TableFootPager tableSettings={tableSettings} numPages={numPages} /> : null}
-			{tableSettings.hasCsv ? <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div> : null}
 		</td>
 	</tr></tfoot>);
 };
