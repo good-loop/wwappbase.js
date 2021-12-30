@@ -842,7 +842,7 @@ const TableFoot = ({visibleColumns, topRow, dataTree, bottomRow, numPages, colSp
 	return (<tfoot><tr>
 		<td colSpan={colSpan}>
 			{numPages > 1 ? <TableFootPager tableSettings={tableSettings} numPages={numPages} /> : null}
-			{tableSettings.hasCsv ? <div className="pull-right"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div> : null}
+			{tableSettings.hasCsv ? <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div> : null}
 		</td>
 	</tr></tfoot>);
 };
