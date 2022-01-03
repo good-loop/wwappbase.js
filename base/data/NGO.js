@@ -1,15 +1,6 @@
 /** Data model functions for the NGO data-type. */
 
 import DataClass from './DataClass';
-import { normaliseSogiveId } from '../plumbing/ServerIOBase';
-import ActionMan from '../plumbing/ActionManBase';
-import DataStore from '../plumbing/DataStore';
-import SearchQuery from '../searchquery';
-import C from '../CBase';
-import { uniq, yessy } from '../utils/miscutils';
-import { getDataItem, getDataList } from '../plumbing/Crud';
-import Campaign from './Campaign';
-import KStatus from './KStatus';
 
 class NGO extends DataClass {
 	constructor(base) {
