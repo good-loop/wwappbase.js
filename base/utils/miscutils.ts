@@ -409,6 +409,15 @@ export const isEmail = function (s: string): boolean {
 	return !! ("string" === typeof(s) && s.match(emailRegex));
 }
 
+/**
+ * Matches urls. Note: Excludes any trailing .	<br>
+ * Group 1: the host/domain (including subdomain) - can be "" for a file url	<br>
+ * Urls must contain the http(s) protocol (compare with Twitter's regex which doesn't require a protocol).
+ * 
+ * E.g. "https://twitter.com/foo"
+ * */
+export const urlRegex = /https?:\/\/([a-zA-Z0-9_\-\.]*)\/?([a-zA-Z0-9_%\-\.,\?&\/=\+'~#!\*:]+[a-zA-Z0-9_%\-&\/=\+])?/g;
+window.urlRegex = urlRegex;
 
 
 /**
