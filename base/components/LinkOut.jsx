@@ -14,7 +14,7 @@ const LinkOut = ({href, disabled, children, className, fetchTitle, ...props}) =>
 	}
 	// fetch the link title
 	if (fetchTitle) {
-		// via our LinkInfoServlet ??should we do this client side instead? CORS issues seem to get in the way
+		// HACK via our LinkInfoServlet ??should we do this client side instead? CORS issues seem to get in the way
 		const pvLinkInfo = DataStore.fetch(['misc','url',href], () => {
 			return ServerIO.load("https://calstat.good-loop.com/linkInfo", {data:{url:href}, swallow:true});
 		});
