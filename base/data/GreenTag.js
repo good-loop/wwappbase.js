@@ -26,7 +26,7 @@ const macroRegexes = {
 // Split out macros and preserve delimiters before URL-component-encoding the rest
 const encodePreserveMacros = (targetUrl, macroType) => {
 	const macroRegex = macroRegexes[macroType];
-	if (!macroRegex) return encodeURIComponent(targetURL);
+	if (!macroRegex) return encodeURIComponent(targetUrl);
 
 	return targetUrl.split(macroRegex).reduce((acc, bit) => {
 		if (bit.match(macroRegex)) return acc + bit;
