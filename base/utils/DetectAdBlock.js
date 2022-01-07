@@ -10,7 +10,7 @@ const doDetect = () => {
 	const $script = document.createElement('script');
 	// Based on https://www.detectadblock.com/
 	// Adblockers are expected to always block js files with "ads" in the name
-	$script.setAttribute('src', 'https://ads.good-loop.com/ads.js');
+	$script.setAttribute('src', 'https://ads.good-loop.com/ads.js?cachebuster=' + Date.now());
 	
 	console.log("[ADBLOCK]","Checking ad block status...");
 
@@ -29,7 +29,7 @@ const doDetect = () => {
 		// We might not be connected to internet at all - make another check
 		const $img = document.createElement('img');
 		$img.setAttribute('id', 'adblockTesterImg');
-		$img.setAttribute('src', 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png');
+		$img.setAttribute('src', 'https://www.google.com/images/branding/googlelogo/1x/googlelogo_color_272x92dp.png?cachebuster=' + Date.now());
 
 		// Google's logo should be snappy, and we don't want to wait ages to confirm an adblock - can afford some error
 		setTimeout(() => {
