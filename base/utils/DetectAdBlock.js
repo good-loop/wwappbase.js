@@ -11,21 +11,16 @@ const doDetect = () => {
 	// Based on https://www.detectadblock.com/
 	// Adblockers are expected to always block js files with "ads" in the name
 	$script.setAttribute('src', 'https://ads.good-loop.com/ads.js?cachebuster=' + Date.now());
-	
-	console.log("[ADBLOCK]","Checking ad block status...");
 
 	let pv = PromiseValue.pending();
 	$script.onload = () => {
-		console.log("[ADBLOCK]","Ad script loaded!");
 		// If adblocker enabled, ads.js will not be able to create div with id #aiPai9th 
 		const adBlockEnabled = ! document.getElementById('aiPai9th');
-		console.log("[ADBLOCK]","Ad script embedded!");
 		// DataStore.setValue(path, adBlockEnabled);
 		pv.resolve(adBlockEnabled);
 	};
 
 	$script.onerror = () => {
-		console.log("[ADBLOCK]","Could not load test ad script. Checking general internet...");
 		// We might not be connected to internet at all - make another check
 		const $img = document.createElement('img');
 		$img.setAttribute('id', 'adblockTesterImg');
@@ -36,13 +31,11 @@ const doDetect = () => {
 			if (!pv.resolved && !pv.error) {
 				// No internet!
 				pv.reject("offline");
-				console.log("[ADBLOCK]","Could not load general internet! We are offline");
 			}
 		}, 1500);
 
 		$img.onload = () => {
 			// Don't escape this function - allows for correcting false readings
-			console.log("[ADBLOCK]","Loaded general internet! Ads are blocked");
 			// Image loaded so internet exists but ads were blocked
 			// DataStore.setValue(path, true);
 			pv.resolve(true);
@@ -51,7 +44,6 @@ const doDetect = () => {
 		$img.onerror = () => {
 			// Escape this if already timed out
 			if (pv.resolved || pv.error) return;
-			console.log("[ADBLOCK]","Could not load general internet! We are offline");
 			// We cannot load anything - no internet
 			pv.reject("offline");
 		}
