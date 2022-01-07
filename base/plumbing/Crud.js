@@ -135,7 +135,7 @@ const localLoad = path => {
 	try {
 		let json = window.localStorage.getItem(spath);
 		let person = JSON.parse(json);			
-		console.log("localLoad of "+path, person && person.id+" "+person.name, person);
+		//console.log("localLoad of "+path, person && person.id+" "+person.name, person);
 		return person;
 	} catch(err) { // paranoia
 		// Can this happen??
