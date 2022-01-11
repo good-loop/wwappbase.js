@@ -78,6 +78,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	hideTotal,
 	pageSize,
 	unwrapped,
+	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) => {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
@@ -525,6 +526,10 @@ const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, child
 		{$createButton}
 	</Form></CardBody></Card>);
 };
+
+// TODO const CSVDownload = ({items, csvFormatItem}) => {
+//
+// };
 
 export { CreateButton, DefaultListItem, createBlank };
 export default ListLoad;

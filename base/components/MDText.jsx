@@ -38,8 +38,9 @@ const MDCheckbox = ({setSource, source, checked, ...args}) => {
  * The props passed to the component varies based on the type of node.
  * @param {?boolean} escapeHtml By default we render html (with just an anti-script-injection check). Set true to block html.
  * @param {Function} setSource newText => Function to make changes to the text source. If provided, then checkboxes can be clicked on/off.
+ * @param {?boolean} linkOut Toggle for <a> links should use LinkOut
  */
-const MDText = ({source, renderers={}, escapeHtml = false, setSource}) => {
+const MDText = ({source, renderers={}, escapeHtml = false, setSource, linkOut}) => {
 	if ( ! source) {
 		return null;
 	}
@@ -60,6 +61,9 @@ const MDText = ({source, renderers={}, escapeHtml = false, setSource}) => {
 	// tasks
 	if (setSource) {
 		renderers.listItem = args => <MDCheckbox source={source} setSource={setSource} {...args} />;
+	}
+	if (linkOut) {
+		// TODO
 	}
 	// TODO linkOut vs a
 
