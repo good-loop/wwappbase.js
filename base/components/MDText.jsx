@@ -5,6 +5,7 @@ import Misc from './Misc';
 import gfm from 'remark-gfm';
 import { is } from '../utils/miscutils';
 import { Input, Label } from 'reactstrap';
+import LinkOut from './LinkOut';
 
 const MDCheckbox = ({setSource, source, checked, ...args}) => {
 	if ( ! is(checked)) {
@@ -63,9 +64,8 @@ const MDText = ({source, renderers={}, escapeHtml = false, setSource, linkOut}) 
 		renderers.listItem = args => <MDCheckbox source={source} setSource={setSource} {...args} />;
 	}
 	if (linkOut) {
-		// TODO
+		renderers.link = args => <LinkOut {...args} />
 	}
-	// TODO linkOut vs a
 
 	return <div className="MDText"><ReactMarkdown plugins={[gfm]} escapeHtml={escapeHtml} children={nsource} renderers={renderers} /></div>;
 };
