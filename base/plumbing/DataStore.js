@@ -15,8 +15,14 @@ import KStatus from '../data/KStatus';
  * E.g. in a top-of-the-app React container, you might do `DataStore.addListener((mystate) => this.setState(mystate));`
  */
 class Store {
+	
+	callbacks = [];
+
+	useHashPath = true;
+	
+	usePathname = false;
+
 	constructor() {
-		this.callbacks = [];
 		// init the "canonical" categories
 		this.appstate = {
 			// published data items
@@ -53,7 +59,6 @@ class Store {
 			return true;
 		});
 	}
-
 
 	/**
 	 * Keep navigation state in the url, after the hash, so we have shareable urls.

@@ -100,7 +100,7 @@ class MainDivBase extends Component {
 		const updateReact = (mystate) => this.setState({});
 		DataStore.addListener(updateReact);
 		// Scroll to top after hashchage (From my-loop MainDiv)
-		window.addEventListener("hashchange", () => window.scrollTo(0,0))
+		window.addEventListener("hashchange", () => window.scrollTo(0,0));
 	}
 
 	componentDidCatch(error, info) {
