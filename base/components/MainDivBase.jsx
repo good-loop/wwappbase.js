@@ -34,6 +34,16 @@ DataStore.update({
 	},
 });
 
+
+// HACK	define C.A = normal <a> for optional replacement with import { A } from "hookrouter";
+if ( ! C.A) {
+	C.A = (x) => {
+		if ( ! x) return null;
+		const {children, ...args} = x;
+		return <a {...args}>{children}</a>;
+	};
+}
+
 // Set up login + watcher here, at the highest level
 // But after app code finishes loading (so use a timeout)
 let initFlag = false;

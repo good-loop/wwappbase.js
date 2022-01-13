@@ -6,7 +6,7 @@ import PromiseValue from 'promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
-import {parseHash, modifyHash, toTitleCase, is, space, yessy} from '../utils/miscutils';
+import {parseHash, modifyHash, toTitleCase, is, space, yessy, getUrlVars, decURI} from '../utils/miscutils';
 import KStatus from '../data/KStatus';
 
 
@@ -63,7 +63,8 @@ class Store {
 	 * @param {?boolean} update Set false to avoid updates (e.g. in a loopy situation)
 	 */
 	parseUrlVars(update) {
-		let {path, params} = parseHash();
+		// Is path pre or post hash?
+		let {path, params} = this.parseUrlVars2();
 		// peel off eg publisher/myblog
 		let location = {};
 		location.path = path;
@@ -73,6 +74,25 @@ class Store {
 		if (path.length > 3) location.subslug = path[2];
 		location.params = params;
 		this.setValue(['location'], location, update);
+	}
+	
+	parseUrlVars2() {
+		if ( ! this.usePathname) {
+			return parseHash();
+		}
+		const params = getUrlVars();
+		let pathname = window.location.pathname;
+		if (pathname.endsWith(".html")) pathname = pathname.substring(0, pathname.length-5);
+		let path = pathname.length ? pathname.split('/').map(decURI) : [];				
+		// HACK fish out key=value bits
+		path = path.filter(bit => {
+			if ( ! bit) return false;
+			let eqi = bit.indexOf("=");
+			if (eqi===-1) return true;
+			params[bit.substring(0, eqi)] = bit.substring(eqi+1);
+			return false;
+		});
+		return {path, params};
 	}
 
 
