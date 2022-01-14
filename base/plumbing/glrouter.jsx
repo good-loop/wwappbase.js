@@ -20,13 +20,23 @@ const goto = href => {
 
 const A = (x) => {
 	if ( ! x) return null;
-	const {href, children, onClick, ...args} = x;	
+	const {href, children, onClick, ...args} = x;
 	const doClick = e => {
+		// Only override redirects to this origin
+		if (!href.includes(window.location.origin) && href.startsWith("http")) {
+			console.log("NOT ME!");
+			//return;
+		}
 		stopEvent(e);
 		if (onClick) onClick(e);
-		goto(href);
+		// Allow onClick functions to stop our events too
+		//if (!e.glrouterStopEvent) goto(href);
 	};
 	return <a href={href} onClick={doClick} {...args}>{children}</a>;
+};
+
+A.stopEvent = e => {
+	e.glrouterStopEvent = true;
 };
 
 const usePath = () => ""+window.location;

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Login from '../youagain';
 
 import { getUrlVars, toTitleCase, modifyHash, yessy } from '../utils/miscutils';
-import { Alert, Container } from 'reactstrap';
+import { Alert, Container, Row } from 'reactstrap';
 import { isFunction } from 'lodash';
 // setup Misc.SavePublishDeleteEtc for older code
 import SavePublishDeleteEtc from './SavePublishDeleteEtc';
@@ -115,7 +115,7 @@ class MainDivBase extends Component {
 		let {
 			homeLink,
 			pageForPath, 
-			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks,
+			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			loginRequired,
 			defaultPage,
@@ -174,7 +174,7 @@ class MainDivBase extends Component {
 		//
 		return (
       <div>
-        {navbar ? (
+        {navbar ? (<>
           <NavBar
             page={page}
             pages={navbarPages}
@@ -185,12 +185,15 @@ class MainDivBase extends Component {
             backgroundColour={navbarBackgroundColour}
             children={navbarChildren}
           ></NavBar>
-        ) : null}
+		  {navbarSpace ? <div className="py-4"/> : null}
+        </>) : null}
         <Container fluid={fluid}>
-          <MessageBar />
-          <div className="page" id={page}>
-            <Page />
-          </div>
+			<Row>
+				<MessageBar />
+				<div className="page" id={page}>
+					<Page />
+				</div>
+			</Row>
         </Container>
         <LoginWidget
           title={`Welcome to ${C.app.name}`}
