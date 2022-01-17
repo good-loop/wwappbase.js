@@ -9,7 +9,7 @@ import Misc from '../Misc';
 const PropControlImg = ({prop, storeValue, onChange, bg, ...rest}) => (
 	<div>
 		<FormControl type="url" name={prop} value={storeValue} onChange={onChange} onBlur={onChange} {...rest} />
-		<div className="pull-right" style={{ background: bg, padding: bg ? '20px' : '0' }}><Misc.ImgThumbnail url={storeValue} background={bg} /></div>
+		{storeValue && <div className="pull-right" style={{ background: bg, padding: bg ? '20px' : '0' }}><Misc.ImgThumbnail url={storeValue} background={bg} /></div>}
 		<div className="clearfix" />
 	</div>
 );
