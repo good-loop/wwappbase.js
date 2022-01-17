@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Login from '../youagain';
 
 import { getUrlVars, toTitleCase, modifyHash, yessy } from '../utils/miscutils';
-import { Alert, Container } from 'reactstrap';
+import { Alert, Container, Row } from 'reactstrap';
 import { isFunction } from 'lodash';
 // setup Misc.SavePublishDeleteEtc for older code
 import SavePublishDeleteEtc from './SavePublishDeleteEtc';
@@ -33,6 +33,16 @@ DataStore.update({
 	data: {
 	},
 });
+
+
+// HACK	define C.A = normal <a> for optional replacement with import { A } from "hookrouter";
+if ( ! C.A) {
+	C.A = (x) => {
+		if ( ! x) return null;
+		const {children, ...args} = x;
+		return <a {...args}>{children}</a>;
+	};
+}
 
 // Set up login + watcher here, at the highest level
 // But after app code finishes loading (so use a timeout)
@@ -90,7 +100,7 @@ class MainDivBase extends Component {
 		const updateReact = (mystate) => this.setState({});
 		DataStore.addListener(updateReact);
 		// Scroll to top after hashchage (From my-loop MainDiv)
-		window.addEventListener("hashchange", () => window.scrollTo(0,0))
+		window.addEventListener("hashchange", () => window.scrollTo(0,0));
 	}
 
 	componentDidCatch(error, info) {
@@ -105,7 +115,7 @@ class MainDivBase extends Component {
 		let {
 			homeLink,
 			pageForPath, 
-			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks,
+			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			loginRequired,
 			defaultPage,
@@ -164,7 +174,7 @@ class MainDivBase extends Component {
 		//
 		return (
       <div>
-        {navbar ? (
+        {navbar ? (<>
           <NavBar
             page={page}
             pages={navbarPages}
@@ -175,12 +185,15 @@ class MainDivBase extends Component {
             backgroundColour={navbarBackgroundColour}
             children={navbarChildren}
           ></NavBar>
-        ) : null}
+		  {navbarSpace ? <div className="py-4"/> : null}
+        </>) : null}
         <Container fluid={fluid}>
-          <MessageBar />
-          <div className="page" id={page}>
-            <Page />
-          </div>
+			<Row>
+				<MessageBar />
+				<div className="page" id={page}>
+					<Page />
+				</div>
+			</Row>
         </Container>
         <LoginWidget
           title={`Welcome to ${C.app.name}`}

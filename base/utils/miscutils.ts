@@ -605,6 +605,7 @@ export const stopEvent = (e: Event) => {
 		try {
 			e.preventDefault();
 			e.stopPropagation();
+			// e.returnValue = false; Is this needed for some events on some browsers? e.g. https://developer.mozilla.org/en-US/docs/Web/API/WindowEventHandlers/onbeforeunload
 		} catch (err) {
 			console.warn("(swallow) stopEvent cant stop", e, err);
 		}

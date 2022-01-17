@@ -113,12 +113,12 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 	
 	// make the page links
 	const pageLinks = pages.map(page => {
-		let pageLink = `#${page}`;
+		let pageLink = (DataStore.usePathname? '/' : '#') + page;
 		if (externalLinks && page in externalLinks) pageLink = externalLinks[page];
 		return( <NavItem key={`navitem_${page}`} active={page === currentPage}>
-			<NavLink href={pageLink} onClick={close} >
+			<C.A className="nav-link" href={pageLink} onClick={close} >
 				{labelFn(page)}
-			</NavLink>
+			</C.A>
 		</NavItem>)
 	});
 
