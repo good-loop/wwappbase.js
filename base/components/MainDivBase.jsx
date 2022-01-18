@@ -140,7 +140,7 @@ class MainDivBase extends Component {
 			// defaultPage may be dynamic
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
-				setTimeout(() => modifyPath([defaultPage]), 1); // let the next render get it
+				setTimeout(() => modifyHash([defaultPage]), 1); // let the next render get it
 			}			
 			return <Alert color="warning">No page specified - and the app does not set a default</Alert>;
 		}
