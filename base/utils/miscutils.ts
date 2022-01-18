@@ -189,6 +189,35 @@ export const modifyHash = function (newpath: string[], newparams, returnOnly: bo
 	}
 };
 
+/**
+ * @param {?String[]} newpath Can be null for no-change
+ * @param {?Object} newparams Can be null for no-change
+ * @param {?Boolean} returnOnly If true, do not modify the hash -- just return what the new value would be (starting with #)
+ */
+ export const modifyPath = function (newpath: string[], newparams, returnOnly: boolean) {
+	const { path, params } = parseHash();
+	let allparams = (params || {});
+	allparams = Object.assign(allparams, newparams);
+	if (!newpath) newpath = path || [];
+	let hash = encURI(newpath.join('/'));
+	if (yessy(allparams)) {
+		let kvs = mapkv(allparams, (k, v) => encURI(k) + "=" + (v === null || v === undefined ? '' : encURI(v)));
+		hash += "?" + kvs.join('&');
+	}
+	if (returnOnly) {
+		return '#' + hash;
+	}
+	if (history && history.pushState) {
+		let oldURL = "" + window.location;
+		history.pushState(null, null, '' + hash);
+		// generate the hashchange event
+		fireHashChangeEvent({ oldURL });
+	} else {
+		// fallback for old browsers
+		location.hash = '#' + hash;
+	}
+};
+
 let fireHashChangeEvent = function ({ oldURL }) {
 	// NB IE9+ on mobile
 	// https://developer.mozilla.org/en-US/docs/Web/API/HashChangeEvent
