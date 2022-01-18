@@ -140,7 +140,10 @@ class MainDivBase extends Component {
 			// defaultPage may be dynamic
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
-				setTimeout(() => modifyHash([defaultPage]), 1); // let the next render get it
+				// HACK allow my-loop render for now
+				window.location.hostname.endsWith('my.good-loop.com') ? 
+				setTimeout(() => modifyPath([defaultPage]), 1) : setTimeout(() => modifyHash([defaultPage]), 1);
+				// let the next render get it
 			}			
 			return <Alert color="warning">No page specified - and the app does not set a default</Alert>;
 		}
