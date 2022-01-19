@@ -115,13 +115,15 @@ class MainDivBase extends Component {
 		let {
 			homeLink,
 			pageForPath, 
-			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			loginRequired,
 			defaultPage,
 			navbar=true, // false for no navbar!
 			navbarDarkTheme=true,
 			navbarBackgroundColour="dark",
+			navbarStyle,
+			navbarShadow=true,
+			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts,
 			fullWidthPages,
 			noRegister,
 			loginService			
@@ -186,7 +188,9 @@ class MainDivBase extends Component {
 			homelink={homeLink}
             darkTheme={navbarDarkTheme}
             backgroundColour={navbarBackgroundColour}
+			shadow={navbarShadow}
             children={navbarChildren}
+			NavGuts={NavGuts}
           ></NavBar>
 		  {navbarSpace ? <div className="py-4"/> : null}
         </>) : null}
