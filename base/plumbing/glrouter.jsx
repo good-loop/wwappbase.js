@@ -24,13 +24,12 @@ const A = (x) => {
 	const doClick = e => {
 		// Only override redirects to this origin
 		if (!href.includes(window.location.origin) && href.startsWith("http")) {
-			console.log("NOT ME!");
-			//return;
+			return;
 		}
 		stopEvent(e);
 		if (onClick) onClick(e);
 		// Allow onClick functions to stop our events too
-		//if (!e.glrouterStopEvent) goto(href);
+		if (!e.glrouterStopEvent) goto(href);
 	};
 	return <a href={href} onClick={doClick} {...args}>{children}</a>;
 };
