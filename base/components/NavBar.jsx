@@ -49,6 +49,10 @@ class NavProps {
 	 * @type {?String} name for 2nd brand
 	 */
 	brandName;
+	/**
+	 * @type {?Any} other renderables to display on the right side
+	 */
+	extraContent;
 };
 
 /**
@@ -85,7 +89,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 				{pageLinks}
 			</Nav>
 			{children}
-			<AccountMenu active={currentPage === 'account'} style={{flexGrow:0.5}}/>
+			<AccountMenu active={currentPage === 'account'} className="mr-2"/>
 		</Collapse>
 	</>);
 };
@@ -101,7 +105,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
-const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
+const NavBar = ({NavGuts = DefaultNavGuts, children, ...props}) => {
 	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
 	const navProps = getNavProps();
 	if (navProps) {
@@ -184,7 +188,9 @@ const NavBar = ({NavGuts = DefaultNavGuts, ...props}) => {
 
 	return (
 		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand="md" className={space('p-1', scrolled && "scrolled")} >
-			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} />
+			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle}>
+				{children}
+			</NavGuts>
 		</Navbar>
 	);
 };
