@@ -115,16 +115,18 @@ class MainDivBase extends Component {
 		let {
 			homeLink,
 			pageForPath, 
-			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace,
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
 			loginRequired,
 			defaultPage,
 			navbar=true, // false for no navbar!
 			navbarDarkTheme=true,
 			navbarBackgroundColour="dark",
+			navbarStyle,
+			navbarShadow=true,
+			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts,
 			fullWidthPages,
 			noRegister,
-			loginService			
+			loginService
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -186,8 +188,11 @@ class MainDivBase extends Component {
 			homelink={homeLink}
             darkTheme={navbarDarkTheme}
             backgroundColour={navbarBackgroundColour}
-            children={navbarChildren}
-          ></NavBar>
+			shadow={navbarShadow}
+			NavGuts={NavGuts}
+          >
+			  {navbarChildren}
+		  </NavBar>
 		  {navbarSpace ? <div className="py-4"/> : null}
         </>) : null}
         <Container fluid={fluid}>

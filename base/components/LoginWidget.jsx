@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import Login from '../youagain';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
-import { stopEvent, toTitleCase } from '../utils/miscutils';
+import { stopEvent, toTitleCase, space } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
@@ -138,7 +138,7 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 	};
 	
 	return (
-		<a className={className} href={window.location} onClick={onClick2} style={style}>
+		<a className={space("login-link", className)} href={window.location} onClick={onClick2} style={style}>
 			{children || toTitleCase(displayVerb[verb])}
 		</a>
 	);

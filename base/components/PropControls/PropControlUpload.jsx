@@ -211,7 +211,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		const checked = storeValue && storeValue.match(/\#(.*_)?noscale\b/);
 		extraControls.push(
 			<FormGroup inline check key='cacheControls'>
-				<FormControl name="noscale" type="checkbox" onChange={event => toggleWart(event.target.checked)} checked={checked} />
+				<FormControl disabled={ ! storeValue} name="noscale" type="checkbox" onChange={event => toggleWart(event.target.checked)} checked={checked} />
 				<Label for="noscale" check>No auto-scale</Label>
 			</FormGroup>
 		);

@@ -10,6 +10,7 @@ import {isMobile} from '../utils/miscutils.ts';
 // import {XId,yessy,uid} from '../js/util/orla-utils.js';
 
 import Misc from './Misc';
+import { space } from '../utils/miscutils';
 
 /**
 The top-right menu
@@ -19,33 +20,30 @@ logoutLink {string} what page should be loaded after logout ('#dashboard' by def
 */
 
 const AccountMenu = (props) => {
-	const {noRegister} = (props || {});
+	const {noRegister, className} = (props || {});
 
 	// TODO see navbar dropdown
 	if ( ! Login.isLoggedIn()) {
 		return (
-			<Nav className="ml-auto" navbar>
+			<Nav navbar style={props.style} className={space("justify-content-end", className)}>
 				{noRegister ? '' : <NavItem id="register-link"><RegisterLink /></NavItem>}
-				<NavItem className="login-link"><LoginLink /></NavItem>
+				<NavItem className="login-link"><LoginLink>Sign in</LoginLink></NavItem>
 			</Nav>
 		);
 	}
 
 	let user = Login.getUser();
 
-	return isMobile() ? (
-		<MobileMenu {...props} user={user} />
-	) : (
-		<DesktopMenu {...props} user={user} />
-	);
+
+	return <DesktopMenu {...props} user={user} />;
 };
 
-const DesktopMenu = ({logoutLink, user}) => (
-	<Nav className="ml-auto" navbar>
+const DesktopMenu = ({logoutLink, user, style, className}) => (
+	<Nav navbar style={style} className={space("justify-content-end", className)}>
 		<UncontrolledDropdown nav inNavbar>
 			<DropdownToggle nav caret>{ user.name || user.xid }</DropdownToggle>
 			<DropdownMenu>
-				<DropdownItem><a href="account">Account</a></DropdownItem>
+				<DropdownItem><C.A href="/account">Account</C.A></DropdownItem>
 				<DropdownItem divider />
 				<DropdownItem><LogoutLink /></DropdownItem>
 			</DropdownMenu>
@@ -53,13 +51,14 @@ const DesktopMenu = ({logoutLink, user}) => (
 	</Nav>
 );
 
+// Is this still needed?? it looks ugly and the desktop menu works fine
 /** Clicking username to expand does not work well on mobile
-// Just display all options as part of burger-menu
-*/
-const MobileMenu = ({logoutLink, user}) => (
-	<Nav navbar>
+ *  Just display all options as part of burger-menu
+ */
+const MobileMenu = ({logoutLink, user, style, className}) => (
+	<Nav navbar style={style} className={space("justify-content-end", className)}>
 		<NavItem>
-			<a href="account">{ user.name || user.xid }</a>
+			<C.A href="/account">{ user.name || user.xid }</C.A>
 		</NavItem>
 		<NavItem>
 			<LogoutLink />

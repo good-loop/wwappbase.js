@@ -137,28 +137,41 @@ img {
 	opacity: 75%;
 }
 
-// full-width -- Break out of a BS .container
-.full-width {
-	width: 100vw;
+
+
+// MainDivBase puts every page in a Row (proper practice within a Container) - default to filling horizontally
+.row .page {
+	width: 100%;
 }
+
+// full-width -- Break out of a BS .container
+// Use double-sided margins instead for more nuance
+// .full-width {
+// 	width: 100vw;
+// }
+
 // HACK: use margin-left linked with the BS .container media rules to go full-width in pure css.
 @media (min-width: 576px) {
-	.full-width {
-		margin-left:calc(0.5*(540px - 30px - 100vw))
+	.container .full-width {
+		margin-left: calc(0.5 * (540px + 16px + 0.5rem - 100vw));
+		margin-right: calc(0.5 * (540px + 16px + 0.5rem - 100vw));
 	}
 }
 @media (min-width: 768px) {
-	.full-width {
-		margin-left:calc(0.5*(720px - 30px - 100vw))
+	.container .full-width {
+		margin-left: calc(0.5 * (720px + 16px + 0.5rem - 100vw));
+		margin-right: calc(0.5 * (720px + 16px + 0.5rem - 100vw));
 	}
 }
 @media (min-width: 992px) {
-	.full-width {
-		margin-left:calc(0.5*(960px - 30px - 100vw))
+	.container .full-width {
+		margin-left: calc(0.5 * (960px + 16px + 0.5rem - 100vw));
+		margin-right: calc(0.5 * (960px + 16px + 0.5rem - 100vw));
 	}
 }
 @media (min-width: 1200px) {
-	.full-width {
-		margin-left:calc(0.5*(1140px - 30px - 100vw))
+	.container .full-width {
+		margin-left: calc(0.5 * (1140px + 16px + 0.5rem - 100vw));
+		margin-right: calc(0.5 * (1140px + 16px + 0.5rem - 100vw));
 	}
 }
