@@ -45,7 +45,7 @@ const DesktopMenu = ({logoutLink, user}) => (
 		<UncontrolledDropdown nav inNavbar>
 			<DropdownToggle nav caret>{ user.name || user.xid }</DropdownToggle>
 			<DropdownMenu>
-				<DropdownItem><a href="#account">Account</a></DropdownItem>
+				<DropdownItem><a href="account">Account</a></DropdownItem>
 				<DropdownItem divider />
 				<DropdownItem><LogoutLink /></DropdownItem>
 			</DropdownMenu>
@@ -59,7 +59,7 @@ const DesktopMenu = ({logoutLink, user}) => (
 const MobileMenu = ({logoutLink, user}) => (
 	<Nav navbar>
 		<NavItem>
-			<a href="#account">{ user.name || user.xid }</a>
+			<a href="account">{ user.name || user.xid }</a>
 		</NavItem>
 		<NavItem>
 			<LogoutLink />

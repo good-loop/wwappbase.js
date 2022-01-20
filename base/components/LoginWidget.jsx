@@ -160,7 +160,7 @@ const RegisteredThankYou = () => {
 	return (<>
 		<h3>Thank you- and welcome!</h3>
 		Welcome to {C.app.name}, {name}!<br/>
-		Check out your new account <a href="/#account">here</a>.
+		Check out your new account <a href="/account">here</a>.
 	</>);
 };
 
