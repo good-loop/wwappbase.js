@@ -71,10 +71,8 @@ const getNavProps = () => DataStore.getValue(['widget','NavBar']) || DataStore.s
  */
 const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName}) => {
 	return (<>
-		<C.A href={homelink || '/'}>
-			<NavbarBrand title="Dashboard">
-				<img className='logo' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
-			</NavbarBrand>
+		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")}>
+			<img className='logo' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
 			<NavbarBrand className="nav-brand" title={brandName} href={brandLink}>
