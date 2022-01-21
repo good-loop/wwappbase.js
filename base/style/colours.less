@@ -1,53 +1,190 @@
-/* define GL colours */
 
-@grey: #666;
+/*
 
-// Extra specific colours in our palette, if you need them. No defined uses.
-@green: #586c28;
-@yellow: #f6cf55;
+The centralised go-to repository of all colours any Good-Loop app should require
+Individual apps can override and add to the colour list in their own files if neccessary,
+but if a colour can be sourced from here or added to here it should be! Keep it simple!
+Additionally, redesigns can happen, sometimes often - it makes it MUCH easier to execute those
+if the css remains centralised, especially colours.
+Make sure redesigns happen in these files!
 
-// New colours from brand-book
+ALSO
+When adding or removing a colour, remember to keep track of the bootstrap-style class definitions as well
+They should all be commented with matching labels
+
+*/
+
+
+
+// Mixin templates for bootstrap-style classes
+.bg(@color) {
+	background-color: @color !important;
+}
+.color(@color) {
+	color: @color !important;
+	// Some CSS rules will override links inside headers with !important, make sure anything tagged with this class is covered
+	h1>a,h2>a,h3>a,h4>a,h5>a {
+        color: @color !important;
+    }
+}
+
 // See https://drive.google.com/drive/folders/0Bz6LfeTw60y3UXlIbVVPRmlpNnc
-@gl-red: #770f00;
-@gl-orange: #af2009;
-@gl-light-blue: #5ca5c0;
-@gl-dark-blue: #3e767f;
-@gl-dark-grey: #928b81; // Why is this NOT grey?
-@gl-light-grey: #dddad3; // Why is this NOT grey?
 
-@ml-dark-blue: #286984;
-@ml-blue: #3488AB;
+
+
+// -------------------------------------------------------------------------------------------------------------
+//                                               COLO(U)RS
+// -------------------------------------------------------------------------------------------------------------
+
+// Red
+@gl-red: #770f00;
+@gl-light-red: #af2009;
+
+// Pink
+@gl-pink: #FBE1DE;
+@gl-light-pink: #FEF5F4;
+
+// Orange
+@gl-orange: #af2009;
+@gl-light-orange: #e82316;
+
+// Blue
+@gl-dark-blue: #3e767f;
+@gl-blue: #1894DA;
+@gl-light-blue: #5ca5c0;
+
+// Grey
+@gl-dark-grey: #928b81; // Why is this NOT grey? Yellow??
+@gl-light-grey: #E4E4E4;
+
+// Turquoise
+@gl-turquoise: #51B6AA;
+
+// Standard white-ish colour for nice blank pages
+@gl-background-default: #f4f3f1;    // gl-grey is too dark/yellow
 
 // Green Media
 @greenmedia-darkgreen: #285E41;
 @greenmedia-green: #75B752;
 @greenmedia-lightgreen: #F2F8EF;
 
+
+
+
+// -------------------------------------------------------------------------------------------------------------
+//                                          BOOTSTRAP STYLE CLASSES
+// -------------------------------------------------------------------------------------------------------------
+
+// Red
 .bg-gl-red {
-	background-color: @gl-red;
+	.bg(@gl-red);
 }
-
-.bg-gl-dark-blue {
-	background-color: @gl-dark-blue;
-}
-
-.bg-light-blue {
-	background-color: @gl-light-blue;
-}
-
-.bg-gl-dark-grey {
-	background-color: @gl-dark-grey;
-}
-
-.bg-gl-light-grey {
-	background-color: @gl-light-grey;
-}
-
-.text-shadow-light-blue {
-	text-shadow: @gl-light-blue 2px 2px;
+.bg-gl-light-red {
+    .bg(@gl-light-red);
 }
 .color-gl-red {
-	color: @gl-red;
+	.color(@gl-red);
+}
+.color-gl-light-red {
+    .color(@gl-light-red);
+}
+
+// Pink
+.bg-gl-pink {
+	.bg(@gl-pink);
+}
+.bg-gl-light-pink {
+    .bg(@gl-light-pink);
+}
+.color-gl-pink {
+	.color(@gl-pink);
+}
+.color-gl-light-pink {
+    .color(@gl-light-pink);
+}
+
+// Orange
+.bg-gl-orange {
+	.bg(@gl-orange);
+}
+.bg-gl-light-orange {
+    .bg(@gl-light-orange);
+}
+.color-gl-orange {
+	.color(@gl-orange);
+}
+.color-gl-light-orange {
+    .color(@gl-light-orange);
+}
+
+// Blue
+.bg-gl-dark-blue {
+	.bg(@gl-dark-blue);
+}
+.bg-gl-blue {
+	.bg(@gl-blue);
+}
+.bg-gl-light-blue {
+    .bg(@gl-light-blue);
+}
+.color-gl-dark-blue {
+	.color(@gl-dark-blue);
+}
+.color-gl-blue {
+	.color(@gl-blue);
+}
+.color-gl-light-blue {
+    .color(@gl-light-blue);
+}
+
+// Grey
+.bg-gl-dark-grey {
+	.bg(@gl-dark-grey);
+}
+.bg-gl-light-grey {
+    .bg(@gl-light-grey);
+}
+.color-gl-dark-grey {
+	.color(@gl-dark-grey);
+}
+.color-gl-light-grey {
+    .color(@gl-light-grey);
+}
+
+// Turquoise
+.bg-gl-turquoise {
+	.bg(@gl-turquoise);
+}
+.color-gl-turquoise {
+	.color(@gl-turquoise);
+}
+
+// Background Default
+.bg-gl-background-default {
+	.bg(@gl-background-default);
+}
+.color-gl-background-default {
+	.color(@gl-background-default);
+}
+
+// Green Media
+.bg-greenmedia-darkgreen {
+	.bg(@greenmedia-darkgreen);
+}
+.bg-greenmedia-green {
+	.bg(@greenmedia-green);
+}
+.bg-greenmedia-lightgreen {
+	.bg(@greenmedia-lightgreen);
+}
+.color-greenmedia-darkgreen {
+	.color(@greenmedia-darkgreen);
+}
+.color-greenmedia-green {
+	.color(@greenmedia-green);
+}
+.color-greenmedia-lightgreen {
+	.color(@greenmedia-lightgreen);
 }
 
 // For svgs
@@ -55,7 +192,19 @@
 	fill: @gl-red;
 }
 
-/* @deprecated prefer text-dark/light-n over a hard-coded colour. */
+
+
+@ml-dark-blue: #286984;
+@ml-blue: #3488AB;
+
+
+// -------------------------------------------------------------------------------------------------------------
+//                                         DEPRECATED / TO BE REMOVED
+// -------------------------------------------------------------------------------------------------------------
+
+
+// @deprecated prefer text-dark/light-n over a hard-coded colour.
+// classes are horrible to find and fix all instances of - just a matter of time
 .black {
 	color: #000;
 }
@@ -64,11 +213,12 @@
 	color: #fff;
 }
 
-
+// ======== The following are required as less-loader depends on them - but are they needed?? lemme kill ;-; ==========
 
 // Foreground and background styles
 // BS defines dark and light (nearly black/white) - see https://getbootstrap.com/docs/4.0/utilities/colors/
 // Add some more colour pairs which can be used as foreground/background combos
+@grey: #666;
 @dark0: #343a40; // BS
 @light0: #f8f9fa; // BS
 @dark1: @gl-dark-blue;
@@ -93,21 +243,7 @@
 .bg-light-2 { background-color:@light2; }
 // NB: This gives 6 colour pairings - more than enough to colour any map :)
 
-
-/* GL button: red button on white background */
-.btn-gl {
-	// padding: 0.5em 1em;
-
-	&:hover {
-		text-decoration: underline;
-	}
-	background-color: #fff;
-	color: @gl-red;
-	border-color: @gl-red;
-	font-weight: bold;
-	// border-radius: 10px;
-}
-
+// Old format, but again classes suck - so will take a while to correct
 .color-facebook {color: #3b5998;}
 .color-twitter {color:#4099ff;}
 .color-instagram {color:#e95950;}
@@ -118,29 +254,6 @@
 .bg-instagram {background-color:#e95950;}
 .bg-linkedin {background-color:#0077B5;}
 .bg-good-loop {background-color: @gl-red;}
-
-// Social Button
-.btn-facebook {
-	color: #3b5998;
-	background-color: white;
-	border: 1px solid #3b5998;
-
-	&:hover{
-		color: white;
-		background-color: #3b5998;
-	}
-}
-
-.btn-twitter {
-	color: #4099ff;
-	background-color: white;
-	border: 1px solid #4099ff;
-
-	&:hover{
-		color: white;
-		background-color: #4099ff;
-	}
-}
 
 // // hack to make grayed out values consistent across website
 // Why? Bootstrap should define this as muted grey. ^DW May 2019
