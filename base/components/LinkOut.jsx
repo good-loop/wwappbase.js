@@ -20,7 +20,10 @@ const LinkOut = ({href, disabled, children, className, fetchTitle, ...props}) =>
 		});
 		children = href;
 		if (pvLinkInfo.value && pvLinkInfo.value.title) {
-			children = pvLinkInfo.value.title;
+			let pageTitle = pvLinkInfo.value.title;
+			// HACK cleanup german g-docs
+			pageTitle = pageTitle.replace("- Google Tabellen","");
+			children = pageTitle;
 			if ( ! props.title) props.title = href;
 		}
 	}
