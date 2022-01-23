@@ -11,6 +11,7 @@ import {isMobile} from '../utils/miscutils.ts';
 
 import Misc from './Misc';
 import { space } from '../utils/miscutils';
+import XId from '../data/XId';
 
 /**
 The top-right menu
@@ -41,7 +42,7 @@ const AccountMenu = (props) => {
 const DesktopMenu = ({logoutLink, user, style, className}) => (
 	<Nav navbar style={style} className={space("justify-content-end", className)}>
 		<UncontrolledDropdown nav inNavbar>
-			<DropdownToggle nav caret>{ user.name || user.xid }</DropdownToggle>
+			<DropdownToggle nav caret>{user.name || XId.prettyName(user.xid) }</DropdownToggle>
 			<DropdownMenu>
 				<DropdownItem><C.A href="/account">Account</C.A></DropdownItem>
 				<DropdownItem divider />
