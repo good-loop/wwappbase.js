@@ -79,6 +79,10 @@ XId.service = function(xid) {
  * Also dewarts. Will put a leading @ on Twitter handles.
  */
 XId.prettyName = function(xid) {
+	if ( ! xid) return "";
+	if ( ! XId.isa(xid)) {
+		return xid;
+	}
 	var id = XId.dewart(xid);
 	var i = id.indexOf('@');
 	if (i != -1) {
