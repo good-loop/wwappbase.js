@@ -19,7 +19,7 @@ class ChartWidget extends React.Component {
 		});
 	}
 
-	componentDidCatch() {
+	componentDidCatch(error, info) {
 		this.setState({error, info});
 		console.error(error, info);
 		if (window.onerror) window.onerror("ChartWidget caught error", null, null, null, error);
