@@ -48,6 +48,11 @@ class Campaign extends DataClass {
 DataClass.register(Campaign, "Campaign"); 
 
 /**
+ * Special id for "everything!"
+ */
+Campaign.TOTAL_IMPACT = "TOTAL_IMPACT";
+
+/**
  * This is the DRAFT budget
  * @returns {?Budget}
  */
@@ -389,6 +394,7 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
  * Recursive and fetches dynamic data.
  
  * @param {!Campaign} campaign 
+*  @param {?boolean} isSub set in recursive calls
  * @returns {!Object} {cid: Money} Values may change as data loads
  * @see Campaign.dntn
  */

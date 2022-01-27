@@ -87,11 +87,15 @@ class Store {
 		}
 		const params = getUrlVars();
 		let pathname = window.location.pathname;
+		// HACK chop .html
 		if (pathname.endsWith(".html")) pathname = pathname.substring(0, pathname.length-5);
 		let path = pathname.length ? pathname.split('/').map(decURI) : [];				
 		// HACK fish out key=value bits
 		path = path.filter(bit => {
 			if ( ! bit) return false;
+			if (bit==="index") { // HACK: /index.html isn't part of the path
+				return false;
+			}
 			let eqi = bit.indexOf("=");
 			if (eqi===-1) return true;
 			params[bit.substring(0, eqi)] = bit.substring(eqi+1);
