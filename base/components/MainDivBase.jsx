@@ -126,7 +126,8 @@ class MainDivBase extends Component {
 			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts,
 			fullWidthPages,
 			noRegister,
-			loginService
+			loginService,
+			Footer
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -201,6 +202,7 @@ class MainDivBase extends Component {
 				<div className="page" id={page}>
 					<Page />
 				</div>
+				{Footer && <Footer/>}
 			</Row>
         </Container>
         <LoginWidget

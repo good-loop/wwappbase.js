@@ -47,10 +47,12 @@ They should all be commented with matching labels
 // Orange
 @gl-orange: #af2009;
 @gl-light-orange: #e82316;
+@gl-pale-orange: #fcf5f4;
 
 // Blue
 @gl-dark-blue: #3e767f;
 @gl-blue: #1894DA;
+@gl-desat-blue: #3488AB;
 @gl-light-blue: #5ca5c0;
 
 // Grey
@@ -58,6 +60,7 @@ They should all be commented with matching labels
 @gl-light-grey: #E4E4E4;
 
 // Turquoise
+@gl-dark-turquoise: #286984;
 @gl-turquoise: #51B6AA;
 
 // Standard white-ish colour for nice blank pages
@@ -110,11 +113,17 @@ They should all be commented with matching labels
 .bg-gl-light-orange {
     .bg(@gl-light-orange);
 }
+.bg-gl-pale-orange {
+	.bg(@gl-pale-orange);
+}
 .color-gl-orange {
 	.color(@gl-orange);
 }
 .color-gl-light-orange {
     .color(@gl-light-orange);
+}
+.color-gl-pale-orange {
+	.color(@gl-pale-orange);
 }
 
 // Blue
@@ -124,6 +133,9 @@ They should all be commented with matching labels
 .bg-gl-blue {
 	.bg(@gl-blue);
 }
+.bg-gl-desat-blue {
+	.bg(@gl-desat-blue);
+}
 .bg-gl-light-blue {
     .bg(@gl-light-blue);
 }
@@ -132,6 +144,9 @@ They should all be commented with matching labels
 }
 .color-gl-blue {
 	.color(@gl-blue);
+}
+.color-gl-desat-blue {
+	.color(@gl-desat-blue);
 }
 .color-gl-light-blue {
     .color(@gl-light-blue);
@@ -152,8 +167,14 @@ They should all be commented with matching labels
 }
 
 // Turquoise
+.bg-gl-dark-turquoise {
+	.bg(@gl-dark-turquoise);
+}
 .bg-gl-turquoise {
 	.bg(@gl-turquoise);
+}
+.color-gl-turquoise {
+	.color(@gl-dark-turquoise);
 }
 .color-gl-turquoise {
 	.color(@gl-turquoise);
