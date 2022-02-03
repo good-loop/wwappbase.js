@@ -106,16 +106,6 @@ const emailLogin = ({verb, app, email, password, onRegister, onLogin}) => {
 
 
 
-
-// Convenience: Stop propagation and prevent default on an event, null-safe
-const killEvent = e => {
-	if (!e) return;
-	e.stopPropagation && e.stopPropagation();
-	e.preventDefault && e.preventDefault();
-}
-
-
-
 /**
 	TODO:
 	- doEmailLogin(email, password) and doSocialLogin(service) are available as props now
@@ -131,7 +121,7 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 	if (!verb && !children) verb = 'login';
 	
 	const onClick2 = e => {
-		killEvent(e);
+		stopEvent(e);
 		if (verb) setLoginVerb(verb);
 		setShowLogin(true);
 		onClick && onClick(e);
@@ -272,7 +262,7 @@ const EmailReset = ({}) => {
 	const path = ['data', C.TYPES.User, 'loggingIn'];
 
 	const doItFn = e => {
-		killEvent(e);				
+		stopEvent(e);				
 		let email = DataStore.getValue(path.concat("email"));
 		if ( ! email) {			
 			Login.error = {text:'Please enter your email'};
@@ -328,7 +318,7 @@ const EmailSignin = ({verb, onLogin, onRegister, noRegister}) => {
 	let person = DataStore.getValue(path);
 
 	const doItFn = e => {
-		killEvent(e);
+		stopEvent(e);
 		if ( ! person) {			
 			Login.error = {text:'Please fill in email and password'};
 			return;
@@ -359,7 +349,7 @@ const EmailSignin = ({verb, onLogin, onRegister, noRegister}) => {
 const ResetLink = ({verb}) => {
 	if (verb !== 'login') return null;
 	const toReset = e => {
-		killEvent(e);
+		stopEvent(e);
 		// clear any error from a failed login
 		Login.error = null;
 		DataStore.setValue(VERB_PATH, 'reset');

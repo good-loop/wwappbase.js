@@ -24,6 +24,7 @@ import { BasicAccountPage } from './AccountPageWidgets';
 import E404Page from './E404Page';
 import { assert } from '../utils/assert';
 import PropControls from './PropControls';
+import { nonce } from '../data/DataClass';
 
 let dummy = PropControls; // keep the PropControls import
 
@@ -113,6 +114,7 @@ class MainDivBase extends Component {
 	render() {
 		init();
 		let {
+			children,
 			homeLink,
 			pageForPath, 
 			securityCheck, SecurityFailPage=DefaultErrorPage, 
@@ -179,8 +181,8 @@ class MainDivBase extends Component {
 		//
 		return (
       <div>
-        {navbar ? (<>
-          <NavBar
+        {navbar && nonce() && <>
+          <NavBar		  	
             page={page}
             pages={navbarPages}
             labels={navbarLabels}
@@ -191,10 +193,11 @@ class MainDivBase extends Component {
 			shadow={navbarShadow}
 			NavGuts={NavGuts}
           >
+			{nonce()}
 			  {navbarChildren}
 		  </NavBar>
-		  {navbarSpace ? <div className="py-4"/> : null}
-        </>) : null}
+		  {navbarSpace && <div className="py-4"/>}
+        </>}
         <Container fluid={fluid}>
 			<Row>
 				<MessageBar />
@@ -208,7 +211,7 @@ class MainDivBase extends Component {
           noRegister={noRegister}
 		  loginService={loginService}
           services={noRegister ? [] : loginService}
-        />
+        />	
       </div>
     );
 	} // ./render()
