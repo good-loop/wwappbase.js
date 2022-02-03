@@ -155,7 +155,7 @@ Person.setHasApp = (person, app) => {
 /**
  * See Purposes.java
  */
-const PURPOSES = new Enum("any email_app email_mailing_list email_marketing cookies cookies_personalization cookies_analytical cookies_marketing cookies_functional personalize_ads");
+const PURPOSES = new Enum("any email_app email_mailing_list email_marketing preregister cookies cookies_personalization cookies_analytical cookies_marketing cookies_functional personalize_ads");
 
 /**
  * Sets dataspace and type
@@ -518,6 +518,7 @@ const getAllXIds2 = (all, agendaXIds) => {
  * Process a mailing-list sign-up form
  * @param {!String} email
  * @param {?String} controller Who "owns" this data? Defaults to `ServerIO.dataspace`
+ * @param {?String} purpose Why? See PURPOSES
  * @param {?String} notify Our email to send a note to
  */
 const doRegisterEmail = (data) => {

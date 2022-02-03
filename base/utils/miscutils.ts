@@ -68,6 +68,10 @@ export const KBrowser = new Enum("CHROME EDGE FIREFOX SAFARI OTHER");
  * https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
  */
 export const getBrowserVendor = () => {
+	// for debugging
+	if (getUrlVars().browserVendor) {
+		return getUrlVars().browserVendor;
+	}
 	const isChromium = window.chrome;
 	const winNav = window.navigator;
 	const vendorName = winNav.vendor;
