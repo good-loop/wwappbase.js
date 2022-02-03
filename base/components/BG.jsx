@@ -19,8 +19,9 @@ import ImageObject from '../data/ImageObject';
  * @param {?string} p.size cover|contain|fit How to size the background image. Fit means stretch to fit
  * @param {?number} p.opacity [0-100] ONLY works for fullscreen backgrounds
  * @param {?string} p.color css background colour
+ * @param {?boolean} p.fitToImage arrange so that the container sizes itself to the image size, while remaining in the background
  */
-const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, bottom=0, fullscreen, opacity, style}) => {
+const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, bottom=0, fullscreen, opacity, style, className, fitToImage}) => {
 	if (size==='fit') size = "100% 100%";
 	if (image) {
 		src = typeof(image)==='string'? image : image.url;
@@ -30,10 +31,18 @@ const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, 
 	if ( ! fullscreen) {
 		// TODO opacity for the bg without affecting the content 
 		// NB: position relative, so the (cc) credit can go bottom-right
-		return (<div style={{backgroundImage: `url('${src}')`, backgroundSize: size, position: image&&'relative'}}>
-			{children}
-			{credit}
-		</div>);
+		if (!fitToImage) {
+			return (<div style={{backgroundImage: `url('${src}')`, backgroundSize: size, position: image&&'relative', ...style}} className={className}>
+				{children}
+				{credit}
+			</div>);fitToImage
+		} else {
+			return (<div style={{position:"relative", ...style}} className={className}>
+				<img src={src} className='w-100 position-absolute'/>
+				{children}
+				{credit}
+			</div>)
+		}
 	}
 	// NB: z-index only works on positioned elements
 	let baseStyle= {
@@ -47,9 +56,9 @@ const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, 
 	};
 	// Assign custom style overrides
 	if (style) Object.assign(baseStyle, style);
-
+	
 	return (<>
-		<div className='BG-img' style={baseStyle} />
+		<div className='BG-img' style={baseStyle} className={className}/>
 		{children}
 		{credit}
 	</>);
