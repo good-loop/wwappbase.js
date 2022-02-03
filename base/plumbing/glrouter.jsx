@@ -22,8 +22,9 @@ const A = (x) => {
 	if ( ! x) return null;
 	const {href, children, onClick, ...args} = x;
 	const doClick = e => {
+		if ( ! href) return; // just an anchor tag, not a link
 		// Only override redirects to this origin
-		if (!href.includes(window.location.origin) && href.startsWith("http")) {
+		if ( ! href.includes(window.location.origin) && href.startsWith("http")) {
 			return;
 		}
 		stopEvent(e);

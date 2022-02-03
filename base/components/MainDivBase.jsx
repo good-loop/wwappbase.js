@@ -24,7 +24,6 @@ import { BasicAccountPage } from './AccountPageWidgets';
 import E404Page from './E404Page';
 import { assert } from '../utils/assert';
 import PropControls from './PropControls';
-import { nonce } from '../data/DataClass';
 
 let dummy = PropControls; // keep the PropControls import
 
@@ -83,14 +82,14 @@ const init = () => {
 	homelink: {String} - Relative url for the home-page. Defaults to "/"
 	pageForPath: {String:JSX}
 	navbarPages: String[]|() => String[]
-	navbarChildren: ?JSX
+	navbarChildren: {?JSX|Function -> JSX} Warning: JSX passed in does not get refreshed on update. If you need a refresh - pass in a function `() => <JSX/>`.
 	navbarExternalLinks: {?Object}
 	navbarDarkTheme: {?boolean}
 	navbarBackgroundColour: {?String}
 	loginRequired: {?boolean}
 	securityCheck: ({page}) => throw error / return true
 	SecurityFailPage: ?JSX
-	defaultPage: String,
+	defaultPage: {String|Function -> String},
 	fullWidthPages: String[]
 */
 class MainDivBase extends Component {
@@ -182,7 +181,7 @@ class MainDivBase extends Component {
 		//
 		return (
       <div>
-        {navbar && nonce() && <>
+        {navbar && <>
           <NavBar		  	
             page={page}
             pages={navbarPages}
@@ -194,8 +193,7 @@ class MainDivBase extends Component {
 			shadow={navbarShadow}
 			NavGuts={NavGuts}
           >
-			{nonce()}
-			  {navbarChildren}
+			{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 		  </NavBar>
 		  {navbarSpace && <div className="py-4"/>}
         </>}
