@@ -61,6 +61,57 @@ export const getScreenSize = () => {
 /**  */
 export const isPortraitMobile = () => window.matchMedia("only screen and (max-width: 768px)").matches && window.matchMedia("(orientation: portrait)").matches;
 
+export const KBrowser = new Enum("CHROME EDGE FIREFOX SAFARI OTHER");
+/**
+ * @returns {!String} CHROME EDGE FIREFOX SAFARI OTHER
+ * See https://stackoverflow.com/questions/4565112/javascript-how-to-find-out-if-the-user-browser-is-chrome
+ * https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+ */
+export const getBrowserVendor = () => {
+	const isChromium = window.chrome;
+	const winNav = window.navigator;
+	const vendorName = winNav.vendor;
+	const isOpera = typeof window.opr !== "undefined";
+	const isIEedge = winNav.userAgent.indexOf("Edg") > -1;
+	const isIOSChrome = winNav.userAgent.match("CriOS");
+
+	if (isIOSChrome) {
+		// is Google Chrome on IOS
+		return "CHROME"
+	}
+	if (
+		isChromium !== null &&
+		typeof isChromium !== "undefined" &&
+		vendorName === "Google Inc." &&
+		isOpera === false &&
+		isIEedge === false
+	) {
+		// is Google Chrome
+		return "CHROME"
+	}
+
+	// Internet Explorer 6-11
+	var isIE = /*@cc_on!@*/false || !!document.documentMode;
+	// Edge (based on chromium) detection
+	if (window.chrome && navigator.userAgent.indexOf("Edg") != -1) return "EDGE";
+	if (!isIE && window.StyleMedia) return "EDGE"; // older edge??
+
+	// Safari 3.0+ "[object HTMLElementConstructor]" 
+	if (navigator.userAgent.indexOf("Safari") != -1) {
+		return "SAFARI";
+	}
+
+	// Firefox 1.0+
+	if (typeof InstallTrigger !== 'undefined') {
+		return "FIREFOX";
+	}
+
+	// Opera 8.0+
+	if ((window.opr && opr.addons) || window.opera || navigator.userAgent.indexOf(' OPR/') >= 0) {
+		return "OPERA";
+	}
+	return "OTHER";
+}; // ./ getBrowserVendor
 
 /**
  * @returns true if share was invoked, false if copy-to-clipboard was invoked

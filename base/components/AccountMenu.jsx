@@ -25,6 +25,7 @@ const AccountMenu = (props) => {
 
 	// TODO see navbar dropdown
 	if ( ! Login.isLoggedIn()) {
+		// why justify-content-end??
 		return (
 			<Nav navbar style={props.style} className={space("justify-content-end", className)}>
 				{noRegister ? '' : <NavItem id="register-link"><RegisterLink /></NavItem>}
@@ -40,7 +41,7 @@ const AccountMenu = (props) => {
 };
 
 const DesktopMenu = ({logoutLink, user, style, className}) => (
-	<Nav navbar style={style} className={space("justify-content-end", className)}>
+	<Nav navbar style={style} className={space("account-menu", className)}>
 		<UncontrolledDropdown nav inNavbar>
 			<DropdownToggle nav caret>{user.name || XId.prettyName(user.xid) }</DropdownToggle>
 			<DropdownMenu>
@@ -49,21 +50,6 @@ const DesktopMenu = ({logoutLink, user, style, className}) => (
 				<DropdownItem><LogoutLink /></DropdownItem>
 			</DropdownMenu>
 		</UncontrolledDropdown>
-	</Nav>
-);
-
-// Is this still needed?? it looks ugly and the desktop menu works fine
-/** Clicking username to expand does not work well on mobile
- *  Just display all options as part of burger-menu
- */
-const MobileMenu = ({logoutLink, user, style, className}) => (
-	<Nav navbar style={style} className={space("justify-content-end", className)}>
-		<NavItem>
-			<C.A href="/account">{ user.name || user.xid }</C.A>
-		</NavItem>
-		<NavItem>
-			<LogoutLink />
-		</NavItem>
 	</Nav>
 );
 

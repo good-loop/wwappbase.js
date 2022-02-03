@@ -21,6 +21,7 @@ const EMOJI = {
 	outtray: "📤",
 	plus: "⨁", // ⊕
 	search: "🔍",
+	seedling: "🌱",
 	tick: "✔",
 	trashcan: "🗑", //&#x1f5d1;
 	".txt":"🖹",
