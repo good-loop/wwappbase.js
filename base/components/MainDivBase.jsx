@@ -124,7 +124,7 @@ class MainDivBase extends Component {
 			navbarBackgroundColour="dark",
 			navbarStyle,
 			navbarShadow=true,
-			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts, NavExpandSize,
+			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts, NavExpandSize="md",
 			fullWidthPages,
 			noRegister,
 			loginService,
