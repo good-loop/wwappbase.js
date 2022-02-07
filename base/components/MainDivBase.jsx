@@ -124,7 +124,7 @@ class MainDivBase extends Component {
 			navbarBackgroundColour="dark",
 			navbarStyle,
 			navbarShadow=true,
-			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts,
+			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts, NavExpandSize,
 			fullWidthPages,
 			noRegister,
 			loginService,
@@ -187,11 +187,12 @@ class MainDivBase extends Component {
             pages={navbarPages}
             labels={navbarLabels}
             externalLinks={navbarExternalLinks}
-			homelink={homeLink}
+						homelink={homeLink}
             darkTheme={navbarDarkTheme}
             backgroundColour={navbarBackgroundColour}
-			shadow={navbarShadow}
-			NavGuts={NavGuts}
+						shadow={navbarShadow}
+						NavGuts={NavGuts}
+						expandSize={NavExpandSize}
           >
 			{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 		  </NavBar>

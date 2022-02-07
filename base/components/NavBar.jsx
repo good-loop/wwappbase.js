@@ -105,7 +105,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
-const NavBar = ({NavGuts = DefaultNavGuts, children, ...props}) => {
+const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props}) => {
 	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
 	const navProps = getNavProps();
 	if (navProps) {
@@ -187,7 +187,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, ...props}) => {
 	}
 
 	return (
-		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand="md" className={space('p-1', scrolled && "scrolled")} >
+		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand={expandSize} className={space('p-1', scrolled && "scrolled")} >
 			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle}>
 				{children}
 			</NavGuts>
