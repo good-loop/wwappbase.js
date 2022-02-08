@@ -20,6 +20,12 @@ account {boolean} true if we want to show the account option (true by default), 
 logoutLink {string} what page should be loaded after logout ('#dashboard' by default), to allow it to go to the dashboard in portal, but the same page in my-loop
 */
 
+const HashLinkChecker = (herf) => {
+	let noHashHostname = ['my.good-loop.com', 'testmy.good-loop.com', 'localmy.good-loop.com'];
+	if (noHashHostname.includes(window.location.hostname)) return herf.replace('#', '');
+	else return herf;
+}
+
 const AccountMenu = (props) => {
 	const {noRegister, className} = (props || {});
 
@@ -40,17 +46,21 @@ const AccountMenu = (props) => {
 	return <DesktopMenu {...props} user={user} />;
 };
 
-const DesktopMenu = ({logoutLink, user, style, className}) => (
+const DesktopMenu = ({logoutLink, noHashLink, user, style, className}) => {
+	let accountHerf = HashLinkChecker('/#account');
+
+	return (
 	<Nav navbar style={style} className={space("account-menu", className)}>
 		<UncontrolledDropdown nav inNavbar>
 			<DropdownToggle nav caret>{user.name || XId.prettyName(user.xid) }</DropdownToggle>
 			<DropdownMenu>
-				<DropdownItem><C.A href="/account">Account</C.A></DropdownItem>
+				<DropdownItem><C.A href={accountHerf}>Account</C.A></DropdownItem>
 				<DropdownItem divider />
 				<DropdownItem><LogoutLink /></DropdownItem>
 			</DropdownMenu>
 		</UncontrolledDropdown>
 	</Nav>
-);
+	)
+};
 
 export default AccountMenu;
