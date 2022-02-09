@@ -410,7 +410,6 @@ const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
 
 const LoginWidgetGuts = ({services, verb, onLogin, onRegister, noRegister, noSocials, children}) => {
 	if (!verb) verb = DataStore.getValue(VERB_PATH) || 'login';
-	console.log("LOGIN CHILDREN", children);
 	return (
 		<div className="login-guts container-fluid">
 			<Row>
