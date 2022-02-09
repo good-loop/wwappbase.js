@@ -143,11 +143,11 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 		setNavProps(null);
 	}
 
-	const PageNavLink = ({page, children}) => {
+	const PageNavLink = ({page, className, children}) => {
 		let pageLink = (DataStore.usePathname? '/' : '#') + page.replace(" ", "-");
 		if (externalLinks && page in externalLinks) pageLink = externalLinks[page];
 		return (
-			<C.A className="nav-link" href={pageLink} onClick={onLinkClick} >
+			<C.A className={space("nav-link", className)} href={pageLink} onClick={onLinkClick} >
 				{children}
 			</C.A>
 		)
@@ -163,17 +163,19 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	// for dropdowns, or, for simpler setups, just an array of strings
 	let pageLinks;
 	if (simplePagesSetup) {
-		pageLinks = pages.map(page => (
-			<NavItem key={`navitem_${page}`} active={page === currentPage}>
-				{getPageLink(page)}
-			</NavItem>
+		pageLinks = pages.map((page,i) => (
+			<PageNavLink page={page}>
+				<NavItem key={`navitem_${page}`} className='top-level' active={page === currentPage}>
+					{getPageLabel(page, labels[i])}
+				</NavItem>
+			</PageNavLink>
 		));
 	} else {
 		pageLinks = Object.keys(pages).map((title, i) => {
 			// Some page links can come in collections - make sure to account for that
 			if (pages[title].length > 0) {
 				return (
-					<UncontrolledDropdown key={`navitem_${title}`} nav inNavbar>
+					<UncontrolledDropdown key={`navitem_${title}`} nav inNavbar className='top-level'>
 						<DropdownToggle nav caret>{(labels && Object.keys(labels)[i]) || title}</DropdownToggle>
 						<DropdownMenu>
 							{pages[title].map((page, j) => (
@@ -189,7 +191,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 			} else {
 				// Title is a single page, not a category
 				return (
-					<PageNavLink page={title}>
+					<PageNavLink page={title} className='top-level'>
 						<NavItem key={`navitem_${title}`} active={title === currentPage}>
 							{getPageLabel(title, (labels && Object.keys(labels)[i]) || title)}
 						</NavItem>
