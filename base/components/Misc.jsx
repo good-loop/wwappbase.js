@@ -214,7 +214,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 	if (service === 'instagram') file = '/img/instagram-logo.png';
 	else if (service === C.app.id) file = C.app.logo;
 
-	let classes = 'rounded logo' + (size ? ' logo-' + size : '');
+	let classes = space('rounded logo' + (size ? ' logo-' + size : ''), className);
 
 	return <img alt={service} data-pin-nopin="true" className={classes} src={file} />;
 }; // ./Logo
