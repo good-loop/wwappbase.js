@@ -73,9 +73,9 @@ const getNavProps = () => DataStore.getValue(['widget','NavBar']) || DataStore.s
  * rendered within BS.Nav
  * @param {NavProps} p
  */
-const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName}) => {
+const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick}) => {
 	return (<>
-		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")}>
+		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
 			<img className='logo' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
@@ -89,7 +89,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 				{pageLinks}
 			</Nav>
 			{children}
-			<AccountMenu active={currentPage === 'account'} className="mr-2"/>
+			<AccountMenu active={currentPage === 'account'} className="mx-2 mt-2 mt-md-0"/>
 		</Collapse>
 	</>);
 };
@@ -138,14 +138,23 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	const simplePagesSetup = Array.isArray(pages);
 	const labelFn = labeller(pages, labels);
 
-	const getPageLink = (page, label) => {
+	const onLinkClick = () => {
+		close();
+		setNavProps(null);
+	}
+
+	const PageNavLink = ({page, className, children}) => {
 		let pageLink = (DataStore.usePathname? '/' : '#') + page.replace(" ", "-");
 		if (externalLinks && page in externalLinks) pageLink = externalLinks[page];
 		return (
-			<C.A className="nav-link" href={pageLink} onClick={close} >
-				{label || labelFn(page)}
+			<C.A className={space("nav-link", className)} href={pageLink} onClick={onLinkClick} >
+				{children}
 			</C.A>
 		)
+	}
+
+	const getPageLabel = (page, label) => {
+		return label || labelFn(page)
 	};
 
 	// make the page links
@@ -154,23 +163,27 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	// for dropdowns, or, for simpler setups, just an array of strings
 	let pageLinks;
 	if (simplePagesSetup) {
-		pageLinks = pages.map(page => (
-			<NavItem key={`navitem_${page}`} active={page === currentPage}>
-				{getPageLink(page)}
-			</NavItem>
+		pageLinks = pages.map((page,i) => (
+			<PageNavLink page={page}>
+				<NavItem key={`navitem_${page}`} className='top-level' active={page === currentPage}>
+					{getPageLabel(page, labels[i])}
+				</NavItem>
+			</PageNavLink>
 		));
 	} else {
 		pageLinks = Object.keys(pages).map((title, i) => {
 			// Some page links can come in collections - make sure to account for that
 			if (pages[title].length > 0) {
 				return (
-					<UncontrolledDropdown key={`navitem_${title}`} nav inNavbar>
+					<UncontrolledDropdown key={`navitem_${title}`} nav inNavbar className='top-level'>
 						<DropdownToggle nav caret>{(labels && Object.keys(labels)[i]) || title}</DropdownToggle>
 						<DropdownMenu>
 							{pages[title].map((page, j) => (
-								<DropdownItem key={`navitem_${page}`} active={page === currentPage}>
-									{getPageLink(page, labels && labels[Object.keys(labels)[i]][j])}
-								</DropdownItem>
+								<PageNavLink page={page}>
+									<DropdownItem key={`navitem_${page}`} active={page === currentPage}>
+										{getPageLabel(page, labels && labels[Object.keys(labels)[i]][j])}
+									</DropdownItem>
+								</PageNavLink>
 							))}
 						</DropdownMenu>
 					</UncontrolledDropdown>
@@ -178,9 +191,11 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 			} else {
 				// Title is a single page, not a category
 				return (
-					<NavItem key={`navitem_${title}`} active={title === currentPage}>
-						{getPageLink(title, (labels && Object.keys(labels)[i]) || title)}
-					</NavItem>
+					<PageNavLink page={title} className='top-level'>
+						<NavItem key={`navitem_${title}`} active={title === currentPage}>
+							{getPageLabel(title, (labels && Object.keys(labels)[i]) || title)}
+						</NavItem>
+					</PageNavLink>
 				);
 			}
 		});
@@ -188,7 +203,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 
 	return (
 		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand={expandSize} className={space('p-1', scrolled && "scrolled")} >
-			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle}>
+			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} onLinkClick={onLinkClick}>
 				{children}
 			</NavGuts>
 		</Navbar>

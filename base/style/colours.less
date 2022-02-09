@@ -38,6 +38,10 @@ They should all be commented with matching labels
 
 // See https://drive.google.com/drive/u/0/folders/1Cu5QCy69aOa4dmmHnGBxl6_XWlj9pRuu
 // BUT that doesn't match these!
+
+// White (for compatibility)
+@gl-white: #fff;
+
 // Red
 @gl-red: #770f00;
 @gl-light-red: #af2009;
@@ -78,6 +82,14 @@ They should all be commented with matching labels
 // -------------------------------------------------------------------------------------------------------------
 //                                          BOOTSTRAP STYLE CLASSES
 // -------------------------------------------------------------------------------------------------------------
+
+// White
+.bg-gl-white {
+	.bg(@gl-white);
+}
+.color-gl-white {
+	.color(@gl-white);
+}
 
 // Red
 .bg-gl-red {
