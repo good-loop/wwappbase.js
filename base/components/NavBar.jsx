@@ -164,8 +164,8 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	let pageLinks;
 	if (simplePagesSetup) {
 		pageLinks = pages.map((page,i) => (
-			<PageNavLink page={page}>
-				<NavItem key={`navitem_${page}`} className='top-level' active={page === currentPage}>
+			<PageNavLink page={page} key={`navitem_${page}`}>
+				<NavItem className='top-level' active={page === currentPage}>
 					{getPageLabel(page, labels[i])}
 				</NavItem>
 			</PageNavLink>
@@ -179,8 +179,8 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 						<DropdownToggle nav caret>{(labels && Object.keys(labels)[i]) || title}</DropdownToggle>
 						<DropdownMenu>
 							{pages[title].map((page, j) => (
-								<PageNavLink page={page}>
-									<DropdownItem key={`navitem_${page}`} active={page === currentPage}>
+								<PageNavLink page={page} key={`navitem_${page}`}>
+									<DropdownItem active={page === currentPage}>
 										{getPageLabel(page, labels && labels[Object.keys(labels)[i]][j])}
 									</DropdownItem>
 								</PageNavLink>
@@ -191,8 +191,8 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 			} else {
 				// Title is a single page, not a category
 				return (
-					<PageNavLink page={title} className='top-level'>
-						<NavItem key={`navitem_${title}`} active={title === currentPage}>
+					<PageNavLink page={title} className='top-level' key={`navitem_${title}`}>
+						<NavItem active={title === currentPage}>
 							{getPageLabel(title, (labels && Object.keys(labels)[i]) || title)}
 						</NavItem>
 					</PageNavLink>
