@@ -164,8 +164,8 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	let pageLinks;
 	if (simplePagesSetup) {
 		pageLinks = pages.map((page,i) => (
-			<PageNavLink page={page}>
-				<NavItem key={`navitem_${page}`} className='top-level' active={page === currentPage}>
+			<PageNavLink page={page} key={page} >
+				<NavItem className='top-level' active={page === currentPage}>
 					{getPageLabel(page, labels[i])}
 				</NavItem>
 			</PageNavLink>
@@ -175,12 +175,12 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 			// Some page links can come in collections - make sure to account for that
 			if (pages[title].length > 0) {
 				return (
-					<UncontrolledDropdown key={`navitem_${title}`} nav inNavbar className='top-level'>
+					<UncontrolledDropdown key={title} nav inNavbar className='top-level'>
 						<DropdownToggle nav caret>{(labels && Object.keys(labels)[i]) || title}</DropdownToggle>
 						<DropdownMenu>
 							{pages[title].map((page, j) => (
-								<PageNavLink page={page}>
-									<DropdownItem key={`navitem_${page}`} active={page === currentPage}>
+								<PageNavLink key={page} page={page}>
+									<DropdownItem active={page === currentPage}>
 										{getPageLabel(page, labels && labels[Object.keys(labels)[i]][j])}
 									</DropdownItem>
 								</PageNavLink>
@@ -191,15 +191,15 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 			} else {
 				// Title is a single page, not a category
 				return (
-					<PageNavLink page={title} className='top-level'>
-						<NavItem key={`navitem_${title}`} active={title === currentPage}>
+					<PageNavLink key={title} page={title} className='top-level'>
+						<NavItem active={title === currentPage}>
 							{getPageLabel(title, (labels && Object.keys(labels)[i]) || title)}
 						</NavItem>
 					</PageNavLink>
 				);
 			}
 		});
-	}
+	} // ./pageLinks
 
 	return (
 		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand={expandSize} className={space('p-1', scrolled && "scrolled")} >

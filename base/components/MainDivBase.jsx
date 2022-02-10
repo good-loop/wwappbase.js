@@ -25,6 +25,8 @@ import E404Page from './E404Page';
 import { assert } from '../utils/assert';
 import PropControls from './PropControls';
 
+import StyleBlock from './StyleBlock';
+
 let dummy = PropControls; // keep the PropControls import
 
 // DataStore
@@ -183,9 +185,10 @@ class MainDivBase extends Component {
 		// full screen?
 		// Either by page, or for a dynamic setting within a page - HACK set window.fullWidthPage=true/false
 		let fluid = (fullWidthPages && fullWidthPages.includes(page)) || window.fullWidthPage;
-		//
+		
 		return (
       <div>
+		{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
         {navbar && <>
           <NavBar		  	
             page={page}
