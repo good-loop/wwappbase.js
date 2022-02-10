@@ -21,6 +21,11 @@ See: https://getbootstrap.com/docs/5.1/layout/breakpoints/
 
 */
 
+
+/** HACK: screen height -- why is this not 100vh?! It doesn't seem to be the navbar, which floats over the top
+*/
+@fullHeight: calc(100vh - 3.4em);
+
 /** select tablets and larger */
 @md-min: ~"(min-width: 767px)"; // -1px from bootstrap to avoid iPads
 /* Use for "mobile only" */
@@ -42,3 +47,5 @@ See: https://getbootstrap.com/docs/5.1/layout/breakpoints/
 // Based on highest width high-res mobile device tested
 @ipad-max: ~"(max-width: 1080px)";
 @ipad-min: ~"(min-width: 1080px)";
+
+
