@@ -69,7 +69,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 		filename = urlToLongHash(url, 16) + extension;
 		params += '&src=' + encodeURIComponent(url);
 	}
-	return ServerIO.MEDIA_ENDPOINT+'/uploads/mediacache/'+ + sizeDir + filename + params;
+	return ServerIO.MEDIA_ENDPOINT+'/uploads/mediacache/' + sizeDir + filename + params;
 };
 
 /**
