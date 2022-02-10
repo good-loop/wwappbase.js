@@ -212,7 +212,7 @@ class MainDivBase extends Component {
 				<div className="page" id={page}>
 					<Page />
 				</div>
-				{Footer && <Footer/>}
+				{Footer && <Footer page={page} />}
 			</Row>
         </Container>
         <LoginWidget
