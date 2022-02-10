@@ -66,7 +66,7 @@ const doLogin = async ({page, username, password}) => {
 	await page.type('[name=password]', password);
 
 	await page.keyboard.press('Enter');
-	await page.waitForSelector('.logout-link');
+	await page.waitForSelector('.LogoutLink');
 };
 
 // set when calling Jest CLI with --testURL $url

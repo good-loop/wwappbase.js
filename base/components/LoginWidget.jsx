@@ -134,7 +134,7 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 	);
 };
 
-const LogoutLink = ({className}) => <a href={'#'} className="logout-link" onClick={() => Login.logout()}>Log out</a>;
+const LogoutLink = ({className, children}) => <a href={'#'} className={space(className,"LogoutLink")} onClick={() => Login.logout()}>{children || "Log out"}</a>;
 
 const RegisterLink = ({className, ...props}) => <LoginLink
 	className={className}
@@ -150,7 +150,7 @@ const RegisteredThankYou = () => {
 	return (<>
 		<h3>Thank you- and welcome!</h3>
 		Welcome to {C.app.name}, {name}!<br/>
-		Check out your new account <a href="/account">here</a>.
+		Check out your new account <C.A href={DataStore.localUrl+"account"}>here</C.A>.
 	</>);
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Nav, NavItem, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+import { Nav, NavItem, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, NavLink } from 'reactstrap';
 import Login from '../youagain';
 
 import C from '../CBase';
@@ -34,7 +34,7 @@ const AccountMenu = (props) => {
 		// why justify-content-end??
 		return (
 			<Nav navbar style={props.style} className={space("justify-content-end", className)}>
-				{noRegister ? '' : <NavItem id="register-link"><RegisterLink /></NavItem>}
+				{ ! noRegister && <NavItem id="register-link"><RegisterLink /></NavItem>}
 				<NavItem className="login-link"><LoginLink>Sign in</LoginLink></NavItem>
 			</Nav>
 		);
@@ -54,9 +54,9 @@ const DesktopMenu = ({logoutLink, noHashLink, user, style, className}) => {
 		<UncontrolledDropdown nav inNavbar>
 			<DropdownToggle nav caret>{user.name || XId.prettyName(user.xid) }</DropdownToggle>
 			<DropdownMenu>
-				<DropdownItem><C.A href={accountHerf}>Account</C.A></DropdownItem>
+				<C.A href={accountHerf} className="nav-link"><NavItem>Account</NavItem></C.A>
 				<DropdownItem divider />
-				<DropdownItem><LogoutLink /></DropdownItem>
+				<LogoutLink className="nav-link"><NavItem>Logout</NavItem></LogoutLink>
 			</DropdownMenu>
 		</UncontrolledDropdown>
 	</Nav>

@@ -49,7 +49,7 @@ const usePath = () => ""+window.location;
  * @param {?Boolean} returnOnly If true, do not modify the hash -- just return what the new value would be (starting with #)
  */
 const modifyPage = (newpath, newparams, returnOnly) => {
-	if ( ! DataStore.usePathname) {
+	if (DataStore.localUrl !== '/') {
 		return modifyHash(newpath, newparams, returnOnly);
 	}	
 	const { path, params } = DataStore.getValue('location');
@@ -70,8 +70,9 @@ const modifyPage = (newpath, newparams, returnOnly) => {
 
 const initRouter = () => {
 	// Switch DataStore to /page over #page
-	DataStore.useHashPath = false;
-	DataStore.usePathname = true;
+	// DataStore.useHashPath = false;
+	// DataStore.usePathname = true;
+	DataStore.localUrl = '/';
 	DataStore.parseUrlVars(false); // update the parsing since we've changed the method
 	// NB: Catch beforeunload? No - Modern Chrome insists on a user popup for this
 	window.addEventListener('popstate', e => {		
