@@ -192,8 +192,6 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 		if (onRegister) onRegister();
 	}
 
-	const logoClassName = title ? "pull-left mr-2" : "mx-auto";
-
 	return (
 		<Modal
 			isOpen={show}
@@ -203,7 +201,7 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 		>
 			{/* NB: If header doesn't work for you, use css to hide it */}
 			<ModalHeader toggle={() => setShowLogin(!show)}>
-				<Misc.Logo service={C.app.id} url={logo} transparent={false} className="pull-left m-r1" />
+				<Misc.Logo service={C.app.id} url={logo} transparent={false} className="pull-left mr-1" />
 				{' '}{title}
 				{subtitle && <p className='my-4 login-subtitle'>{subtitle}</p>}
 			</ModalHeader>
@@ -305,7 +303,7 @@ const EmailReset = ({}) => {
  * @param onLogin called after user has successfully logged in
  * @param onRegister called after the user has successfully registered
  */
-const EmailSignin = ({verb, onLogin, onRegister, noRegister}) => {
+const EmailSignin = ({verb, onLogin, onRegister, noRegister, className}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
@@ -334,16 +332,18 @@ const EmailSignin = ({verb, onLogin, onRegister, noRegister}) => {
 	// login/register
 	let status = DataStore.getValue(STATUS_PATH);
 	return (
-		<form id="loginByEmail" onSubmit={doItFn}>
+		<form id="loginByEmail" onSubmit={doItFn} className={className}>
 			<PropControl label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
 			<PropControl label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
-			<div className="form-group">
-				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
-					{verbButtonLabels[verb]}
-				</Button>
-				{noRegister ? null : <SwitchVerb verb={verb} />}
+			<div className='action-btns'>
+				<div className="form-group">
+					<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
+						{verbButtonLabels[verb]}
+					</Button>
+					{noRegister ? null : <SwitchVerb verb={verb} />}
+				</div>
+				<ResetLink verb={verb} />
 			</div>
-			<ResetLink verb={verb} />
 			<ErrAlert error={Login.error} />
 		</form>
 	);
