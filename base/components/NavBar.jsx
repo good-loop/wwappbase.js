@@ -9,6 +9,7 @@ import {
 	Nav,
 	Container,
 	UncontrolledDropdown,
+	Dropdown,
 	DropdownToggle,
 	DropdownMenu,
 	DropdownItem } from 'reactstrap';
@@ -166,7 +167,21 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 			<PageNavLink page={page} >				
 				{getPageLabel(page, label)}				
 			</PageNavLink>
-		</NavItem>);	
+		</NavItem>);
+
+	const NDropDown = ({title, i}) => {
+		const [open, setOpen] = useState(false);
+		return <Dropdown isOpen={open} toggle={() => setOpen(!open)} key={title} nav inNavbar className='top-level'>
+			<DropdownToggle nav caret>{(labels && Object.keys(labels)[i]) || title}</DropdownToggle>
+			<DropdownMenu>
+				{pages[title].map((page, j) => (
+					<NLink key={page} page={page}
+						label={labels && labels[Object.keys(labels)[i]][j]}
+					/>
+				))}
+			</DropdownMenu>
+		</Dropdown>;
+	}
 
 	let pageLinks;
 	if (simplePagesSetup) {
@@ -175,18 +190,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 		pageLinks = Object.keys(pages).map((title, i) => {
 			// Some page links can come in collections - make sure to account for that
 			if (pages[title].length > 0) {
-				return (
-					<UncontrolledDropdown key={title} nav inNavbar className='top-level'>
-						<DropdownToggle nav caret>{(labels && Object.keys(labels)[i]) || title}</DropdownToggle>
-						<DropdownMenu>
-							{pages[title].map((page, j) => (
-								<NLink key={page} page={page}
-									label={labels && labels[Object.keys(labels)[i]][j]}
-								/>
-							))}
-						</DropdownMenu>
-					</UncontrolledDropdown>
-				);
+				return <NDropDown title={title} i={i} key={title}/>
 			}
 			// Title is a single page, not a category
 			return <NLink key={title} page={title} isTop 
