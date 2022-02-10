@@ -160,7 +160,7 @@ const RegisteredThankYou = () => {
 	@param render {?JSX} default: LoginWidgetGuts
 	@param logo {?String} image url. If unset, guess via app.id
 */
-const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts, services, onLogin, onRegister, noRegister, noSocials, children}) => {
+const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts, services, onLogin, onRegister, noRegister}) => {
 	const show = getShowLogin();
 	
 	// Login widget will vanish when an in-page navigation is made
@@ -185,7 +185,7 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 	}
 	let verb = DataStore.getValue(VERB_PATH) || 'login';
 
-	//if (!title) title = `Welcome ${(verb === 'login') ? '(back)' : ''} to ${C.app.name}`;
+	if (!title) title = `Welcome ${(verb === 'login') ? '(back)' : ''} to ${C.app.name}`;
 
 	const registerCallback = () => {
 		setThankyou(true);
@@ -201,25 +201,16 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 			toggle={() => setShowLogin(!show)}
 			size="lg"
 		>
-			{/* Not using header for content - it wraps everything in an annoying h5 */}
-			<ModalHeader toggle={() => setShowLogin(!show)}/>
+			{/* NB: If header doesn't work for you, use css to hide it */}
+			<ModalHeader toggle={() => setShowLogin(!show)}>
+				<Misc.Logo service={C.app.id} url={logo} transparent={false} className="pull-left m-r1" />
+				{' '}{title}
+				{subtitle && <p className='my-4 login-subtitle'>{subtitle}</p>}
+			</ModalHeader>
 			<ModalBody>
-				<div className={title ? '' : 'd-flex flex-column justify-content-center align-items-center'}>
-					{logo ? (
-						<img src={logo} className={space(logoClassName, "login-logo")}/>
-					) : (
-						<Misc.Logo service={C.app.id} url={logo} transparent={false} className={logoClassName}/>
-					)}
-					{' '}
-					{title && <h4>{title}</h4>}
-					{subtitle && <p className='my-4 login-subtitle'>{subtitle}</p>}
-				</div>
-				<img src="/img/footer/Hummingbird.png" className='hummingbird login'/>
 				{showThankyou ?
 					<RegisteredThankYou />
-				: <Guts services={services} onLogin={onLogin} onRegister={registerCallback} noRegister={noRegister} noSocials={noSocials}>
-					{children}
-				</Guts>}
+				: <Guts services={services} onLogin={onLogin} onRegister={registerCallback} noRegister={noRegister} />}
 			</ModalBody>
 		</Modal>
 	);
@@ -346,13 +337,13 @@ const EmailSignin = ({verb, onLogin, onRegister, noRegister}) => {
 		<form id="loginByEmail" onSubmit={doItFn}>
 			<PropControl label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
 			<PropControl label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
-			<ResetLink verb={verb} />
 			<div className="form-group">
-				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)} className='w-100 my-4' >
+				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
 					{verbButtonLabels[verb]}
 				</Button>
 				{noRegister ? null : <SwitchVerb verb={verb} />}
 			</div>
+			<ResetLink verb={verb} />
 			<ErrAlert error={Login.error} />
 		</form>
 	);
@@ -408,12 +399,12 @@ const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
 	);
 };
 
-const LoginWidgetGuts = ({services, verb, onLogin, onRegister, noRegister, noSocials, children}) => {
+const LoginWidgetGuts = ({services, verb, onLogin, onRegister, noRegister}) => {
 	if (!verb) verb = DataStore.getValue(VERB_PATH) || 'login';
 	return (
 		<div className="login-guts container-fluid">
 			<Row>
-				<div className={space(noSocials ? "mx-auto col-sm-4" : "col-sm-6", "login-email pb-2")}>
+				<div className="login-email col-sm-6 pb-2">
 					<EmailSignin
 						verb={verb}
 						onLogin={onLogin}
@@ -421,13 +412,10 @@ const LoginWidgetGuts = ({services, verb, onLogin, onRegister, noRegister, noSoc
 						noRegister={noRegister}
 					/>
 				</div>
-				{!noSocials &&
-					<div className="login-social col-sm-6">
-						<SocialSignin verb={verb} services={services} />
-					</div>
-				}
+				<div className="login-social col-sm-6">
+					<SocialSignin verb={verb} services={services} />
+				</div>
 			</Row>
-			{children}
 		</div>
 	);
 };

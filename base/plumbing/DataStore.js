@@ -81,7 +81,7 @@ class Store {
 	}
 	
 	parseUrlVars2() {
-		if ( ! this.localUrl !== '/') {
+		if (this.localUrl !== '/') {
 			return parseHash();
 		}
 		const params = getUrlVars();

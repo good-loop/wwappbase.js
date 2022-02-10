@@ -170,7 +170,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 
 	let pageLinks;
 	if (simplePagesSetup) {
-		pageLinks = pages.map((page,i) => <NLink page={page} label={labels[i]} isTop />);
+		pageLinks = pages.map((page,i) => <NLink key={page} page={page} label={labels && labels[i]} isTop />);
 	} else {
 		pageLinks = Object.keys(pages).map((title, i) => {
 			// Some page links can come in collections - make sure to account for that
