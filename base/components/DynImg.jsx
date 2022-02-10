@@ -2,9 +2,7 @@ import React, { Component } from 'react';
 import { useState } from 'react';
 import { useRef } from 'react';
 import ImageObject from '../data/ImageObject';
-
-// TODO Make MEDIA_ENDPOINT standard in ServerIOBase
-const BASE_URL = `${ServerIO.ENDPOINT_MEDIA}/uploads/mediacache/`;
+import ServerIO from '../plumbing/ServerIOBase';
 
 
 
@@ -71,8 +69,7 @@ const BASE_URL = `${ServerIO.ENDPOINT_MEDIA}/uploads/mediacache/`;
 		filename = urlToLongHash(url, 16) + extension;
 		params += '&src=' + encodeURIComponent(url);
 	}
-
-	return mediaCacheBase + '/uploads/mediacache/' + sizeDir + filename + params;
+	return ServerIO.MEDIA_ENDPOINT+'/uploads/mediacache/'+ + sizeDir + filename + params;
 };
 
 /**
