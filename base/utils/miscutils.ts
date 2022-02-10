@@ -283,6 +283,12 @@ let fireHashChangeEvent = function ({ oldURL }) {
 	window.dispatchEvent(e);
 };
 
+
+export const scrollTo = (id:string) => {
+	let $el = document.getElementById(id);	
+	$el.scrollIntoView({behavior: "smooth"});
+};
+
 /**
  * Map fn across the (key, value) properties of obj.
  * 

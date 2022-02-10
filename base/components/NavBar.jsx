@@ -144,7 +144,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	}
 
 	const PageNavLink = ({page, className, children}) => {
-		let pageLink = (DataStore.usePathname? '/' : '#') + page.replace(" ", "-");
+		let pageLink = DataStore.localUrl + page.replace(" ", "-");
 		if (externalLinks && page in externalLinks) pageLink = externalLinks[page];
 		return (
 			<C.A className={space("nav-link", className)} href={pageLink} onClick={onLinkClick} >
@@ -161,45 +161,38 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	// Accepts a page links format as:
 	// {title1: [page1, page2, ...], page3:[], ...}
 	// for dropdowns, or, for simpler setups, just an array of strings
+	const NLink = ({page, label, isTop}) => (
+		<NavItem key={page} className={isTop&&'top-level'} active={page === currentPage}>
+			<PageNavLink page={page} >				
+				{getPageLabel(page, label)}				
+			</PageNavLink>
+		</NavItem>);	
+
 	let pageLinks;
 	if (simplePagesSetup) {
-		pageLinks = pages.map((page,i) => (
-			<PageNavLink page={page} key={`navitem_${page}`}>
-				<NavItem className='top-level' active={page === currentPage}>
-					{getPageLabel(page, labels[i])}
-				</NavItem>
-			</PageNavLink>
-		));
+		pageLinks = pages.map((page,i) => <NLink key={page} page={page} label={labels && labels[i]} isTop />);
 	} else {
 		pageLinks = Object.keys(pages).map((title, i) => {
 			// Some page links can come in collections - make sure to account for that
 			if (pages[title].length > 0) {
 				return (
-					<UncontrolledDropdown key={`navitem_${title}`} nav inNavbar className='top-level'>
+					<UncontrolledDropdown key={title} nav inNavbar className='top-level'>
 						<DropdownToggle nav caret>{(labels && Object.keys(labels)[i]) || title}</DropdownToggle>
 						<DropdownMenu>
 							{pages[title].map((page, j) => (
-								<PageNavLink page={page} key={`navitem_${page}`}>
-									<DropdownItem active={page === currentPage}>
-										{getPageLabel(page, labels && labels[Object.keys(labels)[i]][j])}
-									</DropdownItem>
-								</PageNavLink>
+								<NLink key={page} page={page}
+									label={labels && labels[Object.keys(labels)[i]][j]}
+								/>
 							))}
 						</DropdownMenu>
 					</UncontrolledDropdown>
 				);
-			} else {
-				// Title is a single page, not a category
-				return (
-					<PageNavLink page={title} className='top-level' key={`navitem_${title}`}>
-						<NavItem active={title === currentPage}>
-							{getPageLabel(title, (labels && Object.keys(labels)[i]) || title)}
-						</NavItem>
-					</PageNavLink>
-				);
 			}
+			// Title is a single page, not a category
+			return <NLink key={title} page={title} isTop 
+				label={labels && Object.keys(labels)[i]} />;
 		});
-	}
+	} // ./pageLinks
 
 	return (
 		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand={expandSize} className={space('p-1', scrolled && "scrolled")} >

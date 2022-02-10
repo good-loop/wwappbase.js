@@ -18,9 +18,8 @@ class Store {
 	
 	callbacks = [];
 
-	useHashPath = true;
-	
-	usePathname = false;
+	/** HACK: charcter to start a local path # or /  */
+	localUrl = '#';
 
 	constructor() {
 		// init the "canonical" categories
@@ -82,7 +81,7 @@ class Store {
 	}
 	
 	parseUrlVars2() {
-		if ( ! this.usePathname) {
+		if (this.localUrl !== '/') {
 			return parseHash();
 		}
 		const params = getUrlVars();
