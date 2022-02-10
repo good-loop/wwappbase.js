@@ -7,6 +7,74 @@ import ImageObject from '../data/ImageObject';
 const BASE_URL = `${ServerIO.ENDPOINT_MEDIA}/uploads/mediacache/`;
 
 
+
+
+/**
+ * Avoid cross-domain complaints from eg Google by passing requests for resources
+ * outside the Good-Loop domain to the media server's automatic cache
+ * @param {String} urlString A media URL
+ * @param {Number} width The approximate width the resource is to be displayed at, as a percentage of adunit width
+ * @returns {String} A URL which will retrieve a cached copy of the file from the Good-Loop media server
+ */
+// NB: this was wrapped in React.memo which was breaking (unclear why this was in memo)
+ const wrapUrl = (urlString, width) => {
+	if (!urlString) return null;
+	// Put a protocol on protocol-relative URLs to enable parsing
+	if (urlString.match(/^\/\//)) {
+		urlString = 'https:' + urlString;
+	}
+
+	const url = new URL(urlString);
+
+	// Check for a "Do not rescale!" marker in the hash
+	let noscale = url.hash.match(/\bnoscale\b/);
+		
+	// TODO Use window.devicePixelRatio to adjust size when on mobile
+
+	// does the invoking code ask for a particular size? (Don't request resized SVGs)
+	let sizeDir = '';
+	if (!noscale && width && !url.pathname.match(/\.svg/)) {
+		// Check for a for "get a larger or smaller resize than normal" multiplier in the hash
+		let multiplier = 1;
+		try {
+			let newMul = url.hash.match(/\b(\d+(\.\d*)?)x\b/);
+			if (newMul) newMul = Number.parseFloat(newMul[1]);
+			if (newMul) multiplier = newMul;
+		} catch (e) { }
+
+		let targetSize = (width ? width : height) * multiplier;
+		// Step down through quantised image widths & find smallest one bigger than estimated pixel size
+		let qWidth = sizes[0];
+		for (let i = 0; i < sizes.length && sizes[i] >= targetSize; i++) {
+			qWidth = sizes[i];
+		}
+		sizeDir = `scaled/w/${qWidth}/`;
+	}
+	
+	if (!sizeDir && url.hostname.match(/media.good-loop.com$/)) return urlString; // Our media domain? Use it uncached - unless resize was requested
+	if (!url.protocol.match(/http/)) return urlString; // Not HTTP (eg data: url)? Use it uncached
+
+	// preserve extension because MIME-type at the server side is going to be based on wild filename-based guesses
+	const extension = url.pathname.match(/\.[^.]+$/);
+	// This is going to be used as a filename/URL, so '/' in the encoded string is unsafe
+	// However, there's a URL + filesystem-safe base64 standard we can transform to easily
+	// See https://tools.ietf.org/html/rfc4648#section-5
+	let filename = btoa(urlString).replace('+', '-').replace('/', '_') + extension;
+
+	let params = '?from=good-loop-ad-unit';
+
+	// The base64-encoded filename may be longer than the 255-character limit imposed by EXT4.
+	// In this case - use a hash of the URL as the filename, and explicitly tell the servlet
+	// the URL to fetch in the case of a cache miss.
+	if (filename.length > 250) { // allow a safety margin - longest name on media cluster is 220 characters.
+		// 16 hex characters = 128 bits = probability of collision among 1 trillion hashes too small to store in an IEEE-754 float. Probably enough.
+		filename = urlToLongHash(url, 16) + extension;
+		params += '&src=' + encodeURIComponent(url);
+	}
+
+	return mediaCacheBase + '/uploads/mediacache/' + sizeDir + filename + params;
+};
+
 /**
  * A drop-in replacement for the html <img> tag, which adds in image size handling via media.gl.com
  * and mobile images via `msrc`
@@ -83,7 +151,7 @@ const getCcrop = (url) => {
 	try {
 		// Put a protocol on protocol-relative URLs to enable parsing...
 		const addProtocol = url.match(/^\/\//) ? 'https:' : '';
-		const cropMatch = parseUrl(addProtocol + url).hash.match(/ccrop\:(\d+)/);
+		const cropMatch = new URL(addProtocol + url).hash.match(/ccrop\:(\d+)/);
 		if (cropMatch && cropMatch[1]) {
 			return parseInt(cropMatch[1]); // Found a ccrop:XX marker! Crop to XX% if this BGImg is circular
 		}
@@ -126,72 +194,5 @@ const urlToLongHash = (str, length) => {
 	}
 	return hash.substring(0, length);
 };
-
-
-
-/**
- * Avoid cross-domain complaints from eg Google by passing requests for resources
- * outside the Good-Loop domain to the media server's automatic cache
- * @param {String} urlString A media URL
- * @param {Number} width The approximate width the resource is to be displayed at, as a percentage of adunit width
- * @returns {String} A URL which will retrieve a cached copy of the file from the Good-Loop media server
- */
- const wrapUrl = React.memo((urlString, width) => {
-	if (!urlString) return null;
-	// Put a protocol on protocol-relative URLs to enable parsing
-	if (urlString.match(/^\/\//)) {
-		urlString = 'https:' + urlString;
-	}
-
-	const url = parseUrl(urlString);
-
-	// Check for a "Do not rescale!" marker in the hash
-	let noscale = url.hash.match(/\bnoscale\b/);
-		
-	// TODO Use window.devicePixelRatio to adjust size when on mobile
-
-	// does the invoking code ask for a particular size? (Don't request resized SVGs)
-	let sizeDir = '';
-	if (!noscale && width && !url.pathname.match(/\.svg/)) {
-		// Check for a for "get a larger or smaller resize than normal" multiplier in the hash
-		let multiplier = 1;
-		try {
-			let newMul = url.hash.match(/\b(\d+(\.\d*)?)x\b/);
-			if (newMul) newMul = Number.parseFloat(newMul[1]);
-			if (newMul) multiplier = newMul;
-		} catch (e) { }
-
-		let targetSize = (width ? width : height) * multiplier;
-		// Step down through quantised image widths & find smallest one bigger than estimated pixel size
-		let qWidth = sizes[0];
-		for (let i = 0; i < sizes.length && sizes[i] >= targetSize; i++) {
-			qWidth = sizes[i];
-		}
-		sizeDir = `scaled/w/${qWidth}/`;
-	}
-	
-	if (!sizeDir && url.hostname.match(/media.good-loop.com$/)) return urlString; // Our media domain? Use it uncached - unless resize was requested
-	if (!url.protocol.match(/http/)) return urlString; // Not HTTP (eg data: url)? Use it uncached
-
-	// preserve extension because MIME-type at the server side is going to be based on wild filename-based guesses
-	const extension = url.pathname.match(/\.[^.]+$/);
-	// This is going to be used as a filename/URL, so '/' in the encoded string is unsafe
-	// However, there's a URL + filesystem-safe base64 standard we can transform to easily
-	// See https://tools.ietf.org/html/rfc4648#section-5
-	let filename = btoa(urlString).replace('+', '-').replace('/', '_') + extension;
-
-	let params = '?from=good-loop-ad-unit';
-
-	// The base64-encoded filename may be longer than the 255-character limit imposed by EXT4.
-	// In this case - use a hash of the URL as the filename, and explicitly tell the servlet
-	// the URL to fetch in the case of a cache miss.
-	if (filename.length > 250) { // allow a safety margin - longest name on media cluster is 220 characters.
-		// 16 hex characters = 128 bits = probability of collision among 1 trillion hashes too small to store in an IEEE-754 float. Probably enough.
-		filename = urlToLongHash(url, 16) + extension;
-		params += '&src=' + encodeURIComponent(url);
-	}
-
-	return mediaCacheBase + '/uploads/mediacache/' + sizeDir + filename + params;
-});
 
 export default DynImg;

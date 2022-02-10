@@ -401,12 +401,14 @@ ServerIO.getEndpointForType = (type) => {
 	}
 	// HACK Change "advert" to "vert" to dodge some adblocking
 	if (type==='Advert') {
-		return '/vert';
+		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vert';
 	}
-
 	// HACK Change "advertiser" to "vertiser" to dodge some adblocking
 	if (type==='Advertiser') {
-		return '/vertiser';
+		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vertiser';
+	}
+	if (type==='Campaign') {
+		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/campaign';
 	}
 
 	if (type==="Person" && ServerIO.USE_PROFILER) {
