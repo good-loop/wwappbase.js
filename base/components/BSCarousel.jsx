@@ -25,10 +25,10 @@ const BSCarousel = ({className, hasIndicators, light, children }) => {
 		setIndex(nextIndex);
 	}
 
-	// ?? dots??
+	// For Dots/Indicators
 	const goToIndex = (newIndex) => {
 		if (animating) return;
-		setActiveIndex(newIndex);
+		setIndex(newIndex);
 	};
 
 	return (<Carousel className={space(className,'BSCarousel')}
@@ -46,11 +46,11 @@ const BSCarousel = ({className, hasIndicators, light, children }) => {
 				{content}
 			</CarouselItem>
 		)}
-		{hasIndicators && <div className="d-block d-md-none">
-			<CarouselIndicators items={children} activeIndex={activeIndex} onClickHandler={goToIndex} />
+		{hasIndicators && <div className="d-block">
+			<CarouselIndicators items={children} activeIndex={index} onClickHandler={goToIndex} />
 		</div>}
-		<CarouselControl direction="prev" directionText="Previous" onClickHandler={previous} />
 		<div className={light&&"text-dark"}>
+			<CarouselControl direction="prev" directionText="Previous" onClickHandler={previous} />
 			<CarouselControl direction="next" directionText="Next" onClickHandler={next} />
 		</div>
 	</Carousel>)
