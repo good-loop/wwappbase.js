@@ -3,7 +3,7 @@
  */
 
 import React, { Component } from 'react';
-import { modifyHash, stopEvent } from '../utils/miscutils';
+import { encURI, mapkv, modifyHash, stopEvent, yessy } from '../utils/miscutils';
 import DataStore from './DataStore';
 
 const goto = href => {

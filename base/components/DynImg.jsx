@@ -4,7 +4,23 @@ import { useRef } from 'react';
 import ImageObject from '../data/ImageObject';
 import ServerIO from '../plumbing/ServerIOBase';
 
-
+/**
+ * 
+ * @param {!string} urlString relative
+ * @returns {!string}
+ */
+const getAbsoluteUrl = urlString => {
+	let path = "";
+	if (urlString[0] !== '/') {
+		path = window.location.pathname;
+		if (path.includes('/')) {
+			path = path.substring(0, path.lastIndexOf('/'))
+		}
+		path += '/';
+	}
+	return window.location.protocol+"//"
+		+ window.location.host + path + urlString;
+};
 
 
 /**
@@ -20,6 +36,14 @@ import ServerIO from '../plumbing/ServerIOBase';
 	// Put a protocol on protocol-relative URLs to enable parsing
 	if (urlString.match(/^\/\//)) {
 		urlString = 'https:' + urlString;
+	}
+	// make relative urls absolute
+	if ( ! urlString.includes("//")) {
+		urlString = getAbsoluteUrl(urlString);
+		// HACK for local (which media server can't access)
+		if (urlString.includes("://local")) {
+			return urlString;
+		}
 	}
 
 	const url = new URL(urlString);
