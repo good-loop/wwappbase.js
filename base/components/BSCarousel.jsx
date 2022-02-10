@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Carousel, CarouselControl, CarouselIndicators, CarouselItem } from 'reactstrap';
+import { space } from '../utils/miscutils';
 
 
 /**
  * Wraps the BS Carousel to make it React user friendly.
  */
-const BSCarousel = ({hasIndicators, children }) => {
+const BSCarousel = ({className, hasIndicators, light, children }) => {
 	const [animating, setAnimating] = useState(false);
 	const [index, setIndex] = useState(0);
 
@@ -30,7 +31,7 @@ const BSCarousel = ({hasIndicators, children }) => {
 		setActiveIndex(newIndex);
 	};
 
-	return (<Carousel className='BSCarousel'
+	return (<Carousel className={space(className,'BSCarousel')}
 		activeIndex={index}
 		next={next}
 		previous={previous}
@@ -49,7 +50,9 @@ const BSCarousel = ({hasIndicators, children }) => {
 			<CarouselIndicators items={children} activeIndex={activeIndex} onClickHandler={goToIndex} />
 		</div>}
 		<CarouselControl direction="prev" directionText="Previous" onClickHandler={previous} />
-		<CarouselControl direction="next" directionText="Next" onClickHandler={next} />
+		<div className={light&&"text-dark"}>
+			<CarouselControl direction="next" directionText="Next" onClickHandler={next} />
+		</div>
 	</Carousel>)
 };
 

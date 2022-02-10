@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import Login from '../youagain';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
-import { stopEvent, toTitleCase, space } from '../utils/miscutils';
+import { stopEvent, toTitleCase, space, yessy } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
@@ -404,17 +404,17 @@ const LoginWidgetGuts = ({services, verb, onLogin, onRegister, noRegister}) => {
 	return (
 		<div className="login-guts container-fluid">
 			<Row>
-				<div className="login-email col-sm-6 pb-2">
+				<Col className="login-email pb-2">
 					<EmailSignin
 						verb={verb}
 						onLogin={onLogin}
 						onRegister={onRegister}
 						noRegister={noRegister}
 					/>
-				</div>
-				<div className="login-social col-sm-6">
+				</Col>
+				{yessy(services) && <Col className="login-social">
 					<SocialSignin verb={verb} services={services} />
-				</div>
+				</Col>}
 			</Row>
 		</div>
 	);
