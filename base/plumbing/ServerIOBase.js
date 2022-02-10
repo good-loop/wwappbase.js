@@ -35,7 +35,7 @@ const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http'}[SOGIVE_SUB
 ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}.sogive.org/charity`;
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
-ServerIO.ENDPOINT_MEDIA = `${C.HTTPS}://${C.SERVER_TYPE}media.good-loop.com`;
+ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}media.good-loop.com`;
 
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
