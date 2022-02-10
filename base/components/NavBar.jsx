@@ -20,6 +20,8 @@ import DataStore from '../plumbing/DataStore';
 import { encURI, equals, labeller, space } from '../utils/miscutils';
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
+import DataClass, { getId, getType } from '../data/DataClass';
+import CloseButton from './CloseButton';
 
 
 class NavProps {
@@ -38,6 +40,8 @@ class NavProps {
 	isOpen; 
 	toggle; 
 
+	brandId;
+	brandType;
 	/**
 	 * @type {?String} url for 2nd brand home page
 	 */
@@ -58,9 +62,21 @@ class NavProps {
 
 /**
  * 
- * @param {NavProps} props 
+ * @param {NavProps|DataClass} props e.g. brandLink brandName brandLogo, or an Advertiser or NGO
  */
 export const setNavProps = (props) => {
+	// extract props from a DataItem
+	if (DataClass.isa(props)) {
+		const item = props;
+		props = { // advertiser link and logo			
+			brandId: getId(item),
+			brandType: getType(item),
+			brandLink: ""+window.location,
+			brandLogo: item.branding? (item.branding.logo_white || item.branding.logo) : item.logo,
+			brandName: item.name || getId(item)
+		};	
+	}
+
 	// NB: update if not equals, which avoids the infinite loop bug of default update behaviour
 	if (equals(getNavProps(), props)) {
 		return; // no-op
@@ -68,7 +84,11 @@ export const setNavProps = (props) => {
 	DataStore.setValue(['widget','NavBar'], props);
 };
 
-const getNavProps = () => DataStore.getValue(['widget','NavBar']) || DataStore.setValue(['widget','NavBar'], {}, false);
+/**
+ * 
+ * @returns {?NavProps}
+ */
+export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || DataStore.setValue(['widget','NavBar'], {}, false);
 
 /**
  * rendered within BS.Nav
@@ -80,9 +100,13 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 			<img className='logo' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
-			<NavbarBrand className="nav-brand" title={brandName} href={brandLink}>
-				{brandLogo? <img className='logo' alt={brandName} src={brandLogo} /> : brandName}
-			</NavbarBrand>
+			<div className='position-relative'>
+				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>				
+					{brandLogo? <img className='logo' alt={brandName} src={brandLogo} /> : brandName}
+				</C.A>
+				{brandLink !== ""+window.location 
+					&& <CloseButton style={{position:"absolute", bottom:0, right:"0.8em"}} onClick={e => setNavProps(null)} size="sm" tooltip={`include content beyond ${brandName}'s micro-site`} />}
+			</div>
 		}
 		<NavbarToggler onClick={toggle}/>
 		<Collapse isOpen={isOpen} navbar>
@@ -115,7 +139,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	let {currentPage, pages, labels, externalLinks, darkTheme, shadow, backgroundColour} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
 
 	// Handle nav toggling
-	const [isOpen, setIsOpen] = useState(false);
+	const [isOpen, setIsOpen] = useState(false); // what is open?? the whole menu (mobile) or a dropdown??
 	const close = () => setIsOpen(false);
 	const toggle = () => setIsOpen(!isOpen);
 
@@ -141,8 +165,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 
 	const onLinkClick = () => {
 		close();
-		setNavProps(null);
-	}
+	};
 
 	const PageNavLink = ({page, className, children}) => {
 		let pageLink = DataStore.localUrl + page.replace(" ", "-");

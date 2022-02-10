@@ -533,6 +533,8 @@ const doRegisterEmail = (data) => {
 	if ( ! data.purpose) {
 		data.purpose = PURPOSES.email_mailing_list;
 	}
+	if ( ! data.evt) data.evt = "register";
+	data.app = C.app.id;
 
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data});	
 };
