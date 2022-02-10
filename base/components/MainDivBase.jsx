@@ -128,7 +128,7 @@ class MainDivBase extends Component {
 			navbarShadow=true,
 			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts, NavExpandSize="md",
 			fullWidthPages,
-			noRegister,
+			canRegister,
 			loginService,
 			Footer,
 			noLoginTitle,
@@ -219,10 +219,10 @@ class MainDivBase extends Component {
         <LoginWidget
           title={noLoginTitle ? null : `Welcome to ${C.app.name}`}
 		  subtitle={loginSubtitle}
-          noRegister={noRegister}
+          canRegister={canRegister}
 		  loginService={loginService}
 		  logo={loginLogo}
-          services={noRegister ? [] : loginService}
+          services={canRegister ? [] : loginService}
 		  noSocials={noSocials}
 		  Guts={LoginGuts}
         >

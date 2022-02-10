@@ -160,7 +160,7 @@ const RegisteredThankYou = () => {
 	@param render {?JSX} default: LoginWidgetGuts
 	@param logo {?String} image url. If unset, guess via app.id
 */
-const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts, services, onLogin, onRegister, noRegister}) => {
+const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts, services, onLogin, onRegister, canRegister}) => {
 	const show = getShowLogin();
 	
 	// Login widget will vanish when an in-page navigation is made
@@ -208,7 +208,7 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 			<ModalBody>
 				{showThankyou ?
 					<RegisteredThankYou />
-				: <Guts services={services} onLogin={onLogin} onRegister={registerCallback} noRegister={noRegister} />}
+				: <Guts services={services} onLogin={onLogin} onRegister={registerCallback} canRegister={canRegister} />}
 			</ModalBody>
 		</Modal>
 	);
@@ -303,14 +303,14 @@ const EmailReset = ({}) => {
  * @param onLogin called after user has successfully logged in
  * @param onRegister called after the user has successfully registered
  */
-const EmailSignin = ({verb, onLogin, onRegister, noRegister, className}) => {
+const EmailSignin = ({verb, onLogin, onRegister, canRegister, className}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
 	}
 
 	// Registration disabled? Enforce it, out of paranoia
-	if (noRegister && verb === 'register') {
+	if (canRegister && verb === 'register') {
 		setLoginVerb('login');
 		verb = 'login';
 	}
@@ -326,7 +326,7 @@ const EmailSignin = ({verb, onLogin, onRegister, noRegister, className}) => {
 			return;
 		}
 		let email = person.email;
-		emailLogin({verb, onRegister, ...person});
+		emailLogin({verb, onLogin, onRegister, ...person});
 	};
 
 	// login/register
@@ -340,7 +340,7 @@ const EmailSignin = ({verb, onLogin, onRegister, noRegister, className}) => {
 					<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
 						{verbButtonLabels[verb]}
 					</Button>
-					{noRegister ? null : <SwitchVerb verb={verb} />}
+					{canRegister ? null : <SwitchVerb verb={verb} />}
 				</div>
 				<ResetLink verb={verb} />
 			</div>
@@ -364,13 +364,13 @@ const ResetLink = ({verb}) => {
 };
 
 /**
- * A non-modal login widget - stick it in a page
+ * A non-modal login widget - stick it in a page. A thin wrapper on LoginWidgetGuts
  */
-const LoginWidgetEmbed = ({services, verb, onLogin}) => {
+const LoginWidgetEmbed = ({services, verb, onLogin, onRegister, canRegister}) => {
 	// NB: prefer the user-set verb (so they can change it)
 	verb = DataStore.getValue(VERB_PATH) || verb || 'register';
 	
-	if(Login.isLoggedIn()) {
+	if (Login.isLoggedIn()) {
 		const user = Login.getUser();
 		return (
 			<div>
@@ -381,7 +381,7 @@ const LoginWidgetEmbed = ({services, verb, onLogin}) => {
 
 	return (
 		<div className="login-widget">
-			<LoginWidgetGuts services={services} verb={verb} onLogin={onLogin} />
+			<LoginWidgetGuts services={services} verb={verb} onLogin={onLogin} onRegister={onRegister} canRegister={canRegister} />
 		</div>
 	);
 };
@@ -399,7 +399,7 @@ const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
 	);
 };
 
-const LoginWidgetGuts = ({services, verb, onLogin, onRegister, noRegister}) => {
+const LoginWidgetGuts = ({services, verb, onLogin, onRegister, canRegister}) => {
 	if (!verb) verb = DataStore.getValue(VERB_PATH) || 'login';
 	return (
 		<div className="login-guts container-fluid">
@@ -409,11 +409,11 @@ const LoginWidgetGuts = ({services, verb, onLogin, onRegister, noRegister}) => {
 						verb={verb}
 						onLogin={onLogin}
 						onRegister={onRegister}
-						noRegister={noRegister}
+						canRegister={canRegister}
 					/>
 				</Col>
 				{yessy(services) && <Col className="login-social">
-					<SocialSignin verb={verb} services={services} />
+					<SocialSignin verb={verb} services={services} onLogin={onLogin} onRegister={onRegister} canRegister={canRegister} />
 				</Col>}
 			</Row>
 		</div>
