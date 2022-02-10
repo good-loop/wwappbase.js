@@ -190,7 +190,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 		pageLinks = Object.keys(pages).map((title, i) => {
 			// Some page links can come in collections - make sure to account for that
 			if (pages[title].length > 0) {
-				return <NDropDown title={title} i={i}/>
+				return <NDropDown title={title} i={i} key={title}/>
 			}
 			// Title is a single page, not a category
 			return <NLink key={title} page={title} isTop 
