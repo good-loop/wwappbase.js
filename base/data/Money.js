@@ -181,7 +181,8 @@ Money.CURRENCY = {
 	EUR: "€",
 	MXN: "MX$",
 	JPY: "¥",
-	CNY: "¥" // Same symbol with Yen
+	CNY: "¥", // Same symbol with Yen
+	TRY: "₺"
 };
 /**
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
@@ -189,7 +190,8 @@ Money.CURRENCY = {
 Money.CURRENCY_FOR_COUNTRY = {
 	GB: "GBP", UK: "GBP", // "UK" is wrong, not an iso 3166 code, but handle it anyway
 	US: "USD",
-	AU: "AUD"
+	AU: "AUD",
+	TR: "TRY"
 }
 
 /**
@@ -209,7 +211,9 @@ Money.CURRENCY_CONVERSION = {
 	EUR_AUD: 1.62,
 	AUD_EUR: 0.62,
 	EUR_USD: 1.17,
-	USD_EUR: 0.85
+	USD_EUR: 0.85, 
+	TRY_USD: 0.073,
+	TRY_GBP, 0.054
 }
 
 /**
