@@ -205,7 +205,7 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 				{' '}{title}
 				{subtitle && <p className='my-4 login-subtitle'>{subtitle}</p>}
 			</ModalHeader>
-			<ModalBody>
+			<ModalBody className='pt-0'>
 				{showThankyou ?
 					<RegisteredThankYou />
 				: <Guts services={services} onLogin={onLogin} onRegister={registerCallback} canRegister={canRegister} />}
