@@ -54,9 +54,9 @@ const DesktopMenu = ({logoutLink, noHashLink, user, style, className, small}) =>
 		<UncontrolledDropdown nav inNavbar>
 			<DropdownToggle nav caret>{name}</DropdownToggle>
 			<DropdownMenu>
-				<C.A href={accountHerf} className="nav-link"><NavItem>Account</NavItem></C.A>
+				<C.A href={accountHref} className="nav-link"><DropdownItem>Account</DropdownItem></C.A>
 				<DropdownItem divider />
-				<LogoutLink className="nav-link"><NavItem>Logout</NavItem></LogoutLink>
+				<LogoutLink className="nav-link"><DropdownItem>Logout</DropdownItem></LogoutLink>
 			</DropdownMenu>
 		</UncontrolledDropdown>
 	</Nav>
