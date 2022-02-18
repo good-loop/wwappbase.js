@@ -128,6 +128,8 @@ class MainDivBase extends Component {
 			navbarShadow=true,
 			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts, NavExpandSize="md",
 			fullWidthPages,
+			undecoratedPages,
+			undecorated,
 			canRegister,
 			loginService,
 			Footer,
@@ -186,11 +188,13 @@ class MainDivBase extends Component {
 		// full screen?
 		// Either by page, or for a dynamic setting within a page - HACK set window.fullWidthPage=true/false
 		let fluid = (fullWidthPages && fullWidthPages.includes(page)) || window.fullWidthPage;
+		if (!undecorated) undecorated = !!DataStore.getUrlValue("undecorated");
+		if (!undecorated) undecorated = undecoratedPages && undecoratedPages.includes(page);
 		
 		return (
       <div>
 		{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
-        {navbar && <>
+        {navbar && !undecorated && <>
           <NavBar		  	
             page={page}
             pages={navbarPages}
@@ -213,7 +217,7 @@ class MainDivBase extends Component {
 				<div className="page" id={page}>
 					<Page />
 				</div>
-				{Footer && <Footer page={page} />}
+				{Footer && !undecorated && <Footer page={page} />}
 			</Row>
         </Container>
         <LoginWidget
