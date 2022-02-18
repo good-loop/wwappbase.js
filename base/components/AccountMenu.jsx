@@ -26,8 +26,7 @@ const HashLinkChecker = (herf) => {
 	else return herf;
 }
 
-const AccountMenu = (props) => {
-	const {canRegister, className} = (props || {});
+const AccountMenu = ({canRegister, className, ...props}) => {
 
 	// TODO see navbar dropdown
 	if ( ! Login.isLoggedIn()) {
@@ -46,13 +45,14 @@ const AccountMenu = (props) => {
 	return <DesktopMenu {...props} user={user} />;
 };
 
-const DesktopMenu = ({logoutLink, noHashLink, user, style, className}) => {
+const DesktopMenu = ({logoutLink, noHashLink, user, style, className, small}) => {
 	let accountHerf = HashLinkChecker('/#account');
+	const name = small ? ((user.name && user.name.substr(0, 1)) || XId.prettyName(user.xid).substr(0,1)) : (user.name || XId.prettyName(user.xid));
 
 	return (
 	<Nav navbar style={style} className={space("account-menu", className)}>
 		<UncontrolledDropdown nav inNavbar>
-			<DropdownToggle nav caret>{user.name || XId.prettyName(user.xid) }</DropdownToggle>
+			<DropdownToggle nav caret>{name}</DropdownToggle>
 			<DropdownMenu>
 				<C.A href={accountHerf} className="nav-link"><NavItem>Account</NavItem></C.A>
 				<DropdownItem divider />
