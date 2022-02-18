@@ -12,9 +12,9 @@ import LinkOut from '../LinkOut';
 
 
 /** MIME type sets */
-const imgTypes = '.jpg, .jpeg, image/jpeg, .png, image/png, .svg, image/svg+xml';
-const videoTypes = '.mp4, .m4v, video/mp4, .ogv, video/ogg, .avi, video/x-msvideo, .wmv, video/x-ms-wmv, .mov, video/quicktime, .asf, video/ms-asf';
-const fontTypes = '.ttf, font/ttf, .otf, font/otf, .woff, font/woff, .woff2, font/woff2';
+const imgTypes = 'image/jpeg, image/png, image/svg+xml';
+const videoTypes = 'video/mp4, video/ogg, video/x-msvideo, video/x-ms-wmv, video/quicktime, video/ms-asf';
+const fontTypes = 'font/ttf, .otf, font/woff, font/woff2';
 
 
 /** Uploader types which take a 100x100 square thumbnail */
