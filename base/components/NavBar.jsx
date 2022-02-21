@@ -95,14 +95,18 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  * @param {NavProps} p
  */
 const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick}) => {
+	// Hack: remove logo classname for myGL to advoid Safari CSS bug
+	let logoClass = 'logo';
+	if (window.location.host.includes('my.good-loop.com')) logoClass = '';
+
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
-			<img className='logo' alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+			<img className={logoClass} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
 			<div className='position-relative'>
 				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>				
-					{brandLogo? <img className='logo' alt={brandName} src={brandLogo} /> : brandName}
+					{brandLogo? <img className={logoClass} alt={brandName} src={brandLogo} /> : brandName}
 				</C.A>
 				{brandLink !== ""+window.location 
 					&& <CloseButton style={{position:"absolute", bottom:0, right:"0.8em"}} onClick={e => setNavProps(null)} size="sm" tooltip={`include content beyond ${brandName}'s micro-site`} />}
