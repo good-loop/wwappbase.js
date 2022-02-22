@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useCallback } from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
+import DynImg from './DynImg';
 import Misc from './Misc';
 
 
@@ -145,8 +146,9 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
  * @param {?Boolean} p.noab Set true to block any A/B experiments
  * @param {Object} p.extraParams A map of extra URL parameters to put on the unit.js URL.
  * @param {?JSX} p.Editor added right after the iframe
+ * @param {?boolean|string} p.useScreenshot If set, prefer a screenshot instead of the actual unit. Use a string to pick a size eg landscape
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback}) => {
+const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback, useScreenshot}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug || !C.isProduction();
@@ -171,6 +173,16 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 			setUnitJson(JSON.stringify(unitObj));
 		});
 	}, [vertId]);
+
+	// Use a screenshot instead for lower bandwidth & latency? TODO untested!
+	if (useScreenshot && unitJson && unitJson.mock4size) {
+		const screenshotSize =typeof(useScreenshot)==="string"? useScreenshot : "landscape";
+		if (unitJson.mock4size[screenshotSize]) {
+			return <div className="goodLoopContainer" id={vertId}>
+				<DynImg src={unitJson.mock4size[screenshotSize]} />
+			</div>;
+		}
+	}
 
 	// Store refs to the .goodLoopContainer and iframe nodes, to calculate sizing & insert elements
 	const [frame, setFrame] = useState();
