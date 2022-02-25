@@ -25,20 +25,23 @@ import Money from './Money';
  */
 class BlogPost extends DataClass {
 	
-	/** @type{?String} */
+	/** @type{String} */
 	title;
 
-	/** @type{?String} */
+	/** @type{String} */
 	subtitle;
 
-	/** @type{?String} */
+	/** @type{String} */
 	content;
 
-    /** @type{?Date} */
-	publishedDate
-
-    /** @type{?Number} */
+    /** @type{Number} */
 	readTime
+
+	/** @type{String} */
+	thumbnail
+
+	/** @type{String} */
+	author
 
 	/**
 	 * @param {BlogPost} base 
