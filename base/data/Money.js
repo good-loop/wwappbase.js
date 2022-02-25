@@ -181,7 +181,8 @@ Money.CURRENCY = {
 	EUR: "€",
 	MXN: "MX$",
 	JPY: "¥",
-	CNY: "¥" // Same symbol with Yen
+	CNY: "¥", // Same symbol with Yen
+	TRY: "₺"
 };
 /**
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
@@ -189,7 +190,8 @@ Money.CURRENCY = {
 Money.CURRENCY_FOR_COUNTRY = {
 	GB: "GBP", UK: "GBP", // "UK" is wrong, not an iso 3166 code, but handle it anyway
 	US: "USD",
-	AU: "AUD"
+	AU: "AUD",
+	TR: "TRY"
 }
 
 /**
@@ -209,7 +211,9 @@ Money.CURRENCY_CONVERSION = {
 	EUR_AUD: 1.62,
 	AUD_EUR: 0.62,
 	EUR_USD: 1.17,
-	USD_EUR: 0.85
+	USD_EUR: 0.85, 
+	TRY_USD: 0.073,
+	TRY_GBP: 0.054
 }
 
 /**
@@ -230,6 +234,45 @@ Money.convertCurrency = (money, currencyTo) => {
 	assert(conversionVal, "Cannot convert - rate unset for "+currencyConversion);
 	return moneyFromv100p(money.value100p * conversionVal, currencyTo);
 };
+
+/**
+ * Convert a money value to a different currency using external API
+ * @param {*} money 
+ * @param {*} currencyTo 
+ * @returns {!Money} plus an extra property of money.date for when this was fetched, which is unset if the default was returned
+ */
+Money.convertCurrencyAPI = (money, currencyTo) => {
+	if (! currencyTo) {
+		console.warn("Money.convertCurrency - no-op, unset currencyTo");
+		return money;	
+	}
+
+	let pvRate = DataStore.fetch(['misc','rates'], () => {
+		let got = $.get("https://api.exchangerate.host/latest?base="+money.currency);
+		return got;
+	});
+	
+	let rate = 1;
+	if (pvRate.value && pvRate.value.rates) {
+		try {
+			rate = pvRate.value.rates[currencyTo];
+			console.warn(currencyTo+"currencyTo"+rate, pvRate.value);
+		} catch(err) {	// paranoia (bugs, Nov 2021)
+			console.error(err); // swallow it
+		}
+	}
+
+	if (rate == 1) {
+		console.error("Failed to fetch currency rate from API");
+		return money;
+	}
+
+	assert(Money.CURRENCY[currencyTo], "Bad currency: "+currencyTo);
+	Money.assIsa(money);
+	let m = moneyFromv100p(money.value100p * rate, currencyTo);
+	m.date = new Date();
+	return m;
+}
 
 /**
  * Convenience for getting the symbol for a Money object
