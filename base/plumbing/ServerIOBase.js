@@ -6,7 +6,7 @@ import _ from 'lodash';
 import $ from 'jquery';
 import { assert, assMatch, setAssertFailed } from '../utils/assert';
 import C from '../CBase.js';
-import {encURI, is} from '../utils/miscutils';
+import {encURI, getDomain, is} from '../utils/miscutils';
 
 import Login from '../youagain';
 
@@ -132,6 +132,12 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
+		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org';
+		ServerIO.APIBASE = 'https://test'+window.location.hostname;
+		// hack for SoGive
+		if (ServerIO.APIBASE.includes("sogive")) {
+			ServerIO.APIBASE = 'https://test.sogive.org';
+		}
 		// extra hack for my-loop:
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("local")) {
 			ServerIO.APIBASE = ServerIO.APIBASE.replace("local", "test");
