@@ -1,3 +1,4 @@
+import _ from 'lodash';
 import React, { Component } from 'react';
 import { useState } from 'react';
 import { useRef } from 'react';
@@ -115,7 +116,8 @@ const DynImg = ({src, msrc, image, ...props}) => {
 	// work out the width
 	let [width, setWidth] = useState();
 	let ref = useRef();
-	if (!width) {
+	let [rendered, setRendered] = useState(0); // this is used to force a redraw
+	if ( ! width) {
 		// Set img src to instant-loading placeholder data-URL to probe size without loading anything
 		_src = transparentPixel;
 		if (ref.current) {
@@ -138,6 +140,9 @@ const DynImg = ({src, msrc, image, ...props}) => {
 			if ( ! existingWidth) {
 				$img.style.width = inlineWidth;
 			}
+		} else {
+			// set state to force a redraw to fill in
+			_.defer(() => setRendered(rendered+1));
 		}
 	}
 	// wrap url
@@ -146,6 +151,7 @@ const DynImg = ({src, msrc, image, ...props}) => {
 		// Bump resolution a little to reduce chances of fuzziness
 		_src = wrapUrl(src, width * 1.25);
 	}
+
 	return <img ref={ref} src={_src} {...props} />;
 };
 
