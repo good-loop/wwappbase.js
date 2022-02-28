@@ -54,7 +54,8 @@ const DesktopMenu = ({logoutLink, noHashLink, user, style, className, small}) =>
 		<UncontrolledDropdown nav inNavbar>
 			<DropdownToggle nav caret>{name}</DropdownToggle>
 			<DropdownMenu>
-				<C.A href={accountHerf} className="nav-link"><NavItem>Account</NavItem></C.A>
+				{/* Use a tag instead of C.A to prevent bug in T4G */}
+				<a href={accountHerf} className="nav-link"><NavItem>Account</NavItem></a> 
 				<DropdownItem divider />
 				<LogoutLink className="nav-link"><NavItem>Logout</NavItem></LogoutLink>
 			</DropdownMenu>
