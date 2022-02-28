@@ -511,7 +511,7 @@ window.urlRegex = urlRegex;
 
 
 /**
-Like truthy, but "false", {}, [] and [''] are also false alongside '', 0 and false.
+Like truthy, but "false", {}, [], [null], and [''] are also false alongside '', 0 and false.
 */
 export const yessy = function (val: any): boolean {
 	// any falsy value returns false
