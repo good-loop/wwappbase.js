@@ -45,7 +45,7 @@ const AccountMenu = ({canRegister, className, ...props}) => {
 	return <DesktopMenu {...props} user={user} />;
 };
 
-const DesktopMenu = ({logoutLink, noHashLink, user, style, className, small}) => {
+const DesktopMenu = ({logoutLink, user, style, className, small}) => {
 	let accountHerf = HashLinkChecker('/#account');
 	const name = small ? ((user.name && user.name.substr(0, 1)) || XId.prettyName(user.xid).substr(0,1)) : (user.name || XId.prettyName(user.xid));
 
@@ -54,10 +54,13 @@ const DesktopMenu = ({logoutLink, noHashLink, user, style, className, small}) =>
 		<UncontrolledDropdown nav inNavbar>
 			<DropdownToggle nav caret>{name}</DropdownToggle>
 			<DropdownMenu>
-				{/* Use a tag instead of C.A to prevent bug in T4G */}
-				<a href={accountHerf} className="nav-link"><NavItem>Account</NavItem></a> 
+				<DropdownItem>
+					<a href={accountHerf} className="nav-link">Account</a> 
+				</DropdownItem>
 				<DropdownItem divider />
-				<LogoutLink className="nav-link"><NavItem>Logout</NavItem></LogoutLink>
+				<DropdownItem>
+					<LogoutLink className="nav-link">Logout</LogoutLink>
+				</DropdownItem>
 			</DropdownMenu>
 		</UncontrolledDropdown>
 	</Nav>
