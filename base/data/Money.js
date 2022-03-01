@@ -200,8 +200,9 @@ Money.CURRENCY_FOR_COUNTRY = {
  * EUROS sourced from https://www.google.com/search?q=euro+to+pound&oq=euro+to+pound Sep 20, 2021 16:46
  */
 Money.CURRENCY_CONVERSION = {
-	GBP_USD: 1.365,
-	GBP_AUD: 1.885,
+	GBP_USD: 1.365,	
+	GBP_AUD: 1.885,	
+	GBP_MXN: 27.41,
 	USD_AUD: 1.380,
 	USD_GBP: 0.732,
 	AUD_GBP: 0.530,
