@@ -37,7 +37,8 @@ const acceptDescs = {
 	imgUpload: 'JPG, PNG, or SVG image',
 	videoUpload: 'video',
 	bothUpload: 'video or image',
-	fontUpload: 'font'
+	fontUpload: 'font',
+	upload: 'file'
 };
 
 
