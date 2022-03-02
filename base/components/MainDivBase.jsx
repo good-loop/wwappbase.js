@@ -163,12 +163,14 @@ class MainDivBase extends Component {
 		}
 		assert(page);
 
+		const e404 = false;
 		let Page = pageForPath[page];
 		if ( ! Page) {
 			// basic account?
 			if (page === 'account') Page = BasicAccountPage;
 			else {
 				Page = E404Page;
+				e404 = true;
 			}
 		}
 		// error handler
@@ -187,7 +189,7 @@ class MainDivBase extends Component {
 		}
 		// full screen?
 		// Either by page, or for a dynamic setting within a page - HACK set window.fullWidthPage=true/false
-		let fluid = (fullWidthPages && fullWidthPages.includes(page)) || window.fullWidthPage;
+		let fluid = (fullWidthPages && fullWidthPages.includes(page)) || window.fullWidthPage || e404;
 		if (!undecorated) undecorated = !!DataStore.getUrlValue("undecorated");
 		if (!undecorated) undecorated = undecoratedPages && undecoratedPages.includes(page);
 		
