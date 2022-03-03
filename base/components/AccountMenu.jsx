@@ -26,7 +26,8 @@ const HashLinkChecker = (herf) => {
 	else return herf;
 }
 
-const AccountMenu = ({canRegister, className, ...props}) => {
+const AccountMenu = ({canRegister, customLogin, className, ...props}) => {
+	let LoginLink = customLogin ? customLogin : <LoginLink>Sign in</LoginLink> ;
 
 	// TODO see navbar dropdown
 	if ( ! Login.isLoggedIn()) {
@@ -34,7 +35,7 @@ const AccountMenu = ({canRegister, className, ...props}) => {
 		return (
 			<Nav navbar style={props.style} className={space("justify-content-end", className)}>
 				{ ! canRegister && <NavItem id="register-link"><RegisterLink /></NavItem>}
-				<NavItem className="login-link"><LoginLink>Sign in</LoginLink></NavItem>
+				<NavItem className="login-link">{LoginLink}</NavItem>
 			</Nav>
 		);
 	}
