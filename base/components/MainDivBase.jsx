@@ -163,7 +163,7 @@ class MainDivBase extends Component {
 		}
 		assert(page);
 
-		const e404 = false;
+		let e404 = false;
 		let Page = pageForPath[page];
 		if ( ! Page) {
 			// basic account?
