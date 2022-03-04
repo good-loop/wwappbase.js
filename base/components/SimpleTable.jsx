@@ -97,6 +97,18 @@ class TableSettings {
 
 	/** @type {Column[]|String[]} Can mix String and Column */
 	columns;
+
+	/** @type {?Item[]} Each row an item. item.style will set row tr styling */
+	data;
+	/** @type {?Object} a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
+	* So the columns should use accessors 'key' and 'value'.
+	* This is ONLY good for simple 2-column tables!
+	*/
+	dataObject;
+
+	/**
+	* @type {?Tree<Item>} Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items. */	
+	dataTree;
 	
 	/** @type {?String} Filter rows by keyword */
 	filter;
@@ -160,15 +172,6 @@ class TableSettings {
 
 /**
  * @param {TableSettings} props
- * @param {?Item[]} props.data - Each row an item. item.style will set row tr styling
- *  *
- * @param {?Object} dataObject a {key: value} object, which will be converted into rows [{key:k1, value:v1}, {}...]
- * So the columns should use accessors 'key' and 'value'.
- * This is ONLY good for simple 2-column tables!
- *
- * @param {?Tree<Item>} dataTree Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items.
- * 
- * @param {Column[]|String[]} columns - Can mix String and Column
  * 
  */
 const SimpleTable = (props) => {
@@ -195,6 +198,10 @@ const SimpleTable = (props) => {
 	const originalData = data; // for debug
 	dataTree = standardiseData({ data, dataObject, dataTree })
 	assert(dataTree);
+	if ( ! columns) {
+		assert(dataObject);
+		columns=["key","value"];
+	}
 	assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
 
 	// Filter settings
