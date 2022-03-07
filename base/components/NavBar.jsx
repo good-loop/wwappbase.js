@@ -94,7 +94,7 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  * rendered within BS.Nav
  * @param {NavProps} p
  */
-const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick}) => {
+const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta}) => {
 	// Hack: remove logo classname for myGL to advoid Safari CSS bug
 	let logoClass = 'logo';
 	if (window.location.host.includes('my.good-loop.com')) logoClass = '';
@@ -102,6 +102,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
 			<img className={logoClass} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+			{isBeta && <span style={{position:'absolute',top:'48px',left:'50px',color:'grey'}}>beta</span>}
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
 			<div className='position-relative'>
