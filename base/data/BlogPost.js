@@ -34,14 +34,20 @@ class BlogPost extends DataClass {
 	/** @type{String} */
 	content;
 
-    /** @type{Number} */
-	readTime
-
 	/** @type{String} */
 	thumbnail
 
 	/** @type{String} */
 	author
+
+	/** @type{String} */
+	authorTitle
+
+	/** @type{String} */
+	authorPic
+
+	/** @type{String} */
+	customCSS
 
 	/**
 	 * @param {BlogPost} base 
@@ -52,5 +58,13 @@ class BlogPost extends DataClass {
 	}
 }
 DataClass.register(BlogPost, "BlogPost"); 
+
+BlogPost.readTime = (blogPost) => {
+	// Optimistic reading speed as many "words" will be syntax
+    const avgWPM = 300;
+    let readTime = Math.round(blogPost.content.split(" ").length / avgWPM);
+	if (readTime < 1) readTime = 1;
+	return readTime;
+}
 
 export default BlogPost;
