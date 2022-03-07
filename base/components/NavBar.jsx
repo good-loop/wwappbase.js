@@ -103,7 +103,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
 			<img className={logoClass} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
-			{isBeta && <span style={{position:'absolute',top:'48px',left:'50px',color:'grey'}}>beta</span>}
+			{isBeta && <span style={{position:'sticky',top:'100%',color:'grey'}}>beta</span>}
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
 			<div className='position-relative'>
