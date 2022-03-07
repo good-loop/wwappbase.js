@@ -93,6 +93,7 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
 /**
  * rendered within BS.Nav
  * @param {NavProps} p
+ * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
  */
 const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta}) => {
 	// Hack: remove logo classname for myGL to advoid Safari CSS bug

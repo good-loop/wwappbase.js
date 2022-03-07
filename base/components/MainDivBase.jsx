@@ -124,22 +124,23 @@ class MainDivBase extends Component {
 			navbar=true, // false for no navbar!
 			navbarDarkTheme=true,
 			navbarBackgroundColour="dark",
-			navbarStyle,
-			navbarShadow=true,
-			navbarPages, navbarLabels, navbarChildren, navbarExternalLinks, navbarSpace, NavGuts, NavExpandSize="md",
+			navbarPages, navbarLabels, navbarChildren, 
+			navbarExternalLinks, // TODO document props
+			navbarSpace, // TODO document props
+			NavGuts, NavExpandSize="md",
 			fullWidthPages,
-			undecoratedPages,
-			undecorated,
+			undecoratedPages, // TODO document props
+			undecorated, // TODO document props
 			canRegister,
-			loginService,
+			loginService, // TODO document props
 			Footer,
-			noLoginTitle,
-			loginLogo,
-			loginSubtitle,
-			noSocials,
-			loginChildren,
+			noLoginTitle, // TODO document props
+			loginLogo, // TODO document props
+			loginSubtitle, // TODO document props
+			noSocials, // TODO document props
+			loginChildren, // TODO document props
 			LoginGuts,
-			isBeta
+			isBeta // HACK to place a beta label over the logo for SoGive Mar 2022
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -203,17 +204,16 @@ class MainDivBase extends Component {
             pages={navbarPages}
             labels={navbarLabels}
             externalLinks={navbarExternalLinks}
-						homelink={homeLink}
+			homelink={homeLink}
             darkTheme={navbarDarkTheme}
-            backgroundColour={navbarBackgroundColour}
-						shadow={navbarShadow}
-						NavGuts={NavGuts}
-						expandSize={NavExpandSize}
-						isBeta={isBeta}
+            backgroundColour={navbarBackgroundColour}						
+			NavGuts={NavGuts}
+			expandSize={NavExpandSize}
+			isBeta={isBeta}
           >
 			{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 		  </NavBar>
-		  {navbarSpace && <div className="py-4"/>}
+		  {navbarSpace && <div className="py-4"/> /* why / why-not?? */}
         </>}
         <Container fluid={fluid}>
 			<Row>
