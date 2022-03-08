@@ -260,15 +260,16 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 				</div>
 				</>
 			}
-			<div className="pull-right" style={typesWithThumbnail[type] && thumbnailStyle}>
-				{uploading ? <UploadProgress {...uploading} /> : <>
-					<Thumbnail className={className} background={bg} url={storeValue} />
-					{circleOverlay}
-				</>}
-			</div>
+			{storeValue &&
+				<div className="pull-right" style={typesWithThumbnail[type] && thumbnailStyle}>
+					{uploading ? <UploadProgress {...uploading} /> : <>
+						<Thumbnail className={className} background={bg} url={storeValue} />
+						{circleOverlay}
+					</>}
+				</div>
+			}
 			{extraControls}
-			<div className="clearfix" />
-			
+			<div className="clearfix" />			
 		</div>
 	);
 }; // ./imgUpload
