@@ -6,7 +6,7 @@ import DataStore from '../plumbing/DataStore';
 import { Badge, Form, FormGroup, Input, Label, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import CloseButton from './CloseButton';
 import { useState } from 'react';
-import { asArray, is, labeller } from '../utils/miscutils';
+import { asArray, is, labeller, str } from '../utils/miscutils';
 import { assert } from '../utils/assert';
 import Icon from './Icon';
 
@@ -14,15 +14,17 @@ import Icon from './Icon';
  * A list-of-objects editor
  * @param {Object} p
  * @param {?String} p.itemType Used for labels
+ * @param {JSX} p.Viewer
+ * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
-const PropControlList = ({rawValue, storeValue, Viewer, Editor, itemType, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
+const PropControlList = ({rawValue, storeValue, Viewer=BasicViewer, Editor=BasicEditor, itemType, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
 	const listValue = asArray(storeValue);
 
 	return (<>
 		<ul>
 		{listValue.map((item,i) => 
-			<li key={i} >{is(item)? <Viewer item={item} i={i} /> : "_"} 
-				<AddOrEditButton arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} itemType={itemType} /> 
+			<li key={i} >{is(item)? <Viewer item={item} i={i} path={proppath.concat(i)} /> : "_"} 
+				{Editor !== Viewer && <AddOrEditButton arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} item={item} itemType={itemType} />}
 				<DeleteButton arrayPath={proppath} i={i} listValue={listValue} /> 
 				{item && item.error && <Badge pill color="danger" title={getItemErrorMessage(item)}> 🐛 </Badge>}
 			</li>
@@ -36,13 +38,23 @@ const PropControlList = ({rawValue, storeValue, Viewer, Editor, itemType, setRaw
 }; // ./radio
 registerControl({type:'list', $Widget: PropControlList});
 
+const BasicViewer = ({item, i}) => {
+	return <div>{i}: {str(item)}</div>;
+};
+
+const BasicEditor = ({path}) => {
+	let item = DataStore.getValue(path);
+	return <div>TODO editor for {str(item)}</div>;
+};
+
 const getItemErrorMessage = item => {
 	if ( ! item) return null;
 	if (typeof(item.error)==="string" && item.error) return item.error;	
 	return item.error.detailMessage || item.error.message || JSON.stringify(item.error);
 };
 
-const AddOrEditButton = ({arrayPath, i=-1, listValue, Editor, itemType}) => {
+const AddOrEditButton = ({arrayPath, i=-1, listValue, Editor, item, itemType}) => {
+	assert(Editor, "No list Editor");
 	let [show, setShow] = useState();
 	let epath = i===-1? ['widget','AddButton'].concat(...arrayPath) : arrayPath.concat(i);
 	const doAdd = e => {
@@ -60,7 +72,7 @@ const AddOrEditButton = ({arrayPath, i=-1, listValue, Editor, itemType}) => {
 		<Modal isOpen={show} toggle={() => setShow( ! show)} >
 			<ModalHeader toggle={() => setShow( ! show)} >Add {itemType}</ModalHeader>
 			<ModalBody>
-				<Editor path={epath} />
+				<Editor path={epath} item={item} />
 			</ModalBody>
 			<ModalFooter>{i===-1 && <Button color="primary" onClick={doAdd}>Add</Button>}</ModalFooter>
 		</Modal>
