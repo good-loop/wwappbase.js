@@ -12,7 +12,7 @@ const KMacroType = new Enum('NONE DV360 GOOGLE TTD XANDR');
 
 /** Used by Green Ad Tag generator */
 const REDIRECT_BASE = `${C.HTTPS}://${C.SERVER_TYPE}lg.good-loop.com/lg?t=redirect`;
-const PIXEL_BASE = `${C.HTTPS}://${C.SERVER_TYPE}lg.good-loop.com/pxl.base?t=pixel`;
+const PIXEL_BASE = `${C.HTTPS}://${C.SERVER_TYPE}lg.good-loop.com/pxl.png?t=pixel`;
 const WRAPPER_BASE = `${C.HTTPS}://${C.SERVER_TYPE}as.good-loop.com/greenvast.xml`;
 
 /* When URL-encoding URLs - eg for redirect tags - use these regexes to separate and preserve macros in the target URL, so the user's DSP can process them. */
