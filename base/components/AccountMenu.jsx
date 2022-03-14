@@ -27,7 +27,7 @@ const HashLinkChecker = (herf) => {
 }
 
 const AccountMenu = ({canRegister, customLogin, className, ...props}) => {
-	let ChosenLoginLink = customLogin ? customLogin : () => <LoginLink>Sign in</LoginLink> ;
+	let ChosenLoginLink = customLogin ? customLogin : <LoginLink>Sign in</LoginLink> ;
 
 	// TODO see navbar dropdown
 	if ( ! Login.isLoggedIn()) {
