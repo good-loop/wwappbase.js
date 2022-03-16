@@ -65,11 +65,11 @@ const init = () => {
 	Login.change(() => {
 		// ?? should we store and check for "Login was attempted" to guard this??
 		if (Login.isLoggedIn()) {
-			// close the login dialog on success		
+			// close the login dialog on success
 			setShowLogin(false);
 		}
 		// poke React via DataStore (e.g. for Login.error)
-		DataStore.update({});		
+		DataStore.update({});
 	});
 	// Are we logged in?
 	Login.verify();
@@ -117,14 +117,14 @@ class MainDivBase extends Component {
 		let {
 			children,
 			homeLink,
-			pageForPath, 
-			securityCheck, SecurityFailPage=DefaultErrorPage, 
+			pageForPath,
+			securityCheck, SecurityFailPage=DefaultErrorPage,
 			loginRequired,
 			defaultPage,
 			navbar=true, // false for no navbar!
 			navbarDarkTheme=true,
 			navbarBackgroundColour="dark",
-			navbarPages, navbarLabels, navbarChildren, 
+			navbarPages, navbarLabels, navbarChildren,
 			navbarExternalLinks, // TODO document props
 			navbarSpace, // TODO document props
 			NavGuts, NavExpandSize="md",
@@ -157,10 +157,13 @@ class MainDivBase extends Component {
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
 				// HACK allow my-loop render for now
-				window.location.hostname.endsWith('my.good-loop.com') ? 
-				setTimeout(() => modifyPath([defaultPage]), 1) : setTimeout(() => modifyHash([defaultPage]), 1);
+				window.location.hostname.endsWith('my.good-loop.com') ? (
+					setTimeout(() => modifyPath([defaultPage]), 1)
+				) : (
+					setTimeout(() => modifyHash([defaultPage]), 1)
+				);
 				// let the next render get it
-			}			
+			}
 			return <Alert color="warning">No page specified - and the app does not set a default</Alert>;
 		}
 		assert(page);
@@ -195,49 +198,47 @@ class MainDivBase extends Component {
 		if (!undecorated) undecorated = !!DataStore.getUrlValue("undecorated");
 		if (!undecorated) undecorated = undecoratedPages && undecoratedPages.includes(page);
 		
-		return (
-      <div>
-		{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
-        {navbar && !undecorated && <>
-          <NavBar		  	
-            page={page}
-            pages={navbarPages}
-            labels={navbarLabels}
-            externalLinks={navbarExternalLinks}
-			homelink={homeLink}
-            darkTheme={navbarDarkTheme}
-            backgroundColour={navbarBackgroundColour}						
-			NavGuts={NavGuts}
-			expandSize={NavExpandSize}
-			isBeta={isBeta}
-          >
-			{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
-		  </NavBar>
-		  {navbarSpace && <div className="py-4"/> /* why / why-not?? */}
-        </>}
-        <Container fluid={fluid}>
-			<Row>
-				<MessageBar />
-				<div className="page" id={page}>
-					<Page />
-				</div>
-				{Footer && !undecorated && <Footer page={page} />}
-			</Row>
-        </Container>
-        <LoginWidget
-          title={noLoginTitle ? null : `Welcome to ${C.app.name}`}
-		  subtitle={loginSubtitle}
-          canRegister={canRegister}
-		  loginService={loginService}
-		  logo={loginLogo}
-          services={canRegister ? [] : loginService}
-		  noSocials={noSocials}
-		  Guts={LoginGuts}
-        >
+		return <div>
+			{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
+			{navbar && !undecorated && <>
+				<NavBar
+					page={page}
+					pages={navbarPages}
+					labels={navbarLabels}
+					externalLinks={navbarExternalLinks}
+					homelink={homeLink}
+					darkTheme={navbarDarkTheme}
+					backgroundColour={navbarBackgroundColour}
+					NavGuts={NavGuts}
+					expandSize={NavExpandSize}
+					isBeta={isBeta}
+				>
+				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
+				</NavBar>
+				{navbarSpace && <div className="py-4"/> /* why / why-not?? */}
+			</>}
+			<Container fluid={fluid}>
+				<Row>
+					<MessageBar />
+					<div className="page" id={page}>
+						<Page />
+					</div>
+					{Footer && !undecorated && <Footer page={page} />}
+				</Row>
+			</Container>
+			<LoginWidget
+				title={noLoginTitle ? null : `Welcome to ${C.app.name}`}
+				subtitle={loginSubtitle}
+				canRegister={canRegister}
+				loginService={loginService}
+				logo={loginLogo}
+				services={canRegister ? [] : loginService}
+				noSocials={noSocials}
+				Guts={LoginGuts}
+			>
 			{_.isFunction(loginChildren)? loginChildren() : loginChildren}
-		</LoginWidget>	
-      </div>
-    );
+			</LoginWidget>
+		</div>
 	} // ./render()
 } // ./MainDiv
 
@@ -245,7 +246,7 @@ class MainDivBase extends Component {
 const DefaultErrorPage = ({error}) => (
 	<div>
 		<h3 className="mt-2">There was an Error :&#39;(</h3>
-		<p>Try navigating to a different tab, or reloading the page. 
+		<p>Try navigating to a different tab, or reloading the page.
 			If this problem persists, please contact support.</p>
 		<p>
 			{error && error.message}
