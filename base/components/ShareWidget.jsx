@@ -2,7 +2,7 @@ import React from 'react';
 import { assert, assMatch } from '../utils/assert';
 import Login from '../youagain';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
-import {isEmail, uid } from '../utils/miscutils';
+import {isEmail, stopEvent, uid } from '../utils/miscutils';
 import Cookies from 'js-cookie';
 import PromiseValue from 'promise-value';
 import DataStore from '../plumbing/DataStore';
@@ -28,9 +28,7 @@ const ShareLink = ({item, type, id, shareId}) => {
 		shareId = shareThingId(type, id);
 	}
 	const basePath = ['widget', 'ShareWidget', shareId];
-	return (<a href={window.location} onClick={ e => { e.preventDefault(); e.stopPropagation(); DataStore.setValue(basePath.concat('show'), true); } } >
-		<Misc.Icon fa="share-square" /> Share
-	</a>);
+	return <a href={window.location} onClick={ e => { stopEvent(e); DataStore.setValue(basePath.concat('show'), true); } } title="Share"><Icon name="share" /></a>;
 };
 
 /**
