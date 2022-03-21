@@ -12,6 +12,7 @@ import DataClass, {getType, getId, getClass} from '../data/DataClass';
 import Roles, {getRoles} from '../Roles';
 import Shares, {Share, canRead, canWrite, shareThingId} from '../Shares';
 import PropControl from './PropControl';
+import Icon from './Icon';
 
 /**
  * a Share This button
@@ -96,8 +97,7 @@ const ShareWidget = ({shareId, item, type, id, name, hasButton}) => {
 		{hasButton && <ShareLink shareId={shareId} />}
 		<Modal isOpen={show} className="share-modal" toggle={doToggle}>
 			<ModalHeader toggle={doToggle}>
-				<Misc.Icon fa="share-square" size="large" />
-				{title}
+				<Icon name="share" /> {title}
 			</ModalHeader>
 			<ModalBody>
 				<div className="container-fluid">
