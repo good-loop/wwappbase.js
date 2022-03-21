@@ -91,7 +91,7 @@ try {
 
 class _Login {
 	/** You-Again version */
-	version = "0.9.2";
+	version = "0.9.3";
 	/** This app, as known by you-again. You MUST set this! */
 	app;
 	/** aka `issuer` Allows for grouping several apps under one banner. */
@@ -169,7 +169,7 @@ getId(service) {
 			return pVerify; // don't repeat call if a call is in progress
 		};
 		console.log("start login...");
-		pVerify = aget(Login.ENDPOINT, { action: 'verify' })
+		pVerify = apost(Login.ENDPOINT, { action: 'verify' })
 			.then(function (res) {
 				if (!res || !res.success) {
 					logout2();
@@ -192,7 +192,7 @@ getId(service) {
 	/** @returns {Promise} */
 	logout() {
 		console.log("logout");
-		const serverResponse = aget(Login.ENDPOINT, { action: 'logout' });
+		const serverResponse = apost(Login.ENDPOINT, { action: 'logout' });
 		logout2();
 		clear();
 		return serverResponse;
@@ -408,7 +408,7 @@ const login2 = function (loginInfo) {
 	clear();
 	// now try to login
 	loginInfo.nonce = guid();
-	let pLogin = aget(Login.ENDPOINT, loginInfo);
+	let pLogin = apost(Login.ENDPOINT, loginInfo);
 	pLogin = pLogin.then(setStateFromServerResponse, res => {
 			Login.error = { id: res.statusCode, text: res.responseText || res.statusText };
 		});
@@ -527,7 +527,7 @@ const doFBLogin_connected = (response) => {
 			user: JSON.stringify(Login.getUser()),
 			xid: Login.getId()
 		};
-		aget(Login.ENDPOINT, updateInfo)
+		apost(Login.ENDPOINT, updateInfo)
 			.then(	// JWT from YA has to be stored
 				setStateFromServerResponse
 			);
@@ -544,7 +544,7 @@ Login.reset = function (email) {
 		email: email,
 		action: 'reset'
 	}
-	let request = aget(Login.ENDPOINT, params)
+	let request = apost(Login.ENDPOINT, params)
 		.fail(function (req) {
 			if (req.responseText) {
 				// stash the error for showing to the user
@@ -570,14 +570,14 @@ Login.setPassword = function (email, currentPassword, newPassword) {
 		auth: currentPassword,
 		newPassword: newPassword
 	}
-	let request = aget(Login.ENDPOINT, params);
+	let request = apost(Login.ENDPOINT, params);
 	return request;
 };
 
 
 
 /** convenience for ajax with cookies */
-const aget = function (url, data, type) {
+const apost = (url, data, type="POST") => {
 	assert(Login.app, "You must set Login.app = my-app-name-as-registered-with-you-again");
 	data.app = Login.app;
 	data.d = Login.dataspace;
@@ -605,9 +605,9 @@ const aget = function (url, data, type) {
 	}
 	return $.ajax({
 		dataType: "json", // not really needed but harmless
-		url: url,
-		data: data,
-		type: type || 'GET',
+		url,
+		data,
+		type,
 		xhrFields: { withCredentials: true }
 	});
 };
@@ -687,7 +687,7 @@ const dataPut = function (formData, key, value) {
 Login.shareLogin = function (puppetXId, personXId, bothWays, message) {
 	assert(isString(puppetXId), 'youagain.js shareThing() - Not a String ', puppetXId);
 	assert(isString(personXId), 'youagain.js shareThing() - Not an XId String ', personXId);
-	let request = aget(Login.ENDPOINT, {
+	let request = apost(Login.ENDPOINT, {
 		'action': 'share',
 		'entity': puppetXId,
 		'shareWith': personXId,
@@ -703,7 +703,7 @@ Login.shareLogin = function (puppetXId, personXId, bothWays, message) {
  */
 Login.deleteShare = function (thingId, personXId) {
 	assert(thingId && personXId, "youagain.js - deleteShare needs more info " + thingId + " " + personXId);
-	let request = aget(Login.ENDPOINT, {
+	let request = apost(Login.ENDPOINT, {
 		'action': 'delete-share',
 		'entity': thingId,
 		'shareWith': personXId
@@ -732,7 +732,7 @@ Login.shareThing = function (thingId, personXId, message) {
  */
 Login.claim = function (thingId) {
 	assert(isString(thingId), 'youagain.js claim() - Not a String ', thingId);
-	let request = aget(Login.ENDPOINT, {
+	let request = apost(Login.ENDPOINT, {
 		action: 'claim',
 		entity: thingId
 	});
@@ -745,7 +745,7 @@ Login.claim = function (thingId) {
  * @returns {Promise<Share[]>}
  */
 Login.getSharedWith = args => {
-	let request = aget(Login.ENDPOINT, {
+	let request = apost(Login.ENDPOINT, {
 		action: 'shared-with', 
 		prefix: args && args.prefix
 	});
@@ -759,7 +759,7 @@ Login.getSharedWith = args => {
  * @returns {Promise<Share[]>}
  */
 Login.getSharedBy = function () {
-	let request = aget(Login.ENDPOINT, {
+	let request = apost(Login.ENDPOINT, {
 		action: 'shared-by'
 	});
 	return request;
@@ -775,7 +775,7 @@ const isString = x => typeof (x) === 'string';
  */
 Login.checkShare = function (thingId) {
 	assert(isString(thingId), 'youagain.js checkShare() - Not a String ', thingId);
-	let request = aget(Login.ENDPOINT, {
+	let request = apost(Login.ENDPOINT, {
 		action: 'check-share',
 		entity: thingId
 	});
@@ -790,7 +790,7 @@ Login.checkShare = function (thingId) {
  */
 Login.getShareList = function (thingId) {
 	assert(isString(thingId), 'youagain.js getShareList() - Not a String ', thingId);
-	let request = aget(Login.ENDPOINT, {
+	let request = apost(Login.ENDPOINT, {
 		action: 'share-list',
 		entity: thingId
 	});
