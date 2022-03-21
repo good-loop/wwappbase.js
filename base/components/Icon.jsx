@@ -22,9 +22,10 @@ const EMOJI = {
 	plus: "⨁", // ⊕
 	search: "🔍",
 	seedling: "🌱",
+	// share: "", TODO
 	tick: "✔",
 	trashcan: "🗑", //&#x1f5d1;
-	".txt":"🖹",
+	".txt":"🖹",	
  };
 /**
  * Hack: list a few icons here.

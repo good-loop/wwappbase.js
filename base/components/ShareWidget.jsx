@@ -64,10 +64,11 @@ const deleteShare = ({share}) => {
  * @param {?String} p.shareId E.g. "role:editor" Set this, or item, or type+id.
  * @param {?DataClass} p.item - The item to be shared
  * @param {?String}	p.name - optional name for the thing
+ * @param {?boolean} p.hasButton - Show the standard share button?
  *
  * Note: This does NOT include the share button -- see ShareLink for that
 */
-const ShareWidget = ({shareId, item, type, id, name}) => {
+const ShareWidget = ({shareId, item, type, id, name, hasButton}) => {
 	if ( ! shareId) {
 		if (item) {
 			type = getType(item);
@@ -93,7 +94,8 @@ const ShareWidget = ({shareId, item, type, id, name}) => {
 	// TODO share message email for new sharers
 
 	const doToggle = () => DataStore.setValue([...basePath, 'show'], !show);
-	return (
+	return (<>
+		{hasButton && <ShareLink shareId={shareId} />}
 		<Modal isOpen={show} className="share-modal" toggle={doToggle}>
 			<ModalHeader toggle={doToggle}>
 				<Misc.Icon fa="share-square" size="large" />
@@ -107,7 +109,7 @@ const ShareWidget = ({shareId, item, type, id, name}) => {
 					<div className="row">
 						{/* TODO <PropControl path={formPath} prop="enableNotification" label="Send a notification email" type="checkbox"/> */}
 						{enableNotification? <PropControl path={formPath} prop="optionalMessage" id="OptionalMessage" label="Attached message" type="textarea" /> : null}
-						<Button color="primary" size="lg" className="btn-block" disabled={!validEmailBool}
+						<Button color="primary" className="btn-block" disabled={!validEmailBool}
 							onClick={() => {
 								const {form} = DataStore.getValue(basePath) || {};
 								shareThing({shareId, withXId});
@@ -117,14 +119,16 @@ const ShareWidget = ({shareId, item, type, id, name}) => {
 						</Button>
 					</div>
 					<div className="row">
-						<h4>Shared with</h4>
-						<ListShares list={sharesPV.value} />
+						<div>
+							<h5>Shared with</h5>
+							<ListShares list={sharesPV.value} />
+						</div>
 					</div>
 				</div>
 			</ModalBody>
 			<ModalFooter />
 		</Modal>
-	);
+	</>);
 }; // ./ShareWidget
 
 const ListShares = ({list}) => {
