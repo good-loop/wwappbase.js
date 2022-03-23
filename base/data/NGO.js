@@ -17,6 +17,8 @@ NGO.summaryDescription = (ngo) => ngo.summaryDescription;
 
 NGO.extendedDescription = (ngo) => ngo.extendedDescription;
 
+NGO.imageList = (ngo) => ngo.imageList;
+
 /**
  * displayName or name or ID
  * @param {NGO} ngo 

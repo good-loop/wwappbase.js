@@ -459,7 +459,8 @@ Misc.ImgThumbnail = ({url, alt, background, style, className = ''}) => {
 	// add in base (NB this works with style=null)
 	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain', padding: 0}, style);
 	if (background) style.background = background;
-	if (!alt || !alt.length) {
+	const suppressAccWarnings = DataStore.getUrlValue("suppressAccWarnings");
+	if (!suppressAccWarnings && (!alt || !alt.length)) {
 		console.warn("Image with no alt text! All images must have alt text for accessibility.");
 	}
 	return <img className={space('img-thumbnail',className)} style={style} alt={alt || 'thumbnail'} src={url} />;
