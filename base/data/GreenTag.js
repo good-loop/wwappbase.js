@@ -62,7 +62,7 @@ const setBaseParams = (url, tag) => {
 		macroAdders[tag.macroType](url);
 	}
 	// search vs searchParams: see comment at top
-	if (tag.campaign) url.search += `&campaign=${tag.campaign}`;
+	if (tag.campaign) url.search += `&campaign=${encodeURIComponent(tag.campaign)}`;
 	if (tag.id) url.search += `&adid=${tag.id}`;
 };
 
@@ -111,6 +111,8 @@ class GreenTag extends DataClass {
 	wrapped;
 	/** The generated tag URL */
 	tag;
+	/** The size (in bytes) of the creative this tag represents */
+	weight;
 }
 
 GreenTag.generate = (tag) => {

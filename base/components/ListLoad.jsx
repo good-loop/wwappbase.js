@@ -71,6 +71,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	canDelete, canCopy, canCreate, canFilter,
 	createBase,
 	className,
+	hasCsv,
 	noResults,
 	notALink,
 	itemClassName,
@@ -157,16 +158,17 @@ const ListLoad = ({ type, status, servlet, navpage,
 		setPageNum2(n);
 		window.scrollTo(0, 0);
 	};
+	let allItems = items;
 	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;	
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem ? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
 
 		{canFilter && <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter" />}
 
-		{!items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
+		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 		{total && !hideTotal ? <div>About {total} results in total</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
-
+		{hasCsv && <ListLoadCSVDownload items={items} />}
 		{items.map((item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				unwrapped={unwrapped}
@@ -202,6 +204,11 @@ const ListLoad = ({ type, status, servlet, navpage,
 }; // ./ListLoad
 //
 
+
+const ListLoadCSVDownload = ({items}) => {
+	// return <SimpleTable />
+	return null; // TODO
+};
 
 const paginate = ({ items, pageNum, pageSize }) => {
 	assert(pageSize, "paginate");

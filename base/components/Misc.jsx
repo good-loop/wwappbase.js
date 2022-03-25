@@ -6,7 +6,7 @@ import md5 from 'md5';
 import _ from 'lodash';
 
 import { assert, assMatch } from '../utils/assert';
-import { asDate, getLogo, isoDate, space } from '../utils/miscutils';
+import { asDate, getLogo, isoDate, space, str } from '../utils/miscutils';
 
 import JSend from '../data/JSend';
 
@@ -20,6 +20,7 @@ import Money from '../data/Money';
 import { getId} from '../data/DataClass';
 import ErrAlert from './ErrAlert';
 import XId from '../data/XId';
+import Roles from '../Roles';
 
 
 const Misc = {};
@@ -584,7 +585,7 @@ Misc.CheckAccess = ({can = 'edit'}) => {
 	if (pvCan.error) {
 		return <ErrAlert error={pvCan.error} color="danger" />;
 	}
-	return <><h1>Access Denied</h1><p>You do not have sufficient permissions to view this page. If you think you should have access, please contact an administrator.</p></>;
+	return <><h1>Access Denied</h1><p>You do not have sufficient permissions to view this page. If you think you should have access, please contact an administrator about your roles ({str(Roles.getValue().value)}).</p></>;
 }
 
 
