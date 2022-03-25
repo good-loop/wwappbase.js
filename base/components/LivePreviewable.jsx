@@ -25,8 +25,8 @@ const LivePreviewable = ({object, dataType, urlValidator, Child}) => {
                 const msg = JSON.parse(event.data.substr(5, event.data.length - 4));
                 console.log("Reveived object: ", msg);
                 setMsgObj(msg.data);
-                const dataPath = getDataPath({status:KStatus.DRAFT, type:C.TYPES.NGO, id});
-                const reducedPath = 
+                /*const dataPath = getDataPath({status:KStatus.DRAFT, type:C.TYPES.NGO, id});
+                const reducedPath = */
                 if (!obj) console.warn("LivePreviewable tried to augment data, but there is no object!");
             }
         }
