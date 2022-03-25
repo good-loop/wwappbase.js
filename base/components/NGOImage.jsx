@@ -73,7 +73,7 @@ const NGOImage = ({ngo, main, header, imgIdx, bg, src, noFallback, children, ...
 
     if (main && ngo.images) useUrl = ngo.images;
     else if (header && ngo.headerImage) useUrl = ngo.headerImage;
-    else if (!ngo.imageList || idx > ngo.imageList.length - 1 || idx === undefined) {
+    else if (!ngo.imageList || idx > ngo.imageList.length - 1 || idx === undefined || !ngo.imageList[idx].contentUrl) {
         if (noFallback) return null;
         useUrl = src || ngo.images;
     } else {
@@ -86,7 +86,7 @@ const NGOImage = ({ngo, main, header, imgIdx, bg, src, noFallback, children, ...
         console.warn("NGOImage set to normal image but given children - will not correctly render!");
     }
 
-    return <ImgType src={useUrl} {...props}>{children}</ImgType>;
+    return <ImgType src={useUrl} id={"imageList-" + idx + "-contentUrl"} {...props}>{children}</ImgType>;
 
 };
 
