@@ -4,7 +4,7 @@ import PromiseValue from 'promise-value';
 import { assert, assMatch } from './utils/assert';
 
 /**
- * @returns PromiseValue<String[]>
+ * @returns {PromiseValue} PV<String[]>
  */
 const getRoles = () => {
 	// HACK: This is set elsewhere - but there can be an init ordering issue

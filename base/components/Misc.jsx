@@ -584,7 +584,7 @@ Misc.CheckAccess = ({can = 'edit'}) => {
 	if (pvCan.error) {
 		return <ErrAlert error={pvCan.error} color="danger" />;
 	}
-	return <><h1>Access Denied</h1><p>You do not have sufficient permissions to view this page. If you think you should have access, please contact an administrator about your roles ({str(Roles.getValue().value)}).</p></>;
+	return <><h1>Access Denied</h1><p>You do not have sufficient permissions to view this page. If you think you should have access, please contact an administrator about your roles ({str(Roles.getRoles().value)}).</p></>;
 }
 
 
