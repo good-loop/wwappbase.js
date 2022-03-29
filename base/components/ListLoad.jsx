@@ -40,6 +40,7 @@ import List from '../data/List';
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?Boolean} p.canCreate - If set, show a Create
  * @param {?Boolean} p.canDelete - If set, show delete buttons
+ * @param {?Boolean} p.cannotClick - If set, do not use an a wrapper or have an onPick handler. Use-case: for lists which don't link through to pages.
  * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
  * @param {?String} p.status - e.g. "Draft"
  * @param {?String} p.servlet - Deprecated - use navpage instead
@@ -50,7 +51,7 @@ import List from '../data/List';
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
  * 	Input props: {type, servlet, navpage, item, sort}
 
- * @param {?boolean} p.notALink - Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
+ * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
  * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} p.hideTotal - If true, don't show the "Total about 17" line
  * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
@@ -69,6 +70,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	ListItem,
 	checkboxes,
 	canDelete, canCopy, canCreate, canFilter,
+	cannotClick,
 	createBase,
 	className,
 	hasCsv,
@@ -176,6 +178,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 				type={type}
 				checkboxes={checkboxes}
 				canCopy={canCopy}
+				cannotClick={cannotClick}
 				list={list}
 				canDelete={canDelete}
 				servlet={servlet}
@@ -297,7 +300,7 @@ const onPick = ({ event, navpage, id, customParams }) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-const ListItemWrapper = ({ item, type, checkboxes, canCopy, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped }) => {
+const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped }) => {
 	if (unwrapped) {
 		return children;
 	}
@@ -322,8 +325,8 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, list, canDelete, ser
 	return (
 		<div className="ListItemWrapper clearfix flex-row">
 			{checkbox}
-			<A href={itemUrl} key={'A' + id} notALink={notALink}
-				onClick={event => onPick({ event, navpage, id })}
+			<A href={itemUrl} key={'A' + id} notALink={notALink} cannotClick={cannotClick}
+				onClick={event => ! cannotClick && onPick({ event, navpage, id })}
 				className={itemClassName || space(`ListItem btn-default btn btn-outline-secondary status-${item.status}`, hasButtons && "btn-space")}
 			>
 				{children}
@@ -337,7 +340,7 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, list, canDelete, ser
 };
 
 
-const A = ({ notALink, children, ...stuff }) => notALink ? <div {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
+const A = ({ notALink, cannotClick, children, ...stuff }) => (notALink || cannotClick)? <div {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
 
 /**
  * These can be clicked or control-clicked
