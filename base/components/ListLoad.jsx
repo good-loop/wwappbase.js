@@ -15,6 +15,7 @@ import { getType, getId, nonce, getClass, getStatus } from '../data/DataClass';
 
 import ErrAlert from './ErrAlert';
 import Icon from './Icon';
+import SimpleTable, { DownloadCSVLink } from './SimpleTable';
 import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
 import List from '../data/List';
@@ -73,7 +74,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	cannotClick,
 	createBase,
 	className,
-	hasCsv,
+	hasCsv, csvColumns,
 	noResults,
 	notALink,
 	itemClassName,
@@ -160,7 +161,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		setPageNum2(n);
 		window.scrollTo(0, 0);
 	};
-	let allItems = items;
+	let allItems = items; // don't paginate the csv download
 	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;	
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem ? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
@@ -170,7 +171,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 		{total && !hideTotal ? <div>About {total} results in total</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
-		{hasCsv && <ListLoadCSVDownload items={items} />}
+		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} />}
 		{items.map((item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				unwrapped={unwrapped}
@@ -208,9 +209,17 @@ const ListLoad = ({ type, status, servlet, navpage,
 //
 
 
-const ListLoadCSVDownload = ({items}) => {
-	// return <SimpleTable />
-	return null; // TODO
+/**
+ * HACK offer a csv download
+ * @param {*} param0 
+ * @returns 
+ */
+const ListLoadCSVDownload = ({items, csvColumns}) => {
+	if ( ! items.length) return null;
+	if ( ! csvColumns) {
+		csvColumns = Object.keys(items[0]);
+	}
+	return <DownloadCSVLink data={items} columns={csvColumns} />;	
 };
 
 const paginate = ({ items, pageNum, pageSize }) => {
