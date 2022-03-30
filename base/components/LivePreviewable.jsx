@@ -16,8 +16,7 @@ const LivePreviewable = ({object, dataType, urlValidator, Child}) => {
     const [msgObj, setMsgObj] = useState({});
 
     // soft copy for augmentation
-    let obj = object;
-    if (obj) Object.assign(obj, msgObj);
+    const obj = Object.assign(object, msgObj);
 
     const updateObject = event => {
         if (event.origin.includes(urlValidator || 'portal.good-loop.com')) {
