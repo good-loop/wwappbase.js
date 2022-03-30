@@ -62,7 +62,7 @@ DataClass.register(BlogPost, "BlogPost");
 BlogPost.readTime = (blogPost) => {
 	// Optimistic reading speed as many "words" will be syntax
     const avgWPM = 300;
-    let readTime = Math.round(blogPost.content.split(" ").length / avgWPM);
+    let readTime = blogPost.content ? Math.round(blogPost.content.split(" ").length / avgWPM) : 1;
 	if (readTime < 1) readTime = 1;
 	return readTime;
 }
