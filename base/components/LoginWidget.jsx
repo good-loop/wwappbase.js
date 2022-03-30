@@ -275,7 +275,6 @@ const EmailReset = ({}) => {
 		let call = Login.reset(email).done(res => {
 			if (res.success) {
 				DataStore.setValue(['widget', 'LoginWidget', 'reset-requested'], true);
-				if (onLogin) onLogin(res);
 			}
 			return res;
 		}).fail(() => {
