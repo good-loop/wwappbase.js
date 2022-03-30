@@ -1,6 +1,7 @@
 import React from "react";
 import MDText from "./MDText";
 import { assert } from "../utils/assert";
+import NGO from '../../base/data/NGO';
 
 
 /**
@@ -11,8 +12,7 @@ import { assert } from "../utils/assert";
  * @returns 
  */
 const NGODescription = ({ngo, summarize, extended}) => {
-    
-    assert(ngo.id, ngo);
+    assert(NGO.id(ngo), ngo);
 
     let desc;
     if (summarize) desc = ngo.summaryDescription || ngo.description || ngo.extendedDescription;

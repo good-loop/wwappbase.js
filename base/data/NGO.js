@@ -23,7 +23,7 @@ NGO.imageList = (ngo) => ngo.imageList;
  * displayName or name or ID
  * @param {NGO} ngo 
  */
-NGO.displayName = ngo => ngo ? ngo.displayName || ngo.name || ngo.id : null;
+NGO.displayName = ngo => ngo ? ngo.displayName || ngo.name || NGO.id(ngo) : null;
 
 /**
  * @returns {?Number} [0-17] -- see NGO.UNSDGS
