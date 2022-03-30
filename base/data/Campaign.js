@@ -411,7 +411,7 @@ Campaign.dntn4charity = (campaign, isSub) => {
 		}
 		// are any missing?
 		let charities = Campaign.charities(campaign);
-		let missingNGOs = charities.filter(ngo => ! d4c[ngo.id]);
+		let missingNGOs = charities.filter(ngo => ! d4c[NGO.id(ngo)]);
 		if ( ! missingNGOs.length) {
 			return d4c;
 		}
