@@ -64,6 +64,7 @@ They should all be commented with matching labels
 @gl-lighter-blue: #DEEEF3;
 
 // Grey
+@gl-darker-grey: #515151;
 @gl-dark-grey: #928b81; // Why is this NOT grey? Yellow??
 @gl-light-grey: #E4E4E4;
 
@@ -174,11 +175,17 @@ They should all be commented with matching labels
 }
 
 // Grey
+.bg-gl-darker-grey {
+	.bg(@gl-darker-grey);
+}
 .bg-gl-dark-grey {
 	.bg(@gl-dark-grey);
 }
 .bg-gl-light-grey {
     .bg(@gl-light-grey);
+}
+.color-gl-darker-grey {
+	.color(@gl-darker-grey);
 }
 .color-gl-dark-grey {
 	.color(@gl-dark-grey);

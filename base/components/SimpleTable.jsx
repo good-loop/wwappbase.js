@@ -142,7 +142,7 @@ class TableSettings {
 	sortBy;
 
 	/**
-	 * @type {?Boolean} true for froxen headers and scrolling
+	 * @type {?Boolean} true for frozen headers and scrolling
 	 */
 	scroller;
 
@@ -902,5 +902,12 @@ const csvEscCell = s => {
 	return '"' + s + '"';
 };
 
+
+const DownloadCSVLink = ({columns, data, name}) => {
+	let dataTree = standardiseData({data});
+	let tableSettings = {name};
+	return <CSVDownload dataTree={dataTree} visibleColumns={columns} tableSettings={tableSettings} />;
+};
+
 export default SimpleTable;
-export { CellFormat, Column };
+export { CellFormat, Column, DownloadCSVLink };

@@ -13,11 +13,17 @@ export default NGO;
 
 NGO.description = (ngo) => ngo.description;
 
+NGO.summaryDescription = (ngo) => ngo.summaryDescription;
+
+NGO.extendedDescription = (ngo) => ngo.extendedDescription;
+
+NGO.imageList = (ngo) => ngo.imageList;
+
 /**
  * displayName or name or ID
  * @param {NGO} ngo 
  */
-NGO.displayName = ngo => ngo.displayName || ngo.name || ngo.id;
+NGO.displayName = ngo => ngo ? ngo.displayName || ngo.name || NGO.id(ngo) : null;
 
 /**
  * @returns {?Number} [0-17] -- see NGO.UNSDGS
