@@ -6,6 +6,8 @@ import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
 import { is } from '../utils/miscutils';
 import { Input, Label } from 'reactstrap';
+import C from '../CBase';
+import LinkOut from './LinkOut';
 
 const MDCheckbox = ({setSource, source, checked, ...args}) => {
 	if ( ! is(checked)) {
@@ -66,11 +68,9 @@ const MDText = ({source, renderers={}, components={}, escapeHtml = false, setSou
 	if (setSource) {
 		components.listItem = args => <MDCheckbox source={source} setSource={setSource} {...args} />;
 	}
-	if (linkOut) {
-		// TODO
+	if (!components.a) {
+		components.a = linkOut ? LinkOut : C.A;
 	}
-	// TODO linkOut vs a
-
 	return <div className="MDText"><ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={escapeHtml ? null : [rehypeRaw]} children={nsource} components={components} /></div>;
 };
 
