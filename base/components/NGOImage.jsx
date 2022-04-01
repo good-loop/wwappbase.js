@@ -71,12 +71,16 @@ const NGOImage = ({ngo, main, header, imgIdx, bg, src, noFallback, children, ...
 
     let useUrl = null;
 
-    if (main && ngo.images) useUrl = ngo.images;
-    else if (header && ngo.headerImage) useUrl = ngo.headerImage;
-    else if (!ngo.imageList || idx > ngo.imageList.length - 1 || idx === undefined || !ngo.imageList[idx].contentUrl) {
+    // Use main if specified
+    if (main && ngo && ngo.images) useUrl = ngo.images;
+    // Use header if specified
+    else if (header && ngo && ngo.headerImage) useUrl = ngo.headerImage;
+    // Use src if image list index is not specified or invalid
+    else if (!ngo || !ngo.imageList || idx > ngo.imageList.length - 1 || idx === undefined || !ngo.imageList[idx].contentUrl) {
         if (noFallback) return null;
         useUrl = src || ngo.images;
     } else {
+        // Use image index if specified
         useUrl = ngo.imageList[idx].contentUrl;
     }
 
