@@ -67,6 +67,13 @@ export default List;
  */
 List.hits = list => list? (List.assIsa(list) && list.hits) : null;
 /**
+ * Convenience for first-item or null
+ * @param {?List} list 
+ * @returns {?Item}
+ */
+List.first = list => list? List.hits(list)[0] : null;
+
+/**
  * 
  * @param {?List} list 
  * @returns {?Number}
