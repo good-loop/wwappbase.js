@@ -51,7 +51,7 @@ import List from '../data/List';
  * 	ListItem only has to describe/present the item.   
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
  * 	Input props: {type, servlet, navpage, item, sort}
-
+ * @param {?Function} p.nameFn passed to ListItem, to have custom name extraction
  * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
  * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} p.hideTotal - If true, don't show the "Total about 17" line
@@ -68,7 +68,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	sort = 'created-desc',
 	filter, filterFn, hasFilter, filterLocally,
 	list,
-	ListItem,
+	ListItem, nameFn,
 	checkboxes,
 	canDelete, canCopy, canCreate, canFilter,
 	cannotClick,
@@ -193,6 +193,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 					navpage={navpage}
 					item={item}
 					sort={DataStore.getValue(['misc', 'sort'])}
+					nameFn={nameFn}
 				/>
 			</ListItemWrapper>
 		))}
