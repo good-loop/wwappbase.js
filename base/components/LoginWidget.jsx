@@ -74,7 +74,7 @@ const socialLogin = (service) => {
 const emailLogin = ({verb, app, email, password, onRegister, onLogin}) => {
 	assMatch(email, String, password, String);
 	const call = (verb === 'register') ? (
-		Login.register({email:email, password:password})
+		Login.register({email, password})
 	) : (
 		Login.login(email, password)
 	);
