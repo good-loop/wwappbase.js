@@ -19,6 +19,8 @@ import { assert, assMatch } from '../utils/assert';
 import JSend from '../data/JSend';
 import {stopEvent, toTitleCase, space, labeller, is  } from '../utils/miscutils';
 
+import { getDataItem } from '../plumbing/Crud';
+import KStatus from '../data/KStatus';
 
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
@@ -192,6 +194,40 @@ const PropControl = ({className, ...props}) => {
 	// Hack: Checkbox has a different html layout :( -- handled below
 	const isCheck = PropControl.KControlType.ischeckbox(type); // || PropControl.KControlType.isradio(type);
 
+	const isPublished = () => {
+
+		const getCTYPES = (typeString) => {
+			switch (typeString) {
+				case 'Campaign': return C.TYPES.Campaign;
+				case 'Charity': return C.TYPES.Charity;
+				case 'NGO': return C.TYPES.NGO;
+				case 'Advert': return C.TYPES.Advert;
+				case 'Agency': return C.TYPES.Agency;
+				case 'Advertiser': return C.TYPES.Advertiser;
+				default: return null;
+			};
+		};
+
+		if (props.item && props.path) {
+			let itemType = props.path[1];
+			let itemId = props.path[2];
+			let type = getCTYPES(itemType);
+			if (type === null) return true;
+
+			let pvDraft = getDataItem({type:type, id:itemId, status:KStatus.DRAFT, swallow:true});
+			let pvPub = getDataItem({type:type, id:itemId, status:KStatus.PUBLISHED, swallow:true});
+
+			if (pvDraft.value && pvPub.value) {
+				let valueDraft = pvDraft.value[prop];
+				let valuePub = pvPub.value[prop];
+				if (valueDraft !== valuePub) {
+					return false;
+				};
+			};
+		};
+		return true;
+	};
+
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
 	const helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
@@ -219,6 +255,7 @@ const PropControl = ({className, ...props}) => {
 			{help && (inline || isCheck) && <span className={"help-block ml-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
+			{!isPublished() ? <span className="help-block text-danger">Not Published Yet</span> : null}
 		</FormGroup>
 	);
 }; // ./PropControl
