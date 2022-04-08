@@ -194,33 +194,22 @@ const PropControl = ({className, ...props}) => {
 	// Hack: Checkbox has a different html layout :( -- handled below
 	const isCheck = PropControl.KControlType.ischeckbox(type); // || PropControl.KControlType.isradio(type);
 
+	/**
+	 * Check if dataitem's value between draft and published are different
+	 * @returns false if different 
+	 */
 	const isPublished = () => {
-
-		const getCTYPES = (typeString) => {
-			switch (typeString) {
-				case 'Campaign': return C.TYPES.Campaign;
-				case 'Charity': return C.TYPES.Charity;
-				case 'NGO': return C.TYPES.NGO;
-				case 'Advert': return C.TYPES.Advert;
-				case 'Agency': return C.TYPES.Agency;
-				case 'Advertiser': return C.TYPES.Advertiser;
-				default: return null;
-			};
-		};
-
 		if (props.item && props.path) {
 			let itemType = props.path[1];
 			let itemId = props.path[2];
-			let type = getCTYPES(itemType);
-			if (type === null) return true;
+			let type = C.TYPES[itemType];
+			if (type === null || itemType == 'USER') return true; // Ignore USER type, no need for login props
 
 			let pvDraft = getDataItem({type:type, id:itemId, status:KStatus.DRAFT, swallow:true});
 			let pvPub = getDataItem({type:type, id:itemId, status:KStatus.PUBLISHED, swallow:true});
 
 			if (pvDraft.value && pvPub.value) {
-				let valueDraft = pvDraft.value[prop];
-				let valuePub = pvPub.value[prop];
-				if (valueDraft !== valuePub) {
+				if (!_.isEqual(pvDraft.value[prop], pvPub.value[prop])) {
 					return false;
 				};
 			};
@@ -255,7 +244,7 @@ const PropControl = ({className, ...props}) => {
 			{help && (inline || isCheck) && <span className={"help-block ml-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
-			{!isPublished() ? <span className="help-block text-danger">Not Published Yet</span> : null}
+			{!isPublished() ? <span className="help-block text-warning">Not Published Yet</span> : null}
 		</FormGroup>
 	);
 }; // ./PropControl
