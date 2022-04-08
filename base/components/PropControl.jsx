@@ -19,6 +19,8 @@ import { assert, assMatch } from '../utils/assert';
 import JSend from '../data/JSend';
 import {stopEvent, toTitleCase, space, labeller, is  } from '../utils/miscutils';
 
+import { getDataItem } from '../plumbing/Crud';
+import KStatus from '../data/KStatus';
 
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
@@ -192,6 +194,30 @@ const PropControl = ({className, ...props}) => {
 	// Hack: Checkbox has a different html layout :( -- handled below
 	const isCheck = PropControl.KControlType.ischeckbox(type); // || PropControl.KControlType.isradio(type);
 
+	/**
+	 * Check if dataitem's value between draft and published are different
+	 * Used in portal, to prevent bugs caused of draft/published differences
+	 * @returns false if different 
+	 */
+	const isPublished = () => {
+		if (props.item && props.path) {
+			let itemType = props.path[1];
+			let itemId = props.path[2];
+			let type = C.TYPES[itemType];
+			if (type === null || itemType == 'USER') return true; // Ignore USER type, no need for login props
+
+			let pvDraft = getDataItem({type:type, id:itemId, status:KStatus.DRAFT, swallow:true});
+			let pvPub = getDataItem({type:type, id:itemId, status:KStatus.PUBLISHED, swallow:true});
+
+			if (pvDraft.value && pvPub.value) {
+				if (!_.isEqual(pvDraft.value[prop], pvPub.value[prop])) {
+					return false;
+				};
+			};
+		};
+		return true;
+	};
+
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
 	const helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
@@ -219,6 +245,7 @@ const PropControl = ({className, ...props}) => {
 			{help && (inline || isCheck) && <span className={"help-block ml-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
+			{!isPublished() ? <span className="help-block text-warning">Not Published Yet</span> : null}
 		</FormGroup>
 	);
 }; // ./PropControl
