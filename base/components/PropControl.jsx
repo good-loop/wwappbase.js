@@ -196,6 +196,7 @@ const PropControl = ({className, ...props}) => {
 
 	/**
 	 * Check if dataitem's value between draft and published are different
+	 * Used in portal, to prevent bugs caused of draft/published differences
 	 * @returns false if different 
 	 */
 	const isPublished = () => {
