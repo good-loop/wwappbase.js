@@ -25,6 +25,7 @@ const WIDGET_PATH = ['widget', 'LoginWidget', 'verb'];
 const SHOW_PATH = [...WIDGET_PATH, 'show'];
 const VERB_PATH = [...WIDGET_PATH, 'verb'];
 const STATUS_PATH = [...WIDGET_PATH, 'status'];
+const PERSON_PATH  = ['data', C.TYPES.User, 'loggingIn'];
 
 
 /** Pretty names for the available verbs  */
@@ -71,10 +72,13 @@ const socialLogin = (service) => {
 /**
  * ajax call -- via Login.login() -- to login
  */
-const emailLogin = ({verb, app, email, password, onRegister, onLogin}) => {
+const emailLogin = ({verb, app, email, password, onRegister, onLogin, ...extraData}) => {
 	assMatch(email, String, password, String);
+
+	console.log("LOGGING IN WITH EXTRA DATA",extraData);
+
 	const call = (verb === 'register') ? (
-		Login.register({email, password})
+		Login.register({email, password, ...extraData})
 	) : (
 		Login.login(email, password)
 	);
@@ -261,7 +265,7 @@ const SocialSignInButton = ({className = "btn signin", children, service, verb =
 const EmailReset = ({}) => {
 	const verb = 'reset';
 	const requested = DataStore.getValue('widget', 'LoginWidget', 'reset-requested');
-	const path = ['data', C.TYPES.User, 'loggingIn'];
+	const path = PERSON_PATH;
 
 	const doItFn = e => {
 		stopEvent(e);				
@@ -301,8 +305,10 @@ const EmailReset = ({}) => {
 /**
  * @param onLogin called after user has successfully logged in
  * @param onRegister called after the user has successfully registered
+ * @param disableVerbSwitch remove the ability to change the action verb
+ * @param children appears between the default form inputs and submission button
  */
-const EmailSignin = ({verb, onLogin, onRegister, canRegister, className}) => {
+const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch, className, children}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
@@ -315,7 +321,7 @@ const EmailSignin = ({verb, onLogin, onRegister, canRegister, className}) => {
 	}
 
 	// we need a place to stash form info. Maybe appstate.widget.LoginWidget.name etc would be better?
-	const path = ['data', C.TYPES.User, 'loggingIn'];
+	const path = PERSON_PATH;
 	let person = DataStore.getValue(path);
 
 	const doItFn = e => {
@@ -336,10 +342,11 @@ const EmailSignin = ({verb, onLogin, onRegister, canRegister, className}) => {
 			<PropControl label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
 			<div className='action-btns'>
 				<div className="form-group">
+					{children}
 					<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
 						{verbButtonLabels[verb]}
 					</Button>
-					{canRegister ? null : <SwitchVerb verb={verb} />}
+					{canRegister || disableVerbSwitch ? null : <SwitchVerb verb={verb} />}
 				</div>
 				<ResetLink verb={verb} />
 			</div>
@@ -436,6 +443,7 @@ export {
 	EmailSignin,
 	SocialSignin,
 	VERB_PATH,
+	PERSON_PATH,
 	getShowLogin,
 	setShowLogin,
 	setLoginVerb,
