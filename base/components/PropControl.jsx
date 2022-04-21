@@ -127,8 +127,7 @@ or if extras like help and error text are wanted.
  * @param {?boolean} fast - if true optimise React updates and renders. Only use for busting bottlenecks.
 	 Warning: when coupled with other controls, this can cause issues, as the other controls won't always update. 
 	 E.g. if a fast text input has an associated button.
- * @param {?boolean} saveToUser if true, does not save to DataStore, but instead saves to a user profile in a key/value claim
- * @param {?String} xid user to save data to if saveToUser is true
+ * @param {?boolean} saveToUser if true, does not save to DataStore, but instead saves to a user profile in a key/value claim. If set to an xid, will save to that user
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = ({className, ...props}) => {
@@ -137,9 +136,9 @@ const PropControl = ({className, ...props}) => {
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
 	}
-	assert(prop || prop===0, "PropControl - no prop! "+type, path || xid); // NB 0 is valid as an array entry
-	assMatch(prop, "String|Number", path || xid);
-	if (path) assMatch(path, Array);
+	assert(prop || prop===0, "PropControl - no prop! "+type, path); // NB 0 is valid as an array entry
+	assMatch(prop, "String|Number", path);
+	if (!saveToUser) assMatch(path, Array);
 	// value comes from DataStore
 	let pvalue = props.value; // Hack: preserve value parameter for checkboxes
 	const proppath = path.concat(prop);
@@ -274,10 +273,12 @@ const PropControl2 = (props) => {
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
-	let { bg, saveFn, modelValueFromInput, saveToUser, xid, ...otherStuff } = stuff;
+	let { bg, saveFn, modelValueFromInput, saveToUser, ...otherStuff } = stuff;
+	let xid;
+	if (saveToUser) xid = _.isString(saveToUser) ? saveToUser : Login.getId();
 	assert(!type || PropControl.KControlType.has(type), 'PropControl: ' + type);
-	assert(path && _.isArray(path) || saveToUser && xid, 'PropControl: path is not an array: ' + path + " prop:" + prop + ", and no user xid given: " + xid);
-	if (path) assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'PropControl: null in path ' + path + " prop:" + prop);
+	assert((path && _.isArray(path)) || saveToUser, 'PropControl: path is not an array: ' + path + " prop:" + prop);
+	if (!saveToUser) assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'PropControl: null in path ' + path + " prop:" + prop);
 	// update is undefined by default, false if fast. See DataStore.update()
 	let update;
 	if (fast) update = false;
