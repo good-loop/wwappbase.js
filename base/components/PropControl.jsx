@@ -137,12 +137,10 @@ const PropControl = ({className, ...props}) => {
 	}
 	assert(prop || prop===0, "PropControl - no prop! "+type, path); // NB 0 is valid as an array entry
 	assMatch(prop, "String|Number", path);
-	if (!saveToUser) assMatch(path, Array);
-	let xid;
-	if (saveToUser) {
-		xid = _.isString(saveToUser) ? saveToUser : Login.getId();
-		assert(xid);
-	}
+	if (props.saveToUser) {
+		if (!_.isString(props.saveToUser)) props.saveToUser = Login.getId();
+		assert(props.saveToUser, "saveToUser without specifying ID needs user to be logged in!");
+	} else assMatch(path, Array);
 	// value comes from DataStore
 	let pvalue = props.value; // Hack: preserve value parameter for checkboxes
 	const proppath = path.concat(prop);
@@ -257,7 +255,7 @@ const PropControl = ({className, ...props}) => {
 			{inline && ' '}
 			{help && ! inline && ! isCheck && 
 				<span className={"help-block ml-2 mr-2 small"}>{help}</span>}
-			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} saveToUser={saveToUser} xid={xid} {...props} pvalue={pvalue} />
+			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
 			{help && (inline || isCheck) && <span className={"help-block ml-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
@@ -277,7 +275,7 @@ const PropControl2 = (props) => {
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
-	let { bg, saveFn, modelValueFromInput, saveToUser, xid, ...otherStuff } = stuff;
+	let { bg, saveFn, modelValueFromInput, saveToUser, ...otherStuff } = stuff;
 	assert(!type || PropControl.KControlType.has(type), 'PropControl: ' + type);
 	assert((path && _.isArray(path)) || saveToUser, 'PropControl: path is not an array: ' + path + " prop:" + prop);
 	if (!saveToUser) assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'PropControl: null in path ' + path + " prop:" + prop);
@@ -334,7 +332,7 @@ const PropControl2 = (props) => {
 			let mv = modelValueFromInput(e.target.value, type, e, storeValue, props);
 			// console.warn("onChange", e.target.value, mv, e);
 			if (!saveToUser) DSsetValue(proppath, mv, update);
-			else setPersonClaim({key:prop, value:mv, xid, update});
+			else setPersonClaim({key:prop, value:mv, saveToUser, update});
 			if (saveFn) saveFn({ event: e, path, prop, value: mv });
 			// Enable piggybacking custom onChange functionality ??use-case vs saveFn??
 			if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
@@ -387,7 +385,7 @@ const PropControl2 = (props) => {
 			const isOn = e && e.target && e.target.checked;
 			const newVal = isOn ? onValue : offValue;
 			if (!saveToUser) DSsetValue(proppath, newVal);
-			else setPersonClaim({key:prop, value:newVal, xid})
+			else setPersonClaim({key:prop, value:newVal, saveToUser})
 			if (saveFn) saveFn({ event: e, path, prop, value:newVal});
 		};
 
