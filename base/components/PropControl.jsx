@@ -126,7 +126,7 @@ or if extras like help and error text are wanted.
  * @param {?boolean} fast - if true optimise React updates and renders. Only use for busting bottlenecks.
 	 Warning: when coupled with other controls, this can cause issues, as the other controls won't always update. 
 	 E.g. if a fast text input has an associated button.
- * @param {?boolean} saveToUser if true, does not save to DataStore, but instead saves to a user profile in a key/value claim. If set to an xid, will save to that user
+ * @param {?boolean|string} saveToUser if true, does not save to DataStore, but instead saves to a user profile in a key/value claim. If set to an xid, will save to that user
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = ({className, ...props}) => {
