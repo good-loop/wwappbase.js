@@ -65,7 +65,6 @@ export const savePersonClaims = _.debounce(({xid, callback}) => {
 export const setPersonClaim = ({key, value, xid, update, callback}) => {
 	assMatch(key, String, "setPersonClaim - no key");
 	assMatch(value, "String|Number|Boolean");
-	if (!xid) xid = Login.getId();
 	assert(xid, "setPersonClaim - no login");
 	let pvp = getProfile({ xid });
 	let person = pvp.value || pvp.interim;
@@ -139,6 +138,11 @@ const PropControl = ({className, ...props}) => {
 	assert(prop || prop===0, "PropControl - no prop! "+type, path); // NB 0 is valid as an array entry
 	assMatch(prop, "String|Number", path);
 	if (!saveToUser) assMatch(path, Array);
+	let xid;
+	if (saveToUser) {
+		xid = _.isString(saveToUser) ? saveToUser : Login.getId();
+		assert(xid);
+	}
 	// value comes from DataStore
 	let pvalue = props.value; // Hack: preserve value parameter for checkboxes
 	const proppath = path.concat(prop);
@@ -253,7 +257,7 @@ const PropControl = ({className, ...props}) => {
 			{inline && ' '}
 			{help && ! inline && ! isCheck && 
 				<span className={"help-block ml-2 mr-2 small"}>{help}</span>}
-			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
+			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} saveToUser={saveToUser} xid={xid} {...props} pvalue={pvalue} />
 			{inline && ' '}
 			{help && (inline || isCheck) && <span className={"help-block ml-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
@@ -273,9 +277,7 @@ const PropControl2 = (props) => {
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
-	let { bg, saveFn, modelValueFromInput, saveToUser, ...otherStuff } = stuff;
-	let xid;
-	if (saveToUser) xid = _.isString(saveToUser) ? saveToUser : Login.getId();
+	let { bg, saveFn, modelValueFromInput, saveToUser, xid, ...otherStuff } = stuff;
 	assert(!type || PropControl.KControlType.has(type), 'PropControl: ' + type);
 	assert((path && _.isArray(path)) || saveToUser, 'PropControl: path is not an array: ' + path + " prop:" + prop);
 	if (!saveToUser) assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'PropControl: null in path ' + path + " prop:" + prop);
