@@ -37,6 +37,45 @@ export const DSsetValue = (proppath, value, update) => {
 	// console.log("set",proppath,value,DataStore.getValue(proppath));
 };
 
+/**
+ * Debounced save all current local edits to server
+ * @param {Function} callback triggers once save is complete
+ */
+export const savePersonClaims = _.debounce(({xid, callback}) => {
+	assert(xid);
+	let pvp = getProfile({xid});
+	let person = pvp.value || pvp.interim;
+	const pv = savePersons({ person });
+	pv.promise.then(re => {
+		console.log("... saved person settings");
+		callback && callback();
+	}).catch(e => {
+		console.error("FAILED PERSON SAVE", e);
+	});
+}, 500);
+
+/**
+ * 
+ * @param {String} key
+ * @param {Sting|Number|Boolean} value
+ * @param {String} xid
+ * @param {?Boolean} update if false will not trigger a DS update
+ * @param {?Function} callback fires after the server save is complete
+ */
+export const setPersonClaim = ({key, value, xid, update, callback}) => {
+	assMatch(key, String, "setPersonClaim - no key");
+	assMatch(value, "String|Number|Boolean");
+	if (!xid) xid = Login.getId();
+	assert(xid, "setPersonClaim - no login");
+	let pvp = getProfile({ xid });
+	let person = pvp.value || pvp.interim;
+	assert(person, "setPersonClaim - no person", pvp);
+	console.log("setPersonClaim", xid, key, value, person);
+	setClaimValue({ person, key, value });
+	if (update !== false) DataStore.update();
+	savePersonClaims({xid, callback});
+};
+
 /** Default validator for date values */
 const dateValidator = (val, rawValue) => {
 	if (!val) {
@@ -88,7 +127,8 @@ or if extras like help and error text are wanted.
  * @param {?boolean} fast - if true optimise React updates and renders. Only use for busting bottlenecks.
 	 Warning: when coupled with other controls, this can cause issues, as the other controls won't always update. 
 	 E.g. if a fast text input has an associated button.
- * 
+ * @param {?boolean} saveToUser if true, does not save to DataStore, but instead saves to a user profile in a key/value claim
+ * @param {?String} xid user to save data to if saveToUser is true
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = ({className, ...props}) => {
@@ -97,9 +137,9 @@ const PropControl = ({className, ...props}) => {
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
 	}
-	assert(prop || prop===0, "PropControl - no prop! "+type, path); // NB 0 is valid as an array entry
-	assMatch(prop, "String|Number", path);
-	assMatch(path, Array);
+	assert(prop || prop===0, "PropControl - no prop! "+type, path || xid); // NB 0 is valid as an array entry
+	assMatch(prop, "String|Number", path || xid);
+	if (path) assMatch(path, Array);
 	// value comes from DataStore
 	let pvalue = props.value; // Hack: preserve value parameter for checkboxes
 	const proppath = path.concat(prop);
@@ -234,10 +274,10 @@ const PropControl2 = (props) => {
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
-	let { bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
+	let { bg, saveFn, modelValueFromInput, saveToUser, xid, ...otherStuff } = stuff;
 	assert(!type || PropControl.KControlType.has(type), 'PropControl: ' + type);
-	assert(path && _.isArray(path), 'PropControl: path is not an array: ' + path + " prop:" + prop);
-	assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'PropControl: null in path ' + path + " prop:" + prop);
+	assert(path && _.isArray(path) || saveToUser && xid, 'PropControl: path is not an array: ' + path + " prop:" + prop + ", and no user xid given: " + xid);
+	if (path) assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'PropControl: null in path ' + path + " prop:" + prop);
 	// update is undefined by default, false if fast. See DataStore.update()
 	let update;
 	if (fast) update = false;
@@ -264,6 +304,8 @@ const PropControl2 = (props) => {
 	let onChange;
 
 	if (PropControl.KControlType.isjson(type)) {
+		// TODO implement JSON user profile saving via string - not needed right now
+		assert(!saveToUser, "PropControl2 Cannot save JSON to user profile!");
 		onChange = event => {
 			const rawVal = event.target.value;
 			DataStore.setValue(stringPath, rawVal);
@@ -288,7 +330,8 @@ const PropControl2 = (props) => {
 			}
 			let mv = modelValueFromInput(e.target.value, type, e, storeValue, props);
 			// console.warn("onChange", e.target.value, mv, e);
-			DSsetValue(proppath, mv, update);
+			if (!saveToUser) DSsetValue(proppath, mv, update);
+			else setPersonClaim({key:prop, value:mv, xid, update});
 			if (saveFn) saveFn({ event: e, path, prop, value: mv });
 			// Enable piggybacking custom onChange functionality ??use-case vs saveFn??
 			if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
@@ -340,8 +383,9 @@ const PropControl2 = (props) => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const isOn = e && e.target && e.target.checked;
 			const newVal = isOn ? onValue : offValue;
-			DSsetValue(proppath, newVal);
-			if (saveFn) saveFn({ event: e, path, prop, value:newVal });
+			if (!saveToUser) DSsetValue(proppath, newVal);
+			else setPersonClaim({key:prop, value:newVal, xid})
+			if (saveFn) saveFn({ event: e, path, prop, value:newVal});
 		};
 
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
