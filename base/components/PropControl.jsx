@@ -11,7 +11,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
-import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText } from 'reactstrap';
+import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody } from 'reactstrap';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 
@@ -19,11 +19,14 @@ import { assert, assMatch } from '../utils/assert';
 import JSend from '../data/JSend';
 import {stopEvent, toTitleCase, space, labeller, is  } from '../utils/miscutils';
 
+import { getDataItem } from '../plumbing/Crud';
+import KStatus from '../data/KStatus';
 
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
+import { nonce } from '../data/DataClass';
 
 /**
  * Set the value and the modified flag in DataStore
@@ -55,9 +58,51 @@ const dateValidator = (val, rawValue) => {
 };
 
 /**
+	 * Check if dataitem's value between draft and published are different
+	 * Used in portal, to prevent bugs caused of draft/published differences
+	 * @returns false if different 
+	 */
+ const isPublished = (props) => {
+	if (!props.path || props.path[0] !== "draft" || props.path.length < 3) return true; // Only needed for data props
+
+	let prop = props.prop;
+	let itemType = props.path[1];
+	let itemId = props.path[2];
+	let type = C.TYPES[itemType];
+	if (type === null || itemType == 'USER') return true; // Ignore USER type, no need for login props
+
+	let pvDraft = getDataItem({type:type, id:itemId, status:KStatus.DRAFT, swallow:true});
+	let pvPub = getDataItem({type:type, id:itemId, status:KStatus.PUBLISHED, swallow:true});
+
+	if (pvDraft.value && pvPub.value) {
+		if (!_.isEqual(pvDraft.value[prop], pvPub.value[prop])) {
+			return false;
+		};
+	};
+	return true;
+};
+
+
+const Help = ({children, icon = '🛈', color = 'primary', className, ...props}) => {
+	const [id] = useState(() => `help-${nonce()}`); // Prefixed because HTML ID must begin with a letter
+	const [open, setOpen] = useState(false);
+	const toggle = () => setOpen(!open);
+
+	return <>
+		<a id={id} className={space(className, `text-${color}`)} {...props}>{icon}</a>
+		<Popover target={id} trigger="legacy" placement="auto" isOpen={open} toggle={toggle}>
+			<PopoverBody>
+				{children}
+			</PopoverBody>
+		</Popover>
+	</>;
+};
+
+
+/**
  * Input bound to DataStore.
  * 
-// NB: PropControl or Input + useState?   
+// NB: PropControl or Input + useState?
 // PropControl is best if the data is shared with other components, 
 or if the data should be maintained across page changes (which might destroy and recreate the widget), 
 or if extras like help and error text are wanted. 
@@ -122,17 +167,15 @@ const PropControl = ({className, ...props}) => {
 		delete props.onChange;
 	}
 
-	// Use a default if given - but only replace emptyish values, not false or 0
-	// Only check once, so field doesn't snap back to default if the user empties it
-	if (dflt) {
-		useEffect(() => {
-			if (storeValue === undefined || storeValue === null || storeValue === '') {
-				DataStore.setValue(proppath, dflt, false); // update=false to avoid a nested render, which annoys React
-				storeValue = dflt;
-				value = dflt;
-			}
-		}, []); // 1st time only
-	}
+	// On first render, replace empty-ish values (ie not explicit false or 0) with default, if given.
+	useEffect(() => {
+		if (!dflt) return;
+		if (storeValue === undefined || storeValue === null || storeValue === '') {
+			DataStore.setValue(proppath, dflt, false); // update=false to avoid a nested render, which annoys React
+			storeValue = dflt;
+			value = dflt;
+		}
+	}, []); // 1st time only
 
 	// Temporary hybrid form while transitioning to all-modular PropControl structure
 	// newValidator produces an object compatible with setInputStatus
@@ -209,16 +252,16 @@ const PropControl = ({className, ...props}) => {
 	// focus?? see https://blog.danieljohnson.io/react-ref-autofocus/
 	return (
 		<FormGroup check={isCheck} className={space(type, className, inline && ! isCheck && 'form-inline', error&&'has-error')} size={size} >
-			{(label || tooltip) && ! isCheck &&
+			{(label || tooltip) && !isCheck &&
 				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
-			{help && ! inline && ! isCheck && 
-				<span className={"help-block ml-2 mr-2 small"}>{help}</span>}
+			{help && !inline && !isCheck && <Help>{help}</Help>}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
-			{help && (inline || isCheck) && <span className={"help-block ml-2 small"}>{help}</span> /* there was a <br/> before help which seemed unwanted - May 2021 */}
+			{help && (inline || isCheck) && <Help>{help}</Help>}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
+			{!isPublished(props) ? <span className="help-block text-warning">Not Published Yet</span> : null}
 		</FormGroup>
 	);
 }; // ./PropControl
@@ -348,7 +391,7 @@ const PropControl2 = (props) => {
 		delete otherStuff.size;
 		delete otherStuff.dflt; // TODO handle checkbox default
 
-		return <Label check size={props.size}>
+		return <Label check size={props.size} className="mr-1">
 				<Input bsSize={props.size} type="checkbox" checked={bvalue} value={bvalue} onChange={onChange} {...otherStuff} />
 				{label} {helpIcon}
 			</Label>;
@@ -553,8 +596,7 @@ const PropControlMultiSelect = ({storeValue, value, prop, labelFn, options, mode
 		const checked = !!(value && value.includes(option)); // coerce from undefined/null to boolean false
 		return (
 			<FormGroup inline check key={`option_${option}`}>
-				<Input type="checkbox" value={option} checked={checked} onChange={onChange} />
-				<Label check>{labelFn(option)}</Label>
+				<Label check><Input type="checkbox" value={option} checked={checked} onChange={onChange} />{labelFn(option)}</Label>
 			</FormGroup>
 		);
 	});
@@ -746,13 +788,12 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
 		setNewKey('');
 	};
 
-
 	return (
-		<div className="keyset form-inline">
+		<div className="keyset">
 			<div className="keys">{keyElements}</div>
 			<Form inline onSubmit={onSubmit}>
-				<Input value={newKey} onChange={(e) => setNewKey(e.target.value)}
-				/> <Button type="submit" disabled={!newKey} color="primary" >Add</Button>
+				<Input value={newKey} onChange={(e) => setNewKey(e.target.value)} className="mr-1"/>
+				<Button type="submit" disabled={!newKey} color="primary" >Add</Button>
 			</Form>
 		</div>
 	);
