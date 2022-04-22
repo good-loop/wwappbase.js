@@ -5,15 +5,12 @@
 import { assert, assMatch } from '../utils/assert';
 import {asNum, isNumeric} from '../utils/miscutils';
 import DataClass, {getType} from './DataClass';
-import C from '../CBase';
 import Settings from '../Settings';
-import Enum from 'easy-enums';
-import { compare } from 'fast-json-patch';
 
 /**
- * 
+ *
  * e.g. new Money({currency:GBP, value:10}) = £10
- * 
+ *
 */
 class Money extends DataClass {
 
@@ -71,7 +68,7 @@ DataClass.register(Money, "Money");
 const This = Money;
 export default Money;
 
-/* 
+/*
 
 {
 	currency: {String}
@@ -83,7 +80,7 @@ export default Money;
 
 
 /**
- * 
+ *
  * @param {?Money} ma If null, returns 0
  * @return {Number}
  */
@@ -102,7 +99,7 @@ Money.hasValue = m => {
 };
 
 /**
- * 
+ *
  * @param {!Money} m
  * @param {!Number|falsy} newVal Can be null or '' for unset -- which will produce a value of 0
  * @return {Money} value and value100p set to newVal
@@ -188,33 +185,39 @@ Money.CURRENCY = {
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
  */
 Money.CURRENCY_FOR_COUNTRY = {
-	GB: "GBP", UK: "GBP", // "UK" is wrong, not an iso 3166 code, but handle it anyway
-	US: "USD",
-	AU: "AUD",
-	TR: "TRY"
+	GB: 'GBP', UK: 'GBP', // "UK" is wrong, not an iso 3166 code, but handle it anyway
+	US: 'USD',
+	AU: 'AUD',
+	TR: 'TRY',
+	MX: 'MXN',
+	JP: 'JPY',
+	CN: 'CNY'
 }
 
 /**
  * HACK - estimate conversions to handle adding conflicting currencies
- * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 Sep 20, 2021 16:43
- * EUROS sourced from https://www.google.com/search?q=euro+to+pound&oq=euro+to+pound Sep 20, 2021 16:46
+ * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 2022-04-22 13:30
  */
-Money.CURRENCY_CONVERSION = {
-	GBP_USD: 1.365,	
-	GBP_AUD: 1.885,	
-	GBP_MXN: 27.41,
-	USD_AUD: 1.380,
-	USD_GBP: 0.732,
-	AUD_GBP: 0.530,
-	AUD_USD: 0.724,
-	EUR_GBP: 0.86,
-	GBP_EUR: 1.16,
-	EUR_AUD: 1.62,
-	AUD_EUR: 0.62,
-	EUR_USD: 1.17,
-	USD_EUR: 0.85, 
-	TRY_USD: 0.073,
-	TRY_GBP: 0.054
+Money.GBP_VALUES = {
+	GBP: 1.000, // natch
+	USD: 1.289, // US dollar
+	AUD: 1.765, // Australian dollar
+	MXN: 26.223, // Mexican peso
+	EUR: 1.191, // Euro
+	TRY: 19.001, // Turkish lira
+	JPY: 165.501, // Japanese yen
+	CNY: 8.380, // Chinese yuan / RMB
+}
+
+Money.CURRENCY_NAMES = {
+	GBP: 'British pound',
+	USD: 'US dollar',
+	AUD: 'Australian dollar',
+	MXN: 'Mexican peso',
+	EUR: 'Euro',
+	TRY: 'Turkish lira',
+	JPY: 'Japanese yen',
+	CNY: 'Chinese yuan',
 }
 
 /**
@@ -223,52 +226,54 @@ Money.CURRENCY_CONVERSION = {
  * @param {?String} currencyTo the currency to convert to
  */
 Money.convertCurrency = (money, currencyTo) => {
-	if ( ! currencyTo) {
+	if (!currencyTo) {
 		console.warn("Money.convertCurrency - no-op, unset currencyTo");
 		return money;
 	}
-	console.warn("WARNING: Currency conversion is a rough estimate only and intended as a hack. Should be avoided and not relied on for any precision!!");
-	assert(Money.CURRENCY[currencyTo], "Bad currency: "+currencyTo);
 	Money.assIsa(money);
-	const currencyConversion = money.currency + "_" + currencyTo;
-	const conversionVal = Money.CURRENCY_CONVERSION[currencyConversion];
-	assert(conversionVal, "Cannot convert - rate unset for "+currencyConversion);
-	return moneyFromv100p(money.value100p * conversionVal, currencyTo);
+
+	assert(Money.GBP_VALUES[money.currency], `Cannot convert: rate unset for source currency "${money.currency}"`);
+	assert(Money.GBP_VALUES[currencyTo], `Cannot convert: rate unset for destination currency "${currencyTo}"`);
+	const exchangeRate = Money.GBP_VALUES[currencyTo] / Money.GBP_VALUES[money.currency];
+
+	console.warn("WARNING: Currency conversion is a rough estimate only and intended as a hack. Should be avoided and not relied on for any precision!!");
+
+	return moneyFromv100p(money.value100p * exchangeRate, currencyTo);
 };
 
 /**
  * Convert a money value to a different currency using external API
- * @param {*} money 
- * @param {*} currencyTo 
+ * @param {*} money
+ * @param {*} currencyTo
  * @returns {!Money} plus an extra property of money.date for when this was fetched, which is unset if the default was returned
  */
 Money.convertCurrencyAPI = (money, currencyTo) => {
-	if (! currencyTo) {
-		console.warn("Money.convertCurrency - no-op, unset currencyTo");
-		return money;	
+	if (!currencyTo) {
+		console.warn('Money.convertCurrency - no-op, unset currencyTo');
+		return money;
 	}
 
-	let pvRate = DataStore.fetch(['misc','rates'], () => {
-		let got = $.get("https://api.exchangerate.host/latest?base="+money.currency);
+	let pvRate = DataStore.fetch(['misc', 'rates'], () => {
+		let got = $.get(`https://api.exchangerate.host/latest?base=${money.currency}`);
 		return got;
 	});
-	
+
 	let rate = 1;
 	if (pvRate.value && pvRate.value.rates) {
 		try {
 			rate = pvRate.value.rates[currencyTo];
-			console.warn(currencyTo+"currencyTo"+rate, pvRate.value);
+			console.warn(`${currencyTo}, currencyTo, ${rate}`, pvRate.value);
 		} catch(err) {	// paranoia (bugs, Nov 2021)
 			console.error(err); // swallow it
 		}
 	}
 
 	if (rate == 1) {
-		console.error("Failed to fetch currency rate from API");
+		console.error('Failed to fetch currency rate from API');
 		return money;
 	}
 
-	assert(Money.CURRENCY[currencyTo], "Bad currency: "+currencyTo);
+	assert(Money.CURRENCY[currencyTo], `Bad currency: ${currencyTo}`);
 	Money.assIsa(money);
 	let m = moneyFromv100p(money.value100p * rate, currencyTo);
 	m.date = new Date();
@@ -309,7 +314,7 @@ const assCurrencyEq = (a, b, msg) => {
 	assert(a.currency.toUpperCase() === b.currency.toUpperCase(), m);
 };
 
-/** 
+/**
  * @return {Money} a fresh object.
  * Currency conflicts will trigger a conversion.
  */
@@ -320,7 +325,7 @@ Money.add = (amount1, amount2) => {
 	if (amount1.currency && amount2.currency) {
 		if (amount1.currency.toUpperCase() !== amount2.currency.toUpperCase()) {
 			// conflict! Prefer amount1, unless it is a zero
-			let preferredCurrency = v100p(amount1)? amount1.currency : amount2.currency;            
+			let preferredCurrency = v100p(amount1)? amount1.currency : amount2.currency;
 			if (amount1.currency !== preferredCurrency) amount1 = Money.convertCurrency(amount1, preferredCurrency);
 			if (amount2.currency !== preferredCurrency) amount2 = Money.convertCurrency(amount2, preferredCurrency);
 		}
@@ -345,7 +350,7 @@ const moneyFromv100p = (b100p, currency) => {
 };
 
 /**
- * 
+ *
  * @param {Money[]} amounts Can include nulls/falsy
  */
 Money.total = amounts => {
@@ -363,7 +368,7 @@ Money.total = amounts => {
 	return ttl;
 };
 
-/** 
+/**
  * Subtract.
  * Will fail if not called on 2 Moneys of the same currency
  * @param {!Money} amount1
@@ -405,16 +410,16 @@ Money.mul = mul;
 Money.divide = (total, part) => {
 	Money.assIsa(total);
 	Money.assIsa(part);
-	//assCurrencyEq(total, part);
 	// Ignore if there is an empty currency
 	if (total.currency && part.currency) {
 		if (total.currency.toUpperCase() !== part.currency.toUpperCase()) {
-            console.log("Converting currency " + total.currency + " to " + part.currency);
+			console.log(`Converting currency ${total.currency} to ${part.currency}`);
 			part = Money.convertCurrency(part, total.currency);
 		}
 	}
 	return Money.value(total) / Money.value(part);
 };
+
 
 /**
  * get/set an explanation text
@@ -427,11 +432,12 @@ Money.explain = (money, expln) => {
 	return money.explain;
 };
 
+
 /**
  * Money value, falsy displays as 0
- * 
+ *
  * Converts monetary value in to properly formatted string (29049 -> 29,049.00)
- * 
+ *
  * @param {Object} p amount + Intl.NumberFormat options
  * @param {?Money|Number} p.amount
  * @returns {!String} e.g. £10.7321 to "10.73"
@@ -448,15 +454,15 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 		value = Math.round(value);
 	}
 	let snum;
-	try {		
+	try {
 		snum = new Intl.NumberFormat(Settings.locale,
 			{maximumFractionDigits, minimumFractionDigits, maximumSignificantDigits}
 		).format(value);
 	} catch(er) {
 		console.warn("Money.js prettyString",er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
-		snum = ""+x;	
+		snum = ""+x;
 	}
-	
+
 	if ( ! minimumFractionDigits) {
 		// remove .0 and .00
 		if (snum.substr(snum.length-2) === '.0') snum = snum.substr(0, snum.length-2);
@@ -482,11 +488,11 @@ Money.compare = (a,b) => {
 	if ( ! b) 1;
 	Money.assIsa(a);
     Money.assIsa(b);
-    if (a.currency && b.currency 
+    if (a.currency && b.currency
 		&& v100p(a) && v100p(b)) // NB: no need to convert to compare 0
 	{
 		if (a.currency.toUpperCase() !== b.currency.toUpperCase()) {
-            console.log("Converting currency " + a.currency + " to " + b.currency);
+			console.log(`Converting currency ${total.currency} to ${part.currency}`);
 			a = Money.convertCurrency(a, b.currency);
 		}
 	}
@@ -495,10 +501,10 @@ Money.compare = (a,b) => {
 };
 /**
  * Is a < b? Convenience for Money.compare()
- * @param {!Money} a 
- * @param {!Money} b 
+ * @param {!Money} a
+ * @param {!Money} b
  * @returns {boolean} true if a < b
  */
-Money.lessThan = (a,b) => {	
+Money.lessThan = (a,b) => {
 	return Money.compare(a,b) < 0;
 };
