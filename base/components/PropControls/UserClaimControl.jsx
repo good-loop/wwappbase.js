@@ -67,7 +67,7 @@ export const getEmailProp = () => {
     <FormGroup>
         <label className='mr-1'>Your Email</label>
         <Help>{help}</Help>
-        <input type="text" name='email' className='form-control' value={email} readOnly/>
+        <input type="text" name='email' className='form-control' value={email || ''} readOnly/>
     </FormGroup>)
 }
 
