@@ -157,7 +157,7 @@ class MainDivBase extends Component {
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
 				// HACK allow my-loop render for now
-				window.location.hostname.endsWith('my.good-loop.com') ? (
+				window.location.hostname.endsWith('my.good-loop.com') || window.location.hostname.endsWith('mydata.good-loop.com') ? (
 					setTimeout(() => modifyPath([defaultPage]), 1)
 				) : (
 					setTimeout(() => modifyHash([defaultPage]), 1)
