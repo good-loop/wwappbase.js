@@ -5,8 +5,6 @@ import Login from '../../youagain';
 import DataStore from '../../plumbing/DataStore';
 import Person, { getProfile, getClaimValue, setClaimValue, savePersons } from '../../data/Person';
 import { getDataItem } from '../../plumbing/Crud';
-import { FormGroup } from 'reactstrap';
-import { Help } from '../PropControl';
 
 const USER_WIDGET_PATH = ['widget', 'UserClaimControl'];
 const SAVE_PERSONS_DELAY = 500;
@@ -59,17 +57,11 @@ export const getPersonSetting = ({key, xid}) => {
    return getClaimValue({person, key});
 }
 
-export const getEmailProp = () => {
+export const getEmail = () => {
     let person = getProfile().value;
 	let email = Person.getEmail(person);
-    let help = "Email is set from your login. Let us know if you need to change it by contacting support@good-loop.com.";
 
-    return (
-    <FormGroup>
-        <label className='mr-1'>Your Email</label>
-        <Help>{help}</Help>
-        <input type="text" name='email' className='form-control' value={email || ''} readOnly/>
-    </FormGroup>)
+    return email
 }
 
 /**
