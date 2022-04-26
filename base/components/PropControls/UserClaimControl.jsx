@@ -4,6 +4,7 @@ import PropControl from '../PropControl';
 import Login from '../../youagain';
 import DataStore from '../../plumbing/DataStore';
 import Person, { getProfile, getClaimValue, setClaimValue, savePersons } from '../../data/Person';
+import { getDataItem } from '../../plumbing/Crud';
 import { FormGroup } from 'reactstrap';
 import { Help } from '../PropControl';
 
@@ -69,6 +70,18 @@ export const getEmailProp = () => {
         <Help>{help}</Help>
         <input type="text" name='email' className='form-control' value={email || ''} readOnly/>
     </FormGroup>)
+}
+
+/**
+ * Get the charity object directly 
+ * @returns charity object
+ */
+export const getCharityObject = () => {
+    const cid = getPersonSetting({key:"charity"});
+    let pvCharity = getDataItem({ type: 'NGO', id: cid });
+    if (pvCharity.resolved) {
+        return pvCharity.value;
+    }
 }
 
 /**
