@@ -895,6 +895,9 @@ const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }
 	// Roll back to native editor on 27/04/2022
 	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
+	if ( ! is(rawValue) && storeValue) {
+		rawValue = Misc.isoDate(storeValue);
+	}
 
 	return (<div>
 		<FormControl type="date" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
