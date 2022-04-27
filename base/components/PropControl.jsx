@@ -491,11 +491,17 @@ const PropControl2 = (props) => {
 		const countryMap = new Map(Object.entries(countryListAlpha2));
 		let countryOptions = Array.from(countryMap.keys());
 		let countryLabels = Array.from(countryMap.values());
-		countryOptions.unshift('null');
-		countryLabels.unshift('');
 		
 		props2.options = countryOptions;
 		props2.labels = countryLabels;
+		return <PropControlSelect  {...props2} />
+	}
+
+	if (type === 'gender') {
+		let props2 = { onChange, value, ...props };
+		
+		props2.options = ["male", "female", "others", "nottosay"];
+		props2.labels = ["Male", "Female", "Others", "Preferred not to say"];
 		return <PropControlSelect  {...props2} />
 	}
 
@@ -1026,7 +1032,7 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 PropControl.KControlType = new Enum(
 	"textarea html text search select radio password email color checkbox range"
 	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
-	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
+	+ " yesNo location date year number arraytext keyset entryset address postcode json country gender"
 	// some Good-Loop data-classes
 	+ " XId keyvalue");
 
