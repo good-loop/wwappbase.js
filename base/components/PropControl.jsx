@@ -28,6 +28,8 @@ import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
 import { nonce } from '../data/DataClass';
 
+import { countryListAlpha2 } from '../data/CountryRegion';
+
 /**
  * Set the value and the modified flag in DataStore
  * @param {!String[]} proppath
@@ -486,8 +488,14 @@ const PropControl2 = (props) => {
 	// HACK just a few countries. TODO load in an iso list + autocomplete
 	if (type === 'country') {
 		let props2 = { onChange, value, ...props };
-		props2.options = [null, 'GB', 'US', 'AU', 'DE'];
-		props2.labels = ['', 'United Kingdom (UK)', 'United States of America (USA)', 'Australia', 'Germany'];
+		const countryMap = new Map(Object.entries(countryListAlpha2));
+		let countryOptions = Array.from(countryMap.keys());
+		let countryLabels = Array.from(countryMap.values());
+		countryOptions.unshift('null');
+		countryLabels.unshift('');
+		
+		props2.options = countryOptions;
+		props2.labels = countryLabels;
 		return <PropControlSelect  {...props2} />
 	}
 
