@@ -65,15 +65,17 @@ export const getEmail = () => {
 }
 
 /**
- * Get the charity object directly 
- * @returns charity object
+ * Get the charity promise value if it exists
+ * @returns pvCharity or null
  */
 export const getCharityObject = () => {
     const cid = getPersonSetting({key:"charity"});
-    let pvCharity = getDataItem({ type: 'NGO', id: cid });
-    if (pvCharity.resolved) {
-        return pvCharity.value;
+    if (!cid) {
+        console.warn("getCharityObject - no charity id");
+        return null;
     }
+    let pvCharity = getDataItem({ type: 'NGO', id: cid });
+    return pvCharity;
 }
 
 /**
