@@ -892,6 +892,16 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'Key', v
 
 
 const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }) => {
+	// Roll back to native editor on 27/04/2022
+	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
+	// I don't think it will happen again, but it's worth keeping in mind.
+
+	return (<div>
+		<FormControl type="date" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
+	</div>);
+};
+
+const PropControlDateOld = ({ prop, storeValue, rawValue, onChange, ...otherStuff }) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
 	// NB: parsing incomplete dates causes NaNs
 	let datePreview = null;
