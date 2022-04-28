@@ -95,7 +95,7 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  * @param {NavProps} p
  * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
  */
-const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta}) => {
+const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems}) => {
 	// Hack: remove logo classname for myGL to advoid Safari CSS bug
 	let logoClass = 'logo';
 	if (window.location.host.includes('my.good-loop.com')) logoClass = '';
@@ -120,7 +120,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 				{pageLinks}
 			</Nav>
 			{children}
-			<AccountMenu active={currentPage === 'account'} className="mx-2 mt-2 mt-md-0"/>
+			<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} className="mx-2 mt-2 mt-md-0"/>
 		</Collapse>
 	</>);
 };
