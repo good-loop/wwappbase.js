@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Container, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import DataStore from '../plumbing/DataStore';
-import { getScreenSize, space, stopEvent } from '../utils/miscutils';
+import { getScreenSize, isMobile, space, stopEvent } from '../utils/miscutils';
 import ErrBoundary from './ErrBoundary';
 
 /**
@@ -21,16 +21,13 @@ const Editor3ColLayout = ({ children, showAll }) => {
 const MainPane = ({ className, children }) => <Container className={className}><ErrBoundary>{children}</ErrBoundary></Container>;
 
 const LeftSidebar = ({ children, hideOnMobile }) => {
-	const screenSize = getScreenSize();
-	const userIsOnMobile = (screenSize === "sm" || screenSize === "xs") ? true : false;
-
 	// If hideOnMobile is set, return nothing
-	if (userIsOnMobile && hideOnMobile == true) {
+	if (isMobile() && hideOnMobile == true) {
 		return null;
 	}
 
 	// Show the mobile version of this (widget toggle)
-	if (userIsOnMobile) {
+	if (isMobile()) {
 		let show = DataStore.getValue(['widget', 'LeftSidebar', 'show']);
 		const toggle = e => stopEvent(e) && DataStore.setValue(['widget', 'LeftSidebar', 'show'], ! show);
 		return (<>
