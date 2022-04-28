@@ -68,7 +68,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	sort = 'created-desc',
 	filter, filterFn, hasFilter, filterLocally,
 	list,
-	ListItem, nameFn,
+	ListItem=DefaultListItem, nameFn,
 	checkboxes,
 	canDelete, canCopy, canCreate, canFilter,
 	cannotClick,
@@ -118,9 +118,6 @@ const ListLoad = ({ type, status, servlet, navpage,
 		filter = DataStore.getValue(widgetPath.concat('filter'));
 	}
 	if (filter) filter = filter.toLowerCase(); // normalise
-	if ( ! ListItem) {
-		ListItem = DefaultListItem;
-	}
 
 	let fastFilter, isLoading, error;
 	if ( ! list) { // Load!
