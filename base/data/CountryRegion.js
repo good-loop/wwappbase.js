@@ -1,4 +1,6 @@
 export const countryList = [
+	"United Kingdom",
+	"United States",
 	"Afghanistan",
 	"Albania",
 	"Algeria",
@@ -232,9 +234,7 @@ export const countryList = [
 	"Uganda",
 	"Ukraine",
 	"United Arab Emirates",
-	"United Kingdom",
 	"United States Minor Outlying Islands",
-	"United States",
 	"Uruguay",
 	"Uzbekistan",
 	"Vanuatu",
@@ -251,6 +251,8 @@ export const countryList = [
 ];
 
 export const countryListAlpha2 = {
+	"GB": "United Kingdom",
+	"US": "United States",
 	"AF": "Afghanistan",
 	"AL": "Albania",
 	"DZ": "Algeria",
@@ -484,9 +486,7 @@ export const countryListAlpha2 = {
 	"UG": "Uganda",
 	"UA": "Ukraine",
 	"AE": "United Arab Emirates",
-	"GB": "United Kingdom",
 	"UM": "United States Minor Outlying Islands",
-	"US": "United States",
 	"UY": "Uruguay",
 	"UZ": "Uzbekistan",
 	"VU": "Vanuatu",
