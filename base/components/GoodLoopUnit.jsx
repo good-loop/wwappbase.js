@@ -1,5 +1,6 @@
 import React, {useEffect, useState, useCallback } from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
+import { space } from '../utils/miscutils';
 import DynImg from './DynImg';
 import Misc from './Misc';
 
@@ -148,7 +149,7 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
  * @param {?JSX} p.Editor added right after the iframe
  * @param {?boolean|string} p.useScreenshot If set, prefer a screenshot instead of the actual unit. Use a string to pick a size eg landscape
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback, useScreenshot}) => {
+const GoodLoopUnit = ({vertId, className, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback, useScreenshot}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug || !C.isProduction();
@@ -253,7 +254,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	}
 
 	return (
-		<div className="goodLoopContainer" style={dims} ref={receiveContainer} id={vertId}>
+		<div className={space("goodLoopContainer", className)} style={dims} ref={receiveContainer} id={vertId}>
 			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} aria-label="Good-Loop ad"/>
 			{Editor && <Editor />}
 		</div>
