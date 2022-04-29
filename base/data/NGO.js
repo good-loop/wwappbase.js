@@ -68,13 +68,13 @@ NGO.CATEGORY = {
 		"Wildlife Conservation", 
 		"Zoos and Aquariums"
 	],
-	"arts culture humanities":[
+	"culture":[
 		"Libraries, Historical Societies and Landmark Preservation",
 		"Museums",
 		"Performing Arts",
 		"Public Broadcasting and Media"
 	], 
-	"community development":[
+	"community":[
 		// United Ways
 		// Jewish Federations
 		"Community Foundations",

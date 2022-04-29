@@ -303,12 +303,14 @@ const EmailReset = ({}) => {
 
 
 /**
+ * @param {Object} p
  * @param onLogin called after user has successfully logged in
  * @param onRegister called after the user has successfully registered
  * @param disableVerbSwitch remove the ability to change the action verb
+ * @param {?Function|String} p.agreeToTerms Optional string or JSX element for an "I agree to the terms" checkbox
  * @param children appears between the default form inputs and submission button
  */
-const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch, className, children}) => {
+const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch, className, agreeToTerms, children}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
@@ -336,16 +338,20 @@ const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch,
 
 	// login/register
 	let status = DataStore.getValue(STATUS_PATH);
+	let noAgreement = agreeToTerms && (! person || ! person.agreeToTerms); // true if the user must tick a checkbox
 	return (
 		<form id="loginByEmail" onSubmit={doItFn} className={className}>
 			<PropControl label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
 			<PropControl label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
 			<div className='action-btns'>
 				<div className="form-group">
+					{agreeToTerms && <PropControl type="checkbox" label={agreeToTerms} path={path} prop="agreeToTerms" />}
 					{children}
-					<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
+					<Button type="submit" size="lg" color="primary" 
+						disabled={C.STATUS.isloading(status) || noAgreement}
+						title={noAgreement && "You must agree to the terms if you want to use this service."} >
 						{verbButtonLabels[verb]}
-					</Button>
+					</Button>			
 					{canRegister || disableVerbSwitch ? null : <SwitchVerb verb={verb} />}
 				</div>
 				<ResetLink verb={verb} />
