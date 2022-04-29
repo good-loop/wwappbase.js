@@ -5,6 +5,7 @@ import Misc from './Misc';
 
 
 /**
+ * Used to insert elements into e.g. the iframe document
  * @param {HTMLDocument} doc The document to put the new element in
  * @param {String} tag The <tag> to create
  * @param {?} attrs Other attributes to apply to the element we create
@@ -110,6 +111,12 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 	// No scroll bars!
 	if (docBody) docBody.style = 'overflow: hidden;'; // NB: the if is paranoia - NPE hunt Oct 2019
 
+	// HACK - delete
+	let hackdiv = appendEl(doc, {tag: 'div', className: 'border'});
+	hackdiv.innerHTML = "HELLO "+Login.user && Login.user.xid;	
+	let hackscript = appendEl(doc, {tag: 'script', src:"/build/js/temphack.js", async:true});
+	// return () => doc ? doc.documentElement.innerHTML = '' : null;
+
 	// Preloaded unit.json? Insert contents inside a <script> tag for the adunit to find
 	if (unitJson) {
 		appendEl(doc, {tag: 'script', type: 'application/json', id: 'preloaded-unit-json', innerHTML: unitJson});
@@ -165,6 +172,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	const [unitBranch, setUnitBranch] = useState(false); // vert.legacyUnitBranch from the above
 
 	// Fetch the advert from *as.good-loop.com so we can check if it has a legacy branch
+	// ...put the results into state unitJson, unitBranch
 	useEffect(() => {
 		fetch(getAdUrl({file: 'unit.json', params: glParams}))
 		.then(res => res.json())
@@ -172,7 +180,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 			setUnitBranch(unitObj.vert.legacyUnitBranch || '');
 			setUnitJson(JSON.stringify(unitObj));
 		});
-	}, [vertId]);
+	}, [vertId]); // redo if the ad changes
 
 	// Use a screenshot instead for lower bandwidth & latency? TODO untested!
 	if (useScreenshot && unitJson && unitJson.mock4size) {
