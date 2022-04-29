@@ -127,6 +127,7 @@ class MainDivBase extends Component {
 			navbarPages, navbarLabels, navbarChildren,
 			navbarExternalLinks, // TODO document props
 			navbarSpace, // TODO document props
+			navbarAccountMenuItems=null, // Used for MyData - show extra items such as settings etc alongside standard "Account" and "Logout" (only on mobile devices - that's not controlled here)
 			NavGuts, NavExpandSize="md",
 			fullWidthPages,
 			undecoratedPages, // TODO document props
@@ -212,6 +213,7 @@ class MainDivBase extends Component {
 					NavGuts={NavGuts}
 					expandSize={NavExpandSize}
 					isBeta={isBeta}
+					accountMenuItems={navbarAccountMenuItems}
 				>
 				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 				</NavBar>

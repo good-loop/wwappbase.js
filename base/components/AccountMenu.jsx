@@ -18,6 +18,7 @@ The top-right menu
 active {boolean} true if on the account page
 account {boolean} true if we want to show the account option (true by default), needed by my-loop because it doesn't have an account page but needs logout
 logoutLink {string} what page should be loaded after logout ('#dashboard' by default), to allow it to go to the dashboard in portal, but the same page in my-loop
+accountMenuItems {?DropdownItem} add optional items to the account menu - used in MyGL/MyData where we show settings etc on the account page body (those don't fit into the layout mobile)
 */
 
 const HashLinkChecker = (herf) => {
@@ -46,8 +47,8 @@ const AccountMenu = ({canRegister, customLogin, className, ...props}) => {
 	return <DesktopMenu {...props} user={user} />;
 };
 
-const DesktopMenu = ({logoutLink, user, style, className, small}) => {
-	let accountHerf = HashLinkChecker('/#account');
+const DesktopMenu = ({logoutLink, user, style, className, small, accountMenuItems, ...props}) => {
+	let accountHref = HashLinkChecker('/#account');
 	const name = small ? ((user.name && user.name.substr(0, 1)) || XId.prettyName(user.xid).substr(0,1)) : (user.name || XId.prettyName(user.xid));
 
 	return (
@@ -56,9 +57,10 @@ const DesktopMenu = ({logoutLink, user, style, className, small}) => {
 			<DropdownToggle nav caret>{name}</DropdownToggle>
 			<DropdownMenu>
 				<DropdownItem>
-					<a href={accountHerf} className="nav-link">Account</a> 
+					<a href={accountHref} className="nav-link">Account</a> 
 				</DropdownItem>
 				<DropdownItem divider />
+				{accountMenuItems ? <>{accountMenuItems}<DropdownItem divider /></> : null}
 				<DropdownItem>
 					<LogoutLink className="nav-link">Logout</LogoutLink>
 				</DropdownItem>
