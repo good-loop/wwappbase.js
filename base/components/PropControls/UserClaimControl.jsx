@@ -3,7 +3,7 @@ import { assert } from '../../utils/assert';
 import PropControl from '../PropControl';
 import Login from '../../youagain';
 import DataStore from '../../plumbing/DataStore';
-import Person, { getProfile, getClaimValue, setClaimValue, savePersons } from '../../data/Person';
+import Person, { getProfile, getClaimValue, setClaimValue, savePersons, getPVClaim } from '../../data/Person';
 import { getDataItem } from '../../plumbing/Crud';
 
 const USER_WIDGET_PATH = ['widget', 'UserClaimControl'];
@@ -14,7 +14,7 @@ const SAVE_PERSONS_DELAY = 500;
  * @param {String} key 
  * @param {String|Boolean|Number} value 
  */
- export const setPersonSetting = ({xid, key, value, callback}) => {
+ export const setPersonSetting = ({xid, key, value, consent, callback}) => {
 	assMatch(key, String, "setPersonSetting - no key");
 	assMatch(value, "String|Number|Boolean");
     // Set to logged in user if no xid specified - this check is done in UserClaimControl but needs to be here if its used in an exported context
@@ -24,7 +24,7 @@ const SAVE_PERSONS_DELAY = 500;
 	let person = pvp.value || pvp.interim;
 	assert(person, "setPersonSetting - no person", pvp);
 	console.log("setPersonSetting", xid, key, value, person);
-	setClaimValue({ person, key, value });
+	setClaimValue({ person, key, value, consent });
 	DataStore.update();
     savePersonSettings({xid, callback});
 };
@@ -105,15 +105,14 @@ const savePersonSettings = _.debounce(({xid, callback}) => {
  * @param {Object} p
  * @param {String} p.prop
  * @param {?String} p.xid
- * @param {?Function} p.saveFn normal saveFn functionality from PropControl
- * @param {?Function} p.serverSaveFn a callback for after the server has also saved the user settings
+ * @param {?Function} p.saveFn NOT used
  * @param {?String[]} p.privacyOptions If set, show a choice of privacy levels
  * @param {?String[]} p.privacyLabels labels for privacyOptions
  * @param {?String} p.privacyDefault for privacyOptions
  * @returns 
  */
-const UserClaimControl = ({prop, xid, saveFn, serverSaveFn, privacyOptions, privacyLabels, privacyDefault, ...props}) => {
-
+const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefault, saveFn, ...props}) => {
+	assert( ! saveFn) // TODO delete if not used
     if (!xid) xid = Login.getId();
     assert(xid, 'UserClaimControl if no xid is specified, must be logged in! ' + xid);
     assert(prop, 'UserClaimControl must have a prop');
@@ -125,6 +124,7 @@ const UserClaimControl = ({prop, xid, saveFn, serverSaveFn, privacyOptions, priv
 
     const controlPath = getPersonWidgetPath({xid});
 
+	// TODO is this needed? What is a specific example where it occurs?
     // Complex value handling by parsing to and from JSON
     // These PropControl types require complex data handling (add to this list if you find a PropControl type failing on UserClaimControl)
     const json_types = [
@@ -143,8 +143,7 @@ const UserClaimControl = ({prop, xid, saveFn, serverSaveFn, privacyOptions, priv
         "DataItem",
         "Money",
     ];
-
-    const json = json_types.includes(props.type);
+    const isJsonType = json_types.includes(props.type);
 
     const formatValue = (value) => {
         // Covers all 5 primitive data types - if it's not this, it must be complex
@@ -160,34 +159,43 @@ const UserClaimControl = ({prop, xid, saveFn, serverSaveFn, privacyOptions, priv
         }
     }
 
+	/** @returns parse if isJsonType */
     const parseValue = (value) => {
         // We can't implicitly tell if a prop value is meant to be JSON parsed or just a string that happens to be parseable, which could break PropControl -
         // Ideally we could tell if we need JSON parsing by type, but there's a lot of them, so for now just use 'json' prop if UserClaimControl doesn't work with the type by default
-        if (json) {
-            let obj;
+        if (isJsonType) {
             try {
-                obj = JSON.parse(value);
+                let obj = JSON.parse(value);
                 return obj;
             } catch (e) {
                 return value;
             }
-        } else return value;
+        }
+		return value;
     }
 
-    // PropControl will maintain the DataStore value JSON-friendly by default, so we only need to parse a JSON value from the saved user profile once
-    useEffect(() => {
-        DataStore.setValue(controlPath.concat(prop), parseValue(getPersonSetting({key:prop, xid})));
-    }, [prop, xid]);
+	// What is the claim?
+	let pvClaim = getPVClaim({key:prop, xid});
+	let storedValue = Claim.value(pvClaim);
+	const parsedValue = parseValue(storedValue); // NB no harm doing this repeatedly, and useEffect was causing an issue, April 2022
+	DataStore.setValue(controlPath.concat(prop), parsedValue, false);
 
-    const fullSaveFn = ({path, prop, value, event}) => {
-        if (!value) value = DataStore.getValue(path.concat(prop));
-        setPersonSetting({xid, key:prop, value:formatValue(value), callback:serverSaveFn});
-        saveFn && saveFn({path, prop, value, event});
-    }
+	// should save to server (done in setPersonSettings) be automatic, or only when a submit button is pressed??	
+    const fullSaveFn = ({event}) => {
+		// NB: Can be called by either the value or consent part of the control.
+        let newClaimValue = DataStore.getValue(controlPath.concat(prop));
+		let saveValue = formatValue(newClaimValue);
+		let consent = null;
+		if (privacyOptions) consent = DataStore.getValue(controlPath.concat(prop+"-privacy"));
+		// privacy
+        setPersonSetting({xid, key:prop, value:saveValue, consent});
+    };
 
     return <>
 		<PropControl path={controlPath} prop={prop} saveFn={fullSaveFn} {...props}/>
-		{privacyOptions && <PropControl path={controlPath} prop={prop+"-privacy"} type="select" label="Usage Level" options={privacyOptions} labels={privacyLabels} dflt={privacyDefault} />}
+		{privacyOptions && <PropControl path={controlPath} prop={prop+"-privacy"} type="select" label="Usage Level" 
+			saveFn={fullSaveFn}
+			options={privacyOptions} labels={privacyLabels} dflt={privacyDefault} />}
 	</>;
 }
 

@@ -18,7 +18,7 @@ import { assert, assMatch } from '../utils/assert';
 import DataClass, {getType, getId, nonce} from './DataClass';
 import DataStore, { getDataPath } from '../plumbing/DataStore';
 import Link from '../data/Link';
-import Claim from '../data/Claim';
+import Claim, { DEFAULT_CONSENT } from '../data/Claim';
 import XId from './XId';
 import md5 from 'md5';
 import PromiseValue from 'promise-value';
@@ -570,15 +570,16 @@ const removeConsent = ({persons, consent}) => {
  * @param {Object} p
  * @param {!Person[]} p.persons
  * @param {!String} p.key
+ * @param {?String} p.consent e.g. "public"
  */
-const setClaimValue = ({person, persons, key, value}) => {
+const setClaimValue = ({person, persons, key, value, consent}) => {
 	if (person) persons = [person];
 	assert(persons, "Person.js setClaimValue() - No person or persons input! key: "+key);
 	if ( ! persons.length) console.warn("setClaimValue - no persons :( -- Check profile load is working");
 	console.log("setClaimValue "+key+" = "+value, persons.map(p => p.id));
 	let from = Login.getId() || XId.ANON;
-	let consent = ['dflt']; // the "what is my current default?" setting
-	let claim = new Claim({key,value,from,consent});	
+	let consents = [consent || DEFAULT_CONSENT]; // the "what is my current default?" setting
+	let claim = new Claim({key,value,from,consent:consents});	
 	persons.map(peep => {
 		addClaim(peep, claim);
 	});
