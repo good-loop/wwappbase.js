@@ -3,8 +3,10 @@ import { assert, assMatch } from '../utils/assert';
 import { is } from '../utils/miscutils';
 import DataClass from './DataClass';
 import XId from './XId';
+import PromiseValue from 'promise-value';
 
-const DEFAULT_CONSENT = "dflt";
+export const DEFAULT_CONSENT = "dflt";
+export const OTHER_CONSENT = "other";
 
 /** impact utils */
 class Claim extends DataClass {
@@ -12,7 +14,18 @@ class Claim extends DataClass {
 	 * @type {!String}
 	 */
 	k;
+	/**
+	 * @type {!String} value!
+	 */
 	v;
+	/**
+	 * @type {?Number} long/int value if integer numeric
+	 */
+	n;
+	/**
+	* @type {?Number} double value if floating-point numeric
+	*/
+	x;
 	/** @type {TimeString} */
 	t = new Date().toISOString();
 	/** @type {XId[]} */
@@ -33,16 +46,16 @@ class Claim extends DataClass {
 	 * @param {String[]|boolean} consent - Same as c!
 	 * 
 	*/
-	constructor({key, value, from, c, consent}) {
+	constructor({ key, value, from, c, consent }) {
 		super(); // no base passed into super 'cos its handled below
 		assMatch(value, "String|Number|Boolean"); // Only primitive values allowed
 		// convert a single XId to an array?
-		if ( ! Array.isArray(from)) from = [from];
+		if (!Array.isArray(from)) from = [from];
 		// Converting from internally held true/false to something
 		// That the back-end can understand
-		if ( ! is(c)) c = consent;
-		if ( ! is(c)) c = [DEFAULT_CONSENT];
-		if ( typeof c === 'boolean' ) c = c ? ['public'] : ['private']
+		if (!is(c)) c = consent;
+		if (!is(c)) c = [DEFAULT_CONSENT];
+		if (typeof c === 'boolean') c = c ? ['public'] : ['private']
 
 		let base = {
 			c,
@@ -52,19 +65,53 @@ class Claim extends DataClass {
 		};
 		Object.assign(this, base);
 		assMatch(from, 'String[]');
-		assMatch(key, String); 
+		assMatch(key, String);
 		// NB: kv, o are backend fields made by the backend for internal (ES) use
 	};
 } // ./Claim
 DataClass.register(Claim, "Claim");
 export default Claim;
 
+/**
+ * @param {?Claim|PromiseValue} claim 
+ * @returns {?Number|?String} value if set or if there is an interim
+ */
+Claim.value = claim => {
+	if (PromiseValue.isa(claim)) {
+		claim = claim.value || claim.interim;
+	}
+	if ( ! claim) return null;
+	return claim.n || claim.x || claim.v;
+};
+
+/**
+ * standard consent settings - in roughly the order we prefer them.
+ * See Consents.java
+ */
+const STANDARD_CONSENT_IDS = ["public", "careful", "marketing", "controller", "personalize_ads", "mailing_list", "private", DEFAULT_CONSENT];
+/**
+ * Convenience to simplify things. The consent model is complex - it allows for multiple consents. Often you just want the standard ID for one consent.
+ * @param {?Claim} claim 
+ * @returns {?String} e.g. DEFAULT_CONSENT | "public" | "private" | OTHER_CONSENT
+ */
+Claim.consent = claim => {
+	if ( ! claim) return null;
+	if ( ! claim.c || claim.c.length===0) return DEFAULT_CONSENT;
+	// pick the best
+	for(let i=0; i<STANDARD_CONSENT_IDS.length; i++) {
+		if (claim.c.includes(STANDARD_CONSENT_IDS[i])) {
+			return STANDARD_CONSENT_IDS[i];
+		}
+	}
+	return OTHER_CONSENT;
+};
+
 
 /**
  * ??dubious use cases
  */
 Claim.getClaims = person => {
-	if ( ! person ) return {};
+	if (!person) return {};
 	Person.assIsa(person, "Profiler.js getClaims");
 	const claims = person.claims;
 	return claims || {};

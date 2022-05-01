@@ -45,9 +45,9 @@ export const getPersonWidgetPath = ({xid, prop}) => {
 }
 
 /**
-* Get a claim value from profiler
+* Get a claim value from profiler. See also: the more sophisticated getPVClaim()
 * @param {String} key 
-* @returns 
+* @returns {String|Number} the claim value. Warning: This may be an interim blank which can then change on data load
 */
 export const getPersonSetting = ({key, xid}) => {
    if (!xid) xid = Login.getId();
@@ -57,6 +57,7 @@ export const getPersonSetting = ({key, xid}) => {
    return getClaimValue({person, key});
 }
 
+// FIXME buggy
 export const getEmail = () => {
     let person = getProfile().value;
 	let email = Person.getEmail(person);
@@ -101,13 +102,17 @@ const savePersonSettings = _.debounce(({xid, callback}) => {
  * 
  * WARNING: user claims are only known to work on string, boolean and number values.
  * If you find a complex PropControl failing with UserClaimControl, add to the json_types list
- * @param {String} prop
- * @param {?String} xid
- * @param {?Function} saveFn normal saveFn functionality from PropControl
- * @param {?Function} serverSaveFn a callback for after the server has also saved the user settings
+ * @param {Object} p
+ * @param {String} p.prop
+ * @param {?String} p.xid
+ * @param {?Function} p.saveFn normal saveFn functionality from PropControl
+ * @param {?Function} p.serverSaveFn a callback for after the server has also saved the user settings
+ * @param {?String[]} p.privacyOptions If set, show a choice of privacy levels
+ * @param {?String[]} p.privacyLabels labels for privacyOptions
+ * @param {?String} p.privacyDefault for privacyOptions
  * @returns 
  */
-const UserClaimControl = ({prop, xid, saveFn, serverSaveFn, ...props}) => {
+const UserClaimControl = ({prop, xid, saveFn, serverSaveFn, privacyOptions, privacyLabels, privacyDefault, ...props}) => {
 
     if (!xid) xid = Login.getId();
     assert(xid, 'UserClaimControl if no xid is specified, must be logged in! ' + xid);
@@ -180,7 +185,10 @@ const UserClaimControl = ({prop, xid, saveFn, serverSaveFn, ...props}) => {
         saveFn && saveFn({path, prop, value, event});
     }
 
-    return <PropControl path={controlPath} prop={prop} saveFn={fullSaveFn} {...props}/>;
+    return <>
+		<PropControl path={controlPath} prop={prop} saveFn={fullSaveFn} {...props}/>
+		{privacyOptions && <PropControl path={controlPath} prop={prop+"-privacy"} type="select" label="Usage Level" options={privacyOptions} labels={privacyLabels} dflt={privacyDefault} />}
+	</>;
 }
 
 export default UserClaimControl;
