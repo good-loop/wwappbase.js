@@ -46,14 +46,15 @@ const usePath = () => ""+window.location;
  * 
  * @param {?String[]} newpath Can be null for no-change
  * @param {?Object} newparams Can be null for no-change
- * @param {?Boolean} returnOnly If true, do not modify the hash -- just return what the new value would be (starting with #)
+ * @param {?boolean} returnOnly If true, do not modify the hash -- just return what the new value would be (starting with #)
+ * @param {?boolean} clearParams - If true, remove all existing url parameters
  */
-const modifyPage = (newpath, newparams, returnOnly) => {
+const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
 	if (DataStore.localUrl !== '/') {
 		return modifyHash(newpath, newparams, returnOnly);
 	}	
 	const { path, params } = DataStore.getValue('location');
-	let allparams = (params || {});
+	let allparams = clearParams? {} : (params || {});
 	allparams = Object.assign(allparams, newparams);
 	if ( ! newpath) newpath = path || [];
 	let hash = encURI(newpath.join('/'));

@@ -12,6 +12,15 @@ import {isMobile} from '../utils/miscutils.ts';
 import Misc from './Misc';
 import { space } from '../utils/miscutils';
 import XId from '../data/XId';
+import { modifyPage } from '../plumbing/glrouter';
+
+
+// HACK accommodate # v / routing
+const hashLinkChecker = (href) => {
+	let noHashHostname = ['my.good-loop.com', 'testmy.good-loop.com', 'localmy.good-loop.com'];
+	if (noHashHostname.includes(window.location.hostname)) return href.replace('#', '');
+	else return href;
+}
 
 /**
 The top-right menu
@@ -20,14 +29,7 @@ account {boolean} true if we want to show the account option (true by default), 
 logoutLink {string} what page should be loaded after logout ('#dashboard' by default), to allow it to go to the dashboard in portal, but the same page in my-loop
 accountMenuItems {?DropdownItem} add optional items to the account menu - used in MyGL/MyData where we show settings etc on the account page body (those don't fit into the layout mobile)
 */
-
-const HashLinkChecker = (herf) => {
-	let noHashHostname = ['my.good-loop.com', 'testmy.good-loop.com', 'localmy.good-loop.com'];
-	if (noHashHostname.includes(window.location.hostname)) return herf.replace('#', '');
-	else return herf;
-}
-
-const AccountMenu = ({canRegister, customLogin, className, ...props}) => {
+const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, className, logoutLink, style, small, ...props}) => {
 	let ChosenLoginLink = customLogin ? customLogin : <LoginLink>Sign in</LoginLink> ;
 
 	// TODO see navbar dropdown
@@ -42,13 +44,7 @@ const AccountMenu = ({canRegister, customLogin, className, ...props}) => {
 	}
 
 	let user = Login.getUser();
-
-
-	return <DesktopMenu {...props} user={user} />;
-};
-
-const DesktopMenu = ({logoutLink, user, style, className, small, accountMenuItems, ...props}) => {
-	let accountHref = HashLinkChecker('/#account');
+	let accountHref = modifyPage(["account"], {}, true, true);
 	const name = small ? ((user.name && user.name.substr(0, 1)) || XId.prettyName(user.xid).substr(0,1)) : (user.name || XId.prettyName(user.xid));
 
 	return (
@@ -57,10 +53,13 @@ const DesktopMenu = ({logoutLink, user, style, className, small, accountMenuItem
 			<DropdownToggle nav caret>{name}</DropdownToggle>
 			<DropdownMenu>
 				<DropdownItem>
-					<a href={accountHref} className="nav-link">Account</a> 
+					<C.A href={accountHref} className="nav-link">Account</C.A> 
 				</DropdownItem>
 				<DropdownItem divider />
-				{accountMenuItems ? <>{accountMenuItems}<DropdownItem divider /></> : null}
+				{accountMenuItems && <>
+					{accountMenuItems}
+					<DropdownItem divider />
+				</>}
 				<DropdownItem>
 					<LogoutLink className="nav-link">Logout</LogoutLink>
 				</DropdownItem>

@@ -349,7 +349,7 @@ const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch,
 					{children}
 					<Button type="submit" size="lg" color="primary" 
 						disabled={C.STATUS.isloading(status) || noAgreement}
-						title={noAgreement && "You must agree to the terms if you want to use this service."} >
+						title={noAgreement? "You must agree to the terms if you want to use this service." : ""} >
 						{verbButtonLabels[verb]}
 					</Button>			
 					{canRegister || disableVerbSwitch ? null : <SwitchVerb verb={verb} />}
