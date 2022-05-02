@@ -7,7 +7,7 @@ import { space } from '../utils/miscutils';
  * @param {string} title This will be the tab label
  */
 const Tab = ({tabId, title, children}) => {
-	return <TabPane tabId={tabId || title} title={title}>
+	return <TabPane tabId={tabId || title}>
 		{children}
 	</TabPane>
 };
