@@ -96,6 +96,29 @@ const savePersonSettings = _.debounce(({xid, callback}) => {
 	});
 }, SAVE_PERSONS_DELAY);
 
+export const causesMap = { // See NGO.CATEGORY
+    "culture": "Arts and Culture",
+    "education": "Education",
+    "health": "Health",
+    "community": "Community Development",
+    "environment": "Environment",
+    "civil rights": "Civil Rights",
+    "animals": "Animals",
+    "research": "Science and Research",
+    "international": "International Development",
+}
+
+export const adstypeMap = { // are there IAB labels for these??
+    "fashion": "Fashion",
+    "food": "Food and Drink",
+    "sports": "Sports",
+    "technology": "Technology",
+    "games": "Gaming",
+    "travel": "Travel",
+    "healthy": "Healthy Living",
+    "business": "Business",
+}
+
 /**
  * A wrapper for PropControl that saves to a user's profile instead of DataStore.
  * (It does save to DataStore internally, the path of which can be found with getPersonWidgetPath)
@@ -126,11 +149,11 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
 
     // HACK - build options and labels before json type checkboxes, not in PropControl
     if (prop === 'causes') {
-        props.options = ["culture", "education", "health", "community", "environment", "civil rights", "animals", "research", "international"]; // See NGO.CATEGORY
-        props.labels = ["Arts and Culture", "Education", "Health", "Community Development", "Environment", "Civil Rights", "Animals", "Science and Research", "International Development"];
+        props.options = Object.keys(causesMap);
+        props.labels = Object.values(causesMap);
     } else if (prop === 'adstype') {
-        props.options = ["fashion", "food", "sports", "technology", "games", "travel", "health", "business"]; // are there IAB labels for these??
-        props.labels = ["Fashion", "Food and Drink", "Sports", "Technology", "Gaming", "Travel", "Healthy Living", "Business"];
+        props.options = Object.keys(adstypeMap);
+        props.labels = Object.values(adstypeMap);
     }
 
 	// TODO is this needed? What is a specific example where it occurs?

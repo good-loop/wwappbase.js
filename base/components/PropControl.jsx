@@ -505,14 +505,6 @@ const PropControl2 = (props) => {
 		return <PropControlSelect  {...props2} />
 	}
 
-	if (type === 'privacylevel') {
-		let props2 = { onChange, value, ...props };
-		
-		props2.options = ["0", "1", "2"];
-		props2.labels = ["Private Data", "Default Privacy", "Public Data"];
-		return <PropControlSelect  {...props2} />
-	}
-
 	if (type === 'color') {
 		return <PropControlColor type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;
 	}
