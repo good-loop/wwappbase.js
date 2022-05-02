@@ -65,8 +65,8 @@ const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn, toolti
 				className="form-check-input"
 				name={prop} value={option}
 				checked={ !! isChecked(option)}
-				onChange={onChange} />
-			<Label check>
+				onChange={onChange} id={option} />
+			<Label check for={option}>
 				{labelFn(option)}
 			</Label>
 		</FormGroup>
