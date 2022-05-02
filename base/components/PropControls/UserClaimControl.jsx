@@ -124,6 +124,15 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
 
     const controlPath = getPersonWidgetPath({xid});
 
+    // HACK - build options and labels before json type checkboxes, not in PropControl
+    if (prop === 'causes') {
+        props.options = ["culture", "education", "health", "community", "environment", "civil rights", "animals", "research", "international"]; // See NGO.CATEGORY
+        props.labels = ["Arts and Culture", "Education", "Health", "Community Development", "Environment", "Civil Rights", "Animals", "Science and Research", "International Development"];
+    } else if (prop === 'adstype') {
+        props.options = ["fashion", "food", "sports", "technology", "games", "travel", "health", "business"]; // are there IAB labels for these??
+        props.labels = ["Fashion", "Food and Drink", "Sports", "Technology", "Gaming", "Travel", "Healthy Living", "Business"];
+    }
+
 	// TODO is this needed? What is a specific example where it occurs?
     // Complex value handling by parsing to and from JSON
     // These PropControl types require complex data handling (add to this list if you find a PropControl type failing on UserClaimControl)

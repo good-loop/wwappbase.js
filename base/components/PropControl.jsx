@@ -1053,9 +1053,11 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 PropControl.KControlType = new Enum(
 	"textarea html text search select radio password email color checkbox range"
 	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
-	+ " yesNo location date year number arraytext keyset entryset address postcode json country gender privacylevel"
+	+ " yesNo location date year number arraytext keyset entryset address postcode json"
 	// some Good-Loop data-classes
-	+ " XId keyvalue");
+	+ " XId keyvalue"
+	// My Data 
+	+ " country gender privacylevel");
 
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
 
