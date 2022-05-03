@@ -84,6 +84,7 @@ const init = () => {
 	homelink: {String} - Relative url for the home-page. Defaults to "/"
 	pageForPath: {String:JSX}
 	navbarPages: String[]|() => String[]
+	navbarLabels: ?String[]|Function|Object 
 	navbarChildren: {?JSX|Function -> JSX} Warning: JSX passed in does not get refreshed on update. If you need a refresh - pass in a function `() => <JSX/>`.
 	navbarExternalLinks: {?Object}
 	navbarDarkTheme: {?boolean}
@@ -127,6 +128,7 @@ class MainDivBase extends Component {
 			navbarPages, navbarLabels, navbarChildren,
 			navbarExternalLinks, // TODO document props
 			navbarSpace, // TODO document props
+			navbarAccountMenuItems, // Used for MyData - show extra items such as settings etc alongside standard "Account" and "Logout" (only on mobile devices - that's not controlled here)
 			NavGuts, NavExpandSize="md",
 			fullWidthPages,
 			undecoratedPages, // TODO document props
@@ -157,7 +159,7 @@ class MainDivBase extends Component {
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
 				// HACK allow my-loop render for now
-				window.location.hostname.endsWith('my.good-loop.com') ? (
+				window.location.hostname.endsWith('my.good-loop.com') || window.location.hostname.endsWith('mydata.good-loop.com') ? (
 					setTimeout(() => modifyPath([defaultPage]), 1)
 				) : (
 					setTimeout(() => modifyHash([defaultPage]), 1)
@@ -212,6 +214,7 @@ class MainDivBase extends Component {
 					NavGuts={NavGuts}
 					expandSize={NavExpandSize}
 					isBeta={isBeta}
+					accountMenuItems={navbarAccountMenuItems}
 				>
 				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 				</NavBar>

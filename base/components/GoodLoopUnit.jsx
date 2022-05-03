@@ -1,10 +1,12 @@
 import React, {useEffect, useState, useCallback } from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
+import { space } from '../utils/miscutils';
 import DynImg from './DynImg';
 import Misc from './Misc';
 
 
 /**
+ * Used to insert elements into e.g. the iframe document
  * @param {HTMLDocument} doc The document to put the new element in
  * @param {String} tag The <tag> to create
  * @param {?} attrs Other attributes to apply to the element we create
@@ -110,6 +112,12 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 	// No scroll bars!
 	if (docBody) docBody.style = 'overflow: hidden;'; // NB: the if is paranoia - NPE hunt Oct 2019
 
+	// HACK - delete
+	let hackdiv = appendEl(doc, {tag: 'div', className: 'border'});
+	hackdiv.innerHTML = "HELLO "+Login.user && Login.user.xid;	
+	let hackscript = appendEl(doc, {tag: 'script', src:"/build/js/temphack.js", async:true});
+	// return () => doc ? doc.documentElement.innerHTML = '' : null;
+
 	// Preloaded unit.json? Insert contents inside a <script> tag for the adunit to find
 	if (unitJson) {
 		appendEl(doc, {tag: 'script', type: 'application/json', id: 'preloaded-unit-json', innerHTML: unitJson});
@@ -148,7 +156,7 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
  * @param {?JSX} p.Editor added right after the iframe
  * @param {?boolean|string} p.useScreenshot If set, prefer a screenshot instead of the actual unit. Use a string to pick a size eg landscape
  */
-const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback, useScreenshot}) => {
+const GoodLoopUnit = ({vertId, className, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback, useScreenshot}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug || !C.isProduction();
@@ -165,6 +173,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	const [unitBranch, setUnitBranch] = useState(false); // vert.legacyUnitBranch from the above
 
 	// Fetch the advert from *as.good-loop.com so we can check if it has a legacy branch
+	// ...put the results into state unitJson, unitBranch
 	useEffect(() => {
 		fetch(getAdUrl({file: 'unit.json', params: glParams}))
 		.then(res => res.json())
@@ -172,7 +181,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 			setUnitBranch(unitObj.vert.legacyUnitBranch || '');
 			setUnitJson(JSON.stringify(unitObj));
 		});
-	}, [vertId]);
+	}, [vertId]); // redo if the ad changes
 
 	// Use a screenshot instead for lower bandwidth & latency? TODO untested!
 	if (useScreenshot && unitJson && unitJson.mock4size) {
@@ -253,7 +262,7 @@ const GoodLoopUnit = ({vertId, css, size = 'landscape', status, play = 'onvisibl
 	}
 
 	return (
-		<div className="goodLoopContainer" style={dims} ref={receiveContainer} id={vertId}>
+		<div className={space("goodLoopContainer", className)} style={dims} ref={receiveContainer} id={vertId}>
 			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} aria-label="Good-Loop ad"/>
 			{Editor && <Editor />}
 		</div>

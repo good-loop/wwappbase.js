@@ -28,6 +28,8 @@ import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
 import { nonce } from '../data/DataClass';
 
+import { countryListAlpha2 } from '../data/CountryRegion';
+
 /**
  * Set the value and the modified flag in DataStore
  * @param {!String[]} proppath
@@ -83,7 +85,7 @@ const dateValidator = (val, rawValue) => {
 };
 
 
-const Help = ({children, icon = '🛈', color = 'primary', className, ...props}) => {
+export const Help = ({children, icon = 'ⓘ', color = 'primary', className, ...props}) => {
 	const [id] = useState(() => `help-${nonce()}`); // Prefixed because HTML ID must begin with a letter
 	const [open, setOpen] = useState(false);
 	const toggle = () => setOpen(!open);
@@ -137,7 +139,7 @@ or if extras like help and error text are wanted.
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = ({className, ...props}) => {
-	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
+	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, labelStyle, ...stuff } = props;
 	if ( ! path) {	// default to using path = the url
 		path = ['location', 'params'];
 		props = Object.assign({ path }, props);
@@ -253,7 +255,7 @@ const PropControl = ({className, ...props}) => {
 	return (
 		<FormGroup check={isCheck} className={space(type, className, inline && ! isCheck && 'form-inline', error&&'has-error')} size={size} >
 			{(label || tooltip) && !isCheck &&
-				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
+				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name} style={labelStyle}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
 			{help && !inline && !isCheck && <Help>{help}</Help>}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
@@ -486,8 +488,20 @@ const PropControl2 = (props) => {
 	// HACK just a few countries. TODO load in an iso list + autocomplete
 	if (type === 'country') {
 		let props2 = { onChange, value, ...props };
-		props2.options = [null, 'GB', 'US', 'AU', 'DE'];
-		props2.labels = ['', 'United Kingdom (UK)', 'United States of America (USA)', 'Australia', 'Germany'];
+		const countryMap = new Map(Object.entries(countryListAlpha2));
+		let countryOptions = Array.from(countryMap.keys());
+		let countryLabels = Array.from(countryMap.values());
+		
+		props2.options = countryOptions;
+		props2.labels = countryLabels;
+		return <PropControlSelect  {...props2} />
+	}
+
+	if (type === 'gender') {
+		let props2 = { onChange, value, ...props };
+		
+		props2.options = ["male", "female", "others", "nottosay"];
+		props2.labels = ["Male", "Female", "Others", "Preferred not to say"];
 		return <PropControlSelect  {...props2} />
 	}
 
@@ -870,6 +884,19 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'Key', v
 
 
 const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }) => {
+	// Roll back to native editor on 27/04/2022
+	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
+	// I don't think it will happen again, but it's worth keeping in mind.
+	if ( ! is(rawValue) && storeValue) {
+		rawValue = Misc.isoDate(storeValue);
+	}
+
+	return (<div>
+		<FormControl type="date" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
+	</div>);
+};
+
+const PropControlDateOld = ({ prop, storeValue, rawValue, onChange, ...otherStuff }) => {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
 	// NB: parsing incomplete dates causes NaNs
 	let datePreview = null;
@@ -1018,9 +1045,11 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 PropControl.KControlType = new Enum(
 	"textarea html text search select radio password email color checkbox range"
 	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
-	+ " yesNo location date year number arraytext keyset entryset address postcode json country"
+	+ " yesNo location date year number arraytext keyset entryset address postcode json"
 	// some Good-Loop data-classes
-	+ " XId keyvalue");
+	+ " XId keyvalue"
+	// My Data 
+	+ " country gender privacylevel");
 
 // for search -- an x icon?? https://stackoverflow.com/questions/45696685/search-input-with-an-icon-bootstrap-4
 
