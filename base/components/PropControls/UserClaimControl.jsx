@@ -3,6 +3,7 @@ import { assert } from '../../utils/assert';
 import PropControl from '../PropControl';
 import Login from '../../youagain';
 import DataStore from '../../plumbing/DataStore';
+import Claim from '../../data/Claim';
 import Person, { getProfile, getClaimValue, setClaimValue, savePersons, getPVClaim } from '../../data/Person';
 import { getDataItem } from '../../plumbing/Crud';
 
@@ -209,8 +210,11 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
 	// What is the claim?
 	let pvClaim = getPVClaim({key:prop, xid});
 	let storedValue = Claim.value(pvClaim);
+    let claim = pvClaim && pvClaim.value;
 	const parsedValue = parseValue(storedValue); // NB no harm doing this repeatedly, and useEffect was causing an issue, April 2022
 	DataStore.setValue(controlPath.concat(prop), parsedValue, false);
+    claim && DataStore.setValue(controlPath.concat(prop+"-privacy"), Claim.consent(claim), false);
+    console.log("CLAIM", claim);
 
 	// should save to server (done in setPersonSettings) be automatic, or only when a submit button is pressed??	
     const fullSaveFn = ({event}) => {
@@ -219,15 +223,19 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
 		let saveValue = formatValue(newClaimValue);
 		let consent = null;
 		if (privacyOptions) consent = DataStore.getValue(controlPath.concat(prop+"-privacy"));
+        if (consent === "dflt") consent = privacyDefault;
+        console.log("PRIVACY: " + consent);
 		// privacy
         setPersonSetting({xid, key:prop, value:saveValue, consent});
     };
 
+    // DO NOT USE dlft FOR PRIVACY DEFAULT - it triggers the saveFn, which erroneously overrides the user's previous privacy setting
     return <>
 		<PropControl path={controlPath} prop={prop} saveFn={fullSaveFn} {...props}/>
-		{privacyOptions && <PropControl path={controlPath} prop={prop+"-privacy"} type="select" label="Usage Level" 
+		{privacyOptions && (storedValue ? <PropControl path={controlPath} prop={prop+"-privacy"} type="select" label="Usage Level" 
 			saveFn={fullSaveFn}
-			options={privacyOptions} labels={privacyLabels} dflt={privacyDefault} />}
+			options={privacyOptions} labels={privacyLabels} />
+        : <p>Once you've added your data, you will be able to change your privacy settings</p>)}
 	</>;
 }
 
