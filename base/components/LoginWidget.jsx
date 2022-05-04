@@ -309,8 +309,9 @@ const EmailReset = ({}) => {
  * @param disableVerbSwitch remove the ability to change the action verb
  * @param {?Function|String} p.agreeToTerms Optional string or JSX element for an "I agree to the terms" checkbox
  * @param children appears between the default form inputs and submission button
+ * @param buttonText optional button text which can replace the default (default: verb used)
  */
-const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch, className, agreeToTerms, children}) => {
+const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch, className, agreeToTerms, children, buttonText}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
@@ -350,7 +351,7 @@ const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch,
 					<Button type="submit" size="lg" color="primary" 
 						disabled={C.STATUS.isloading(status) || noAgreement}
 						title={noAgreement? "You must agree to the terms if you want to use this service." : ""} >
-						{verbButtonLabels[verb]}
+						{buttonText || verbButtonLabels[verb]}
 					</Button>			
 					{canRegister || disableVerbSwitch ? null : <SwitchVerb verb={verb} />}
 				</div>
