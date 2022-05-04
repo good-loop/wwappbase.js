@@ -133,9 +133,10 @@ export const adstypeMap = { // are there IAB labels for these??
  * @param {?String[]} p.privacyOptions If set, show a choice of privacy levels
  * @param {?String[]} p.privacyLabels labels for privacyOptions
  * @param {?String} p.privacyDefault for privacyOptions
+ * @param {?Boolean} p.privacyOnly only show privacy controls
  * @returns 
  */
-const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefault, saveFn, ...props}) => {
+const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefault, privacyOnly, saveFn, ...props}) => {
 	assert( ! saveFn) // TODO delete if not used
     if (!xid) xid = Login.getId();
     assert(xid, 'UserClaimControl if no xid is specified, must be logged in! ' + xid);
@@ -231,7 +232,7 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
 
     // DO NOT USE dlft FOR PRIVACY DEFAULT - it triggers the saveFn, which erroneously overrides the user's previous privacy setting
     return <>
-		<PropControl path={controlPath} prop={prop} saveFn={fullSaveFn} {...props}/>
+		{!privacyOnly && <PropControl path={controlPath} prop={prop} saveFn={fullSaveFn} {...props}/>}
 		{privacyOptions && (storedValue ? <PropControl path={controlPath} prop={prop+"-privacy"} type="select" label="Usage Level" 
 			saveFn={fullSaveFn}
 			options={privacyOptions} labels={privacyLabels} />
