@@ -232,11 +232,11 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
 
     // DO NOT USE dlft FOR PRIVACY DEFAULT - it triggers the saveFn, which erroneously overrides the user's previous privacy setting
     return <>
-		{!privacyOnly && <PropControl path={controlPath} prop={prop} saveFn={fullSaveFn} {...props}/>}
-		{privacyOptions && (storedValue ? <PropControl path={controlPath} prop={prop+"-privacy"} type="select" label="Usage Level" 
+		{ ! privacyOnly && <PropControl path={controlPath} prop={prop} saveFn={fullSaveFn} {...props}/>}
+		{privacyOptions && <PropControl path={controlPath} prop={prop+"-privacy"} type="select" label="Usage Level" 
 			saveFn={fullSaveFn}
-			options={privacyOptions} labels={privacyLabels} />
-        : <p>Once you've added your data, you will be able to change your privacy settings</p>)}
+			options={privacyOptions} labels={privacyLabels} />		
+        /* : <p>Once you've added your data, you will be able to change your privacy settings</p>) May 2022: off because an erratic bug was seen with this with email */}
 	</>;
 }
 

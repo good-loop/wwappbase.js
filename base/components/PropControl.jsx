@@ -31,7 +31,8 @@ import { nonce } from '../data/DataClass';
 import { countryListAlpha2 } from '../data/CountryRegion';
 
 /**
- * Set the value and the modified flag in DataStore
+ * Set the value and the modified flag in DataStore.
+ * Convenience for DataStore.setModified() + DataStore.setValue()
  * @param {!String[]} proppath
  * @param value
  * @returns value
@@ -385,8 +386,9 @@ const PropControl2 = (props) => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const isOn = e && e.target && e.target.checked;
 			const newVal = isOn ? onValue : offValue;
-			DSsetValue(proppath, newVal);
-			if (saveFn) saveFn({ event: e, path, prop, value:newVal });
+			DSsetValue(proppath, newVal); // Debugging no-visual-update bug May 2022 on testmy.gl: tried update=true here -- no change :(
+			setTimeout(() => DataStore.update(), 1); // HACK for no-visual-update bug May 2022 seen on testmy.gl
+			if (saveFn) saveFn({ event: e, path, prop, value:newVal });			
 		};
 
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;

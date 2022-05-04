@@ -45,8 +45,9 @@ const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFro
 			newList = listValue.concat(val);
 		}
 		let newList2 = modelValueFromInput? modelValueFromInput(newList, type, e) : newList;
-		DSsetValue(proppath, newList2);
-		if (saveFn) saveFn({ event: e, path, prop, value: newList2});
+		DSsetValue(proppath, newList2); // Debugging no-visual-update bug Apr 2022: tried update=true here -- no change :(
+		setTimeout(() => DataStore.update(), 1); // HACK for no-visual-update bug May 2022 on testmy.gl
+		if (saveFn) saveFn({ event: e, path, prop, value: newList2});		
 	};
 	const isChecked = x => listValue.includes(x);
 	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn, tooltipFn}} />;
@@ -61,7 +62,7 @@ registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes});
 const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn, tooltipFn}) => options.map(option => 
 	(
 		<FormGroup check inline={inline} key={option} title={tooltipFn && tooltipFn(option)}>
-			<Input type='checkbox' key={`option_${option}`}
+			<Input type='checkbox'
 				className="form-check-input"
 				name={prop} value={option}
 				checked={ !! isChecked(option)}
