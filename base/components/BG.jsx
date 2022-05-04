@@ -22,8 +22,9 @@ import ImageObject from '../data/ImageObject';
  * @param {?boolean} p.fitToImage arrange so that the container sizes itself to the image size, while remaining in the background
  * @param {?boolean} p.center center the image
  * @param {?number} p.ratio percentage ratio height:width, if set will maintain size ratio from width
+ * @param {?string} p.minHeight min height of the BG
  */
-const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, bottom=0, fullscreen, opacity, style, className, fitToImage, center, ratio}) => {
+const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, bottom=0, fullscreen, opacity, style, className, fitToImage, center, ratio, minHeight}) => {
 	if (size==='fit') size = "100% 100%";
 	if (image) {
 		src = typeof(image)==='string'? image : image.url;
@@ -39,7 +40,8 @@ const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, 
 							backgroundSize: size, 
 							backgroundPosition:center ? 'center' : null,
 							position: image&&'relative', ...style,
-							paddingBottom: ratio ? `${ratio}%` : null
+							paddingBottom: ratio ? `${ratio}%` : null,
+							minHeight: minHeight ? minHeight : null,
 						}}
 						className={className}>
 				{children}
