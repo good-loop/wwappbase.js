@@ -1,5 +1,5 @@
-import React from 'react';
-import { Nav, NavItem, UncontrolledDropdown, DropdownToggle, DropdownMenu, DropdownItem, NavLink } from 'reactstrap';
+import React, { useState } from 'react';
+import { Nav, NavItem, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, NavLink } from 'reactstrap';
 import Login from '../youagain';
 
 import C from '../CBase';
@@ -30,6 +30,8 @@ logoutLink {string} what page should be loaded after logout ('#dashboard' by def
 accountMenuItems {?DropdownItem} add optional items to the account menu - used in MyGL/MyData where we show settings etc on the account page body (those don't fit into the layout mobile)
 */
 const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, className, logoutLink, style, small, ...props}) => {
+	const [open, setOpen] = useState(false);
+	const onClickFn = () => setOpen(!open); 
 	let ChosenLoginLink = customLogin ? customLogin : <LoginLink>Sign in</LoginLink> ;
 
 	// TODO see navbar dropdown
@@ -49,22 +51,26 @@ const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, classN
 
 	return (
 	<Nav navbar style={style} className={space("account-menu", className)}>
-		<UncontrolledDropdown nav inNavbar>
+		<Dropdown isOpen={open} toggle={() => setOpen(!open)} nav inNavbar>
 			<DropdownToggle nav caret>{name}</DropdownToggle>
 			<DropdownMenu>
 				<DropdownItem>
-					<C.A href={accountHref} className="nav-link">Account</C.A> 
+					<C.A href={accountHref} className="nav-link" onClick={onClickFn}>Account</C.A> 
 				</DropdownItem>
 				<DropdownItem divider />
-				{accountMenuItems && <>
-					{accountMenuItems}
-					<DropdownItem divider />
-				</>}
+					{accountMenuItems && accountMenuItems.map(item => {
+						return <>
+							<DropdownItem>
+								<C.A href={modifyPage(["account"],{tab: item.page}, true, true)} className="nav-link" onClick={onClickFn}>{item.label}</C.A> 
+							</DropdownItem>
+						</>
+					})}
+					{accountMenuItems && <DropdownItem divider />}
 				<DropdownItem>
 					<LogoutLink className="nav-link">Logout</LogoutLink>
 				</DropdownItem>
 			</DropdownMenu>
-		</UncontrolledDropdown>
+		</Dropdown>
 	</Nav>
 	)
 };
