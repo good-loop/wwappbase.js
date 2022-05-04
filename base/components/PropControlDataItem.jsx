@@ -142,7 +142,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 				{pvDI.value && 
 					(notALink? 
 						<SlimListItem type={itemType} item={pvDI.value} noClick={false} />
-						: <a href={"/#"+(navpage||itemType.toLowerCase())+"/"+encURI(getId(pvDI.value))} title={"Switch to editing this "+itemType}><SlimListItem type={itemType} item={pvDI.value} noClick={false} /></a>
+						: <C.A href={"/#"+(navpage||itemType.toLowerCase())+"/"+encURI(getId(pvDI.value))} title={"Switch to editing this "+itemType}><SlimListItem type={itemType} item={pvDI.value} noClick={false} /></C.A>
 					)
 				}
 				{canCreate && rawValue && pvDI.resolved && ! pvDI.value && 
