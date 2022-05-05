@@ -6,7 +6,7 @@ import { space } from '../utils/miscutils';
  * @param {string} tabId NB: this is what BS calls it. Will use the title if unset
  * @param {string} title This will be the tab label
  */
-const Tab = ({tabId, title, children}) => {
+const Tab = ({tabId, title, disabled, onTabClick, children}) => {
 	return <TabPane tabId={tabId || title}>
 		{children}
 	</TabPane>
@@ -29,16 +29,22 @@ const Tabs = ({activeTabId, setActiveTabId, defaultTabId, children, ...props}) =
 	let $activeTab = null;
 	let kids = children.filter(x => x); // remove nulls
 	const $navItems = React.Children.map(kids, (childTab) => {
-		let {props: {tabId, title}} = childTab; // extract the info
+		let {props: {tabId, title, disabled, onTabClick}} = childTab; // extract the info
 		if ( ! tabId) tabId = title;
 		if ( ! tabId) console.error("Tabs.jsx - Tab without an ID",title);
 		if ( ! _activeTabId) _activeTabId = tabId; // default to the first if unset
 		const active = (_activeTabId === tabId);
 		// pick active - which is the only tab to get rendered
 		if (active) $activeTab = childTab;
+
+		const onClick = () => {
+			onTabClick && onTabClick();
+			!disabled && _setActiveTabId(tabId);
+		}
+
 		return (
 			<NavItem className={space(active&&'active')}>
-				<NavLink onClick={() => ( ! active && _setActiveTabId(tabId))}
+				<NavLink onClick={() => ( ! active && onClick())}
 					className={space(active&&'active')} 
 				>
 					{title || tabId}
