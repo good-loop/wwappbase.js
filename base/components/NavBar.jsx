@@ -121,7 +121,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 				{pageLinks}
 			</Nav>
 			{children}
-			<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} className="mx-2 mt-2 mt-md-0"/>
+			<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} onLinkClick={onLinkClick} className="mx-2 mt-2 mt-md-0"/>
 		</Collapse>
 	</>);
 };
