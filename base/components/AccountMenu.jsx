@@ -28,8 +28,9 @@ active {boolean} true if on the account page
 account {boolean} true if we want to show the account option (true by default), needed by my-loop because it doesn't have an account page but needs logout
 logoutLink {string} what page should be loaded after logout ('#dashboard' by default), to allow it to go to the dashboard in portal, but the same page in my-loop
 accountMenuItems {?DropdownItem} add optional items to the account menu - used in MyGL/MyData where we show settings etc on the account page body (those don't fit into the layout mobile)
+linkType {string} HACK: Set to "C.A" for <C.A /> hrefs, "a" for normal hrefs. Fixes bug in T4G in which it wasn't loading the links correctly (since it's in an iFrame presumably)
 */
-const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, className, logoutLink, style, small, ...props}) => {
+const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, className, logoutLink, style, small, accountLink, linkType="C.A", ...props}) => {
 	const [open, setOpen] = useState(false);
 	const onClickFn = () => setOpen(!open); 
 	let ChosenLoginLink = customLogin ? customLogin : <LoginLink>Sign in</LoginLink> ;
@@ -46,7 +47,7 @@ const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, classN
 	}
 
 	let user = Login.getUser();
-	let accountHref = modifyPage(["account"], {}, true, true);
+	const accountHref = accountLink || {};
 	const name = small ? ((user.name && user.name.substr(0, 1)) || XId.prettyName(user.xid).substr(0,1)) : (user.name || XId.prettyName(user.xid));
 
 	return (
@@ -55,13 +56,19 @@ const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, classN
 			<DropdownToggle nav caret>{name}</DropdownToggle>
 			<DropdownMenu>
 				<DropdownItem>
-					<C.A href={accountHref} className="nav-link" onClick={onClickFn}>Account</C.A> 
+					{linkType == "C.A"
+						? <C.A href={modifyPage(["account"], accountHref, true, true)} className="nav-link" onClick={onClickFn}>Account</C.A> 
+						: <a href={modifyPage(["account"], accountHref, true, true)}  className="nav-link" onClick={onClickFn}>Account</a> 
+					}	
 				</DropdownItem>
 				<DropdownItem divider />
 					{accountMenuItems && accountMenuItems.map(item => {
 						return <>
 							<DropdownItem>
-								<C.A href={modifyPage(["account"],{tab: item.page}, true, true)} className="nav-link" onClick={onClickFn}>{item.label}</C.A> 
+							{linkType == "C.A"
+								? <C.A href={modifyPage(["account"],{tab: item.page}, true, true)} className="nav-link" onClick={onClickFn}>{item.label}</C.A> 
+								: <a href={modifyPage(["account"],{tab: item.page}, true, true)} className="nav-link" onClick={onClickFn}>{item.label}</a> 
+							}
 							</DropdownItem>
 						</>
 					})}
