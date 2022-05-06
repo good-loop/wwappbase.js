@@ -63,19 +63,21 @@ const dateValidator = (val, rawValue) => {
 /**
 	 * Check if dataitem's value between draft and published are different
 	 * Used in portal, to prevent bugs caused of draft/published differences
-	 * @returns false if different 
+	 * @returns 
 	 */
  const isPublished = (props) => {
-	if (!props.path || props.path[0] !== "draft" || props.path.length < 3) return true; // Only needed for data props
+	if (!props.path || props.path[0] !== "draft" || props.path.length < 3) return null; // Only needed for data props
 
 	let prop = props.prop;
 	let itemType = props.path[1];
 	let itemId = props.path[2];
 	let type = C.TYPES[itemType];
-	if (type === null || itemType == 'USER') return true; // Ignore USER type, no need for login props
+	if (type === null || itemType == 'USER') return null; // Ignore USER type, no need for login props
 
 	let pvDraft = getDataItem({type:type, id:itemId, status:KStatus.DRAFT, swallow:true});
 	let pvPub = getDataItem({type:type, id:itemId, status:KStatus.PUBLISHED, swallow:true});
+
+	if (pvDraft.value && !pvPub.value ) return false; // Never been published
 
 	if (pvDraft.value && pvPub.value) {
 		if (!_.isEqual(pvDraft.value[prop], pvPub.value[prop])) {
@@ -84,7 +86,6 @@ const dateValidator = (val, rawValue) => {
 	};
 	return true;
 };
-
 
 export const Help = ({children, icon = 'ⓘ', color = 'primary', className, ...props}) => {
 	const [id] = useState(() => `help-${nonce()}`); // Prefixed because HTML ID must begin with a letter
@@ -264,7 +265,7 @@ const PropControl = ({className, ...props}) => {
 			{help && (inline || isCheck) && <Help>{help}</Help>}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
-			{!isPublished(props) ? <span className="help-block text-warning">Not Published Yet</span> : null}
+			{isPublished(props) === false ? <span className="help-block text-warning">Not Published Yet</span> : null}
 		</FormGroup>
 	);
 }; // ./PropControl
