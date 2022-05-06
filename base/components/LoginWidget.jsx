@@ -72,7 +72,7 @@ const socialLogin = (service) => {
 /**
  * ajax call -- via Login.login() -- to login
  */
-const emailLogin = ({verb, app, email, password, onRegister, onLogin, ...extraData}) => {
+const emailLogin = ({verb, app, email, password, onRegister, onLogin, onError, ...extraData}) => {
 	assMatch(email, String, password, String);
 
 	console.log("LOGGING IN WITH EXTRA DATA",extraData);
@@ -102,8 +102,10 @@ const emailLogin = ({verb, app, email, password, onRegister, onLogin, ...extraDa
 		} else {
 			// poke React via DataStore (e.g. for Login.error)
 			DataStore.update({});
+			onError(Login.error);
 		}
 	}, err => {
+		onError(err);
 		DataStore.setValue(STATUS_PATH, C.STATUS.clean);
 	});
 };
@@ -311,7 +313,7 @@ const EmailReset = ({}) => {
  * @param children appears between the default form inputs and submission button
  * @param buttonText optional button text which can replace the default (default: verb used)
  */
-const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch, className, agreeToTerms, children, buttonText}) => {
+const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister, disableVerbSwitch, className, agreeToTerms, children, buttonText}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
@@ -329,12 +331,14 @@ const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch,
 
 	const doItFn = e => {
 		stopEvent(e);
+		onSubmit();
 		if ( ! person) {			
 			Login.error = {text:'Please fill in email and password'};
+			onError(Login.error);
 			return;
 		}
-		let email = person.email;
-		emailLogin({verb, onLogin, onRegister, ...person});
+		//let email = person.email;
+		emailLogin({verb, onLogin, onRegister, onError, ...person});
 	};
 
 	// login/register
@@ -348,7 +352,7 @@ const EmailSignin = ({verb, onLogin, onRegister, canRegister, disableVerbSwitch,
 				<div className="form-group">
 					{agreeToTerms && <PropControl type="checkbox" label={agreeToTerms} path={path} prop="agreeToTerms" />}
 					{children}
-					<Button type="submit" size="lg" color="primary" 
+					<Button type="submit" size="lg" color="primary"
 						disabled={C.STATUS.isloading(status) || noAgreement}
 						title={noAgreement? "You must agree to the terms if you want to use this service." : ""} >
 						{buttonText || verbButtonLabels[verb]}
