@@ -65,15 +65,15 @@ const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, classN
 					}	
 				</DropdownItem>
 				<DropdownItem divider />
-				{accountMenuItems && accountMenuItems.map(item => {
-					return <>
-						<DropdownItem>
+				{accountMenuItems && accountMenuItems.map((item, i) => {
+					return <div key={i}>
+						<DropdownItem >
 						{linkType == "C.A"
 							? <C.A href={modifyPage(["account"],{tab: item.page}, true, true)} className="nav-link" onClick={onClickFn}>{item.label}</C.A> 
 							: <a href={modifyPage(["account"],{tab: item.page}, true, true)} className="nav-link" onClick={onClickFn}>{item.label}</a> 
 						}
 						</DropdownItem>
-					</>
+					</div>
 				})}
 				{accountMenuItems && <DropdownItem divider />}
 				<DropdownItem>
