@@ -102,10 +102,10 @@ const emailLogin = ({verb, app, email, password, onRegister, onLogin, onError, .
 		} else {
 			// poke React via DataStore (e.g. for Login.error)
 			DataStore.update({});
-			onError(Login.error);
+			onError && onError(Login.error);
 		}
 	}, err => {
-		onError(err);
+		onError && onError(err);
 		DataStore.setValue(STATUS_PATH, C.STATUS.clean);
 	});
 };
@@ -331,10 +331,10 @@ const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 
 	const doItFn = e => {
 		stopEvent(e);
-		onSubmit();
+		onSubmit && onSubmit();
 		if ( ! person) {			
 			Login.error = {text:'Please fill in email and password'};
-			onError(Login.error);
+			onError && onError(Login.error);
 			return;
 		}
 		//let email = person.email;
