@@ -1,12 +1,11 @@
-
-
 import React from 'react';
 
-import PropControl, {registerControl, DSsetValue} from './PropControl';
-import DataStore from '../plumbing/DataStore';
+import { registerControl, DSsetValue } from './PropControl';
 import { Badge } from 'reactstrap';
 import CloseButton from './CloseButton';
 import { useState } from 'react';
+
+
 /**
  * A list-of-strings editor, where the strings are drawn as discrete "pills"
  * 
@@ -67,4 +66,7 @@ const PropControlPills = ({storeValue, modelValueFromInput, path, prop, proppath
 	</div>);
 }
 
-registerControl({type:'pills', $Widget: PropControlPills});
+registerControl({
+	type:'pills',
+	$Widget: PropControlPills
+});

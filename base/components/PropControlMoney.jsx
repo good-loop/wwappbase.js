@@ -1,32 +1,11 @@
-
-
-/**
- * 
- * TODO refactor other select-options-from-a-list controls from PropControl into here
- * 
- */
-
 import React from 'react';
 
-import PropControl, {registerControl, DSsetValue, FormControl} from './PropControl';
-import DataStore from '../plumbing/DataStore';
-import { Badge, Form, FormGroup, Input, Label, InputGroup, InputGroupAddon } from 'reactstrap';
-import CloseButton from './CloseButton';
-import { useState } from 'react';
-import { asArray, is, labeller } from '../utils/miscutils';
-import UncontrolledButtonDropdown from 'reactstrap/lib/UncontrolledButtonDropdown';
-import DropdownToggle from 'reactstrap/lib/DropdownToggle';
-import DropdownMenu from 'reactstrap/lib/DropdownMenu';
-import DropdownItem from 'reactstrap/lib/DropdownItem';
+import { registerControl, FormControl } from './PropControl';
+import { DropdownItem, DropdownMenu, DropdownToggle, InputGroup, InputGroupAddon, UncontrolledButtonDropdown } from 'reactstrap';
+import { is } from '../utils/miscutils';
 import Money from '../data/Money';
 import { assert } from '../utils/assert';
 
-/**
- * A list-of-strings editor, where the strings are drawn as discrete "pills"
- * @param {Object} p
- * @param {String[]} p.value
- * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
- */
 /**
  * See also: Money.js
  * @param currency {?String}
@@ -132,5 +111,11 @@ const moneyValidator = ({value, props}) => {
 	return null;
 };
 
-registerControl({type:'Money', $Widget: PropControlMoney, validator:moneyValidator, rawToStore:rawToStoreMoney});
+registerControl({
+	type: 'Money',
+	$Widget: PropControlMoney,
+	validator: moneyValidator,
+	rawToStore: rawToStoreMoney
+});
+
 export default PropControlMoney;

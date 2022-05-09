@@ -27,6 +27,7 @@ const shouldItemRenderDflt = (itm, value) => str(itm).toLowerCase().startsWith((
 
 
 /**
+ * @deprecated DO NOT USE WITHOUT OVERHAULING: depends on react-autocomplete which is 4 years abandoned and a dependency nightmare.
  * wraps the reactjs autocomplete widget
  * TODO When options is a function, default to "show all items"
  * @param {Function|Object[]|String[]} options The items to select from
