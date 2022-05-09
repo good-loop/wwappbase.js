@@ -88,7 +88,7 @@ const dateValidator = (val, rawValue) => {
 };
 
 /** Use Bootstrap popover to display help text on click */
-const Help = ({children, icon = '🛈', color = 'primary', className, ...props}) => {
+export const Help = ({children, icon = '🛈', color = 'primary', className, ...props}) => {
 	const [id] = useState(() => `help-${nonce()}`); // Prefixed because HTML ID must begin with a letter
 	const [open, setOpen] = useState(false);
 	const toggle = () => setOpen(!open);
