@@ -57,9 +57,33 @@ Printer.prototype.prettyNumber = function(x, sigFigs=3, minimumFractionDigits) {
 		return snum;
 	} catch(er) {
 		console.warn("toNSigFigs "+er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
-		return ""+x;	
+		return ""+x;
 	}
 };
+
+
+const roundFormat = new Intl.NumberFormat('en-GB', {maximumFractionDigits: 0});
+const oneDecimalFormat = new Intl.NumberFormat('en-GB', {maximumFractionDigits: 1});
+
+
+/**
+ * Round and comma-group a number. Optionally alow one decimal place on single-digit numbers.
+ * @param {?Number} x The number to print
+ * @param {?Boolean} allowOneDigitDecimal If true, one-digit numbers will allow (but not enforce) one more digit after the decimal point.
+ */
+Printer.prototype.prettyInt = function(x, allowOneDecimal) {
+	if (x === undefined || x === null) return '';
+	if (x == 0) return '0';
+	try {
+		const format = (x > -10 && x < 10 && allowOneDecimal) ? oneDecimalFormat : roundFormat;
+		return format.format(x);
+	} catch (e) {
+		console.warn('prettyInt error:', e); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
+		return '' + x;
+	}
+};
+
+
 
 /**
 * Converts objects to a human-readable string. Uses `JSON.stringify`, with the
