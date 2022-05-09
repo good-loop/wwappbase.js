@@ -13,7 +13,7 @@ import {
 	DropdownToggle,
 	DropdownMenu,
 	DropdownItem } from 'reactstrap';
-
+import { assMatch } from '../utils/assert';
 import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
@@ -25,6 +25,7 @@ import CloseButton from './CloseButton';
 
 
 class NavProps {
+	/** can contain nulls */
 	pageLinks;	
 	currentPage; 
 	children;
@@ -95,7 +96,7 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  * @param {NavProps} p
  * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
  */
-const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta}) => {
+const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems}) => {
 	// Hack: remove logo classname for myGL to advoid Safari CSS bug
 	let logoClass = 'logo';
 	if (window.location.host.includes('my.good-loop.com')) logoClass = '';
@@ -120,7 +121,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 				{pageLinks}
 			</Nav>
 			{children}
-			<AccountMenu active={currentPage === 'account'} className="mx-2 mt-2 mt-md-0"/>
+			<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} onLinkClick={onLinkClick} className="mx-2 mt-2 mt-md-0"/>
 		</Collapse>
 	</>);
 };
@@ -136,7 +137,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
-const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props}) => {
+const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, children, expandSize="md", ...props}) => {
 	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
 	const navProps = getNavProps();
 	if (navProps) {
@@ -173,6 +174,11 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 		close();
 	};
 
+	/**
+	 * @param {Object} p
+	 * @param {!String} p.page
+	 * @param {!String|JSX} p.children
+	 */
 	const PageNavLink = ({page, className, children}) => {
 		let pageLink = DataStore.localUrl + page.replace(" ", "-");
 		if (externalLinks && page in externalLinks) pageLink = externalLinks[page];
@@ -183,21 +189,19 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 		)
 	}
 
-	const getPageLabel = (page, label) => {
-		return label || labelFn(page)
-	};
-
 	// make the page links
 	// Accepts a page links format as:
 	// {title1: [page1, page2, ...], page3:[], ...}
 	// for dropdowns, or, for simpler setups, just an array of strings
-	const NLink = ({page, label, isTop}) => {
+
+	const NLink = ({page, isTop}) => {
+		assMatch(page, String);
 		// Don't put NavItems inside dropdowns! React screams at us about incorrectly nesting <li> elements.
 		const Item = isTop ? NavItem : DropdownItem;
 		return (
 			<Item key={page} className={isTop && 'top-level'} active={page === currentPage}>
 				<PageNavLink page={page} >
-					{getPageLabel(page, label)}
+					{labelFn(page)}
 				</PageNavLink>
 			</Item>
 		);
@@ -206,32 +210,36 @@ const NavBar = ({NavGuts = DefaultNavGuts, children, expandSize="md", ...props})
 	const NDropDown = ({title, i}) => {
 		const [open, setOpen] = useState(false);
 		return <Dropdown isOpen={open} toggle={() => setOpen(!open)} key={title} nav inNavbar className='top-level'>
-			<DropdownToggle nav caret>{(labels && Object.keys(labels)[i]) || title}</DropdownToggle>
+			<DropdownToggle nav caret>{labelFn(title)}</DropdownToggle>
 			<DropdownMenu>
-				{pages[title].map((page, j) => (
-					<NLink key={page} page={page} label={labels && labels[Object.keys(labels)[i]][j]} />
+				{pages[title].filter(page => page).map((page, j) => (
+					<NLink key={page} page={page} />
 				))}
 			</DropdownMenu>
 		</Dropdown>;
-	}
+	};
 
 	let pageLinks;
 	if (simplePagesSetup) {
-		pageLinks = pages.map((page,i) => <NLink key={page} page={page} label={labels && labels[i]} isTop />);
+		pageLinks = pages.map((page,i) => <NLink key={page} page={page} isTop />);
 	} else {
 		pageLinks = Object.keys(pages).map((title, i) => {
 			// Some page links can come in collections - make sure to account for that
-			if (pages[title].length > 0) {
+			let subPages = pages[title];
+			if ( ! title || subPages===false) {
+				return null; // switched off e.g. not logged in or type of user
+			}
+			if (subPages && subPages.length) {
 				return <NDropDown title={title} i={i} key={title}/>
 			}
 			// Title is a single page, not a category
-			return <NLink key={title} page={title} isTop label={labels && Object.keys(labels)[i]} />;
+			return <NLink key={title} page={title} isTop />;
 		});
 	} // ./pageLinks
 
 	return (
 		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand={expandSize} className={space('p-1', scrolled && "scrolled")} >
-			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} onLinkClick={onLinkClick}>
+			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} onLinkClick={onLinkClick} accountMenuItems={accountMenuItems}>
 				{children}
 			</NavGuts>
 		</Navbar>

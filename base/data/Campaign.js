@@ -232,6 +232,12 @@ Campaign.pvAds = ({campaign,status=KStatus.DRAFT,query}) => {
 	return pv;
 };
 
+/** Newest first. Safe default for pretty much everywhere here. */
+const sortAdsList = adsList => adsList.hits.sort((a, b) => {
+	if (a.created === b.created) return 0;
+	return a.created < b.created ? 1 : -1;
+});
+
 /**
  * NB: This function does chained promises, so we use async + await for convenience.
  * @returns Promise List(Advert) All ads -- hidden ones are marked with a truthy `_hidden` prop
@@ -249,11 +255,13 @@ const pAds2 = async function({campaign, status, query, isSub}) {
 			return pSubAds;
 		});
 		let adLists = await Promise.all(AdListPs);
-		let ads = [];		
+		let ads = [];
 		adLists.forEach(adl => ads.push(...List.hits(adl)));
 		// adds can be hidden at leaf or master
 		pAds3_labelHidden({campaign, ads});
+
 		const list = new List(ads);
+		sortAdsList(list);
 		return list;
 	}
 
@@ -264,9 +272,12 @@ const pAds2 = async function({campaign, status, query, isSub}) {
 	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
 	let adl = await pvAds.promise;
 	List.assIsa(adl);
-	let ads = List.hits(adl);
+	sortAdsList(adl);
+
 	// Label ads using hide list and non-served
+	let ads = List.hits(adl);
 	pAds3_labelHidden({campaign, ads});
+
 	return adl;
 };
 

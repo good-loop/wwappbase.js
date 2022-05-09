@@ -12,7 +12,12 @@ import NGO from '../../base/data/NGO';
  * @returns 
  */
 const NGODescription = ({ngo, summarize, extended}) => {
-    assert(NGO.id(ngo), ngo);
+    //assert(NGO.id(ngo), ngo);
+
+    if (!ngo) {
+        console.warn("No NGO for description??");
+        return null;
+    }
 
     let desc;
     if (summarize) desc = ngo.summaryDescription || ngo.description || ngo.extendedDescription;

@@ -8,7 +8,6 @@
  // Just importing these gets them registered with PropControl
 import PropControlUrl from './PropControls/PropControlUrl';
 import PropControlUpload from './PropControls/PropControlUpload'
-// import PropControlAutoComplete from './PropControlAutoComplete'; // do we use this still??
 import PropControlPills from './PropControlPills';
 import PropControlSelection from './PropControlSelection';
 import PropControlDataItem from './PropControlDataItem';

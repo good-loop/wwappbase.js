@@ -17,6 +17,8 @@ NGO.summaryDescription = (ngo) => ngo.summaryDescription;
 
 NGO.extendedDescription = (ngo) => ngo.extendedDescription;
 
+NGO.logo = ngo => ngo.logo; // placeholder by cause area?
+
 NGO.imageList = (ngo) => ngo.imageList;
 
 /**
@@ -68,13 +70,13 @@ NGO.CATEGORY = {
 		"Wildlife Conservation", 
 		"Zoos and Aquariums"
 	],
-	"arts culture humanities":[
+	"culture":[
 		"Libraries, Historical Societies and Landmark Preservation",
 		"Museums",
 		"Performing Arts",
 		"Public Broadcasting and Media"
 	], 
-	"community development":[
+	"community":[
 		// United Ways
 		// Jewish Federations
 		"Community Foundations",

@@ -49,7 +49,7 @@ const bezierSlide = (x = 0) => {
 const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, currencySymbol, pretty = true, sigFigs, preservePennies, noPennies, centerText=false}) => 
 {
 
-    let {noround} = DataStore.getValue(['location', 'params']) || {};
+	let {noround} = DataStore.getValue(['location', 'params']) || {};
 
 	if (amount) {
 		value = Money.value(amount);
@@ -58,7 +58,7 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 			console.warn("Counter.jsx - No currency (using £ as default)",amount)
 			currencySymbol = currencySymbol="£";
 		}
-	}	
+	}
 	if ( ! value) {	// paranoia
 		console.warn("Counter - No value or amount");
 		return null;
@@ -73,7 +73,7 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 	const options = {};
 	// ...set default value for preservePennies and sigFigs (but not both)
 	if (preservePennies===undefined && ! sigFigs && (amount || currencySymbol)) {
-		preservePennies = true;				
+		preservePennies = true;
 	}
 	// preservePennies = true; // for debug, to see the exact amount
 	if (sigFigs===undefined) {
@@ -88,12 +88,12 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 		options.minimumFractionDigits = 0;
 		options.maximumFractionDigits = 0;
 	}
-	const formatNum = x => {		
+	const formatNum = x => {
 		if ( ! pretty) return ""+x;
 		if (amount || currencySymbol) {
 			return Money.prettyString(Object.assign({amount:x}, options));
 		}
-		try {			
+		try {
 			return new Intl.NumberFormat('en-GB', options).format(x);
 		} catch(er) {
 			console.warn("Counter.jsx formatNumber "+er); // Handle the weird Intl undefined bug, seen Oct 2019, possibly caused by a specific phone type
@@ -135,10 +135,10 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 	// If centerText is set, width is set to 100 and text-center does the job
 	// When centerText is set, the container div gets some extra horizontal padding to stop text overflow
 	return (
-		<div className="position-relative d-inline-block" style={{padding: "0 " + (centerText ? "0.1rem" : "0")}}>
+		<span className="position-relative d-inline-block" style={{padding: "0 " + (centerText ? "0.1rem" : "0")}}>
 			<span className="invisible text-center" style={{width: centerText ? "100%" : "auto"}}>{currencySymbol}{totalVal}</span>
 			<span className="position-absolute text-center" style={{right: 0, width: centerText ? "100%" : "auto"}} ref={ref}>{currencySymbol}{disp}</span>
-		</div>
+		</span>
 	);
 };
 

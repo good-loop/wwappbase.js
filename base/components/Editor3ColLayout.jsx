@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button, Container, Nav, NavItem, NavLink, TabContent, TabPane } from 'reactstrap';
 import DataStore from '../plumbing/DataStore';
-import { getScreenSize, space, stopEvent } from '../utils/miscutils';
+import { getScreenSize, isMobile, space, stopEvent } from '../utils/miscutils';
 import ErrBoundary from './ErrBoundary';
 
 /**
@@ -20,9 +20,14 @@ const Editor3ColLayout = ({ children, showAll }) => {
 // margin-left 0 IF there is a LeftSidebar
 const MainPane = ({ className, children }) => <Container className={className}><ErrBoundary>{children}</ErrBoundary></Container>;
 
-const LeftSidebar = ({ children }) => {
-	const sz = getScreenSize();
-	if (sz === "sm" || sz === "xs") {
+const LeftSidebar = ({ children, hideOnMobile }) => {
+	// If hideOnMobile is set, return nothing
+	if (isMobile() && hideOnMobile == true) {
+		return null;
+	}
+
+	// Show the mobile version of this (widget toggle)
+	if (isMobile()) {
 		let show = DataStore.getValue(['widget', 'LeftSidebar', 'show']);
 		const toggle = e => stopEvent(e) && DataStore.setValue(['widget', 'LeftSidebar', 'show'], ! show);
 		return (<>
@@ -37,6 +42,8 @@ const LeftSidebar = ({ children }) => {
 			</div>
 		</>);
 	}
+
+	// Show the regular desktop version of this
 	return <div className='mt-1 mr-0' style={{ maxWidth: "30%", position: "sticky", height: "100vh", top: 40 }} >{children}</div>; // TODO use a slide-out tray if space is limited
 };
 const RightSidebar = ({ children, width = "40vw", height = "100vh", overflowY = "scroll" }) => {
