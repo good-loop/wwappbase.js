@@ -68,3 +68,5 @@ const PropControlPills = ({storeValue, modelValueFromInput, path, prop, proppath
 }
 
 registerControl({type:'pills', $Widget: PropControlPills});
+
+export default PropControlPills;
