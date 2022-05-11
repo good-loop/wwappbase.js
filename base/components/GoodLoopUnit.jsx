@@ -112,10 +112,10 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 	// No scroll bars!
 	if (docBody) docBody.style = 'overflow: hidden;'; // NB: the if is paranoia - NPE hunt Oct 2019
 
-	// HACK - delete
-	let hackdiv = appendEl(doc, {tag: 'div', className: 'border'});
-	hackdiv.innerHTML = "HELLO "+Login.user && Login.user.xid;	
-	let hackscript = appendEl(doc, {tag: 'script', src:"/build/js/temphack.js", async:true});
+	// // HACK - delete
+	// let hackdiv = appendEl(doc, {tag: 'div', className: 'border'});
+	// hackdiv.innerHTML = "HELLO "+Login.user && Login.user.xid;	
+	// let hackscript = appendEl(doc, {tag: 'script', src:"/build/js/temphack.js", async:true});
 	// return () => doc ? doc.documentElement.innerHTML = '' : null;
 
 	// Preloaded unit.json? Insert contents inside a <script> tag for the adunit to find
