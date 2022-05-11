@@ -19,34 +19,46 @@ import BG from "./BG";
 const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...props}) => {
     assert(imgIdx !== undefined || main || header || backdrop); // temporary
 
+	const [useUrl, setUseUrl] = useState();
+	const [randIdx, setRandIdx] = useState(-1);
+
     const ImgType = bg ? BG : "img";
     if (children && !bg) {
         console.warn("NGOImage set to normal image but given children - will not correctly render!");
     }
 
-    let useUrl;
-	if (ngo) {
-		// Use main if specified
-		if (main) useUrl = ngo.images;
-		// Use header if specified
-		if (header) {
-			useUrl = ngo.headerImage;
-			if ( ! useUrl) {
-				// TODO Hm: could we use a composite image to create a banner effect?
-				useUrl = ngo.images;
+	useEffect (() => {
+		if (ngo) {
+			// Use main if specified
+			if (main) setUseUrl(ngo.images);
+			// Use header if specified
+			if (header) {
+				setUseUrl(ngo.headerImage);
+				if ( ! useUrl) {
+					// TODO Hm: could we use a composite image to create a banner effect?
+					setUseUrl(ngo.images);
+				}
+			}
+			if (backdrop && ngo.imageList) {
+				const useableImages = ngo.imageList.filter(imgObj => imgObj.backdrop);
+				if (useableImages.length > 0) {
+					// Use states to prevent random selections reoccuring every re-render
+					let newIdx = Math.floor(Math.random()*useableImages.length);
+					if (randIdx === -1) {
+						setRandIdx(newIdx);
+					} else {
+						newIdx = randIdx;
+					}
+					let selImg = useableImages[newIdx];
+					setUseUrl(selImg.contentUrl);
+				}
+			}
+			if (imgIdx !== null && ngo.imageList && ngo.imageList[imgIdx]) {
+				setUseUrl(ngo.imageList[imgIdx].contentUrl);
 			}
 		}
-		if (backdrop && ngo.imageList) {
-			const useableImages = ngo.imageList.filter(imgObj => imgObj.backdrop);
-			if (useableImages.length > 0) {
-				const selImg = useableImages[Math.floor(Math.random()*useableImages.length)];
-				useUrl = selImg.contentUrl;
-			}
-		}
-		if (imgIdx !== null && ngo.imageList && ngo.imageList[imgIdx]) {
-			useUrl = ngo.imageList[imgIdx].contentUrl;
-		}
-	}
+	}, [ngo, main, header, backdrop, imgIdx]);
+
 	if ( ! useUrl) useUrl = src;
 	if ( ! useUrl) return null; // no fallback? then no render
 
