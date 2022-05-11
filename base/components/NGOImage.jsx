@@ -9,14 +9,15 @@ import BG from "./BG";
  * @param {NGO} ngo
  * @param {?Boolean} main use the main photo
  * @param {?Boolean} header use the header photo
+ * @param {?Boolean} backdrop use a random photo that is marked as backdrop friendly
  * @param {Number} imgIdx use a specific image from the image list
  * @param {?Boolean} bg render as a BG component instead
  * @param {?String} src if no NGO is set, will render this like a normal image as a fallback (defaults to main photo). 
  * 	If no src and no NGO, then render null.
  * @param {?JSX} children ??What is the use-case for children of an image??
  */
-const NGOImage = ({ngo, main, header, imgIdx, bg, src, children, ...props}) => {
-    assert(imgIdx !== undefined || main || header); // temporary
+const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...props}) => {
+    assert(imgIdx !== undefined || main || header || backdrop); // temporary
 
     const ImgType = bg ? BG : "img";
     if (children && !bg) {
@@ -33,6 +34,13 @@ const NGOImage = ({ngo, main, header, imgIdx, bg, src, children, ...props}) => {
 			if ( ! useUrl) {
 				// TODO Hm: could we use a composite image to create a banner effect?
 				useUrl = ngo.images;
+			}
+		}
+		if (backdrop && ngo.imageList) {
+			const useableImages = ngo.imageList.filter(imgObj => imgObj.backdrop);
+			if (useableImages.length > 0) {
+				const selImg = useableImages[Math.floor(Math.random()*useableImages.length)];
+				useUrl = selImg.contentUrl;
 			}
 		}
 		if (imgIdx !== null && ngo.imageList && ngo.imageList[imgIdx]) {
