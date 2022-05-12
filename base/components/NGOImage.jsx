@@ -41,6 +41,7 @@ const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...pr
 			}
 			if (backdrop && ngo.imageList) {
 				const useableImages = ngo.imageList.filter(imgObj => imgObj.backdrop);
+				console.log("BACKDROP IMAGES:", useableImages);
 				if (useableImages.length > 0) {
 					// Use states to prevent random selections reoccuring every re-render
 					let newIdx = Math.floor(Math.random()*useableImages.length);
