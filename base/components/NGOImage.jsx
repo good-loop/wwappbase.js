@@ -59,11 +59,11 @@ const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...pr
 		}
 	}, [ngo, main, header, backdrop, imgIdx]);
 
-	if ( ! useUrl) useUrl = src;
-	if ( ! useUrl) return null; // no fallback? then no render
+	const finalUrl = useUrl || src;
+	if ( ! finalUrl) return null; // no fallback? then no render
 
 	// ??what is the id used for? Is it for debug purposes??
-    return <ImgType src={useUrl} id={"imageList-" + imgIdx + "-contentUrl"} {...props}>{children}</ImgType>;
+    return <ImgType src={finalUrl} id={"imageList-" + imgIdx + "-contentUrl"} {...props}>{children}</ImgType>;
 
 };
 
