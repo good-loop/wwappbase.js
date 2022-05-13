@@ -4,11 +4,24 @@ import PropControlPills from '../PropControlPills';
 
 // PropControlGender - is a PropControlPills
 
+export const DEFAULT_GENDER_LABELS = {
+    "male": "Male",
+    "female": "Female",
+    "non-binary": "Non-Binary",
+    "trans": "Transgender",
+    "intersex": "Intersex",
+    "two-spirit": "Two-Spirit",
+    "androgyne": "Androgyne",
+    "femme": "Femme",
+    "masc": "Masc",
+    "agender": "Agender",
+    "fluid": "Genderfluid"
+};
+
 export const PropControlGender = ({path, prop, ...props}) => {
     
     return <div className="d-flex flex-row">
         <PropControlPills path={path} prop={prop} {...props}/>
-        <Button color="primary">+</Button>
     </div>
 };
 

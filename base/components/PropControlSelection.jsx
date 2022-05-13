@@ -1,4 +1,3 @@
-
 /**
  * 
  * TODO refactor other select-options-from-a-list controls from PropControl into here
@@ -52,6 +51,7 @@ const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFro
 	const isChecked = x => listValue.includes(x);
 	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn, tooltipFn}} />;
 }; // ./radio
+
 registerControl({type:'checkboxes', $Widget: PropControlCheckboxes});
 registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes});
 
@@ -59,19 +59,19 @@ registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes});
  * 
  * @param {Object} p
  */
-const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn, tooltipFn}) => options.map(option => 
-	(
-		<FormGroup check inline={inline} key={option} title={tooltipFn && tooltipFn(option)}>
-			<Input type='checkbox'
-				className="form-check-input"
-				name={prop} value={option}
-				checked={ !! isChecked(option)}
-				onChange={onChange} id={option} />
-			<Label check for={option}>
-				{labelFn(option)}
-			</Label>
-		</FormGroup>
-	));
+const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn, tooltipFn}) => options.map(option => (
+	<FormGroup check inline={inline} key={option} title={tooltipFn && tooltipFn(option)}>
+		<Input type="checkbox" key={`option_${option}`}
+			className="form-check-input"
+			name={prop} value={option}
+			checked={!!isChecked(option)}
+			onChange={onChange} id={option}
+		/>
+		<Label check for={option}>
+			{labelFn(option)}
+		</Label>
+	</FormGroup>
+));
 
 
 /**

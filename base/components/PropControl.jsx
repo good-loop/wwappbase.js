@@ -63,19 +63,21 @@ const dateValidator = (val, rawValue) => {
 /**
 	 * Check if dataitem's value between draft and published are different
 	 * Used in portal, to prevent bugs caused of draft/published differences
-	 * @returns false if different 
+	 * @returns 
 	 */
  const isPublished = (props) => {
-	if (!props.path || props.path[0] !== "draft" || props.path.length < 3) return true; // Only needed for data props
+	if (!props.path || props.path[0] !== "draft" || props.path.length < 3) return null; // Only needed for data props
 
 	let prop = props.prop;
 	let itemType = props.path[1];
 	let itemId = props.path[2];
 	let type = C.TYPES[itemType];
-	if (type === null || itemType == 'USER') return true; // Ignore USER type, no need for login props
+	if (type === null || itemType == 'USER') return null; // Ignore USER type, no need for login props
 
 	let pvDraft = getDataItem({type:type, id:itemId, status:KStatus.DRAFT, swallow:true});
 	let pvPub = getDataItem({type:type, id:itemId, status:KStatus.PUBLISHED, swallow:true});
+
+	if (pvDraft.value && !pvPub.value ) return false; // Never been published
 
 	if (pvDraft.value && pvPub.value) {
 		if (!_.isEqual(pvDraft.value[prop], pvPub.value[prop])) {
@@ -85,8 +87,8 @@ const dateValidator = (val, rawValue) => {
 	return true;
 };
 
-
-export const Help = ({children, icon = 'ⓘ', color = 'primary', className, ...props}) => {
+/** Use Bootstrap popover to display help text on click */
+export const Help = ({children, icon = '🛈', color = 'primary', className, ...props}) => {
 	const [id] = useState(() => `help-${nonce()}`); // Prefixed because HTML ID must begin with a letter
 	const [open, setOpen] = useState(false);
 	const toggle = () => setOpen(!open);
@@ -140,14 +142,26 @@ or if extras like help and error text are wanted.
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  */
 const PropControl = ({className, ...props}) => {
-	let { type = "text", optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, labelStyle, ...stuff } = props;
-	if ( ! path) {	// default to using path = the url
+	let { type, optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
+
+	// If path not given, link it to a URL param by default
+	if (!path) {
 		path = ['location', 'params'];
-		props = Object.assign({ path }, props);
+		props = {...props, path};
 	}
-	assert(prop || prop===0, "PropControl - no prop! "+type, path); // NB 0 is valid as an array entry
-	assMatch(prop, "String|Number", path);
-	assMatch(path, Array);
+
+	// Type defaults to "text" (intentionally done here instead of using destructure-default)
+	if (!type) {
+		type = 'text';
+		props = {...props, type};
+	}
+
+	assert(PropControl.KControlType.has(type), `PropControl: invalid type ${type}`);
+	assert(prop || prop === 0, `PropControl: invalid prop for path: "${path}", prop: "${prop}"`); // NB 0 is valid as an array entry
+	assMatch(prop, 'String|Number', `PropControl: prop must be string or number, path: "${path}", prop: "${prop}"`);
+	assMatch(path, Array, `PropControl: path is not an array: "${path}", prop: "${prop}"`);
+	assert(path.indexOf(undefined) < 0 && path.indexOf(null) < 0, `PropControl: nully in path "${path}", prop: "${prop}"`);
+
 	// value comes from DataStore
 	let pvalue = props.value; // Hack: preserve value parameter for checkboxes
 	const proppath = path.concat(prop);
@@ -161,11 +175,11 @@ const PropControl = ({className, ...props}) => {
 	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
 	// Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
 	const [rawValue, setRawValue] = useState(_.isString(storeValue)? storeValue : null);
-	assMatch(rawValue, "?String", "rawValue must be a string type:"+type+" path:"+path+" prop:"+prop);
+	assMatch(rawValue, "?String", `PropControl: rawValue must be a string, path: "${path}", prop: "${prop}" type: "${type}""`);
 
 	// old code
 	if (props.onChange) {
-		console.warn("PropControl.jsx " + path + "." + prop + " s/onChange/saveFn/ as onChange is set internally by PropControl");
+		console.warn(`PropControl: ${path}.${prop} s/onChange/saveFn/ as onChange is set internally by PropControl`);
 		props = Object.assign({ saveFn: props.onChange }, props);
 		delete props.onChange;
 	}
@@ -197,9 +211,9 @@ const PropControl = ({className, ...props}) => {
 	// validate!
 	if (newValidator) { // safe to override with this if it exists as it won't override explicit validator in props
 		validatorStatus = newValidator({ value: storeValue, props });
-		if (validatorStatus && ! validatorStatus.status) {	// catch bad code
-			console.warn("PropControl.jsx: Odd validator output (please use {status,message}) for "+type, path, validatorStatus);
-			validatorStatus = {status:"warning",message:""+validatorStatus};
+		if (validatorStatus && !validatorStatus.status) { // catch bad code
+			console.warn(`PropControl: Odd validator output (please use {status,message}) "${validatorStatus}" for type: "${type}", path: "${path}", prop: "${prop}"` );
+			validatorStatus = {status: 'warning', message: `${validatorStatus}`};
 		}
 	} else if (validator) {
 		const tempError = validator(storeValue, rawValue);
@@ -241,9 +255,15 @@ const PropControl = ({className, ...props}) => {
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
 	const helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
-	const optreq = optional ? <small className="text-muted">optional</small>
-		: required ? <small className={storeValue === undefined ? 'text-danger' : null}>*</small> : null;
-	// NB: The label and PropControl are on the same line to preserve the whitespace in between for inline forms.
+
+	// Mark as required or explicitly-optional?
+	let optreq = null;
+	if (optional) {
+		optreq = <small className="text-muted">optional</small>
+	} else if (required) {
+		optreq = <small className={storeValue === undefined ? 'text-danger' : null}>*</small>
+	}
+
 	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	// let props2 = Object.assign({}, props);
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
@@ -256,7 +276,7 @@ const PropControl = ({className, ...props}) => {
 	return (
 		<FormGroup check={isCheck} className={space(type, className, inline && ! isCheck && 'form-inline', error&&'has-error')} size={size} >
 			{(label || tooltip) && !isCheck &&
-				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name} style={labelStyle}>{labelText} {helpIcon} {optreq}</label>}
+				<label className={space(sizeClass,'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
 			{help && !inline && !isCheck && <Help>{help}</Help>}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
@@ -264,7 +284,7 @@ const PropControl = ({className, ...props}) => {
 			{help && (inline || isCheck) && <Help>{help}</Help>}
 			{error ? <span className="help-block text-danger">{error}</span> : null}
 			{warning ? <span className="help-block text-warning">{warning}</span> : null}
-			{!isPublished(props) ? <span className="help-block text-warning">Not Published Yet</span> : null}
+			{isPublished(props) === false ? <span className="help-block text-warning">Not Published Yet</span> : null}
 		</FormGroup>
 	);
 }; // ./PropControl
@@ -279,15 +299,13 @@ const PropControl2 = (props) => {
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
-	let { storeValue, value, rawValue, setRawValue, type = "text", optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
+	let { storeValue, value, rawValue, setRawValue, type, optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
 	let { bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
-	assert(!type || PropControl.KControlType.has(type), 'PropControl: ' + type);
-	assert(path && _.isArray(path), 'PropControl: path is not an array: ' + path + " prop:" + prop);
-	assert(path.indexOf(null) === -1 && path.indexOf(undefined) === -1, 'PropControl: null in path ' + path + " prop:" + prop);
+
 	// update is undefined by default, false if fast. See DataStore.update()
 	let update;
 	if (fast) update = false;
-	
+
 	// HACK: Fill in modelValueFromInput differently depending on whether this is a plugin-type input
 	// Temporary while shifting everything to plugins
 	if ($widgetForType[type]) {
@@ -295,7 +313,7 @@ const PropControl2 = (props) => {
 			modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
 		}
 	} else {
-		if ( ! modelValueFromInput) {
+		if (!modelValueFromInput) {
 			if (type === 'html') {
 				modelValueFromInput = (_v, type, event, target) => standardModelValueFromInput((target && target.innerHTML) || null, type, event);
 			} else {
@@ -329,7 +347,7 @@ const PropControl2 = (props) => {
 		onChange = e => {
 			// TODO a debounced property for "do ajax stuff" to hook into. HACK blur = do ajax stuff
 			// HACK: allow our own ersatz events to avoid calling setRawValue
-			if ( ! e.cooked) {
+			if (!e.cooked) {
 				setRawValue(e.target.value);
 			}
 			let mv = modelValueFromInput(e.target.value, type, e, storeValue, props);
@@ -347,17 +365,12 @@ const PropControl2 = (props) => {
 
 	// Is there a plugin for this type?
 	if ($widgetForType[type]) {
-		const $widget = $widgetForType[type];
-
-		const props2 = {
-			...props,
-			storeValue,
-			onChange,
-		};
+		const Widget = $widgetForType[type];
+		const props2 = { ...props, storeValue, onChange };
 		// Fill in default modelValueFromInput but don't override an explicitly provided one
 		if (!modelValueFromInput) props2.modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
 
-		return <$widget {...props2} />
+		return <Widget {...props2} />
 	}
 
 	// Checkbox?
@@ -365,7 +378,7 @@ const PropControl2 = (props) => {
 		// on/off values hack - make sure we don't have "false"
 		// Is the checkbox for setting [path].prop = true/false, or for setting path.prop = [pvalue]/null?
 		let onValue = props.pvalue || true;
-		let offValue = props.pvalue? null : false;
+		let offValue = props.pvalue ? null : false;
 
 		if (_.isString(storeValue)) {
 			if (storeValue === 'true') onValue = true;
@@ -388,7 +401,7 @@ const PropControl2 = (props) => {
 			const newVal = isOn ? onValue : offValue;
 			DSsetValue(proppath, newVal); // Debugging no-visual-update bug May 2022 on testmy.gl: tried update=true here -- no change :(
 			setTimeout(() => DataStore.update(), 1); // HACK for no-visual-update bug May 2022 seen on testmy.gl
-			if (saveFn) saveFn({ event: e, path, prop, value:newVal });			
+			if (saveFn) saveFn({ event: e, path, prop, value:newVal });
 		};
 
 		const helpIcon = tooltip ? <Misc.Icon fa="question-circle" title={tooltip} /> : null;
@@ -406,7 +419,7 @@ const PropControl2 = (props) => {
 		return <PropControlYesNo path={path} prop={prop} value={storeValue} inline={inline} saveFn={saveFn} />
 	}
 
-	// Deprecated - prefer PropControlEntrySet - only known use of this is portal, AdDesignExtraControls
+	// @deprecated: prefer PropControlEntrySet - only known use of this is portal, AdDesignExtraControls
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
 	}
@@ -519,14 +532,14 @@ const PropControl2 = (props) => {
 }; //./PropControl2
 
 
-const FOCUS_PATH = ["widget","PropControl","focus"];
+const FOCUS_PATH = ['widget', 'PropControl', 'focus'];
 
 /**
  * Status: doesn't work :(
  * @param {?String[]} proppath 
  */
 const setFocus = (proppath) => {
-	DataStore.setValue(FOCUS_PATH, proppath? proppath[proppath.length-1] : null); // TODO .join(".")
+	DataStore.setValue(FOCUS_PATH, proppath ? proppath[proppath.length-1] : null); // TODO .join('.')
 }
 
 // /**

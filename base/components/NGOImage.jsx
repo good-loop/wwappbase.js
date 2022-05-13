@@ -9,41 +9,62 @@ import BG from "./BG";
  * @param {NGO} ngo
  * @param {?Boolean} main use the main photo
  * @param {?Boolean} header use the header photo
+ * @param {?Boolean} backdrop use a random photo that is marked as backdrop friendly
  * @param {Number} imgIdx use a specific image from the image list
  * @param {?Boolean} bg render as a BG component instead
  * @param {?String} src if no NGO is set, will render this like a normal image as a fallback (defaults to main photo). 
  * 	If no src and no NGO, then render null.
  * @param {?JSX} children ??What is the use-case for children of an image??
  */
-const NGOImage = ({ngo, main, header, imgIdx, bg, src, children, ...props}) => {
-    assert(imgIdx !== undefined || main || header); // temporary
+const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...props}) => {
+    assert(imgIdx !== undefined || main || header || backdrop); // temporary
+
+	const [useUrl, setUseUrl] = useState();
+	const [randIdx, setRandIdx] = useState(-1);
 
     const ImgType = bg ? BG : "img";
     if (children && !bg) {
         console.warn("NGOImage set to normal image but given children - will not correctly render!");
     }
 
-    let useUrl;
-	if (ngo) {
-		// Use main if specified
-		if (main) useUrl = ngo.images;
-		// Use header if specified
-		if (header) {
-			useUrl = ngo.headerImage;
-			if ( ! useUrl) {
-				// TODO Hm: could we use a composite image to create a banner effect?
-				useUrl = ngo.images;
+	useEffect (() => {
+		if (ngo) {
+			// Use main if specified
+			if (main) setUseUrl(ngo.images);
+			// Use header if specified
+			if (header) {
+				setUseUrl(ngo.headerImage);
+				if ( ! useUrl) {
+					// TODO Hm: could we use a composite image to create a banner effect?
+					setUseUrl(ngo.images);
+				}
+			}
+			if (backdrop && ngo.imageList) {
+				const useableImages = ngo.imageList.filter(imgObj => imgObj.backdrop);
+				console.log("BACKDROP IMAGES:", useableImages);
+				if (useableImages.length > 0) {
+					// Use states to prevent random selections reoccuring every re-render
+					let newIdx = Math.floor(Math.random()*useableImages.length);
+					if (randIdx === -1) {
+						setRandIdx(newIdx);
+					} else {
+						newIdx = randIdx;
+					}
+					let selImg = useableImages[newIdx];
+					setUseUrl(selImg.contentUrl);
+				}
+			}
+			if (imgIdx !== null && ngo.imageList && ngo.imageList[imgIdx]) {
+				setUseUrl(ngo.imageList[imgIdx].contentUrl);
 			}
 		}
-		if (imgIdx !== null && ngo.imageList && ngo.imageList[imgIdx]) {
-			useUrl = ngo.imageList[imgIdx].contentUrl;
-		}
-	}
-	if ( ! useUrl) useUrl = src;
-	if ( ! useUrl) return null; // no fallback? then no render
+	}, [ngo, main, header, backdrop, imgIdx]);
+
+	const finalUrl = useUrl || src;
+	if ( ! finalUrl) return null; // no fallback? then no render
 
 	// ??what is the id used for? Is it for debug purposes??
-    return <ImgType src={useUrl} id={"imageList-" + imgIdx + "-contentUrl"} {...props}>{children}</ImgType>;
+    return <ImgType src={finalUrl} id={"imageList-" + imgIdx + "-contentUrl"} {...props}>{children}</ImgType>;
 
 };
 
