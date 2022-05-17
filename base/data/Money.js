@@ -191,7 +191,8 @@ Money.CURRENCY_FOR_COUNTRY = {
 	TR: 'TRY',
 	MX: 'MXN',
 	JP: 'JPY',
-	CN: 'CNY'
+	CN: 'CNY',
+	CA: 'CAD'
 }
 
 /**
@@ -207,6 +208,7 @@ Money.GBP_VALUES = {
 	TRY: 19.001, // Turkish lira
 	JPY: 165.501, // Japanese yen
 	CNY: 8.380, // Chinese yuan / RMB
+	CAD: 1.58, // Canadian dollar
 }
 
 Money.CURRENCY_NAMES = {
@@ -218,6 +220,7 @@ Money.CURRENCY_NAMES = {
 	TRY: 'Turkish lira',
 	JPY: 'Japanese yen',
 	CNY: 'Chinese yuan',
+	CAD: 'Canadian dollar',
 }
 
 /**
