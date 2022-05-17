@@ -75,6 +75,7 @@ ServerIO.checkBase = () => {
 		if (ServerIOOverrides) {
 			Object.entries(ServerIOOverrides).forEach(([key, val]) => {
 				ServerIO[key] = val;
+				console.log("SERVERIOOVERRIDE", key, val);
 			});
 		}
 	} catch (e) {} // Ignore "process is undefined" etc errors
@@ -323,7 +324,8 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 	// HACK route charity requests to SoGive
 	if (type==='NGO' && C.app.id !== 'sogive') {
 		id = normaliseSogiveId(id);
-		return ServerIO.ENDPOINT_NGO+"/"+encURI(id)+'.json'+(status? '?status='+status : '');
+		const endpoint = "https://test.sogive.org/charity";//ServerIO.ENDPOINT_NGO;
+		return endpoint+"/"+encURI(id)+'.json'+(status? '?status='+status : '');
 	}	
 	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);

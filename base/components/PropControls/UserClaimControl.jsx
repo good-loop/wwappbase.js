@@ -71,6 +71,7 @@ export const getEmail = () => {
  * @returns pvCharity or null
  */
 export const getCharityObject = () => {
+    if (!Login.isLoggedIn()) return null;
     const cid = getPersonSetting({key:"charity"});
     if (!cid) {
         console.warn("getCharityObject - no charity id");
