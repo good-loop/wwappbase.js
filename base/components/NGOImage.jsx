@@ -41,7 +41,6 @@ const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...pr
 			}
 			if (backdrop && ngo.imageList) {
 				const useableImages = ngo.imageList.filter(imgObj => imgObj.backdrop);
-				console.log("BACKDROP IMAGES:", useableImages);
 				if (useableImages.length > 0) {
 					// Use states to prevent random selections reoccuring every re-render
 					let newIdx = Math.floor(Math.random()*useableImages.length);
@@ -55,7 +54,8 @@ const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...pr
 				}
 			}
 			if (imgIdx !== null && ngo.imageList && ngo.imageList[imgIdx]) {
-				setUseUrl(ngo.imageList[imgIdx].contentUrl);
+				const useableImages = ngo.imageList.filter(imgObj => !imgObj.backdrop);
+				setUseUrl(useableImages.length > imgIdx ? useableImages[imgIdx].contentUrl : null);
 			}
 		}
 	}, [ngo, main, header, backdrop, imgIdx]);
