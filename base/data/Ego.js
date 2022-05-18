@@ -1,16 +1,22 @@
 
 import DataClass from './DataClass';
 
-class Pronoun {
+export class Pronoun {
     /** @type{String} they */
     subject;
     /** @type{String} them */
     object;
     /** @type{String} their */
     possessive;
+
+    constructor (subject, object, possessive) {
+        this.subject = subject;
+        this.object = object;
+        this.possessive = possessive;
+    }
 }
 
-class Identity {    
+export class Identity {    
     /** @type{String} mostly null, for plural identities*/
     name;
     /** @type{Array(String[])} each gender is a list of labels*/

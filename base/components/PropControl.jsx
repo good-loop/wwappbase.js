@@ -29,6 +29,7 @@ import { luminanceFromHex } from './Colour';
 import { nonce } from '../data/DataClass';
 
 import { countryListAlpha2 } from '../data/CountryRegion';
+import { PropControlGender } from './PropControls/PropControlEgo';
 
 /**
  * Set the value and the modified flag in DataStore.
