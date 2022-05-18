@@ -170,7 +170,6 @@ Money.eq = (a, b) => {
 /**
  * @deprecated (dont use externally) currency code to everyday symbol
  */
-// could we use an enum instead??
 Money.CURRENCY = {
 	GBP: "£",
 	USD: "$",
@@ -178,6 +177,7 @@ Money.CURRENCY = {
 	EUR: "€",
 	MXN: "MX$",
 	JPY: "¥",
+	CAD: "C$",
 	CNY: "¥", // Same symbol with Yen
 	TRY: "₺"
 };
