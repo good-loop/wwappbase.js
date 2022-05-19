@@ -297,7 +297,7 @@ const THead = ({ visibleColumns, tableSettings, headerRender, topRow, dataTree }
 /**
  * 
  * @param {Object} params
- * @param {!Column[]} params.visibleColumns
+ * @param {!Column[]|String[]} params.visibleColumns
  * @param {!TableSettings} params.tableSettings
  */
 const createCSVData = ({ visibleColumns, topRow, tableSettings, dataTree, bottomRow }) => {
@@ -902,7 +902,11 @@ const csvEscCell = s => {
 	return '"' + s + '"';
 };
 
-
+/**
+ * 
+ * @param {Object} p
+ * @param {!Column[]|string[]} p.columns
+ */
 const DownloadCSVLink = ({columns, data, name}) => {
 	let dataTree = standardiseData({data});
 	let tableSettings = {name};

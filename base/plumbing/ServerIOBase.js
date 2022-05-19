@@ -418,6 +418,9 @@ ServerIO.getEndpointForType = (type) => {
 	if (type==='Campaign') {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/campaign';
 	}
+	if (type==='GreenTag') {
+		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/greentag';
+	}
 
 	if (type==="Person" && ServerIO.USE_PROFILER) {
 		return ServerIO.PROFILER_ENDPOINT+"/person";
