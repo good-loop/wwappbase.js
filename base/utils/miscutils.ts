@@ -6,6 +6,10 @@ import PromiseValue from 'promise-value';
 
 // Should we switch back to .js over .ts??
 
+export const isDebug = () => {
+	return window.isDebug; // set by our index.html code (which also picks which js bundle to load)
+};
+
 export const randomPick = function <T>(array: T[]): T {
 	if (!array) {
 		return null;
