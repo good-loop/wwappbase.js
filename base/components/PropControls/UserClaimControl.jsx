@@ -177,6 +177,9 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
         "checkboxObject",
         "DataItem",
         "Money",
+        "gender",
+        "pronoun",
+        "ego"
     ];
     const isJsonType = json_types.includes(props.type);
 

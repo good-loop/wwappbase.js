@@ -14,6 +14,10 @@ export class Pronoun {
         this.object = object;
         this.possessive = possessive;
     }
+
+    toString () {
+        return this.subject + "/" + this.object + "/" + this.possessive;
+    }
 }
 
 export class Identity {    
@@ -45,6 +49,7 @@ class Ego extends DataClass {
 		DataClass._init(this, base);
 	}
 }
-DataClass.register(Ego, "Ego"); 
+
+DataClass.register(Ego, "Ego");
 
 export default Ego;

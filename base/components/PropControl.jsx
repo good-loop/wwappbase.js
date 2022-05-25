@@ -29,7 +29,6 @@ import { luminanceFromHex } from './Colour';
 import { nonce } from '../data/DataClass';
 
 import { countryListAlpha2 } from '../data/CountryRegion';
-import { PropControlGender } from './PropControls/PropControlEgo';
 
 /**
  * Set the value and the modified flag in DataStore.
@@ -513,7 +512,7 @@ const PropControl2 = (props) => {
 		return <PropControlSelect  {...props2} />
 	}
 
-	if (type === 'gender') {
+	/*if (type === 'gender') {
 		
 		let props2 = { onChange, value, ...props };
 		return <PropControlGender {...props2}/>
@@ -521,8 +520,8 @@ const PropControl2 = (props) => {
 		/*
 		props2.options = ["male", "female", "others", "nottosay"];
 		props2.labels = ["Male", "Female", "Others", "Preferred not to say"];
-		return <PropControlSelect  {...props2} />*/
-	}
+		return <PropControlSelect  {...props2} />
+	}*/
 
 	if (type === 'color') {
 		return <PropControlColor type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;

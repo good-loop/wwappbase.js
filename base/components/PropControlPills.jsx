@@ -72,6 +72,5 @@ const PropControlPills = ({storeValue, modelValueFromInput, path, prop, onBlur, 
 	</div>);
 }
 
-//registerControl({type:'pills', $Widget: PropControlPills});
+registerControl({type:'pills', $Widget: PropControlPills});
 
-export default PropControlPills;
