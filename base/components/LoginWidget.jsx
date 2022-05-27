@@ -31,7 +31,7 @@ const PERSON_PATH  = ['data', C.TYPES.User, 'loggingIn'];
 /** Pretty names for the available verbs  */
 const displayVerb = {
 	login: "Log in",
-	register: "Register",
+	register: "Create Account", // Was "Register"
 	reset: "Reset",
 	signin: "Sign in",
 	connect: "Connect"
@@ -40,7 +40,7 @@ const displayVerb = {
 /** As above, but for a button */
 const verbButtonLabels = {
 	login: 'Sign In',
-	register: 'Register',
+	register: 'Create Account', // Was "Register"
 	reset: 'Reset password',
 };
 
