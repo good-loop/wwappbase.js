@@ -37,6 +37,7 @@ import List from '../data/List';
  * TODO test "" works
  * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
  * @param {?Function} p.filterFn - A local filter function. Can be combined with filter/canFilter
+ * @param {?Function} p.transformFn - do some transformation on the list after all filtering/sorting. should return a new array
  * @param {?List} p.list No loading - just use this list of hits
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
  * @param {?Boolean} p.canCreate - If set, show a Create
@@ -67,6 +68,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	start, end,
 	sort = 'created-desc',
 	filter, filterFn, hasFilter, filterLocally,
+	transformFn,
 	list,
 	ListItem=DefaultListItem, nameFn,
 	checkboxes,
@@ -147,7 +149,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	let total = list && List.total(list); // FIXME this ignores local filtering
 	
 	// ...filter / resolve
-	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter });
+	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter, transformFn });
 	if (items && hits && items.length < hits.length) {
 		// filtered out locally - reduce the total
 		total = items.length;
@@ -245,7 +247,7 @@ const MassActionToolbar = ({ type, canDelete, items }) => {
  * @param {?Ref[]} hits 
  * @returns {Item[]}
  */
-const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, fastFilter }) => {
+const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, transformFn, fastFilter }) => {
 	if (!hits) {
 		// an ajax call probably just hasn't loaded yet
 		return [];
@@ -271,6 +273,11 @@ const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, fast
 	if (filterFn) {
 		hits = hits.filter(filterFn);
 	}
+
+	if (transformFn) {
+		hits = transformFn(hits);
+	}
+
 	// ...string filter, dedupe, and ad
 	if (!filter) fastFilter = false; // avoid pointless work in the loop
 	hits.forEach(item => {

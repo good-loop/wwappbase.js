@@ -825,3 +825,35 @@ export const toCanonical = (text: String) => {
 	if ( ! text) return "";
 	return text.trim().toLowerCase().replaceAll(/\W+/g, " ");
 };
+
+export const hardNormalize = (text: String) => {
+	text = toCanonical(text);
+	// Remove all non-letter characters entirely
+	text.replaceAll(/\W+/g, "");
+}
+
+/**
+ * Find a partial match of a string
+ * 1 = full match, 0 = no match
+ * @param {String} text 
+ * @param {String} match 
+ * @param {?Boolean} normalize
+ * @returns 
+ */
+ export const partialMatch = (text, match, normalize) => {
+	if (normalize) {
+		text = hardNormalize(text);
+		match = hardNormalize(match);
+	}
+	const len = match.length;
+	// Reduce match length until a match is made
+	for (let i = len; i > 0; i--) {
+		if (text.includes(match.substring(0, i))) {
+			// Find factor of match and return
+			// 1 = perfect match, 0 = no match
+			const factor = i / len;
+			return factor;
+		}
+	}
+	return 0;
+};
