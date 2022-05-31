@@ -154,7 +154,7 @@ class MainDivBase extends Component {
 		// which page?
 		let path = DataStore.getValue('location', 'path');
 		let page = (path && path[0]);
-		if ( ! page) {
+		if (!page) {
 			// defaultPage may be dynamic
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
@@ -172,7 +172,7 @@ class MainDivBase extends Component {
 
 		let e404 = false;
 		let Page = pageForPath[page];
-		if ( ! Page) {
+		if (!Page) {
 			// basic account?
 			if (page === 'account') Page = BasicAccountPage;
 			else {
@@ -180,12 +180,14 @@ class MainDivBase extends Component {
 				e404 = true;
 			}
 		}
+
 		// error handler
 		if (this.state && this.state.error && this.state.errorPath === path) {
 			Page = DefaultErrorPage;
 		}
+
 		// must login?
-		if (loginRequired && ! Login.isLoggedIn()) {
+		if (loginRequired && !Login.isLoggedIn()) {
 			Page = LoginPage;
 		} else if (securityCheck) {
 			try {
@@ -194,11 +196,23 @@ class MainDivBase extends Component {
 				Page = () => <SecurityFailPage error={err} />;
 			}
 		}
+
 		// full screen?
 		// Either by page, or for a dynamic setting within a page - HACK set window.fullWidthPage=true/false
 		let fluid = (fullWidthPages && fullWidthPages.includes(page)) || window.fullWidthPage || e404;
 		if (!undecorated) undecorated = !!DataStore.getUrlValue("undecorated");
 		if (!undecorated) undecorated = undecoratedPages && undecoratedPages.includes(page);
+
+		// Hack enabler: Apply a page-specific class to the outermost container.
+		const mainDiv = document.querySelector('#mainDiv');
+		if (mainDiv) {
+			const newPageClass = `page-${page}`;
+			const currentPageClass = [...mainDiv.classList].find(cls => cls.value.match(/page-\w+/));
+			if (newPageClass !== currentPageClass) {
+				currentPageClass && mainDiv.classList.remove(currentPageClass);
+				mainDiv.classList.add(newPageClass);
+			}
+		}
 		
 		return <div>
 			{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
