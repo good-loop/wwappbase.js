@@ -15,7 +15,7 @@ const EMOJI = {
 	clipboard: "📋",
 	globe: "🌍",
 	hourglass: "⏳",
-	info: "🛈", // ℹ or 🛈
+	info: "ⓘ", // ℹ or 🛈
 	intray: "📥",
 	memo: "📝",
 	outtray: "📤",
