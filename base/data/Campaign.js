@@ -101,17 +101,17 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
  * @param {Advertiser|Agency} multiCampaign 
  * @returns PromiseValue(Campaign)
  */
-Campaign.fetchMasterCampaign = (multiCampaign, status=KStatus.DRAFT) => {
+Campaign.fetchMasterCampaign = (multiCampaign, status=KStatus.PUB_OR_DRAFT) => {
     if (!multiCampaign.campaign) return null;
     let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:multiCampaign.campaign});
     return pvCampaign;
 }
 
 /**
- * Get all campaigns matchin an advertiser
+ * Get all campaigns matching an advertiser
  * @param {Advertiser} vertiser
  * @param {KStatus} status
- * @returns PromiseValue(Campaign)
+ * @returns PromiseValue(Campaign[])
  */
  Campaign.fetchForAdvertiser = (vertiserId, status=KStatus.DRAFT) => {
     let q = SearchQuery.setProp(new SearchQuery(), "vertiser", vertiserId).query;

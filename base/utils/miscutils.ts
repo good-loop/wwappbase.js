@@ -6,6 +6,10 @@ import PromiseValue from 'promise-value';
 
 // Should we switch back to .js over .ts??
 
+export const isDebug = () => {
+	return window.isDebug; // set by our index.html code (which also picks which js bundle to load)
+};
+
 export const randomPick = function <T>(array: T[]): T {
 	if (!array) {
 		return null;
@@ -601,7 +605,7 @@ export const ellipsize = function (s: string, maxLength: number) {
 	if (!s) return s;
 	if (!maxLength) maxLength = 140;
 	if (s.length <= maxLength) return s;
-	return s.substr(0, maxLength - 1) + '…'; // NB: React doesn't render html entities, so lets use a unicode ellipsis.
+	return s.substr(0, maxLength - 1).replace(/ *$/g, '') + '…'; // NB: React doesn't render html entities, so lets use a unicode ellipsis.
 };
 
 /**
@@ -820,4 +824,36 @@ export const article = (noun: Object) => ('aeiou'.indexOf(String(noun).toLowerCa
 export const toCanonical = (text: String) => {
 	if ( ! text) return "";
 	return text.trim().toLowerCase().replaceAll(/\W+/g, " ");
+};
+
+export const hardNormalize = (text: String) => {
+	text = toCanonical(text);
+	// Remove all non-letter characters entirely
+	text.replaceAll(/\W+/g, "");
+}
+
+/**
+ * Find a partial match of a string
+ * 1 = full match, 0 = no match
+ * @param {String} text 
+ * @param {String} match 
+ * @param {?Boolean} normalize
+ * @returns 
+ */
+ export const partialMatch = (text, match, normalize) => {
+	if (normalize) {
+		text = hardNormalize(text);
+		match = hardNormalize(match);
+	}
+	const len = match.length;
+	// Reduce match length until a match is made
+	for (let i = len; i > 0; i--) {
+		if (text.includes(match.substring(0, i))) {
+			// Find factor of match and return
+			// 1 = perfect match, 0 = no match
+			const factor = i / len;
+			return factor;
+		}
+	}
+	return 0;
 };

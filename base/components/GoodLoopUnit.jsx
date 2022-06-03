@@ -156,7 +156,7 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
  * @param {?JSX} p.Editor added right after the iframe
  * @param {?boolean|string} p.useScreenshot If set, prefer a screenshot instead of the actual unit. Use a string to pick a size eg landscape
  */
-const GoodLoopUnit = ({vertId, className, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback, useScreenshot}) => {
+const GoodLoopUnit = ({vertId, className, style, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback, useScreenshot}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug || !C.isProduction();
@@ -260,6 +260,8 @@ const GoodLoopUnit = ({vertId, className, css, size = 'landscape', status, play 
 		if (size === 'landscape') dims.height = `${width * 0.5625}px`; // 0.5625 = 9/16
 		else if (size === 'portrait') dims.width = `${height * 0.5625}px`;
 	}
+
+	Object.assign(dims, style);
 
 	return (
 		<div className={space("goodLoopContainer", className)} style={dims} ref={receiveContainer} id={vertId}>

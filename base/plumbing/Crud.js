@@ -664,7 +664,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 	assert(C.TYPES.has(type), type);
 	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found
 	if (q) assMatch(q, String); // NB: q should not be a SearchQuery
-	if (ids) {
+	if (ids && ids.length) {
 		q = SearchQuery.setPropOr(q, "id", ids).query;
 	}
 	const lpath =  getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});

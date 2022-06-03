@@ -15,7 +15,7 @@ const EMOJI = {
 	clipboard: "📋",
 	globe: "🌍",
 	hourglass: "⏳",
-	info: "🛈", // ℹ or 🛈
+	info: "ⓘ", // ℹ or 🛈
 	intray: "📥",
 	memo: "📝",
 	outtray: "📤",
@@ -25,6 +25,8 @@ const EMOJI = {
 	tick: "✔",
 	trashcan: "🗑", //&#x1f5d1;
 	".txt":"🖹",	
+	mobile: "📱",
+	desktop: "💻", // or 🖳	
  };
  const SVG = {
 	 // (cc) https://icons8.com/icons/set/share
@@ -50,7 +52,8 @@ const Icon = ({name,size="sm",className,color,...props}) => {
 		if (color && ! ['black','white','grey'].includes(color)) {
 			console.warn("Icon.jsx color not directly supported: "+color+" Icons can only reliably use a few set colors cross-device.");
 		}
-		// see Icon.less
+		// TODO test for character support -- try this https://stackoverflow.com/a/63520666
+		// see Icon.less for emoji-X 
 		return <span className={space("emoji", color&&"emoji-"+color, size&&"logo-"+size, className)} dangerouslySetInnerHTML={{__html:EMOJI[name]}} {...props} />;
 	}
 	if (SVG[name]) {
