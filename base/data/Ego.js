@@ -20,6 +20,10 @@ export class Pronoun {
     }
 }
 
+Pronoun.fromObj = obj => {
+    return new Pronoun(obj.subject, obj.object, obj.possessive);
+}
+
 export class Identity {    
     /** @type{String} mostly null, for plural identities*/
     name;

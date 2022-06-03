@@ -75,8 +75,9 @@ export const PropControlPronoun = ({storeValue, modelValueFromInput, path, prop,
         storeValue = storeValue.split(',');
     }
 
-    const onAddTag = tag => {
-        let tags2 = storeValue ? storeValue.concat(tag) : [tag];
+    const onAddTags = tags => {
+        const pronouns = new Pronoun(tags[0], tags[1], tags[2]);
+        let tags2 = storeValue ? storeValue.concat(pronouns) : [pronouns];
 		let tags3 = modelValueFromInput? modelValueFromInput(tags2) : tags2;
 		DSsetValue(proppath, tags3);
 		if (saveFn) saveFn({path, prop});
@@ -94,9 +95,10 @@ export const PropControlPronoun = ({storeValue, modelValueFromInput, path, prop,
         <TagInputMultiWord tags={storeValue}
             wordNum={3}
             placeholders={["they", "them", "their"]}
-            onAddTag={onAddTag} 
+            onAddTags={onAddTags} 
             onRemoveTag={onRemoveTag}
             autofillOptions={DEFAULT_GENDER_LABELS}
+            tagFn={tag => Pronoun.fromObj(tag).toString()}
         />
     </div>
 
