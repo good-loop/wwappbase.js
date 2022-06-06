@@ -90,7 +90,7 @@ const ShareWidget = ({shareId, item, type, id, name, hasButton}) => {
 	let title = `Share ${name}`;
 	let {email: withXId, enableNotification} = form;
 	if (withXId) withXId += '@email';
-	let shares = Shares.getShareListPV(shareId).value;
+	let shares = show && Shares.getShareListPV(shareId).value;
 	let emailOK = isEmail(DataStore.getValue(formPath.concat('email')));
 	// TODO share by url on/off
 	// TODO share message email for new sharers
