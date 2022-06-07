@@ -29,9 +29,9 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed, pageSize=20, navpage, notALink
 }) => {
 	let pvDI = {};
-	if (rawValue) {
-		pvDI = getDataItem({ type: itemType, id: rawValue, status, domain, swallow: true });
-	} 
+	if (rawValue || (storeValue && ! embed)) {
+		pvDI = getDataItem({ type: itemType, id: rawValue || storeValue, status, domain, swallow: true });
+	}
 
 	// let pvItemsAll = ActionMan.list({ type: itemType, status, q: rawValue });
 	// console.log(rawValue, pvItemsAll);
@@ -128,7 +128,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 			onKeyDown={kd} onMouseOut={e => pickmenot(meid)}
 		>
 			<Col md={8}>
-				<Input type='text' value={rawValue || ''} onChange={onChange} />
+				<Input type='text' value={rawValue || storeValue || ''} onChange={onChange} />
 				{ll && <div className='position-relative'><div className='position-absolute' // NB: the two divs are needed to "float" the element (float itself doesnt seem to work here)
 					style={{float:"left", opacity:ll==="..."?0.25:"inherit", top:0, left:0, zIndex:1000, background:"rgba(255,255,255,0.9)", border:"1px solid #80bdff", boxShadow: "0 0 0 0.2rem rgb(0 123 255 / 25%)"}}>
 					{rawValue && <ListLoad hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem} 
