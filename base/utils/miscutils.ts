@@ -829,18 +829,19 @@ export const toCanonical = (text: String) => {
 export const hardNormalize = (text: String) => {
 	text = toCanonical(text);
 	// Remove all non-letter characters entirely
-	text.replaceAll(/\W+/g, "");
+	text.replaceAll(/\W+/g, "").replaceAll(/ +/g, "");
+	return text;
 }
 
 /**
- * Find a partial match of a string
+ * Find a partial match of string "match" in string "text"
  * 1 = full match, 0 = no match
  * @param {String} text 
  * @param {String} match 
  * @param {?Boolean} normalize
  * @returns 
  */
- export const partialMatch = (text, match, normalize) => {
+ export const partialMatch = (text: String, match: String, normalize: Boolean) => {
 	if (normalize) {
 		text = hardNormalize(text);
 		match = hardNormalize(match);
@@ -856,4 +857,15 @@ export const hardNormalize = (text: String) => {
 		}
 	}
 	return 0;
+};
+
+/**
+ * same as Array.map, but just takes a number. Useful for render functions
+ * @param func function to loop with
+ */
+export const mapNew = (num: number, func: Function) => {
+
+	const numIterator = Array.from(Array(num));
+	return numIterator.map((v, i) => func(i));
+
 };

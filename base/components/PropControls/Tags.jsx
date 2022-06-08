@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { Badge, Button } from 'reactstrap';
 import { assert } from '../../utils/assert';
+import { hardNormalize, mapNew, partialMatch } from '../../utils/miscutils';
 import CloseButton from '../CloseButton';
 
 /**
@@ -11,7 +12,8 @@ import CloseButton from '../CloseButton';
 export const Autofill = ({value, onSelect, options}) => {
 
     let labels = Object.values(options);
-    labels = labels.filter(label => label.toLowerCase().replace(/\W+/g, '').includes(value.toLowerCase()));
+    labels = labels.filter(label => hardNormalize(label).includes(hardNormalize(value)));
+    //labels.sort((a, b) => partialMatch(b, value, true) - partialMatch(a, value, true));
     let filteredOptions = {};
     labels.forEach(label => {
         Object.keys(options).forEach(option => {
@@ -45,6 +47,7 @@ export const Autofill = ({value, onSelect, options}) => {
  * @param {*} onAddTag 
  * @param {*} onRemoveTag 
  * @param {*} tagFn used to transform the tag objects before being displayed
+ * @param {?Function} onAutofill
  * @returns 
  */
 export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAddTags, onRemoveTag, autofillOptions, tagFn, ...props}) => {
@@ -54,19 +57,19 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAdd
     assert(wordNum);
     assert(!placeholders || placeholders.length === wordNum);
 
-    const wordNumIterator = Array.from(Array(wordNum));
-
     const [showAutofill, setShowAutofill] = useState(false);
     // An array of state functions - creates a 2d array
     // first index is which input, second is value or set function
     // e.g. set second input value is vals[1][0]("abc")
-    const vals = wordNumIterator.map(() => useState(""));
-    const inputRefs = wordNumIterator.map(() => useRef(null));
+    const vals = mapNew(wordNum, () => useState(""));
+    const inputRefs = mapNew(wordNum, () => useRef(null));
 
     const filteredOptions = {};
     Object.keys(autofillOptions).forEach(option => {
         if (!tags.includes(option)) filteredOptions[option] = autofillOptions[option];
     });
+
+    const currentVals = () => vals.map(v => v[0]).filter(x => x && x !== "");
 
     const changeVals = newVals => {
         assert(newVals.length === wordNum);
@@ -77,11 +80,13 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAdd
     }
 
     const clearVals = () => {
-        changeVals(wordNumIterator.map(() => ""));
+        changeVals(mapNew(wordNum, () => ""));
     }
 
     const tryAddTags = tags => {
         if (!tags) return;
+        // Check for empty tags
+        if (tags.filter(x => x && x !== "").length !== tags.length) return;
         onAddTags(tags);
         clearVals();
     }
@@ -97,10 +102,10 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAdd
 		// console.log("keyup", e.key, e.keyCode, e);
 		/*if (e.key==='Backspace' && tags.length) {
 			tryRemoveTag(tags[tags.length-1]);
-		}
-		if (e.key==='Enter') {
-			tryAddTag(changingVal);
 		}*/
+		if (e.key==='Enter') {
+			tryAddTags(currentVals());
+		}
 	};
 
     const changeVal = (e, idx) => {
@@ -109,18 +114,33 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAdd
         onType && onType();
     }
 
+    const onAutofillSelect = options => {
+        //if (!onAutofill) tryAddTags(options);
+        //else onAutofill(options);
+        changeVals(options);
+    };
+
     return (<div className='tag-input'>
         <div className="tags flex-row flex-wrap">
 		    {tags.map((tg,i) => <Badge className='mr-1 mb-1' key={i} color="primary">{tagFn ? tagFn(tg) : tg}&nbsp;<CloseButton onClick={e => tryRemoveTag(tg)}/></Badge>)}
         </div>
         <div className="new-tags position-relative flex-row" tabIndex={0} onFocus={() => setShowAutofill(true)} onBlur={() => setShowAutofill(false)}>
 
-            {wordNumIterator.map((n, i) => <input key={i} value={vals[i][0]} className='form-control'
-                onKeyUp={onKeyUp} placeholder={placeholders && placeholders[i]} ref={inputRefs[i]} onChange={e => changeVal(e, i)}/>)}
+            {mapNew(wordNum, i => <input key={i} value={vals[i][0]} className='form-control'
+                onKeyUp={onKeyUp} placeholder={placeholders && placeholders[i]} ref={inputRefs[i]}
+                onChange={e => changeVal(e, i)}
+                style={{
+                    borderTopLeftRadius: i !== 0 ? 0 : undefined,
+                    borderBottomLeftRadius: i !== 0 ? 0 : undefined,
+                    borderLeft: i !== 0 ? "none" : undefined,
+                    borderTopRightRadius: i !== wordNum - 1 ? 0 : undefined,
+                    borderBottomRightRadius: i !== wordNum - 1 ? 0 : undefined,
+                }}
+                />)}
 
-            <Button color="primary" className="px-2 ml-1" style={{borderRadius:5}} onClick={() => tryAddTags(vals.map(v => v[0]))}>✓</Button>
+            <Button color="primary" className="px-2 ml-1" style={{borderRadius:5}} onClick={() => tryAddTags(currentVals())}>✓</Button>
 
-            {showAutofill && autofillOptions && <Autofill value={vals[0][0]} options={filteredOptions} onSelect={option => tryAddTag(option)}/>}
+            {showAutofill && autofillOptions && <Autofill value={currentVals().join("/")} options={filteredOptions} onSelect={option => onAutofillSelect(option.split("/"))}/>}
         </div>
 	</div>);
 }
@@ -132,6 +152,7 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAdd
  * @param {*} tags
  * @param {*} onAddTag 
  * @param {*} onRemoveTag 
+ * @param {?Object} autofillOptions object of {key: label} options for autofill menu
  * @returns 
  */
  const TagInput = ({tags=[], placeholder, onType, onAddTag, onRemoveTag, autofillOptions, ...props}) => {
@@ -184,6 +205,10 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAdd
 		}
 	};
 
+    const onAutofillSelect = option => {
+        changeVal(option);
+    };
+
     return (<div className='tag-input'>
         <div className="tags flex-row flex-wrap">
 		    {tags.map((tg,i) => <Badge className='mr-1 mb-1' key={i} color="primary">{tg}&nbsp;<CloseButton onClick={e => tryRemoveTag(tg)}/></Badge>)}
@@ -191,7 +216,7 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAdd
         <div className="new-tags position-relative" tabIndex={0} onFocus={() => setShowAutofill(true)} onBlur={() => setShowAutofill(false)}>
             <input value={changingVal} className='form-control' placeholder={placeholder}
                 onChange={checkOnChange} onKeyUp={onKeyUp} {...props}/>
-            {showAutofill && autofillOptions && <Autofill value={changingVal} options={filteredOptions} onSelect={option => tryAddTag(option)}/>}
+            {showAutofill && autofillOptions && <Autofill value={changingVal} options={filteredOptions} onSelect={option => onAutofillSelect(option)}/>}
         </div>
 	</div>);
 }

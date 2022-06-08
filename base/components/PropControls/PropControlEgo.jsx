@@ -22,8 +22,7 @@ export const DEFAULT_GENDER_LABELS = {
     "fluid": "Genderfluid"
 };
 
-export const DEFAULT_PRONOUNS = {
-    "they/them/their": new Pronoun("they", "them", "their"),
+/*"they/them/their": new Pronoun("they", "them", "their"),
     "he/him/his": new Pronoun("he", "him", "his"),
     "she/her/her": new Pronoun("she", "her", "her"),
     "it/it/its": new Pronoun("it", "it", "its"),
@@ -32,7 +31,20 @@ export const DEFAULT_PRONOUNS = {
     "ae/aer/aer": new Pronoun("ae", "aer", "aer"),
     "ey/em/eir": new Pronoun("ey", "em", "eir"),
     "ze/hir/hir": new Pronoun("ze", "hir", "hir"),
-    "ve/ver/vis": new Pronoun("ve", "ver", "vis")
+    "ve/ver/vis": new Pronoun("ve", "ver", "vis")*/
+
+
+export const DEFAULT_PRONOUNS = {
+    "they/them/their": "they/them/their",
+    "he/him/his": "he/him/his",
+    "she/her/her": "she/her/her",
+    "it/it/its": "it/it/its",
+    "xe/xem/xyr": "xe/xem/xyr",
+    "fae/faer/faer": "fae/faer/faer",
+    "ae/aer/aer": "ae/aer/aer",
+    "ey/em/eir": "ey/em/eir",
+    "ze/hir/hir": "ze/hir/hir",
+    "ve/ver/vis": "ve/ver/vis"
 };
 
 export const PropControlGender = ({storeValue, modelValueFromInput, path, prop, proppath, type, fcolor, saveFn, ...props}) => {
@@ -90,14 +102,14 @@ export const PropControlPronoun = ({storeValue, modelValueFromInput, path, prop,
 		DSsetValue(proppath, tags2);
 		if (saveFn) saveFn({path, prop});
     }
-
+    
     return <div className="prop-control-gender position-relative">
         <TagInputMultiWord tags={storeValue}
             wordNum={3}
             placeholders={["they", "them", "their"]}
             onAddTags={onAddTags} 
             onRemoveTag={onRemoveTag}
-            autofillOptions={DEFAULT_GENDER_LABELS}
+            autofillOptions={DEFAULT_PRONOUNS}
             tagFn={tag => Pronoun.fromObj(tag).toString()}
         />
     </div>
