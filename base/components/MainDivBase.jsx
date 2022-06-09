@@ -149,7 +149,11 @@ class MainDivBase extends Component {
 		if (isFunction(navbarPages)) {
 			navbarPages = navbarPages();
 		}
-		if ( ! navbarPages) navbarPages = Object.keys(pageForPath);
+		if (!navbarPages) navbarPages = Object.keys(pageForPath);
+
+		if (isFunction(homeLink)) {
+			homeLink = homeLink();
+		}
 
 		// which page?
 		let path = DataStore.getValue('location', 'path');
