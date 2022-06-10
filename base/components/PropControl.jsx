@@ -951,7 +951,7 @@ const PropControlColor = ({onChange, ...props}) => {
 
 	// Allow user to clear the colour if present...
 	// but supply a dummy element (so FormControl still makes an input-group) that won't look strange behind the "no colour" overlay if not
-	const clearBtn = props.value ? <Button disabled={props.disabled} onClick={() => onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
+	const clearBtn = props.value ? <Button disabled={props.disabled} onClick={() => !disabled && onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
 
 	// Colour unset? 
 	if (!props.value) {
