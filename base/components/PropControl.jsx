@@ -285,9 +285,9 @@ const PropControl = ({className, ...props}) => {
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
 			{help && (inline || isCheck) && <Help>{help}</Help>}
-			{error && <span className="help-block text-danger">{error}</span>}
-			{warning && <span className="help-block text-warning">{warning}</span>}
-			{isModified(props) && <span className="help-block text-warning">Not Published Yet</span>}
+			{error && <span className="help-block text-danger data-error">{error}</span>}
+			{warning && <span className="help-block text-warning data-warning">{warning}</span>}
+			{isModified(props) && <span className="help-block text-warning data-modified">Not Published Yet</span>}
 		</FormGroup>
 	);
 }; // ./PropControl
@@ -951,7 +951,7 @@ const PropControlColor = ({onChange, ...props}) => {
 
 	// Allow user to clear the colour if present...
 	// but supply a dummy element (so FormControl still makes an input-group) that won't look strange behind the "no colour" overlay if not
-	const clearBtn = props.value ? <Button onClick={() => onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
+	const clearBtn = props.value ? <Button disabled={props.disabled} onClick={() => onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
 
 	// Colour unset? 
 	if (!props.value) {
