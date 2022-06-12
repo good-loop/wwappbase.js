@@ -268,7 +268,7 @@ const EmailReset = ({}) => {
 	const verb = 'reset';
 	const requested = DataStore.getValue('widget', 'LoginWidget', 'reset-requested');
 	const path = PERSON_PATH;
-
+	const [isLoading, setIsLoading] = useState();
 	const doItFn = e => {
 		stopEvent(e);				
 		let email = DataStore.getValue(path.concat("email"));
@@ -282,10 +282,13 @@ const EmailReset = ({}) => {
 			if (res.success) {
 				DataStore.setValue(['widget', 'LoginWidget', 'reset-requested'], true);
 			}
+			setIsLoading(false);
 			return res;
 		}).fail(() => {
 			DataStore.update({}); // The error will be in state, provoke a redraw to display it
+			setIsLoading(false);
 		});
+		setIsLoading(true);
 	};
 
 	return (
@@ -294,7 +297,7 @@ const EmailReset = ({}) => {
 			<PropControl label='Email' type="email" path={path} prop="email" placeholder="Email" />			
 			{requested ? <div className="alert alert-info">A password reset email has been sent out.</div> : ''}
 			<div className="form-group">
-				<Button type="submit" size="lg" color="primary" disabled={C.STATUS.isloading(status)}>
+				<Button type="submit" size="lg" color="primary" disabled={isLoading}>
 					{verbButtonLabels[verb]}
 				</Button>
 			</div> 
@@ -307,13 +310,13 @@ const EmailReset = ({}) => {
 /**
  * @param {Object} p
  * @param onLogin called after user has successfully logged in
+ * @param {?boolean} p.canRegister If true, offer "register" as an option.
  * @param onRegister called after the user has successfully registered
- * @param disableVerbSwitch remove the ability to change the action verb
  * @param {?Function|String} p.agreeToTerms Optional string or JSX element for an "I agree to the terms" checkbox
  * @param children appears between the default form inputs and submission button
  * @param buttonText optional button text which can replace the default (default: verb used)
  */
-const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister, disableVerbSwitch, className, agreeToTerms, children, buttonText}) => {
+const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister, className, agreeToTerms, children, buttonText}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
@@ -357,7 +360,7 @@ const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 						title={noAgreement? "You must agree to the terms if you want to use this service." : ""} >
 						{buttonText || verbButtonLabels[verb]}
 					</Button>			
-					{canRegister || disableVerbSwitch ? null : <SwitchVerb verb={verb} />}
+					{canRegister && <SwitchVerb verb={verb} />}
 				</div>
 				<ResetLink verb={verb} />
 			</div>
@@ -385,7 +388,7 @@ const ResetLink = ({verb}) => {
  */
 const LoginWidgetEmbed = ({services, verb, onLogin, onRegister, canRegister}) => {
 	// NB: prefer the user-set verb (so they can change it)
-	verb = DataStore.getValue(VERB_PATH) || verb || 'register';
+	verb = DataStore.getValue(VERB_PATH) || verb || (canRegister? 'register' : 'login');
 	
 	if (Login.isLoggedIn()) {
 		const user = Login.getUser();
