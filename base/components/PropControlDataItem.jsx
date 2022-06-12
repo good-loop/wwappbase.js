@@ -119,7 +119,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	};
 
 	const createThen = (args) => {
-		console.warn("createThen", args);
+		console.log("createThen", args);
 		setRawValue(args.id);
 	};
 
@@ -134,7 +134,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 					{rawValue && <ListLoad hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem} 
 						// TODO allow ListLoad to show if there are only a few options
 						noResults={canCreate && rawValue && " "} // this was confusing with the create button too (pvDI.value? <></> : "A new "+itemType+" named "+rawValue+" will be made.")}
-						pageSize={pageSize}
+						pageSize={pageSize} otherParams={{filterByShares:true}}
 					/>}
 				</div></div>}
 			</Col>
