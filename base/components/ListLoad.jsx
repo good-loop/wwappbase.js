@@ -53,7 +53,7 @@ import List from '../data/List';
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
  * 	Input props: {type, servlet, navpage, item, sort}
  * @param {?Function} p.nameFn passed to ListItem, to have custom name extraction
- * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
+ * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which don't nest).* 
  * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} p.hideTotal - If true, don't show the "Total about 17" line
  * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
@@ -61,6 +61,7 @@ import List from '../data/List';
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
  * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
  * @param {JSX|String} p.noResults  Message to show if there are no results
+ * @param {?Function} p.onClickItem  Custom non-navigation action when list item clicked
  * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
  */
 const ListLoad = ({ type, status, servlet, navpage,
@@ -84,6 +85,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	hideTotal,
 	pageSize,
 	unwrapped,
+	onClickItem,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) => {
@@ -161,7 +163,8 @@ const ListLoad = ({ type, status, servlet, navpage,
 		window.scrollTo(0, 0);
 	};
 	let allItems = items; // don't paginate the csv download
-	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;	
+	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;
+
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem ? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
 
@@ -193,15 +196,17 @@ const ListLoad = ({ type, status, servlet, navpage,
 					item={item}
 					sort={DataStore.getValue(['misc', 'sort'])}
 					nameFn={nameFn}
+					onClick={() => onClickItem(item)}
 				/>
 			</ListItemWrapper>
 		))}
-
-		{pageSize && total > pageSize && <div>
-			<Button className='mr-2' color='secondary' disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b>&lt;</b></Button>
-			page {(pageNum + 1)} of {Math.ceil(total / pageSize)}
-			<Button className='ml-2' color='secondary' disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b>&gt;</b></Button>
-		</div>}
+		{(pageSize && total > pageSize) && (
+			<div className="pagination-controls flex-row justify-content-between align-items-center">
+				<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b>◀</b></Button>
+				page {(pageNum + 1)} of {Math.ceil(total / pageSize)}
+				<Button className="ml-2" color="secondary" disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b>▶</b></Button>
+			</div>
+		)}
 		{isLoading && <Misc.Loading text={type.toLowerCase() + 's'} />}
 		<ErrAlert error={error} />
 	</div>);
@@ -340,7 +345,7 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, c
 		<div className="ListItemWrapper clearfix flex-row">
 			{checkbox}
 			<A href={itemUrl} key={'A' + id} notALink={notALink} cannotClick={cannotClick}
-				onClick={event => ! cannotClick && onPick({ event, navpage, id })}
+				onClick={event => !cannotClick && onPick({ event, navpage, id })}
 				className={itemClassName || space(`ListItem btn-default btn btn-outline-secondary status-${item.status}`, hasButtons && "btn-space")}
 			>
 				{children}
