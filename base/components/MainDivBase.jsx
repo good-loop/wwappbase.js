@@ -75,6 +75,21 @@ const init = () => {
 	Login.verify();
 };
 
+
+/** Apply the specified class to #mainDiv, replacing any class found matching the given regex */
+const setMainDivClass = (newClass, regex) => {
+	const mainDiv = document.querySelector('#mainDiv');
+	if (mainDiv) {
+		const prevClass = mainDiv.classList.values().find(cls => {
+			return cls.match(regex)
+		});
+		if (newClass !== prevClass) {
+			prevClass && mainDiv.classList.remove(prevClass);
+			mainDiv.classList.add(newClass);
+		}
+	}
+};
+
 /**
 	WARNING: This element will update on changes ...but the calling MainDiv most likely will *not*.
 	So the props will remain fixed.
@@ -207,16 +222,9 @@ class MainDivBase extends Component {
 		if (!undecorated) undecorated = !!DataStore.getUrlValue("undecorated");
 		if (!undecorated) undecorated = undecoratedPages && undecoratedPages.includes(page);
 
-		// Hack enabler: Apply a page-specific class to the outermost container.
-		const mainDiv = document.querySelector('#mainDiv');
-		if (mainDiv) {
-			const newPageClass = `page-${page}`;
-			const currentPageClass = [...mainDiv.classList].find(cls => cls.value.match(/page-\w+/));
-			if (newPageClass !== currentPageClass) {
-				currentPageClass && mainDiv.classList.remove(currentPageClass);
-				mainDiv.classList.add(newPageClass);
-			}
-		}
+		// Hack enabler: Apply some context-specific classes to the outermost container.
+		setMainDivClass(`page-${page}`, /page-\w+/);
+		setMainDivClass(`logged-${Login.isLoggedIn() ? 'in' : 'out'}`, /logged-\w+/);
 		
 		return <div>
 			{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
