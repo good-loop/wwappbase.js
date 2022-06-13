@@ -1,7 +1,7 @@
 import React from 'react';
 
-const SignatureSVG = ({name, title, href, hideLogo, ...props}) => {
-    return <svg id="svgOutput" viewBox={"0 -178.699 1200 " + (hideLogo ? "160" : "300")} xmlns="http://www.w3.org/2000/svg" {...props} >
+const SignatureSVG = ({name, title, href, hideLogo, svgwidth, ...props}) => {
+    return <svg id="svgOutput" viewBox={"0 -178.699 " + svgwidth + " " + (hideLogo ? "160" : "300")} xmlns="http://www.w3.org/2000/svg" {...props} >
         {!hideLogo && <g id="g36" transform="matrix(1, 0, 0, 1, -41.027996, -239.068924)">
             <g id="g12">
                 <path d="m 231.888,296.323 h 15.449 v 25.451 c -7.153,5.089 -16.952,7.812 -25.961,7.812 -19.694,0 -34.08,-13.253 -34.08,-31.947 0,-18.694 14.386,-31.95 34.434,-31.95 11.567,0 20.927,3.952 27.017,11.235 l -11.121,10 a 19.349,19.349 0 0 0 -15.014,-6.842 c -10.6,0 -17.656,6.932 -17.656,17.553 0,10.357 7.06,17.553 17.484,17.553 a 22.344,22.344 0 0 0 9.448,-2.018 z" id="path4" fill="#1d1d1b"/>
