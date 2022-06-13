@@ -186,6 +186,10 @@ You can apply it to, well, anything.
 			vertical-align: middle; // default for <img> but we also have dummy span.logo elements
 		}
 	}
+	// Non-link preview shouldn't look clickable
+	span.preview .data-item {
+		cursor: default;
+	}
 	// The autocomplete dropdown list
 	.items-dropdown {
 		display: block;

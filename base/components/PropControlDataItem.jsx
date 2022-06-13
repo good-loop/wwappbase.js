@@ -35,19 +35,17 @@ const SlimListItem = ({item, onClick, noClick}) => {
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
 const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, proppath, rawValue, setRawValue, storeValue, modelValueFromInput, 
-	type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed, pageSize=20, navpage, notALink
+	type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed, pageSize=20, navpage, notALink, readOnly
 }) => {
-	let [showLL, setShowLL] = useState(); // show/hide ListLoad
-
-	const [, setCloseTimeout] = useState(); // hrrrrr
-
+	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
+	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad
 
 	// In React pre-v17, onFocus/onBlur events bubble - BUT:
 	// When focus shifts WITHIN the listener, a blur/focus event pair is fired.
 	// (In React 17+, onFocus/onBlur uses native onFocusIn/onFocusOut,
 	// which bubbles and does NOT fire on internal-focus-shift.)
-	// So when a blur event fires, wait a moment in case another focus event arrives
-	// before closing the dropdown list.
+	// So when a blur event fires, wait a moment before closing the dropdown list
+	// in case another focus event arrives.
 
 	const onFocus = () => {
 		setCloseTimeout(prevTimeout => {
@@ -93,8 +91,6 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 		DSsetValue(proppath, '');
 	};
 
-	// TODO display the name not the ID getName(pvDataItem.value). But: handling onChange and setting the id value is fiddly
-
 	// (default create behaviour) the input names the object
 	if (rawValue && !base) {
 		base = {};
@@ -105,7 +101,6 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	
 
 	const createThen = (args) => {
-		console.log("createThen", args);
 		setRawValue(args.id);
 	};
 
@@ -114,14 +109,13 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 			{pvDataItem.value ? <>
 				<Col xs={12}>
 					<ButtonGroup>
-						<Button color="secondary" className="data-item preview"
-							tag={notALink ? 'span' : A} disabled={notALink}
+						<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
 							href={!notALink ? `/#${(navpage||itemType.toLowerCase())}/${encURI(getId(pvDataItem.value))}` : undefined}
 							title={!notALink ? `Switch to editing this ${itemType}` : undefined}
 						>
 							<SlimListItem type={itemType} item={pvDataItem.value} noClick />
 						</Button>
-						<Button color="secondary" onClick={doClear}>X</Button>
+						{!readOnly && <Button color="secondary" onClick={doClear}>🗙</Button>}
 					</ButtonGroup>
 					<div><small>ID: <code>{rawValue}</code></small></div>
 				</Col>
