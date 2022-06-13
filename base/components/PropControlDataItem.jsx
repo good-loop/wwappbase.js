@@ -125,7 +125,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
 					{rawValue && showLL && <ListLoad className="items-dropdown card card-body" hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem}
 						// TODO allow ListLoad to show if there are only a few options
-						noResults={canCreate && rawValue && " "} // this was confusing with the create button too (pvDI.value? <></> : "A new "+itemType+" named "+rawValue+" will be made.")}
+						noResults={`No ${itemType} found for "${rawValue}"`}
 						pageSize={pageSize} otherParams={{filterByShares:true}}
 						onClickItem={item => doSet(item)}
 					/>}
