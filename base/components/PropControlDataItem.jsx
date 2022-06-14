@@ -31,6 +31,8 @@ const SlimListItem = ({item, onClick, noClick}) => {
 /**
  * @param {Object} p
  * @param {!String} p.itemType
+ * @param {?Object} p.base Used with canCreate, a base object for if a new item is created.
+ * @param {?boolean} p.canCreate Offer a create button
  * @param {?String} p.createProp If a new item is created -- what property should the typed value set? Defaults to "id"
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
@@ -92,8 +94,8 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	};
 
 	// (default create behaviour) the input names the object
-	if (rawValue && !base) {
-		base = {};
+	if (rawValue && createProp) {
+		if ( ! base) base = {};
 		base[createProp] = rawValue
 	}
 	let baseId = base && base.id;
