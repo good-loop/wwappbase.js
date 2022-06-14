@@ -24,7 +24,7 @@ const SlimListItem = ({item, onClick, noClick}) => {
 	const Tag = noClick ? 'div' : 'a';
 	return <Tag className="data-item" onClick={onClick} title={`ID: ${getId(item)}`}>
 		{getLogo(item) ? <img src={getLogo(item)} className="logo logo-sm" /> : <span className="d-inline-block logo logo-sm" />}{' '}
-		{getName(item)}
+		{getName(item) || getId(item)}
 	</Tag>;
 };
 
@@ -125,7 +125,9 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 				<Col md={8}>
 				<div className="dropdown-sizer">
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
-					{rawValue && showLL && <ListLoad className="items-dropdown card card-body" hideTotal type={itemType} status={status} domain={domain} filter={rawValue} unwrapped sort={sort} ListItem={SlimListItem}
+					{rawValue && showLL && <ListLoad className="items-dropdown card card-body" hideTotal type={itemType} status={status} 
+						domain={domain} filter={rawValue} unwrapped sort={sort} 
+						ListItem={SlimListItem}
 						// TODO allow ListLoad to show if there are only a few options
 						noResults={`No ${itemType} found for "${rawValue}"`}
 						pageSize={pageSize} otherParams={{filterByShares:true}}
