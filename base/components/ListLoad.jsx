@@ -40,7 +40,7 @@ import List from '../data/List';
  * @param {?Function} p.transformFn - do some transformation on the list after all filtering/sorting. should return a new array
  * @param {?List} p.list No loading - just use this list of hits
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
- * @param {?Boolean} p.canCreate - If set, show a Create
+ * @param {?Boolean} p.canCreate - If set, show a Create button
  * @param {?Boolean} p.canDelete - If set, show delete buttons
  * @param {?Boolean} p.cannotClick - If set, do not use an a wrapper or have an onPick handler. Use-case: for lists which don't link through to pages.
  * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
