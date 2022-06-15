@@ -103,12 +103,18 @@ class GreenTag extends DataClass {
 	name;
 	/** Campaign to group impressions for multiple tags */
 	campaign;
+	/** Whose adverts are we measuring? */
+	vertiser;
+	/** Which organisation is managing these tags? */
+	agencyId;
 	/** Tag type, e.g. pixel, redirect, VAST wrapper */
 	tagType;
 	/** Macro type for target DSP, e.g. google, xandr */
 	macroType;
 	/** (For WRAPPER and REDIRECT tagType) The user's original tag which this wraps/redirects */
 	wrapped;
+	/** URL to the tagged advert's VAST tag or uploaded creative zip */
+	creativeURL;
 	/** The generated tag URL */
 	tag;
 	/** The size (in bytes) of the creative this tag represents */
