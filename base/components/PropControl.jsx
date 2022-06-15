@@ -934,7 +934,7 @@ const PropControlDateOld = ({ prop, storeValue, rawValue, onChange, ...otherStuf
 
 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
 	// Encourage ISO8601 format
-	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
+	if (!otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
 	return (<div>
 		<FormControl type="text" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
 		<div className="pull-right"><i>{datePreview}</i></div>

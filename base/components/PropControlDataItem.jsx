@@ -88,23 +88,18 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 		DSsetValue(proppath, mv, true);
 	};
 
-	const doClear = item => {
+	const doClear = () => {
 		setRawValue('')
 		DSsetValue(proppath, '');
 	};
 
 	// (default create behaviour) the input names the object
 	if (rawValue && createProp) {
-		if ( ! base) base = {};
+		if (!base) base = {};
 		base[createProp] = rawValue
 	}
 	let baseId = base && base.id;
 	if (baseId) delete base.id; // manage CreateButton's defences
-	
-
-	const createThen = (args) => {
-		setRawValue(args.id);
-	};
 
 	return (
 		<Row className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
@@ -135,7 +130,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 			</Col>
 			<Col md={4}>
 				{canCreate && rawValue && (
-					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={createThen} />
+					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={({item}) => doSet(item)} />
 				)}
 			</Col>
 		</>}
