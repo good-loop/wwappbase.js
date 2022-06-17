@@ -114,7 +114,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 						</Button>
 						{!readOnly && <Button color="secondary" onClick={doClear}>🗙</Button>}
 					</ButtonGroup>
-					<div><small>ID: <code>{rawValue}</code></small></div>
+					<div><small>ID: <code>{rawValue || storeValue}</code></small></div>
 				</Col>
 			</> : <>
 				<Col md={8}>

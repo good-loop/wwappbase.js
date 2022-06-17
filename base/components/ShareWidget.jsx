@@ -18,7 +18,7 @@ import Icon from './Icon';
 /**
  * a Share This button
  */
-const ShareLink = ({item, type, id, shareId}) => {
+const ShareLink = ({item, type, id, shareId, children}) => {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -30,7 +30,21 @@ const ShareLink = ({item, type, id, shareId}) => {
 	}
 
 	const basePath = ['widget', 'ShareWidget', shareId];
-	return <a href={window.location} onClick={ e => { stopEvent(e); DataStore.setValue(basePath.concat('show'), true); } } title="Share"><Icon name="share" /></a>;
+
+	const doShow = e => {
+		stopEvent(e);
+		DataStore.setValue(basePath.concat('show'), true);
+	};
+
+	if (children) return (
+		<Button color="secondary" onClick={doShow}><Icon name="share" /> {children}</Button>
+	);
+
+	return (
+		<a onClick={doShow} title="Share">
+			<Icon name="share" />
+		</a>
+	);
 };
 
 
@@ -70,12 +84,12 @@ const deleteShare = ({share}) => {
  *
  * Note: This does NOT include the share button -- see ShareLink for that
 */
-const ShareWidget = ({shareId, item, type, id, name, hasButton}) => {
+const ShareWidget = ({shareId, item, type, id, name, hasButton, children}) => {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
 			id = getId(item);
-			name = getClass(type) && getClass(type).getName(item);
+			name = (getClass(type) && getClass(type).getName(item)) || DataClass.getName(item);
 		}
 		if (!type || !id) return null;
 
@@ -103,7 +117,7 @@ const ShareWidget = ({shareId, item, type, id, name, hasButton}) => {
 	};
 	
 	return <>
-		{hasButton && <ShareLink shareId={shareId} />}
+		{hasButton && <ShareLink shareId={shareId}>{children}</ShareLink>}
 		<Modal isOpen={show} className="share-modal" toggle={toggle}>
 			<ModalHeader toggle={toggle}>
 				<Icon name="share" /> {title}
