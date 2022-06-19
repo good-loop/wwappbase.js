@@ -37,8 +37,13 @@ DataStore.update({
 });
 
 
-// HACK	define C.A = normal <a> for optional replacement with import { A } from "hookrouter";
 if ( ! C.A) {
+	/** HACK define C.A = the normal <a> tag, for optional replacement with import { A } from glrouter  
+	 * @param {?Object} x
+	 * @param {string} x.href url
+	 * @param {string|JSX} x.children text/elements to render in the tag
+	*/
+	// NB: not defined in C.js to avoid making that depend on React
 	C.A = (x) => {
 		if ( ! x) return null;
 		const {children, ...args} = x;
