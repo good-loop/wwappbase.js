@@ -121,6 +121,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		assert(!filter, "ListLoad.jsx - Do NOT use filter and canFilter props");
 		filter = DataStore.getValue(widgetPath.concat('filter'));
 	}
+	const rawFilter = filter; // TODO case is needed for id matching -- Where/how best to handle that?
 	if (filter) filter = filter.toLowerCase(); // normalise
 
 	let fastFilter, isLoading, error;
@@ -128,7 +129,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		// Load via ActionMan -- both filtered and un-filtered
 		// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 		// while fetching from the backedn using the filter)
-		let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: filter, sort, ...otherParams }) : { resolved: true };
+		let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: rawFilter, sort, ...otherParams }) : { resolved: true };
 		let pvItemsAll = ActionMan.list({ type, status, q, start, end, sort, ...otherParams });
 		let pvItems = pvItemsFiltered.value ? pvItemsFiltered : pvItemsAll;
 		// filter out duplicate-id (paranoia: this should already have been done server side)
