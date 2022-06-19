@@ -26,7 +26,7 @@ export const sum = (array: number[]): number => array.reduce((acc, a) => acc + a
 
 /**
  * Is this a number or number-like?
- * @param {?String|NUmber} value 
+ * @param {?String|Number} value 
  * @returns {Boolean}
  */
 // ref: https://stackoverflow.com/questions/18082/validate-decimal-numbers-in-javascript-isnumeric

@@ -98,14 +98,14 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 
 /**
  * Get the master campaign of a multi campaign object
- * @param {Advertiser|Agency} multiCampaign 
- * @returns PromiseValue(Campaign)
+ * @param {Advertiser|Agency} advertiserOrAgency 
+ * @returns ?PromiseValue(Campaign)
  */
-Campaign.fetchMasterCampaign = (multiCampaign, status=KStatus.PUB_OR_DRAFT) => {
-    if (!multiCampaign.campaign) return null;
-    let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:multiCampaign.campaign});
+Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT) => {
+    if ( ! advertiserOrAgency.campaign) return null;
+    let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:advertiserOrAgency.campaign});
     return pvCampaign;
-}
+};
 
 /**
  * Get all campaigns matching an advertiser
