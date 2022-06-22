@@ -352,14 +352,15 @@ Campaign.viewcount = ({campaign, status}) => {
 /**
  * 
  * @param {!Campaign} campaign 
- * @returns {?Object} {type, id} the master agency/advertiser or {}. 
+ * @returns {!Object} {type, id} a stub object for the master agency/advertiser, or {}. 
  * NB: advertiser takes precedence, so you can usefully call this on a leaf campaign.
+ * NB: {} is to support `let {type, id} = Campaign.masterFor()` without an NPE
  */
 Campaign.masterFor = campaign => {
 	Campaign.assIsa(campaign);
 	if (campaign.vertiser) return {type:C.TYPES.Advertiser, id:campaign.vertiser};
 	if (campaign.agencyId) return {type:C.TYPES.Agency, id:campaign.agencyId};
-	return {}; // NB: this is to support `let {type, id} = Campaign.masterFor()` without an NPE
+	return {};
 };
 
 /**
