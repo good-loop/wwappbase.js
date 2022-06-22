@@ -84,6 +84,13 @@ Campaign.isOngoing = campaign => {
 };
 
 /**
+ * See Campaign.pvSubCampaigns() for the child campaigns.
+ * @param {!Campaign} campaign 
+ * @returns {boolean}
+ */
+Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
+
+/**
  * 
  * @param {Advert} advert 
  * @param {?KStatus} status 
