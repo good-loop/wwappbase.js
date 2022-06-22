@@ -15,20 +15,17 @@ import { encURI, getLogo, space } from '../utils/miscutils';
 import {saveDraftFnFactory} from './SavePublishDeleteEtc';
 import { doShareThing } from '../Shares';
 import { A } from '../plumbing/glrouter';
+import DataItemBadge from './DataItemBadge';
 
 /**
- * TODO a picker with auto-complete for e.g. Advertiser, Agency
+ * TODO replace with DataItemBadge
  */
-
 const SlimListItem = ({item, onClick, noClick}) => {
-	const Tag = noClick ? 'div' : 'a';
-	return <Tag className="data-item" onClick={onClick} title={`ID: ${getId(item)}`}>
-		{getLogo(item) ? <img src={getLogo(item)} className="logo logo-sm" /> : <span className="d-inline-block logo logo-sm" />}{' '}
-		{getName(item) || getId(item)}
-	</Tag>;
+	return <DataItemBadge item={item} onClick={onClick} href={ ! noClick} />
 };
 
 /**
+ * A picker with auto-complete for e.g. Advertiser, Agency
  * @param {Object} p
  * @param {!String} p.itemType
  * @param {?Object} p.base Used with canCreate, a base object for if a new item is created.

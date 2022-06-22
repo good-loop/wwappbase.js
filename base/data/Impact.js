@@ -34,3 +34,10 @@ export default Impact;
  * @returns {boolean}
  */
 Impact.isDynamic = impact => !! impact.rate;
+
+/**
+ * HACK says yes to "carbon" "carbon offset(s)" "carbon offset (kg)" etc.
+ * @param {?Impact} impact 
+ * @returns {boolean}
+ */
+Impact.isCarbonOffset = impact => impact?.name && impact.name.substring(0, 6)==="carbon";

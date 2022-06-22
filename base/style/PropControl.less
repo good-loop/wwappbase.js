@@ -176,19 +176,20 @@ You can apply it to, well, anything.
 } /* ./color-control */
 
 /* Special styling for PropControlDataItem */
+.DataItemBadge {
+	.logo {
+		border: 1px solid #ddd;
+		vertical-align: middle; // default for <img> but we also have dummy span.logo elements
+	}
+}
+// Non-link preview shouldn't look clickable
+span.preview .DataItemBadge {
+	cursor: default;
+
+}
 .data-item-control {
 	.dropdown-sizer {
 		position: relative; // This is a size/position reference for the floating dropdown list
-	}
-	.data-item {
-		.logo {
-			border: 1px solid #ddd;
-			vertical-align: middle; // default for <img> but we also have dummy span.logo elements
-		}
-	}
-	// Non-link preview shouldn't look clickable
-	span.preview .data-item {
-		cursor: default;
 	}
 	// The autocomplete dropdown list
 	.items-dropdown {
@@ -199,7 +200,7 @@ You can apply it to, well, anything.
 		left: 0;
 		z-index: 1;
 		// Individual items in the list
-		.data-item {
+		.DataItemBadge {
 			display: block;
 			margin: 0;
 			padding: 0.25em 0;
