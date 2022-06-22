@@ -90,6 +90,19 @@ Campaign.isOngoing = campaign => {
  */
 Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
 
+
+/**
+ * 
+ * @param {Campaign} campaign 
+ * @returns {!Impact[]} can be empty. 
+ * Does NOT include offsets from any child campaign. 
+ * Use with Campaign.pvSubCampaigns()
+ */
+ Campaign.offsets = (campaign) => {
+	Campaign.assIsa(campaign);
+	return campaign.offsets || [];
+};
+
 /**
  * 
  * @param {Advert} advert 
@@ -314,7 +327,7 @@ const tomsCampaigns = /(josh|sara|ella)/; // For matching TOMS campaign names ne
 
 
 /**
- * Get the viewcount for a set of campaigns
+ * Get the viewcount for a campaign, summing the ads (or using the override numPeople)
  * @param {Object} p
  * @param {Campaign} p.campaign 
  * @returns {Number}

@@ -19,8 +19,8 @@ class Impact extends DataClass {
     rate;
     ref;
 	constructor(base) {
-		super(base);
-		Object.assign(this, base);
+		super();
+		DataClass._init(this, base);
 	}
 
 }
