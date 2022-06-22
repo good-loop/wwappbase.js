@@ -472,7 +472,7 @@ const DefaultCopy = ({ type, id, item, list, onCopy }) => {
  * @param {?Object} p.base - use to make the blank. This will be copied.
  * @param {?Function} p.make use to make the blank. base -> item. If unset, look for a DataClass for type, and use `new` constructor. Or just {}.
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
- * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
+ * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item. Set this to switch off navigation.
  */
 const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
 	assert(!getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) " + type + ". Safety hack: Pass in an id param instead");
@@ -501,7 +501,7 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
 	DataStore.setLocalEditsStatus(type, id, C.STATUS.dirty, false);
 
 	if (!getType(newItem)) newItem['@type'] = type;
-	// poke a new blank into DataStore
+	// poke the new blank into DataStore
 	newItem.status = KStatus.DRAFT;
 	const path = DataStore.getDataPath({ status: KStatus.DRAFT, type, id });
 	DataStore.setValue(path, newItem);
