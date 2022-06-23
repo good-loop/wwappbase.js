@@ -366,10 +366,9 @@ Campaign.masterFor = campaign => {
 /**
  * 
  * @param {!Campaign} campaign 
- * @param {?KStatus} status 
  * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
  */
-Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
+Campaign.pvSubCampaigns = ({campaign, query}) => {
 	Campaign.assIsa(campaign);
 	if ( ! campaign.master) {
 		return new PromiseValue(new List([]));
