@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Login from '../youagain';
 
-import { getUrlVars, toTitleCase, modifyPath, yessy } from '../utils/miscutils';
+import { getUrlVars, toTitleCase, yessy } from '../utils/miscutils';
 import { Alert, Container, Row } from 'reactstrap';
 import { isFunction } from 'lodash';
 // setup Misc.SavePublishDeleteEtc for older code
