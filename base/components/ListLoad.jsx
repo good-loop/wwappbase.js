@@ -4,7 +4,7 @@ import { Button, Card, CardBody, Form } from 'reactstrap';
 
 import { assert, assMatch } from '../utils/assert';
 
-import { ellipsize, is, modifyHash, space, stopEvent, yessy } from '../utils/miscutils';
+import { ellipsize, is, space, stopEvent, yessy } from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
@@ -19,6 +19,7 @@ import SimpleTable, { DownloadCSVLink } from './SimpleTable';
 import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
 import List from '../data/List';
+import { modifyPage } from '../plumbing/glrouter';
 
 /**
  * Provide a list of items of a given type.
@@ -314,7 +315,7 @@ const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, tran
  */
 const onPick = ({ event, navpage, id, customParams }) => {
 	stopEvent(event);
-	modifyHash([navpage, id], customParams);
+	modifyPage([navpage, id], customParams);
 };
 
 /**
@@ -329,7 +330,7 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, c
 		console.error("ListLoad.jsx - " + type + " with no id", item);
 		return null;
 	}
-	let itemUrl = modifyHash([servlet, id], null, true);
+	let itemUrl = modifyPage([servlet, id], null, true);
 
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 

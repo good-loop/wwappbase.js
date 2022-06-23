@@ -6,8 +6,9 @@ import PromiseValue from 'promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
-import {parseHash, modifyHash, toTitleCase, is, space, yessy, getUrlVars, decURI} from '../utils/miscutils';
+import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI} from '../utils/miscutils';
 import KStatus from '../data/KStatus';
+import { modifyPage } from './glrouter';
 
 
 /**
@@ -113,7 +114,7 @@ class Store {
 	setUrlValue(key, value, update) {
 		assMatch(key, String);
 		if (value) assMatch(value, "String|Boolean|Number");
-		// the modifyHash hack is in setValue() so that PropControl can use it too
+		// the modifyPage hack is in setValue() so that PropControl can use it too
 		return this.setValue(['location', 'params', key], value, update);
 	}
 
@@ -370,7 +371,7 @@ class Store {
 			} else {
 				newParams = value;
 			}
-			modifyHash(null, newParams);
+			modifyPage(null, newParams);
 		}
 
 		let tip = this.appstate;

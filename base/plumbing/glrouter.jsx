@@ -75,8 +75,11 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
 	goto(u);
 };
 
+/**
+ * Call this to change the routing behaviour from #page to /page
+ */
 const initRouter = () => {
-	// Switch DataStore to /page over #page
+	// Switch DataStore to /page
 	// DataStore.useHashPath = false;
 	// DataStore.usePathname = true;
 	DataStore.localUrl = '/';

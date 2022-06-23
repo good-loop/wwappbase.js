@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Login from '../youagain';
 
-import { getUrlVars, toTitleCase, modifyHash, modifyPath, yessy } from '../utils/miscutils';
+import { getUrlVars, toTitleCase, modifyPath, yessy } from '../utils/miscutils';
 import { Alert, Container, Row } from 'reactstrap';
 import { isFunction } from 'lodash';
 // setup Misc.SavePublishDeleteEtc for older code
@@ -26,6 +26,7 @@ import { assert } from '../utils/assert';
 import PropControls from './PropControls';
 
 import StyleBlock from './StyleBlock';
+import { modifyPage } from '../plumbing/glrouter';
 
 let dummy = PropControls; // keep the PropControls import
 
@@ -184,9 +185,9 @@ class MainDivBase extends Component {
 			if (defaultPage) {
 				// HACK allow my-loop render for now
 				window.location.hostname.endsWith('my.good-loop.com') || window.location.hostname.endsWith('mydata.good-loop.com') ? (
-					setTimeout(() => modifyPath([defaultPage]), 1)
+					setTimeout(() => modifyPage([defaultPage]), 1)
 				) : (
-					setTimeout(() => modifyHash([defaultPage]), 1)
+					setTimeout(() => modifyPage([defaultPage]), 1) ??foo
 				);
 				// let the next render get it
 			}
