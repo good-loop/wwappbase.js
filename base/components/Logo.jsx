@@ -2,10 +2,11 @@
 import React from 'react';
 import { space, ellipsize } from '../utils/miscutils';
 import C from '../C';
-import {getName} from '../data/DataClass';
+import DataClass, {getName} from '../data/DataClass';
 /**
- * Logo
- * @param {?boolean} link true to make the logo a link
+ * Logo from branding (also handles NGOs)
+ * @param {Object} p
+ * @param {DataClass} p.item
  */
 const Logo = ({item, className, size, style, nameCap=24}) => {
 	if (! item) return null;
