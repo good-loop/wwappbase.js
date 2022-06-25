@@ -360,6 +360,8 @@ const createCSVData3_cell = ({ item, column }) => {
 
 /**
  * Convert data or dataObject into a tree, as the most general format
+ * @param {Object} p
+ * @param {?Object[]} p.data rows
  * @returns {!Tree}
  */
 const standardiseData = ({ data, dataObject, dataTree }) => {
@@ -906,6 +908,7 @@ const csvEscCell = s => {
  * 
  * @param {Object} p
  * @param {!Column[]|string[]} p.columns
+ * @param {!Object[]} p.data
  */
 const DownloadCSVLink = ({columns, data, name}) => {
 	let dataTree = standardiseData({data});
