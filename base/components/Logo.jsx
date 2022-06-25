@@ -1,8 +1,8 @@
 
 import React from 'react';
 import { space, ellipsize } from '../utils/miscutils';
-import C from '../C';
 import DataClass, {getName} from '../data/DataClass';
+import { assert } from '../utils/assert';
 /**
  * Logo from branding (also handles NGOs)
  * @param {Object} p
@@ -10,6 +10,7 @@ import DataClass, {getName} from '../data/DataClass';
  */
 const Logo = ({item, className, size, style, nameCap=24}) => {
 	if (! item) return null;
+    assert(item.id, "Not a DataItem", item);
     // get branding
     let branding = item.branding || item; // HACK: NGOs have .logo on the item
     let altText = item.displayName || item.name || item.id;
