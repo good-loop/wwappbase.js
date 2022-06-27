@@ -60,8 +60,8 @@ const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, classN
 			<DropdownMenu>
 				<DropdownItem>
 					{linkType == "C.A"
-						? <C.A href={modifyPage(["account"], accountHref, true, true)} className="nav-link" onClick={onClickFn}>Account</C.A> 
-						: <a href={modifyPage(["account"], accountHref, true, true)}  className="nav-link" onClick={onClickFn}>Account</a> 
+						? <C.A href={modifyPage(["account"], accountHref, true, true)} className="nav-link" onClick={onClickFn}>My.Data</C.A> 
+						: <a href={modifyPage(["account"], accountHref, true, true)}  className="nav-link" onClick={onClickFn}>My.Data</a> 
 					}	
 				</DropdownItem>
 				<DropdownItem divider />
