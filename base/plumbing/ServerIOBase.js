@@ -407,25 +407,23 @@ ServerIO.getEndpointForType = (type) => {
 	if (type==='Task' && C.app.id !== 'calstat') {
 		return ServerIO.ENDPOINT_TASK;
 	}
-	// HACK Change "advert" to "vert" to dodge some adblocking
+	// HACK Change "advert" to "vert" to dodge some adblocking & route to Portal
 	if (type==='Advert') {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vert';
 	}
-	// HACK Change "advertiser" to "vertiser" to dodge some adblocking
+	// HACK Change "advertiser" to "vertiser" to dodge some adblocking & route to Portal
 	if (type==='Advertiser') {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vertiser';
 	}
-	if (type==='Campaign') {
-		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/campaign';
+	// HACK route Agency, Campaign, GreenTag to Portal
+	if (['Agency','Campaign','GreenTag'].includes(type)) {
+		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/' +type.toLowerCase();
 	}
-	if (type==='GreenTag') {
-		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/greentag';
-	}
-
+	// HACK route Person to Profiler?
 	if (type==="Person" && ServerIO.USE_PROFILER) {
 		return ServerIO.PROFILER_ENDPOINT+"/person";
 	}
-	
+	// normal = this domain's backend	
 	return '/'+type.toLowerCase();
 };
 
