@@ -944,14 +944,14 @@ const PropControlDateOld = ({ prop, storeValue, rawValue, onChange, ...otherStuf
 
 
 /** Add "colour not set" indicator and "remove colour" button to <input type="color"> */
-const PropControlColor = ({onChange, ...props}) => {
+const PropControlColor = ({onChange, disabled, ...props}) => {
 	const luminance = luminanceFromHex(props.value || '#000000')
 	const overlayClass = `form-control overlay ${!props.value ? 'no-color' : ''} ${luminance > 0.5 ? 'light-bg' : ''}`;
 	const overlayText = props.value || 'None';
 
 	// Allow user to clear the colour if present...
 	// but supply a dummy element (so FormControl still makes an input-group) that won't look strange behind the "no colour" overlay if not
-	const clearBtn = props.value ? <Button disabled={props.disabled} onClick={() => !disabled && onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
+	const clearBtn = props.value ? <Button disabled={disabled} onClick={() => !disabled && onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
 
 	// Colour unset? 
 	if (!props.value) {
@@ -970,7 +970,7 @@ const PropControlColor = ({onChange, ...props}) => {
 
 	return (
 		<div className="color-control">
-			<FormControl append={clearBtn} {...props} onChange={onChange} />
+			<FormControl append={clearBtn} {...props} onChange={onChange} disabled={disabled} />
 			<div className={overlayClass}>{overlayText}</div>
 		</div>
 	);

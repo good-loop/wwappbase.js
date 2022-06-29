@@ -8,7 +8,7 @@ import SearchQuery from '../../base/searchquery';
 import List from './List';
 import DataStore, { getDataPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
-import { getDataItem, saveEdits } from '../plumbing/Crud';
+import { getDataItem, getDataList, saveEdits } from '../plumbing/Crud';
 import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
@@ -371,7 +371,7 @@ Campaign.masterFor = campaign => {
 Campaign.pvSubCampaigns = ({campaign, query}) => {
 	Campaign.assIsa(campaign);
 	if ( ! campaign.master) {
-		return new PromiseValue(new List([]));
+		return new PromiseValue(new List([campaign]));
 	}
 	// fetch leaf campaigns	
 	let {id, type} = Campaign.masterFor(campaign);
@@ -379,7 +379,7 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
 	// exclude this? No: some (poorly configured) master campaigns are also leaves
 	// sq = SearchQuery.and(sq, "-id:"+campaign.id); 
-	const pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query}); 
+	const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query}); 
 	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
 	return pvCampaigns;
 };
