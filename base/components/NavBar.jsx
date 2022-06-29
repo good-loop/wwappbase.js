@@ -96,7 +96,7 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  * @param {NavProps} p
  * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
  */
-const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems}) => {
+const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems, accountLinkText}) => {
 	// Hack: remove logo classname for myGL to advoid Safari CSS bug
 	let logoClass = 'logo';
 	if (window.location.host.includes('my.good-loop.com')) logoClass = '';
@@ -121,7 +121,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 				{pageLinks}
 			</Nav>
 			{children}
-			<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} onLinkClick={onLinkClick} className="mx-2 mt-2 mt-md-0"/>
+			<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText} onLinkClick={onLinkClick} className="mx-2 mt-2 mt-md-0"/>
 		</Collapse>
 	</>);
 };
@@ -137,7 +137,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
-const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, children, expandSize="md", ...props}) => {
+const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize="md", ...props}) => {
 	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
 	const navProps = getNavProps();
 	if (navProps) {
@@ -239,7 +239,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, children, expandSiz
 
 	return (
 		<Navbar sticky="top" dark={darkTheme} light={!darkTheme} color={backgroundColour} expand={expandSize} className={space('p-1', scrolled && "scrolled")} >
-			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} onLinkClick={onLinkClick} accountMenuItems={accountMenuItems}>
+			<NavGuts {...props} pageLinks={pageLinks} isOpen={isOpen} toggle={toggle} onLinkClick={onLinkClick} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText}>
 				{children}
 			</NavGuts>
 		</Navbar>

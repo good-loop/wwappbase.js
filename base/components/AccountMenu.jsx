@@ -30,7 +30,7 @@ logoutLink {string} what page should be loaded after logout ('#dashboard' by def
 accountMenuItems {?DropdownItem} add optional items to the account menu - used in MyGL/MyData where we show settings etc on the account page body (those don't fit into the layout mobile)
 linkType {string} HACK: Set to "C.A" for <C.A /> hrefs, "a" for normal hrefs. Fixes bug in T4G in which it wasn't loading the links correctly (since it's in an iFrame presumably)
 */
-const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, className, logoutLink, onLinkClick, style, small, accountLink, linkType="C.A", ...props}) => {
+const AccountMenu = ({active, accountMenuItems, accountLinkText="Account", canRegister, customLogin, className, logoutLink, onLinkClick, style, small, accountLink, linkType="C.A", ...props}) => {
 	const [open, setOpen] = useState(false);
 	const onClickFn = () => {
 		setOpen(!open);
@@ -60,8 +60,8 @@ const AccountMenu = ({active, accountMenuItems, canRegister, customLogin, classN
 			<DropdownMenu>
 				<DropdownItem>
 					{linkType == "C.A"
-						? <C.A href={modifyPage(["account"], accountHref, true, true)} className="nav-link" onClick={onClickFn}>Account</C.A> 
-						: <a href={modifyPage(["account"], accountHref, true, true)}  className="nav-link" onClick={onClickFn}>Account</a> 
+						? <C.A href={modifyPage(["account"], accountHref, true, true)} className="nav-link" onClick={onClickFn}>{accountLinkText}</C.A> 
+						: <a href={modifyPage(["account"], accountHref, true, true)}  className="nav-link" onClick={onClickFn}>{accountLinkText}</a> 
 					}	
 				</DropdownItem>
 				<DropdownItem divider />
