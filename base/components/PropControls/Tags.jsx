@@ -50,12 +50,13 @@ export const Autofill = ({value, onSelect, options}) => {
  * @param {?Function} onAutofill
  * @returns 
  */
-export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAddTags, onRemoveTag, autofillOptions, tagFn, ...props}) => {
+export const TagInputMultiWord = ({wordNum, tags=[], placeholders, alts, onType, onAddTags, onRemoveTag, autofillOptions, tagFn, ...props}) => {
 
     assert(onAddTags);
     assert(onRemoveTag);
     assert(wordNum);
     assert(!placeholders || placeholders.length === wordNum);
+    assert(!alts || alts.length == wordNum);
 
     const [showAutofill, setShowAutofill] = useState(false);
     // An array of state functions - creates a 2d array
@@ -128,7 +129,7 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, onType, onAdd
 
             {mapNew(wordNum, i => <input key={i} value={vals[i][0]} className='form-control'
                 onKeyUp={onKeyUp} placeholder={placeholders && placeholders[i]} ref={inputRefs[i]}
-                onChange={e => changeVal(e, i)}
+                onChange={e => changeVal(e, i)} alt={alts && alts[i]}
                 style={{
                     borderTopLeftRadius: i !== 0 ? 0 : undefined,
                     borderBottomLeftRadius: i !== 0 ? 0 : undefined,

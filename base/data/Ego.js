@@ -24,6 +24,16 @@ Pronoun.fromObj = obj => {
     return new Pronoun(obj.subject, obj.object, obj.possessive);
 }
 
+/**
+ * Combine several pronouns into one string
+ * @param {Array} pronouns 
+ */
+Pronoun.concatonate = pronouns => {
+    if (pronouns.length === 1) return pronouns[0].toString();
+    const combined = pronouns.map(pronoun => pronoun.subject);
+    return combined.join("/");
+}
+
 export class Identity {    
     /** @type{String} mostly null, for plural identities*/
     name;

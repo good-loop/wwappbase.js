@@ -4,7 +4,10 @@ import { assert } from '../../utils/assert';
 import PropControl, { registerControl, DSsetValue } from '../PropControl';
 import TagInput, { TagInputMultiWord } from './Tags';
 
-// PropControlGender - is a PropControlPills
+
+/*
+    DO NOT USE RIGHT NOW - WIP, only being used in specific instances
+*/
 
 export const DEFAULT_GENDER_LABELS = {
     "male": "Male",
@@ -47,6 +50,9 @@ export const DEFAULT_PRONOUNS = {
     "ve/ver/vis": "ve/ver/vis"
 };
 
+/**
+ * @deprecated DONT USE YET - very WIP
+ */
 export const PropControlGender = ({storeValue, modelValueFromInput, path, prop, proppath, type, fcolor, saveFn, ...props}) => {
 
     if (!storeValue) storeValue = [];
@@ -79,6 +85,9 @@ export const PropControlGender = ({storeValue, modelValueFromInput, path, prop, 
     </div>
 };
 
+/**
+ * @deprecated DONT USE YET - Still WIP
+ */
 export const PropControlPronoun = ({storeValue, modelValueFromInput, path, prop, proppath, type, fcolor, saveFn, ...props}) => {
 
     if (!storeValue) storeValue = [];
@@ -106,6 +115,7 @@ export const PropControlPronoun = ({storeValue, modelValueFromInput, path, prop,
     return <div className="prop-control-gender position-relative">
         <TagInputMultiWord tags={storeValue}
             wordNum={3}
+            alts={["they", "them", "their"]}
             placeholders={["they", "them", "their"]}
             onAddTags={onAddTags} 
             onRemoveTag={onRemoveTag}
@@ -117,6 +127,7 @@ export const PropControlPronoun = ({storeValue, modelValueFromInput, path, prop,
 };
 
 /**
+ * @deprecated DONT USE YET still WIP
  * See Ego.js for more information
  * @param {*} param0 
  */
