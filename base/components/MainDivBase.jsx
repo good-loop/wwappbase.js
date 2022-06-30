@@ -259,7 +259,9 @@ class MainDivBase extends Component {
 					<MessageBar />
 					<div className="page" id={page}>
 						<Page />
-					</div>
+					</div>					
+				</Row>
+				<Row>
 					{Footer && !undecorated && <Footer page={page} />}
 				</Row>
 			</Container>
