@@ -425,6 +425,20 @@ Login.register = function (registerInfo) {
 };
 
 /**
+ * Like register() but for an authorised user to register other people
+ * @param {Object} registerInfo {email, password}
+ * @returns {Promise} Unlike register(), no processing is done with this
+ */
+Login.registerStranger = function (registerInfo) {	
+	registerInfo.action = 'register';
+	registerInfo.by = Login.getId();
+	registerInfo.nonce = guid();
+	let pLogin = apost(Login.ENDPOINT, registerInfo);
+	return pLogin;
+};
+
+
+/**
  * Authorise via Twitter etc. This will redirect the user away!
 @param service {string} e.g. twitter
 @param appId {string} Your app-id for the service, e.g. '1847521215521290' for Facebook

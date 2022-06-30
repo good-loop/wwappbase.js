@@ -8,7 +8,7 @@ import SearchQuery from '../../base/searchquery';
 import List from './List';
 import DataStore, { getDataPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
-import { getDataItem, saveEdits } from '../plumbing/Crud';
+import { getDataItem, getDataList, saveEdits } from '../plumbing/Crud';
 import PromiseValue from 'promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
@@ -84,6 +84,26 @@ Campaign.isOngoing = campaign => {
 };
 
 /**
+ * See Campaign.pvSubCampaigns() for the child campaigns.
+ * @param {!Campaign} campaign 
+ * @returns {boolean}
+ */
+Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
+
+
+/**
+ * 
+ * @param {Campaign} campaign 
+ * @returns {!Impact[]} can be empty. 
+ * Does NOT include offsets from any child campaign. 
+ * Use with Campaign.pvSubCampaigns()
+ */
+ Campaign.offsets = (campaign) => {
+	Campaign.assIsa(campaign);
+	return campaign.offsets || [];
+};
+
+/**
  * 
  * @param {Advert} advert 
  * @param {?KStatus} status 
@@ -98,14 +118,14 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 
 /**
  * Get the master campaign of a multi campaign object
- * @param {Advertiser|Agency} multiCampaign 
- * @returns PromiseValue(Campaign)
+ * @param {Advertiser|Agency} advertiserOrAgency 
+ * @returns ?PromiseValue(Campaign)
  */
-Campaign.fetchMasterCampaign = (multiCampaign, status=KStatus.PUB_OR_DRAFT) => {
-    if (!multiCampaign.campaign) return null;
-    let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:multiCampaign.campaign});
+Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT) => {
+    if ( ! advertiserOrAgency.campaign) return null;
+    let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:advertiserOrAgency.campaign});
     return pvCampaign;
-}
+};
 
 /**
  * Get all campaigns matching an advertiser
@@ -307,7 +327,7 @@ const tomsCampaigns = /(josh|sara|ella)/; // For matching TOMS campaign names ne
 
 
 /**
- * Get the viewcount for a set of campaigns
+ * Get the viewcount for a campaign, summing the ads (or using the override numPeople)
  * @param {Object} p
  * @param {Campaign} p.campaign 
  * @returns {Number}
@@ -332,26 +352,26 @@ Campaign.viewcount = ({campaign, status}) => {
 /**
  * 
  * @param {!Campaign} campaign 
- * @returns {?Object} {type, id} the master agency/advertiser or {}. 
+ * @returns {!Object} {type, id} a stub object for the master agency/advertiser, or {}. 
  * NB: advertiser takes precedence, so you can usefully call this on a leaf campaign.
+ * NB: {} is to support `let {type, id} = Campaign.masterFor()` without an NPE
  */
 Campaign.masterFor = campaign => {
 	Campaign.assIsa(campaign);
 	if (campaign.vertiser) return {type:C.TYPES.Advertiser, id:campaign.vertiser};
 	if (campaign.agencyId) return {type:C.TYPES.Agency, id:campaign.agencyId};
-	return {}; // NB: this is to support `let {type, id} = Campaign.masterFor()` without an NPE
+	return {};
 };
 
 /**
  * 
  * @param {!Campaign} campaign 
- * @param {?KStatus} status 
  * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
  */
-Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
+Campaign.pvSubCampaigns = ({campaign, query}) => {
 	Campaign.assIsa(campaign);
 	if ( ! campaign.master) {
-		return new PromiseValue(new List([]));
+		return new PromiseValue(new List([campaign]));
 	}
 	// fetch leaf campaigns	
 	let {id, type} = Campaign.masterFor(campaign);
@@ -359,7 +379,7 @@ Campaign.pvSubCampaigns = ({campaign, status=KStatus.DRAFT, query}) => {
 	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
 	// exclude this? No: some (poorly configured) master campaigns are also leaves
 	// sq = SearchQuery.and(sq, "-id:"+campaign.id); 
-	const pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query}); 
+	const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query}); 
 	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
 	return pvCampaigns;
 };

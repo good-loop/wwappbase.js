@@ -158,7 +158,7 @@ const snipProp = (sq, propName) => {
  */
 SearchQuery.setPropOr = (sq, propName, propValues) => {	
 	assMatch(propName, String, "searchquery.js "+propName+": "+propValues);
-	assMatch(propValues, "String[]", "searchquery.js "+propName, propValues);
+	assMatch(propValues, "String[]", "searchquery.js "+propName, propValues); // NB: Should we allow empty? No - ambiguous whether or(empty) should mean all or none
 	assert(propValues.length, "searchquery.js - "+propName+" Cant OR over nothing "+propValues)
 	// quote the values? HACK if they have a space
 	let qpropValues = propValues.map(propValue => propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"');

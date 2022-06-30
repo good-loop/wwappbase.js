@@ -15,6 +15,7 @@ import LinkOut from '../LinkOut';
 const imgTypes = '.jpg, .jpeg, image/jpeg, .png, image/png, .svg, image/svg+xml';
 const videoTypes = '.mp4, .m4v, video/mp4, .ogv, video/ogg, .avi, video/x-msvideo, .wmv, video/x-ms-wmv, .mov, video/quicktime, .asf, video/ms-asf';
 const fontTypes = '.ttf, font/ttf, .otf, font/otf, .woff, font/woff, .woff2, font/woff2';
+const spreadsheetTypes = '.csv'; // TODO Excel and -- maybe using libreoffice as the backend convertor to csv? Or the Apache Something library?
 
 
 /** Uploader types which take a 100x100 square thumbnail */
@@ -28,7 +29,8 @@ const acceptTypes = {
 	imgUpload: imgTypes,
 	videoUpload: videoTypes,
 	bothUpload: `${imgTypes}, ${videoTypes}`,
-	fontUpload: fontTypes
+	fontUpload: fontTypes,
+	spreadsheetUpload: spreadsheetTypes
 };
 
 
@@ -38,7 +40,8 @@ const acceptDescs = {
 	videoUpload: 'video',
 	bothUpload: 'video or image',
 	fontUpload: 'font',
-	upload: 'file'
+	upload: 'file',
+	spreadsheetUpload: '.csv'
 };
 
 
@@ -286,6 +289,8 @@ registerControl({ type: 'videoUpload', ...baseSpec });
 registerControl({ type: 'bothUpload', ...baseSpec });
 // Fonts!
 registerControl({ type: 'fontUpload', ...baseSpec });
+// data
+registerControl({ type: 'spreadsheetUpload', ...baseSpec });
 // Upload anything!?
 registerControl({ type: 'upload', ...baseSpec });
 

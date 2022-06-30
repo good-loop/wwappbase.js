@@ -123,9 +123,12 @@ const check = ok => {
 /**
  * save buttons
  * @param {Object} p
+ * @param {!string} p.type Must be in C.TYPES
+ * @param {!string} p.id
  * @param {?String} p.className Defaults to "SavePublishDeleteEtc" (which activates the black fixed-position design). Set to e.g. "" avoid that design.
  * @param {?Boolean} p.hidden If set, hide the control (it will still auto-save)
  * @param {?Boolean} p.autoSave default=true
+ * @param {?Boolean} p.autoPublish default=false NB: If autoPublish is set then autoSave is moot
  * @param {?Boolean} p.saveAs If set, offer a save-as button which will copy, tweak the ID and the name, then save.
  * @param {?String} p.size Bootstrap size e.g. "lg"
  * @param {?string} p.position fixed|relative
@@ -138,7 +141,8 @@ const SavePublishDeleteEtc = ({
 	size,
 	cannotPublish, cannotDelete, canArchive, canDiscard,
 	publishTooltipText = 'Your account cannot publish this.',
-	autoPublish, autoSave = true,
+	autoPublish, 
+	autoSave = true,
 	saveAs, unpublish,
 	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
 	sendDiff

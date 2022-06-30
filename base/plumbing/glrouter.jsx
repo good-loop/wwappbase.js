@@ -18,13 +18,19 @@ const goto = href => {
 	DataStore.parseUrlVars(true);
 };
 
+/** Which is the "open in new tab" modifier key - Ctrl or Meta (Command)? */
+const clickModKey = window.navigator.platform.match(/^(Mac|iPhone|iPad|iPod)/) ? 'metaKey' : 'ctrlKey';
+
 const A = (x) => {
-	if ( ! x) return null;
+	if (!x) return null;
 	const {href, children, onClick, ...args} = x;
 	const doClick = e => {
-		if ( ! href) return; // just an anchor tag, not a link
+		// Allow default <a> behaviour (ie open in new tab/window) if appropriate modifier held down
+		if (e.shiftKey || e[clickModKey]) return;
+
+		if (!href) return; // just an anchor tag, not a link
 		// Only override redirects to this origin
-		if ( ! href.includes(window.location.origin) && href.startsWith("http")) {
+		if (!href.includes(window.location.origin) && href.startsWith("http")) {
 			return;
 		}
 		stopEvent(e);
@@ -52,7 +58,7 @@ const usePath = () => ""+window.location;
 const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
 	if (DataStore.localUrl !== '/') {
 		return modifyHash(newpath, newparams, returnOnly);
-	}	
+	}
 	const { path, params } = DataStore.getValue('location');
 	let allparams = clearParams? {} : (params || {});
 	allparams = Object.assign(allparams, newparams);
@@ -64,13 +70,16 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
 	}
 	let u = '/' + hash;
 	if (returnOnly) {
-		return u;	
+		return u;
 	}
 	goto(u);
 };
 
+/**
+ * Call this to change the routing behaviour from #page to /page
+ */
 const initRouter = () => {
-	// Switch DataStore to /page over #page
+	// Switch DataStore to /page
 	// DataStore.useHashPath = false;
 	// DataStore.usePathname = true;
 	DataStore.localUrl = '/';

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import Login from '../youagain';
 
-import { getUrlVars, toTitleCase, modifyHash, modifyPath, yessy } from '../utils/miscutils';
+import { getUrlVars, toTitleCase, yessy } from '../utils/miscutils';
 import { Alert, Container, Row } from 'reactstrap';
 import { isFunction } from 'lodash';
 // setup Misc.SavePublishDeleteEtc for older code
@@ -26,6 +26,7 @@ import { assert } from '../utils/assert';
 import PropControls from './PropControls';
 
 import StyleBlock from './StyleBlock';
+import { modifyPage } from '../plumbing/glrouter';
 
 let dummy = PropControls; // keep the PropControls import
 
@@ -37,8 +38,13 @@ DataStore.update({
 });
 
 
-// HACK	define C.A = normal <a> for optional replacement with import { A } from "hookrouter";
 if ( ! C.A) {
+	/** HACK define C.A = the normal <a> tag, for optional replacement with import { A } from glrouter  
+	 * @param {?Object} x
+	 * @param {string} x.href url
+	 * @param {string|JSX} x.children text/elements to render in the tag
+	*/
+	// NB: not defined in C.js to avoid making that depend on React
 	C.A = (x) => {
 		if ( ! x) return null;
 		const {children, ...args} = x;
@@ -73,6 +79,21 @@ const init = () => {
 	});
 	// Are we logged in?
 	Login.verify();
+};
+
+
+/** Apply the specified class to #mainDiv, replacing any class found matching the given regex */
+const setMainDivClass = (newClass, regex) => {
+	const mainDiv = document.querySelector('#mainDiv');
+	if (mainDiv) {
+		const prevClass = mainDiv.classList.values().find(cls => {
+			return cls.match(regex)
+		});
+		if (newClass !== prevClass) {
+			prevClass && mainDiv.classList.remove(prevClass);
+			mainDiv.classList.add(newClass);
+		}
+	}
 };
 
 /**
@@ -129,6 +150,7 @@ class MainDivBase extends Component {
 			navbarExternalLinks, // TODO document props
 			navbarSpace, // TODO document props
 			navbarAccountMenuItems, // Used for MyData - show extra items such as settings etc alongside standard "Account" and "Logout" (only on mobile devices - that's not controlled here)
+			navbarAccountLinkText,
 			NavGuts, NavExpandSize="md",
 			fullWidthPages,
 			undecoratedPages, // TODO document props
@@ -149,7 +171,11 @@ class MainDivBase extends Component {
 		if (isFunction(navbarPages)) {
 			navbarPages = navbarPages();
 		}
-		if ( ! navbarPages) navbarPages = Object.keys(pageForPath);
+		if (!navbarPages) navbarPages = Object.keys(pageForPath);
+
+		if (isFunction(homeLink)) {
+			homeLink = homeLink();
+		}
 
 		// which page?
 		let path = DataStore.getValue('location', 'path');
@@ -160,9 +186,9 @@ class MainDivBase extends Component {
 			if (defaultPage) {
 				// HACK allow my-loop render for now
 				window.location.hostname.endsWith('my.good-loop.com') || window.location.hostname.endsWith('mydata.good-loop.com') ? (
-					setTimeout(() => modifyPath([defaultPage]), 1)
+					setTimeout(() => modifyPage([defaultPage]), 1)
 				) : (
-					setTimeout(() => modifyHash([defaultPage]), 1)
+					setTimeout(() => modifyPage([defaultPage]), 1) ??foo
 				);
 				// let the next render get it
 			}
@@ -203,16 +229,9 @@ class MainDivBase extends Component {
 		if (!undecorated) undecorated = !!DataStore.getUrlValue("undecorated");
 		if (!undecorated) undecorated = undecoratedPages && undecoratedPages.includes(page);
 
-		// Hack enabler: Apply a page-specific class to the outermost container.
-		const mainDiv = document.querySelector('#mainDiv');
-		if (mainDiv) {
-			const newPageClass = `page-${page}`;
-			const currentPageClass = [...mainDiv.classList].find(cls => cls.value.match(/page-\w+/));
-			if (newPageClass !== currentPageClass) {
-				currentPageClass && mainDiv.classList.remove(currentPageClass);
-				mainDiv.classList.add(newPageClass);
-			}
-		}
+		// Hack enabler: Apply some context-specific classes to the outermost container.
+		setMainDivClass(`page-${page}`, /page-\w+/);
+		setMainDivClass(`logged-${Login.isLoggedIn() ? 'in' : 'out'}`, /logged-\w+/);
 		
 		return <div>
 			{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
@@ -229,6 +248,7 @@ class MainDivBase extends Component {
 					expandSize={NavExpandSize}
 					isBeta={isBeta}
 					accountMenuItems={navbarAccountMenuItems}
+					accountLinkText={navbarAccountLinkText}
 				>
 				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 				</NavBar>

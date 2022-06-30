@@ -47,7 +47,8 @@ const RolesCard = () => {
 
 	return (<Misc.Card title="Roles">
 		<p>Roles determine what you can do. E.g. only editors can publish changes.</p>
-		{roles? roles.map((role, i) => <RoleLine key={i+role} role={role} />) : <Misc.Loading />}
+		{roles? roles.map((role, i) => <RoleLine key={i+role} role={role} />) : <Misc.Loading />}		
+		{roles && roles.includes("admin") && C.ROLES && <div><hr/>{C.ROLES.values.map((role, i) => <RoleLine key={"admin"+i+role} role={role} />)}</div>}
 	</Misc.Card>);
 }
 

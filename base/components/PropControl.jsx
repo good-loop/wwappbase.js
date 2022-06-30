@@ -63,9 +63,9 @@ const dateValidator = (val, rawValue) => {
 /**
 	 * Check if dataitem's value between draft and published are different
 	 * Used in portal, to prevent bugs caused of draft/published differences
-	 * @returns 
+	 * @returns {?KStatus} false if draft=published. If published=null then DRAFT, if draft != published then MODIFIED
 	 */
- const isPublished = (props) => {
+ const isModified = (props) => {
 	if (!props.path || props.path[0] !== "draft" || props.path.length < 3) return null; // Only needed for data props
 
 	let prop = props.prop;
@@ -77,14 +77,16 @@ const dateValidator = (val, rawValue) => {
 	let pvDraft = getDataItem({type:type, id:itemId, status:KStatus.DRAFT, swallow:true});
 	let pvPub = getDataItem({type:type, id:itemId, status:KStatus.PUBLISHED, swallow:true});
 
-	if (pvDraft.value && !pvPub.value ) return false; // Never been published
+	if (pvDraft.value && ! pvPub.value ) {
+		return KStatus.DRAFT; // Never been published
+	}
 
 	if (pvDraft.value && pvPub.value) {
 		if (!_.isEqual(pvDraft.value[prop], pvPub.value[prop])) {
-			return false;
-		};
-	};
-	return true;
+			return KStatus.MODIFIED;
+		}
+	}
+	return false;
 };
 
 /** Use Bootstrap popover to display help text on click */
@@ -113,6 +115,8 @@ or if the data should be maintained across page changes (which might destroy and
 or if extras like help and error text are wanted. 
 // useState is best for purely local state.
  *
+* NB: This function provides a label / help / error wrapper -- then passes to PropControl2
+
  * @param {Object} p
  * @param {?Function} p.saveFn inputs: `{path, prop, value, event}`
  * This gets called at the end of onChange.
@@ -130,7 +134,7 @@ or if extras like help and error text are wanted.
  * @param {?Function} modelValueFromInput - inputs: (value, type, event) See standardModelValueFromInput.
  * @param {?boolean} required  If set, this field should be filled in before a form submit.
  * 	TODO mark that somehow
- * @param validator {?(value, rawValue) => String} Generate an error message if invalid
+ * @param {?Function} validator {?(value, rawValue) => String} Generate an error message if invalid
  * @param {?String} error Error message to show, regardless of validator output
  * @param {?String} warning Warning message to show, regardless of validator output
  * @param {?boolean} inline  If set, this is an inline form, so add some spacing to the label.
@@ -138,8 +142,7 @@ or if extras like help and error text are wanted.
  * @param {?boolean} fast - if true optimise React updates and renders. Only use for busting bottlenecks.
 	 Warning: when coupled with other controls, this can cause issues, as the other controls won't always update. 
 	 E.g. if a fast text input has an associated button.
- * 
- * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
+ * @param {?boolean} p.readOnly
  */
 const PropControl = ({className, ...props}) => {
 	let { type, optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
@@ -282,9 +285,9 @@ const PropControl = ({className, ...props}) => {
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
 			{help && (inline || isCheck) && <Help>{help}</Help>}
-			{error ? <span className="help-block text-danger">{error}</span> : null}
-			{warning ? <span className="help-block text-warning">{warning}</span> : null}
-			{isPublished(props) === false ? <span className="help-block text-warning">Not Published Yet</span> : null}
+			{error && <span className="help-block text-danger data-error">{error}</span>}
+			{warning && <span className="help-block text-warning data-warning">{warning}</span>}
+			{isModified(props) && <span className="help-block text-warning data-modified">Not Published Yet</span>}
 		</FormGroup>
 	);
 }; // ./PropControl
@@ -934,7 +937,7 @@ const PropControlDateOld = ({ prop, storeValue, rawValue, onChange, ...otherStuf
 
 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
 	// Encourage ISO8601 format
-	if ( ! otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
+	if (!otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
 	return (<div>
 		<FormControl type="text" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
 		<div className="pull-right"><i>{datePreview}</i></div>
@@ -944,14 +947,14 @@ const PropControlDateOld = ({ prop, storeValue, rawValue, onChange, ...otherStuf
 
 
 /** Add "colour not set" indicator and "remove colour" button to <input type="color"> */
-const PropControlColor = ({onChange, ...props}) => {
+const PropControlColor = ({onChange, disabled, ...props}) => {
 	const luminance = luminanceFromHex(props.value || '#000000')
 	const overlayClass = `form-control overlay ${!props.value ? 'no-color' : ''} ${luminance > 0.5 ? 'light-bg' : ''}`;
 	const overlayText = props.value || 'None';
 
 	// Allow user to clear the colour if present...
 	// but supply a dummy element (so FormControl still makes an input-group) that won't look strange behind the "no colour" overlay if not
-	const clearBtn = props.value ? <Button onClick={() => onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
+	const clearBtn = props.value ? <Button disabled={disabled} onClick={() => !disabled && onChange({target: {value: ''} })}>&times;</Button> : <InputGroupText />;
 
 	// Colour unset? 
 	if (!props.value) {
@@ -970,7 +973,7 @@ const PropControlColor = ({onChange, ...props}) => {
 
 	return (
 		<div className="color-control">
-			<FormControl append={clearBtn} {...props} onChange={onChange} />
+			<FormControl append={clearBtn} {...props} onChange={onChange} disabled={disabled} />
 			<div className={overlayClass}>{overlayText}</div>
 		</div>
 	);

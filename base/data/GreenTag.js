@@ -6,6 +6,7 @@ We use it ONCE when applying the dataspace param, to cleanly make sure the URL h
 */
 import DataClass from './DataClass';
 import Enum from 'easy-enums';
+import { encURI } from '../utils/miscutils';
 
 const KGreenTagType = new Enum('PIXEL REDIRECT WRAPPER');
 const KMacroType = new Enum('NONE DV360 GOOGLE TTD XANDR');
@@ -54,7 +55,11 @@ const macroAdders = {
 	},
 }
 
-
+/**
+ * 
+ * @param {!URL} url 
+ * @param {!GreenTag} tag 
+ */
 const setBaseParams = (url, tag) => {
 	url.searchParams.set('d', 'green'); // "green ad tag" dataspace
 
@@ -62,8 +67,9 @@ const setBaseParams = (url, tag) => {
 		macroAdders[tag.macroType](url);
 	}
 	// search vs searchParams: see comment at top
-	if (tag.campaign) url.search += `&campaign=${encodeURIComponent(tag.campaign)}`;
+	if (tag.campaign) url.search += `&campaign=${encURI(tag.campaign)}`;
 	if (tag.id) url.search += `&adid=${tag.id}`;
+	if (tag.vertiser) url.search += `&vertiser=${encURI(tag.vertiser)}`;
 };
 
 
@@ -103,12 +109,18 @@ class GreenTag extends DataClass {
 	name;
 	/** Campaign to group impressions for multiple tags */
 	campaign;
+	/** Whose adverts are we measuring? */
+	vertiser;
+	/** Which organisation is managing these tags? */
+	agencyId;
 	/** Tag type, e.g. pixel, redirect, VAST wrapper */
 	tagType;
 	/** Macro type for target DSP, e.g. google, xandr */
 	macroType;
 	/** (For WRAPPER and REDIRECT tagType) The user's original tag which this wraps/redirects */
 	wrapped;
+	/** URL to the tagged advert's VAST tag or uploaded creative zip */
+	creativeURL;
 	/** The generated tag URL */
 	tag;
 	/** The size (in bytes) of the creative this tag represents */

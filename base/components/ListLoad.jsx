@@ -4,7 +4,7 @@ import { Button, Card, CardBody, Form } from 'reactstrap';
 
 import { assert, assMatch } from '../utils/assert';
 
-import { ellipsize, is, modifyHash, space, stopEvent, yessy } from '../utils/miscutils';
+import { ellipsize, is, space, stopEvent, yessy } from '../utils/miscutils';
 import C from '../CBase';
 import Misc from './Misc';
 import PropControl from './PropControl';
@@ -19,6 +19,7 @@ import SimpleTable, { DownloadCSVLink } from './SimpleTable';
 import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
 import List from '../data/List';
+import { modifyPage } from '../plumbing/glrouter';
 
 /**
  * Provide a list of items of a given type.
@@ -40,7 +41,7 @@ import List from '../data/List';
  * @param {?Function} p.transformFn - do some transformation on the list after all filtering/sorting. should return a new array
  * @param {?List} p.list No loading - just use this list of hits
  * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
- * @param {?Boolean} p.canCreate - If set, show a Create
+ * @param {?Boolean} p.canCreate - If set, show a Create button
  * @param {?Boolean} p.canDelete - If set, show delete buttons
  * @param {?Boolean} p.cannotClick - If set, do not use an a wrapper or have an onPick handler. Use-case: for lists which don't link through to pages.
  * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
@@ -53,7 +54,7 @@ import List from '../data/List';
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
  * 	Input props: {type, servlet, navpage, item, sort}
  * @param {?Function} p.nameFn passed to ListItem, to have custom name extraction
- * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which dont nest).* 
+ * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which don't nest).* 
  * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
  * @param {?boolean} p.hideTotal - If true, don't show the "Total about 17" line
  * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
@@ -61,6 +62,7 @@ import List from '../data/List';
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
  * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
  * @param {JSX|String} p.noResults  Message to show if there are no results
+ * @param {?Function} p.onClickItem  Custom non-navigation action when list item clicked
  * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
  */
 const ListLoad = ({ type, status, servlet, navpage,
@@ -84,6 +86,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	hideTotal,
 	pageSize,
 	unwrapped,
+	onClickItem,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) => {
@@ -119,6 +122,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		assert(!filter, "ListLoad.jsx - Do NOT use filter and canFilter props");
 		filter = DataStore.getValue(widgetPath.concat('filter'));
 	}
+	const rawFilter = filter; // TODO case is needed for id matching -- Where/how best to handle that?
 	if (filter) filter = filter.toLowerCase(); // normalise
 
 	let fastFilter, isLoading, error;
@@ -126,7 +130,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		// Load via ActionMan -- both filtered and un-filtered
 		// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 		// while fetching from the backedn using the filter)
-		let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: filter, sort, ...otherParams }) : { resolved: true };
+		let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: rawFilter, sort, ...otherParams }) : { resolved: true };
 		let pvItemsAll = ActionMan.list({ type, status, q, start, end, sort, ...otherParams });
 		let pvItems = pvItemsFiltered.value ? pvItemsFiltered : pvItemsAll;
 		// filter out duplicate-id (paranoia: this should already have been done server side)
@@ -161,7 +165,8 @@ const ListLoad = ({ type, status, servlet, navpage,
 		window.scrollTo(0, 0);
 	};
 	let allItems = items; // don't paginate the csv download
-	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;	
+	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;
+
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem ? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
 
@@ -193,15 +198,17 @@ const ListLoad = ({ type, status, servlet, navpage,
 					item={item}
 					sort={DataStore.getValue(['misc', 'sort'])}
 					nameFn={nameFn}
+					onClick={() => onClickItem(item)}
 				/>
 			</ListItemWrapper>
 		))}
-
-		{pageSize && total > pageSize && <div>
-			<Button className='mr-2' color='secondary' disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b>&lt;</b></Button>
-			page {(pageNum + 1)} of {Math.ceil(total / pageSize)}
-			<Button className='ml-2' color='secondary' disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b>&gt;</b></Button>
-		</div>}
+		{(pageSize && total > pageSize) && (
+			<div className="pagination-controls flex-row justify-content-between align-items-center">
+				<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b>◀</b></Button>
+				page {(pageNum + 1)} of {Math.ceil(total / pageSize)}
+				<Button className="ml-2" color="secondary" disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b>▶</b></Button>
+			</div>
+		)}
 		{isLoading && <Misc.Loading text={type.toLowerCase() + 's'} />}
 		<ErrAlert error={error} />
 	</div>);
@@ -308,7 +315,7 @@ const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, tran
  */
 const onPick = ({ event, navpage, id, customParams }) => {
 	stopEvent(event);
-	modifyHash([navpage, id], customParams);
+	modifyPage([navpage, id], customParams);
 };
 
 /**
@@ -323,7 +330,7 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, c
 		console.error("ListLoad.jsx - " + type + " with no id", item);
 		return null;
 	}
-	let itemUrl = modifyHash([servlet, id], null, true);
+	let itemUrl = modifyPage([servlet, id], null, true);
 
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 
@@ -340,7 +347,7 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, c
 		<div className="ListItemWrapper clearfix flex-row">
 			{checkbox}
 			<A href={itemUrl} key={'A' + id} notALink={notALink} cannotClick={cannotClick}
-				onClick={event => ! cannotClick && onPick({ event, navpage, id })}
+				onClick={event => !cannotClick && onPick({ event, navpage, id })}
 				className={itemClassName || space(`ListItem btn-default btn btn-outline-secondary status-${item.status}`, hasButtons && "btn-space")}
 			>
 				{children}
@@ -466,7 +473,7 @@ const DefaultCopy = ({ type, id, item, list, onCopy }) => {
  * @param {?Object} p.base - use to make the blank. This will be copied.
  * @param {?Function} p.make use to make the blank. base -> item. If unset, look for a DataClass for type, and use `new` constructor. Or just {}.
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
- * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
+ * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item. Set this to switch off navigation.
  */
 const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
 	assert(!getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) " + type + ". Safety hack: Pass in an id param instead");
@@ -495,7 +502,7 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
 	DataStore.setLocalEditsStatus(type, id, C.STATUS.dirty, false);
 
 	if (!getType(newItem)) newItem['@type'] = type;
-	// poke a new blank into DataStore
+	// poke the new blank into DataStore
 	newItem.status = KStatus.DRAFT;
 	const path = DataStore.getDataPath({ status: KStatus.DRAFT, type, id });
 	DataStore.setValue(path, newItem);
