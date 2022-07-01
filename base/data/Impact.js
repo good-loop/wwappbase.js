@@ -30,10 +30,10 @@ export default Impact;
 
 /**
  * Is this a dynamic impact, which should be calculated from e.g. impressions*rate?
- * @param {!Impact} impact 
+ * @param {?Impact} impact 
  * @returns {boolean}
  */
-Impact.isDynamic = impact => !! impact.rate;
+Impact.isDynamic = impact => impact && !! impact.rate;
 
 /**
  * HACK says yes to "carbon" "carbon offset(s)" "carbon offset (kg)" etc.
