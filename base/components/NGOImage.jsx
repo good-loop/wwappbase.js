@@ -56,6 +56,8 @@ const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...pr
 			if (imgIdx !== null && ngo.imageList && ngo.imageList[imgIdx]) {
 				const useableImages = ngo.imageList.filter(imgObj => !imgObj.backdrop);
 				setUseUrl(useableImages.length > imgIdx ? useableImages[imgIdx].contentUrl : ngo.images);
+			} else {
+				setUseUrl(ngo.images);
 			}
 		}
 	}, [ngo, main, header, backdrop, imgIdx]);
