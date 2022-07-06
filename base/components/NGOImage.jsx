@@ -14,9 +14,10 @@ import BG from "./BG";
  * @param {?Boolean} bg render as a BG component instead
  * @param {?String} src if no NGO is set, will render this like a normal image as a fallback (defaults to main photo). 
  * 	If no src and no NGO, then render null.
+ * @param {?Boolean} hardFallback instead of returning null on no image found, fallback as much as possible
  * @param {?JSX} children ??What is the use-case for children of an image??
  */
-const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...props}) => {
+const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, hardFallback, children, ...props}) => {
     assert(imgIdx !== undefined || main || header || backdrop); // temporary
 
 	const [useUrl, setUseUrl] = useState();
@@ -56,7 +57,7 @@ const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, children, ...pr
 			if (imgIdx !== null && ngo.imageList && ngo.imageList[imgIdx]) {
 				const useableImages = ngo.imageList.filter(imgObj => !imgObj.backdrop);
 				setUseUrl(useableImages.length > imgIdx ? useableImages[imgIdx].contentUrl : ngo.images);
-			} else {
+			} else if (hardFallback) {
 				setUseUrl(ngo.images);
 			}
 		}
