@@ -28,8 +28,8 @@ Pronoun.fromObj = obj => {
  * Combine several pronouns into one string
  * @param {Array} pronouns 
  */
-Pronoun.concatonate = pronouns => {
-    if (pronouns.length === 1) return pronouns[0].toString();
+Pronoun.summarize = pronouns => {
+    if (pronouns.length === 1) return pronouns[0].subject + "/" + pronouns[0].object;
     const combined = pronouns.map(pronoun => pronoun.subject);
     return combined.join("/");
 }
