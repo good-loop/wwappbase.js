@@ -101,6 +101,18 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 	let logoClass = 'logo';
 	if (window.location.host.includes('my.good-loop.com')) logoClass = '';
 
+	// Make Collapse full screen height on mobile
+	const [colClass, setColClass] = useState();
+	const onEntering = () => {
+		setColClass("collapse-excessheight");
+	}
+	const onEntered = () => {
+		setColClass("collapse-fullheight");
+	}
+	const onExiting = () => {
+		setColClass(null);
+	}
+
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
 			<img className={logoClass} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
@@ -116,7 +128,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 			</div>
 		}
 		<NavbarToggler onClick={toggle}/>
-		<Collapse isOpen={isOpen} navbar>
+		<Collapse isOpen={isOpen} navbar className={colClass} onEntering={onEntering} onEntered={onEntered} onExiting={onExiting}>
 			<Nav navbar className="page-links justify-content-start" style={{flexGrow:1}}>
 				{pageLinks}
 			</Nav>
