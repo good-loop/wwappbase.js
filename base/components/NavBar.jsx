@@ -105,6 +105,8 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 	const [colClass, setColClass] = useState();
 	const onEntering = () => {
 		setColClass("collapse-excessheight");
+		// prevent being accidentally kicked down from menu
+		window.scrollTo(0, 0);
 	}
 	const onEntered = () => {
 		setColClass("collapse-fullheight");
@@ -128,12 +130,15 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 			</div>
 		}
 		<NavbarToggler onClick={toggle}/>
-		<Collapse isOpen={isOpen} navbar className={colClass} onEntering={onEntering} onEntered={onEntered} onExiting={onExiting}>
-			<Nav navbar className="page-links justify-content-start" style={{flexGrow:1}}>
-				{pageLinks}
-			</Nav>
-			{children}
-			<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText} onLinkClick={onLinkClick} className="mx-2 mt-2 mt-md-0"/>
+		<Collapse isOpen={isOpen} navbar className={colClass} 
+			onEntering={onEntering} onEntered={onEntered} onExiting={onExiting}>
+				<div className="nav-innards">
+					<Nav navbar className="page-links justify-content-center justify-content-md-start" style={{flexGrow:1}}>
+						{pageLinks}
+					</Nav>
+					{children}
+					<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText} onLinkClick={onLinkClick} className="mx-2 mt-2 mt-md-0"/>
+				</div>
 		</Collapse>
 	</>);
 };
@@ -149,7 +154,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
-const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize="md", ...props}) => {
+const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize="md", onToggle, ...props}) => {
 	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
 	const navProps = getNavProps();
 	if (navProps) {
@@ -159,8 +164,12 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 
 	// Handle nav toggling
 	const [isOpen, setIsOpen] = useState(false); // what is open?? the whole menu (mobile) or a dropdown??
-	const close = () => setIsOpen(false);
-	const toggle = () => setIsOpen(!isOpen);
+	const setOpen = (open) => {
+		setIsOpen(open);
+		onToggle && onToggle(open);
+	}
+	const close = () => setOpen(false);
+	const toggle = () => setOpen(!isOpen);
 
 	const [scrolled, setScrolled] = useState(false);
 	const checkScroll = () => {
