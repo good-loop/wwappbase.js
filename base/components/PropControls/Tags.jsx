@@ -87,7 +87,7 @@ export const TagInputMultiWord = ({wordNum, tags=[], placeholders, alts, onType,
     const tryAddTags = tags => {
         if (!tags) return;
         // Check for empty tags
-        if (tags.filter(x => x && x !== "").length !== tags.length) return;
+        if (tags.filter(x => x && x !== "").length !== wordNum) return;
         onAddTags(tags);
         clearVals();
     }
