@@ -515,13 +515,16 @@ const PropControl2 = (props) => {
 		return <PropControlSelect  {...props2} />
 	}
 
-	if (type === 'gender') {
-		let props2 = { onChange, value, ...props };
+	/*if (type === 'gender') {
 		
+		let props2 = { onChange, value, ...props };
+		return <PropControlGender {...props2}/>
+
+		/*
 		props2.options = ["male", "female", "others", "nottosay"];
 		props2.labels = ["Male", "Female", "Others", "Preferred not to say"];
 		return <PropControlSelect  {...props2} />
-	}
+	}*/
 
 	if (type === 'color') {
 		return <PropControlColor type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;

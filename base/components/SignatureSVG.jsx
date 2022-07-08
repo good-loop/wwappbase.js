@@ -1,6 +1,7 @@
 import React from 'react';
+import { Pronoun } from '../data/Ego';
 
-const SignatureSVG = ({name, title, href, hideLogo, svgwidth, ...props}) => {
+const SignatureSVG = ({name, pronouns, title, href, hideLogo, svgwidth, ...props}) => {
     return <svg id="svgOutput" viewBox={"0 -178.699 " + svgwidth + " " + (hideLogo ? "160" : "300")} xmlns="http://www.w3.org/2000/svg" {...props} >
         {!hideLogo && <g id="g36" transform="matrix(1, 0, 0, 1, -41.027996, -239.068924)">
             <g id="g12">
@@ -25,7 +26,8 @@ const SignatureSVG = ({name, title, href, hideLogo, svgwidth, ...props}) => {
         </g>}
         <g style={{ textTransform: 'uppercase', letterSpacing: '0.1em' }}>
             <text className="signature-name" fontFamily="Montserrat" fontSize="62px" fontWeight="900" fill="rgb(175, 32, 9)" x="145.217" y="-109.521">{name}</text>
-            <text className="signature-title" fontFamily="Montserrat" fontSize="42px" fontWeight="600" fill="rgb(29, 29, 27)" x="145.217" y="-38.3">{title}</text>
+            <text className="signature-title" fontFamily="Montserrat" fontSize="42px" fontWeight="600" fill="rgb(29, 29, 27)" x="145.217" y="-60">{title}</text>
+            {pronouns && <text className="signature-pronouns" fontFamily="Montserrat" fontSize="30px" fontWeight="400" fill="rgb(0,0,0)" x="145.217" y="-15">{Pronoun.summarize(pronouns)}</text>}
         </g>
         <clipPath id="clip" clipPathUnits="objectBoundingBox">
             <rect rx="60" ry="60" width="1" height="1" fill="black" />

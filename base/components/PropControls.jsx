@@ -13,6 +13,7 @@ import PropControlSelection from './PropControlSelection';
 import PropControlDataItem from './PropControlDataItem';
 import PropControlMoney from './PropControlMoney';
 import PropControlDt from './PropControls/PropControlDt';
+import PropControlEgo from './PropControls/PropControlEgo';
 
 import PropControlImg from './PropControls/PropControlImg';
 
