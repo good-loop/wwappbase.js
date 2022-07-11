@@ -125,7 +125,7 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 
 	// Insert the element the unit goes in at the top of the document
 	// Keep it simple: Tell the unit it's already isolated in an iframe and doesn't need to create another.
-	appendEl(doc, {tag: 'div', className: 'goodloopad-frameless'}, true);
+	appendEl(doc, { tag: 'div', className: 'goodloopad-frameless', style: { height: '100%' } }, true);
 
 	// Generate the unit.js URL and insert the <script> tag
 	const src = getAdUrl({ file: 'unit.js', unitBranch, params: glParams });
@@ -133,7 +133,7 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 
 	// insert wysiwyg xray code
 	if (xray) {
-		appendEl(doc, {tag: 'script', src:"/build/js/xray.js" , async: true});
+		appendEl(doc, { tag: 'script', src: '/build/js/xray.js', async: true });
 	}
 
 	// On unmount: empty out iframe's document
@@ -253,7 +253,7 @@ const GoodLoopUnit = ({vertId, className, style, css, size = 'landscape', status
 	}, []);
 
 	// Calculate dimensions every render because it's cheap and KISS
-	const dims = {position:"relative"}; // allow Editor to position elements
+	const dims = { position: 'relative' }; // allow Editor to position elements
 	if (container) {
 		const { width, height } = container.getBoundingClientRect();
 		// 16:9 --> 100% width, proportional height; 9:16 --> 100% height, proportional width
