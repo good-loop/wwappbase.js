@@ -222,7 +222,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 		return (
 			<Item key={page} className={isTop && 'top-level'} active={page === currentPage}>
 				<PageNavLink page={page} >
-					{labelFn(page)}
+					<h5>{labelFn(page)}</h5>
 				</PageNavLink>
 			</Item>
 		);
@@ -230,14 +230,35 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 
 	const NDropDown = ({title, i}) => {
 		const [open, setOpen] = useState(false);
-		return <Dropdown isOpen={open} toggle={() => setOpen(!open)} key={title} nav inNavbar className='top-level'>
-			<DropdownToggle nav caret>{labelFn(title)}</DropdownToggle>
-			<DropdownMenu>
-				{pages[title].filter(page => page).map((page, j) => (
-					<NLink key={page} page={page} />
-				))}
-			</DropdownMenu>
-		</Dropdown>;
+
+		// Force collapsable on mobile to be proper absolute height
+		const [colClass, setColClass] = useState();
+		const onEntering = () => {
+			const num = pages[title].filter(page => page).length;
+			// Can't set specific styles on collapse elements - have to use some CSS class hardcoding hacks
+			setColClass("nav-collapse-height-" + num);
+		}
+		const onExiting = () => {
+			setColClass(null);
+		}
+
+		return <>
+			<Dropdown isOpen={open} toggle={() => setOpen(!open)} key={title} nav inNavbar className='top-level'>
+				<DropdownToggle nav caret><h5>{labelFn(title)}</h5></DropdownToggle>
+				{/* Desktop display */}
+				<DropdownMenu className="d-none d-md-block">
+					{pages[title].filter(page => page).map((page, j) => (
+						<NLink key={page} page={page} />
+					))}
+				</DropdownMenu>
+				{/* Mobile display */}
+				<Collapse className={space("d-md-none", colClass)} isOpen={open} onEntering={onEntering} onExiting={onExiting}>
+					{pages[title].filter(page => page).map((page, j) => (
+						<NLink key={page} page={page} />
+					))}
+				</Collapse>
+			</Dropdown>
+		</>;
 	};
 
 	let pageLinks;

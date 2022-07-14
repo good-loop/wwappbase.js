@@ -235,7 +235,7 @@ class MainDivBase extends Component {
 		
 		const onNavToggle = (open) => {
 			if (open) setMainDivClass('nav-open', /nav-\w+/);
-			else setMainDivClass('', /nav-\w+/);
+			else setMainDivClass('nav-closed', /nav-\w+/);
 		}
 		
 		return <div>
