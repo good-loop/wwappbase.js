@@ -233,6 +233,11 @@ class MainDivBase extends Component {
 		setMainDivClass(`page-${page}`, /page-\w+/);
 		setMainDivClass(`logged-${Login.isLoggedIn() ? 'in' : 'out'}`, /logged-\w+/);
 		
+		const onNavToggle = (open) => {
+			if (open) setMainDivClass('nav-open', /nav-\w+/);
+			else setMainDivClass('nav-closed', /nav-\w+/);
+		}
+		
 		return <div>
 			{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
 			{navbar && !undecorated && <>
@@ -249,6 +254,7 @@ class MainDivBase extends Component {
 					isBeta={isBeta}
 					accountMenuItems={navbarAccountMenuItems}
 					accountLinkText={navbarAccountLinkText}
+					onToggle={onNavToggle}
 				>
 				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 				</NavBar>
