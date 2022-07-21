@@ -263,7 +263,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 					))}
 				</DropdownMenu>
 				{/* Mobile display */}
-				<Collapse className={space("d-md-none")} isOpen={open} onEntering={onEntering} onExiting={onExiting}>
+				<Collapse className={space("d-md-none")} isOpen={open}>
 					{pages[title].filter(page => page).map((page, j) => (
 						<NLink key={page} page={page} />
 					))}
