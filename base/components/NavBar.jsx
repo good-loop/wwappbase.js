@@ -121,7 +121,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 				<Nav navbar className="page-links justify-content-start" style={{flexGrow:1}}>
 					{pageLinks}
 				</Nav>
-				<div className="d-flex">
+				<div className="d-flex align-items-center">
 					{children}
 					<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText} onLinkClick={onLinkClick} className=""/>
 				</div>
