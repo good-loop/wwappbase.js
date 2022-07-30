@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
 	Navbar,
 	NavbarBrand,
@@ -17,7 +17,7 @@ import { assMatch } from '../utils/assert';
 import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
-import { encURI, equals, isPortraitMobile, labeller, space } from '../utils/miscutils';
+import { encURI, equals, labeller, space } from '../utils/miscutils';
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
 import DataClass, { getId, getType } from '../data/DataClass';
@@ -101,28 +101,6 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 	let logoClass = 'logo';
 	if (window.location.host.includes('my.good-loop.com')) logoClass = '';
 
-	// Make Collapse full screen height on mobile
-	const [colClass, setColClass] = useState();
-	const onEntering = () => {
-		setColClass("collapse-excessheight");
-		// prevent being accidentally kicked down from menu
-		window.scrollTo(0, 0);
-	}
-	const onEntered = () => {
-		setColClass("collapse-fullheight");
-	}
-	const onExiting = () => {
-		setColClass(null);
-	}
-
-	const NavInnards = () => <>
-		<Nav navbar className="page-links justify-content-center justify-content-md-start" style={{flexGrow:1}}>
-			{pageLinks}
-		</Nav>
-		{children}
-		<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText} onLinkClick={onLinkClick} className="mx-2 mt-2 mt-md-0"/>
-	</>;
-
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
 			<img className={logoClass} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
@@ -138,13 +116,16 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
 			</div>
 		}
 		<NavbarToggler onClick={toggle}/>
-		<Collapse isOpen={isOpen} navbar className={colClass} 
-			onEntering={onEntering} onEntered={onEntered} onExiting={onExiting}>
-				{isPortraitMobile() ?
-					<div className="nav-mobile-innards">
-						<NavInnards/>
-					</div>
-				: <NavInnards/>}
+		<Collapse isOpen={isOpen} navbar>
+			<div className="collapsibles mx-2 w-100 d-flex justify-content-between">
+				<Nav navbar className="page-links justify-content-start" style={{flexGrow:1}}>
+					{pageLinks}
+				</Nav>
+				<div className="d-flex align-items-center">
+					{children}
+					<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText} onLinkClick={onLinkClick} className=""/>
+				</div>
+			</div>
 		</Collapse>
 	</>);
 };
@@ -160,7 +141,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, tog
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
-const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize="md", onToggle, ...props}) => {
+const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize="md", ...props}) => {
 	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
 	const navProps = getNavProps();
 	if (navProps) {
@@ -170,12 +151,8 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 
 	// Handle nav toggling
 	const [isOpen, setIsOpen] = useState(false); // what is open?? the whole menu (mobile) or a dropdown??
-	const setOpen = (open) => {
-		setIsOpen(open);
-		onToggle && onToggle(open);
-	}
-	const close = () => setOpen(false);
-	const toggle = () => setOpen(!isOpen);
+	const close = () => setIsOpen(false);
+	const toggle = () => setIsOpen(!isOpen);
 
 	const [scrolled, setScrolled] = useState(false);
 	const checkScroll = () => {
@@ -228,7 +205,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 		return (
 			<Item key={page} className={isTop && 'top-level'} active={page === currentPage}>
 				<PageNavLink page={page} >
-					<h5>{labelFn(page)}</h5>
+					{labelFn(page)}
 				</PageNavLink>
 			</Item>
 		);
@@ -236,40 +213,14 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 
 	const NDropDown = ({title, i}) => {
 		const [open, setOpen] = useState(false);
-
-		// Force collapsable on mobile to be proper absolute height
-		/*const colRef = useRef();
-		const onEntering = () => {
-			const num = pages[title].filter(page => page).length;
-			// Can't set specific styles on collapse elements - have to use some CSS class hardcoding hacks
-			if (colRef.current) {
-				console.log("CURRENT???", colRef.current);
-				colRef.current.state.height = (num * 1.2) + "rem";
-			}
-		}
-		const onExiting = () => {
-			if (colRef.current) {
-				colRef.current.state.height = 0;
-			}
-		}*/
-
-		return <>
-			<Dropdown isOpen={open} toggle={() => setOpen(!open)} key={title} nav inNavbar className='top-level'>
-				<DropdownToggle nav caret><h5>{labelFn(title)}</h5></DropdownToggle>
-				{/* Desktop display */}
-				<DropdownMenu className="nav-dropdown">
-					{pages[title].filter(page => page).map((page, j) => (
-						<NLink key={page} page={page} />
-					))}
-				</DropdownMenu>
-				{/* Mobile display */}
-				<Collapse className={space("d-md-none")} isOpen={open}>
-					{pages[title].filter(page => page).map((page, j) => (
-						<NLink key={page} page={page} />
-					))}
-				</Collapse>
-			</Dropdown>
-		</>;
+		return <Dropdown isOpen={open} toggle={() => setOpen(!open)} key={title} nav inNavbar className='top-level'>
+			<DropdownToggle nav caret>{labelFn(title)}</DropdownToggle>
+			<DropdownMenu>
+				{pages[title].filter(page => page).map((page, j) => (
+					<NLink key={page} page={page} />
+				))}
+			</DropdownMenu>
+		</Dropdown>;
 	};
 
 	let pageLinks;

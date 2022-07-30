@@ -13,7 +13,7 @@ import { useState } from 'react';
  * @param {String[]|String} p.storeValue If a String is passed in, it will be split on commas. The saved value from edits is always String[] 
  * (unless modelValueFromInput is used to join it into a string).
  */
-const PropControlPills = ({storeValue, modelValueFromInput, path, prop, onBlur, onType, proppath, type, fcolor, saveFn, ...props}) => {
+const PropControlPills = ({storeValue, modelValueFromInput, path, prop, proppath, type, fcolor, saveFn}) => {
 	let pills = storeValue || [];
 	if (typeof(pills)==="string") {
 		pills = pills.split(/,\s*/).filter(s => s);
@@ -31,7 +31,6 @@ const PropControlPills = ({storeValue, modelValueFromInput, path, prop, onBlur, 
 	const addTagOnChange = e => {
 		// console.log("addTag", e);
 		let tg = e.target.value || '';
-		onType && onType(tg);
 		tg = tg.trim();
 		if ( ! tg || tg === e.target.value) {
 			// not finished typing - we need word+space to make a pill
@@ -60,17 +59,16 @@ const PropControlPills = ({storeValue, modelValueFromInput, path, prop, onBlur, 
 		}
 	};
 
-	const fullOnBlur = () => {
-		addTag2(rawPartValue);
-		onBlur && onBlur();
-	}
-
 	return (<div className='form-control flex-row'>
 		{pills.map((tg,i) => <Badge className='mr-1' key={i} color={fcolor && fcolor(tg)}>{tg} <CloseButton onClick={e => removeTag(tg)}/></Badge>)}
 		<input value={rawPartValue} className='flex-grow'
-			onChange={addTagOnChange} onKeyUp={onKeyUp} onBlur={fullOnBlur} {...props}/>
+			onChange={addTagOnChange} onKeyUp={onKeyUp} onBlur={e => addTag2(rawPartValue)} />
 	</div>);
 }
 
-registerControl({type:'pills', $Widget: PropControlPills});
+registerControl({
+	type:'pills',
+	$Widget: PropControlPills
+});
 
+export default PropControlPills;
