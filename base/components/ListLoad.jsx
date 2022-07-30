@@ -45,6 +45,7 @@ import { modifyPage } from '../plumbing/glrouter';
  * @param {?Boolean} p.canDelete - If set, show delete buttons
  * @param {?Boolean} p.cannotClick - If set, do not use an a wrapper or have an onPick handler. Use-case: for lists which don't link through to pages.
  * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
+ * @param {?String} p.start - optional date filter
  * @param {?String} p.status - e.g. "Draft"
  * @param {?String} p.servlet - Deprecated - use navpage instead
  * @param {?String} p.navpage - e.g. "publisher" If unset, a default is taken from the url.
