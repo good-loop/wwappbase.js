@@ -7,6 +7,12 @@ import Claim from '../../data/Claim';
 import Person, { getProfile, getClaimValue, setClaimValue, savePersons, getPVClaim } from '../../data/Person';
 import { getDataItem } from '../../plumbing/Crud';
 
+/**
+ * This is for working with Profiler Claims whih are A Bit Odd. 
+ * 
+ * Arguably this belongs in my-loop rather than in wwappbase.js
+ */
+
 const USER_WIDGET_PATH = ['widget', 'UserClaimControl'];
 const SAVE_PERSONS_DELAY = 500;
 
@@ -177,9 +183,6 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
         "checkboxObject",
         "DataItem",
         "Money",
-        "gender",
-        "pronoun",
-        "ego"
     ];
     const isJsonType = json_types.includes(props.type);
 
