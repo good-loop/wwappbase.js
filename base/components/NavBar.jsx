@@ -96,14 +96,12 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  * @param {NavProps} p
  * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
  */
-const DefaultNavGuts = ({pageLinks, currentPage, children, homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems, accountLinkText}) => {
-	// Hack: remove logo classname for myGL to advoid Safari CSS bug
-	let logoClass = 'logo';
-	if (window.location.host.includes('my.good-loop.com')) logoClass = '';
+const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems, accountLinkText}) => {
 
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
-			<img className={logoClass} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+			<img className={space(logoClass, C.app.logoMobile && "d-none d-md-inline-block")} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+            {C.app.logoMobile && <img className={space(logoClass, "d-md-none")} alt={C.app.name} src={C.app.logoMobile} />}
 			{isBeta && <span style={{position:'sticky',top:'100%',color:'grey'}}>beta</span>}
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?

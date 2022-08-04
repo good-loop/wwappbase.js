@@ -147,6 +147,7 @@ class MainDivBase extends Component {
 			navbarDarkTheme=true,
 			navbarBackgroundColour="dark",
 			navbarPages, navbarLabels, navbarChildren,
+            navbarLogoClass,
 			navbarExternalLinks, // TODO document props
 			navbarSpace, // TODO document props
 			navbarAccountMenuItems, // Used for MyData - show extra items such as settings etc alongside standard "Account" and "Logout" (only on mobile devices - that's not controlled here)
@@ -255,6 +256,7 @@ class MainDivBase extends Component {
 					accountMenuItems={navbarAccountMenuItems}
 					accountLinkText={navbarAccountLinkText}
 					onToggle={onNavToggle}
+                    logoClass={navbarLogoClass}
 				>
 				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 				</NavBar>
