@@ -795,12 +795,12 @@ export const article = (noun: Object) => ('aeiou'.indexOf(String(noun).toLowerCa
  * @param {?String} text 
  * @returns {!String} lowercase, trim, strip punctuation and other non-letters, and compact whitespace.
  */
-export const toCanonical = (text: String) => {
+export const toCanonical = (text: string) => {
 	if ( ! text) return "";
 	return text.trim().toLowerCase().replaceAll(/\W+/g, " ");
 };
 
-export const hardNormalize = (text: String) => {
+export const hardNormalize = (text: string) => {
 	text = toCanonical(text);
 	// Remove all non-letter characters entirely
 	text.replaceAll(/\W+/g, "").replaceAll(/ +/g, "");
@@ -812,25 +812,68 @@ export const hardNormalize = (text: String) => {
  * 1 = full match, 0 = no match
  * @param {String} text 
  * @param {String} match 
- * @param {?Boolean} normalize
+ * @param {?Boolean} splitWords do individual searches per word, split by spacing, punctuation and cases
+ * @param {?Boolean} normalize normalize strings before attempting matches. if splitWords is used, will occur after word splits
  * @returns 
  */
- export const partialMatch = (text: String, match: String, normalize: Boolean) => {
-	if (normalize) {
-		text = hardNormalize(text);
-		match = hardNormalize(match);
-	}
-	const len = match.length;
-	// Reduce match length until a match is made
-	for (let i = len; i > 0; i--) {
-		if (text.includes(match.substring(0, i))) {
-			// Find factor of match and return
-			// 1 = perfect match, 0 = no match
-			const factor = i / len;
-			return factor;
-		}
-	}
-	return 0;
+ export const partialMatch = (text: string, match: string, splitWords: boolean, normalize: boolean) => {
+    
+    // Function to find a factor of one string against another
+	const searchFunc = (t: string, m: string) => {
+        const len = m.length;
+        // Reduce match length until a match is made
+        for (let i = len; i > 0; i--) {
+            if (t.includes(m.substring(0, i))) {
+                // Find factor of match and return
+                // 1 = perfect match, 0 = no match
+                const factor = i / len;
+                return factor;
+            }
+        }
+        return 0;
+    }
+
+    // Function to split words up by spacing, punctuation and casing
+    const splitWordsFunc = (t: String) => {
+        let res = t.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/\W/g, ' ').split(" ").filter(x => x && x !== '');
+        return res;
+    }
+
+    if (!splitWords) {
+        if (normalize) {
+            text = hardNormalize(text);
+            match = hardNormalize(match);
+        }
+        return searchFunc(text, match);
+    } else {
+        // Splitting words does not take up the full search, as the full search can still have a strong yield
+        // So the split word result contibutes 50% and the full search contributes 50% to the returned factor
+        const textWords = splitWordsFunc(text);
+        const matchWords = splitWordsFunc(match);
+        let totalMatch = 0;
+        matchWords.forEach(m => {
+            textWords.forEach(t => {
+                let m2 = m;
+                let t2 = t;
+                if (normalize) {
+                    m2 = hardNormalize(m);
+                    t2 = hardNormalize(t);
+                }
+                totalMatch += searchFunc(t2, m2);
+            })
+        });
+        const totalLen = matchWords.length * textWords.length;
+        if (totalLen === 0) return 0;
+        const splitFactor = totalMatch / totalLen;
+
+        if (normalize) {
+            text = hardNormalize(text);
+            match = hardNormalize(match);
+        }
+        const fullFactor = searchFunc(text, match);
+
+        return (splitFactor + fullFactor) / 2;
+    }
 };
 
 /**
