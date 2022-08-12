@@ -316,7 +316,7 @@ const EmailReset = ({}) => {
  * @param children appears between the default form inputs and submission button
  * @param buttonText optional button text which can replace the default (default: verb used)
  */
-const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister, className, agreeToTerms, children, buttonText}) => {
+const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister, className, agreeToTerms, children, buttonText, disableLoginVerb}) => {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
@@ -360,7 +360,7 @@ const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 						title={noAgreement? "You must agree to the terms if you want to use this service." : ""} >
 						{buttonText || verbButtonLabels[verb]}
 					</Button>			
-					{canRegister && <SwitchVerb verb={verb} />}
+					{canRegister && !disableLoginVerb && <SwitchVerb verb={verb} />}
 				</div>
 				<ResetLink verb={verb} />
 			</div>
