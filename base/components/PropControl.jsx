@@ -268,7 +268,7 @@
 	 }
 
 	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
-	if (props.modal && type === 'text' || type === 'textarea') {
+	if (props.modal && (type === 'text' || type === 'textarea')) {
 		const { modal, ...rest } = props;
 		rest.className = className;
 
