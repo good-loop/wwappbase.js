@@ -11,7 +11,7 @@
  
  // FormControl removed in favour of basic <inputs> as that helped with input lag
  // TODO remove the rest of these
- import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody } from 'reactstrap';
+ import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody } from 'reactstrap';
  import _ from 'lodash';
  import Enum from 'easy-enums';
  
@@ -266,6 +266,30 @@
 	 } else if (required) {
 		 optreq = <small className={storeValue === undefined ? 'text-danger' : null}>*</small>
 	 }
+
+	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
+	if (props.modal && type === 'text' || type === 'textarea') {
+		const { modal, ...rest } = props;
+		rest.className = className;
+
+		const [modalOpen, setModalOpen] = useState();
+
+		const focusInner = el => {
+			const inputEl = el?.querySelector('.form-control');
+			if (!inputEl) return;
+			inputEl.focus();
+			// TODO onFocus should get and store caret position if applicable
+		};
+
+		return <>
+			<PropControl onFocus={(e) => { console.log(e.target); setModalOpen(true)} } {...rest} />
+			<Modal isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
+				<ModalBody>
+					<PropControl {...rest} />
+				</ModalBody>
+			</Modal>
+		</>;
+	}
  
 	 // NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	 // let props2 = Object.assign({}, props);
