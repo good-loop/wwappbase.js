@@ -187,6 +187,7 @@
 		 delete props.onChange;
 	 }
  
+
 	 // On first render, replace empty-ish values (ie not explicit false or 0) with default, if given.
 	 useEffect(() => {
 		 if (!dflt) return;
@@ -270,20 +271,38 @@
 	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
 	if (props.modal && (type === 'text' || type === 'textarea')) {
 		const { modal, ...rest } = props;
+
 		rest.className = className;
 
-		const [modalOpen, setModalOpen] = useState();
+		const [modalOpen, setModalOpen] = useState(false);
+		const [modalCaretPos, setModalCaretPos] = useState()
+		const [modalJustOpened, setModalJustOpened] = useState(false)
 
-		const focusInner = el => {
-			const inputEl = el?.querySelector('.form-control');
-			if (!inputEl) return;
-			inputEl.focus();
-			// TODO onFocus should get and store caret position if applicable
+
+		const focusInner = el => {        
+			const inputEl = el?.querySelector('.form-control');			// grab modal text element
+
+			if (!inputEl) return;								
+			
+			if(modalJustOpened){										// only set caret position once
+				inputEl.selectionStart = modalCaretPos					// set modals caret to be same as non-modals
+				inputEl.selectionEnd   = modalCaretPos
+				setModalJustOpened(false)
+			}
+
+			inputEl.focus();								
 		};
 
 		return <>
-			<PropControl onFocus={(e) => { console.log(e.target); setModalOpen(true)} } {...rest} />
-			<Modal isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
+			<PropControl onFocus={(e) => {
+					setTimeout(() => {									// horrible hack - selectionStart needs a TINY delay or it reads incorrectly
+						setModalCaretPos(e.target.selectionStart)
+						setModalOpen(true);          
+			  		}) 
+				setModalJustOpened(true)
+				} 
+				} {...rest} onClick={() => console.log("clicked!")}/>
+			<Modal isOpen={modalOpen} toggle={() => {setModalOpen(!modalOpen)}} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
 				<ModalBody>
 					<PropControl {...rest} />
 				</ModalBody>
