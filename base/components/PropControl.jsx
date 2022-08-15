@@ -275,34 +275,30 @@
 		rest.className = className;
 
 		const [modalOpen, setModalOpen] = useState(false);
-		const [modalCaretPos, setModalCaretPos] = useState()
-		const [modalJustOpened, setModalJustOpened] = useState(false)
+		const [caretPos, setCaretPos] = useState(false);
+		const [inputEl, setInputEl] = useState();
 
+		const onFocusInput = e => setTimeout(() => { // selectionStart needs a TINY delay or it reads incorrectly
+			setCaretPos(e.target.selectionStart)
+			setModalOpen(true);
+		}, 0);
 
-		const focusInner = el => {        
-			const inputEl = el?.querySelector('.form-control');			// grab modal text element
-
-			if (!inputEl) return;								
-			
-			if(modalJustOpened){										// only set caret position once
-				inputEl.selectionStart = modalCaretPos					// set modals caret to be same as non-modals
-				inputEl.selectionEnd   = modalCaretPos
-				setModalJustOpened(false)
-			}
-
-			inputEl.focus();								
+		const focusInner = (el) => {
+			if (caretPos === false) return;
+			const _inputEl = el?.querySelector('.form-control'); // grab modal text element
+			setInputEl(prev => {
+				if (_inputEl && !prev) {
+					_inputEl.selectionStart = caretPos; // set modals caret to be same as non-modals
+					_inputEl.selectionEnd = caretPos;
+					_inputEl.focus();
+				};
+				return _inputEl;
+			});
 		};
 
 		return <>
-			<PropControl onFocus={(e) => {
-					setTimeout(() => {									// horrible hack - selectionStart needs a TINY delay or it reads incorrectly
-						setModalCaretPos(e.target.selectionStart)
-						setModalOpen(true);          
-			  		}) 
-				setModalJustOpened(true)
-				} 
-				} {...rest} onClick={() => console.log("clicked!")}/>
-			<Modal isOpen={modalOpen} toggle={() => {setModalOpen(!modalOpen)}} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
+			<PropControl onFocus={onFocusInput} {...rest} />
+			<Modal isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
 				<ModalBody>
 					<PropControl {...rest} />
 				</ModalBody>
