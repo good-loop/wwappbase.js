@@ -286,9 +286,10 @@
 		const focusInner = (el) => {
 			if (caretPos === false) return;
 			const _inputEl = el?.querySelector('.form-control'); // grab modal text element
+			// focus & set modals caret to be same as non-modals - but only on creation
 			setInputEl(prev => {
 				if (_inputEl && !prev) {
-					_inputEl.selectionStart = caretPos; // set modals caret to be same as non-modals
+					_inputEl.selectionStart = caretPos; 
 					_inputEl.selectionEnd = caretPos;
 					_inputEl.focus();
 				};
@@ -298,7 +299,7 @@
 
 		return <>
 			<PropControl onFocus={onFocusInput} {...rest} />
-			<Modal isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
+			<Modal className="modal-propControl" isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
 				<ModalBody>
 					<PropControl {...rest} />
 				</ModalBody>
