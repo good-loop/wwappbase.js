@@ -11,7 +11,7 @@
  
  // FormControl removed in favour of basic <inputs> as that helped with input lag
  // TODO remove the rest of these
- import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody } from 'reactstrap';
+ import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody } from 'reactstrap';
  import _ from 'lodash';
  import Enum from 'easy-enums';
  
@@ -187,6 +187,7 @@
 		 delete props.onChange;
 	 }
  
+
 	 // On first render, replace empty-ish values (ie not explicit false or 0) with default, if given.
 	 useEffect(() => {
 		 if (!dflt) return;
@@ -266,6 +267,45 @@
 	 } else if (required) {
 		 optreq = <small className={storeValue === undefined ? 'text-danger' : null}>*</small>
 	 }
+
+	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
+	if (props.modal && (type === 'text' || type === 'textarea')) {
+		const { modal, ...rest } = props;
+
+		rest.className = className;
+
+		const [modalOpen, setModalOpen] = useState(false);
+		const [caretPos, setCaretPos] = useState(false);
+		const [inputEl, setInputEl] = useState();
+
+		const onFocusInput = e => setTimeout(() => { // selectionStart needs a TINY delay or it reads incorrectly
+			setCaretPos(e.target.selectionStart)
+			setModalOpen(true);
+		}, 0);
+
+		const focusInner = (el) => {
+			if (caretPos === false) return;
+			const _inputEl = el?.querySelector('.form-control'); // grab modal text element
+			// focus & set modals caret to be same as non-modals - but only on creation
+			setInputEl(prev => {
+				if (_inputEl && !prev) {
+					_inputEl.selectionStart = caretPos; 
+					_inputEl.selectionEnd = caretPos;
+					_inputEl.focus();
+				};
+				return _inputEl;
+			});
+		};
+
+		return <>
+			<PropControl onFocus={onFocusInput} {...rest} />
+			<Modal className="modal-propControl" isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
+				<ModalBody>
+					<PropControl {...rest} />
+				</ModalBody>
+			</Modal>
+		</>;
+	}
  
 	 // NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	 // let props2 = Object.assign({}, props);
