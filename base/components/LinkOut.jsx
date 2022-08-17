@@ -27,7 +27,11 @@ const LinkOut = ({href, disabled, children, className, fetchTitle, ...props}) =>
 			if ( ! props.title) props.title = href;
 		}
 	}
-	return <a href={href.includes("://")? href : "https://"+href} target="_blank" rel="noopener" rel="noreferrer" className={className} {...props} >{ children }</a>;
+
+	// Does this look like a domain name with the protocol omitted? Very loose criterion: if there's a slash anywhere, use it verbatim.
+	const fixedHref = href.match(/\//) ? href : `https://${href}`;
+
+	return <a href={fixedHref} target="_blank" rel="noopener" rel="noreferrer" className={className} {...props} >{ children }</a>;
 };
 let citeCnt = 1;
 /**
