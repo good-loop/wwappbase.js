@@ -63,6 +63,7 @@ const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
 	site = eventParams.site;
 	delete eventParams.count;
 	delete eventParams.gby;
+	delete eventParams.dataspace; // unusual, but in case eventParams was used to pass dataspace around
 	
 	if ( ! site) site = ""+window.location;
 
@@ -118,7 +119,7 @@ const lg = (eventTag, eventParams) => {
 		lgError(`Bad lg() inputs! eventTag: ${eventTag} glslot: ${'preact'}`);
 	}
 
-	let dataspace = null; // use the default
+	let dataspace = eventParams.dataspace; // usually unset, so this will use the default
 	const logPromise = lgBase(dataspace, eventTag, eventParams, true);
 	if ( ! logPromise) {
 		return null; // Tried to log a dupe
