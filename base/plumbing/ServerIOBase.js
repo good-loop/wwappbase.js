@@ -215,7 +215,7 @@ if (C.isProduction()) {
 }
 
 
-ServerIO.upload = function(file, progress, load) {
+ServerIO.upload = function(file, progress, load, {params, endpoint = ServerIO.MEDIA_ENDPOINT}) {
 	// Provide a pre-constructed XHR so we can insert progress/load callbacks
 	const makeXHR = () => {
 		const xhr = $.ajaxSettings.xhr(); //new window.XMLHttpRequest();
@@ -230,8 +230,9 @@ ServerIO.upload = function(file, progress, load) {
 
 	const data = new FormData(); // This is a browser native thing: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 	data.append('upload', file);
+	params && Object.entries(params).forEach(([k, v]) => data.append(k, v));
 
-	return ServerIO.load(ServerIO.MEDIA_ENDPOINT, {
+	return ServerIO.load(endpoint, {
 		xhr: makeXHR,
 		data,
 		type: 'POST',
@@ -240,7 +241,6 @@ ServerIO.upload = function(file, progress, load) {
 		swallow: true,
 	});
 };
-
 
 
 /**
