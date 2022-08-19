@@ -16,10 +16,7 @@
  import Enum from 'easy-enums';
 
  import Prism from 'prismjs';
- import '../style/syntaxHighlighting.less';
- import 'prismjs/components/prism-scss';
- import 'prismjs/plugins/line-numbers/prism-line-numbers';
- import 'prismjs/plugins/line-numbers/prism-line-numbers.css';
+ import 'prismjs/themes/syntaxHighlighting.less';
 
  import { assert, assMatch } from '../utils/assert';
  import JSend from '../data/JSend';
