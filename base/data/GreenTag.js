@@ -125,6 +125,8 @@ class GreenTag extends DataClass {
 	tag;
 	/** The size (in bytes) of the creative this tag represents */
 	weight;
+    /** For holding notes info. TODO: maybe move somewhere else? */
+    notes;
 }
 
 GreenTag.generate = (tag) => {
