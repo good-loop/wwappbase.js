@@ -9,6 +9,7 @@ import Misc from '../Misc';
 import { urlValidator } from './validators';
 import Icon from '../Icon';
 import LinkOut from '../LinkOut';
+import { space } from '../../utils/miscutils';
 
 
 /** MIME type sets */
@@ -199,7 +200,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	};
 
 	// New hooks-based DropZone - give it your upload specs & an upload-accepting function, receive props-generating functions
-	const { getRootProps, getInputProps } = useDropzone({accept: acceptTypes[type], onDrop});
+	const { getRootProps, getInputProps } = useDropzone({accept: acceptTypes[type], onDrop, disabled: otherStuff.disabled});
 
 	// Catch special background-colour name for img and apply a special background to show img transparency
 	let className;
@@ -261,7 +262,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 			{collapse && <Button className="pull-left" title="upload media" onClick={e => setCollapsed( ! collapsed)} color="secondary" size={size}><Icon color="white" name="outtray" /></Button>}
 			{isOpen && <>
 				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
-				<div className="DropZone pull-left my-1 p-1" {...getRootProps()}>
+				<div className={space('DropZone pull-left my-1 p-1', otherStuff.disabled && 'disabled')} {...getRootProps()}>
 					<input {...getInputProps()} />
 					Drop a {acceptDescs[type]} here
 				</div>
@@ -276,7 +277,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 				</div>
 			}
 			{extraControls}
-			<div className="clearfix" />			
+			<div className="clearfix" />
 		</div>
 	);
 }; // ./imgUpload
