@@ -211,10 +211,54 @@ span.preview .DataItemBadge {
 	}
 }/* ./data-item-control */
 
+/* Modals */
+.modal-content {
+	width: 150%;
+	height: 90vh;
+	margin-left:-25%;
+}
+
 .modal-propControl {
 	.form-group.textarea textarea {
-		height: 70vh;
-		width: 100%;
 		max-width: unset;
+		height: 80vh;
+	}
+
+
+	/* Modal syntax highlighting */
+	#input-highlighting, #syntax-highlighting #code-highlighting  {
+		font-size: 15px;
+		font-family: monospace;
+		line-height: 1rem;
+		tab-size: 4;
+	}
+	
+	#syntax-highlighting {
+		line-height: 1rem;
+		tab-size: 4;
+	}
+	
+	#input-highlighting, #syntax-highlighting {
+		margin: 1%;
+		padding: 1%;
+		padding-left:5%;
+		border: 0;
+		width: 	98%;
+		height: 98%;
+		max-width: unset;
+		position: absolute;
+		top: 0;
+		left: 0;
+	
+	}
+	
+	#input-highlighting {
+		z-index: 1;
+		color:transparent;
+		background: transparent;
+		caret-color: black;
+		resize: none;
 	}
 }
+
+
