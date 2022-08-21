@@ -9,6 +9,7 @@ import Misc from '../Misc';
 import { urlValidator } from './validators';
 import Icon from '../Icon';
 import LinkOut from '../LinkOut';
+import { space } from '../../utils/miscutils';
 
 
 /** MIME type sets */
@@ -143,7 +144,7 @@ const FontThumbnail = ({url}) => {
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
-const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", cacheControls, circleCrop, ...otherStuff }) => {
+const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
@@ -169,7 +170,11 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		const load = () => setUploading(false);
 
 		accepted.forEach(file => {
-			ServerIO.upload(file, progress, load)
+			const uploadOptions = {};
+			if (uploadParams) uploadOptions.params = uploadParams;
+			if (endpoint) uploadOptions.endpoint = endpoint;
+
+			ServerIO.upload(file, progress, load, uploadOptions)
 				.done(response => {
 					// TODO refactor to clean this up -- we should have one way of doing things.
 					// Different forms for UploadServlet vs MediaUploadServlet
@@ -186,7 +191,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 				})
 				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
 				// Record start time of current upload
-				setUploading({start: new Date().getTime()}); 
+				setUploading({start: new Date().getTime()});
 		});
 		rejected.forEach(file => {
 			// TODO Inform the user that their file had a Problem
@@ -195,7 +200,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	};
 
 	// New hooks-based DropZone - give it your upload specs & an upload-accepting function, receive props-generating functions
-	const { getRootProps, getInputProps } = useDropzone({accept: acceptTypes[type], onDrop});
+	const { getRootProps, getInputProps } = useDropzone({accept: acceptTypes[type], onDrop, disabled: otherStuff.disabled});
 
 	// Catch special background-colour name for img and apply a special background to show img transparency
 	let className;
@@ -257,7 +262,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 			{collapse && <Button className="pull-left" title="upload media" onClick={e => setCollapsed( ! collapsed)} color="secondary" size={size}><Icon color="white" name="outtray" /></Button>}
 			{isOpen && <>
 				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
-				<div className="DropZone pull-left my-1 p-1" {...getRootProps()}>
+				<div className={space('DropZone pull-left my-1 p-1', otherStuff.disabled && 'disabled')} {...getRootProps()}>
 					<input {...getInputProps()} />
 					Drop a {acceptDescs[type]} here
 				</div>
@@ -272,7 +277,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 				</div>
 			}
 			{extraControls}
-			<div className="clearfix" />			
+			<div className="clearfix" />
 		</div>
 	);
 }; // ./imgUpload
