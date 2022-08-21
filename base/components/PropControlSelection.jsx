@@ -1,6 +1,6 @@
 /**
  * 
- * TODO refactor other select-options-from-a-list controls from PropControl into here
+ * TODO refactor other select_options-from-a-list controls from PropControl into here
  * 
  */
 
