@@ -160,9 +160,11 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
-		// extra hack for my-loop:
-		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("test")) {
-			ServerIO.APIBASE = ServerIO.APIBASE.replace("test", "");
+		if (ServerIO.APIBASE) {
+			ServerIO.APIBASE = ServerIO.APIBASE.replace(/test|local/, "");
+		} else if (ServerIO.APIBASE==='' || ServerIO.APIBASE==='/') {
+			// extra hack for my-loop or moneyscript:
+			ServerIO.APIBASE = 'https://'+(C.app.service|| C.app.name).toLowerCase()+'.good-loop.com';
 		}
 		// SoGive hack
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("sogive.org")) {
