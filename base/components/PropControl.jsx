@@ -16,7 +16,7 @@
  import Enum from 'easy-enums';
 
  import Prism from 'prismjs';
- import '../style/syntaxHighlighting.less';
+ import 'prismjs/themes/syntaxHighlighting.less';
 
  import { assert, assMatch } from '../utils/assert';
  import JSend from '../data/JSend';
