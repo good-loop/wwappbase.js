@@ -4,7 +4,6 @@ import Login from '../youagain';
 import { getUrlVars, toTitleCase, yessy } from '../utils/miscutils';
 import { Alert, Container, Row } from 'reactstrap';
 import { isFunction } from 'lodash';
-
 // setup Misc.SavePublishDeleteEtc for older code
 import SavePublishDeleteEtc from './SavePublishDeleteEtc';
 
