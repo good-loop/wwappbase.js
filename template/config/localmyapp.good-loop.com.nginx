@@ -16,13 +16,34 @@ map $sent_http_content_type $expires {
 
 server {
 	listen   80; ## listen for ipv4; this line is default and implied
+	listen [::]:80;
 
-	root /home/winterwell/myapp/web;
-	index index.html;
+	server_name localmyapp.good-loop.com;
+	rewrite ^ https://$server_name$request_uri? permanent;
+}
+
+server {
+	listen 443 ssl http2;
+	listen [::]:443 ssl http2;
 
 	server_name localmyapp.good-loop.com;
 
-    expires $expires;
+	root /home/winterwell/myapp/web;
+
+	ssl_certificate /home/winterwell/ssl-certs/wildcard.good-loop.com/fullchain1.pem;
+	ssl_certificate_key /home/winterwell/ssl-certs/wildcard.good-loop.com/privkey1.pem;
+	ssl_protocols TLSv1.2 TLSv1.3;
+	ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+	ssl_prefer_server_ciphers off;
+	ssl_dhparam /home/winterwell/config/etc/ssl/dhparams.pem;
+
+	large_client_header_buffers 4 32k;
+
+	add_header X-Frame-Options SAMEORIGIN always;
+
+	index index.html;
+
+	expires $expires;
 
 	location / {
 		try_files $uri $uri/ index @backend;
@@ -38,3 +59,4 @@ server {
 		proxy_set_header	Host $http_host;
 	}
 }
+
