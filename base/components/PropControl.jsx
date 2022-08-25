@@ -191,10 +191,11 @@
 	 // On first render, replace empty-ish values (ie not explicit false or 0) with default, if given.
 	 useEffect(() => {
 		 if (!dflt) return;
+		 // if (type === 'select') debugger;
 		 if (storeValue === undefined || storeValue === null || storeValue === '') {
-			 DataStore.setValue(proppath, dflt, false); // update=false to avoid a nested render, which annoys React
 			 storeValue = dflt;
 			 value = dflt;
+			 setTimeout(() => DataStore.setValue(proppath, dflt)); // Defer in timeout to avoid "update during render" warnings
 		 }
 	 }, []); // 1st time only
  
