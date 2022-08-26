@@ -292,6 +292,7 @@
 				if (_inputEl && !prev) {
 					_inputEl.selectionStart = caretPos; 
 					_inputEl.selectionEnd = caretPos;
+					setTimeout(() => setCaretPos(false), 0)
 					_inputEl.focus();
 				};
 				return _inputEl;
