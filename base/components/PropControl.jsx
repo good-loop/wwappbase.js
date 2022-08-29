@@ -15,7 +15,6 @@
  import _ from 'lodash';
  import Enum from 'easy-enums';
 
- import Prism from 'prismjs';
  import '../style/syntaxHighlighting.less';
 
  import { assert, assMatch } from '../utils/assert';
@@ -32,6 +31,8 @@
  import { nonce } from '../data/DataClass';
  
  import { countryListAlpha2 } from '../data/CountryRegion';
+import ModalTextInput, {ModalStyledTextarea} from './TextareaModal';
+import createUtilityClassName from 'react-bootstrap/esm/createUtilityClasses';
 
  
  /**
@@ -274,66 +275,7 @@
 
 	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
 	if (props.modal && (type === 'text' || type === 'textarea')) {
-		const { modal, ...rest } = props;
-		
-		rest.className = className;
-
-		const [modalOpen, setModalOpen] = useState(false);
-		const [caretPos, setCaretPos] = useState(false);
-		const [inputEl, setInputEl] = useState();
-
-		const onFocusInput = e => setTimeout(() => { // selectionStart needs a TINY delay or it reads incorrectly
-			setCaretPos(e.target.selectionStart)
-			setModalOpen(true);
-		}, 0);
-
-
-		const focusInner = (el) => {
-			const _inputEl = el?.querySelector('.form-control'); // grab modal text element
-			
-			if(_inputEl && props.styled) Prism.highlightAll();	 // apply highlighting once a call
-
-			if (caretPos === false) return;						 // if false, we've already set
-
-			// focus & set modals caret to be same as non-modals - but only on creation
-			setInputEl(prev => {
-				if (_inputEl && !prev) {
-					_inputEl.selectionStart = caretPos; 
-					_inputEl.selectionEnd = caretPos;
-					setTimeout(() => setCaretPos(false), 0) 
-					_inputEl.focus();
-				};
-				return _inputEl;
-			});
-		};
-
-		if(props.styled) {
-			// Prism (the syntax-highlighting lib) doesn't work on text-area's
-			// to get around this, this puts a translucent text-area over a highlighted code block
-			
-			// fixes lastline discrepency between prism & textarea 
-			let codeText = storeValue ? (storeValue[storeValue.length-1] === "\n" ? storeValue + " " : storeValue) : " "
-
-			return <>
-				<PropControl onFocus={onFocusInput} {...rest} />
-				<Modal className="modal-propControl" isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
-					<ModalBody>
-						<PropControl {...rest} modalTextarea/>
-						<pre className="line-numbers" id="syntax-highlighting"><code className={"language-"+props.styled} id="code-highlighting">{codeText}</code></pre>
-					</ModalBody>
-				</Modal>
-			</>;
-		} else {
-			return <>
-				<PropControl onFocus={onFocusInput} {...rest} />
-				<Modal className="modal-propControl" isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
-					<ModalBody>
-						<PropControl {...rest} id="modal-textarea-no-style"/>
-					</ModalBody>
-				</Modal>
-			</>;
-		}
-		
+		return <ModalTextInput props={props} storeValue={storeValue}/>
 	}
  
 	 // NB: pass in recursing error to avoid an infinite loop with the date error handling above.
@@ -522,48 +464,12 @@
 	 }
  
 	 if (type === 'textarea') {
-
 		// if we want to apply styling AND the modal is open...
 		if(props.styled && props.modalTextarea){
-			// tab normally selects next window, make it indent instead
-			const onTabDown = (e) => {
-				if(e.key === "Tab"){
-				  e.preventDefault()
-				  let startCaret = e.target.selectionStart;
-				  let endCaret = e.target.selectionEnd;
-				  let newText = storeValue.slice(0, startCaret) + "\t" +storeValue.slice(endCaret)
-				  setTimeout(() => {
-					e.target.selectionStart = startCaret + 1
-					e.target.selectionEnd = startCaret + 1
-				}, 0)
-				DSsetValue(proppath, newText)
-				}
-			}
-
-			// scroll the textarea & code at the same time
-			const onScroll = () => {
-				$("#syntax-highlighting").scrollTop($("#input-highlighting").scrollTop());
-				$("#syntax-highlighting").scrollLeft($("#input-highlighting").scrollLeft());
-			  }
-
-
-			return <textarea 
-			id="input-highlighting"
-			wrap="off"
-			spellCheck="false"
-			onKeyDown={onTabDown}
-			onScroll={onScroll}
-
-			className="form-control"
-			name={prop}
-			onChange={onChange}
-			value={storeValue}
-			{...otherStuff}
-			/>;	
+			return <ModalStyledTextarea props={props} storeValue={storeValue} name={prop} onChange={onChange} otherStuff={otherStuff} DSsetValue={DSsetValue} proppath={proppath}/>
 		}
-
-		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={storeValue}/>;	
-		
+		// otherwise, normal textarea
+		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={storeValue}/>;		
 		}
  
 	 if (type === 'html') {
