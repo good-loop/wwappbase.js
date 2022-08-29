@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { encURI } from '../utils/miscutils';
 import LinkOut from './LinkOut';
 
+/**
+ * A mailto tag for emails you can click on
+ */
 const MailTo = ({email, children}) => {
     if ( ! email) return children;
     // TODO check email is an email
