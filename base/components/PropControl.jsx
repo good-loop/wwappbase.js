@@ -15,8 +15,6 @@
  import _ from 'lodash';
  import Enum from 'easy-enums';
 
- import '../style/syntaxHighlighting.less';
-
  import { assert, assMatch } from '../utils/assert';
  import JSend from '../data/JSend';
  import {stopEvent, toTitleCase, space, labeller, is  } from '../utils/miscutils';
