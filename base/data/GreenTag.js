@@ -8,7 +8,7 @@ import DataClass from './DataClass';
 import Enum from 'easy-enums';
 import { encURI } from '../utils/miscutils';
 
-const KGreenTagType = new Enum('PIXEL REDIRECT WRAPPER');
+const KGreenTagType = new Enum('PIXEL JAVASCRIPT REDIRECT WRAPPER');
 const KMacroType = new Enum('NONE DV360 GOOGLE TTD XANDR');
 
 /** Used by Green Ad Tag generator */
@@ -79,6 +79,11 @@ const generators = {
 		setBaseParams(url, tag);
 		return `<img src="${url.toString()}" style="position:absolute;">`;
 	},
+	JAVASCRIPT: (tag) => {
+		const url = new URL(PIXEL_BASE);
+		setBaseParams(url, tag);
+		return `<script type="text/javascript">var x=new XMLHttpRequest();x.open('GET', '${url.toString()}');x.send()</script>`;
+	},
 	REDIRECT: (tag) => {
 		const url = new URL(REDIRECT_BASE);
 		setBaseParams(url, tag);
@@ -125,6 +130,8 @@ class GreenTag extends DataClass {
 	tag;
 	/** The size (in bytes) of the creative this tag represents */
 	weight;
+    /** For holding notes info. TODO: maybe move somewhere else? */
+    notes;
 }
 
 GreenTag.generate = (tag) => {

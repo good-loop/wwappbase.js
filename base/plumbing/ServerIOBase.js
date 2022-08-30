@@ -160,9 +160,11 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
-		// extra hack for my-loop:
-		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("test")) {
-			ServerIO.APIBASE = ServerIO.APIBASE.replace("test", "");
+		if (ServerIO.APIBASE) {
+			ServerIO.APIBASE = ServerIO.APIBASE.replace(/test|local/, "");
+		} else if (ServerIO.APIBASE==='' || ServerIO.APIBASE==='/') {
+			// extra hack for my-loop or moneyscript:
+			ServerIO.APIBASE = 'https://'+(C.app.service|| C.app.name).toLowerCase()+'.good-loop.com';
 		}
 		// SoGive hack
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("sogive.org")) {
@@ -215,7 +217,7 @@ if (C.isProduction()) {
 }
 
 
-ServerIO.upload = function(file, progress, load) {
+ServerIO.upload = function(file, progress, load, {params, endpoint = ServerIO.MEDIA_ENDPOINT}) {
 	// Provide a pre-constructed XHR so we can insert progress/load callbacks
 	const makeXHR = () => {
 		const xhr = $.ajaxSettings.xhr(); //new window.XMLHttpRequest();
@@ -230,8 +232,9 @@ ServerIO.upload = function(file, progress, load) {
 
 	const data = new FormData(); // This is a browser native thing: https://developer.mozilla.org/en-US/docs/Web/API/FormData
 	data.append('upload', file);
+	params && Object.entries(params).forEach(([k, v]) => data.append(k, v));
 
-	return ServerIO.load(ServerIO.MEDIA_ENDPOINT, {
+	return ServerIO.load(endpoint, {
 		xhr: makeXHR,
 		data,
 		type: 'POST',
@@ -240,7 +243,6 @@ ServerIO.upload = function(file, progress, load) {
 		swallow: true,
 	});
 };
-
 
 
 /**

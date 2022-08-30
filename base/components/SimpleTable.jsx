@@ -860,7 +860,7 @@ const TableFootPager = ({tableSettings, numPages }) => {
 	// TODO https://getbootstrap.com/docs/4.5/components/pagination/
 	const page = tableSettings.page;
 	const setPage = p => {tableSettings.page = p; tableSettings.update()};
-	return (<div className="pull-left">
+	return (<div className="pull-left pager">
 		Page
 		&nbsp; {page > 0 ? <a href='' onClick={e => stopEvent(e) && setPage(page - 1)} >&lt;</a> : <span className="disabled">&lt;</span>}
 		&nbsp; {page + 1}

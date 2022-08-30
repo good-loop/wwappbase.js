@@ -69,6 +69,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 
 	let onChange = e => {
 		let id = e.target.value;
+        id = id.replace(/ $/g, "");
 		setRawValue(id);
 		if (embed) {
 			return; // if embed, only set on-click

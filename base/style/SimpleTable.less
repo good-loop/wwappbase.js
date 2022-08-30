@@ -8,6 +8,7 @@
 	td {
 		max-width: 33vw;
 		overflow: auto;
+		overflow-wrap: anywhere; // eg dont let urls bork the layout
 	}
 
 	tr.depth2, tr.depth3, tr.depth4, tr.depth5, tr.depth6, tr.depth7 {
@@ -50,6 +51,12 @@
 	// For a caller-provided total row
 	.topRow {
 		font-weight: bold;
+	}
+	/* e.g. "Page < 1 > of 3" */
+	.pager {
+		a {
+			text-decoration: none;
+		}
 	}
 } // ./SimpleTable
 

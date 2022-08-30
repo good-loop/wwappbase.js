@@ -692,6 +692,10 @@ ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', 
 	let url = domain + servlet 
 		+ (ServerIO.dataspace && type!=='NGO'? '/'+ServerIO.dataspace : '')	// HACK: no dataspace for SoGive
 		+ '/_list.json';
+	// HACK repoint a relative url?
+	if (ServerIO.APIBASE && url[0] === '/') {
+		url = ServerIO.APIBASE + url;
+	}
 	let params = {
 		data: {status, q, start, end, prefix, sort, size, ...other}
 	};	

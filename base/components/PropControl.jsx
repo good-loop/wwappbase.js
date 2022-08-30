@@ -23,16 +23,14 @@
  import KStatus from '../data/KStatus';
  
  import Misc from './Misc';
- import DataStore, { setValue } from '../plumbing/DataStore';
+ import DataStore from '../plumbing/DataStore';
  import Icon from './Icon';
  import { luminanceFromHex } from './Colour';
  import { nonce } from '../data/DataClass';
  
  import { countryListAlpha2 } from '../data/CountryRegion';
-import ModalTextInput, {ModalStyledTextarea} from './TextareaModal';
-import createUtilityClassName from 'react-bootstrap/esm/createUtilityClasses';
+ import ModalTextInput, {ModalStyledTextarea} from './TextareaModal';
 
- 
  /**
 	* Set the value and the modified flag in DataStore.
 	* Convenience for DataStore.setModified() + DataStore.setValue()
@@ -194,10 +192,11 @@ import createUtilityClassName from 'react-bootstrap/esm/createUtilityClasses';
 	 // On first render, replace empty-ish values (ie not explicit false or 0) with default, if given.
 	 useEffect(() => {
 		 if (!dflt) return;
+		 // if (type === 'select') debugger;
 		 if (storeValue === undefined || storeValue === null || storeValue === '') {
-			 DataStore.setValue(proppath, dflt, false); // update=false to avoid a nested render, which annoys React
 			 storeValue = dflt;
 			 value = dflt;
+			 setTimeout(() => DataStore.setValue(proppath, dflt)); // Defer in timeout to avoid "update during render" warnings
 		 }
 	 }, []); // 1st time only
  
