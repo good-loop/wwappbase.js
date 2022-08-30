@@ -13,7 +13,7 @@ import { assMatch } from '../utils/assert';
 
 // For testing
 if (window.location.href.match(/login=local/)) {
-	Login.ENDPOINT = 'http://localyouagain.good-loop.com/youagain.json';
+	Login.ENDPOINT = 'https://localyouagain.good-loop.com/youagain.json';
 	console.warn('config', `Set you-again Login endpoint to ${Login.ENDPOINT}`);
 } else if (window.location.href.match(/login=test/)) {
 	Login.ENDPOINT = 'https://testyouagain.good-loop.com/youagain.json';
@@ -25,7 +25,7 @@ const WIDGET_PATH = ['widget', 'LoginWidget', 'verb'];
 const SHOW_PATH = [...WIDGET_PATH, 'show'];
 const VERB_PATH = [...WIDGET_PATH, 'verb'];
 const STATUS_PATH = [...WIDGET_PATH, 'status'];
-const PERSON_PATH  = ['data', C.TYPES.User, 'loggingIn'];
+const PERSON_PATH = ['data', C.TYPES.User, 'loggingIn'];
 
 
 /** Pretty names for the available verbs  */
