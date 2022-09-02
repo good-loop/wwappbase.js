@@ -100,8 +100,25 @@ class ChartWidget extends React.Component {
 					<div>
 						{true ? <small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small> : null}
 					</div>
+					{ dataPoints ? <a href="#" onClick={(e) => { e.preventDefault(); this.exportCSV(chartData); }}>&#128229; Download .csv</a> : null }	
 				</div>);
 	} // ./render
+
+	exportCSV(chartData) {
+		let rows = [
+			["event", "date", "count"]
+		];
+
+		Object.values(chartData.datasets).forEach(dataset => {
+			Object.values(dataset.data).forEach(datapoint => {
+				rows.push([dataset.label, datapoint.x, datapoint.y]);
+			})
+		});
+
+		let csvData = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+
+		window.open(encodeURI(csvData));
+	} // ./exportCSV
 } 
 
 /**
