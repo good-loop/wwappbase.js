@@ -276,8 +276,8 @@ ActionMan.saveEdits = saveEdits;
  */
  const saveAs = ({type, id, oldId, item, onChange}) => {
 	oldId = id = (oldId || id); // bridge to old code
-	if ( ! item) item = DataStore.getData(KStatus.DRAFT, type, oldId);
-	if ( ! item) item = DataStore.getData(KStatus.PUBLISHED, type, oldId);
+	if ( ! item) item = DataStore.getData({status:KStatus.DRAFT, type, id:oldId});
+	if ( ! item) item = DataStore.getData({status:KStatus.PUBLISHED, type, id:oldId});
 	assert(item, "Crud.js no item "+type+" "+oldId);	
 	if ( ! oldId) oldId = getId(item);
 	// deep copy
