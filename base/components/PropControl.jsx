@@ -14,6 +14,7 @@
  import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody } from 'reactstrap';
  import _ from 'lodash';
  import Enum from 'easy-enums';
+ import '../style/prism-dark.less';
 
  import { assert, assMatch } from '../utils/assert';
  import JSend from '../data/JSend';
@@ -29,7 +30,6 @@
  import { nonce } from '../data/DataClass';
  
  import { countryListAlpha2 } from '../data/CountryRegion';
- import ModalTextInput, {ModalStyledTextarea} from './TextareaModal';
 
  /**
 	* Set the value and the modified flag in DataStore.
@@ -271,9 +271,51 @@
 	 }
 
 	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
-	if (props.modal && (type === 'text' || type === 'textarea')) {
-		return <ModalTextInput props={props} storeValue={storeValue}/>
-	}
+	if (props.modal && (type === 'text' || type === 'textarea' || type === 'code')) {
+		const { modal, ...rest } = props;
+		rest.className = className;
+
+		const [modalOpen, setModalOpen] = useState(false);
+		const [caretPos, setCaretPos] = useState(false);
+		const [inputEl, setInputEl] = useState();
+
+		const onFocusInput = e => setTimeout(() => { // selectionStart needs a TINY delay or it reads incorrectly
+			setCaretPos(e.target.selectionStart)
+			setModalOpen(true);
+		}, 0);
+
+		const focusInner = (el) => {
+			if (caretPos === false) return;
+			const _inputEl = el?.querySelector('.form-control'); // grab modal text element
+			// focus & set modals caret to be same as non-modals - but only on creation
+			setInputEl(prev => {
+				if (_inputEl && !prev) {
+					_inputEl.selectionStart = caretPos; 
+					_inputEl.selectionEnd = caretPos;
+					setTimeout(() => setCaretPos(false), 0)
+					_inputEl.focus();
+				};
+				return _inputEl;
+			});
+		};
+
+		// onFocus doesn't understand type code, if it is that type then let onFocus think it's a textarea
+		let newRest = rest
+		if (type === "code") {
+			let {type,  ...allButType} = rest
+			newRest = {type:"textarea", ...allButType}
+		}
+
+
+		return <>
+			<PropControl onFocus={onFocusInput} {...newRest}/>
+			<Modal className="modal-propControl" isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
+				<ModalBody>
+					<PropControl {...rest} />
+				</ModalBody>
+			</Modal>
+		</>;
+	}	
  
 	 // NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	 // let props2 = Object.assign({}, props);
@@ -461,13 +503,8 @@
 	 }
  
 	 if (type === 'textarea') {
-		// if we want to apply styling AND the modal is open...
-		if(props.styled && props.modalTextarea){
-			return <ModalStyledTextarea props={props} storeValue={storeValue} name={prop} onChange={onChange} otherStuff={otherStuff} DSsetValue={DSsetValue} proppath={proppath}/>
-		}
-		// otherwise, normal textarea
-		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={storeValue}/>;		
-		}
+		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={storeValue} />;
+	 }
  
 	 if (type === 'html') {
 		 // NB: relies on a special-case innerHTML version of modelValueFromInput, set above
