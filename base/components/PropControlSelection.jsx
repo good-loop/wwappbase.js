@@ -15,7 +15,6 @@ import { asArray, labeller } from '../utils/miscutils';
 import { assert } from '../utils/assert';
 
 /**
- * A list-of-strings editor, where the strings are drawn as discrete "pills"
  * @param {Object} p
  * @param {String[]} p.value
  * @param {Object[]} p.options 
@@ -75,7 +74,6 @@ const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn, toolti
 
 
 /**
- * A list-of-strings editor, where the strings are drawn as discrete "pills"
  * @param {Object} p
  * @param {{String:Boolean}} p.value
  * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.

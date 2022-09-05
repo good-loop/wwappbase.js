@@ -14,14 +14,16 @@ import Icon from './Icon';
  * A list-of-objects editor
  * @param {Object} p
  * @param {?String} p.itemType Used for labels
- * @param {JSX} p.Viewer
+ * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
  * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
-const PropControlList = ({rawValue, storeValue, Viewer=BasicViewer, Editor=BasicEditor, itemType, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
+const PropControlList = ({rawValue, storeValue, Viewer=BasicViewer, Editor=BasicEditor, itemType, rowStyle, setRawValue, modelValueFromInput, 
+	path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => 
+{
 	const listValue = asArray(storeValue);
-
+	if ( ! Viewer) Viewer = Editor;
 	return (<>
-		<ul>
+		<ul className={rowStyle && "rowStyle"}>
 		{listValue.map((item,i) => 
 			<li key={i} >{is(item)? <Viewer item={item} i={i} path={proppath.concat(i)} /> : "_"} 
 				{Editor !== Viewer && <AddOrEditButton arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} item={item} itemType={itemType} />}
@@ -53,6 +55,12 @@ const getItemErrorMessage = item => {
 	return item.error.detailMessage || item.error.message || JSON.stringify(item.error);
 };
 
+/**
+ * 
+ * @param {Object} p
+ * @param {?string} p.itemType for the label/title "Add X"
+ * @returns 
+ */
 const AddOrEditButton = ({arrayPath, i=-1, listValue, Editor, item, itemType}) => {
 	assert(Editor, "No list Editor");
 	let [show, setShow] = useState();
@@ -66,7 +74,7 @@ const AddOrEditButton = ({arrayPath, i=-1, listValue, Editor, item, itemType}) =
 	const onClick = e => { DataStore.update(); setShow(true); }
 	return (<>		
 		{i===-1?
-			<Button onClick={onClick}><Icon name="plus" /> Add</Button>
+			<Button onClick={onClick}><Icon name="plus" /> Add {itemType}</Button>
 			: <><Button size="sm" className="ml-1" color="outline-secondary" onClick={onClick}><Icon name="memo"/></Button></>
 		}
 		<Modal isOpen={show} toggle={() => setShow( ! show)} >
