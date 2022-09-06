@@ -104,6 +104,81 @@
 		 </Popover>
 	 </>;
  };
+
+ 
+/**
+ * Define a class for useful VS Code editor help
+ */
+class PropControlParams {
+	/** 
+	 * @type {?Function} 
+	 * inputs: `{path, prop, value, event}` 
+	 * * This gets called at the end of onChange.
+	* You are advised to wrap this with e.g. _.debounce(myfn, 500).
+	* NB: we cant debounce here, cos it'd be a different debounce fn each time.
+	* Save utils:
+	* SavePublishDeleteEtc `saveDraftFn` 
+	* or instead of saveFn, place a SavePublishDeleteEtc on the page.
+	 * 
+	*/
+	saveFn;
+	
+	/** @type {?string} */
+	label;
+
+	/** 
+	 * @type {string[]} The DataStore path to item, e.g. [data, NGO, id].
+	 * 	Default: ['location','params'] which codes for the url
+	 */
+	path = ['location','params'];
+
+
+	/** @type {!string} The field being edited */
+	prop;
+
+	/** @type {?Object} default value (this will get set over-riding a null/undefined/'' value in the item) 
+	 * NB: "default" is a reserved word, hence the truncated spelling. 
+	 * This CANNOT change from unset to set or React will get upset (with the error "Rendered more hooks than during the previous render.")
+	 */
+	dflt ;
+
+	/** @type {?Function} inputs: (value, type, event) See standardModelValueFromInput. */
+	modelValueFromInput;
+
+	/** @type {?boolean} If set, this field should be filled in before a form submit. 
+	 * TODO mark that somehow visually
+	*/
+	required;
+
+	/** @type {?Function}  {?(value, rawValue) => String} Generate an error message if invalid */
+	validator;
+
+	/** @type {?String} Error message to show, regardless of validator output */
+	error
+	
+	/** @type {?boolean} If set, this is an inline form, so add some spacing to the label. */
+	inline;
+
+	/** @type {?boolean} if true, for type=url, urls must use https not http (recommended) */
+	https;
+	
+	/** @type {?boolean} if true optimise React updates and renders. Only use for busting bottlenecks.
+	// 	Warning: when coupled with other controls, this can cause issues, as the other controls won't always update. 
+	// 	E.g. if a fast text input has an associated button. */
+	fast;
+
+	/** @type {?boolean}  */
+	readOnly;
+
+	/** @type {?String} Warning message to show, regardless of validator output */
+	warning
+
+	/**
+	 * @type {boolean} If true (the default) show a "Not Published Yet" warning if an edit to a published object is in draft only
+	 */
+	 warnOnUnpublished = true;
+ }; // ./PropControlParams
+
  
  
  /**
@@ -117,34 +192,9 @@
 	*
  * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
  
-	* @param {Object} p
-	* @param {?Function} p.saveFn inputs: `{path, prop, value, event}`
-	* This gets called at the end of onChange.
-	* You are advised to wrap this with e.g. _.debounce(myfn, 500).
-	* NB: we cant debounce here, cos it'd be a different debounce fn each time.
-	* Save utils:
-	* SavePublishDeleteEtc `saveDraftFn` 
-	* or instead of saveFn, place a SavePublishDeleteEtc on the page.
-	* @param {?String} label
-	* @param {String[]} path The DataStore path to item, e.g. [data, NGO, id].
-	* 	Default: ['location','params'] which codes for the url
-	* @param {!string} prop The field being edited
-	* @param {?Object} dflt default value (this will get set over-riding a null/undefined/'' value in the item)
-	* 	NB: "default" is a reserved word, hence the truncated spelling. This CANNOT change from unset to set or React will get upset (with the error "Rendered more hooks than during the previous render.")
-	* @param {?Function} modelValueFromInput - inputs: (value, type, event) See standardModelValueFromInput.
-	* @param {?boolean} required  If set, this field should be filled in before a form submit.
-	* 	TODO mark that somehow
-	* @param {?Function} validator {?(value, rawValue) => String} Generate an error message if invalid
-	* @param {?String} error Error message to show, regardless of validator output
-	* @param {?String} warning Warning message to show, regardless of validator output
-	* @param {?boolean} inline  If set, this is an inline form, so add some spacing to the label.
-	* @param {?boolean} https if true, for type=url, urls must use https not http (recommended)
-	* @param {?boolean} fast - if true optimise React updates and renders. Only use for busting bottlenecks.
-		Warning: when coupled with other controls, this can cause issues, as the other controls won't always update. 
-		E.g. if a fast text input has an associated button.
-	* @param {?boolean} p.readOnly
+	* @param {PropControlParams} p
 	*/
- const PropControl = ({className, ...props}) => {
+ const PropControl = ({className, warnOnUnpublished=true, ...props}) => {
 	 let { type, optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
  
 	 // If path not given, link it to a URL param by default
@@ -329,7 +379,7 @@
 			 {help && (inline || isCheck) && <Help>{help}</Help>}
 			 {error && <span className="help-block text-danger data-error">{error}</span>}
 			 {warning && <span className="help-block text-warning data-warning">{warning}</span>}
-			 {isModified(props) && <span className="help-block text-warning data-modified">Not Published Yet</span>}
+			 {warnOnUnpublished && isModified(props) && <span className="help-block text-warning data-modified">Not Published Yet</span>}
 		 </FormGroup>
 	 );
  }; // ./PropControl

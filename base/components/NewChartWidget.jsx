@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Line, Pie, Bar } from 'react-chartjs-2';
+import { Line, Pie, Bar, Scatter } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import Annotation from 'chartjs-plugin-annotation';
 
@@ -44,19 +44,21 @@ ChartJS.register(
  */
 const NewChartWidget = ({type = 'line', datalabels, className, style, width, height, ...props}) => {
 	props.options = props.options || {};
-	props.options.maintainAspectRatio = props.options.maintainAspectRatio || false;
+	props.options.maintainAspectRatio = props.options.maintainAspectRatio || false; // why??
 	if (datalabels) {
 		if (props.plugins) {
-			if (!props.plugins.includes(ChartDataLabels)) props.plugins.push(ChartDataLabels);
-		} else props.plugins = [ChartDataLabels];
+			if ( ! props.plugins.includes(ChartDataLabels)) {
+				props.plugins.push(ChartDataLabels);
+			}
+		} else {
+			props.plugins = [ChartDataLabels];
+		}
 	}
 
-	return <div className={space("chart-canvas-container position-relative", className)} style={style}>
-		{{
-			line: <Line width={width} height={height} {...props} />,
-			pie: <Pie width={width} height={height} {...props} />,
-			bar: <Bar width={width} height={height} {...props} />,
-		}[type]}
+	let Chart = {line:Line, pie:Pie, bar:Bar, scatter:Scatter}[type];
+	
+	return <div className={space("NewChartWidget position-relative", className)} style={style}>
+		<Chart width={width} height={height} {...props} />
 	</div>;
 };
 

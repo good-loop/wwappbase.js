@@ -416,6 +416,19 @@ class Store {
 
 
 	/**
+	 * Convenience for getValue() || setValue(). It's like java's Map.putIfAbsent()
+	 * @param {!string[]} path 
+	 * @param {Object} value Set this IF there is no value already
+	 * @param {?boolean} update 
+	 * @returns the value
+	 */
+	setValueIfAbsent(path, value, update) {
+		let v = this.getValue(path);
+		if (v) return v;
+		return this.setValue(path, value, update);
+	}
+
+	/**
 	 * Has a data item been modified since loading?
 	 * @param {string} type
 	 * @param {string} id

@@ -306,12 +306,18 @@ export const asNum = (v: string | number | null): number | null => {
 
 /**
  * Is it an array? undefined? a single value? Whatever -- give me an array.
- * @param {?any} hm If null/undefined/"", return []
+ * @param {?any} hm If null/undefined/"", return []. If an array-like map, copy it into an array
  * @returns {Object[]} 
  */
 export const asArray = (hm: any): Object[] => {
-	if (!is(hm) || hm === "") return [];
+	if ( ! is(hm) || hm === "") return [];
 	if (_.isArray(hm)) return hm;
+	// HACK: catch {0:foo, 1:bar}
+	let keys = Object.keys(hm);
+	if (keys.length && ! keys.find(key => ! isNumeric(key))) {
+		let arr = [];
+		keys.forEach(k => arr[k] = hm[k]);
+	}
 	return [hm];
 };
 
