@@ -14,7 +14,8 @@
  import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody } from 'reactstrap';
  import _ from 'lodash';
  import Enum from 'easy-enums';
- 
+ import '../style/prism-dark.less';
+
  import { assert, assMatch } from '../utils/assert';
  import JSend from '../data/JSend';
  import {stopEvent, toTitleCase, space, labeller, is  } from '../utils/miscutils';
@@ -29,7 +30,7 @@
  import { nonce } from '../data/DataClass';
  
  import { countryListAlpha2 } from '../data/CountryRegion';
- 
+
  /**
 	* Set the value and the modified flag in DataStore.
 	* Convenience for DataStore.setModified() + DataStore.setValue()
@@ -320,37 +321,52 @@ class PropControlParams {
 	 }
 
 	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
-	if (props.modal && (type === 'text' || type === 'textarea')) {
+	if (props.modal) {
 		const { modal, ...rest } = props;
-
 		rest.className = className;
 
 		const [modalOpen, setModalOpen] = useState(false);
 		const [caretPos, setCaretPos] = useState(false);
-		const [inputEl, setInputEl] = useState();
+		const [, setInputEl] = useState(); // we only access inputEl as its previous value in the setter function
 
-		const onFocusInput = e => setTimeout(() => { // selectionStart needs a TINY delay or it reads incorrectly
-			setCaretPos(e.target.selectionStart)
-			setModalOpen(true);
-		}, 0);
-
-		const focusInner = (el) => {
-			if (caretPos === false) return;
-			const _inputEl = el?.querySelector('.form-control'); // grab modal text element
-			// focus & set modals caret to be same as non-modals - but only on creation
-			setInputEl(prev => {
-				if (_inputEl && !prev) {
-					_inputEl.selectionStart = caretPos; 
-					_inputEl.selectionEnd = caretPos;
-					setTimeout(() => setCaretPos(false), 0)
-					_inputEl.focus();
-				};
-				return _inputEl;
+		const onFocusInput = e => {
+			const evtTarget = e.target; // grab target before entering deferred context
+			// defer & let focus event finish before reading selectionStart
+			setTimeout(() => {
+				// Get caret position from the input if it has one
+				if (evtTarget.setSelectionRange) setCaretPos(evtTarget.selectionStart);
+				setModalOpen(true);
 			});
 		};
 
+		const focusInner = (el) => {
+			if (caretPos === false) return;
+			// Grab the first textish input - failing that, the first input of any kind.
+			let _inputEl = el?.querySelectorAll('input, textarea, select');
+			if (_inputEl) _inputEl = Array.from(_inputEl).find(el => el.setSelectionRange) || _inputEl[0];
+			// focus & set modal input's caret to be same as outer - but only on creation
+			setTimeout(() => {
+				setInputEl(prev => {
+					if (_inputEl && !prev) {
+						_inputEl?.setSelectionRange(caretPos, caretPos);
+						setTimeout(() => setCaretPos(false));
+						_inputEl.focus();
+					}
+					return _inputEl;
+				});
+			});
+		};
+
+		// onFocus doesn't understand type code, if it is that type then let onFocus think it's a textarea
+		let newRest = rest
+		if (type === "code") {
+			let {type, ...allButType} = rest
+			newRest = {type: "textarea", ...allButType}
+		}
+
+
 		return <>
-			<PropControl onFocus={onFocusInput} {...rest} />
+			<PropControl onFocus={onFocusInput} {...newRest}/>
 			<Modal className="modal-propControl" isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
 				<ModalBody>
 					<PropControl {...rest} />
@@ -545,7 +561,7 @@ class PropControlParams {
 	 }
  
 	 if (type === 'textarea') {
-		 return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={storeValue} />;
+		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={storeValue} />;
 	 }
  
 	 if (type === 'html') {

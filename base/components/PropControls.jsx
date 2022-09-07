@@ -14,6 +14,7 @@ import PropControlDataItem from './PropControlDataItem';
 import PropControlMoney from './PropControlMoney';
 import PropControlDt from './PropControls/PropControlDt';
 import PropControlEgo from './PropControls/PropControlEgo';
+import PropControlCode from './PropControls/PropControlCode';
 
 import PropControlImg from './PropControls/PropControlImg';
 
