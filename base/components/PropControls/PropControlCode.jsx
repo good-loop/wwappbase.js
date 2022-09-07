@@ -1,58 +1,74 @@
-import React, { useState } from 'react';
-import { registerControl } from '../PropControl';
+import React from 'react';
 
 import Prism from 'prismjs';
 import '../../style/prism-dark.less';
 
+import { DSsetValue, registerControl } from '../PropControl';
 
-const PropControlCode = ({ storeValue, onChange, prop, otherStuff, DSsetValue, path, lang, onFocus }) => {
-	// tab normally selects next window, make it indent instead
-	const onTabDown = (e) => {
-		if (e.key === "Tab") {
-			e.preventDefault()
-			let startCaret = e.target.selectionStart;
-			let endCaret = e.target.selectionEnd;
-			let newText = storeValue.slice(0, startCaret) + "\t" + storeValue.slice(endCaret)
-			setTimeout(() => {
-				e.target.selectionStart = startCaret + 1
-				e.target.selectionEnd = startCaret + 1
-			}, 0)
-			DSsetValue(path, newText)
-		}
-	}
+
+const PropControlCode = ({ storeValue, prop, path, lang, onFocus: _onFocus, onChange: _onChange, onKeyDown: _onKeyDown, rawValue, setRawValue, ...otherStuff}) => {
+	// Tab should insert tab character instead of selecting next interactable element
+	const onKeyDown = (e) => {
+		if (e.key !== 'Tab') {
+			_onKeyDown && _onKeyDown(e);
+			return;
+		};
+
+		e.preventDefault();
+		const evtTarget = e.target;
+		const { selectionStart, selectionEnd } = evtTarget;
+		DSsetValue([...path, prop], storeValue.slice(0, selectionStart) + '\t' + storeValue.slice(selectionEnd));
+		setTimeout(() => {
+			evtTarget.setSelectionRange(selectionStart + 1, selectionStart + 1);
+			evtTarget.focus();
+		}); // defer until after DataStore update redraws element & breaks caret pos / focus
+	};
 
 	// scroll the textarea & code at the same time
-	const onScroll = () => {
-		let syntaxEl = document.querySelector("#syntax-highlighting-" + prop)
-		let inputEl = document.querySelector("#input-highlighting-" + prop)
+	const onScroll = (e) => {
+		const inputEl = e.target.parentElement.querySelector('textarea');
+		const syntaxEl = e.target.parentElement.querySelector('pre');
 		syntaxEl.scrollLeft = inputEl.scrollLeft;
 		syntaxEl.scrollTop = inputEl.scrollTop;
-	}
+	};
+
+	const onChange = e => {
+		_onChange && _onChange(e);
+		const codeEl = e.target.parentElement.querySelector('code');
+		setTimeout(() => Prism.highlightElement(codeEl));
+	};
+
+	const onFocus = e => {
+		_onFocus && _onFocus(e);
+		const codeEl = e.target.parentElement.querySelector('code');
+		setTimeout(() => Prism.highlightElement(codeEl));
+	};
 
 	// fix discrepency between last lines & stop undefined errors
-	let codeText = storeValue ? storeValue + "\n " : " "
+	const codeText = storeValue ? `${storeValue}\n ` : ' ';
 
 	return (
-		<div className='code-container'>
-			<pre id={"syntax-highlighting-" + prop} className="syntax-highlighting"><code className={"language-" + lang + " code-highlighting"} id={"code-highlighting-" + prop}>{codeText}</code></pre>
+		<div className="code-container">
+			<pre className="form-control syntax-highlighting">
+				<code className={`code-highlighting language-${lang}`}>
+					{codeText}
+				</code>
+			</pre>
 			<textarea
+				name={prop}
 				value={storeValue}
-				id={"input-highlighting-" + prop}
-				className={"form-control " + prop + " input-highlighting"}
+				className="form-control code-input"
 				wrap="off"
-				spellCheck="false"
-				form-control
-				onKeyDown={onTabDown}
-				onFocus = {e => setTimeout(() => {Prism.highlightAllUnder(e.target.parentElement)}, 0)}
+				spellCheck={false}
+				onKeyDown={onKeyDown}
+				onFocus={onFocus}
 				onScroll={onScroll}
-				name = { prop }
-				onChange = { e => { onChange(e); setTimeout(() => {Prism.highlightAllUnder(e.target.parentElement)}, 0)}}
-			
-			{...otherStuff}
+				onChange={onChange}
+				{...otherStuff}
 			/>
 		</div>
-	)
-}
+	);
+};
 
 
 registerControl({
