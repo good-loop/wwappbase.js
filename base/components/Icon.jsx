@@ -14,6 +14,7 @@ const EMOJI = {
 	copy: "⎘",
 	clipboard: "📋",
 	globe: "🌍",
+	help: "?", // use the normal q-mark - though we also have ❓？
 	hourglass: "⏳",
 	info: "ⓘ", // ℹ or 🛈
 	intray: "📥",

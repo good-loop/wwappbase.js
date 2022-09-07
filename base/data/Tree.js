@@ -210,20 +210,21 @@ Tree.filterByValue = (tree, predicate) => {
 };
 
 /**
- * @param {Function} predicate (node,parent) -> ?Boolean. Return true to keep, false to prune, 
+ * @param {Tree} tree
+ * @param {!Function} predicate (node,parent,depth) -> ?Boolean. Return true to keep, false to prune, 
  * 	null/undefined to decide based on children. Beware of falsy!
  * @returns {?Tree} A copy. Can be null if the whole tree is pruned.
  */
-Tree.filter = (tree, predicate, parent=null) => {
+Tree.filter = (tree, predicate, parent=null, depth=0) => {
 	let t2 = new Tree();
-	let px = predicate(tree, parent);
+	let px = predicate(tree, parent, depth);
 	if (px===false) {
 		return null;
 	}
-	assert(px || px===null || px===undefined, "predictae must return truthy, false, or null/undefined -- NOT falsy");
+	assert(px || px===null || px===undefined, "predicate must return truthy, false, or null/undefined -- NOT falsy");
 	t2.value = tree.value;
 	// recurse
-	let fkids = Tree.children(tree).map(kid => Tree.filter(kid, predicate, tree));
+	let fkids = Tree.children(tree).map(kid => Tree.filter(kid, predicate, tree, depth+1));
 	fkids = fkids.filter(k => !! k); // remove nulls
 	t2.children = fkids;
 	// prune null branches?
