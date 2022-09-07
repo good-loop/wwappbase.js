@@ -271,28 +271,32 @@
 	 }
 
 	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
-	if (props.modal && (type === 'text' || type === 'textarea' || type === 'code')) {
+	if (props.modal) {
 		const { modal, ...rest } = props;
 		rest.className = className;
 
 		const [modalOpen, setModalOpen] = useState(false);
 		const [caretPos, setCaretPos] = useState(false);
-		const [inputEl, setInputEl] = useState();
+		const [, setInputEl] = useState(); // we only access inputEl as its previous value in the setter function
 
-		const onFocusInput = e => setTimeout(() => { // selectionStart needs a TINY delay or it reads incorrectly
-			setCaretPos(e.target.selectionStart)
-			setModalOpen(true);
-		}, 0);
+		const onFocusInput = e => {
+			const evtTarget = e.target; // grab target before entering deferred context
+			// defer & let focus event finish before reading selectionStart
+			setTimeout(() => {
+				// Get caret position from the input if it has one
+				if (evtTarget.setSelectionRange) setCaretPos(evtTarget.selectionStart);
+				setModalOpen(true);
+			});
+		};
 
 		const focusInner = (el) => {
 			if (caretPos === false) return;
 			const _inputEl = el?.querySelector('.form-control'); // grab modal text element
-			// focus & set modals caret to be same as non-modals - but only on creation
+			// focus & set modal input's caret to be same as outer - but only on creation
 			setInputEl(prev => {
 				if (_inputEl && !prev) {
-					_inputEl.selectionStart = caretPos; 
-					_inputEl.selectionEnd = caretPos;
-					setTimeout(() => setCaretPos(false), 0)
+					_inputEl?.setSelectionRange(caretPos, caretPos);
+					setTimeout(() => setCaretPos(false));
 					_inputEl.focus();
 				};
 				return _inputEl;
@@ -302,8 +306,8 @@
 		// onFocus doesn't understand type code, if it is that type then let onFocus think it's a textarea
 		let newRest = rest
 		if (type === "code") {
-			let {type,  ...allButType} = rest
-			newRest = {type:"textarea", ...allButType}
+			let {type, ...allButType} = rest
+			newRest = {type: "textarea", ...allButType}
 		}
 
 
@@ -315,7 +319,7 @@
 				</ModalBody>
 			</Modal>
 		</>;
-	}	
+	}
  
 	 // NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	 // let props2 = Object.assign({}, props);
