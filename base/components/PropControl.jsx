@@ -291,15 +291,19 @@
 
 		const focusInner = (el) => {
 			if (caretPos === false) return;
-			const _inputEl = el?.querySelector('.form-control'); // grab modal text element
+			// Grab the first textish input - failing that, the first input of any kind.
+			let _inputEl = el?.querySelectorAll('input, textarea, select');
+			if (_inputEl) _inputEl = Array.from(_inputEl).find(el => el.setSelectionRange) || _inputEl[0];
 			// focus & set modal input's caret to be same as outer - but only on creation
-			setInputEl(prev => {
-				if (_inputEl && !prev) {
-					_inputEl?.setSelectionRange(caretPos, caretPos);
-					setTimeout(() => setCaretPos(false));
-					_inputEl.focus();
-				};
-				return _inputEl;
+			setTimeout(() => {
+				setInputEl(prev => {
+					if (_inputEl && !prev) {
+						_inputEl?.setSelectionRange(caretPos, caretPos);
+						setTimeout(() => setCaretPos(false));
+						_inputEl.focus();
+					}
+					return _inputEl;
+				});
 			});
 		};
 
