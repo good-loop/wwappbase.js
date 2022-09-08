@@ -77,7 +77,7 @@ const AccountMenu = ({active, accountMenuItems, accountLinkText="Account", canRe
 				})}
 				{accountMenuItems && <DropdownItem divider />}
 				<DropdownItem>
-					<LogoutLink className="nav-link">Logout</LogoutLink>
+					{logoutLink ? logoutLink : <LogoutLink className="nav-link">Logout</LogoutLink>}
 				</DropdownItem>
 			</DropdownMenu>
 		</Dropdown>
