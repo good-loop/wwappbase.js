@@ -92,19 +92,6 @@ export const setNavProps = (props) => {
 export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || DataStore.setValue(['widget','NavBar'], {}, false);
 
 /**
- * To handle larger logo in new my-loop design
- */
-const BrandLink = ({homelink, onLinkClick, logoClass, isBeta, className}) => {
-	return(
-	<C.A href={homelink || '/'} className={space("navbar-brand", className)} title={space(C.app.name, "- Home")} onClick={onLinkClick}>
-			<img className={space(logoClass, C.app.logoMobile && "d-none d-md-inline-block")} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
-            {C.app.logoMobile && <img className={space(logoClass, "d-md-none")} alt={C.app.name} src={C.app.logoMobile} />}
-			{isBeta && <span style={{position:'sticky',top:'100%',color:'grey'}}>beta</span>}
-	</C.A>
-	)
-}
-
-/**
  * rendered within BS.Nav
  * @param {NavProps} p
  * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
@@ -112,7 +99,11 @@ const BrandLink = ({homelink, onLinkClick, logoClass, isBeta, className}) => {
 const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems, accountLinkText}) => {
 
 	return (<>
-		<BrandLink homelink={homelink} onLinkClick={onLinkClick} logoClass={logoClass} isBeta={isBeta} className="d-block d-md-none" />
+		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
+			<img className={space(logoClass, C.app.logoMobile && "d-none d-md-inline-block")} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
+            {C.app.logoMobile && <img className={space(logoClass, "d-md-none")} alt={C.app.name} src={C.app.logoMobile} />}
+			{isBeta && <span style={{position:'sticky',top:'100%',color:'grey'}}>beta</span>}
+		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
 			<div className='position-relative'>
 				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>				
@@ -124,7 +115,6 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', hom
 		}
 		<NavbarToggler onClick={toggle}/>
 		<Collapse isOpen={isOpen} navbar>
-			<BrandLink homelink={homelink} onLinkClick={onLinkClick} logoClass={logoClass} isBeta={isBeta} className="d-none d-md-block" />
 			<div className="collapsibles mx-2 w-100 d-flex justify-content-between">
 				<Nav navbar className="page-links justify-content-start" style={{flexGrow:1}}>
 					{pageLinks}
