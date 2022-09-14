@@ -137,13 +137,14 @@ export const adstypeMap = { // are there IAB labels for these??
  * @param {String} p.prop
  * @param {?String} p.xid
  * @param {?Function} p.saveFn NOT used
+ * @param {?Function} p.onChange replaces saveFn
  * @param {?String[]} p.privacyOptions If set, show a choice of privacy levels
  * @param {?String[]} p.privacyLabels labels for privacyOptions
  * @param {?String} p.privacyDefault for privacyOptions
  * @param {?Boolean} p.privacyOnly only show privacy controls
  * @returns 
  */
-const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefault, privacyOnly, saveFn, ...props}) => {
+const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefault, privacyOnly, saveFn, onChange, onSave, ...props}) => {
 	assert( ! saveFn) // TODO delete if not used
     if (!xid) xid = Login.getId();
     assert(xid, 'UserClaimControl if no xid is specified, must be logged in! ' + xid);
@@ -222,7 +223,7 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
 	const parsedValue = parseValue(storedValue); // NB no harm doing this repeatedly, and useEffect was causing an issue, April 2022
 	DataStore.setValue(controlPath.concat(prop), parsedValue, false);
     claim && DataStore.setValue(controlPath.concat(prop+"-privacy"), Claim.consent(claim), false);
-    console.log("CLAIM", claim);
+    //console.log("CLAIM", claim);
 
 	// should save to server (done in setPersonSettings) be automatic, or only when a submit button is pressed??	
     const fullSaveFn = ({event}) => {
@@ -232,9 +233,10 @@ const UserClaimControl = ({prop, xid, privacyOptions, privacyLabels, privacyDefa
 		let consent = null;
 		if (privacyOptions) consent = DataStore.getValue(controlPath.concat(prop+"-privacy"));
         if (consent === "dflt") consent = privacyDefault;
-        console.log("PRIVACY: " + consent);
+        //console.log("PRIVACY: " + consent);
 		// privacy
-        setPersonSetting({xid, key:prop, value:saveValue, consent});
+        setPersonSetting({xid, key:prop, value:saveValue, consent, callback:onSave});
+        onChange && onChange(saveValue);
     };
 
     // DO NOT USE dlft FOR PRIVACY DEFAULT - it triggers the saveFn, which erroneously overrides the user's previous privacy setting

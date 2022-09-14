@@ -809,7 +809,7 @@ export const toCanonical = (text: string) => {
 export const hardNormalize = (text: string) => {
 	text = toCanonical(text);
 	// Remove all non-letter characters entirely
-	text.replaceAll(/\W+/g, "").replaceAll(/ +/g, "");
+	text = text.replaceAll(/\W+/g, "").replaceAll(/ +/g, "");
 	return text;
 }
 
