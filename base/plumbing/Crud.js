@@ -605,10 +605,12 @@ const SIO_getDataItem = function({type, id, status, domain, swallow, ...other}) 
 
 /**
  * get an item from DataStore, or call the backend if not there (and save it into DataStore)
+ * @param {Object} p
  * @param {!String} p.type From C.TYPES
  * @param {?KStatus} status If in doubt: use PUBLISHED for display, and DRAFT for editors. default: check url, then use PUBLISHED
  * 	Default: look for a status= parameter in thre url, or use published.
  * @param {?string} action e.g. `getornew`
+ * @param {?boolean} p.swallow If true, hide error messages from the server
  * @returns PromiseValue(type)
  */
 // * NB: Does not use `crud()` (yet!) as this manages status.

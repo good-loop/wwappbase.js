@@ -544,7 +544,7 @@ const charities2 = (campaign, charityIds, charities) => {
 		// TODO SoGive stores id as @id, which messes this up :(
 		// @id is the thing.org "standard", but sod that, its daft - We should switch SoGive to `id`
 		charityIds.forEach(cid => {
-			let pvSoGiveCharity = getDataItem({type: C.TYPES.NGO, status:KStatus.PUBLISHED, id:cid});
+			let pvSoGiveCharity = getDataItem({type: C.TYPES.NGO, status:KStatus.PUBLISHED, id:cid, swallow:true});
 			// Add them as they load (assume this function gets called repeatedly)
 			if (pvSoGiveCharity.value) {
 				charities.push(pvSoGiveCharity.value);
