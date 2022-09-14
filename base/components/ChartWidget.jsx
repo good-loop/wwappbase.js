@@ -100,25 +100,46 @@ class ChartWidget extends React.Component {
 					<div>
 						{true ? <small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small> : null}
 					</div>
-					{ dataPoints ? <a href="#" onClick={(e) => { e.preventDefault(); this.exportCSV(chartData); }}>&#128229; Download .csv</a> : null }	
+					{ dataPoints ? <a href="#" onClick={(e) => { e.preventDefault(); this.exportCSV(chartData); }}>&#128229; Download .csv</a> : null }
+					<br />
+					{ dataPoints ? <a href="#" onClick={(e) => { e.preventDefault(); this.exportClickDataCSV(chartData); }}>&#128229; Download Click Data .csv</a> : null }	
 				</div>);
 	} // ./render
+
+	downloadCSV(rows) {
+		let csvData = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
+		window.open(encodeURI(csvData));
+	}
 
 	exportCSV(chartData) {
 		let rows = [
 			["event", "date", "count"]
 		];
 
-		Object.values(chartData.datasets).forEach(dataset => {
-			Object.values(dataset.data).forEach(datapoint => {
+		chartData.datasets.map(dataset => {
+			dataset.data.map(datapoint => {
 				rows.push([dataset.label, datapoint.x, datapoint.y]);
-			})
+			});
 		});
 
-		let csvData = "data:text/csv;charset=utf-8," + rows.map(e => e.join(",")).join("\n");
-
-		window.open(encodeURI(csvData));
+		this.downloadCSV(rows);
 	} // ./exportCSV
+
+	exportClickDataCSV(chartData) {
+		let rows = [
+			["date", "clicks"]
+		];
+
+		chartData.datasets.map(dataset => {
+			if (dataset.label == "click") {
+				dataset.data.map(datapoint => {
+					rows.push([datapoint.x, datapoint.y]);
+				});
+			}
+		});
+
+		this.downloadCSV(rows);
+	} // ./exportCLickDataCSV
 } 
 
 /**
