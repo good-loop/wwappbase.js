@@ -36,7 +36,7 @@ const AccountMenu = ({active, accountMenuItems, accountLinkText="Account", canRe
 		setOpen(!open);
 		onLinkClick && onLinkClick();
 	}
-	let ChosenLoginLink = customLogin ? customLogin : <LoginLink>Sign in</LoginLink> ;
+	let ChosenLoginLink = customLogin ? customLogin : <LoginLink className="p-2">Sign in</LoginLink> ;
 
 	// TODO see navbar dropdown
 	if ( ! Login.isLoggedIn()) {
