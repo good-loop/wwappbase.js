@@ -58,13 +58,13 @@ const AccountMenu = ({active, accountMenuItems, accountLinkText="Account", canRe
 		<Dropdown isOpen={open} toggle={() => setOpen(!open)} nav inNavbar>
 			<DropdownToggle nav caret>{customImg ? <img src={customImg} className="custom-img"/> : name}</DropdownToggle>
 			<DropdownMenu>
-				<DropdownItem>
+				{/*<DropdownItem>
 					{linkType == "C.A"
 						? <C.A href={modifyPage(["account"], accountHref, true, true)} className="nav-link" onClick={onClickFn}>{accountLinkText}</C.A> 
 						: <a href={modifyPage(["account"], accountHref, true, true)}  className="nav-link" onClick={onClickFn}>{accountLinkText}</a> 
 					}	
 				</DropdownItem>
-				<DropdownItem divider />
+				<DropdownItem divider />*/}
 				{accountMenuItems && accountMenuItems.map((item, i) => {
 					return <div key={i}>
 						<DropdownItem >

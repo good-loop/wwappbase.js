@@ -23,7 +23,7 @@ const svgClass = (logoUrl) => {
  */
 const Logo = ({item, className, size, style, nameCap = 24}) => {
 	if (!item) return null;
-	assert(item.id, 'Not a DataItem', item);
+	assert(item.id || item.name === "Default Advertiser", 'Not a DataItem', item);
 
 	// get branding
 	let branding = item.branding || item; // HACK: NGOs have .logo on the item
