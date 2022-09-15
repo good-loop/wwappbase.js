@@ -15,9 +15,10 @@ import BG from "./BG";
  * @param {?String} src if no NGO is set, will render this like a normal image as a fallback (defaults to main photo). 
  * 	If no src and no NGO, then render null.
  * @param {?Boolean} hardFallback instead of returning null on no image found, fallback as much as possible
- * @param {?JSX} children ??What is the use-case for children of an image??
+ * @param {?JSX} children For use with bg
+ * @param {?Boolean} alwaysDisplayChildren if true, will return children on empty background when no image can be sourced instead of null (with bg option)
  */
-const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, hardFallback, children, ...props}) => {
+const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, hardFallback, children, alwaysDisplayChildren, ...props}) => {
     assert(imgIdx !== undefined || main || header || backdrop); // temporary
 
 	const [useUrl, setUseUrl] = useState();
@@ -64,7 +65,12 @@ const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, hardFallback, c
 	}, [ngo, main, header, backdrop, imgIdx]);
 
 	const finalUrl = useUrl || src;
-	if ( ! finalUrl) return null; // no fallback? then no render
+	if ( ! finalUrl) {
+        if (bg && alwaysDisplayChildren) {
+            return {children};
+        }
+        return null; // no fallback? then no render
+    }
 
 	// ??what is the id used for? Is it for debug purposes??
     return <ImgType src={finalUrl} id={"imageList-" + imgIdx + "-contentUrl"} {...props}>{children}</ImgType>;
