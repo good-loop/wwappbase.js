@@ -6,14 +6,25 @@ import React, { Component } from 'react';
 import { encURI, mapkv, modifyHash, stopEvent, yessy } from '../utils/miscutils';
 import DataStore from './DataStore';
 
-const goto = href => {
+/**
+ * Navigate without a page reload. Also scrolls to the page top
+ * @param {?string} href 
+ * @param {?Object} options
+ * @param {?boolean} options.scroll defaults to (0,0). Set `false` (not falsy) for no scroll
+ * @returns null
+ */
+const goto = (href, options={}) => {
 	if ( ! href) {
 		console.warn("goto: no href");
 		return;
 	}
 	window.history.pushState({}, "", href);
 	// scroll to the page top
-	window.scrollTo(0,0);
+	if (options && options.scroll==='false') {
+		// no scroll
+	} else {
+		window.scrollTo(0,0);
+	}
 	// update
 	DataStore.parseUrlVars(true);
 };
@@ -36,7 +47,9 @@ const A = (x) => {
 		stopEvent(e);
 		if (onClick) onClick(e);
 		// Allow onClick functions to stop our events too
-		if (!e.glrouterStopEvent) goto(href);
+		if ( !e.glrouterStopEvent) {
+			goto(href);
+		}
 	};
 	return <a href={href} onClick={doClick} {...args}>{children}</a>;
 };

@@ -269,10 +269,11 @@ ActionMan.saveEdits = saveEdits;
  * AKA copy!
  * 
  * This will modify the ID to a new nonce()!
- * @param {?String} id DEPRECATED use oldId
- * @param {!String} oldId The item which is being copied
- * @param onChange {Function: newItem => ()}
- * @returns PromiseValue(DataItem)
+ * @param {Object} p
+ * @param {?String} p.id DEPRECATED use oldId
+ * @param {!String} p.oldId The item which is being copied
+ * @param {?Function} p.onChange {Function: newItem => ()} Use this to e.g. change the url
+ * @returns PromiseValue(DataItem) 
  */
  const saveAs = ({type, id, oldId, item, onChange}) => {
 	oldId = id = (oldId || id); // bridge to old code

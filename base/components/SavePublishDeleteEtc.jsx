@@ -11,10 +11,11 @@ import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import C from '../CBase';
 // // import I18n from 'easyi18n';
-import DataClass, { getType, getId, nonce, getStatus } from '../data/DataClass';
+import DataClass, { getType, getId, nonce, getStatus, getName } from '../data/DataClass';
 import { notifyUser } from '../plumbing/Messaging';
 import { publishEdits, saveEdits } from '../plumbing/Crud';
 import Icon from './Icon';
+import { goto } from '../plumbing/glrouter';
 
 /**
  * 
@@ -129,7 +130,8 @@ const check = ok => {
  * @param {?Boolean} p.hidden If set, hide the control (it will still auto-save)
  * @param {?Boolean} p.autoSave default=true
  * @param {?Boolean} p.autoPublish default=false NB: If autoPublish is set then autoSave is moot
- * @param {?Boolean} p.saveAs If set, offer a save-as button which will copy, tweak the ID and the name, then save.
+ * @param {?Boolean|Function} p.saveAs If set, offer a save-as button which will copy, tweak the ID and the name, then save.
+ * 	If this is a function, it is invoked with the new-item. By default, a "switch the ID in the url" function will be invoked.
  * @param {?String} p.size Bootstrap size e.g. "lg"
  * @param {?string} p.position fixed|relative
  * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
@@ -244,7 +246,21 @@ const SavePublishDeleteEtc = ({
 	const doSaveAs = e => {
 		let ok = check(preSaveAs({ item, action: C.CRUDACTION.copy }));
 		if ( ! ok) return;
-		ActionMan.saveAs({ type, id, onChange: _.isFunction(saveAs) ? saveAs : null });
+		let onChange;
+		if (_.isFunction(saveAs)) {
+			onChange = saveAs;
+		} else {
+			// switch location to the new ID
+			onChange = (newItem) => {
+				if ( ! getId(item) || ! getId(newItem)) return; // paranoia
+				const locn = ""+window.location;
+				let newLocn = locn.replace(getId(item), getId(newItem));
+				if (newLocn == locn) return;
+				goto(newLocn);
+				notifyUser("Switched editor to new version: "+(getName(newItem) || getId(newItem)));				
+			}
+		}
+		ActionMan.saveAs({ type, id, onChange});
 		setSaveButtonDropdownOpen(false);
 	};
 
