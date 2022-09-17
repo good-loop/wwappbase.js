@@ -53,7 +53,7 @@ const macroAdders = {
 		// creative ID, size string, width, height, site ID, site URL
 		url.search += '&vert=${CREATIVE_ID}&size=${CREATIVE_SIZE}&width=${WIDTH}&height=${HEIGHT}&pub=${SITE_ID}&url=${REFERER_URL_ENC}';
 	},
-}
+};
 
 /**
  * 
