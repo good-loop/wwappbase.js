@@ -57,8 +57,9 @@ const macroAdders = {
 
 /**
  * 
- * @param {!URL} url 
+ * @param {!URL} url modifies this
  * @param {!GreenTag} tag 
+ * @returns null
  */
 const setBaseParams = (url, tag) => {
 	url.searchParams.set('d', 'green'); // "green ad tag" dataspace
@@ -70,9 +71,13 @@ const setBaseParams = (url, tag) => {
 	if (tag.campaign) url.search += `&campaign=${encURI(tag.campaign)}`;
 	if (tag.id) url.search += `&adid=${tag.id}`;
 	if (tag.vertiser) url.search += `&vertiser=${encURI(tag.vertiser)}`;
+	if (tag.agencyId) url.search += `&via=${encURI(tag.agencyId)}`;
 };
 
 
+/**
+ * string -> function: tag -> string
+ */
 const generators = {
 	PIXEL: (tag) => {
 		const url = new URL(PIXEL_BASE);
