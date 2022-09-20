@@ -42,16 +42,19 @@ const macroAdders = {
 		url.search += '&vert=${CREATIVE_ID}&url=${SOURCE_URL_ENC}';
 	},
 	[KMacroType.GOOGLE]: (url) => {
-		// width, height, site ID, site url
+		// width, height, site domain, site url
+		// https://support.google.com/admanager/answer/2376981?hl=en
 		url.search += '&width=%%WIDTH%%&height=%%HEIGHT%%&pub=%%SITE%%&url=%%REFERRER_URL_ESC%%';
 	},
 	[KMacroType.TTD]: (url) => {
-		// creative ID, size string, device type, site ID
+		// creative ID, size string, device type, site domain
 		url.search += '&vert=%%TTD_CREATIVEID%%&size=%%TTD_ADFORMAT%%&env=%%TTD_DEVICETYPE%%&pub=%%TTD_SITE%%';
 	},
 	[KMacroType.XANDR]: (url) => {
-		// creative ID, size string, width, height, site ID, site URL
-		url.search += '&vert=${CREATIVE_ID}&size=${CREATIVE_SIZE}&width=${WIDTH}&height=${HEIGHT}&pub=${SITE_ID}&url=${REFERER_URL_ENC}';
+		// creative ID, size string, width, height, site URL
+		// Removed "&pub=${SITE_ID}" as it was polluting records with numeric values, xandr does not have a "site domain" macro
+		// https://docs.xandr.com/bundle/invest_invest-standard/page/topics/supported-creative-macros.html
+		url.search += '&vert=${CREATIVE_ID}&size=${CREATIVE_SIZE}&width=${WIDTH}&height=${HEIGHT}&url=${REFERER_URL_ENC}';
 	},
 }
 
