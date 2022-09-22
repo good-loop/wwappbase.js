@@ -71,9 +71,9 @@ const setBaseParams = (url, tag) => {
 	if (tag.campaign) url.search += `&campaign=${encURI(tag.campaign)}`;
 	if (tag.id) url.search += `&adid=${tag.id}`;
 	if (tag.vertiser) url.search += `&vertiser=${encURI(tag.vertiser)}`;
-	if (tag.agencyId) url.search += `&via=${encURI(tag.agencyId)}`;
-	url.search += `&ow=1`;
-	// NB: after the base info in case the macros break the url (eg the user puts the wrong macros for the dsp)
+	if (tag.agencyId) url.search += `&agency=${encURI(tag.agencyId)}`;
+	url.search += `&ow=1`; // overwrite for faster server-side save
+	// NB: add macros after the base info in case the macros break the url (eg the user puts the wrong macros for the dsp)
 	if (tag.macroType && macroAdders[tag.macroType]) {
 		macroAdders[tag.macroType](url);
 	}
