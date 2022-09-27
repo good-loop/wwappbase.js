@@ -194,7 +194,7 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 		// Preserve very recent local edits (which we haven't yet told the server about)
 		let recentLocalDiffs = jsonpatch.compare(itemBefore, item);
 		if (recentLocalDiffs.length) {
-			console.warn("Race condition! Preserving recent local edits", recentLocalDiffs, JSON.stringify(itemBefore), JSON.stringify(item));
+			console.warn("Race condition! Preserving recent local edits", recentLocalDiffs, "before",JSON.stringify(itemBefore), "now",JSON.stringify(item));
 			applyPatch(freshItem, recentLocalDiffs, item, itemBefore);
 		}
 
@@ -208,6 +208,11 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 		}
 		if (action==='save') {	
 			// NB: the recent diff handling above should manage the latency issue around setting the draft item
+			console.log("post-save update", JSON.stringify(itemBefore), freshItem);
+			// HACK to prevent MoneyScript flickering text bug
+			if (getType(item)==="PlanDoc" && item) {
+				freshItem.sheets = item.sheets;
+			}
 			DataStore.setValue(draftpath, freshItem);
 		}
 		// save to local and DS?
