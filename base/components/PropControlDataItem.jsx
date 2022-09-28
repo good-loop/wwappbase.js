@@ -102,7 +102,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 
 	return (
 		<Row className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
-			{pvDataItem.value ? <>
+			{pvDataItem.value && <>
 				<Col xs={12}>
 					<ButtonGroup>
 						<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
@@ -115,7 +115,8 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 					</ButtonGroup>
 					<div><small>ID: <code>{rawValue || storeValue}</code></small></div>
 				</Col>
-			</> : <>
+			</>}
+            <>
 				<Col md={8}>
 				<div className="dropdown-sizer">
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
