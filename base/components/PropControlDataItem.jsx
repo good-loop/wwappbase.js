@@ -135,7 +135,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={({item}) => doSet(item)} />
 				)}
 			</Col>
-		</>}
+		</>
 		</Row>);
 };
 
