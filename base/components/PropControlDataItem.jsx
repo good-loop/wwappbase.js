@@ -69,11 +69,12 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 
 	let onChange = e => {
 		let id = e.target.value;
-        id = id.replace(/ $/g, "");
+        //id = id.replace(/ $/g, "");
 		setRawValue(id);
 		if (embed) {
 			return; // if embed, only set on-click
 		}
+        id = id.replace(/ $/g, "");
 		let mv = modelValueFromInput? modelValueFromInput(id, type, e, storeValue) : id;
 		DSsetValue(proppath, mv);
 	};
