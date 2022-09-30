@@ -62,34 +62,6 @@ const dateValidator = (val, rawValue) => {
 	}
 };
 
-/**
-	   * Check if dataitem's value between draft and published are different
-	   * Used in portal, to prevent bugs caused of draft/published differences
-	   * @returns {?KStatus} false if draft=published. If published=null then DRAFT, if draft != published then MODIFIED
-	   */
-const isModified = (props) => {
-	if (!props.path || props.path[0] !== "draft" || props.path.length < 3) return null; // Only needed for data props
-
-	let prop = props.prop;
-	let itemType = props.path[1];
-	let itemId = props.path[2];
-	let type = C.TYPES[itemType];
-	if (type === null || itemType == 'USER') return null; // Ignore USER type, no need for login props
-
-	let pvDraft = getDataItem({ type: type, id: itemId, status: KStatus.DRAFT, swallow: true });
-	let pvPub = getDataItem({ type: type, id: itemId, status: KStatus.PUBLISHED, swallow: true });
-
-	if (pvDraft.value && !pvPub.value) {
-		return KStatus.DRAFT; // Never been published
-	}
-
-	if (pvDraft.value && pvPub.value) {
-		if (!_.isEqual(pvDraft.value[prop], pvPub.value[prop])) {
-			return KStatus.MODIFIED;
-		}
-	}
-	return false;
-};
 
 /** Use Bootstrap popover to display help text on click */
 export const Help = ({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) => {
@@ -182,7 +154,14 @@ class PropControlParams {
 }; // ./PropControlParams
 
 
-/* */
+/**
+ * Check part of a DataItem for difference between DRAFT and PUBLISHED versions.
+ * @param {String[]} path Path to DataItem OR object inside it
+ * @param {String} prop Final path element (structured like this for convenience with PropControl)
+ * @returns {?Object} null for no item / not draft / no difference,
+ * { status: 'DRAFT' } for draft-only,
+ * { status: 'MODIFIED', pubVal: '...', draftVal: '.....' } if different from published.
+ */
 const diffProp = (path, prop) => {
 	if (!path || path.length < 3) return null; // Must be a DataItem or part of one
 	const [status, type, id] = path || [];
@@ -215,7 +194,13 @@ const diffProp = (path, prop) => {
 	return { status: KStatus.MODIFIED, pubVal, draftVal };
 }
 
-
+/**
+ * Show a black and yellow marker badge + popover detailing differences if a PropControl's value is different from the published version.
+ * @param {props.path}
+ * @param {props.prop}
+ * @param {props.className}
+ * @returns 
+ */
 const DiffWarning = ({path, prop, className}) => {
 	const diff = diffProp(path, prop);
 	if (!diff) return null;
@@ -240,6 +225,7 @@ const DiffWarning = ({path, prop, className}) => {
 		setShowPopover(!showPopover);
 	};
 
+	// This processing could get expensive, don't do it if the popover is closed
 	let pBody = null;
 	if (showPopover) {
 		const {pubVal, draftVal} = diff;
@@ -256,8 +242,6 @@ const DiffWarning = ({path, prop, className}) => {
 			</div>
 		</PopoverBody>;
 	}
-
-
 
 	return <>
 		<Button id={id} className={space('data-modified', className)} onClick={toggle} title="Unpublished edits, click to see difference" />
