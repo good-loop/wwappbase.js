@@ -159,7 +159,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		// filtered out locally - reduce the total
 		total = items.length;
 	}
-	// paginate
+	// paginate ??allow url to specify page? But what if we have a couple of ListLoad widgets on the page?
 	let [pageNum, setPageNum2] = pageSize ? useState(0) : [];
 	const setPageNum = n => {
 		setPageNum2(n);
