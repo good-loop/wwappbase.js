@@ -107,7 +107,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', hom
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
 			<div className='position-relative'>
 				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>				
-					{brandLogo? <img className={logoClass} alt={brandName} src={brandLogo} /> : brandName}
+					{brandLogo? <img className={space(logoClass, "brand-logo")} alt={brandName} src={brandLogo} /> : brandName}
 				</C.A>
 				{brandLink !== ""+window.location 
 					&& <CloseButton style={{position:"absolute", bottom:0, right:"0.8em"}} onClick={e => setNavProps(null)} size="sm" tooltip={`include content beyond ${brandName}'s micro-site`} />}
