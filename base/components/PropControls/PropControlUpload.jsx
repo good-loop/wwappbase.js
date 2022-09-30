@@ -167,7 +167,8 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		// Update progress readout - use updater function to merge start time into new object
 		const progress = ({ loaded, total }) => setUploading(({start}) => ({ start, loaded, total }));
 		// Upload complete = delete progress readout
-		const load = () => setUploading(false);
+		// Hack: Wait half a second so file should be available in nginx when we try to display preview
+		const load = () => setTimeout(() => setUploading(false), 500);
 
 		accepted.forEach(file => {
 			const uploadOptions = {};
@@ -249,12 +250,23 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		);
 	}
 
-	// While the circle-crop control is focused, preview its effects by overlaying a scaled circle
-	let circleOverlay = null;
-	if (previewCrop) {
-		const wart = storeValue && storeValue.match(/#.*ccrop:(\d+)/);
-		const ccVal = (wart && wart[1]) || 100;
-		circleOverlay = <div style={{...circleStyle, width: `${10000/ccVal}%`, height: `${10000/ccVal}%`}} />;
+	let preview = null;
+	if (uploading) {
+		// Upload in progress: show % done report
+		preview = <UploadProgress {...uploading} />
+	} else if (storeValue) {
+		// File already uploaded: show media preview if possible
+		// While the circle-crop control is focused, preview its effects by overlaying a scaled circle
+		let circleOverlay = null;
+		if (previewCrop) {
+			const wart = storeValue && storeValue.match(/#.*ccrop:(\d+)/);
+			const ccVal = (wart && wart[1]) || 100;
+			circleOverlay = <div style={{...circleStyle, width: `${10000/ccVal}%`, height: `${10000/ccVal}%`}} />;
+		}
+		preview = <>
+			<Thumbnail className={className} background={bg} url={storeValue} />
+			{circleOverlay}
+		</>;
 	}
 
 	return (
@@ -266,16 +278,8 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 					<input {...getInputProps()} />
 					Drop a {acceptDescs[type]} here
 				</div>
-				</>
-			}
-			{storeValue &&
-				<div className="pull-right" style={typesWithThumbnail[type] && thumbnailStyle}>
-					{uploading ? <UploadProgress {...uploading} /> : <>
-						<Thumbnail className={className} background={bg} url={storeValue} />
-						{circleOverlay}
-					</>}
-				</div>
-			}
+			</>}
+			{preview && <div className="pull-right" style={typesWithThumbnail[type] && thumbnailStyle}>{preview}</div>}
 			{extraControls}
 			<div className="clearfix" />
 		</div>
