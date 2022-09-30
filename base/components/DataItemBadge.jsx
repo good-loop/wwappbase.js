@@ -17,18 +17,16 @@ import KStatus from '../data/KStatus';
  * @param {?KStatus} p.status Only used if `item` isn't set.
  */
 const DataItemBadge = ({item, id, type, status=KStatus.PUBLISHED, onClick, href, className, ...rest}) => {
-    if ( ! item) {
-        let pvItem = getDataItem({type, id, status});
-        item = pvItem.value || {id, type};
-    }
-    const Tag = href? 'a' : 'div';
-    // if (href===true) { TODO if `true` then put together a url
-    //     href = getDataItemLink(item);
-    // }
-    return <Tag className="DataItemBadge" onClick={onClick} href={href} title={`ID: ${getId(item)}`}>
-        {getLogo(item) ? <img src={getLogo(item)} className="logo logo-sm" /> : <span className="d-inline-block logo logo-sm" />}{' '}
-        {getName(item) || getId(item)}
-    </Tag>;
+	if (!item) item = getDataItem({type, id, status}).value || {id, type};
+
+	const Tag = href ? 'a' : 'div';
+	// if (href === true) { // TODO if `true` then put together a url
+	//	href = getDataItemLink(item);
+	// }
+	return <Tag className="DataItemBadge" onClick={onClick} href={href} title={getName(item) || `ID: ${getId(item)}`}>
+	{getLogo(item) ? <img src={getLogo(item)} className="logo logo-sm" /> : <span className="d-inline-block logo logo-sm" />}{' '}
+	{getName(item) || getId(item)}
+	</Tag>;
 };
 
 // export const getDataItemLink = (item) => {
