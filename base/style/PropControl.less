@@ -9,6 +9,7 @@
 	background: repeating-linear-gradient(-45deg, #555, #555 6px, #ccc 6px, #ccc 12px);
 }
 
+
 // Define height of form-compact elements for reuse
 .form-compact-height() {
 	height: calc(1em + 0.7rem + 2px);
@@ -332,4 +333,32 @@ span.preview .DataItemBadge {
 .code-container {
 	display: block;
 	position: relative;
+}
+
+// Badge to mark a PropControl with unpublished edits
+.btn.data-modified {
+	background: repeating-linear-gradient(-45deg, #000, #000 4px, #ffc107 4px, #ffc107 8px);
+}
+.btn, .form-compact .btn {
+	&.data-modified {
+		padding: 0;
+		width: 1em;
+		height: 1em;
+	}
+}
+.data-modified-details {
+	.diff-line {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		max-width: 100%;
+	}
+	> :not(.diff-val) {
+		flex-shrink: 0;
+	}
+	.diff-val {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+	}
 }
