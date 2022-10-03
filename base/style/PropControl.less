@@ -246,12 +246,26 @@ You can apply it to, well, anything.
 // Non-link preview shouldn't look clickable
 span.preview .DataItemBadge {
 	cursor: default;
-
 }
 
 .data-item-control {
 	.dropdown-sizer {
 		position: relative; // This is a size/position reference for the floating dropdown list
+	}
+
+	// Ellipsize text label if it would overflow
+	.btn, .btn-group {
+		overflow: hidden;
+		max-width: 100%;
+	}
+	.btn.clear {
+		flex-shrink: 0; // squash text label but never X button
+	}
+	.DataItemBadge {
+		max-width: 100%;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
 	}
 
 	// The autocomplete dropdown list
@@ -276,6 +290,22 @@ span.preview .DataItemBadge {
 	}
 }
 
+// .form-compact container scrunches everything
+.form-compact .data-item-control {
+	.btn {
+		padding: 0;
+	}
+
+	.DataItemBadge {
+		height: 100%;
+		padding: 0 0.25rem;
+		.logo {
+			height: 100%;
+			border: none;
+			margin-right: 0.25rem;
+		}
+	}
+}
 /* ./data-item-control */
 
 
