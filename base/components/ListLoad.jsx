@@ -534,7 +534,7 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn Deprecated - prefer `then`
  * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
  */
-const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, children}) => {
+const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, children, className}) => {
 	assert(type);
 	assert(!base || !base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) " + type + ". You can use top-level `id` instead.");
 	if (!navpage) navpage = DataStore.getValue('location', 'path')[0];
@@ -547,7 +547,7 @@ const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, child
 	if ( ! children) {
 		children = <><span style={{fontSize:'125%', lineHeight:'1em'}}>+</span> Create</>;
 	}
-	const $createButton = <Button className='btn-create' onClick={() => createBlank({type,navpage,base,id,make,saveFn,then})}>{children}</Button>;
+	const $createButton = <Button className={space('btn-create', className)} onClick={() => createBlank({type,navpage,base,id,make,saveFn,then})}>{children}</Button>;
 	if ( ! props) {
 		// simple button
 		return $createButton;
