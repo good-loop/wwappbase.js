@@ -23,14 +23,13 @@ import { stopEvent, toTitleCase, space, labeller, is, ellipsize } from '../utils
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
 
-import Misc from './Misc';
+import Misc, { CopyToClipboardButton } from './Misc';
 import DataStore from '../plumbing/DataStore';
 import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
 import { nonce } from '../data/DataClass';
 
 import { countryListAlpha2 } from '../data/CountryRegion';
-import { CopyToClipboardButton } from '../../components/ExportControls';
 
 /**
    * Set the value and the modified flag in DataStore.

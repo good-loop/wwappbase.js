@@ -6,7 +6,7 @@ import md5 from 'md5';
 import _ from 'lodash';
 
 import { assert, assMatch } from '../utils/assert';
-import { asDate, getLogo, isoDate, space, str } from '../utils/miscutils';
+import { asDate, copyTextToClipboard, getLogo, isoDate, space, stopEvent, str } from '../utils/miscutils';
 
 import JSend from '../data/JSend';
 
@@ -21,6 +21,7 @@ import { getId} from '../data/DataClass';
 import ErrAlert from './ErrAlert';
 import XId from '../data/XId';
 import Roles from '../Roles';
+import Icon from './Icon';
 
 
 const Misc = {};
@@ -534,11 +535,15 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, className = 'btn 
 };
 
 /**
- * Markdown text
+ * A copy-to-clipboard Button.
+ * @param {Object} p
+ * @param {String} p.text The text to copy on-click
  */
-Misc.MDText = ({source}) => {
+ export const CopyToClipboardButton = ({text, ...params}) => 
+ 	<Button {...params} disabled={ ! text} 
+		 title="Copy to clipboard"
+		onClick={e => stopEvent(e) && copyTextToClipboard(text)}><Icon name="clipboard"/></Button>;
 
-}
 
 /**
  * Expect children to have an "option" property which should match the "selected" attribute
