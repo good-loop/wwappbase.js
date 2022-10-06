@@ -148,7 +148,8 @@ const SavePublishDeleteEtc = ({
 	autoSave = true,
 	saveAs, unpublish,
 	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
-	sendDiff
+	sendDiff,
+	confirmationDialog = false
 }) => {
 	// No anon edits
 	if (!Login.isLoggedIn()) {
@@ -220,6 +221,9 @@ const SavePublishDeleteEtc = ({
 	 * Inform user delete action was succesful, and redirect to home preserving search params.
 	 */
 	const doDeleteAndRedirect = () => {
+		if (confirmationDialog) {
+			if (!window.confirm(`Are you sure you want to delete this ${type}?`)) return;
+		}
 		let ok = check(preDelete({ item, action: C.CRUDACTION.delete }));
 		if (!ok) return;
 		const pDel = ActionMan.delete(type, id);
