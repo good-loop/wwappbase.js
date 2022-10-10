@@ -267,6 +267,7 @@ span.preview .DataItemBadge {
 .modal-content {
 	//height: 90vh; // Why?? This looks bad for e.g. the Add-a-Line chart editor in MoneyScript
 
+
 	/* if styled code in in the modal, make sure it's components are the same size */
 	.code-input, .syntax-highlighting, .code-highlighting {
 		width: 99% !important;
@@ -317,4 +318,10 @@ span.preview .DataItemBadge {
 .code-container {
 	display: block;
 	position: relative;
+}
+
+.modal-propControl-code {
+	.modal-content {
+		height: 90vh;
+	}
 }
