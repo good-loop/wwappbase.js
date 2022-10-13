@@ -79,7 +79,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	cannotClick,
 	createBase,
 	className,
-	hasCsv, csvColumns,
+	hasCsv, csvColumns, hideCsvColumns,
 	noResults,
 	notALink,
 	itemClassName,
@@ -176,7 +176,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 		{total && !hideTotal ? <div>About {total} results in total</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
-		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} />}
+		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} hideCsvColumns={hideCsvColumns} />}
 		{items.map((item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				unwrapped={unwrapped}
@@ -222,10 +222,13 @@ const ListLoad = ({ type, status, servlet, navpage,
  * @param {*} param0 
  * @returns 
  */
-const ListLoadCSVDownload = ({items, csvColumns}) => {
+const ListLoadCSVDownload = ({items, csvColumns, hideCsvColumns}) => {
 	if ( ! items.length) return null;
 	if ( ! csvColumns) {
 		csvColumns = Object.keys(items[0]);
+	}
+	if (hideCsvColumns) {
+		csvColumns = csvColumns.filter(col => !hideCsvColumns.includes(col))
 	}
 	return <DownloadCSVLink data={items} columns={csvColumns} />;	
 };
