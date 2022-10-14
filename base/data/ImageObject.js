@@ -12,8 +12,6 @@ class ImageObject extends DataClass {
 	/** the actual image url */
 	contentUrl;
 	license;
-	/** can this be used for backgrounds? */	
-	backdrop;
 }
 DataClass.register(ImageObject, "ImageObject");
 const This = ImageObject;
