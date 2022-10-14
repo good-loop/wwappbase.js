@@ -428,16 +428,20 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		};
 
 		// onFocus doesn't understand type code, if it is that type then let onFocus think it's a textarea
+		// code modals should have 'height: 90vh' - needs to be done here when Modal is instantiated
 		let newRest = rest
+		let codeClassName = ""
 		if (type === "code") {
 			let { type, ...allButType } = rest
+			codeClassName = " modal-propControl-code"
 			newRest = { type: "textarea", ...allButType }
 		}
 
 
+
 		return <>
 			<PropControl onFocus={onFocusInput} {...newRest} />
-			<Modal className="modal-propControl" isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
+			<Modal className={"modal-propControl" + codeClassName} isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
 				<ModalBody>
 					<PropControl {...rest} />
 				</ModalBody>
