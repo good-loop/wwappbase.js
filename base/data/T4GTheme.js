@@ -6,4 +6,15 @@ class T4GTheme {
     backgroundColor;
 }
 
+T4GTheme.valid = (theme) => {
+    const valid = !!(
+        (
+            (theme.backdropImages && theme.backdropImages.length) ||
+            (theme.backgroundColor && theme.backgroundColor !== "")
+        ) &&
+        theme.t4gLogo && theme.t4gLogo !== ""
+    );
+    return valid;
+}
+
 export default T4GTheme;
