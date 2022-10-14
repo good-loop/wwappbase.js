@@ -30,7 +30,8 @@ const saveAs = (dataUrl, fileName) => {
 /**
  * Export an element in the DOM as a png image using html2canvas
  * NB: html2canvas doesn't work well with elements which have a `box-shadow` property.
- * You can remove that using a custom onCloneFn.
+ * You can remove that using a custom onCloneFn. Or, you can try setting the `scale` to 1.25
+ * in the opts property.
  * 
  * @param {string} querySelector - A query selector for the DOM element we want to export
  * @param {string} [fileName="image"] - The filename to use for the exported image
