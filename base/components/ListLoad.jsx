@@ -79,7 +79,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	cannotClick,
 	createBase,
 	className,
-	hasCsv, csvColumns,
+	hasCsv, csvColumns, hideCsvColumns,
 	noResults,
 	notALink,
 	itemClassName,
@@ -159,7 +159,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		// filtered out locally - reduce the total
 		total = items.length;
 	}
-	// paginate
+	// paginate ??allow url to specify page? But what if we have a couple of ListLoad widgets on the page?
 	let [pageNum, setPageNum2] = pageSize ? useState(0) : [];
 	const setPageNum = n => {
 		setPageNum2(n);
@@ -176,7 +176,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 		{total && !hideTotal ? <div>About {total} results in total</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
-		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} />}
+		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} hideCsvColumns={hideCsvColumns} />}
 		{items.map((item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				unwrapped={unwrapped}
@@ -222,10 +222,13 @@ const ListLoad = ({ type, status, servlet, navpage,
  * @param {*} param0 
  * @returns 
  */
-const ListLoadCSVDownload = ({items, csvColumns}) => {
+const ListLoadCSVDownload = ({items, csvColumns, hideCsvColumns}) => {
 	if ( ! items.length) return null;
 	if ( ! csvColumns) {
 		csvColumns = Object.keys(items[0]);
+	}
+	if (hideCsvColumns) {
+		csvColumns = csvColumns.filter(col => !hideCsvColumns.includes(col))
 	}
 	return <DownloadCSVLink data={items} columns={csvColumns} />;	
 };
@@ -534,7 +537,7 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn Deprecated - prefer `then`
  * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
  */
-const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, children}) => {
+const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, children, className, disabled}) => {
 	assert(type);
 	assert(!base || !base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) " + type + ". You can use top-level `id` instead.");
 	if (!navpage) navpage = DataStore.getValue('location', 'path')[0];
@@ -547,7 +550,7 @@ const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, child
 	if ( ! children) {
 		children = <><span style={{fontSize:'125%', lineHeight:'1em'}}>+</span> Create</>;
 	}
-	const $createButton = <Button className='btn-create' onClick={() => createBlank({type,navpage,base,id,make,saveFn,then})}>{children}</Button>;
+	const $createButton = <Button disabled={disabled} className={space('btn-create', className)} onClick={() => createBlank({type,navpage,base,id,make,saveFn,then})}>{children}</Button>;
 	if ( ! props) {
 		// simple button
 		return $createButton;

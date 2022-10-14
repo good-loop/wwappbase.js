@@ -869,7 +869,7 @@ const TableFootPager = ({tableSettings, numPages }) => {
 	</div>);
 };
 
-const CSVDownload = ({tableSettings, visibleColumns, topRow, dataTree, bottomRow }) => {
+const CSVDownload = ({tableSettings, visibleColumns, topRow, dataTree, bottomRow, children }) => {
 	const ref = useRef();
 	// assert(_.isArray(jsonArray), jsonArray);
 	// // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
@@ -886,7 +886,7 @@ const CSVDownload = ({tableSettings, visibleColumns, topRow, dataTree, bottomRow
 			ref={ref}
 			onClick={e => setupCsv(e, this)}
 		>
-			&#128229; Download .csv
+			{children || <>&#128229; Download .csv</>}
 		</a>
 	);
 };
@@ -910,10 +910,10 @@ const csvEscCell = s => {
  * @param {!Column[]|string[]} p.columns
  * @param {!Object[]} p.data
  */
-const DownloadCSVLink = ({columns, data, name}) => {
+const DownloadCSVLink = ({columns, data, name, children}) => {
 	let dataTree = standardiseData({data});
 	let tableSettings = {name};
-	return <CSVDownload dataTree={dataTree} visibleColumns={columns} tableSettings={tableSettings} />;
+	return <CSVDownload dataTree={dataTree} visibleColumns={columns} tableSettings={tableSettings} children={children} />;
 };
 
 export default SimpleTable;

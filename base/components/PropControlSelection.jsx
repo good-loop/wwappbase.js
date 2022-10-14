@@ -52,7 +52,7 @@ const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFro
 }; // ./radio
 
 registerControl({type:'checkboxes', $Widget: PropControlCheckboxes});
-registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes});
+registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes}); // how does this differ from checkboxes??
 
 /**
  * 

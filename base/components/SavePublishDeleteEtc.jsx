@@ -41,6 +41,7 @@ const DEBOUNCE_MSECS = 2000;
 /**
 Problem: we can't keep making fresh copies 'cos that breaks debounce. But we can't share a fn either!
 Solution TODO cache versions of it.
+?? useState() would probably be a neater solution
  */
 const _saveDraftFn4typeid = {};
 
@@ -60,7 +61,7 @@ const saveDraftFnFactory = ({type,key}) => {
 		sdfn = _.debounce(
 			({ type, id, item, previous }) => {
 				// console.log("...saveDraftFn :)");
-				ActionMan.saveEdits({ type, id, item, previous });
+				let pv = saveEdits({ type, id, item, previous });
 				return true;
 			}, DEBOUNCE_MSECS
 		);
@@ -107,7 +108,7 @@ const autoPublishFn = _.debounce(
 const T = () => true;
 
 /**
- * Just console log if ! ok
+ * Just console log if ! ok.
  * @param {Boolean} ok 
  * @returns {Boolean}
  */
@@ -185,7 +186,7 @@ const SavePublishDeleteEtc = ({
 			autoPublishFn({ type, id, item, previous });
 		} else if (autoSave) {
 			const saveDraftFn = saveDraftFnFactory({type, key:id});
-			saveDraftFn({ type, id, item, previous });
+			saveDraftFn({ type, id, item, previous, swallow:true }); // auto-save hides errors TODO show a warning icon on the widget
 		}
 	}
 

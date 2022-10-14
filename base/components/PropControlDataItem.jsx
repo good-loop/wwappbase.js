@@ -69,11 +69,12 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 
 	let onChange = e => {
 		let id = e.target.value;
-        id = id.replace(/ $/g, "");
+		//id = id.replace(/ $/g, "");
 		setRawValue(id);
 		if (embed) {
 			return; // if embed, only set on-click
 		}
+		id = id.replace(/ $/g, "");
 		let mv = modelValueFromInput? modelValueFromInput(id, type, e, storeValue) : id;
 		DSsetValue(proppath, mv);
 	};
@@ -87,7 +88,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	};
 
 	const doClear = () => {
-		setRawValue('')
+		setRawValue('');
 		DSsetValue(proppath, '');
 	};
 
@@ -101,7 +102,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 
 	return (
 		<Row className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
-			{pvDataItem.value ? <>
+			{pvDataItem.value && <>
 				<Col xs={12}>
 					<ButtonGroup>
 						<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
@@ -110,12 +111,13 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 						>
 							<SlimListItem type={itemType} item={pvDataItem.value} noClick />
 						</Button>
-						{!readOnly && <Button color="secondary" onClick={doClear}>🗙</Button>}
+						{!readOnly && <Button color="secondary" className="clear" onClick={doClear}>🗙</Button>}
 					</ButtonGroup>
 					<div><small>ID: <code>{rawValue || storeValue}</code></small></div>
 				</Col>
-			</> : <>
-				<Col md={8}>
+			</>}
+			<>
+				<Col xs={canCreate ? 8 : 12}>
 				<div className="dropdown-sizer">
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
 					{rawValue && showLL && <ListLoad className="items-dropdown card card-body" hideTotal type={itemType} status={status} 
@@ -128,12 +130,12 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 					/>}
 				</div>
 			</Col>
-			<Col md={4}>
+			<Col xs={4}>
 				{canCreate && rawValue && (
 					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={({item}) => doSet(item)} />
 				)}
 			</Col>
-		</>}
+		</>
 		</Row>);
 };
 

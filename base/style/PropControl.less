@@ -6,8 +6,9 @@
 
 // Used to signify "transparent" or "no colour chosen"
 .stripe-bg() {
-	background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA4AAAAOAQMAAAAlhr+SAAAABlBMVEW7u7tVVVXOtErWAAAAM0lEQVQI12P4x8Dwh4XhBw/DBxmGBzYMB2oYGv4wMP5hYP7BwP6Bgf8Bg/wBBvsGhnoGADdeDd7GEVhmAAAAAElFTkSuQmCC);
+	background: repeating-linear-gradient(-45deg, #555, #555 6px, #ccc 6px, #ccc 12px);
 }
+
 
 // Define height of form-compact elements for reuse
 .form-compact-height() {
@@ -98,7 +99,7 @@
 .form-group.videoUpload,
 .form-group.bothUpload {
 
-	// normalise height of preview boxes
+	// normalise height of preview boxes + dropzone
 	.video-thumbnail,
 	.img-thumbnail,
 	.DropZone {
@@ -106,13 +107,27 @@
 		height: @preview-height;
 	}
 
+	// distribute width between dropzone and preview box
+	@dropzone-width: @preview-height * 1.2;
 	.DropZone {
-		width: @preview-height * 1.2;
+		margin-left: 0;
+		width: @dropzone-width;
+	}
+	.preview-container {
+		// Weirdness: If you remove this explicit height it decides to be 100px - and Chrome inspector can't say why.
+		height: @preview-height + @preview-margin + @preview-margin;
+		max-width: calc(100% - (@dropzone-width + @preview-margin + @preview-margin));
+		img, video {
+			margin-right: 0;
+		}
 	}
 
 	// let the white silhouette logo control show that the user hasn't picked a brand colour
 	.img-thumbnail.stripe-bg {
 		.stripe-bg();
+	}
+	.video-thumbnail {
+		width: unset;
 	}
 }
 
@@ -231,12 +246,26 @@ You can apply it to, well, anything.
 // Non-link preview shouldn't look clickable
 span.preview .DataItemBadge {
 	cursor: default;
-
 }
 
 .data-item-control {
 	.dropdown-sizer {
 		position: relative; // This is a size/position reference for the floating dropdown list
+	}
+
+	// Ellipsize text label if it would overflow
+	.btn, .btn-group {
+		overflow: hidden;
+		max-width: 100%;
+	}
+	.btn.clear {
+		flex-shrink: 0; // squash text label but never X button
+	}
+	.DataItemBadge {
+		max-width: 100%;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		overflow: hidden;
 	}
 
 	// The autocomplete dropdown list
@@ -261,7 +290,24 @@ span.preview .DataItemBadge {
 	}
 }
 
+// .form-compact container scrunches everything
+.form-compact .data-item-control {
+	.btn {
+		padding: 0;
+	}
+
+	.DataItemBadge {
+		height: 100%;
+		padding: 0 0.25rem;
+		.logo {
+			height: 100%;
+			border: none;
+			margin-right: 0.25rem;
+		}
+	}
+}
 /* ./data-item-control */
+
 
 /* Modals */
 .modal-content {
@@ -323,5 +369,32 @@ span.preview .DataItemBadge {
 .modal-propControl-code {
 	.modal-content {
 		height: 90vh; // fixes modal being smaller than code blocks
+	}
+}
+// Badge to mark a PropControl with unpublished edits
+.btn.data-modified {
+	background: repeating-linear-gradient(-45deg, #000, #000 4px, #ffc107 4px, #ffc107 8px);
+}
+.btn, .form-compact .btn {
+	&.data-modified {
+		padding: 0;
+		width: 1em;
+		height: 1em;
+	}
+}
+.data-modified-details {
+	.diff-line {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		max-width: 100%;
+	}
+	> :not(.diff-val) {
+		flex-shrink: 0;
+	}
+	.diff-val {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 }

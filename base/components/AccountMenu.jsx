@@ -15,13 +15,6 @@ import XId from '../data/XId';
 import { modifyPage } from '../plumbing/glrouter';
 
 
-// HACK accommodate # v / routing
-const hashLinkChecker = (href) => {
-	let noHashHostname = ['my.good-loop.com', 'testmy.good-loop.com', 'localmy.good-loop.com'];
-	if (noHashHostname.includes(window.location.hostname)) return href.replace('#', '');
-	else return href;
-}
-
 /**
 The top-right menu
 active {boolean} true if on the account page

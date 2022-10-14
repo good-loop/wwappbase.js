@@ -11,19 +11,19 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
-import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody } from 'reactstrap';
+import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody, PopoverHeader, Table } from 'reactstrap';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import '../style/prism-dark.less';
 
 import { assert, assMatch } from '../utils/assert';
 import JSend from '../data/JSend';
-import { stopEvent, toTitleCase, space, labeller, is } from '../utils/miscutils';
+import { stopEvent, toTitleCase, space, labeller, is, ellipsize } from '../utils/miscutils';
 
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
 
-import Misc from './Misc';
+import Misc, { CopyToClipboardButton } from './Misc';
 import DataStore from '../plumbing/DataStore';
 import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
@@ -61,34 +61,6 @@ const dateValidator = (val, rawValue) => {
 	}
 };
 
-/**
-	   * Check if dataitem's value between draft and published are different
-	   * Used in portal, to prevent bugs caused of draft/published differences
-	   * @returns {?KStatus} false if draft=published. If published=null then DRAFT, if draft != published then MODIFIED
-	   */
-const isModified = (props) => {
-	if (!props.path || props.path[0] !== "draft" || props.path.length < 3) return null; // Only needed for data props
-
-	let prop = props.prop;
-	let itemType = props.path[1];
-	let itemId = props.path[2];
-	let type = C.TYPES[itemType];
-	if (type === null || itemType == 'USER') return null; // Ignore USER type, no need for login props
-
-	let pvDraft = getDataItem({ type: type, id: itemId, status: KStatus.DRAFT, swallow: true });
-	let pvPub = getDataItem({ type: type, id: itemId, status: KStatus.PUBLISHED, swallow: true });
-
-	if (pvDraft.value && !pvPub.value) {
-		return KStatus.DRAFT; // Never been published
-	}
-
-	if (pvDraft.value && pvPub.value) {
-		if (!_.isEqual(pvDraft.value[prop], pvPub.value[prop])) {
-			return KStatus.MODIFIED;
-		}
-	}
-	return false;
-};
 
 /** Use Bootstrap popover to display help text on click */
 export const Help = ({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) => {
@@ -180,6 +152,104 @@ class PropControlParams {
 	warnOnUnpublished = true;
 }; // ./PropControlParams
 
+
+/**
+ * Check part of a DataItem for difference between DRAFT and PUBLISHED versions.
+ * @param {String[]} path Path to DataItem OR object inside it
+ * @param {String} prop Final path element (structured like this for convenience with PropControl)
+ * @returns {?Object} null for no item / not draft / no difference,
+ * { status: 'DRAFT' } for draft-only,
+ * { status: 'MODIFIED', pubVal: '...', draftVal: '.....' } if different from published.
+ */
+const diffProp = (path, prop) => {
+	if (!path || path.length < 3) return null; // Must be a DataItem or part of one
+	const [status, type, id] = path || [];
+	if (!status || status !== 'draft') return null; // Must be a draft
+	if (!type || C.TYPES.isUser(type)) return null; // Ignore USER type, no need for login props
+
+	// Make sure both versions of the item are available locally
+	let pvDraft = getDataItem({ type, id, status: KStatus.DRAFT, swallow: true });
+	let pvPub = getDataItem({ type, id, status: KStatus.PUBLISHED, swallow: true });
+
+	// If the draft doesn't exist it can't have unpublished changes.
+	if (!pvDraft.value) return null;
+
+	if (prop === 'customcss') {
+		console.log('customcss');
+	}
+
+	// Never been published? Everything's unpublished changes!
+	if (!pvPub.value) {
+		return { status: KStatus.DRAFT };
+	}
+
+	// OK, so what's the actual difference for this prop?
+	const draftVal = DataStore.getValue([...path, prop]);
+	const pubVal = DataStore.getValue(['data', ...path.slice(1), prop]); // "data", not "published"
+
+	// No difference?
+	if (draftVal === pubVal) return null;
+
+	return { status: KStatus.MODIFIED, pubVal, draftVal };
+}
+
+/**
+ * Show a black and yellow marker badge + popover detailing differences if a PropControl's value is different from the published version.
+ * @param {props.path}
+ * @param {props.prop}
+ * @param {props.className}
+ * @returns 
+ */
+const DiffWarning = ({path, prop, className}) => {
+	const diff = diffProp(path, prop);
+	if (!diff) return null;
+	// Don't spew visual noise on every PropControl for an unpublished item
+	// TODO Should we mark this anyway?
+	if (KStatus.isDRAFT(diff.status)) return null;
+
+	const [showPopover, setShowPopover] = useState(false);
+	const [id] = useState(() => `diff-${nonce()}`);
+	const popoverId = `${id}-popover`;
+	const toggle = () => {
+		// TODO Pull this out and have a SelfClosingPopover element
+		if (!showPopover) {
+			const maybeHidePopover = (e) => {
+				const popoverEl = document.getElementById(popoverId);
+				if (popoverEl.contains(e.target)) return;
+				setShowPopover(false);
+				document.body.removeEventListener('click', maybeHidePopover);
+			};
+			document.body.addEventListener('click', maybeHidePopover);
+		}
+		setShowPopover(!showPopover);
+	};
+
+	// This processing could get expensive, don't do it if the popover is closed
+	let pBody = null;
+	if (showPopover) {
+		const {pubVal, draftVal} = diff;
+		pBody = <PopoverBody>
+			<div className="diff-line mb-1">
+				<strong>Old</strong>
+				<code className="diff-val mx-1" title={ellipsize(pubVal, 100)}>{JSON.stringify(pubVal)}</code>
+				<CopyToClipboardButton size="sm" text={pubVal} />
+			</div>
+			<div className="diff-line">
+				<strong>New</strong>
+				<code className="diff-val mx-1" title={ellipsize(draftVal, 100)}>{JSON.stringify(draftVal)}</code>
+				<CopyToClipboardButton size="sm" text={pubVal} />
+			</div>
+		</PopoverBody>;
+	}
+
+	return <>
+		<Button id={id} className={space('data-modified', className)} onClick={toggle} title="Unpublished edits, click to see difference" />
+		<Popover id={popoverId} isOpen={showPopover} toggle={toggle} target={id} className="data-modified-details">
+			<PopoverHeader>Unpublished edit</PopoverHeader>
+			{pBody}
+		</Popover>
+	</>;
+};
 
 
 /**
@@ -394,12 +464,12 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 				<label className={space(sizeClass, 'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
 			{help && !inline && !isCheck && <Help>{help}</Help>}
+			{warnOnUnpublished && <DiffWarning path={path} prop={prop} className="ml-1" />}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
 			{help && (inline || isCheck) && <Help>{help}</Help>}
 			{error && <span className="help-block text-danger data-error">{error}</span>}
 			{warning && <span className="help-block text-warning data-warning">{warning}</span>}
-			{warnOnUnpublished && isModified(props) && <span className="help-block text-warning data-modified">Not Published Yet</span>}
 		</FormGroup>
 	);
 }; // ./PropControl
