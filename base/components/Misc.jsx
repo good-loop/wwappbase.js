@@ -262,6 +262,7 @@ const YEAR = 365 * DAY;
 
 
 Misc.RelativeDate = ({date, ...rest}) => {
+	if ( ! date) return null;
 	const dateObj = new Date(date);
 	const now = new Date();
 
