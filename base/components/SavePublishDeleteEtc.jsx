@@ -3,7 +3,6 @@ import React, { useEffect, useState } from 'react';
 import { Button, ButtonDropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap';
 
 import { assert, assMatch } from '../utils/assert';
-import _ from 'lodash';
 
 import Misc from './Misc';
 import DataStore, { getPath } from '../plumbing/DataStore';
@@ -12,10 +11,11 @@ import ActionMan from '../plumbing/ActionManBase';
 import C from '../CBase';
 // // import I18n from 'easyi18n';
 import DataClass, { getType, getId, nonce, getStatus, getName } from '../data/DataClass';
-import { notifyUser } from '../plumbing/Messaging';
+import Messaging, { notifyUser } from '../plumbing/Messaging';
 import { publishEdits, saveEdits } from '../plumbing/Crud';
 import Icon from './Icon';
 import { goto } from '../plumbing/glrouter';
+import Login from '../youagain';
 
 /**
  * 
@@ -151,7 +151,7 @@ const SavePublishDeleteEtc = ({
 	sendDiff
 }) => {
 	// No anon edits
-	if (!Login.isLoggedIn()) {
+	if ( ! Login.isLoggedIn()) {
 		if (hidden) return null;
 		return <div className="SavePublishDeleteEtc"><i>Login to save or publish edits</i></div>;
 	}
@@ -177,7 +177,7 @@ const SavePublishDeleteEtc = ({
 				// console.log("set previous")
 				DataStore.setValue(prevPath, _.cloneDeep(item));
 			}
-		}, [item, isdirty])
+		}, [item, isdirty]);
 	}
 
 	// request a save/publish?
@@ -225,11 +225,11 @@ const SavePublishDeleteEtc = ({
 		const pDel = ActionMan.delete(type, id);
 		pDel.promise.then(() => {
 			Messaging.notifyUser(type + " " + id + " deleted");
-		})
+		});
 		// To be extra safe we'll redirect back to the origin, preserving any params already present
 		const currentUrl = new URL(window.location);
 		window.location.href = (currentUrl.origin + '/' + currentUrl.search)
-	}
+	};
 
 	const SaveEditsButton = () =>
 	(<Button name="save" size={size}

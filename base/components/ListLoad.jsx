@@ -20,6 +20,7 @@ import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
 import List from '../data/List';
 import { modifyPage } from '../plumbing/glrouter';
+import Roles from '../Roles';
 
 /**
  * Provide a list of items of a given type.
@@ -376,8 +377,7 @@ const A = ({ notALink, cannotClick, children, ...stuff }) => (notALink || cannot
  * 	TODO If it's of a data type which has getName(), default to that
  * @param extraDetail {Element} e.g. used on AdvertPage to add a marker to active ads
  */
-const DefaultListItem = ({ type, servlet, navpage, item, checkboxes, canDelete, nameFn, extraDetail, button }) => {
-	if (!navpage) navpage = servlet;
+const DefaultListItem = ({ type, item, checkboxes, canDelete, nameFn, extraDetail, button }) => {
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
@@ -398,8 +398,7 @@ const DefaultListItem = ({ type, servlet, navpage, item, checkboxes, canDelete, 
 /**
  * Like DefaultListItem, but with less details unless dev/debug=dev
  */
- export const SimplePrettyListItem = ({ type, servlet, navpage, item, checkboxes, canDelete, nameFn, extraDetail, button }) => {
-	if (!navpage) navpage = servlet;
+ export const SimplePrettyListItem = ({ type, item, checkboxes, canDelete, nameFn, extraDetail, button }) => {
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
