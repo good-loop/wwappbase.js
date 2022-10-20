@@ -18,6 +18,7 @@ import deepCopy from '../utils/deepCopy';
 import KStatus from '../data/KStatus';
 import Person from '../data/Person';
 import PromiseValue from 'promise-value';
+import SearchQuery from '../searchquery';
 
 /**
  * @param {Object} p
@@ -657,6 +658,8 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 
 
 /**
+ * Get a list of CRUD objects from the server
+ * 
  * @param {Object} p
  * @param {?String} p.q search query string
  * @param {?String[]} p.ids Convenience for a common use-case: batch fetching a set of IDs
@@ -675,7 +678,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 	if (ids && ids.length) {
 		q = SearchQuery.setPropOr(q, "id", ids).query;
 	}
-	const lpath =  getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});
+	const lpath = getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});
 	const pv = DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q, prefix, start, end, size, sort, domain, ...other});
 	});	

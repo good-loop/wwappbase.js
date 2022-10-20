@@ -6,6 +6,8 @@ import pivot from 'data-pivot';
 import md5 from 'md5';
 import { assert } from '../utils/assert';
 import { encURI } from '../utils/miscutils';
+import DataStore from './DataStore';
+import ServerIO from './ServerIOBase';
 
 /**
  * @param {Object} p
