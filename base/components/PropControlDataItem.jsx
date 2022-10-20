@@ -21,7 +21,7 @@ import DataItemBadge from './DataItemBadge';
  * TODO replace with DataItemBadge
  */
 const SlimListItem = ({item, onClick, noClick}) => {
-	return <DataItemBadge item={item} onClick={onClick} href={ ! noClick} />
+	return <DataItemBadge item={item} onClick={onClick} href={ ! noClick} />;
 };
 
 /**

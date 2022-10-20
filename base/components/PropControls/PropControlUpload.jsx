@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button, FormGroup, Label } from 'reactstrap';
 
-import { FormControl, registerControl } from '../PropControl';
+import { fakeEvent, FormControl, registerControl } from '../PropControl';
 import Misc from '../Misc';
 import { urlValidator } from './validators';
 import Icon from '../Icon';
 import LinkOut from '../LinkOut';
 import { space } from '../../utils/miscutils';
+import { notifyUser } from '../../plumbing/Messaging';
+import ServerIO from '../../plumbing/ServerIOBase';
 
 
 /** MIME type sets */
@@ -44,14 +46,6 @@ const acceptDescs = {
 	upload: 'file',
 	spreadsheetUpload: '.csv'
 };
-
-
-// Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it
-const fakeEvent = {
-	preventDefault: () => null,
-	stopPropagation: () => null,
-};
-
 
 /**
  * Warts are processed within AdUnit -- ccrop is done by local css, whilst noscale switches off the use of media.gl.com's scaling
@@ -131,7 +125,7 @@ const FontThumbnail = ({url}) => {
 		<p className="my-1" style={{fontFamily: 'Font-Upload-Test'}} contentEditable suppressContentEditableWarning>
 			The quick brown fox jumps over the lazy dog.
 		</p>
-	</>
+	</>;
 };
 
 
@@ -188,7 +182,9 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 					}
 					// Hack: Execute the onChange function explicitly to update value & trigger side effects
 					// (React really doesn't want to let us trigger it on the actual input element)
-					onChange && onChange({...fakeEvent, target: { value: url }});
+					if (onChange) {
+						onChange({...fakeEvent, target: { value: url }});
+					}
 				})
 				.fail(res => res.status == 413 && notifyUser(new Error(res.statusText)));
 				// Record start time of current upload

@@ -64,7 +64,7 @@ module.exports = {
 		"import/no-named-as-default-member": "off",
 		"import/no-named-as-default": "off",
 		"import/order": "warn",
-		"import/prefer-default-export": "warn",
+		"import/prefer-default-export":"off",
 		indent: ["off", "tab"],
 		"no-case-declarations": "off",
 		"no-console": "off",

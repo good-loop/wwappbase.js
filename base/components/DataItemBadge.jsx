@@ -23,6 +23,8 @@ const DataItemBadge = ({item, id, type, status=KStatus.PUBLISHED, onClick, href,
 	// if (href === true) { // TODO if `true` then put together a url
 	//	href = getDataItemLink(item);
 	// }
+	if ( ! href) href = null; // avoid a react error message
+	
 	return <Tag className="DataItemBadge" onClick={onClick} href={href} title={getName(item) || `ID: ${getId(item)}`}>
 	{getLogo(item) ? <img src={getLogo(item)} className="logo logo-sm" /> : <span className="d-inline-block logo logo-sm" />}{' '}
 	{getName(item) || getId(item)}

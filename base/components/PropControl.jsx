@@ -30,6 +30,7 @@ import { luminanceFromHex } from './Colour';
 import { nonce } from '../data/DataClass';
 
 import { countryListAlpha2 } from '../data/CountryRegion';
+import C from '../CBase';
 
 /**
    * Set the value and the modified flag in DataStore.
@@ -191,7 +192,7 @@ const diffProp = (path, prop) => {
 	if (draftVal === pubVal) return null;
 
 	return { status: KStatus.MODIFIED, pubVal, draftVal };
-}
+};
 
 /**
  * Show a black and yellow marker badge + popover detailing differences if a PropControl's value is different from the published version.
@@ -313,7 +314,6 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		delete props.onChange;
 	}
 
-
 	// On first render, replace empty-ish values (ie not explicit false or 0) with default, if given.
 	// Don't refactor this to useEffect - we want storeValue and value changed in-flow as well
 	const [firstRender, setFirstRender] = useState(true);
@@ -357,12 +357,12 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// Has an issue been reported?
 	// TODO refactor so validators and callers use setInputStatus
 	if (!error) {
-		const is = getInputStatus(proppath);
-		if (!is && required && storeValue === undefined) {
+		const inputStatus = getInputStatus(proppath);
+		if (!inputStatus && required && storeValue === undefined) {
 			setInputStatus({ path: proppath, status: 'error', message: 'Missing required input' });
 		}
-		if (is && is.status === 'error') {
-			error = is.message || 'Error';
+		if (inputStatus && inputStatus.status === 'error') {
+			error = inputStatus.message || 'Error';
 		}
 	}
 
@@ -1038,12 +1038,25 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'Key', v
 };
 
 
+/**
+ * Note: `date` vs `datetime-local`
+ * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
+ * 
+ * @param {*} param0 
+ * @returns 
+ */
 const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }) => {
 	// Roll back to native editor on 27/04/2022
 	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
-	if (!is(rawValue) && storeValue) {
+	if ( ! is(rawValue) && storeValue) {
 		rawValue = Misc.isoDate(storeValue);
+	}
+
+	// Strip out the time part!
+	// TODO support datetime-local
+	if (rawValue && rawValue.includes("T")) {
+		rawValue = rawValue.substr(0, rawValue.indexOf("T"));
 	}
 
 	return (<div>
@@ -1371,6 +1384,14 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 
 	if (validator) validatorForType[type] = validator;
 	if (rawToStore) rawToStoreForType[type] = rawToStore;
+};
+
+// Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it
+// TODO Copy-paste from PropControlUpload.jsx - factor out?
+export const fakeEvent = {
+	preventDefault: () => null,
+	stopPropagation: () => null,
+	cooked: true, // Signal PropControl wrapper code NOT to call setRawValue
 };
 
 
