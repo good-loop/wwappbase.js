@@ -371,6 +371,18 @@ span.preview .DataItemBadge {
 		height: 90vh; // fixes modal being smaller than code blocks
 	}
 }
+
+// Toggle switch control
+.form-group .toggle-switch {
+	.btn {
+		width: 1.5rem; // fix size of slider (inner .btn)
+		transition: margin 0.1s linear; // Slide smoothly
+		pointer-events: none; // Container to catch clicks, take focus, have "active" highlight
+	}
+}
+
+
+
 // Badge to mark a PropControl with unpublished edits
 .btn.data-modified {
 	background: repeating-linear-gradient(-45deg, #000, #000 4px, #ffc107 4px, #ffc107 8px);

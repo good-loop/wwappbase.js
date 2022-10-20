@@ -11,7 +11,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 // FormControl removed in favour of basic <inputs> as that helped with input lag
 // TODO remove the rest of these
-import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody, PopoverHeader, Table } from 'reactstrap';
+import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody, PopoverHeader, Table, Badge } from 'reactstrap';
 import _ from 'lodash';
 import Enum from 'easy-enums';
 import '../style/prism-dark.less';
@@ -228,15 +228,18 @@ const DiffWarning = ({path, prop, className}) => {
 	let pBody = null;
 	if (showPopover) {
 		const {pubVal, draftVal} = diff;
+		
+		const truncPubVal = pubVal.substr ? ellipsize(pubVal, 100) : pubVal;
+		const truncDraftVal = draftVal.substr ? ellipsize(draftVal, 100) : draftVal;
 		pBody = <PopoverBody>
 			<div className="diff-line mb-1">
-				<strong>Old</strong>
-				<code className="diff-val mx-1" title={ellipsize(pubVal, 100)}>{JSON.stringify(pubVal)}</code>
+				<strong>Pub</strong>
+				<code className="diff-val mx-1" title={truncPubVal}>{JSON.stringify(pubVal)}</code>
 				<CopyToClipboardButton size="sm" text={pubVal} />
 			</div>
 			<div className="diff-line">
-				<strong>New</strong>
-				<code className="diff-val mx-1" title={ellipsize(draftVal, 100)}>{JSON.stringify(draftVal)}</code>
+				<strong>Edit</strong>
+				<code className="diff-val mx-1" title={truncDraftVal}>{JSON.stringify(draftVal)}</code>
 				<CopyToClipboardButton size="sm" text={pubVal} />
 			</div>
 		</PopoverBody>;
@@ -250,6 +253,8 @@ const DiffWarning = ({path, prop, className}) => {
 		</Popover>
 	</>;
 };
+
+
 
 
 /**
@@ -310,15 +315,18 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 
 
 	// On first render, replace empty-ish values (ie not explicit false or 0) with default, if given.
-	useEffect(() => {
-		if (!dflt) return;
-		// if (type === 'select') debugger;
+	// Don't refactor this to useEffect - we want storeValue and value changed in-flow as well
+	const [firstRender, setFirstRender] = useState(true);
+	if (firstRender && dflt !== undefined) {
 		if (storeValue === undefined || storeValue === null || storeValue === '') {
 			storeValue = dflt;
 			value = dflt;
 			setTimeout(() => DataStore.setValue(proppath, dflt)); // Defer in timeout to avoid "update during render" warnings
 		}
-	}, []); // 1st time only
+		setTimeout(() => setFirstRender(false));
+	}
+	
+	
 
 	// Temporary hybrid form while transitioning to all-modular PropControl structure
 	// newValidator produces an object compatible with setInputStatus
@@ -599,11 +607,6 @@ const PropControl2 = (props) => {
 		</Label>;
 	} // ./checkbox
 
-	// HACK: Yes-no (or unset) radio buttons? (eg in the Gift Aid form)
-	if (type === 'yesNo') {
-		return <PropControlYesNo path={path} prop={prop} value={storeValue} inline={inline} saveFn={saveFn} />
-	}
-
 	// @deprecated: prefer PropControlEntrySet - only known use of this is portal, AdDesignExtraControls
 	if (type === 'keyvalue') {
 		return <MapEditor {...props} />
@@ -666,7 +669,6 @@ const PropControl2 = (props) => {
 
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={svalue} />;
 	}
-
 	// date
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
 	//  && value && ! value.match(/dddd-dd-dd/)
@@ -885,53 +887,6 @@ const numFromAnything = v => {
 		v = v.replace(/^(-)?[£$\u20AC]/, "$1");
 	}
 	return parseFloat(v);
-};
-
-
-
-/**
-   * yes/no radio buttons (kind of like a checkbox)
-   *
-   * @param value {?Boolean}
-   */
-const PropControlYesNo = ({ path, prop, value, saveFn, className }) => {
-	// NB: try to spot bad code/values -- beware of truthy/falsy here
-	if (value && !_.isBoolean(value)) {
-		console.error("PropControlYesNo - value not a proper boolean!", prop, value);
-		// if (value === 'yes') value = true;
-		// convert string to false
-		if (value === 'no' || value === 'false') value = false;
-		value = !!value; // its boolean now
-	}
-	// handle yes/no -> true/false
-	const onChange = e => {
-		// String yes/no -> boolean
-		let newValue;
-		if (e.target.value === 'yes') newValue = true;
-		else if (e.target.value === 'no') newValue = false;
-		else newValue = undefined;
-
-		DSsetValue(path.concat(prop), newValue);
-		if (saveFn) saveFn({ event: e, path, prop, newValue });
-	};
-
-	// Null/undefined doesn't mean "no"! Don't check either option until we have a value.
-	const noChecked = value === false;
-	// NB: checked=!!value avoids react complaining about changing from uncontrolled to controlled.
-	return <>
-		<FormGroup check inline>
-			<Label check>
-				<Input type="radio" value="yes" name={prop} onChange={onChange} checked={!!value} />
-				{' '}Yes
-			</Label>
-		</FormGroup>
-		<FormGroup check inline>
-			<Label check>
-				<Input type="radio" value="no" name={prop} onChange={onChange} checked={noChecked} />
-				{' '}No
-			</Label>
-		</FormGroup>
-	</>;
 };
 
 
@@ -1244,8 +1199,8 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
    */
 PropControl.KControlType = new Enum(
 	"textarea html text search select radio password email color checkbox range"
-	// + " img imgUpload videoUpload bothUpload url" // Removed to avoid double-add
-	+ " yesNo location date year number arraytext keyset entryset address postcode json"
+	// + " img imgUpload videoUpload bothUpload url yesNo" // Removed to avoid double-add
+	+ " location date year number arraytext keyset entryset address postcode json"
 	// some Good-Loop data-classes
 	+ " XId keyvalue"
 	// My Data 
