@@ -256,7 +256,8 @@ export const setNavContext = (type, id, processLogo) => {
 	CONTEXT[type] = id;
 	if ( ! processLogo) return;
 	// process for 2nd logo
-	let pvAdvertiser = id && getDataItem({type, id, status:KStatus.PUB_OR_DRAFT, swallow:true});
+	// NB: bug Oct 2022: KStatus.PUB_OR_DRAFT was over-writing draft data
+	let pvAdvertiser = id && getDataItem({type, id, status:KStatus.PUBLISHED, swallow:true});
 	const advertiser = pvAdvertiser && pvAdvertiser.value;	
 	if ( ! advertiser) {		
 		setNavProps({brandLink:null,brandLogo:null,brandName:null}); // reset blank
