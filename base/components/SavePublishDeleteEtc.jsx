@@ -61,7 +61,8 @@ const saveDraftFnFactory = ({type,key}) => {
 		sdfn = _.debounce(
 			({ type, id, item, previous }) => {
 				// console.log("...saveDraftFn :)");
-				let pv = saveEdits({ type, id, item, previous });
+				let pv = saveEdits({ type, id, item, previous, swallow });
+				// TODO how can we capture errors and show them on the save button??
 				return true;
 			}, DEBOUNCE_MSECS
 		);

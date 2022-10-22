@@ -263,11 +263,11 @@ const errorPath = ({type, id, action}) => {
  * @param {Object} p
  * @returns PromiseValue(DataItem)
  */
-const saveEdits = ({type, id, item, previous}) => {
+const saveEdits = ({type, id, item, previous, swallow}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
-	return crud({type, id, action: 'save', item, previous});
+	return crud({type, id, action: 'save', item, previous, swallow});
 };
 ActionMan.saveEdits = saveEdits;
 
