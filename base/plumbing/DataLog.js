@@ -63,10 +63,51 @@ const pivotDataLogData = (data, breakdowns) => {
 	let evttotaldata = pivot(data, `by_${b0}.buckets.$bi.{key, count}`, '$key.total.$count');
 	let data4 = _.merge(data3, evttotaldata);
 	return data4;
-}
+};
+
+
+
+/**
+ * Convert from "ElasticSearch format" (buckets with a key) into `{key: value}` format
+ * @param {Object} data Output from getDataLogData()
+ * @param {!String} breakdown e.g. 'brand/campaign{"co2":"sum"}'
+ * @returns {Object[]} e.g. [{brand, campaign, count, co2}, ...]
+ */
+ const pivotDataLogToRows = (data, breakdown) => {
+	let ei = breakdown.indexOf("{");
+	let b = ei===-1? breakdown : breakdown.substring(0, ei);
+	let bits = b.split("/");
+	// NB: multiple keys named "key" means pivot() wont work
+	let rows = pivotDataLogToRows2(data, bits);
+	console.log("pivotDataLogToRows", data, breakdown, rows);
+	return rows;
+};
+
+const pivotDataLogToRows2 = (data, bits) => {
+	if ( ! bits.length) {
+		return [{...data}]; // copy so we can safely change "key" to eg "campaign"
+	}
+	let bit = bits[0];
+	let byKey = "by_"+bits.join("_");
+	let byBit = data[byKey];
+	let buckets = byBit.buckets;
+	let rows = [];
+	const bits2 = bits.slice(1);
+	for(let bi=0; bi<buckets.length; bi++) {
+		let bucket = byBit.buckets[bi];
+		let ki = bucket.key;
+		let rowsi = pivotDataLogToRows2(bucket, bits2);		
+		rowsi.forEach(row => {
+			delete row.key;
+			row[bit] = ki;
+			rows.push(row);
+		});
+	}
+	return rows;
+};
 
 
 export {
-	getDataLogData, pivotDataLogData
+	getDataLogData, pivotDataLogData, pivotDataLogToRows
 };
 
