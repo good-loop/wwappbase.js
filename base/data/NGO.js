@@ -23,6 +23,8 @@ NGO.logo = ngo => ngo.logo; // placeholder by cause area?
 
 NGO.imageList = (ngo) => ngo.imageList;
 
+NGO.t4gTheme = (ngo) => ngo.t4gTheme;
+
 /**
  * displayName or name or ID
  * @param {NGO} ngo 
