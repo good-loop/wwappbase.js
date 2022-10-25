@@ -11,6 +11,7 @@ import NGO from './NGO';
 import KStatus from './KStatus';
 import { getDataLogData, pivotDataLogData } from '../plumbing/DataLog';
 import SearchQuery from '../searchquery';
+import ServerIO from '../plumbing/ServerIOBase';
 
 /**
  * See Branding.java
@@ -69,7 +70,8 @@ C.DEFAULT_AD_ID = 'default-advert';
  * Note: race condition on app loading - this will be null for a second.
  */
 Advert.defaultAdvert = () => {
-	const pvAd = getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status: KStatus.PUBLISHED});
+	let swallow = C.SERVER_TYPE !== 'test'; // NB: local will often fail; production shouldn't, but should fail quietly if it does
+	const pvAd = getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status: KStatus.PUBLISHED, swallow});
 	return pvAd.value;
 };
 
@@ -98,7 +100,7 @@ Advert.campaign = ad => ad.campaign;
 Advert.budget = ad => {
 	let tli = Advert.topLineItem(ad);
 	return tli? tli.budget : null;
-}
+};
 
 Advert.topLineItem = ad => ad.topLineItem;
 
@@ -158,4 +160,4 @@ const KAdFormat = new Enum("video social banner");
 export default Advert;
 export {
 	KAdFormat
-}
+};

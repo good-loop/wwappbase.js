@@ -745,7 +745,7 @@ const setFocus = (proppath) => {
 const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, inline, ...otherStuff }) => {
 	// NB inline does nothing here?
 	// NB: pull off internal attributes so the select is happy with rest
-	const { className, recursing, modelValueFromInput, ...rest } = otherStuff;
+	const { className, recursing, modelValueFromInput, label, ...rest } = otherStuff;
 	assert(options, 'PropControl: no options for select ' + [prop, otherStuff]);
 	assert(options.map, 'PropControl: options not an array ' + options);
 	options = _.uniq(options);

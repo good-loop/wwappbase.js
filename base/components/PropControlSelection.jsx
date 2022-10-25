@@ -4,13 +4,12 @@
  * 
  */
 
-import React from 'react';
 
+import React, { useState } from 'react';
 import PropControl, {registerControl, DSsetValue} from './PropControl';
 import DataStore from '../plumbing/DataStore';
 import { Badge, Form, FormGroup, Input, Label } from 'reactstrap';
 import CloseButton from './CloseButton';
-import { useState } from 'react';
 import { asArray, labeller } from '../utils/miscutils';
 import { assert } from '../utils/assert';
 
