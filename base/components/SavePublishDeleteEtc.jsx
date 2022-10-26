@@ -61,7 +61,7 @@ const saveDraftFnFactory = ({type,key}) => {
 		sdfn = _.debounce(
 			({ type, id, item, previous }) => {
 				// console.log("...saveDraftFn :)");
-				let pv = saveEdits({ type, id, item, previous, swallow });
+				let pv = saveEdits({ type, id, item, previous, swallow:true });
 				// TODO how can we capture errors and show them on the save button??
 				return true;
 			}, DEBOUNCE_MSECS
@@ -81,7 +81,7 @@ const saveDraftFnFactory = ({type,key}) => {
 const autoPublishFn = _.debounce(
 	({ type, id, path, item }) => {
 		if (!type || !id) {
-			let item = item || DataStore.getValue(path);
+			item = item || DataStore.getValue(path);
 			id = id || getId(item);
 			type = type || getType(item);
 		}
@@ -260,7 +260,7 @@ const SavePublishDeleteEtc = ({
 				if (newLocn == locn) return;
 				goto(newLocn);
 				notifyUser("Switched editor to new version: "+(getName(newItem) || getId(newItem)));				
-			}
+			};
 		}
 		ActionMan.saveAs({ type, id, onChange});
 		setSaveButtonDropdownOpen(false);
@@ -338,4 +338,4 @@ export {
 	confirmUserAction,
 	autoPublishFn as publishDraftFn,
 	saveDraftFnFactory
-}
+};
