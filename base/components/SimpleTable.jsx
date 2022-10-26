@@ -118,7 +118,7 @@ class TableSettings {
 	
 	hasCollapse;
 	
-	/** @param {?Boolean} If true, offer csv download */
+	/** @param {?Boolean|String} If true, offer csv download. See also DownloadCSVLink. Set to "top" to position the link above the table. */
 	hasCsv;
 
 	/**
@@ -244,6 +244,7 @@ const SimpleTable = (props) => {
 				value={tableSettings.filter || ''}
 				onChange={filterChange}
 			/></div> : null}
+			{/* NB outside scroller */ tableSettings.hasCsv==="top" && <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div>}
 			<div className='scroll-div' onScroll={onScroll} >
 				<table className={space("table", "position-relative", tableSettings.tableClass)}>
 					<THead {...{ visibleColumns, tableSettings, headerRender, topRow, dataTree}} />
@@ -259,7 +260,7 @@ const SimpleTable = (props) => {
 						colSpan={visibleColumns.length} />
 				</table>
 			</div>
-			{/* NB outside scroller */ tableSettings.hasCsv && <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div>}
+			{/* NB outside scroller */ tableSettings.hasCsv && tableSettings.hasCsv!=="top" && <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div>}
 		</div>
 	);
 } // ./SimpleTable
@@ -905,7 +906,7 @@ const csvEscCell = s => {
 };
 
 /**
- * 
+ * A link tag
  * @param {Object} p
  * @param {!Column[]|string[]} p.columns
  * @param {!Object[]} p.data
@@ -917,4 +918,4 @@ const DownloadCSVLink = ({columns, data, name, children}) => {
 };
 
 export default SimpleTable;
-export { CellFormat, Column, DownloadCSVLink };
+export { CellFormat, Column, DownloadCSVLink, TableSettings };
