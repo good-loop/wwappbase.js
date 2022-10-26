@@ -79,7 +79,7 @@ const pivotDataLogData = (data, breakdowns) => {
 	let bits = b.split("/");
 	// NB: multiple keys named "key" means pivot() wont work
 	let rows = pivotDataLogToRows2(data, bits);
-	console.log("pivotDataLogToRows", data, breakdown, rows);
+	// console.log("pivotDataLogToRows", data, breakdown, rows);
 	return rows;
 };
 
