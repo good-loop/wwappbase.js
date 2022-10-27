@@ -21,7 +21,7 @@ const svgClass = (logoUrl) => {
  * @param {Object} p
  * @param {DataClass} p.item
  */
-const Logo = ({item, className, size, style, nameCap = 24}) => {
+const Logo = ({item, className, size, style, nameCap = 24, logoOnly}) => {
 	if (!item) return null;
 	assert(item.id || item.name === "Default Advertiser", 'Not a DataItem', item);
 
@@ -33,7 +33,8 @@ const Logo = ({item, className, size, style, nameCap = 24}) => {
 	const classes = space('logo', size && `logo-${size}`, className, /*svgClass(branding.logo)*/);
 
 	// fallback to entity name
-	if (!branding.logo) {
+	if ( ! branding.logo) {
+		if (logoOnly) return null;
 		return <span className={classes} style={style}>{altText}</span>;
 	}
 
