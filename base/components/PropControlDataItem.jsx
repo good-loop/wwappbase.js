@@ -131,7 +131,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 				</div>
 			</Col>
 			<Col xs={4}>
-				{canCreate && rawValue && (
+				{canCreate && rawValue && ! pvDataItem.value && (
 					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={({item}) => doSet(item)} />
 				)}
 			</Col>
