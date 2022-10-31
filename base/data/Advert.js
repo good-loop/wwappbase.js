@@ -155,7 +155,8 @@ Advert.viewcountByCampaign = ads => {
 	return viewcount4campaign;
 };
 
-const KAdFormat = new Enum("video social banner");
+// NB: banner=display
+const KAdFormat = new Enum("display video social");
 
 export default Advert;
 export {

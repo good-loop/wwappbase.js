@@ -95,7 +95,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	// (default create behaviour) the input names the object
 	if (rawValue && createProp) {
 		if (!base) base = {};
-		base[createProp] = rawValue
+		base[createProp] = rawValue;
 	}
 	let baseId = base && base.id;
 	if (baseId) delete base.id; // manage CreateButton's defences
@@ -119,7 +119,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 			<>
 				<Col xs={canCreate ? 8 : 12}>
 				<div className="dropdown-sizer">
-					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
+					{ ! pvDataItem.value && <Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />}
 					{rawValue && showLL && <ListLoad className="items-dropdown card card-body" hideTotal type={itemType} status={status} 
 						domain={domain} filter={rawValue} unwrapped sort={sort} 
 						ListItem={SlimListItem}
