@@ -60,7 +60,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 			window.clearTimeout(prevTimeout);
 			return window.setTimeout(() => setShowLL(false), 200);
 		});
-	}
+	};
 
 	let pvDataItem = {};
 	if (rawValue || (storeValue && !embed)) {
