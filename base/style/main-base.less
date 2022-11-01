@@ -63,7 +63,7 @@ a {
 }
 .btn-default:hover, .btn-default:focus, .btn-default:active {
 	color: #333;
-    background-color: #e6e6e6;
+	background-color: #e6e6e6;
 }
 .btn-default:hover {
 	border-color: #adadad;
@@ -73,7 +73,11 @@ a {
 }
 .btn-default:active {
 	background-image: none;
-    border-color: #adadad;
+	border-color: #adadad;
+}
+// Generic for concave button
+.btn .inset {
+	box-shadow: 0px 2px 3px rgba(0,0,0,0.3) inset;
 }
 /* avoid large X with odd spacing on badges */
 .badge .close {
@@ -81,7 +85,7 @@ a {
 }
 // @deprecated Backwards compatibility: BS4 has dropped pull-left in favour of float-left
 .pull-left {
-    float: left;
+	float: left;
 }
 .pull-right {
 	float: right;
