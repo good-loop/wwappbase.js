@@ -175,24 +175,30 @@ const diffProp = (path, prop) => {
 	// If the draft doesn't exist it can't have unpublished changes.
 	if (!pvDraft.value) return null;
 
-	if (prop === 'customcss') {
-		console.log('customcss');
-	}
-
-	// Never been published? Everything's unpublished changes!
-	if (!pvPub.value) {
-		return { status: KStatus.DRAFT };
-	}
+	// Never been published? It's ALL unpublished changes!
+	if (!pvPub.value) return { status: KStatus.DRAFT };
 
 	// OK, so what's the actual difference for this prop?
 	const draftVal = DataStore.getValue([...path, prop]);
 	const pubVal = DataStore.getValue(['data', ...path.slice(1), prop]); // "data", not "published"
 
-	// No difference?
+	// No difference? (Cheap identity / implicit string-comparison check)
 	if (draftVal === pubVal) return null;
+	// No difference? (More expensive deep-compare)
+	if (_.isEqual(draftVal, pubVal)) return null;
 
 	return { status: KStatus.MODIFIED, pubVal, draftVal };
 };
+
+
+/** Longhand string representation of a value for disambiguating diffs. */
+const diffStringify = val => {
+	// Anything with explicitly defined toString should use it...
+	if (val.hasOwnProperty('toString')) return val.toString();
+	// Stringify kills the [Object object] problem & explicitly differentiates e.g. 123 vs "123"
+	return JSON.stringify(val);
+}
+
 
 /**
  * Show a black and yellow marker badge + popover detailing differences if a PropControl's value is different from the published version.
@@ -228,20 +234,24 @@ const DiffWarning = ({path, prop, className}) => {
 	// This processing could get expensive, don't do it if the popover is closed
 	let pBody = null;
 	if (showPopover) {
-		const {pubVal, draftVal} = diff;
+		const pubValStr = diffStringify(diff.pubVal);
+		const draftValStr = diffStringify(diff.draftVal);
+		const pubValShort = ellipsize(pubValStr, 100);
+		const draftValShort = ellipsize(draftValStr, 100);
+		let checkClipboardWarning = (pubValShort === draftValShort) ? (
+			' (Differences outside this excerpt - use clipboard button to inspect)'
+		) : '';
 		
-		const truncPubVal = pubVal.substr ? ellipsize(pubVal, 100) : pubVal;
-		const truncDraftVal = draftVal.substr ? ellipsize(draftVal, 100) : draftVal;
 		pBody = <PopoverBody>
 			<div className="diff-line mb-1">
 				<strong>Pub</strong>
-				<code className="diff-val mx-1" title={truncPubVal}>{JSON.stringify(pubVal)}</code>
-				<CopyToClipboardButton size="sm" text={pubVal} />
+				<code className="diff-val mx-1" title={pubValShort + checkClipboardWarning}>{pubValShort}</code>
+				<CopyToClipboardButton size="sm" text={pubValStr} />
 			</div>
 			<div className="diff-line">
 				<strong>Edit</strong>
-				<code className="diff-val mx-1" title={truncDraftVal}>{JSON.stringify(draftVal)}</code>
-				<CopyToClipboardButton size="sm" text={pubVal} />
+				<code className="diff-val mx-1" title={draftValShort + checkClipboardWarning}>{draftValShort}</code>
+				<CopyToClipboardButton size="sm" text={draftValStr} />
 			</div>
 		</PopoverBody>;
 	}
