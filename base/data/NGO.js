@@ -21,6 +21,10 @@ NGO.anyDescription = (ngo) => NGO.description(ngo) || NGO.summaryDescription(ngo
 
 NGO.logo = ngo => ngo.logo; // placeholder by cause area?
 
+NGO.altlogo = ngo => ngo.altlogo;
+
+NGO.useAltLogo = ngo => ngo.useAltLogo;
+
 NGO.imageList = (ngo) => ngo.imageList;
 
 NGO.t4gTheme = (ngo) => ngo.t4gTheme;
