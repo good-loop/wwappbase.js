@@ -229,9 +229,9 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 			const newWart = (percent == 100) ? '' : `ccrop:${percent}`;
 			const newUrl = hashWart(storeValue, /ccrop:\d+/, newWart);
 			onChange && onChange({...fakeEvent, target: { value: newUrl }});
-		}
+		};
 		const wart = storeValue && storeValue.match(/#.*ccrop:(\d+)/);
-		const value = (wart && wart[1]) || 100;
+		const cropValue = (wart && wart[1]) || 100;
 
 		const events = {
 			onChange: event => updateWart(event.target.value),
@@ -241,7 +241,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		extraControls.push(
 			<FormGroup inline key='circleCrop'>
 				<Label for="ccrop">Scale in circle:</Label>{' '}
-				<FormControl style={{width: '4em', display: 'inline'}} name="ccrop" type="number" value={value} {...events} /> %
+				<FormControl style={{width: '4em', display: 'inline'}} name="ccrop" type="number" value={cropValue} {...events} /> %
 			</FormGroup>
 		);
 	}
@@ -249,7 +249,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 	let preview = null;
 	if (uploading) {
 		// Upload in progress: show % done report
-		preview = <UploadProgress {...uploading} />
+		preview = <UploadProgress {...uploading} />;
 	} else if (storeValue) {
 		// File already uploaded: show media preview if possible
 		// While the circle-crop control is focused, preview its effects by overlaying a scaled circle
