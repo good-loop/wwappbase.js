@@ -119,7 +119,7 @@ module.exports = {
 		"object-property-newline": "off",
 		"object-shorthand": "off",
 		"one-var-declaration-per-line": "off",
-		"one-var": "warn",
+		"one-var": "off",
 		"operator-assignment": "off",
 		"operator-linebreak": "off",
 		"jsx-a11y/anchor-has-content": "warn", // what about in-page name-only anchors?
