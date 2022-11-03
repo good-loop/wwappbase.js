@@ -247,9 +247,9 @@ const MassActionToolbar = ({ type, canDelete, items }) => {
 	// checked count
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let checked4id = DataStore.getValue(checkedPath);
-	let checkCnt = 0 // TODO
+	let checkCnt = 0; // TODO
 	if (!checkCnt) return null; // TODO
-	return (<div class="btn-toolbar" role="toolbar" aria-label="Toolbar for checked items">
+	return (<div className="btn-toolbar" role="toolbar" aria-label="Toolbar for checked items">
 		{checkCnt} checked of {items.length}
 	</div>);
 };

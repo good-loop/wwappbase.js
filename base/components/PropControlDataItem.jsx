@@ -85,6 +85,8 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 		let mv = embed? Object.assign({}, item) : id;
 		if (modelValueFromInput) mv = modelValueFromInput(mv, type, {}, storeValue);
 		DSsetValue(proppath, mv, true);
+		// hide ListLoad
+		setShowLL(false);
 	};
 
 	const doClear = () => {
