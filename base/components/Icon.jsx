@@ -1,4 +1,5 @@
 import React from 'react';
+import C from '../CBase';
 import { space } from '../utils/miscutils';
 
 /**
