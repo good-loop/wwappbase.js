@@ -15,6 +15,13 @@ const PropControlDt = ({prop, storeValue, onChange, unitOptions = Object.keys(la
 	// Default to unit=SECOND if available
 	const [unitVal, setUnitVal] = useState(storeValue.unit || (() => unitOptions.find(a => a === 'SECOND') ? 'SECOND' : unitOptions[0]));
 
+	// useEffect makes sure that _onChange fires AFTER state update, to prevent updates being out of sync
+	useEffect (() => {
+		// Ignore no change - will fire on first render otherwise
+		if (nVal === storeValue.n && unitVal === storeValue.unit) return;
+		_onChange();
+	}, [nVal, unitVal]);
+	
 	// When the inputs change, synthesise an input-change event to pass up to PropControl and DataStore
 	const _onChange = () => {
 		const newVal = { ...storeValue };
@@ -27,8 +34,8 @@ const PropControlDt = ({prop, storeValue, onChange, unitOptions = Object.keys(la
 	const unitDisable = unitOptions.length <= 1;
 
 	return <InputGroup>
-		<Input type="number" name={`${prop}-n`} value={nVal} onChange={(e) => { setNVal(e.target.value); _onChange(); }} />
-		<Input type="select" name={`${prop}-unit`} value={unitVal} onChange={(e) => { setUnitVal(e.target.value); _onChange(); }} disabled={unitDisable}>
+		<Input type="number" name={`${prop}-n`} value={nVal} onChange={(e) => { setNVal(e.target.value); }} />
+		<Input type="select" name={`${prop}-unit`} value={unitVal} onChange={(e) => { setUnitVal(e.target.value); }} disabled={unitDisable}>
 			{unitOptions.map(option => <option key={option} value={option}>{label4TUnit[option] || option}</option>)}
 		</Input>
 	</InputGroup>;
