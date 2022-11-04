@@ -38,12 +38,13 @@ ChartJS.register(
  * @param {Object} p
  * @param {?number} p.width Set to null to inherit See https://github.com/reactchartjs/react-chartjs-2/issues/362
  * @param {?number} p.height Set to null to inherit
- * @param {Object} p.data { labels:string[], datasets:[] }
+ * @param {Object} p.data { labels:string[], datasets:[{label, data:number[]}] } The labels and data arrays get paired up.
  * @param {Object} p.datalabels See https://www.npmjs.com/package/chartjs-plugin-datalabels
  * @param {?number} p.maxy max y scale (usually this is auto-fitted from the data)
+ * @param {Object} p.options {scales: {x, y}, plugins}
  * @returns 
  */
-const NewChartWidget = ({type = 'line', datalabels, className, style, width, height, miny, maxy, ...props}) => {
+const NewChartWidget = ({type = 'line', data, datalabels, className, style, width, height, miny, maxy, ...props}) => {
 	props.options = props.options || {};
 	props.options.maintainAspectRatio = props.options.maintainAspectRatio || false; // why??
 	if (datalabels) {
@@ -65,7 +66,7 @@ const NewChartWidget = ({type = 'line', datalabels, className, style, width, hei
 	let Chart = {line:Line, pie:Pie, bar:Bar, scatter:Scatter}[type];
 	
 	return <div className={space("NewChartWidget position-relative", className)} style={style}>
-		<Chart width={width} height={height} {...props} />
+		<Chart data={data} width={width} height={height} {...props} />
 	</div>;
 };
 
