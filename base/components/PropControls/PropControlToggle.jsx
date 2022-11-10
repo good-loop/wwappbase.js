@@ -6,7 +6,7 @@ import { DSsetValue, registerControl } from '../PropControl';
 
 
 // Default option setup for a yes/no button.
-const dfltLeft = { colour: 'danger', label: 'No', value: false };
+const dfltLeft = { colour: 'secondary', label: 'No', value: false }; // NB: the red 'danger' colour was a bit too alarming for "off"
 const dfltRight = { colour: 'success', label: 'Yes', value: true };
 const fixBool = {yes: 'true', no: 'false'};
  
