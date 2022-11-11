@@ -51,7 +51,8 @@ class Column extends DataClass {
 	type;
 	/** @type {?String|Function} Text to show as help. If a function, works like style */
 	tooltip;
-
+	/** @type {?Boolean|Number} override value for the total row (if there is one). false to show blank. unset for auto-sum. */
+	total;
 	/** @type {?Object|Function} custom css styling. If a function, it does (cellValue, item, column) -> css-style-object */
 	style;
 
@@ -789,15 +790,28 @@ const calcStyle = ({ style, cellValue, item, row, depth, column }) => {
 	return style;
 };
 
+/**
+ * 
+ * @param {Object} p
+ * @param {Column} p.column
+ * @returns 
+ */
 const TotalCell = ({ dataTree, column }) => {
+	if (column.total === false) {
+		return <td></td>;
+	}
 	// sum the data for this column
 	let total = 0;
-	const getter = sortGetter(column);
-	Tree.mapByValue(dataTree, rItem => {
-		const v = getter(rItem);
-		// NB: 1* to force coercion of numeric-strings
-		if (isNumeric(v)) total += 1 * v;
-	});
+	if (column.total) {
+		total = column.total;
+	} else {
+		const getter = sortGetter(column);
+		Tree.mapByValue(dataTree, rItem => {
+			const v = getter(rItem);
+			// NB: 1* to force coercion of numeric-strings
+			if (isNumeric(v)) total += 1 * v;
+		});
+	}
 	if (!total) return <td></td>;
 	// ??custom cell render might break on a Number. But Money seems to be robust about its input.
 	const render = column.Cell || defaultCellRender;
