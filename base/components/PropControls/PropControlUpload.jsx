@@ -246,23 +246,35 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		);
 	}
 
-	let preview = null;
+	let preview = [];
 	if (uploading) {
 		// Upload in progress: show % done report
-		preview = <UploadProgress {...uploading} />;
+		preview.push(<UploadProgress {...uploading} />);
 	} else if (storeValue) {
 		// File already uploaded: show media preview if possible
+		const thumbProps = { className, background: bg, url: storeValue };
+		// Mark image and video URLs with a hash-wart denoting aspect ratio to improve pre-load size guessing
+		if (['imgUpload', 'videoUpload', 'bothUpload'].includes(type)) {
+			const receiveSize = (w, h) => {
+				if (!w || !h) return; // Can't read intrinsic size? Don't do anything
+				const newUrl = hashWart(storeValue, /aspect:\d+:\d+/, `aspect:${w}:${h}`);
+				if (newUrl === storeValue) return; // Already correct
+				onChange && onChange({...fakeEvent, target: { value: newUrl }});
+			};
+			// for images - when fired on a <video>, will send undefined/undefined & have no effect
+			thumbProps.onLoad = (e) => receiveSize(e.target.naturalWidth, e.target.naturalHeight);
+			// for videos - won't fire on an <img>
+			thumbProps.onCanPlay = (e) => receiveSize(e.target.videoWidth, e.target.videoHeight);
+		}
+		preview.push(<Thumbnail {...thumbProps} />);
+		
 		// While the circle-crop control is focused, preview its effects by overlaying a scaled circle
 		let circleOverlay = null;
 		if (previewCrop) {
 			const wart = storeValue && storeValue.match(/#.*ccrop:(\d+)/);
 			const ccVal = (wart && wart[1]) || 100;
-			circleOverlay = <div style={{...circleStyle, width: `${10000/ccVal}%`, height: `${10000/ccVal}%`}} />;
+			preview.push(<div style={{...circleStyle, width: `${10000/ccVal}%`, height: `${10000/ccVal}%`}} />)
 		}
-		preview = <>
-			<Thumbnail className={className} background={bg} url={storeValue} />
-			{circleOverlay}
-		</>;
 	}
 
 	return (
@@ -289,7 +301,7 @@ const baseSpec = {
 };
 
 // Externally these are identical - they just sniff their own type internally & change behaviour on that basis.
-registerControl({type: 'imgUpload', ...baseSpec });
+registerControl({ type: 'imgUpload', ...baseSpec });
 registerControl({ type: 'videoUpload', ...baseSpec });
 registerControl({ type: 'bothUpload', ...baseSpec });
 // Fonts!

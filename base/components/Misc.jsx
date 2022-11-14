@@ -457,7 +457,7 @@ Misc.isoDate = (d) => d? asDate(d).toISOString().replace(/T.+/, '') : null;
  * }
  * @return {JSX}
  */
-Misc.ImgThumbnail = ({url, alt, background, style, className = ''}) => {
+Misc.ImgThumbnail = ({url, alt, background, style, className = '', ...rest}) => {
 	if (!url) return null;
 	// add in base (NB this works with style=null)
 	style = Object.assign({width: '100px', height: '100px', objectFit: 'contain', padding: 0}, style);
@@ -466,12 +466,12 @@ Misc.ImgThumbnail = ({url, alt, background, style, className = ''}) => {
 	if (!suppressAccWarnings && (!alt || !alt.length)) {
 		console.warn("Image with no alt text! All images must have alt text for accessibility.");
 	}
-	return <img className={space('img-thumbnail',className)} style={style} alt={alt || 'thumbnail'} src={url} />;
+	return <img className={space('img-thumbnail',className)} style={style} alt={alt || 'thumbnail'} src={url} {...rest} />;
 };
 
 
-Misc.VideoThumbnail = ({url, width=200, height=150, controls=true}) => url ? (
-	<video className="video-thumbnail" width={width} height={height} src={url} controls />
+Misc.VideoThumbnail = ({url, width = 200, height = 150, controls = true, ...rest}) => url ? (
+	<video className="video-thumbnail" width={width} height={height} src={url} controls={controls} {...rest} />
 ) : null;
 
 
