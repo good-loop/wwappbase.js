@@ -19,7 +19,7 @@ import SimpleTable, { DownloadCSVLink } from './SimpleTable';
 import KStatus from '../data/KStatus';
 import AThing from '../data/AThing';
 import List from '../data/List';
-import { modifyPage } from '../plumbing/glrouter';
+import { A, modifyPage } from '../plumbing/glrouter';
 import Roles from '../Roles';
 
 /**
