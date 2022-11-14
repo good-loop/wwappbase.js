@@ -323,6 +323,7 @@ const onPick = ({ event, navpage, id, customParams }) => {
 	modifyPage([navpage, id], customParams);
 };
 
+
 /**
  * checkbox, delete, on-click a wrapper
  */
@@ -345,18 +346,20 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, c
 		</div>
 	) : null;
 
-	// use a or div?
-	// ??Is there a nicer way to do this?
 	const hasButtons = canDelete || canCopy;
+
+	// Item container element - clickable or not?
+	const LinkOrDiv = (notALink || cannotClick) ? 'div' : A;
+	const linkOrDivProps = { key: `item${id}`, className: itemClassName || space('ListItem btn-default btn btn-outline-secondary', `status-${item.status}`, hasButtons && 'btn-space') };
+	if (!notALink) linkOrDivProps.href = itemUrl;
+	if (!cannotClick) linkOrDivProps.onClick = event => onPick({event, navpage, id});
+
 	return (
 		<div className="ListItemWrapper clearfix flex-row">
 			{checkbox}
-			<A href={itemUrl} key={'A' + id} notALink={notALink} cannotClick={cannotClick}
-				onClick={event => !cannotClick && onPick({ event, navpage, id })}
-				className={itemClassName || space(`ListItem btn-default btn btn-outline-secondary status-${item.status}`, hasButtons && "btn-space")}
-			>
+			<LinkOrDiv {...linkOrDivProps}>
 				{children}
-			</A>
+			</LinkOrDiv>
 			{hasButtons && <div className="flex-column LL-buttons">
 				{canDelete && <DefaultDelete type={type} id={id} />}
 				{canCopy && <DefaultCopy type={type} id={id} item={item} list={list} onCopy={newId => onPick({ navpage, id: newId })} />}
@@ -365,8 +368,6 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, c
 	);
 };
 
-
-const A = ({ notALink, cannotClick, children, ...stuff }) => (notALink || cannotClick)? <div {...stuff} >{children}</div> : <a {...stuff} >{children}</a>;
 
 /**
  * These can be clicked or control-clicked
