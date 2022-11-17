@@ -530,7 +530,7 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
  * @param {Object} p
  * @param {!String} p.type
  * @param {?JSX} p.children Normally null (defaults to "+ Create"). If set, this provides the button text contents
- * @param {?String]} p.navpage - defaults to the curent page from url
+ * @param {?String} p.navpage - defaults to the curent page from url
  * @param {?String} p.id - Optional id for the new item (otherwise nonce or a prop might be used)
  * @param {?string[]} p.props - keys of extra props -- this is turned into a form for the user to enter
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn Deprecated - prefer `then`
