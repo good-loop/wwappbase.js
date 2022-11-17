@@ -1,16 +1,10 @@
-/**
- * prism.js Dark theme for JavaScript, CSS and HTML
- * Based on the slides of the talk “/Reg(exp){2}lained/”
- * @author Lea Verou
- */
-/* Code blocks */
-/* Inline code */
-code[class*="language-"], pre[class*="language-"] {
-	color: white;
-	background: none;
-	font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+code[class*=language-] {
+	color: #fff;
+	background: 0 0;
+	font-family: Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;
 	font-size: 1em;
 	text-align: left;
+	text-shadow: none;
 	white-space: pre;
 	word-spacing: normal;
 	word-break: normal;
@@ -23,32 +17,81 @@ code[class*="language-"], pre[class*="language-"] {
 	-moz-hyphens: none;
 	-ms-hyphens: none;
 	hyphens: none;
+	&::-moz-selection {
+		text-shadow: none;
+		text-shadow: none;
+		background: hsla(0,0%,93%,.15);
+		background: hsla(0,0%,93%,.15);
+	}
+	&::selection {
+		text-shadow: none;
+		text-shadow: none;
+		background: hsla(0,0%,93%,.15);
+		background: hsla(0,0%,93%,.15);
+	}
 }
-pre[class*="language-"] {
-	background: hsl(30, 20%, 25%);
-	padding: 1em;
+pre[class*=language-] {
+	color: #f9ed99;
+	background: 0 0;
+	font-family: Consolas,Monaco,'Andale Mono','Ubuntu Mono',monospace;
+	font-size: 1em;
+	text-align: left;
+	text-shadow: none;
+	white-space: pre;
+	word-spacing: normal;
+	word-break: normal;
+	word-wrap: normal;
+	line-height: 1.5;
+	-moz-tab-size: 4;
+	-o-tab-size: 4;
+	tab-size: 4;
+	-webkit-hyphens: none;
+	-moz-hyphens: none;
+	-ms-hyphens: none;
+	hyphens: none;
+	background: #1d1e22 !important;
+	border-radius: .5em;
+	border: .3em solid #545454;
+	box-shadow: 1px 1px .5em #000 inset;
 	margin: .5em 0;
 	overflow: auto;
+	padding: 1em;
+	&::-moz-selection {
+		background: #27292a;
+		text-shadow: none;
+		text-shadow: none;
+		background: hsla(0,0%,93%,.15);
+		background: hsla(0,0%,93%,.15);
+	}
+	&::selection {
+		background: #27292a;
+		text-shadow: none;
+		text-shadow: none;
+		background: hsla(0,0%,93%,.15);
+		background: hsla(0,0%,93%,.15);
+	}
 }
-
 &:not(pre) {
-	>code[class*="language-"] {
-		background: hsl(30, 20%, 25%);
+	>code[class*=language-] {
+		background: #141414;
+		border-radius: .3em;
+		border: .13em solid #545454;
+		box-shadow: 1px 1px .3em -.1em #000 inset;
 		padding: .15em .2em .05em;
 		white-space: normal;
 	}
 }
-.token.comment {
-	color: hsl(30, 20%, 50%);
+.token.cdata {
+	color: #777;
 }
-.token.prolog {
-	color: hsl(30, 20%, 50%);
+.token.comment {
+	color: #777;
 }
 .token.doctype {
-	color: hsl(30, 20%, 50%);
+	color: #777;
 }
-.token.cdata {
-	color: hsl(30, 20%, 50%);
+.token.prolog {
+	color: #777;
 }
 .token.punctuation {
 	opacity: .7;
@@ -56,87 +99,120 @@ pre[class*="language-"] {
 .token.namespace {
 	opacity: .7;
 }
-.token.property {
-	color: hsl(350, 40%, 70%);
-}
-.token.tag {
-	color: hsl(350, 40%, 70%);
-}
 .token.boolean {
-	color: hsl(350, 40%, 70%);
+	color: #ce6849;
+}
+.token.deleted {
+	color: #ce6849;
 }
 .token.number {
-	color: hsl(350, 40%, 70%);
+	color: #ce6849;
 }
-.token.constant {
-	color: hsl(350, 40%, 70%);
-}
-.token.symbol {
-	color: hsl(350, 40%, 70%);
-}
-.token.selector {
-	color: hsl(75, 70%, 60%);
-}
-.token.attr-name {
-	color: hsl(75, 70%, 60%);
-}
-.token.string {
-	color: hsl(75, 70%, 60%);
-}
-.token.char {
-	color: hsl(75, 70%, 60%);
+.token.tag {
+	color: #ce6849;
 }
 .token.builtin {
-	color: hsl(75, 70%, 60%);
+	color: #f9ed99;
 }
-.token.inserted {
-	color: hsl(75, 70%, 60%);
+.token.constant {
+	color: #f9ed99;
 }
-.token.operator {
-	color: hsl(40, 90%, 60%);
+.token.keyword {
+	color: #f9ed99;
 }
-.token.entity {
-	color: hsl(40, 90%, 60%);
-	cursor: help;
+.token.property {
+	color: #9a8297;
 }
-.token.url {
-	color: hsl(40, 90%, 60%);
+.token.selector {
+	color: #f9ed99;
+}
+.token.symbol {
+	color: #f9ed99;
 }
 .language-css {
 	.token.string {
-		color: hsl(40, 90%, 60%);
+		color: #909e6a;
 	}
 }
 .style {
 	.token.string {
-		color: hsl(40, 90%, 60%);
+		color: #909e6a;
 	}
 }
-.token.variable {
-	color: hsl(40, 90%, 60%);
-}
-.token.atrule {
-	color: hsl(350, 40%, 70%);
+.token.attr-name {
+	color: #909e6a;
 }
 .token.attr-value {
-	color: hsl(350, 40%, 70%);
+	color: #909e6a;
 }
-.token.keyword {
-	color: hsl(350, 40%, 70%);
+.token.char {
+	color: #909e6a;
 }
-.token.regex {
-	color: #e90;
+.token.entity {
+	color: #909e6a;
+	cursor: help;
+}
+.token.inserted {
+	color: #909e6a;
+}
+.token.operator {
+	color: #909e6a;
+}
+.token.string {
+	color: #909e6a;
+}
+.token.url {
+	color: #909e6a;
+}
+.token.variable {
+	color: #909e6a;
+}
+.token.atrule {
+	color: #7385a5;
 }
 .token.important {
-	color: #e90;
-	font-weight: bold;
+	color: #e8c062;
+	font-weight: 700;
+}
+.token.regex {
+	color: #e8c062;
 }
 .token.bold {
-	font-weight: bold;
+	font-weight: 700;
 }
 .token.italic {
 	font-style: italic;
 }
-.token.deleted {
-	color: red;
+.language-markup {
+	.token.attr-name {
+		color: #ac885c;
+	}
+	.token.punctuation {
+		color: #ac885c;
+	}
+	.token.tag {
+		color: #ac885c;
+	}
+}
+.token {
+	position: relative;
+	z-index: 1;
+}
+.line-highlight.line-highlight {
+	background: hsla(0,0%,33%,.25);
+	background: linear-gradient(to right,hsla(0,0%,33%,.1) 70%,hsla(0,0%,33%,0));
+	border-bottom: 1px dashed #545454;
+	border-top: 1px dashed #545454;
+	margin-top: .75em;
+	z-index: 0;
+	&:before {
+		background-color: #8693a6;
+		color: #f4f1ef;
+	}
+}
+.line-highlight.line-highlight[data-end] {
+	&:after {
+		background-color: #8693a6;
+		color: #f4f1ef;
+	}
 }
