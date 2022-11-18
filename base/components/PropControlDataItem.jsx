@@ -38,6 +38,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 }) => {
 	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
 	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad
+	const [inputClean, setInputClean] = useState(true); // Has the user input anything since last pick?
 
 	// In React pre-v17, onFocus/onBlur events bubble - BUT:
 	// When focus shifts WITHIN the listener, a blur/focus event pair is fired.
@@ -69,11 +70,11 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 
 	let onChange = e => {
 		let id = e.target.value;
-		//id = id.replace(/ $/g, "");
 		setRawValue(id);
-		if (embed) {
-			return; // if embed, only set on-click
-		}
+		// signal "don't replace search box with item badge, even if this is a valid ID"
+		setInputClean(false);
+		// if embed (store whole item, not just ID), only set modelvalue on-click
+		if (embed) return;
 		id = id.replace(/ $/g, "");
 		let mv = modelValueFromInput? modelValueFromInput(id, type, e, storeValue) : id;
 		DSsetValue(proppath, mv);
@@ -85,8 +86,8 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 		let mv = embed? Object.assign({}, item) : id;
 		if (modelValueFromInput) mv = modelValueFromInput(mv, type, {}, storeValue);
 		DSsetValue(proppath, mv, true);
-		// hide ListLoad
-		setShowLL(false);
+		setShowLL(false); // hide ListLoad
+		setInputClean(true); // signal OK to replace search box with item badge
 	};
 
 	const doClear = () => {
@@ -102,9 +103,13 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	let baseId = base && base.id;
 	if (baseId) delete base.id; // manage CreateButton's defences
 
+	// If the user has entered something in the search box, and it happens to be a valid ID -
+	// don't replace the search box with the item badge until they select it in the dropdown!
+	const showItem = pvDataItem.value && inputClean;
+
 	return (
 		<Row className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
-			{pvDataItem.value && <>
+			{showItem && <>
 				<Col xs={12}>
 					<ButtonGroup>
 						<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
@@ -121,7 +126,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 			<>
 				<Col xs={canCreate ? 8 : 12}>
 				<div className="dropdown-sizer">
-					{ ! pvDataItem.value && <Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />}
+					{ !showItem && <Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />}
 					{rawValue && showLL && <ListLoad className="items-dropdown card card-body" hideTotal type={itemType} status={status} 
 						domain={domain} filter={rawValue} unwrapped sort={sort} 
 						ListItem={SlimListItem}
