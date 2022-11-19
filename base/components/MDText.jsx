@@ -9,8 +9,8 @@ import { Input, Label } from 'reactstrap';
 import C from '../CBase';
 import LinkOut from './LinkOut';
 
-const MDCheckbox = ({setSource, source, checked, ...args}) => {
-	if ( ! is(checked)) {
+const MDCheckbox = ({ setSource, source, checked, ...args }) => {
+	if (!is(checked)) {
 		return ReactMarkdown.renderers.listItem(args);
 	}
 	// args = Object.assign({}, args);
@@ -20,18 +20,18 @@ const MDCheckbox = ({setSource, source, checked, ...args}) => {
 	const onChange = e => {
 		const posn = args.node.position;
 		let lis = source.slice(posn.start.offset, posn.end.offset);
-		let newLis = checked? lis.replace("[x]","[ ]") : lis.replace("[ ]","[x]");
-		let newSource = source.slice(0,posn.start.offset)+newLis+source.slice(posn.end.offset);
+		let newLis = checked ? lis.replace("[x]", "[ ]") : lis.replace("[ ]", "[x]");
+		let newSource = source.slice(0, posn.start.offset) + newLis + source.slice(posn.end.offset);
 		console.log("task tick :)", newSource, args, e);
 		setSource(newSource);
 	};
 	return (<li>
-		<Input type='checkbox' 
-				className="form-check-input"				
-				checked={checked}
-				onChange={onChange} />
-			<Label check>{args.children}</Label>
-		</li>);
+		<Input type='checkbox'
+			className="form-check-input"
+			checked={checked}
+			onChange={onChange} />
+		<Label check>{args.children}</Label>
+	</li>);
 };
 
 /**
@@ -44,8 +44,8 @@ const MDCheckbox = ({setSource, source, checked, ...args}) => {
  * @param {Function} setSource newText => Function to make changes to the text source. If provided, then checkboxes can be clicked on/off.
  * @param {?boolean} linkOut Toggle for <a> links should use LinkOut
  */
-const MDText = ({source, renderers={}, components={}, escapeHtml = false, setSource, linkOut}) => {
-	if ( ! source) {
+const MDText = ({ source, renderers = {}, components = {}, escapeHtml = false, setSource, linkOut }) => {
+	if (!source) {
 		return null;
 	}
 	assMatch(source, String);
@@ -54,14 +54,14 @@ const MDText = ({source, renderers={}, components={}, escapeHtml = false, setSou
 	nsource = nsource.replace(/<br\s*\/?>/g, '    \n'); // HACK - always support break tags
 
 	// security: no onClick etc traps or scripts
-	if ( ! escapeHtml) {
+	if (!escapeHtml) {
 		let bad = nsource.match(/<([^>]+\bon[a-zA-Z]+=|script.*)/g, '');
 		if (bad) {
 			console.warn("Dangerous content in markdown!", bad, nsource);
 			escapeHtml = true;
 		}
 	}
-	
+
 	// Merge renderers with new components for legacy
 	Object.assign(components, renderers);
 	// tasks
@@ -71,7 +71,13 @@ const MDText = ({source, renderers={}, components={}, escapeHtml = false, setSou
 	if (!components.a) {
 		components.a = linkOut ? LinkOut : C.A;
 	}
-	return <div className="MDText"><ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={escapeHtml ? null : [rehypeRaw]} children={nsource} components={components} /></div>;
+	return <div className="MDText">
+		<ReactMarkdown
+			remarkPlugins={[remarkGfm]}
+			rehypePlugins={escapeHtml ? null : [rehypeRaw]}
+			children={nsource}
+			components={components} />
+	</div>;
 };
 
 export default MDText;

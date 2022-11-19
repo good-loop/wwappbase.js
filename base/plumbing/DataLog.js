@@ -12,7 +12,7 @@ import ServerIO from './ServerIOBase';
 /**
  * @param {Object} p
  * @param {String} p.q
- * @param {String} p.dataspace
+ * @param {!String} p.dataspace
  * @param {?String[]} p.breakdowns - e.g. ['campaign'] will result in by_campaign results.
  * NB: the server parameter is currently `breakdown` (no -s).
  * Eventually we want to standardise on `breakdowns` as it's more intuitive for an array type,
@@ -23,6 +23,7 @@ import ServerIO from './ServerIOBase';
  * @returns PromiseValue "ElasticSearch format" (buckets with a key)
  */
 const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",name,dataspace=ServerIO.DATALOG_DATASPACE}) => {
+	assert(dataspace);
 	let dspec = md5(JSON.stringify({q, start, end, breakdowns}));
 	const dlpath = ['misc', 'DataLog', dataspace, dspec];
 
