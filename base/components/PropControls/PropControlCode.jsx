@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 
 import Prism from 'prismjs';
 import '../../style/prism-dark.less';
@@ -21,6 +21,8 @@ const PropControlCode = ({ storeValue, prop, path, lang, onFocus: _onFocus, onCh
 		setTimeout(() => {
 			evtTarget.setSelectionRange(selectionStart + 1, selectionStart + 1);
 			evtTarget.focus();
+			const codeEl = evtTarget.parentElement.querySelector('code');
+			setTimeout(() => Prism.highlightElement(codeEl));
 		}); // defer until after DataStore update redraws element & breaks caret pos / focus
 	};
 
@@ -44,13 +46,20 @@ const PropControlCode = ({ storeValue, prop, path, lang, onFocus: _onFocus, onCh
 		setTimeout(() => Prism.highlightElement(codeEl));
 	};
 
+	// Highlight the element once loaded
+	const codeRef = useRef();
+	React.useEffect((e) => {
+		if (codeRef.current)
+			setTimeout(() => Prism.highlightElement(codeRef.current));
+	}, [codeRef])
+
 	// fix discrepency between last lines & stop undefined errors
 	const codeText = storeValue ? `${storeValue}\n ` : ' ';
 
 	return (
 		<div className="code-container">
 			<pre className="form-control syntax-highlighting">
-				<code className={`code-highlighting language-${lang}`}>
+				<code className={`code-highlighting language-${lang}`} ref={codeRef} >
 					{codeText}
 				</code>
 			</pre>

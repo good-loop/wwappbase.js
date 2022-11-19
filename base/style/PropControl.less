@@ -359,9 +359,15 @@ span.preview .DataItemBadge {
 	caret-color: white;
 	resize: none;
 	padding-top: 1.5rem !important;
+	z-index: 1;
+}
+
+.syntax-highlighting {
+	z-index: 0;
 }
 
 .code-container {
+	height: 500px; // code blocks should be a good size, otherwise the single lines are fairly hard to read
 	display: block;
 	position: relative;
 }
