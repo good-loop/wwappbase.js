@@ -29,6 +29,7 @@ const goto = (href, options={}) => {
 	DataStore.parseUrlVars(true);
 };
 
+
 /** Which is the "open in new tab" modifier key - Ctrl or Meta (Command)? */
 const clickModKey = window.navigator.platform.match(/^(Mac|iPhone|iPad|iPod)/) ? 'metaKey' : 'ctrlKey';
 
@@ -36,18 +37,19 @@ const A = (x) => {
 	if (!x) return null;
 	const {href, children, onClick, ...args} = x;
 	const doClick = e => {
-		// Allow default <a> behaviour (ie open in new tab/window) if appropriate modifier held down
+		// Base <a> behaviour (ie open in new tab/window) on middle-, Ctrl- or Command-click
 		if (e.shiftKey || e[clickModKey]) return;
+		
+		// No href means just an anchor tag, not a link - nowhere to navigate to when clicked
+		if (!href) return;
 
-		if (!href) return; // just an anchor tag, not a link
-		// Only override redirects to this origin
-		if (!href.includes(window.location.origin) && href.startsWith("http")) {
-			return;
-		}
+		// Don't hijack the navigation event on links to other origins
+		if (!href.includes(window.location.origin) && href.startsWith("http")) return;
+
 		stopEvent(e);
 		if (onClick) onClick(e);
 		// Allow onClick functions to stop our events too
-		if ( !e.glrouterStopEvent) {
+		if (!e.glrouterStopEvent) {
 			goto(href);
 		}
 	};

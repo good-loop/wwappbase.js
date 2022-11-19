@@ -887,8 +887,20 @@ export const hardNormalize = (text: string) => {
  * @param func function to loop with
  */
 export const mapNew = (num: number, func: Function) => {
-
 	const numIterator = Array.from(Array(num));
 	return numIterator.map((v, i) => func(i));
+};
 
+
+/**
+ * Convert a MouseEvent.buttons number to an array of booleans
+ * - See https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent/buttons
+ * - TLDR: it's a number which, in binary, is a bitfield where LSB = left click, 2s = right, 4s =  middle etc)
+ * - So e.g. 6 --> '110' --> ['1', '1', '0'] --> ['0', '1', '1'] --> [false, true, true] --> left no, right yes, middle yes
+ * @param {Number} buttons
+ * @return {Array[boolean]} Buttons reported as "down" by this MouseEvent, in order L, R, Middle, [Back], [Forward] 
+ */
+ export const decodeButtons = (buttons: number): boolean[] => {
+	if (!buttons) return decodeButtons(0);
+	return buttons.toString(2).padStart(5, '0').split('').reverse().map(digit => !!Number.parseInt(digit));
 };
