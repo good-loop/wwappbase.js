@@ -122,6 +122,7 @@ class Store {
 	/**
 	 * Get a parameter setting from the url. Convenience for appstate.location.params.key. This is to match setUrlValue.
 	 * See also getValue('location','path') for the path.
+	 * Use `getValue('location','params')` for all the url parameters
 	 * @param {String} key
 	 */
 	getUrlValue(key) {

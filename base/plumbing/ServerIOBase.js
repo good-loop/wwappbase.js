@@ -418,7 +418,7 @@ ServerIO.getEndpointForType = (type) => {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vertiser';
 	}
 	// HACK route Agency, Campaign, GreenTag to Portal
-	if (['Agency','Campaign','GreenTag'].includes(type)) {
+	if (['Agency','Campaign','GreenTag','ImpactDebit'].includes(type)) {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/' +type.toLowerCase();
 	}
 	// HACK route Person to Profiler?
