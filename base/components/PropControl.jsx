@@ -283,13 +283,15 @@ or if extras like help and error text are wanted.
    */
 const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	let { type, optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
-	if (label === true) label = toTitleCase(prop); // convenience
+	if (label === true) {
+		label = toTitleCase(prop); // convenience
+		props = { ...props, label };
+	}
 	// If path not given, link it to a URL param by default
 	if (!path) {
 		path = ['location', 'params'];
 		props = { ...props, path };
 	}
-
 	// Type defaults to "text" (intentionally done here instead of using destructure-default)
 	if (!type) {
 		type = 'text';

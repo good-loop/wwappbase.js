@@ -474,6 +474,7 @@ const DefaultCopy = ({ type, id, item, list, onCopy }) => {
  * @param {Object} p
  * @param {!String} p.type C.TYPES
  * @param {?Object} p.base - use to make the blank. This will be copied.
+ * @param {?String} p.id This will have spaces replaced with "-"s
  * @param {?Function} p.make use to make the blank. base -> item. If unset, look for a DataClass for type, and use `new` constructor. Or just {}.
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
  * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item. Set this to switch off navigation.
@@ -494,7 +495,13 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
 	}
 	if (!newItem) newItem = Object.assign({}, base);
 	// specify the id?
-	if (id) newItem.id = id;
+	if (id) {
+		// ...canon, as users type names
+		const canonId = id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
+		newItem.id = canonId;
+		// ...and set the name for the same reason
+		if ( ! newItem.name) newItem.name = id;
+	}
 	// make an id? (make() might have done it)
 	if (!getId(newItem)) {
 		newItem.id = nonce(8);
@@ -549,7 +556,8 @@ const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, child
 	if ( ! children) {
 		children = <><span style={{fontSize:'125%', lineHeight:'1em'}}>+</span> Create</>;
 	}
-	const $createButton = <Button disabled={disabled} className={space('btn-create', className)} onClick={() => createBlank({type,navpage,base,id,make,saveFn,then})}>{children}</Button>;
+	const $createButton = <Button disabled={disabled} className={space('btn-create', className)} 
+		onClick={() => createBlank({type,navpage,base,id,make,saveFn,then})} >{children}</Button>;
 	if ( ! props) {
 		// simple button
 		return $createButton;
@@ -560,10 +568,6 @@ const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, child
 		{$createButton}
 	</Form></CardBody></Card>);
 };
-
-// TODO const CSVDownload = ({items, csvFormatItem}) => {
-//
-// };
 
 export { CreateButton, DefaultListItem, createBlank };
 export default ListLoad;
