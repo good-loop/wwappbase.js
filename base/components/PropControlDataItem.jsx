@@ -16,6 +16,7 @@ import {saveDraftFnFactory} from './SavePublishDeleteEtc';
 import { doShareThing } from '../Shares';
 import { A } from '../plumbing/glrouter';
 import DataItemBadge from './DataItemBadge';
+import KStatus from '../data/KStatus';
 
 /**
  * TODO replace with DataItemBadge
@@ -31,10 +32,11 @@ const SlimListItem = ({item, onClick, noClick, ...props}) => {
  * @param {?Object} p.base Used with canCreate, a base object for if a new item is created.
  * @param {?boolean} p.canCreate Offer a create button
  * @param {?String} p.createProp If a new item is created -- what property should the typed value set? Defaults to "id"
+ * @param {?String} p.status Defaulst to PUB_OR_DRAFT
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
 const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, proppath, rawValue, setRawValue, storeValue, modelValueFromInput, 
-	type, itemType, status=C.KStatus.DRAFT, domain, q, sort, embed, pageSize=20, navpage, notALink, readOnly
+	type, itemType, status=KStatus.PUB_OR_DRAFT, domain, q, sort, embed, pageSize=20, navpage, notALink, readOnly
 }) => {
 	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
 	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad

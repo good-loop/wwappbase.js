@@ -245,7 +245,7 @@ Misc.Icon = ({glyph, fa, size, className, prefix = 'fa', ...rest}) => {
 
 
 /**
- * Try to make a thumbnail image for a data item by checking: logo, img
+ * Try to make a thumbnail image for a data item by checking: logo, img, image
  */
 Misc.Thumbnail = ({item, className}) => {
 	let img = getLogo(item);
