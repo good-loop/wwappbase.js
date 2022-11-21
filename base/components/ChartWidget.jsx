@@ -2,7 +2,8 @@ import React from 'react';
 import _ from 'lodash';
 
 // import chartjs from 'chart.js';
-import RC2, {Line} from 'react-chartjs2';
+// import RC2, {Line} from 'react-chartjs2';
+import { Chart, Line } from 'react-chartjs-2';
 import { assert } from '../utils/assert';
 
 /**
@@ -96,7 +97,8 @@ class ChartWidget extends React.Component {
 		}; // ./options;
 		console.warn("RC2 Draw chart", chartOptions, chartData);
 		return (<div><h3>{title}</h3>
-					<RC2 data={chartData} options={chartOptions} type="line" />
+					{/* <RC2 data={chartData} options={chartOptions} type="line" /> */}
+					<Chart data={chartData} options={chartOptions} type="line" />
 					<div>
 						{true ? <small>Labels: {JSON.stringify(keys)}, Total data points: {dataPoints}</small> : null}
 					</div>
