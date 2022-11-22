@@ -4,6 +4,7 @@ import { Card as BSCard, CardHeader, CardBody, Button } from 'reactstrap';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import { space } from '../utils/miscutils';
+import Icon from './Icon';
 
 
 /**
@@ -57,25 +58,27 @@ class Card extends React.Component {
 
 		// Error or warning to show user?
 		const alert = (error && _.isString(error)) ? (
-			<Misc.Icon fa="exclamation-triangle" color={color} title={error} className="mr-2" />
+			<Icon name="warning" color="danger" title={error} className="mr-2" />
 		) : (warning && _.isString(warning)) ? (
-			<Misc.Icon fa="exclamation-circle" color={color} title={warning} className="mr-2" />
+			<Icon name="warning" color="warning" title={warning} className="mr-2" />
 		) : null;
 
 		// Clickable header takes a caret to signify it's clickable
 		const caret = onHeaderClick ? (
-			<Misc.Icon className="pull-right" fa={`caret-${collapse ? 'down' : 'up'}`} />
+			<Icon className="pull-right" name={`caret-${collapse ? 'down' : 'up'}`} />
 		) : null;
+
+		let showHeader = title || glyph || icon || logo || alert || caret;
 
 		return (
 			<BSCard color={color} outline className={space(className, 'mb-3')}>
-				<CardHeader className={space(headerClasses)} onClick={onHeaderClick} title={titleText}>
-					{(glyph || icon) && <Misc.Icon glyph={glyph} fa={icon} className="mr-2"/>}
+				{showHeader && <CardHeader className={space(headerClasses)} onClick={onHeaderClick} title={titleText}>
+					{(glyph || icon) && <Icon glyph={glyph} name={icon} className="mr-2"/>}
 					{title && <span className="mr-2">{title}</span>}
 					{logo && <img className="logo-sm rounded" src={logo} />}
 					{alert}
 					{caret}
-				</CardHeader>
+				</CardHeader>}
 				{collapse ? null : <CardBody>{children}</CardBody>}
 			</BSCard>
 		);
