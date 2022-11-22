@@ -33,10 +33,12 @@ const SlimListItem = ({item, onClick, noClick, ...props}) => {
  * @param {?boolean} p.canCreate Offer a create button
  * @param {?String} p.createProp If a new item is created -- what property should the typed value set? Defaults to "id"
  * @param {?String} p.status Defaulst to PUB_OR_DRAFT
+ * @param {?String} p.q Optional search query (user input will add to this). Usually unset.
+ * @param {?String} p.list Optional list to use (instead of querying the server). Usually unset.
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
 const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, proppath, rawValue, setRawValue, storeValue, modelValueFromInput, 
-	type, itemType, status=KStatus.PUB_OR_DRAFT, domain, q, sort, embed, pageSize=20, navpage, notALink, readOnly
+	type, itemType, status=KStatus.PUB_OR_DRAFT, domain, list, q, sort, embed, pageSize=20, navpage, notALink, readOnly, showId=true,
 }) => {
 	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
 	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad
@@ -122,7 +124,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 						</Button>
 						{!readOnly && <Button color="secondary" className="clear" onClick={doClear}>🗙</Button>}
 					</ButtonGroup>
-					<div><small>ID: <code>{rawValue || storeValue}</code></small></div>
+					{showId && <div><small>ID: <code>{rawValue || storeValue}</code></small></div>}
 				</Col>
 			</>) : (<>
 				<Col xs={canCreate ? 8 : 12}>
@@ -136,6 +138,8 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 							noResults={`No ${itemType} found for "${rawValue}"`}
 							pageSize={pageSize} otherParams={{filterByShares:true}}
 							onClickItem={item => doSet(item)}
+							q={q}
+							list={list}
 						/>
 					</div>}
 				</div>

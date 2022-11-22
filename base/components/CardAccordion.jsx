@@ -38,7 +38,7 @@ class Card extends React.Component {
 		// ??HACK expose this card to its innards via a global
 		// Card.current = this;
 
-		let { title, glyph, icon, logo, children, className, onHeaderClick, collapse, warning, error } = this.props;
+		let { title, glyph, icon, logo, children, className, style, onHeaderClick, collapse, warning, error } = this.props;
 		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.
 		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
 		if (!children) return null;
@@ -71,7 +71,7 @@ class Card extends React.Component {
 		let showHeader = title || glyph || icon || logo || alert || caret;
 
 		return (
-			<BSCard color={color} outline className={space(className, 'mb-3')}>
+			<BSCard color={color} outline className={space(className, 'mb-3')} style={style} >
 				{showHeader && <CardHeader className={space(headerClasses)} onClick={onHeaderClick} title={titleText}>
 					{(glyph || icon) && <Icon glyph={glyph} name={icon} className="mr-2"/>}
 					{title && <span className="mr-2">{title}</span>}
