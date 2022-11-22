@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from 'react';
 
 import { Alert, Card, CardBody, Nav, Button, NavItem, NavLink } from 'reactstrap';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 import md5 from 'md5';
 import _ from 'lodash';
 

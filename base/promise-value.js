@@ -11,7 +11,6 @@
 * The `resolved` flag records the promise status, and changes to true once the promise is resolved.
  */
 class PromiseValue {
-
 	/** @type {?Error} */
 	error;
 	/** 
@@ -53,7 +52,7 @@ class PromiseValue {
 			// Hm -- keep on trucking?? Or would it better to throw an error?
 			valueOrPromise = valueOrPromise.value || valueOrPromise.promise;
 		}
-		if (valueOrPromise===null || valueOrPromise===undefined) {
+		if (valueOrPromise === null || valueOrPromise === undefined) {
 			const e = new Error("null value");
 			this.error = e;
 			this.promise = Promise.reject(e);
@@ -61,7 +60,7 @@ class PromiseValue {
 			return;
 		}
 		// NB: Promise.resolve() can be used with Promises without nesting	
-		if (typeof(valueOrPromise.then) === 'function') {		
+		if (typeof (valueOrPromise.then) === 'function') {
 			// Having then() is the only real requirement for a Promise
 			const vp = this;
 			this.resolved = false;
@@ -72,23 +71,26 @@ class PromiseValue {
 					// Warning: this on-success function will also be called if the server
 					// returns a code 200 (OK http) but {status:error} (JSend error) response.
 					// Handling this should be done in the Ajax layer.
+					if (PromiseValue.isa(r)) {
+						console.warn("TODO unwrap constructor?", r);
+					}
 					vp.value = r;
 					vp.resolved = true;
 					return r;
-				}, 
-				function (err) {				
+				},
+				function (err) {
 					// oh dear - store the error
 					setError(vp, err);
 					vp.resolved = true;
 					// carry on error-handling if the promise has any catches
 					throw err;
 				});
-			this.promise = _promise;		
+			this.promise = _promise;
 			return;
-		}		
+		}
 		// It's a value - resolve now
-		this.value = valueOrPromise,
-		this.resolved = true,
+		this.value = valueOrPromise;
+		this.resolved = true;
 		this.promise = Promise.resolve(valueOrPromise);
 	}
 
@@ -109,7 +111,7 @@ class PromiseValue {
  * @param {?Function} onReject input:error
  * @returns {!PromiseValue} a new PV with the promise pv.promise.then
  */
-PromiseValue.then = (pv, onResolve, onReject) => {	
+PromiseValue.then = (pv, onResolve, onReject) => {
 	// safety against repeated calls 
 	if (pv._then) {
 		return pv._then;
@@ -117,18 +119,24 @@ PromiseValue.then = (pv, onResolve, onReject) => {
 	// Input is resolved? Make an already resolved response (otherwise it wouldn't resolve until a moment later)
 	if (pv.resolved) {
 		let pv2 = PromiseValue.pending(); // NB: this allows for thenV = null without an ugly error message in the console
-		pv._then = pv2;		
+		pv._then = pv2;
 		if (pv.error) {
-			const thenErr = onReject? onReject(pv.error) : pv.error;
+			const thenErr = onReject ? onReject(pv.error) : pv.error;
+			if (PromiseValue.isa(thenErr)) {
+				return thenErr;
+			}
 			pv2.reject(thenErr);
 		} else {
-			let thenV = onResolve? onResolve(pv.value) : pv.value;
+			let thenV = onResolve ? onResolve(pv.value) : pv.value;
+			if (PromiseValue.isa(thenV)) {
+				return thenV;
+			}
 			pv2.resolve(thenV);
 		}
 		return pv2;
 	}
 	// ...then...
-	const p2 = pv.promise.then(onResolve, onReject);	
+	const p2 = pv.promise.then(onResolve, onReject);
 	let pv2 = new PromiseValue(p2);
 	pv._then = pv2;
 	return pv2;
@@ -140,7 +148,7 @@ PromiseValue.then = (pv, onResolve, onReject) => {
  * @param {Error|JSend|String|Object} err 
  */
 const setError = (pv, err) => {
-	if (err===undefined || err===null) err = "";
+	if (err === undefined || err === null) err = "";
 	// Is it an Error? instanceof will mostly work, but not across windows -- so also do duck-typing
 	// See https://stackoverflow.com/a/30469297/346629
 	if (err instanceof Error || err.stack) {
@@ -148,8 +156,8 @@ const setError = (pv, err) => {
 		return;
 	}
 	// Handle ajax xhr or JSend or String/number/whatever
-	const msg = err.responseText || err.statusText || err.message || err.status || ""+err;
-	pv.error = new Error('PromiseValue rejected: '+msg);	
+	const msg = err.responseText || err.statusText || err.message || err.status || "" + err;
+	pv.error = new Error('PromiseValue rejected: ' + msg);
 	// JSend? Keep `data` if we have it
 	pv.error.data = err.data;
 };
@@ -159,20 +167,23 @@ const setError = (pv, err) => {
  * @returns {PromiseValue} pv
  */
 PromiseValue.pending = () => {
-	const rr = {}
+	const rr = {};
 	const p = new Promise((resolve, reject) => {
 		rr.resolve = resolve;
 		rr.reject = reject;
 	});
 	let pv = new PromiseValue(p);
 	pv.resolve = v => {
+		if (PromiseValue.isa(v)) {
+			console.warn("TODO unwrap pending?", v);
+		}
 		pv.value = v;
-		pv.resolved  = true;
-		rr.resolve(v);		
+		pv.resolved = true;
+		rr.resolve(v);
 	};
 	pv.reject = err => {
 		setError(pv, err);
-		pv.resolved  = true;
+		pv.resolved = true;
 		rr.reject(err);
 	};
 	return pv;

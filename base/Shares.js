@@ -4,7 +4,7 @@
 import Login from '../base/youagain';
 import DataStore from './plumbing/DataStore';
 import {assMatch } from './utils/assert';
-import PromiseValue from 'promise-value';
+import PromiseValue from './promise-value';
 import C from './CBase';
 import DataClass from './data/DataClass';
 /**

@@ -17,7 +17,7 @@ import * as jsonpatch from 'fast-json-patch';
 import deepCopy from '../utils/deepCopy';
 import KStatus from '../data/KStatus';
 import Person from '../data/Person';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 import SearchQuery from '../searchquery';
 
 /**
@@ -614,6 +614,7 @@ const SIO_getDataItem = function({type, id, status, domain, swallow, ...other}) 
  * get an item from DataStore, or call the backend if not there (and save it into DataStore)
  * @param {Object} p
  * @param {!String} p.type From C.TYPES
+ * @param {!String} p.id 
  * @param {?KStatus} status If in doubt: use PUBLISHED for display, and DRAFT for editors. default: check url, then use PUBLISHED
  * 	Default: look for a status= parameter in thre url, or use published.
  * @param {?string} action e.g. `getornew`
@@ -710,6 +711,10 @@ ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', 
 	let params = {
 		data: {status, q, start, end, prefix, sort, size, ...other}
 	};	
+	// HACK: sogive? include unlisted charities (which sogive itself filters by default)
+	if (url.includes("sogive.org/charity")) {
+		params.data.unlisted=true;
+	}
 	const p = ServerIO.load(url, params);
 		// .then(res => { // sanity check
 		// 	if (JSend.success(res)) {

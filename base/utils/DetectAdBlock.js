@@ -1,5 +1,5 @@
 import DataStore from '../plumbing/DataStore';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 
 const path = ['misc', 'adBlockEnabled'];
 

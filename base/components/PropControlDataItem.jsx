@@ -128,7 +128,7 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 				<Col xs={canCreate ? 8 : 12}>
 				<div className="dropdown-sizer">
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
-					{rawValue && true && <div className="items-dropdown card card-body">
+					{rawValue && showLL && <div className="items-dropdown card card-body">
 						<ListLoad hideTotal type={itemType} status={status}
 							domain={domain} filter={rawValue} unwrapped sort={sort}
 							ListItem={SlimListItem}

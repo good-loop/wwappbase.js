@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 
 import Autocomplete from 'react-autocomplete';
-import PromiseValue from'promise-value';
+import PromiseValue from '../promise-value';
 
 import DataStore from '../plumbing/DataStore';
 import { getType, getId } from '../data/DataClass';

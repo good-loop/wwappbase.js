@@ -442,13 +442,14 @@ Money.explain = (money, expln) => {
 
 
 /**
- * Money value, falsy displays as 0
+ * Money value, falsy displays as 0. Does not include the currency symbol.
  *
  * Converts monetary value in to properly formatted string (29049 -> 29,049.00)
  *
  * @param {Object} p amount + Intl.NumberFormat options
  * @param {?Money|Number} p.amount
  * @returns {!String} e.g. £10.7321 to "10.73"
+ * @see Money.str() 
  */
 Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
 	if ( ! amount) amount = 0;
@@ -481,6 +482,7 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 
 	return snum;
 };
+
 
 /**
  * e.g. for use in sort()

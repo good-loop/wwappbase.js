@@ -3,7 +3,7 @@ import { assert, assMatch } from '../utils/assert';
 import { is } from '../utils/miscutils';
 import DataClass from './DataClass';
 import XId from './XId';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 
 export const DEFAULT_CONSENT = "dflt";
 export const OTHER_CONSENT = "other";
