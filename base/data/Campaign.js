@@ -9,7 +9,7 @@ import List from './List';
 import DataStore, { getDataPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
 import { getDataItem, getDataList, saveEdits } from '../plumbing/Crud';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
 import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
