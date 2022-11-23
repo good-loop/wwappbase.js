@@ -101,10 +101,13 @@ const getAbsoluteUrl = urlString => {
  * A drop-in replacement for the html <img> tag, which adds in image size handling via media.gl.com
  * and mobile images via `msrc`
  * 
- * @param {?ImageObject} image Alternative to src, which includes credit & license info
+ * @param {?ImageObject|String} image Alternative to src, which includes credit & license info
  * 
  */
 const DynImg = ({src, msrc, image, ...props}) => {
+	if (image && ! src) {
+		src = typeof(image)==='string'? image : image.contentUrl;
+	}
 	let _src = src;
 	// explicit mobile setting?
 	if (msrc && isMobile()) {
