@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useRef } from 'react';
 import ImageObject from '../data/ImageObject';
 import ServerIO from '../plumbing/ServerIOBase';
+import { space } from '../utils/miscutils';
 
 /**
  * 
@@ -99,14 +100,18 @@ const getAbsoluteUrl = urlString => {
 
 /**
  * A drop-in replacement for the html <img> tag, which adds in image size handling via media.gl.com
- * and mobile images via `msrc`
+ * and mobile images via `msrc`. And it can handle ImageObjects
  * 
- * @param {?ImageObject|String} image Alternative to src, which includes credit & license info
+ * @param {Object} p
+ * @param {?ImageObject|String} p.image Alternative to src, which includes credit & license info
  * 
  */
-const DynImg = ({src, msrc, image, ...props}) => {
-	if (image && ! src) {
-		src = typeof(image)==='string'? image : image.contentUrl;
+const DynImg = ({src, msrc, image, title, ...props}) => {
+	if (image) {
+		if ( ! src) {
+			src = typeof(image)==='string'? image : image.contentUrl;
+		}
+		if ( ! title) title = space(image.name, image.author);
 	}
 	let _src = src;
 	// explicit mobile setting?
@@ -155,7 +160,7 @@ const DynImg = ({src, msrc, image, ...props}) => {
 		_src = wrapUrl(src, width * 1.25);
 	}
 
-	return <img ref={ref} src={_src} {...props} />;
+	return <img ref={ref} src={_src} title={title} {...props} />;
 };
 
 
