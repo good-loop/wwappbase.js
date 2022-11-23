@@ -69,8 +69,7 @@ module.exports = {
 		"no-case-declarations": "off",
 		"no-console": "off",
 		"no-else-return": "warn",
-		"no-extra-semi": "warn",
-
+		"no-extra-semi": "warn",		
 		"jsx-a11y/alt-text": "warn",
 		"jsx-a11y/anchor-is-valid": "warn",
 		"jsx-a11y/click-events-have-key-events": "warn",
@@ -120,7 +119,7 @@ module.exports = {
 		"object-shorthand": "off",
 		"one-var-declaration-per-line": "off",
 		"one-var": "off",
-		"operator-assignment": "off",
+		"operator-assignment": "off",		
 		"operator-linebreak": "off",
 		"jsx-a11y/anchor-has-content": "warn", // what about in-page name-only anchors?
 		"padded-blocks": "warn",

@@ -14,7 +14,7 @@ import DataClass, { getType, getId, nonce, getStatus, getName } from '../data/Da
 import Messaging, { notifyUser } from '../plumbing/Messaging';
 import { publishEdits, saveEdits } from '../plumbing/Crud';
 import Icon from './Icon';
-import { goto } from '../plumbing/glrouter';
+import { goto, modifyPage } from '../plumbing/glrouter';
 import Login from '../youagain';
 
 /**
@@ -134,6 +134,7 @@ const check = ok => {
  * @param {?Boolean} p.autoPublish default=false NB: If autoPublish is set then autoSave is moot
  * @param {?Boolean|Function} p.saveAs If set, offer a save-as button which will copy, tweak the ID and the name, then save.
  * 	If this is a function, it is invoked with the new-item. By default, a "switch the ID in the url" function will be invoked.
+ * @param {?String} p.navpage Used to redirect after a delete
  * @param {?String} p.size Bootstrap size e.g. "lg"
  * @param {?string} p.position fixed|relative
  * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
@@ -147,6 +148,7 @@ const SavePublishDeleteEtc = ({
 	publishTooltipText = 'Your account cannot publish this.',
 	autoPublish, 
 	autoSave = true,
+	navpage,	
 	saveAs, unpublish,
 	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
 	sendDiff
@@ -227,9 +229,22 @@ const SavePublishDeleteEtc = ({
 		pDel.promise.then(() => {
 			Messaging.notifyUser(type + " " + id + " deleted");
 		});
-		// To be extra safe we'll redirect back to the origin, preserving any params already present
+		// redirect back up a level, preserving any params eg filtering already present
+		if (navpage) {
+			modifyPage(navpage.split("/"));
+			return;
+		}
 		const currentUrl = new URL(window.location);
-		window.location.href = (currentUrl.origin + '/' + currentUrl.search)
+		// HACK: remove id from hash
+		let href;
+		if (DataStore.localUrl==='#') {
+			let i = currentUrl.hash.lastIndexOf('/');			
+			href = currentUrl.hash.substring(1, i);	
+		} else {
+			let i = currentUrl.search.lastIndexOf('/');
+			href = currentUrl.search.substring(0, i);
+		}			
+		modifyPage(href.split("/"));
 	};
 
 	const SaveEditsButton = () =>

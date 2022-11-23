@@ -3,8 +3,6 @@ import { assert, assMatch } from '../utils/assert';
 import Login from '../youagain';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
 import {isEmail, stopEvent, uid } from '../utils/miscutils';
-import Cookies from 'js-cookie';
-import PromiseValue from 'promise-value';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';

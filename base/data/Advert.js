@@ -12,13 +12,7 @@ import KStatus from './KStatus';
 import { getDataLogData, pivotDataLogData } from '../plumbing/DataLog';
 import SearchQuery from '../searchquery';
 import ServerIO from '../plumbing/ServerIOBase';
-
-/**
- * See Branding.java
- */
-class Branding {
-	logo;
-}
+import Branding from './Branding';
 
 /**
  * See Advert.java

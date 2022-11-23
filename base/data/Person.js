@@ -21,7 +21,7 @@ import Link from '../data/Link';
 import Claim, { DEFAULT_CONSENT } from '../data/Claim';
 import XId from './XId';
 import md5 from 'md5';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 import {mapkv, encURI, debouncePV, isEmail} from '../utils/miscutils';
 import Cookies from 'js-cookie';
 import Enum from 'easy-enums';

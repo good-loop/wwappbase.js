@@ -1,12 +1,16 @@
 
 import _ from 'lodash';
 import DataClass, {getType} from '../../base/data/DataClass';
+import Money from './Money';
 
 /** Impact type. See Impact.java -- NB: copy-pasta from SoGive's Output.js. 
 */
 class Impact extends DataClass {
 	/** @type {Money}  */
 	amount;
+	/** @type {Double}  */
+	amountGBP;
+	/** @type {String} */
     charity;
     /** @type {?string} e.g. "impressions" */
     input;
@@ -41,3 +45,8 @@ Impact.isDynamic = impact => impact && !! impact.rate;
  * @returns {boolean}
  */
 Impact.isCarbonOffset = impact => impact?.name && impact.name.substring(0, 6)==="carbon";
+
+/**
+ * @param {Impact} impact 
+ */
+Impact.amount = impact => impact?.amount;

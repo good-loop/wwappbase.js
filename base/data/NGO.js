@@ -27,6 +27,17 @@ NGO.useAltLogo = ngo => ngo.useAltLogo;
 
 NGO.imageList = (ngo) => ngo.imageList;
 
+/**
+ * The NGO data type has got messy -- this will return all images
+ * @param {?NGO} ngo 
+ * @returns {Object[]}
+ */
+NGO.images = ngo => {
+	if ( ! ngo) return [];
+	let allImages = [ngo.photo, ngo.images, ngo.highResPhoto].concat(ngo.imageList);
+	return allImages.filter(x => x);
+};
+
 NGO.t4gTheme = (ngo) => ngo.t4gTheme;
 
 /**
