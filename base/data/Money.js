@@ -179,36 +179,38 @@ Money.CURRENCY = {
 	JPY: "¥",
 	CAD: "C$",
 	CNY: "¥", // Same symbol with Yen
-	TRY: "₺"
+	TRY: "₺",
+	ZAR: "R", // Just a regular R.
 };
 /**
  * ISO3166 two-letter code, e.g. "US" to three-letter currency code.
  */
 Money.CURRENCY_FOR_COUNTRY = {
-	GB: 'GBP', UK: 'GBP', // "UK" is wrong, not an iso 3166 code, but handle it anyway
+	GB: 'GBP', UK: 'GBP', // "UK" is wrong, not an iso 3166 code, but it doesn't collide with anything so alias to GB
 	US: 'USD',
 	AU: 'AUD',
 	TR: 'TRY',
 	MX: 'MXN',
 	JP: 'JPY',
 	CN: 'CNY',
-	CA: 'CAD'
+	CA: 'CAD',
+	ZA: 'ZAR',
 }
 
 /**
  * HACK - estimate conversions to handle adding conflicting currencies
- * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 2022-04-22 13:30
+ * Sourced from https://www.x-rates.com/table/?from=GBP&amount=1 2022-11-24 10:00 GMT
  */
 Money.GBP_VALUES = {
 	GBP: 1.000, // natch
-	USD: 1.289, // US dollar
-	AUD: 1.765, // Australian dollar
-	MXN: 26.223, // Mexican peso
-	EUR: 1.191, // Euro
-	TRY: 19.001, // Turkish lira
-	JPY: 165.501, // Japanese yen
-	CNY: 8.380, // Chinese yuan / RMB
-	CAD: 1.58, // Canadian dollar
+	USD: 1.208, // US dollar
+	AUD: 1.791, // Australian dollar
+	MXN: 23.371, // Mexican peso
+	EUR: 1.159, // Euro
+	TRY: 22.510, // Turkish lira
+	JPY: 167.485, // Japanese yen
+	CNY: 8.625, // Chinese yuan / RMB
+	CAD: 1.612, // Canadian dollar
 }
 
 Money.CURRENCY_NAMES = {
@@ -221,6 +223,7 @@ Money.CURRENCY_NAMES = {
 	JPY: 'Japanese yen',
 	CNY: 'Chinese yuan',
 	CAD: 'Canadian dollar',
+	ZAR: 'South African rand'
 }
 
 /**
