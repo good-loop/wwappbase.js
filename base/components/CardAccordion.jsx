@@ -4,6 +4,7 @@ import { Card as BSCard, CardHeader, CardBody, Button } from 'reactstrap';
 import Misc from './Misc';
 import DataStore from '../plumbing/DataStore';
 import { space } from '../utils/miscutils';
+import Icon from './Icon';
 
 
 /**
@@ -37,7 +38,7 @@ class Card extends React.Component {
 		// ??HACK expose this card to its innards via a global
 		// Card.current = this;
 
-		let { title, glyph, icon, logo, children, className, onHeaderClick, collapse, warning, error } = this.props;
+		let { title, glyph, icon, logo, children, className, style, onHeaderClick, collapse, warning, error } = this.props;
 		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.
 		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
 		if (!children) return null;
@@ -57,25 +58,27 @@ class Card extends React.Component {
 
 		// Error or warning to show user?
 		const alert = (error && _.isString(error)) ? (
-			<Misc.Icon fa="exclamation-triangle" color={color} title={error} className="mr-2" />
+			<Icon name="warning" color="danger" title={error} className="mr-2" />
 		) : (warning && _.isString(warning)) ? (
-			<Misc.Icon fa="exclamation-circle" color={color} title={warning} className="mr-2" />
+			<Icon name="warning" color="warning" title={warning} className="mr-2" />
 		) : null;
 
 		// Clickable header takes a caret to signify it's clickable
 		const caret = onHeaderClick ? (
-			<Misc.Icon className="pull-right" fa={`caret-${collapse ? 'down' : 'up'}`} />
+			<Icon className="pull-right" name={`caret-${collapse ? 'down' : 'up'}`} />
 		) : null;
 
+		let showHeader = title || glyph || icon || logo || alert || caret;
+
 		return (
-			<BSCard color={color} outline className={space(className, 'mb-3')}>
-				<CardHeader className={space(headerClasses)} onClick={onHeaderClick} title={titleText}>
-					{(glyph || icon) && <Misc.Icon glyph={glyph} fa={icon} className="mr-2"/>}
+			<BSCard color={color} outline className={space(className, 'mb-3')} style={style} >
+				{showHeader && <CardHeader className={space(headerClasses)} onClick={onHeaderClick} title={titleText}>
+					{(glyph || icon) && <Icon glyph={glyph} name={icon} className="mr-2"/>}
 					{title && <span className="mr-2">{title}</span>}
 					{logo && <img className="logo-sm rounded" src={logo} />}
 					{alert}
 					{caret}
-				</CardHeader>
+				</CardHeader>}
 				{collapse ? null : <CardBody>{children}</CardBody>}
 			</BSCard>
 		);

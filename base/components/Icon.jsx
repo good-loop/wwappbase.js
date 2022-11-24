@@ -27,6 +27,7 @@ const EMOJI = {
 	tick: "✔",
 	trashcan: "🗑", //&#x1f5d1;
 	".txt":"🖹",	
+	"warning": "⚠",
 	mobile: "📱",
 	desktop: "💻", // or 🖳	
  };

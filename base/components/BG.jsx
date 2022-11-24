@@ -2,6 +2,7 @@
 import React from 'react';
 import { addImageCredit } from './AboutPage';
 import ImageObject from '../data/ImageObject';
+import { space } from '../utils/miscutils';
 
 /**
  * Drops a background image behind the children.
@@ -31,19 +32,24 @@ const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, 
 		addImageCredit(image);
 	}
 	let credit = image && image.author? <div className='img-credit'><small>{image.name} image (cc) by {image.author}</small></div> : null;
+	let bgstyle = {
+		backgroundImage: src? `url('${src}')` : null,
+		backgroundColor: color,
+		backgroundSize: size, 
+		backgroundPosition:center ? 'center' : null,
+		backgroundRepeat: repeat,
+		position: image && 'relative',
+		paddingBottom: ratio ? `${ratio}%` : null,
+		minHeight: minHeight ? minHeight : null,
+		opacity,
+	};
 	if ( ! fullscreen) {
+		// Assign custom style overrides late
+		if (style) Object.assign(bgstyle, style);
 		// TODO opacity for the bg without affecting the content 
 		// NB: position relative, so the (cc) credit can go bottom-right
 		if (!fitToImage) {
-			return (<div style={{
-							backgroundImage: `url('${src}')`,
-							backgroundSize: size, 
-							backgroundPosition:center ? 'center' : null,
-							backgroundRepeat: repeat,
-							position: image&&'relative', ...style,
-							paddingBottom: ratio ? `${ratio}%` : null,
-							minHeight: minHeight ? minHeight : null,
-						}}
+			return (<div style={bgstyle}
 						className={className}>
 				{children}
 				{credit}
@@ -57,22 +63,15 @@ const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, 
 		}
 	}
 	// NB: z-index only works on positioned elements
-	let baseStyle= {
-		backgroundImage: src? `url('${src}')` : null,
-		backgroundColor: color,
-		backgroundSize: size,
-		backgroundRepeat: repeat,
-		backgroundPosition: center ? 'center' : null,
-		position: fullscreen? 'fixed' : 'absolute',
-		opacity,
-		top:top,left:left,right:right,bottom:bottom,
+	bgstyle = Object.assign(bgstyle, {position: fullscreen? 'fixed' : 'absolute',		
+		top, left, right, bottom,
 		zIndex: -1
-	};
-	// Assign custom style overrides
-	if (style) Object.assign(baseStyle, style);
+	});
+	// Assign custom style overrides late
+	if (style) Object.assign(bgstyle, style);
 	
 	return (<>
-		<div className='BG-img' style={baseStyle} className={className}/>
+		<div className={space('BG-img',className)} style={bgstyle} />
 		{children}
 		{credit}
 	</>);

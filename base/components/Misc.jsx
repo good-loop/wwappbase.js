@@ -1,7 +1,7 @@
 import React, { useState, Fragment } from 'react';
 
 import { Alert, Card, CardBody, Nav, Button, NavItem, NavLink } from 'reactstrap';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 import md5 from 'md5';
 import _ from 'lodash';
 
@@ -248,6 +248,7 @@ Misc.Icon = ({glyph, fa, size, className, prefix = 'fa', ...rest}) => {
  * Try to make a thumbnail image for a data item by checking: logo, img, image
  */
 Misc.Thumbnail = ({item, className}) => {
+	if ( ! item) return null;
 	let img = getLogo(item);
 	return <Misc.ImgThumbnail url={img} alt={item.name || item.id} className={className} />;
 };

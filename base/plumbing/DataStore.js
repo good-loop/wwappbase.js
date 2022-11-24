@@ -1,8 +1,8 @@
 
 import JSend from '../data/JSend';
-import C from '../CBase.js';
+import C from '../CBase';
 import _ from 'lodash';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
@@ -480,8 +480,15 @@ class Store {
 	 * @see #setLocalEditsStatus() which is for ajax state
 	 */
 	setModified(path, flag=true) {
-		// NB: dont trigger a render for this emi-internal state edit
-		this.setValue(['widget', 'modified'].concat(path), flag, false);
+		// NB: dont trigger a render for this semi-internal state edit
+		try {
+			this.setValue(['widget', 'modified'].concat(path), flag, false);
+		} catch(err) {
+			// propcontrols that operate on "complex" json objects can lead to:
+			// TypeError: Cannot create property 'country' on boolean 'true'
+			// ignore
+			console.log("(swallow) PropControl.setModified fail: "+err);
+		}		
 	}
 
 

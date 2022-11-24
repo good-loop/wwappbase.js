@@ -322,26 +322,6 @@ const assCurrencyEq = (a, b, msg) => {
 };
 
 /**
- * @return {Money} a fresh object.
- * Currency conflicts will trigger a conversion.
- */
-Money.add = (amount1, amount2) => {
-	Money.assIsa(amount1);
-	Money.assIsa(amount2);
-	// currency conflict? - ignore if there is an empty currency
-	if (amount1.currency && amount2.currency) {
-		if (amount1.currency.toUpperCase() !== amount2.currency.toUpperCase()) {
-			// conflict! Prefer amount1, unless it is a zero
-			let preferredCurrency = v100p(amount1)? amount1.currency : amount2.currency;
-			if (amount1.currency !== preferredCurrency) amount1 = Money.convertCurrency(amount1, preferredCurrency);
-			if (amount2.currency !== preferredCurrency) amount2 = Money.convertCurrency(amount2, preferredCurrency);
-		}
-	}
-	const b100p = v100p(amount1) + v100p(amount2);
-	return moneyFromv100p(b100p, amount1.currency || amount2.currency);
-};
-
-/**
  * Convenience to process the results from arithmetic ops, without the gotchas of make() keeping bits of stale data
  * @param {*} b100p
  * @param {*} currency
@@ -356,11 +336,36 @@ const moneyFromv100p = (b100p, currency) => {
 	return m;
 };
 
+
+/**
+ * @param {?String} preferredCurrency Only used if there is a clash
+ * @return {Money} a fresh object.
+ * Currency conflicts will trigger a conversion.
+ */
+ Money.add = (amount1, amount2, preferredCurrency) => {
+	Money.assIsa(amount1);
+	Money.assIsa(amount2);
+	// currency conflict? - ignore if there is an empty currency
+	if (amount1.currency && amount2.currency) {
+		if (amount1.currency.toUpperCase() !== amount2.currency.toUpperCase()) {
+			// conflict! Prefer amount1, unless it is a zero
+			if ( ! preferredCurrency) {
+				preferredCurrency = v100p(amount1)? amount1.currency : amount2.currency;
+			}
+			if (amount1.currency !== preferredCurrency) amount1 = Money.convertCurrency(amount1, preferredCurrency);
+			if (amount2.currency !== preferredCurrency) amount2 = Money.convertCurrency(amount2, preferredCurrency);
+		}
+	}
+	const b100p = v100p(amount1) + v100p(amount2);
+	return moneyFromv100p(b100p, amount1.currency || amount2.currency);
+};
+
 /**
  *
  * @param {Money[]} amounts Can include nulls/falsy
+ * @param {?String} preferredCurrency Only used if there is a clash
  */
-Money.total = amounts => {
+Money.total = (amounts, preferredCurrency) => {
 	// assMatch(amounts, "Money[]", "Money.js - total()");
 	let zero = new Money();
 	Money.assIsa(zero);
@@ -370,7 +375,7 @@ Money.total = amounts => {
 			console.warn(new Error("Money.total() - Not Money? "+JSON.stringify(m)), amounts);
 			return acc;
 		}
-		return Money.add(acc, m);
+		return Money.add(acc, m, preferredCurrency);
 	}, zero);
 	return ttl;
 };
@@ -441,13 +446,14 @@ Money.explain = (money, expln) => {
 
 
 /**
- * Money value, falsy displays as 0
+ * Money value, falsy displays as 0. Does not include the currency symbol.
  *
  * Converts monetary value in to properly formatted string (29049 -> 29,049.00)
  *
  * @param {Object} p amount + Intl.NumberFormat options
  * @param {?Money|Number} p.amount
  * @returns {!String} e.g. £10.7321 to "10.73"
+ * @see Money.str() 
  */
 Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, maximumSignificantDigits}) => {
 	if ( ! amount) amount = 0;
@@ -480,6 +486,7 @@ Money.prettyString = ({amount, minimumFractionDigits, maximumFractionDigits=2, m
 
 	return snum;
 };
+
 
 /**
  * e.g. for use in sort()

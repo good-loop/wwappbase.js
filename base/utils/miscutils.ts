@@ -2,7 +2,7 @@ import _ from 'lodash';
 import Enum from 'easy-enums';
 import { assert, assMatch } from "./assert";
 import printer from './printer';
-import PromiseValue from 'promise-value';
+import PromiseValue from '../promise-value';
 
 // Should we switch back to .js over .ts??
 
