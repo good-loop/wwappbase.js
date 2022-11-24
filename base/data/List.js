@@ -41,6 +41,7 @@ class List extends DataClass {
 	 */
 	constructor(base) {
 		super();
+		if ( ! base) base = [];
 		if (Array.isArray(base)) {
 			this.hits = base;
 			this.total = base.length;
