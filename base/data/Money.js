@@ -211,6 +211,7 @@ Money.GBP_VALUES = {
 	JPY: 167.485, // Japanese yen
 	CNY: 8.625, // Chinese yuan / RMB
 	CAD: 1.612, // Canadian dollar
+	ZAR: 20.564, // South African rand
 }
 
 Money.CURRENCY_NAMES = {
