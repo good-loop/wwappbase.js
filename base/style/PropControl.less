@@ -313,13 +313,6 @@ span.preview .DataItemBadge {
 .modal-content {
 	//height: 90vh; // Why?? This looks bad for e.g. the Add-a-Line chart editor in MoneyScript
 
-
-	/* if styled code in in the modal, make sure it's components are the same size */
-	.code-input, .syntax-highlighting, .code-highlighting {
-		width: 99% !important;
-		height: 80vh !important;
-	}
-
 	/* if text is in in the modal, make it take up enough space */
 	textarea, text {
 		max-width: 100% !important;
@@ -327,56 +320,6 @@ span.preview .DataItemBadge {
 	}
 }
 
-/* Syntax Highlighting */
-
-/* Syntax highlighting works by using a trasnparent text area that overlays a styling container which 
-   contains the tokenised & styled code. To work, the layers need to be pixel-exact. These rules ensure they are.
-   
-   Bootstraps styling kept messing this up and would override rules, resulting !importants are used here to make
-   sure the rules are followed  */
-.code-input,
-.syntax-highlighting,
-.code-highlighting {
-	font-size: inherit !important;
-	font-family: monospace !important;
-	line-height: inherit !important;
-	tab-size: 2 !important;
-	margin: 0.5em 0 !important;
-	padding: 1rem !important;
-	position: absolute;
-	width: 100%;
-	height: 100% !important;
-	top: 0;
-	left: 0;
-	border: none !important;
-	word-wrap: none;
-}
-
-/* invisible textarea input */
-.code-input {
-	background-color: transparent !important;
-	color: transparent !important;
-	caret-color: white;
-	resize: none;
-	padding-top: 1.5rem !important;
-	z-index: 1;
-}
-
-.syntax-highlighting {
-	z-index: 0;
-}
-
-.code-container {
-	height: 500px; // code blocks should be a good size, otherwise the single lines are fairly hard to read
-	display: block;
-	position: relative;
-}
-
-.modal-propControl-code {
-	.modal-content {
-		height: 90vh; // fixes modal being smaller than code blocks
-	}
-}
 
 // Toggle switch control
 .form-group .toggle-switch {
