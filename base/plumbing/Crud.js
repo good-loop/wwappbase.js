@@ -716,13 +716,6 @@ ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', 
 		params.data.unlisted=true;
 	}
 	const p = ServerIO.load(url, params);
-		// .then(res => { // sanity check
-		// 	if (JSend.success(res)) {
-		// 		List.assIsa(JSend.data(res), "Not a List "+url);
-		// 	}
-		// 	return res;
-		// });
-	// console.log("ServerIO.list", url, params, p);
 	return p;
 };
 
