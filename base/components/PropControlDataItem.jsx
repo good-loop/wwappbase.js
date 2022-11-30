@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import { Input, Row, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Button, ButtonGroup } from 'reactstrap';
 
@@ -43,6 +43,11 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
 	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad
 	const [inputClean, setInputClean] = useState(true); // Has the user input anything since last pick?
+
+	// If storevalue is nulled out from elsewhere, don't retain rawValue
+	useEffect(() => {
+		if (!storeValue) setRawValue('');
+	}, [storeValue]);
 
 	// In React pre-v17, onFocus/onBlur events bubble - BUT:
 	// When focus shifts WITHIN the listener, a blur/focus event pair is fired.
