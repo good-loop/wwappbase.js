@@ -126,18 +126,21 @@ ServerIO.checkBase = () => {
  */
 const checkBase2_toggleTestEndpoints = () => {
 	const server = DataStore.getUrlValue("server");
-	if ( ! server) return;
-	if (server==="test") {
+	if (!server) return;
+	// Used by a few APIBASE instances
+	const unprefixedHostname = window.location.hostname.replace(/^(local|test)?/, '');
+	if (server === 'test') {
 		ServerIO.AS_ENDPOINT = 'https://testas.good-loop.com';
 		ServerIO.PORTAL_ENDPOINT = 'https://testportal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
-		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org';
-		ServerIO.APIBASE = 'https://test'+window.location.hostname;
+		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
 		// hack for SoGive
 		if (ServerIO.APIBASE.includes("sogive")) {
 			ServerIO.APIBASE = 'https://test.sogive.org';
+		} else {
+			ServerIO.APIBASE = `https://test${unprefixedHostname}`;
 		}
 		// extra hack for my-loop:
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("local")) {
@@ -145,7 +148,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		}
 		return;
 	}
-	if (server==="local") {	// probably not needed
+	if (server === 'local') { // probably not needed
 		ServerIO.AS_ENDPOINT = 'http://localas.good-loop.com';
 		ServerIO.PORTAL_ENDPOINT = 'http://localportal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'http://locallg.good-loop.com/data';
@@ -154,17 +157,17 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.APIBASE = ''; // lets assume you're on local
 		return;
 	}
-	if (server==="production") {
+	if (server === 'production') {
 		ServerIO.AS_ENDPOINT = 'https://as.good-loop.com';
 		ServerIO.PORTAL_ENDPOINT = 'https://portal.good-loop.com';
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
 		if (ServerIO.APIBASE) {
-			ServerIO.APIBASE = ServerIO.APIBASE.replace(/test|local/, "");
-		} else if (ServerIO.APIBASE==='' || ServerIO.APIBASE==='/') {
+			ServerIO.APIBASE = `https://${unprefixedHostname}`;
+		} else if (ServerIO.APIBASE === '' || ServerIO.APIBASE === '/') {
 			// extra hack for my-loop or moneyscript:
-			ServerIO.APIBASE = 'https://'+(C.app.service|| C.app.name).toLowerCase()+'.good-loop.com';
+			ServerIO.APIBASE = `https://${(C.app.service|| C.app.name).toLowerCase()}.good-loop.com`;
 		}
 		// SoGive hack
 		if (ServerIO.APIBASE && ServerIO.APIBASE.includes("sogive.org")) {
