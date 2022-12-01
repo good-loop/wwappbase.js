@@ -470,6 +470,8 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		</>;
 	}
 
+	const diffWarning = warnOnUnpublished && warnOnUnpublished && <DiffWarning path={path} prop={prop} className="ml-1" />;
+
 	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	// let props2 = Object.assign({}, props);
 	// Hm -- do we need this?? the recursing flag might do the trick. delete props2.label; delete props2.help; delete props2.tooltip; delete props2.error;
@@ -485,9 +487,10 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 				<label className={space(sizeClass, 'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
 			{help && !inline && !isCheck && <Help>{help}</Help>}
-			{warnOnUnpublished && <DiffWarning path={path} prop={prop} className="ml-1" />}
+			{!isCheck && diffWarning}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
+			{isCheck && diffWarning}
 			{help && (inline || isCheck) && <Help>{help}</Help>}
 			{error && <span className="help-block text-danger data-error">{error}</span>}
 			{warning && <span className="help-block text-warning data-warning">{warning}</span>}
