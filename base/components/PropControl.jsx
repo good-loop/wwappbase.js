@@ -194,7 +194,7 @@ const diffProp = (path, prop) => {
 /** Longhand string representation of a value for disambiguating diffs. */
 const diffStringify = val => {
 	// Anything with explicitly defined toString should use it...
-	if (val.hasOwnProperty('toString')) return val.toString();
+	if (val?.hasOwnProperty('toString')) return val.toString();
 	// Stringify kills the [Object object] problem & explicitly differentiates e.g. 123 vs "123"
 	return JSON.stringify(val);
 }
@@ -222,6 +222,7 @@ const DiffWarning = ({path, prop, className}) => {
 		if (!showPopover) {
 			const maybeHidePopover = (e) => {
 				const popoverEl = document.getElementById(popoverId);
+				if (!popoverEl) return; // never got created due to error?
 				if (popoverEl.contains(e.target)) return;
 				setShowPopover(false);
 				document.body.removeEventListener('click', maybeHidePopover);
