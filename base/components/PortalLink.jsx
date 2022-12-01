@@ -7,7 +7,8 @@ import { encURI, space } from '../utils/miscutils';
 
 const PortalLink = ({item,size,className,devOnly}) => {
     if (devOnly && ! Roles.isDev()) return null;
-    const url = ServerIO.getEndpointForType(getType(item));
+    let url = ServerIO.getEndpointForType(getType(item));
+    url = url.replace("good-loop.com/", "good-loop.com/#"); // hack: switch from servlet to editor page    
     return <C.A className={space(size,devOnly&&"dev-link",className)} href={url+"/"+encURI(getId(item))}>{item.name}</C.A>;
 };
 

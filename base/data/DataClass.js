@@ -171,7 +171,7 @@ window.isa2 = isa2; // debug
 /**
  * Uses schema.org or gson class to get the type.
  * Or null
- * @param item {?any}
+ * @param {?any} item
  * @returns {?String} e.g. "Money"
  * 
  * See also getClass()
