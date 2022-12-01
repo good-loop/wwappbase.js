@@ -393,7 +393,7 @@ const normaliseSogiveId = id => {
 /**
  * type -> servlet url
  * This can call different micro-services, e.g. SoGive for charity data.
- * @returns e.g. "/thingy"
+ * @returns e.g. "/thingy" ot "https://app.sogive.org/charity"
  */
 ServerIO.getEndpointForType = (type) => {
 	// Future: refactor to be pluggable (but this is simpler and clearer for now)
