@@ -36,7 +36,7 @@ const MDCheckbox = ({ setSource, source, checked, ...args }) => {
 
 /**
  * Remove non-standard characters and render Markdown.
- * @param {?string} source text to render
+ * @param {?string} source text to render. NB: using a parameter instead of children allows for use of `` strings which can contain {}s
  * @param {?Object} renderers DEPRECATED same function as components, left in for legacy
  * @param {?Object} components node-type: React-component. This is merged with the default renderers.
  * The props passed to the component varies based on the type of node.
