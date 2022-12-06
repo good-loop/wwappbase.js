@@ -11,7 +11,8 @@
 * The `resolved` flag records the promise status, and changes to true once the promise is resolved.
  */
 class PromiseValue {
-	/** @type {?Error} */
+	/** @type {?Error} 
+	 * NB: This can use an ersatz {message,name} object. */
 	error;
 	/** 
 	 * @type {?Object} an interim value for value, e.g. a local memory whilst we fetch a fresh value from the server
@@ -34,7 +35,7 @@ class PromiseValue {
 	reject;
 
 	/**
-	 * @param {*} valueOrPromise 
+	 * @param {?Object|Promise} valueOrPromise If null, the PV will have a rejected promise and an error.
 	 * @returns {value: ?Object, promise: !Promise, error: ?Object, resolved: boolean} 
 	 *  The return is never null, and the promise part is always set.
 	 * 	The behaviour depends on valueOrPromise:
@@ -53,10 +54,10 @@ class PromiseValue {
 			valueOrPromise = valueOrPromise.value || valueOrPromise.promise;
 		}
 		if (valueOrPromise === null || valueOrPromise === undefined) {
-			const e = new Error("null value");
-			this.error = e;
+			// const e = new Error("null value"); Misleadingly noisy - use an ersatz error instead
+			this.error = {message:"null value for PromiseValue", name:"Error"};
 			this.promise = Promise.reject(e);
-			this.resolved = true;
+			this.resolved = true; // NB: resolved:true and no value implies an error
 			return;
 		}
 		// NB: Promise.resolve() can be used with Promises without nesting	
