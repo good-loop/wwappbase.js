@@ -295,6 +295,8 @@ Login.getEmail = function () {
 
 const COOKIE_UXID = "uxid";
 const COOKIE_JWT = "jwt";
+/** Cookies beginning with this are added to post requests and removed on logout. 
+ * So we can hold logins for multiple apps in the cookie jar */
 const cookieBase = () => Login.app + ".jwt";
 
 const setLoginError = err => {
