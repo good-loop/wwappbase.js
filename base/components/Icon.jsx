@@ -22,6 +22,7 @@ const EMOJI = {
 	memo: "📝",
 	outtray: "📤",
 	plus: "⨁", // ⊕
+	reload: "↻", // clockwise open circle arrow ♺⥁
 	search: "🔍",
 	seedling: "🌱",
 	tick: "✔",

@@ -485,13 +485,14 @@ Misc.Help = ({children}) => {
 
 
 /**
- *
- * @param path {?String[]} path to the form-data to submit.
- * @param {Boolean} once If set, this button can only be clicked once.
+ * @param {Object} p
+ * @param {?Object[]} p.formData
+ * @param {?String[]} p.path DataStore path to the form-data to submit. Set this OR formData
+ * @param {Boolean} p.once If set, this button can only be clicked once.
  * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
  * @param onSuccess {JSX} TODO rename this! shown after a successful submit. This is not a function to call!
  */
-Misc.SubmitButton = ({formData, path, url, responsePath, once, className = 'btn btn-primary', onSuccess, children}) => {
+Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, children, size}) => {
 	assMatch(url, String);
 	// assMatch(path, 'String[]');
 	// track the submit request
@@ -529,10 +530,10 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, className = 'btn 
 	if (disabled) title = isSaving? "Saving..." : "Submitted :) To avoid errors, you cannot re-submit this form";
 
 	return (
-		<button onClick={doSubmit} className={className} disabled={disabled} title={title}>
+		<Button onClick={doSubmit} size={size} color={color} className={className} disabled={disabled} title={title}>
 			{children}
 			<span className="fa fa-circle-notch spinning" style={vis} />
-		</button>
+		</Button>
 	);
 };
 
