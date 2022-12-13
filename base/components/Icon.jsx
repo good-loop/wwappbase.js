@@ -25,6 +25,7 @@ const EMOJI = {
 	reload: "↻", // clockwise open circle arrow ♺⥁
 	search: "🔍",
 	seedling: "🌱",
+	settings: "⚙", // gear
 	tick: "✔",
 	trashcan: "🗑", //&#x1f5d1;
 	".txt":"🖹",	

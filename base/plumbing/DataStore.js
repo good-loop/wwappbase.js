@@ -851,10 +851,11 @@ const getPath = DataStore.getPath.bind(DataStore);
  * the DataStore path for this item, or null if item is null. 
  * You can pass in an item as all the args (but not if it uses `domain` as a prop!)
  *  -- But WARNING: editors should always use status DRAFT
- * @param {KStatus} status 
- * @param {!C.TYPES} type 
- * @param id {!String}
- * @param domain {?String} Only used by Profiler??
+ * @param {Object} p
+ * @param {KStatus} p.status 
+ * @param {!C.TYPES} p.type 
+ * @param {!String} p.id 
+ * @param {?String} p.domain Only used by Profiler?? 
  * @returns {String[]}
  */
 const getDataPath = DataStore.getDataPath.bind(DataStore);
