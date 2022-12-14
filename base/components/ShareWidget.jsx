@@ -16,7 +16,7 @@ import Icon from './Icon';
 /**
  * a Share This button
  */
-const ShareLink = ({item, type, id, shareId, children}) => {
+const ShareLink = ({item, type, id, shareId, children, button, size, color="secondary"}) => {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -34,9 +34,12 @@ const ShareLink = ({item, type, id, shareId, children}) => {
 		DataStore.setValue(basePath.concat('show'), true);
 	};
 
-	if (children) return (
-		<Button color="secondary" onClick={doShow}><Icon name="share" /> {children}</Button>
-	);
+	if (children) {
+		return <Button color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /> {children}</Button>;
+	}
+	if (button) {
+		return <Button color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /></Button>;
+	}
 
 	return (
 		<a onClick={doShow} title="Share">
