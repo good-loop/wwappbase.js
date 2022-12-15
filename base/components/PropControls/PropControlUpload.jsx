@@ -44,7 +44,8 @@ const acceptDescs = {
 	bothUpload: 'video or image',
 	fontUpload: 'font',
 	upload: 'file',
-	spreadsheetUpload: '.csv'
+	spreadsheetUpload: '.csv',
+	// emailUpload: '.eml' ??
 };
 
 /**
