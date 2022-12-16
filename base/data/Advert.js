@@ -135,7 +135,15 @@ Advert.charityList = ad => {
 	return clist; 
 };
 
+/**
+ * @param {Item[]} ads 
+ * @returns {object} viewcount4campaign
+ */
 Advert.viewcountByCampaign = ads => {
+	if (!ads || ads.length === 0) {
+		console.error('ads is empty')
+		return {}
+	}
 	// Get ad viewing data
 	let sq = new SearchQuery("evt:minview");
 	let qads = ads.map(({ id }) => `vert:${id}`).join(' OR ');
