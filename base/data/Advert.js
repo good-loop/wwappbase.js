@@ -141,7 +141,7 @@ Advert.charityList = ad => {
  */
 Advert.viewcountByCampaign = ads => {
 	if (!ads || ads.length === 0) {
-		console.error('ads is empty')
+		console.log('ads is empty')
 		return {}
 	}
 	// Get ad viewing data
