@@ -154,7 +154,7 @@ class TableSettings {
 	rowsPerPage;
 
 	
-	/** @type {?String}  Used to name the csv download */ 
+	/** @type {?String} Used to name the csv download */
 	tableName = 'Table';
 
 	/** @type {?String} Applied to the <table> for e.g. BS styles */ 
@@ -246,7 +246,7 @@ const SimpleTable = (props) => {
 				onChange={filterChange}
 			/></div> : null}
 			{/* NB outside scroller */ tableSettings.hasCsv==="top" && <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div>}
-			<div className='scroll-div' onScroll={onScroll} >
+			<div className="scroll-div" onScroll={onScroll} >
 				<table className={space("table", "position-relative", tableSettings.tableClass)}>
 					<THead {...{ visibleColumns, tableSettings, headerRender, topRow, dataTree}} />
 					<tbody>
@@ -861,62 +861,64 @@ const CellFormat = new Enum("percent pounds string"); // What does a spreadsheet
 
 
 const TableFoot = ({visibleColumns, topRow, dataTree, bottomRow, numPages, colSpan, tableSettings}) => {
-	if ( ! numPages || numPages < 2) {
-		return null;
-	}
-	return (<tfoot><tr>
+	if (!numPages || numPages < 2) return null;
+
+	return <tfoot><tr>
 		<td colSpan={colSpan}>
 			{numPages > 1 ? <TableFootPager tableSettings={tableSettings} numPages={numPages} /> : null}
 		</td>
-	</tr></tfoot>);
+	</tr></tfoot>;
 };
+
 
 const TableFootPager = ({tableSettings, numPages }) => {
 	// TODO https://getbootstrap.com/docs/4.5/components/pagination/
 	const page = tableSettings.page;
 	const setPage = p => {tableSettings.page = p; tableSettings.update()};
-	return (<div className="pull-left pager">
+
+	return <div className="pull-left pager">
 		Page
-		&nbsp; {page > 0 ? <a href='' onClick={e => stopEvent(e) && setPage(page - 1)} >&lt;</a> : <span className="disabled">&lt;</span>}
+		&nbsp; {page > 0 ? <a href="" onClick={e => stopEvent(e) && setPage(page - 1)} >&lt;</a> : <span className="disabled">&lt;</span>}
 		&nbsp; {page + 1}
-		&nbsp; {page + 1 < numPages ? <a href='' onClick={e => stopEvent(e) && setPage(page + 1)}>&gt;</a> : <span className="disabled">&gt;</span>}
+		&nbsp; {page + 1 < numPages ? <a href="" onClick={e => stopEvent(e) && setPage(page + 1)}>&gt;</a> : <span className="disabled">&gt;</span>}
 		&nbsp; of {numPages}
-	</div>);
+	</div>;
 };
 
-const CSVDownload = ({tableSettings, visibleColumns, topRow, dataTree, bottomRow, children }) => {
-	const ref = useRef();
-	// assert(_.isArray(jsonArray), jsonArray);
-	// // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
-	const setupCsv = (e, $a) => {
+
+const CSVDownload = ({tableSettings, visibleColumns, topRow, dataTree, bottomRow, ...props}) => {
+	const setupCsv = (e) => {
 		let dataArray = createCSVData({ visibleColumns, topRow, tableSettings, dataTree, bottomRow });
 		let csv = dataArray.map(r => r.join ? r.map(cell => csvEscCell(cell)).join(",") : "" + r).join("\r\n");
+		// https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
 		let csvLink = 'data:text/csv;charset=utf-8,' + encURI(csv);
-		// console.log(e, e.target, $a, ref, csv, csvLink);
 		e.target.setAttribute('href', csvLink);
+		// click is implicit in the action
 	};
-	// NB the entity below is the emoji "Inbox Tray" glyph, U+1F4E5
-	return (
-		<a href='' download={(tableSettings.tableName || 'table') + '.csv'}
-			ref={ref}
-			onClick={e => setupCsv(e, this)}
-		>
-			{children || <>&#128229; Download .csv</>}
-		</a>
-	);
+
+	// Allow prop passing - no overriding href and download, and onClick must be piggybacked
+	let {children, href, download, onClick, ...safeProps} = props;
+	safeProps.onClick = e => {
+		onClick && onClick(e);
+		return setupCsv(e);
+	};
+	// Filename of generated download
+	safeProps.download = `${(tableSettings.tableName || 'table')}.csv`;
+
+	// NB the entity in the text is the emoji "Inbox Tray" glyph, U+1F4E5
+	return <a href="" {...safeProps}>{children || <>&#128229; Download .csv</>}</a>;
 };
 
+/** Regex for characters that shouldn't be in a CSV unescaped*/
+const unsafeChars = /[",\r\n]/;
+
 const csvEscCell = s => {
-	if (!s) return "";
-	assMatch(s, String, "SimpleTable.jsx - csvEscCell not a String " + str(s));
-	// do we have to quote?
-	if (s.indexOf('"') === -1 && s.indexOf(',') === -1 && s.indexOf('\r') === -1 && s.indexOf('\n') === -1) {
-		return s;
-	}
-	// quote to double quote
-	s = s.replace(/"/g, '""');
-	// quote it
-	return '"' + s + '"';
+	if (!s) return '';
+	assMatch(s, String, `SimpleTable.jsx - csvEscCell not a String ${str(s)}`);
+	// may not have to quote
+	if (!s.match(unsafeChars)) return s;
+	// wrap in quotes & escape " to ""
+	return `"${s.replace(/"/g, '""')}"`;
 };
 
 /**
@@ -925,10 +927,10 @@ const csvEscCell = s => {
  * @param {!Column[]|string[]} p.columns
  * @param {!Object[]} p.data
  */
-const DownloadCSVLink = ({columns, data, name, children}) => {
+const DownloadCSVLink = ({columns, data, name, ...props}) => {
 	let dataTree = standardiseData({data});
 	let tableSettings = {name};
-	return <CSVDownload dataTree={dataTree} visibleColumns={columns} tableSettings={tableSettings} children={children} />;
+	return <CSVDownload dataTree={dataTree} visibleColumns={columns} tableSettings={tableSettings} {...props} />;
 };
 
 export default SimpleTable;
