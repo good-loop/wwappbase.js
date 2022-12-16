@@ -62,7 +62,7 @@ const NewChartWidget = ({type = 'line', data, datalabels, className, style, widt
 		if ( ! props.options.scales.y) props.options.scales.y = {};
 		if (is(maxy)) props.options.scales.y.max = maxy;
 		if (is(miny)) props.options.scales.y.min = miny;
-    }
+	}
 	let Chart = {line:Line, pie:Pie, bar:Bar, scatter:Scatter}[type];
 	
 	return <div className={space("NewChartWidget position-relative", className)} style={style}>

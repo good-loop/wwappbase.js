@@ -91,7 +91,7 @@ class Card extends React.Component {
  * @param {?String} widgetName - Best practice is to give the widget a name.
  * @param {?Boolean} multiple - If true, allow multiple cards to stay open.
  * @param {Misc.Card[]} children
- *    children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
+ * 	children should be Misc.Card OR pass on ...other params to a Misc.Card. Otherwise the open/close clickers wont show.
  * @param {?Boolean} defaultOpen - Should all cards start open or closed? This is more normally set at the Card level.
  */
 const CardAccordion = ({ children, multiple, defaultOpen}) => {

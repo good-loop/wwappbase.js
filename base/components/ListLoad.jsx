@@ -92,18 +92,18 @@ const ListLoad = ({ type, status, servlet, navpage,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) => {
-	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
+	assert(C.TYPES.has(type), `ListLoad - odd type ${type}`);
 	if ( ! status) {
-		if (!list) console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
+		if (!list) console.error('ListLoad no status :( defaulting to ALL_BAR_TRASH', type);
 		status = KStatus.ALL_BAR_TRASH;
 	}
-	assert(KStatus.has(status), "ListLoad - odd status " + status);
+	assert(KStatus.has(status), `ListLoad - odd status ${status}`);
 	// widget settings TODO migrate to useState so we can have multiple overlapping ListLoads
 	// const [foo, setFoo] = useState({});
 	// ??preserves state across q and filter edits -- is that best??
 	const widgetPath = ['widget', 'ListLoad', type, status];
 	if (servlet && !navpage) {
-		console.warn("ListLoad.jsx - deprecated use of servlet - please switch to navpage");
+		console.warn('ListLoad.jsx - deprecated use of servlet - please switch to navpage');
 	}
 	if (!canFilter) canFilter = hasFilter; // for old code
 	if (!navpage) navpage = servlet || DataStore.getValue('location', 'path')[0]; //type.toLowerCase();
@@ -114,14 +114,14 @@ const ListLoad = ({ type, status, servlet, navpage,
 	}
 	assMatch(servlet, String);
 	assMatch(navpage, String);
-	assert(navpage && navpage[0] !== '#', "ListLoad.jsx - navpage should be a 'word' [" + navpage + "]");
+	assert(navpage && navpage[0] !== '#', `ListLoad.jsx - navpage should be a 'word' [${navpage}]`);
 	// store the lists in a separate bit of appstate
 	// from data.
 	// Downside: new events dont get auto-added to lists
 	// Upside: clearer
 	// NB: case-insentive filtering
 	if (canFilter) {
-		assert(!filter, "ListLoad.jsx - Do NOT use filter and canFilter props");
+		assert(!filter, 'ListLoad.jsx - Do NOT use filter and canFilter props');
 		filter = DataStore.getValue(widgetPath.concat('filter'));
 	}
 	const rawFilter = filter; // TODO case is needed for id matching -- Where/how best to handle that?
@@ -176,8 +176,8 @@ const ListLoad = ({ type, status, servlet, navpage,
 
 		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 		{total && !hideTotal ? <div>About {total} results in total</div> : null}
-		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
 		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} hideCsvColumns={hideCsvColumns} />}
+		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
 		{items.map((item, i) => (
 			<ListItemWrapper key={getId(item) || i}
 				unwrapped={unwrapped}
@@ -224,20 +224,22 @@ const ListLoad = ({ type, status, servlet, navpage,
  * @returns 
  */
 const ListLoadCSVDownload = ({items, csvColumns, hideCsvColumns}) => {
-	if ( ! items.length) return null;
-	if ( ! csvColumns) {
+	if (!items.length) return null;
+	if (!csvColumns) {
 		csvColumns = Object.keys(items[0]);
 	}
 	if (hideCsvColumns) {
 		csvColumns = csvColumns.filter(col => !hideCsvColumns.includes(col))
 	}
-	return <DownloadCSVLink data={items} columns={csvColumns} />;	
+	return <DownloadCSVLink data={items} columns={csvColumns} />;
 };
 
+
 const paginate = ({ items, pageNum, pageSize }) => {
-	assert(pageSize, "paginate");
+	assert(pageSize, 'paginate');
 	return items.slice(pageNum * pageSize, (pageNum + 1) * pageSize);
 };
+
 
 /**
  * TODO
@@ -254,16 +256,16 @@ const MassActionToolbar = ({ type, canDelete, items }) => {
 	</div>);
 };
 
+
 /**
  * 
  * @param {?Ref[]} hits 
  * @returns {Item[]}
  */
 const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, transformFn, fastFilter }) => {
-	if (!hits) {
-		// an ajax call probably just hasn't loaded yet
-		return [];
-	}
+	// No hits - an ajax call probably just hasn't loaded yet
+	if (!hits) return [];
+
 	// resolve Refs to full Items
 	hits = DataStore.resolveDataList(hits, preferStatus);
 	// HACK: Use-case: you load published items. But the list allows for edits. Those edits need draft items. So copy pubs into draft
@@ -313,6 +315,7 @@ const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, tran
 
 	return items;
 };
+
 
 /**
  * 
@@ -396,6 +399,7 @@ const DefaultListItem = ({ type, item, checkboxes, canDelete, nameFn, extraDetai
 	</>;
 };
 
+
 /**
  * Like DefaultListItem, but with less details unless dev/debug=dev
  */
@@ -417,6 +421,7 @@ const DefaultListItem = ({ type, item, checkboxes, canDelete, nameFn, extraDetai
 		</div>
 	</>;
 };
+
 
 const DefaultDelete = ({ type, id }) => {
 	return (
@@ -569,6 +574,7 @@ const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, child
 		{$createButton}
 	</Form></CardBody></Card>);
 };
+
 
 export { CreateButton, DefaultListItem, createBlank };
 export default ListLoad;

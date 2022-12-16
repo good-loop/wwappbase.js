@@ -12,7 +12,7 @@ const Editor3ColLayout = ({ children, showAll }) => {
 	if (children.length > 3) {
 		console.error("Editor3ColLayout - Too many children", children);
 	}
-	return (<div className='Editor3ColLayout flex-row position-relative'>
+	return (<div className="Editor3ColLayout flex-row position-relative">
 		{children}
 	</div>);
 };
@@ -44,10 +44,10 @@ const LeftSidebar = ({ children, hideOnMobile }) => {
 	}
 
 	// Show the regular desktop version of this
-	return <div className='mt-1 mr-0' style={{ maxWidth: "30%", position: "sticky", height: "100vh", top: 40 }} >{children}</div>; // TODO use a slide-out tray if space is limited
+	return <div className="mt-1 mr-0" style={{ maxWidth: "30%", position: "sticky", height: "100vh", top: 40 }} >{children}</div>; // TODO use a slide-out tray if space is limited
 };
 const RightSidebar = ({ children, width = "40vw", height = "100vh", overflowY = "scroll" }) => {
-	return <div className='mt-1' style={{ position: "sticky", top: 40, width, height, overflowY }}><ErrBoundary>{children}</ErrBoundary></div>;
+	return <div className="mt-1" style={{ position: "sticky", top: 40, width, height, overflowY }}><ErrBoundary>{children}</ErrBoundary></div>;
 };
 
 /**

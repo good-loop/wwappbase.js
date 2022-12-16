@@ -28,7 +28,7 @@ const STATUS_PATH = [...WIDGET_PATH, 'status'];
 const PERSON_PATH = ['data', C.TYPES.User, 'loggingIn'];
 
 
-/** Pretty names for the available verbs  */
+/** Pretty names for the available verbs */
 const displayVerb = {
 	login: "Log in",
 	register: "Create Account", // Was "Register"
@@ -177,7 +177,7 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 		window.addEventListener("hashchange", onHashChange);
 		
 		return function cleanup() {
-		  window.removeEventListener("hashchange", onHashChange);
+			window.removeEventListener("hashchange", onHashChange);
 		}
 	}, []);
 
@@ -209,7 +209,7 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 			<ModalHeader toggle={() => setShowLogin(!show)}>
 				<Misc.Logo service={C.app.id} url={logo} transparent={false} className="pull-left mr-1" />
 				{' '}{title}
-				{subtitle && <p className='my-4 login-subtitle'>{subtitle}</p>}
+				{subtitle && <p className="my-4 login-subtitle">{subtitle}</p>}
 			</ModalHeader>
 			<ModalBody>
 				{showThankyou ?
@@ -270,13 +270,13 @@ const EmailReset = ({}) => {
 	const path = PERSON_PATH;
 	const [isLoading, setIsLoading] = useState();
 	const doItFn = e => {
-		stopEvent(e);				
+		stopEvent(e);
 		let email = DataStore.getValue(path.concat("email"));
-		if ( ! email) {			
+		if ( ! email) {
 			Login.error = {text:'Please enter your email'};
 			DataStore.update();
 			return;
-		}		
+		}
 		assMatch(email, String);
 		let call = Login.reset(email).done(res => {
 			if (res.success) {
@@ -294,13 +294,13 @@ const EmailReset = ({}) => {
 	return (
 		<form id="loginByEmail" onSubmit={doItFn}>
 			<p>Forgotten your password? No problem - we will email you a link to reset it.</p>
-			<PropControl label='Email' type="email" path={path} prop="email" placeholder="Email" />			
+			<PropControl label="Email" type="email" path={path} prop="email" placeholder="Email" />
 			{requested ? <div className="alert alert-info">A password reset email has been sent out.</div> : ''}
 			<div className="form-group">
 				<Button type="submit" size="lg" color="primary" disabled={isLoading}>
 					{verbButtonLabels[verb]}
 				</Button>
-			</div> 
+			</div>
 			<ErrAlert error={Login.error} />
 		</form>
 	);
@@ -335,7 +335,7 @@ const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 	const doItFn = e => {
 		stopEvent(e);
 		onSubmit && onSubmit();
-		if ( ! person) {			
+		if ( ! person) {
 			Login.error = {text:'Please fill in email and password'};
 			onError && onError(Login.error);
 			return;
@@ -349,9 +349,9 @@ const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 	let noAgreement = agreeToTerms && (! person || ! person.agreeToTerms); // true if the user must tick a checkbox
 	return (
 		<form id="loginByEmail" onSubmit={doItFn} className={className}>
-			<PropControl label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
-			<PropControl label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
-			<div className='action-btns'>
+			<PropControl label="Email" type="email" path={path} item={person} prop="email" placeholder="Email" />
+			<PropControl label="Password" type="password" path={path} item={person} prop="password" placeholder="Password" />
+			<div className="action-btns">
 				<div className="form-group">
 					{agreeToTerms && <PropControl type="checkbox" label={agreeToTerms} path={path} prop="agreeToTerms" />}
 					{children}
@@ -359,7 +359,7 @@ const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 						disabled={C.STATUS.isloading(status) || noAgreement}
 						title={noAgreement? "You must agree to the terms if you want to use this service." : ""} >
 						{buttonText || verbButtonLabels[verb]}
-					</Button>			
+					</Button>
 					{canRegister && !disableLoginVerb && <SwitchVerb verb={verb} />}
 				</div>
 				<ResetLink verb={verb} />

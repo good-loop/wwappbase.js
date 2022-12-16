@@ -186,7 +186,7 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea, focus, a
 	// NB: the use of `fast` means we cant put disabled={ ! ttext} on the Add button, as it wouldn't update to non-disabled
 	return (
 		<div key={'f'} className={space('QuickTaskMaker flex-row', parent? 'QuickTaskMakerReply' : null)}>
-			<Form className='flex-grow' onSubmit={quickTask}>
+			<Form className="flex-grow" onSubmit={quickTask}>
 				<PropControl className="w-100"
 					type={textarea?"textarea":"text"} path={qpath} prop="text"
 					placeholder={parent? 'Reply / Comment' : 'Make a new task'} 
@@ -204,7 +204,7 @@ const QuickTaskMaker = ({parent, tags=[], assigned=[], items, textarea, focus, a
 // </div>
 /* <Col md="3"><div className="flex-row">
 {media.map(m => <a key={m} href={m} target="_blank" className="pull-left"><Misc.ImgThumbnail url={m} /></a>)}
-<PropControl collapse path={path.concat('media')} type='imgUpload' prop={media.length} version="mobile" />
+<PropControl collapse path={path.concat('media')} type="imgUpload" prop={media.length} version="mobile" />
 </div></Col> */
 };
 

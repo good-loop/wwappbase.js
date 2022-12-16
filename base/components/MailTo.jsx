@@ -8,9 +8,9 @@ import LinkOut from './LinkOut';
  * TODO support for setting email subject
  */
 const MailTo = ({email, children}) => {
-    if ( ! email) return children;
-    // TODO check email is an email
-    return <a href={"mailto:"+encURI(email)}>{children || email}</a>;
+	if ( ! email) return children;
+	// TODO check email is an email
+	return <a href={"mailto:"+encURI(email)}>{children || email}</a>;
 };
 
 export default MailTo;

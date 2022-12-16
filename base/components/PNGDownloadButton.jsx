@@ -48,9 +48,8 @@ const screenshotIcon = (
  * @param {string} querySelector - A query selector for the DOM element we want to export
  * @param {string} [fileName="image"] - The filename to use for the exported image
  * @param {function} [onCloneFn] - If an onclone function is specified, a clone of the DOM will be made before
- *                               saving the image. This cloned DOM can be manipulated without affecting the
- *                               original DOM. 
- * @param {object} [opts] - Configuration options to be passed to html2canvas. See: https://html2canvas.hertzen.com/configuration 
+ * 	saving the image. This cloned DOM can be manipulated without affecting the original DOM.
+ * @param {object} [opts] - Configuration options to be passed to html2canvas. See: https://html2canvas.hertzen.com/configuration
  * 
  * @returns a download button
  */

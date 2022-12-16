@@ -107,9 +107,9 @@ setInterval(() => {
 }, 10000);
 /**
  * 
- * @param  {...any} args If args[1]==='warning', then warn
+ * @param {...any} args If args[1]==='warning', then warn
  */
-const logOnce = (...args) => {		
+const logOnce = (...args) => {
 	let key = args[0];
 	if (_logOnceKeys[key]) return;
 	_logOnceKeys[key] = true;

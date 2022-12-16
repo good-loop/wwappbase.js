@@ -1,9 +1,7 @@
-/**
- * A css node for custom css
- */
-import React, {useState, useRef} from 'react';
+import React from 'react';
 
 /**
+ * A css node for custom css
  * Wrap the contents in {`   `}, because {}s are special characters for jsx and for css.
  */
 const StyleBlock = ({children}) => {	

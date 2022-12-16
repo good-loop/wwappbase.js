@@ -682,7 +682,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 	const lpath = getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});
 	const pv = DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q, prefix, start, end, size, sort, domain, ...other});
-	});	
+	});
 	// console.log("ActionMan.list", q, prefix, pv);
 	return pv;
 };

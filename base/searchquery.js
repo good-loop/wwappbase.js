@@ -156,7 +156,7 @@ const snipProp = (sq, propName) => {
  * @param {!String[]} propValues Must not be empty
  * @returns a NEW SearchQuery
  */
-SearchQuery.setPropOr = (sq, propName, propValues) => {	
+SearchQuery.setPropOr = (sq, propName, propValues) => {
 	assMatch(propName, String, "searchquery.js "+propName+": "+propValues);
 	assMatch(propValues, "String[]", "searchquery.js "+propName, propValues); // NB: Should we allow empty? No - ambiguous whether or(empty) should mean all or none
 	assert(propValues.length, "searchquery.js - "+propName+" Cant OR over nothing "+propValues)

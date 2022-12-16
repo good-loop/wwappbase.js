@@ -216,7 +216,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 		}
 		const checked = storeValue && storeValue.match(/\#(.*_)?noscale\b/);
 		extraControls.push(
-			<FormGroup inline check key='cacheControls'>
+			<FormGroup inline check key="cacheControls">
 				<FormControl disabled={ ! storeValue} name="noscale" type="checkbox" onChange={event => toggleWart(event.target.checked)} checked={checked} />
 				<Label for="noscale" check>No auto-scale</Label>
 			</FormGroup>
@@ -239,7 +239,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 			onBlur: () => setPreviewCrop(false),
 		};
 		extraControls.push(
-			<FormGroup inline key='circleCrop'>
+			<FormGroup inline key="circleCrop">
 				<Label for="ccrop">Scale in circle:</Label>{' '}
 				<FormControl style={{width: '4em', display: 'inline'}} name="ccrop" type="number" value={cropValue} {...events} /> %
 			</FormGroup>

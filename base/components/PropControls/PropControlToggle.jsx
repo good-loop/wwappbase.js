@@ -72,11 +72,11 @@ const PropControlToggle = ({ path, prop, value, saveFn, left = {}, right = {}}) 
 	};
 
 	return <>
-			<Label check>{left?.label || 'No'}</Label>
-			<span className={`toggle-switch btn btn-xs inset ml-1 mr-1 btn-${btnColour}`} onClick={toggle}>
-				<Button size="xs" color="default" className={shiftClass}>{badgeContent}</Button>
-			</span>
-			<Label check>{right?.label || 'Yes'}</Label>
+		<Label check>{left?.label || 'No'}</Label>
+		<span className={`toggle-switch btn btn-xs inset ml-1 mr-1 btn-${btnColour}`} onClick={toggle}>
+			<Button size="xs" color="default" className={shiftClass}>{badgeContent}</Button>
+		</span>
+		<Label check>{right?.label || 'Yes'}</Label>
 	</>;
 };
 

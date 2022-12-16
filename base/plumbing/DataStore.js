@@ -736,7 +736,7 @@ class Store {
 
 	/**
 	 * @deprecated
-	 */	
+	 */
 	getDataList(listOfRefs, preferStatus) {
 		console.warn("Switch to resolveDataList");
 		return this.resolveDataList(listOfRefs, preferStatus);

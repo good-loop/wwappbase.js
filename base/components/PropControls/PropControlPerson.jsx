@@ -1,19 +1,19 @@
-import React, { useEffect, useState } from 'react';
-import { Input, InputGroup } from 'reactstrap';
-import { countryListAlpha2 } from '../../data/CountryRegion';
+import React from 'react';
+import { InputGroup } from 'reactstrap';
 
-import PropControl, { fakeEvent, registerControl } from '../PropControl';
-import PropControlSelection from '../PropControlSelection';
+import PropControl, { registerControl } from '../PropControl';
+
 
 /**
  * See PersonLite.java
  */
-const PropControlPerson = ({path, prop, proppath, storeValue, onChange, warnOnUnpublished}) => {
+const PropControlPerson = ({proppath}) => {
 	return (<InputGroup>
-        <PropControl type="text" prop='name' path={proppath} label />	
-        <PropControl type="imgUpload" prop='img' path={proppath} label="Portrait photo" />	
+		<PropControl type="text" prop="name" path={proppath} label />
+		<PropControl type="imgUpload" prop="img" path={proppath} label="Portrait photo" />
 	</InputGroup>);
 };
+
 
 registerControl({type: 'person', $Widget: PropControlPerson});
 

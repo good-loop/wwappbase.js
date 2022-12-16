@@ -101,11 +101,11 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', hom
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
 			<img className={space(logoClass, C.app.logoMobile && "d-none d-md-inline-block")} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
-            {C.app.logoMobile && <img className={space(logoClass, "d-md-none")} alt={C.app.name} src={C.app.logoMobile} />}
+				{C.app.logoMobile && <img className={space(logoClass, "d-md-none")} alt={C.app.name} src={C.app.logoMobile} />}
 			{isBeta && <span style={{position:'sticky',top:'100%',color:'grey'}}>beta</span>}
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
-			<div className='position-relative'>
+			<div className="position-relative">
 				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>				
 					{brandLogo? <img className={space(logoClass, "brand-logo")} alt={brandName} src={brandLogo} /> : brandName}
 				</C.A>
@@ -211,7 +211,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 
 	const NDropDown = ({title, i}) => {
 		const [open, setOpen] = useState(false);
-		return <Dropdown isOpen={open} toggle={() => setOpen(!open)} key={title} nav inNavbar className='top-level'>
+		return <Dropdown isOpen={open} toggle={() => setOpen(!open)} key={title} nav inNavbar className="top-level">
 			<DropdownToggle nav caret>{labelFn(title)}</DropdownToggle>
 			<DropdownMenu>
 				{pages[title].filter(page => page).map((page, j) => (

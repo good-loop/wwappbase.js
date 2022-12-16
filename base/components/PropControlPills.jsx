@@ -59,9 +59,9 @@ const PropControlPills = ({storeValue, modelValueFromInput, path, prop, proppath
 		}
 	};
 
-	return (<div className='form-control flex-row'>
-		{pills.map((tg,i) => <Badge className='mr-1' key={i} color={fcolor && fcolor(tg)}>{tg} <CloseButton onClick={e => removeTag(tg)}/></Badge>)}
-		<input value={rawPartValue} className='flex-grow'
+	return (<div className="form-control flex-row">
+		{pills.map((tg,i) => <Badge className="mr-1" key={i} color={fcolor && fcolor(tg)}>{tg} <CloseButton onClick={e => removeTag(tg)}/></Badge>)}
+		<input value={rawPartValue} className="flex-grow"
 			onChange={addTagOnChange} onKeyUp={onKeyUp} onBlur={e => addTag2(rawPartValue)} />
 	</div>);
 }

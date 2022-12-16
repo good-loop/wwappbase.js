@@ -39,7 +39,7 @@ DataStore.update({
 
 
 if ( ! C.A) {
-	/** HACK define C.A = the normal <a> tag, for optional replacement with import { A } from glrouter  
+	/** HACK define C.A = the normal <a> tag, for optional replacement with import { A } from glrouter
 	 * @param {?Object} x
 	 * @param {string} x.href url
 	 * @param {string|JSX} x.children text/elements to render in the tag
@@ -147,7 +147,7 @@ class MainDivBase extends Component {
 			navbarDarkTheme=true,
 			navbarBackgroundColour="dark",
 			navbarPages, navbarLabels, navbarChildren,
-            navbarLogoClass,
+			navbarLogoClass,
 			navbarExternalLinks, // TODO document props
 			navbarSpace, // TODO document props
 			navbarAccountMenuItems, // Used for MyData - show extra items such as settings etc alongside standard "Account" and "Logout" (only on mobile devices - that's not controlled here)
@@ -256,7 +256,7 @@ class MainDivBase extends Component {
 					accountMenuItems={navbarAccountMenuItems}
 					accountLinkText={navbarAccountLinkText}
 					onToggle={onNavToggle}
-                    logoClass={navbarLogoClass}
+					logoClass={navbarLogoClass}
 				>
 				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 				</NavBar>
@@ -267,7 +267,7 @@ class MainDivBase extends Component {
 					<MessageBar />
 					<div className="page" id={page}>
 						<Page />
-					</div>					
+					</div>
 				</Row>
 				<Row>
 					{Footer && !undecorated && <Footer page={page} />}

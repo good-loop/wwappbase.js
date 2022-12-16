@@ -1,30 +1,24 @@
-import React, { useEffect, useState } from 'react';
-import { Input, InputGroup } from 'reactstrap';
-import { countryListAlpha2 } from '../../data/CountryRegion';
+import React from 'react';
 
-import PropControl, { fakeEvent, registerControl } from '../PropControl';
-import PropControlSelection from '../PropControlSelection';
-import SubCard from '../SubCard';
-import PropControlPerson from './PropControlPerson';
-const dummy = PropControlPerson;
+import PropControl, { registerControl } from '../PropControl';
 
-const PropControlMediaObject = ({path, prop, proppath, uploadType, storeValue, onChange, warnOnUnpublished}) => {
+
+const PropControlMediaObject = ({ proppath, uploadType }) => {
 	return (<>
-        <PropControl type={uploadType} prop='contentUrl' path={proppath} />	
-        <PropControl type="text" prop='caption' path={proppath} label size='sm' />	
+		<PropControl type={uploadType} prop="contentUrl" path={proppath} />
+		<PropControl type="text" prop="caption" path={proppath} label size="sm" />
 	</>);
 };
 
-/**
- * See ImageObject.java
- */
-const PropControlImageObject = (props) => <PropControlMediaObject uploadType='imgUpload' {...props} />;
-/**
- * See VideoObject.java
- */
- const PropControlVideoObject = (props) => <PropControlMediaObject uploadType='videoUpload' {...props} />;
+
+/** See ImageObject.java */
+const PropControlImageObject = (props) => <PropControlMediaObject uploadType="imgUpload" {...props} />;
+/** See VideoObject.java */
+const PropControlVideoObject = (props) => <PropControlMediaObject uploadType="videoUpload" {...props} />;
+
 
 registerControl({type: 'ImageObject', $Widget: PropControlImageObject});
 registerControl({type: 'VideoObject', $Widget: PropControlVideoObject});
+
 
 export default {};
