@@ -111,6 +111,7 @@ const setMainDivClass = (newClass, regex) => {
 	navbarDarkTheme: {?boolean}
 	navbarBackgroundColour: {?String}
 	loginRequired: {?boolean}
+	{?String[]} loginServices e.g. ["twitter","facebook"] See LoginWidget({services})
 	securityCheck: ({page}) => throw error / return true
 	SecurityFailPage: ?JSX
 	defaultPage: {String|Function -> String},
@@ -157,7 +158,8 @@ class MainDivBase extends Component {
 			undecoratedPages, // TODO document props
 			undecorated, // TODO document props
 			canRegister,
-			loginService, // TODO document props
+			loginService, // OLD code
+			loginServices,
 			Footer,
 			noLoginTitle, // TODO document props
 			loginLogo, // TODO document props
@@ -277,9 +279,8 @@ class MainDivBase extends Component {
 				title={noLoginTitle ? null : `Welcome to ${C.app.name}`}
 				subtitle={loginSubtitle}
 				canRegister={canRegister}
-				loginService={loginService}
 				logo={loginLogo}
-				services={canRegister ? [] : loginService}
+				services={canRegister ? [] : (loginServices || loginService)}
 				noSocials={noSocials}
 				Guts={LoginGuts}
 			>
