@@ -743,10 +743,10 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 		}
 
 		// align the collapse/expand button to the right
-		let divStyle = null;
+		let divStyle = null, wrapStyle = null;
 		const hasCollapse = colNum===0 && tableSettings?.hasCollapse;
 		if (hasCollapse) {
-			style = Object.assign({display:"flex"}, style);
+			wrapStyle = {display:"flex"};
 			divStyle={flexGrow:1};
 		}
 		// selected?
@@ -768,8 +768,10 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 			onMouseDown={onSelect? e => startSelect({row, colNum, tableSettings}) : null}
 			onMouseUp={onSelect? e => endSelect({row, colNum, tableSettings}) : null}
 			onDoubleClick={clickToEdit} onBlur={clickToEditOff} >
-				<div style={divStyle} >{cellGuts}</div>
-				{hasCollapse && <CollapseExpandButton node={node} item={item} tableSettings={tableSettings} />}
+				<Wrap style={wrapStyle} >
+					<Wrap style={divStyle} >{cellGuts}</Wrap>
+					{hasCollapse && <CollapseExpandButton node={node} item={item} tableSettings={tableSettings} />}
+				</Wrap>
 			</td>;
 	} catch (err) {
 		// be robust
