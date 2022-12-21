@@ -27,6 +27,7 @@ import DataClass, { getClass, getType, Item } from '../data/DataClass';
 import Tree from '../data/Tree';
 import PropControl from './PropControl';
 import StyleBlock from './StyleBlock';
+import Wrap from './Wrap';
 
 const str = printer.str;
 
