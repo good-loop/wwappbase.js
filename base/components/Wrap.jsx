@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
 import { space } from '../utils/miscutils';
 
-const Wrap = ({children, style, className}) => {
+/**
+ * Optionally wrap the contents in a div.
+ * Use-case: When there might be a need for a wrapper div to take some props. But maybe not. 
+ * To avoid "polluting" the dom with unnecessary divs.
+ * 
+ */
+const Wrap = ({children, ...props}) => {
     if ( ! children) return null;
-    if ( ! style && ! className) return children;
-    return <div className={className} style={style}>{children}</div>;
+    if ( ! props) return children;
+    return <div {...props}>{children}</div>;
 };
 
 export default Wrap;
