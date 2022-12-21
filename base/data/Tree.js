@@ -43,7 +43,7 @@ Tree.str = (tree, depth=0, maxDepth=5) => {
 	let sv = str(Tree.value(tree));
 	let kids = Tree.children(tree);
 	if ( ! kids.length) return sv;
-	let skids = kids.map(kid => Tree.str(kid, depth+1));
+	let skids = kids.map(kid => Tree.str(kid, depth+1)).filter(s => s); // NB undefined skid bug seen Dec 2022
 	// make each line one deeper
 	let skids2 = skids.map(skid => skid.split("\n").map(line => "\t"+line).join("\n"));
 	return sv+"\n"+skids2.join("\n");

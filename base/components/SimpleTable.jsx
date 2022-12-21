@@ -219,6 +219,13 @@ const SimpleTable = (props) => {
 	};
 	// filter and sort - and add in collapse buttons
 	const dataTreeUnfiltered = dataTree;
+	// ...preserve collapsed setting
+	// NB: lodash _.merge wasnt working as expected - collapsed state got lost
+	if ( ! tableSettings.collapsed4nodeid) {			
+		tableSettings.collapsed4nodeid = {all:true}; // HACK start collapsed
+		doCollapseAll(dataTreeUnfiltered, tableSettings, true);
+	}
+	// ...filter!
 	let { dataTree: fdataTree, visibleColumns } = rowFilter({ dataTree, columns, tableSettings});
 	assert(fdataTree, "SimpleTable.jsx - rowFilter led to null?!", dataTree);
 	dataTree = fdataTree;
@@ -514,36 +521,37 @@ const Th = ({ column, colNum, tableSettings, headerRender, dataTreeUnfiltered })
 			zIndex:20
 		};
 	}	
-	// No sorting?
-	if ( ! tableSettings.showSortButtons) return (
-		<th style={style}><div>{hText}</div></th>
-	);
-	// sort UI
-	let sortByMe = _.isEqual(tableSettings.sortBy, column);
-	let onClick = e => {
-		console.warn('sort click', column, sortByMe, tableSettings);
-		if (sortByMe) {
-			tableSettings.sortByReverse = ! tableSettings.sortByReverse;
-		} else {
-			tableSettings.sortByReverse = false;
-		}
-		tableSettings.sortBy = column;
-		tableSettings.update();
-	};
-
-	// Sort indicator glyph: point down for descending, point up for ascending, outlined point down for "not sorted on this column"
-	let arrow = null;
-	if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
-	else arrow = <>&#x25BD;</>;
-
-	// align the collapse/expand button to the right
-	let divStyle = null;
+	// No sorting or collapse?
 	const hasCollapse = colNum===0 && tableSettings?.hasCollapse;
+	if ( ! tableSettings.showSortButtons && ! hasCollapse) {
+		return <th style={style}><div>{hText}</div></th>;
+	}
+	// sort UI
+	let arrow = null, onClick = null;
+	if (tableSettings.showSortButtons) {
+		let sortByMe = _.isEqual(tableSettings.sortBy, column);
+		onClick = e => {
+			console.warn('sort click', column, sortByMe, tableSettings);
+			if (sortByMe) {
+				tableSettings.sortByReverse = ! tableSettings.sortByReverse;
+			} else {
+				tableSettings.sortByReverse = false;
+			}
+			tableSettings.sortBy = column;
+			tableSettings.update();
+		};
+
+		// Sort indicator glyph: point down for descending, point up for ascending, outlined point down for "not sorted on this column"		
+		if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
+		else arrow = <>&#x25BD;</>;
+	}
+	// align the collapse/expand button to the right
+	let divStyle = null;	
 	if (hasCollapse) {
 		style = Object.assign({display:"flex"}, style);
 		divStyle={flexGrow:1};
 	}
-
+	// Th with sort and/or collapse
 	return (
 		<th style={style} >
 			<div style={divStyle} onClick={onClick}>{hText}{arrow}</div>
@@ -753,36 +761,33 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 };
 
 
+/** (un)collapse all  */
+const doCollapseAll = (dataTreeUnfiltered, tableSettings, allCollapsed) => {	
+	// NB: unshift so we dont collapse the root node
+	Tree.flatten(dataTreeUnfiltered).slice(1).map(node => {
+		if (!Tree.children(node).length) return;
+		let nodeid = Tree.id(node) || JSON.stringify(node.value);
+		tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
+	});
+	tableSettings.collapsed4nodeid.all = allCollapsed;
+};
 
 const CollapseExpandButton = ({all, dataTreeUnfiltered, node, item, tableSettings}) => {	
+	if ( ! tableSettings) {
+		return null; // huh?
+	}
 	let onClick, ncollapsed;
 	if (all) { // top row
-		// (un)collapse all
-		const doCollapseAll = (allCollapsed) => {	
-			// NB: unshift so we dont collapse the root node
-			Tree.flatten(dataTreeUnfiltered).slice(1).map(node => {
-				if (!Tree.children(node).length) return;
-				let nodeid = Tree.id(node) || JSON.stringify(node.value);
-				tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
-			});
-			tableSettings.collapsed4nodeid.all = allCollapsed;
-		};
-		// ...preserve collapsed setting
-		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
-		if ( ! tableSettings.collapsed4nodeid) {			
-			tableSettings.collapsed4nodeid = {all:true}; // HACK start collapsed
-			doCollapseAll(true);
-		}
 		// all state
-		ncollapsed = !!tableSettings.collapsed4nodeid.all;		
+		ncollapsed = !!tableSettings.collapsed4nodeid?.all;		
 		onClick = e => {
-			doCollapseAll( ! ncollapsed);			
+			doCollapseAll(dataTreeUnfiltered, tableSettings, ! ncollapsed);			
 			DataStore.update();
 		};
 	} else {
 		// normal row
 		let nodeid = Tree.id(node) || JSON.stringify(item);		
-		ncollapsed = tableSettings.collapsed4nodeid[nodeid];		
+		ncollapsed = tableSettings.collapsed4nodeid && tableSettings.collapsed4nodeid[nodeid];		
 		// no node or children? no need for a control
 		if (!node || !Tree.children(node).length) {
 			// but what if we'd filtered out the children above?
