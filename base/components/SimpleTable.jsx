@@ -198,7 +198,7 @@ const SimpleTable = (props) => {
 	// Standardise the possible data inputs as a dataTree (which is the most general format)
 	const originalData = data; // for debug
 	dataTree = standardiseData({ data, dataObject, dataTree })
-	assert(dataTree);
+	assert(dataTree);	
 	if ( ! columns) {
 		assert(dataObject);
 		columns=["key","value"];
@@ -218,6 +218,7 @@ const SimpleTable = (props) => {
 		tableSettings.update();
 	};
 	// filter and sort - and add in collapse buttons
+	const dataTreeUnfiltered = dataTree;
 	let { dataTree: fdataTree, visibleColumns } = rowFilter({ dataTree, columns, tableSettings});
 	assert(fdataTree, "SimpleTable.jsx - rowFilter led to null?!", dataTree);
 	dataTree = fdataTree;
@@ -248,7 +249,7 @@ const SimpleTable = (props) => {
 			{/* NB outside scroller */ tableSettings.hasCsv==="top" && <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div>}
 			<div className='scroll-div' onScroll={onScroll} >
 				<table className={space("table", "position-relative", tableSettings.tableClass)}>
-					<THead {...{ visibleColumns, tableSettings, headerRender, topRow, dataTree}} />
+					<THead {...{ visibleColumns, tableSettings, headerRender, topRow, dataTree, dataTreeUnfiltered}} />
 					<tbody>
 						<Rows
 							dataTree={dataTree}
@@ -268,17 +269,19 @@ const SimpleTable = (props) => {
 
 /**
  * 
- * @param {Object} params
- * @param {!Column[]} params.visibleColumns
- * @param {!TableSettings} params.tableSettings
+ * @param {Object} p
+ * @param {!Column[]} p.visibleColumns
+ * @param {!TableSettings} p.tableSettings
+ * @param {Tree} p.dataTree Used for totals. This is the filtered dataTree (so not all rows are here)
+ * @param {Tree} p.dataTreeUnfiltered Used for (un)collapse-all.
  */
-const THead = ({ visibleColumns, tableSettings, headerRender, topRow, dataTree }) => {
+const THead = ({ visibleColumns, tableSettings, headerRender, topRow, dataTree, dataTreeUnfiltered}) => {
 	// c isn't used but will be off by 1 if scroller is true
 	return (<thead>
 		<tr>
-			{visibleColumns.map((col, c) => {
-				return <Th tableSettings={tableSettings} key={c} 
-					column={col} c={c} headerRender={headerRender} />
+			{visibleColumns.map((col, colNum) => {
+				return <Th tableSettings={tableSettings} key={colNum} 
+					column={col} colNum={colNum} headerRender={headerRender} dataTreeUnfiltered={dataTreeUnfiltered} />
 			})
 			}
 		</tr>
@@ -406,61 +409,14 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 
 	// dataTree - filter out collapsed rows
 	let visibleColumns = [...columns]; // copy for safety against the edits below
-	if (tableSettings.hasCollapse) {
-		let allDataTree = dataTree;
-		// (un)collapse all
-		const doCollapseAll = (allCollapsed) => {	
-			// NB: unshift so we dont collapse the root node
-			Tree.flatten(allDataTree).slice(1).map(node => {
-				if (!Tree.children(node).length) return;
-				let nodeid = Tree.id(node) || JSON.stringify(node.value);
-				tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
-			});			
-		};
-		// ...preserve collapsed setting
-		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
-		if ( ! tableSettings.collapsed4nodeid) {
-			tableSettings.collapsed4nodeid = {all:true}; // start collapsed
-			doCollapseAll(true);
-		}
+	if (tableSettings.hasCollapse && tableSettings.collapsed4nodeid) {
 		// Filter out the collapsed nodes
 		dataTree = Tree.filter(dataTree, (node, parent) => {
 			if (!parent) return true;
 			const pnodeid = Tree.id(parent) || JSON.stringify(parent.value);
 			const ncollapsed = tableSettings.collapsed4nodeid[pnodeid];
 			return !ncollapsed;
-		});
-		assert(dataTree, "SimpleTable.jsx - collapsed to null?!");
-		// HACK: add a collapse column		
-		// filter by collapsed (which is set on the parent)
-		// ...collapse button
-		const CellWithCollapse = (v, col, item, node) => {
-			let nodeid = Tree.id(node) || JSON.stringify(item);
-			const ncollapsed = tableSettings.collapsed4nodeid[nodeid];
-			// no node or children? no need for a control
-			if (!node || !Tree.children(node).length) {
-				// but what if we'd filtered out the children above?
-				if (!ncollapsed) return null;
-			}
-			return (<button className="btn btn-xs btn-outline-secondary" title={ncollapsed ? "click to expand" : "click to collapse"}
-				onClick={e => { tableSettings.collapsed4nodeid[nodeid] = !ncollapsed; DataStore.update(); }}
-			>{ncollapsed ? '▷' : '▼'}</button>);
-		};
-		// add column, with a collapse/expand all option
-		let allCollapsed = !!tableSettings.collapsed4nodeid.all;
-		const uiCol = new Column({
-			ui: true,
-			Header: <button className="btn btn-xs btn-outline-secondary" onClick={e => {
-				allCollapsed = !allCollapsed;
-				doCollapseAll(allCollapsed);
-				tableSettings.collapsed4nodeid.all = allCollapsed;
-				DataStore.update();
-			}} title={'click to collapse/expand all'} ><b>{allCollapsed ? '▷' : '▼'}</b></button>,
-			Cell: CellWithCollapse
-		});
-		// ... put it as the 2nd column, after the row-name
-		let firstCol = visibleColumns.shift();
-		visibleColumns = [firstCol, uiCol].concat(visibleColumns);
+		});		
 	} // ./hasCollapse
 
 	// sort?
@@ -536,7 +492,7 @@ const Rows = ({ dataTree, visibleColumns, tableSettings, rowNum = 0 }) => {
 };
 
 
-const Th = ({ column, tableSettings, headerRender }) => {
+const Th = ({ column, colNum, tableSettings, headerRender, dataTreeUnfiltered }) => {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
 	let hText;
 	if (headerRender) hText = headerRender(column);
@@ -580,9 +536,18 @@ const Th = ({ column, tableSettings, headerRender }) => {
 	if (sortByMe) arrow = tableSettings.sortByReverse ? <>&#x25B2;</> : <>&#x25BC;</>;
 	else arrow = <>&#x25BD;</>;
 
+	// align the collapse/expand button to the right
+	let divStyle = null;
+	const hasCollapse = colNum===0 && tableSettings?.hasCollapse;
+	if (hasCollapse) {
+		style = Object.assign({display:"flex"}, style);
+		divStyle={flexGrow:1};
+	}
+
 	return (
 		<th style={style} >
-			<div onClick={onClick}>{hText}{arrow}</div>
+			<div style={divStyle} onClick={onClick}>{hText}{arrow}</div>
+			{hasCollapse && <CollapseExpandButton all dataTreeUnfiltered={dataTreeUnfiltered} tableSettings={tableSettings} />}
 		</th>
 	);
 };
@@ -719,7 +684,7 @@ const defaultCellRender = (v, column) => {
 /**
  * @param {Object} p
  * @param {Number} p.row
- * @param {Number} p.colNum
+ * @param {Number} p.colNum 0 indexed
  * @param {Number} p.depth
  * @param {Column} p.column
  * @param {Tree} p.node
@@ -766,14 +731,72 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 			}, style);
 		}
 
+		// align the collapse/expand button to the right
+		let divStyle = null;
+		const hasCollapse = colNum===0 && tableSettings?.hasCollapse;
+		if (hasCollapse) {
+			style = Object.assign({display:"flex"}, style);
+			divStyle={flexGrow:1};
+		}
+
 		// the moment you've been waiting for: a table cell!
-		return <td style={style} title={tooltip} onDoubleClick={clickToEdit} onBlur={clickToEditOff} ><div>{cellGuts}</div></td>;
+		return <td style={style} title={tooltip} onSelectCapture={e => console.log("onSelectCapture",e)} onSelect={e => console.log("onSelect",e)} 
+			onDoubleClick={clickToEdit} onBlur={clickToEditOff} >
+				<div style={divStyle} >{cellGuts}</div>
+				{hasCollapse && <CollapseExpandButton node={node} item={item} tableSettings={tableSettings} />}
+			</td>;
 	} catch (err) {
 		// be robust
 		console.error(err);
 		return <td><div>{str(err)}</div></td>;
 	}
 };
+
+
+
+const CollapseExpandButton = ({all, dataTreeUnfiltered, node, item, tableSettings}) => {	
+	let onClick, ncollapsed;
+	if (all) { // top row
+		// (un)collapse all
+		const doCollapseAll = (allCollapsed) => {	
+			// NB: unshift so we dont collapse the root node
+			Tree.flatten(dataTreeUnfiltered).slice(1).map(node => {
+				if (!Tree.children(node).length) return;
+				let nodeid = Tree.id(node) || JSON.stringify(node.value);
+				tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
+			});
+			tableSettings.collapsed4nodeid.all = allCollapsed;
+		};
+		// ...preserve collapsed setting
+		// NB: lodash _.merge wasnt working as expected - collapsed state got lost
+		if ( ! tableSettings.collapsed4nodeid) {			
+			tableSettings.collapsed4nodeid = {all:true}; // HACK start collapsed
+			doCollapseAll(true);
+		}
+		// all state
+		ncollapsed = !!tableSettings.collapsed4nodeid.all;		
+		onClick = e => {
+			doCollapseAll( ! ncollapsed);			
+			DataStore.update();
+		};
+	} else {
+		// normal row
+		let nodeid = Tree.id(node) || JSON.stringify(item);		
+		ncollapsed = tableSettings.collapsed4nodeid[nodeid];		
+		// no node or children? no need for a control
+		if (!node || !Tree.children(node).length) {
+			// but what if we'd filtered out the children above?
+			if (!ncollapsed) return null;
+		}
+		onClick = e => { tableSettings.collapsed4nodeid[nodeid] = !ncollapsed; DataStore.update(); };
+	}
+	// the button
+	return (<div><button className="btn btn-xs btn-outline-secondary" title={ncollapsed ? "click to expand" : "click to collapse"}
+		onClick={onClick}
+	>{ncollapsed ? '▷' : '▼'}</button></div>); 
+	// NB: the wrapping div prevents the button growing vertically if the name in the rest of the cell is multi-line
+};
+
 
 /**
  * Custom css for a cell?
