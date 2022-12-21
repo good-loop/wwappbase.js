@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { space } from '../utils/miscutils';
+import { yessy } from '../utils/miscutils';
 
 /**
  * Optionally wrap the contents in a div.
@@ -9,7 +9,7 @@ import { space } from '../utils/miscutils';
  */
 const Wrap = ({children, ...props}) => {
     if ( ! children) return null;
-    if ( ! props) return children;
+    if ( ! yessy(props)) return children;
     return <div {...props}>{children}</div>;
 };
 
