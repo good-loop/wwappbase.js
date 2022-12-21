@@ -129,6 +129,9 @@ class TableSettings {
 	/** @type {Number} */
 	numCols;
 	
+	/** @type {?Function} optional support for selections. input: ({data:[][], start:{row,colNum}, end:{row,colNum}}) TODO true gives the copy-selection */
+	onSelect;
+
 	/** @type {Number} */
 	page = 0;
 
@@ -255,7 +258,7 @@ const SimpleTable = (props) => {
 			/></div> : null}
 			{/* NB outside scroller */ tableSettings.hasCsv==="top" && <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div>}
 			<div className='scroll-div' onScroll={onScroll} >
-				<table className={space("table", "position-relative", tableSettings.tableClass)}>
+				<table className={space("table", "position-relative", tableSettings.tableClass)} >
 					<THead {...{ visibleColumns, tableSettings, headerRender, topRow, dataTree, dataTreeUnfiltered}} />
 					<tbody>
 						<Rows
@@ -746,9 +749,24 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 			style = Object.assign({display:"flex"}, style);
 			divStyle={flexGrow:1};
 		}
+		// selected?
+		const onSelect = tableSettings.onSelect;
+		let selected;
+		if (tableSettings?.selection?.end) {
+			let minRow = Math.min(tableSettings.selection.start.row, tableSettings.selection.end.row);
+			let maxRow = Math.max(tableSettings.selection.start.row, tableSettings.selection.end.row);
+			let minCol = Math.min(tableSettings.selection.start.colNum, tableSettings.selection.end.colNum);
+			let maxCol = Math.max(tableSettings.selection.start.colNum, tableSettings.selection.end.colNum);
+			if (row >= minRow && row <= maxRow && colNum >=minCol && colNum <= maxCol) {
+				selected = true;
+				addToSelection({selection: tableSettings.selection, row, colNum, v});
+			}
+		}		
 
 		// the moment you've been waiting for: a table cell!
-		return <td style={style} title={tooltip} onSelectCapture={e => console.log("onSelectCapture",e)} onSelect={e => console.log("onSelect",e)} 
+		return <td style={style} title={tooltip} className={selected?"selected":""}
+			onMouseDown={onSelect? e => startSelect({row, colNum, tableSettings}) : null}
+			onMouseUp={onSelect? e => endSelect({row, colNum, tableSettings}) : null}
 			onDoubleClick={clickToEdit} onBlur={clickToEditOff} >
 				<div style={divStyle} >{cellGuts}</div>
 				{hasCollapse && <CollapseExpandButton node={node} item={item} tableSettings={tableSettings} />}
@@ -760,6 +778,67 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 	}
 };
 
+const startSelect= ({row, colNum, tableSettings}) => {
+	tableSettings.selection = {start:{row,colNum}};
+};
+const endSelect= ({row, colNum, tableSettings}) => {
+	console.log("endSelect", {row, colNum, tableSettings});
+	if ( ! tableSettings.selection) return;
+	tableSettings.selection.end = {row,colNum};
+	tableSettings.selection.data = [];
+	DataStore.update(); // this will set selection.data (but we need to defer to let it re-render)
+	// copy-paste support See: https://medium.com/dlt-labs-publication/copy-webpage-tables-to-excel-without-changing-their-formatting-1e0103523b63
+	if (row !== tableSettings.selection.start?.row) {
+		let select = window.getSelection(); // avoid ugly native selection across rows
+		select.removeAllRanges();		
+	}
+	_.defer(() => {
+		let data = tableSettings.selection.data;
+		let $tbl = document.createElement("table");
+		let $tblBody = document.createElement("tbody");
+		data.forEach(row => {
+			let $tr = document.createElement("tr");
+			row.forEach(v => {
+				let $td = document.createElement("td");
+				$td.innerHTML = v;
+				$tr.appendChild($td);
+			});		
+			$tblBody.appendChild($tr);
+		});
+		$tbl.appendChild($tblBody);	
+		// document.body.appendChild($tbl);
+		let range = document.createRange();
+		range.selectNodeContents($tbl)
+		let select = window.getSelection();
+		select.removeAllRanges();
+		select.addRange(range);
+		// :( control-c copy feels unreliable here (chrome, dec 22)
+		// let blob = new Blob([], {type:"text/html"});
+		// navigator.clipboard?.write([new ClipboardItem({ [blob.type]: blob })]);
+		// window.getSelection().removeAllRanges();
+		// $tbl.style.display = "none";
+		console.log("select", data);
+	});
+	// custom handler?
+	if (_.isFunction(tableSettings.onSelect)) {	
+		_.defer(() => tableSettings.onSelect(tableSettings.selection));
+	}	
+};
+
+const clearSelect= ({row, colNum, tableSettings}) => {
+	tableSettings.selection = {};
+}
+const addToSelection = ({selection, row, colNum, v}) => {
+	if ( ! selection.data) {
+		selection.data = [];
+	}
+	let minRow = Math.min(selection.start.row, selection.end.row);
+	let minCol = Math.min(selection.start.colNum, selection.end.colNum);
+	let r = row - minRow;
+	let c = colNum - minCol;
+	if ( ! selection.data[r]) selection.data[r] = [];
+	selection.data[r][c] = v;
+};
 
 /** (un)collapse all  */
 const doCollapseAll = (dataTreeUnfiltered, tableSettings, allCollapsed) => {	
