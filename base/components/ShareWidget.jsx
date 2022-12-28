@@ -202,9 +202,18 @@ const doShareByLink2 = ({link, shareId, withXId, jwt}) => {
 	return link2;
 };
 
+/**
+ * 
+ * @param {Object} p
+ * @param {Share[]} p.list
+ * @returns 
+ */
 const ListShares = ({list}) => {
 	if (!list) return <Misc.Loading text="Loading current shares" />;
-
+	// dont show pseudo users
+	if ( ! Roles.isDev()) {
+		list = list.filter(s => s._to && XId.service(s._to) !== 'pseudo');
+	}
 	return (
 		<ul className="ListShares">
 			{list.length ? (
