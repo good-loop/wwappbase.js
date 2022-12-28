@@ -63,8 +63,8 @@ XId.dewart = function(xid) {
 };
 
 /**
- * @param xid {!String}
- * @returns the service part of the XId, e.g. "twitter"
+ * @param {!string} xid
+ * @returns {string} the service part of the XId, e.g. "twitter"
  */
 XId.service = function(xid) {
 	assert(_.isString(xid), "XId.js service(): xid is not a string! " + xid);

@@ -2,15 +2,17 @@ import React, { useState } from 'react';
 import { assert, assMatch } from '../utils/assert';
 import Login from '../youagain';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
-import {isEmail, stopEvent, uid } from '../utils/miscutils';
+import {copyTextToClipboard, setUrlParameter, isEmail, stopEvent, uid } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
 import DataClass, {getType, getId, getClass} from '../data/DataClass';
+import XId from '../data/XId';
 import Roles, {getRoles} from '../Roles';
-import Shares, {Share, canRead, canWrite, shareThingId} from '../Shares';
+import Shares, {Share, canRead, canWrite, shareThingId, doShareThing, getShareListPV} from '../Shares';
 import PropControl from './PropControl';
 import Icon from './Icon';
+import JSend from '../data/JSend';
 
 
 /**
@@ -81,11 +83,12 @@ const deleteShare = ({share}) => {
  * @param {?String} p.shareId E.g. "role:editor" Set this, or item, or type+id.
  * @param {?DataClass} p.item - The item to be shared
  * @param {?String}	p.name - optional name for the thing
- * @param {?boolean} p.hasButton - Show the standard share button?
+ * @param {?boolean} p.hasButton - Show the standard share button? Otherwise this would NOT include the share button -- see ShareLink for handling that separately.
+ * @param {?boolean} p.hasLink offer a share-by-link option
  *
- * Note: This does NOT include the share button -- see ShareLink for that
+ 
 */
-const ShareWidget = ({shareId, item, type, id, name, hasButton, children}) => {
+const ShareWidget = ({shareId, item, type, id, name, hasButton, hasLink, children}) => {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -136,11 +139,65 @@ const ShareWidget = ({shareId, item, type, id, name, hasButton, children}) => {
 				</div>
 				<h5>Shared with</h5>
 				<ListShares list={shares} />
+				{hasLink && <ShareByLink name={name} shareId={shareId} />}
 			</ModalBody>
 		</Modal>
 	</>;
 }; // ./ShareWidget
 
+
+const ShareByLink = ({link, name, shareId}) => {
+	if ( ! link) link = window.location+"";
+	let [slink, setSlink] = useState();
+	let withXId = shareId+"@pseudo";
+	const doShareByLink = e => {
+		if (slink) {
+			copyTextToClipboard(slink);
+			return;
+		}
+		let pvShareList = getShareListPV(shareId);
+		pvShareList.promise.then(shares => {
+			console.log("ShareByLink shares", shares);
+			let pseudoShare = shares.find(s => s._to === withXId);
+			if (pseudoShare) {
+				// ?? how to get the jwt for the already made pseudo user??
+				let pjwt = Login.getJWT({person:withXId});
+				pjwt.then(res => {
+					let jwt = JSend.data(res);
+					let link2 = doShareByLink2({link, shareId, withXId, jwt});
+					setSlink(link2);
+				});
+				return;
+			}	
+			// request a pseudo user jwt
+			console.log("ShareByLink make a new pseudo user...");
+			let pPseudoUser = Login.registerStranger({name:"Pseudo user for "+name, person:withXId});
+			pPseudoUser.then(res => {
+				console.warn("pPseudoUser then", res, res?.cargo?.user);
+				let user = JSend.data(res).user;
+				let jwt = user.jwt;
+				// share the pseudo-user with the shareId (so e.g. users of a dashbaord can access the pseudo-user)
+				doShareThing({shareId:withXId, withXId:shareId+"@share"});
+				let link2 = doShareByLink2({link, shareId, withXId, jwt});
+				setSlink(link2);
+			}, err => {
+				console.warn("pPseudoUser Error",err);
+			});	
+		}); // ./ shareList.then		
+	}; // ./ doShareByLink
+	
+	return <><h5>General Access</h5>
+		<Button onClick={doShareByLink} ><Icon name="clipboard" /> Copy Link for {withXId || "pseudo-user"}</Button>
+	</>;
+};
+
+const doShareByLink2 = ({link, shareId, withXId, jwt}) => {
+	let pShare = doShareThing({shareId, withXId});
+	let link2 = setUrlParameter(link, "jwt", jwt);
+	copyTextToClipboard(link2);
+	console.warn("copied link",link2);
+	return link2;
+};
 
 const ListShares = ({list}) => {
 	if (!list) return <Misc.Loading text="Loading current shares" />;

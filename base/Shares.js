@@ -54,15 +54,16 @@ const shareThingId = (type, id) => {
 };
 
 /**
+ * List the shares for an object (the user must have access to the thing).
  * 
  * @param {!String} shareId 
- * @returns PV<Share[]>
+ * @returns {PromiseValue} PV<Share[]>
  */
 const getShareListPV = shareId => {
 	return DataStore.fetch(pathToListHits(shareId), 
 		() => Login.getShareList(shareId),
 		false, CACHE_TIME_MS);
-}
+};
 
 const claimItem = ({type, id}) => {
 	C.TYPES.assert(type);
@@ -72,6 +73,13 @@ const claimItem = ({type, id}) => {
 		.then(DataStore.update);
 }
 
+/**
+ * 
+ * @param {Object} p
+ * @param {!string} p.shareId
+ * @param {!XId} p.withXId
+ * @returns {Promise} Login.shareThing
+ */
 const doShareThing = ({shareId, withXId}) => {
 	// call the server
 	let p = Login.shareThing(shareId, withXId);
