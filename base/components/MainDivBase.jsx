@@ -155,7 +155,7 @@ class MainDivBase extends Component {
 			navbarAccountLinkText,
 			NavGuts, NavExpandSize="md",
 			fullWidthPages,
-			undecoratedPages, // TODO document props
+			undecoratedPages, // String[] pages with no navbar or footer
 			undecorated, // TODO document props
 			canRegister,
 			loginService, // OLD code
