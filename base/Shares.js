@@ -74,7 +74,7 @@ const claimItem = ({type, id}) => {
 }
 
 /**
- * 
+ * ?? read vs write ??
  * @param {Object} p
  * @param {!string} p.shareId
  * @param {!XId} p.withXId

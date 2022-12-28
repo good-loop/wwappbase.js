@@ -215,11 +215,11 @@ class _Login {
 
 	/**
 	 * 
-	 * @param {{person:XId, password:?string}} loginInfo 
+	 * @param {{txid:XId}} loginInfo 
 	 * @returns 
 	 */
 	getJWT(loginInfo) {
-		loginInfo.action = 'login';
+		loginInfo.action = 'getjwt';
 		// copy pasta from login() without the state edits
 		loginInfo.nonce = guid();
 		let pLogin = apost(Login.ENDPOINT, loginInfo);

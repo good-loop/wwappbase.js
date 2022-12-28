@@ -149,7 +149,7 @@ const ShareWidget = ({shareId, item, type, id, name, hasButton, hasLink, childre
 const ShareByLink = ({link, name, shareId}) => {
 	if ( ! link) link = window.location+"";
 	let [slink, setSlink] = useState();
-	let withXId = shareId+"@pseudo";
+	const withXId =  shareId+"_by_"+Login.getId()+"@pseudo";
 	const doShareByLink = e => {
 		if (slink) {
 			copyTextToClipboard(slink);
@@ -161,7 +161,7 @@ const ShareByLink = ({link, name, shareId}) => {
 			let pseudoShare = shares.find(s => s._to === withXId);
 			if (pseudoShare) {
 				// ?? how to get the jwt for the already made pseudo user??
-				let pjwt = Login.getJWT({person:withXId});
+				let pjwt = Login.getJWT({txid:withXId, via:shareId+"@share"});
 				pjwt.then(res => {
 					let jwt = JSend.data(res);
 					let link2 = doShareByLink2({link, shareId, withXId, jwt});
@@ -176,8 +176,11 @@ const ShareByLink = ({link, name, shareId}) => {
 				console.warn("pPseudoUser then", res, res?.cargo?.user);
 				let user = JSend.data(res).user;
 				let jwt = user.jwt;
-				// share the pseudo-user with the shareId (so e.g. users of a dashbaord can access the pseudo-user)
+				// claim the pseudo-user
+				Login.claim(withXId);
+				// share the pseudo-user with the shareId (so TODO e.g. users of a dashbaord can access the pseudo-user)
 				doShareThing({shareId:withXId, withXId:shareId+"@share"});
+				// share the item with the seudo-user & copy to clipboard
 				let link2 = doShareByLink2({link, shareId, withXId, jwt});
 				setSlink(link2);
 			}, err => {
