@@ -173,6 +173,7 @@ class _Login {
 		// ?? how does this interact with other jwts if the user is logged in??
 		let m = window.location.search.match(/jwt=([^&]+)/);
 		let jwt = m? m[1] : null;
+		console.log("JWT from url", jwt);
 		// call the server...
 		pVerify = apost(Login.ENDPOINT, { action: 'verify', jwt })
 			.then(function (res) {
@@ -616,7 +617,7 @@ const apost = (url, data, type="POST") => {
 	data.app = Login.app;
 	data.d = Login.dataspace;
 	data.withCredentials = true; // let the server know this is a with-credentials call
-	data.caller = "" + document.location; // provide some extra info
+	data.caller = document.location?.origin + document.location?.pathname; // provide some extra info. truncate the url to avoid shipping eg jwt tokens
 	// add in local cookie auth
 	const cookies = Cookies.get();
 	let cbase = cookieBase();
