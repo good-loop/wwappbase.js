@@ -48,7 +48,7 @@ const EMOJI = {
  /**
   * 
   * @param {Object} p
-  * @param {?String} p.name camera|trashcan|memo etc
+  * @param {?EMOJI} p.name camera|trashcan|memo etc
   * @param {?String} p.color black|white|grey
   * @param {?String} p.size xs|sm|lg|xl
   */

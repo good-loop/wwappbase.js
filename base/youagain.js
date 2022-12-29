@@ -91,7 +91,7 @@ try {
 
 class _Login {
 	/** You-Again version */
-	version = "0.9.3";
+	version = "0.9.4";
 	/** This app, as known by you-again. You MUST set this! */
 	app;
 	/** aka `issuer` Allows for grouping several apps under one banner. */
@@ -150,26 +150,31 @@ class _Login {
 	};
 
 
-/**
-@param {?string} service  Optional selector
-@return {string} The (first) xid for this service, or null. E.g. "moses@twitter"
-*/
-getId(service) {
-	let u = Login.getUser(service);
-	if (!u) {
-		return null;
-	}
-	return u.xid;
-};
+	/**
+	@param {?string} service  Optional selector
+	@return {string} The (first) xid for this service, or null. E.g. "moses@twitter"
+	*/
+	getId(service) {
+		let u = Login.getUser(service);
+		if (!u) {
+			return null;
+		}
+		return u.xid;
+	};
 
 	/** Is the user signed in? Check with the server.
-	@returns {Promise} */
+	@returns {Promise} for a user, and sets the local login state */
 	verify() {
 		if (pVerify) {
 			return pVerify; // don't repeat call if a call is in progress
 		};
 		console.log("start login...");
-		pVerify = apost(Login.ENDPOINT, { action: 'verify' })
+		// support for a jwt in the url eg for a pseudo user to enable sharing
+		// ?? how does this interact with other jwts if the user is logged in??
+		let m = window.location.search.match(/jwt=([^&]+)/);
+		let jwt = m? m[1] : null;
+		// call the server...
+		pVerify = apost(Login.ENDPOINT, { action: 'verify', jwt })
 			.then(function (res) {
 				if (!res || !res.success) {
 					logout2();
@@ -208,6 +213,19 @@ getId(service) {
 		return login2({ action: 'login', person, password });
 	};
 
+	/**
+	 * 
+	 * @param {{txid:XId}} loginInfo 
+	 * @returns 
+	 */
+	getJWT(loginInfo) {
+		loginInfo.action = 'getjwt';
+		// copy pasta from login() without the state edits
+		loginInfo.nonce = guid();
+		let pLogin = apost(Login.ENDPOINT, loginInfo);
+		return pLogin;
+	};
+	
 }; // ./ Login class
 const Login = new _Login();
 
@@ -419,7 +437,7 @@ const login2 = function (loginInfo) {
 
 /**
 * Register a new user, typically with email & password
-@param registerInfo {email:string, password:string} + other info??
+@param {{email:string, password:string}} registerInfo + other info??
 */
 Login.register = function (registerInfo) {
 	registerInfo.action = 'signup';
@@ -428,7 +446,7 @@ Login.register = function (registerInfo) {
 
 /**
  * Like register() but for an authorised user to register other people
- * @param {Object} registerInfo {email, password}
+ * @param {{email:string, person:XId, password:string, name:?string}} registerInfo
  * @returns {Promise} Unlike register(), no processing is done with this
  */
 Login.registerStranger = function (registerInfo) {	
@@ -694,11 +712,12 @@ const dataPut = function (formData, key, value) {
  * 
  * Security: The browser must have a token for puppetXId for this request to succeed. 
  * 
- * @param puppetXId {String} Normally Login.getId() But actually this can be any string! This is the base method for shareThing()
+ * @param {String} puppetXId Normally Login.getId() But actually this can be any string! This is the base method for shareThing()
  * TODO we should probably refactor that just for clearer naming.
- * @param personXId {String} the user who it is shared with
- * @param bothWays {?boolean} If true, this relation is bi-directional: you claim the two ids are the same person.
- * @param message {?String} Optional message to email to personXId
+ * @param {String} personXId the user who it is shared with
+ * @param {?boolean} bothWays If true, this relation is bi-directional: you claim the two ids are the same person.
+ * @param {?String} message Optional message to email to personXId
+ * @returns {Promise}
  */
 Login.shareLogin = function (puppetXId, personXId, bothWays, message) {
 	assert(isString(puppetXId), 'youagain.js shareThing() - Not a String ', puppetXId);
@@ -734,6 +753,7 @@ Login.deleteShare = function (thingId, personXId) {
  * @param thingId {String} ID for the thing you want to share. 
  * This ID is app specific. E.g. "/myfolder/mything"
  * @param message {?String} Optional message to email to personXId
+ * @returns 
  */
 Login.shareThing = function (thingId, personXId, message) {
 	// actually they are the same call, but bothWays only applies for shareLogin

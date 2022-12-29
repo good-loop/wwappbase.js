@@ -13,7 +13,7 @@ module.exports = {
 		context: true,
 		jestPuppeteer: true
 	},
-	parser: "babel-eslint",
+	parser: "@babel/eslint-parser",
 	parserOptions: {
 		ecmaVersion: 9,// 2018 version. Can still be transpiled to 6 (2015) by Babel 
 		sourceType: "module",
