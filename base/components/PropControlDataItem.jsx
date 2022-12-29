@@ -141,7 +141,8 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 							ListItem={SlimListItem}
 							// TODO allow ListLoad to show if there are only a few options
 							noResults={`No ${itemType} found for "${rawValue}"`}
-							pageSize={pageSize} otherParams={{filterByShares:true}}
+							pageSize={pageSize} 
+							otherParams={{filterByShares:true}} // deprecated: filterByShares Dec 2022
 							onClickItem={item => doSet(item)}
 							q={q}
 							list={list}
