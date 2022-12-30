@@ -5,7 +5,7 @@ import { getScreenSize, isMobile, space, stopEvent } from '../utils/miscutils';
 import ErrBoundary from './ErrBoundary';
 
 /**
- * @param {JSX[]} children 1 to 3 elements, for left (optional), main, right. Use LeftSidebar, MainPaine, RightSidebar
+ * @param {JSX[]} children 1 to 3 elements, for left (optional), main, right. Use LeftSidebar, MainPain, RightSidebar
  * @param {?Boolean} showAll If true, then all panes are always shown -- on small devices: left as slide-out nav (TODO), right underneath.
  */
 const Editor3ColLayout = ({ children, showAll }) => {
