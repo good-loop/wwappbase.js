@@ -144,6 +144,9 @@ class PropControlParams {
 	/** @type {?boolean}  */
 	readOnly;
 
+	/** Optional pass in of the current value */
+	value;
+
 	/** @type {?String} Warning message to show, regardless of validator output */
 	warning
 
@@ -283,7 +286,7 @@ or if extras like help and error text are wanted.
    * @param {PropControlParams} p
    */
 const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
-	let { type, optional, required, path, prop, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
+	let { type, optional, required, path, prop, set, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
 	if (label === true) {
 		label = toTitleCase(prop); // convenience
 		props = { ...props, label };
@@ -300,8 +303,8 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	}
 
 	assert(PropControl.KControlType.has(type), `PropControl: invalid type ${type}`);
-	assert(prop || prop === 0, `PropControl: invalid prop for path: "${path}", prop: "${prop}"`); // NB 0 is valid as an array entry
-	assMatch(prop, 'String|Number', `PropControl: prop must be string or number, path: "${path}", prop: "${prop}"`);
+	assert(prop || prop === 0 || set, `PropControl: invalid prop for path: "${path}", prop: "${prop}"`); // NB 0 is valid as an array entry
+	if (prop) assMatch(prop, 'String|Number', `PropControl: prop must be string or number, path: "${path}", prop: "${prop}"`);
 	assMatch(path, Array, `PropControl: path is not an array: "${path}", prop: "${prop}"`);
 	assert(path.indexOf(undefined) < 0 && path.indexOf(null) < 0, `PropControl: nully in path "${path}", prop: "${prop}"`);
 
@@ -310,7 +313,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	const proppath = path.concat(prop);
 	// TODO refactor to use `storeValue` in preference to `value` as it is unambiguous
 	// HACK: for now, we use both as theres a lot of code that refers to value, but its fiddly to update it all)
-	let storeValue = DataStore.getValue(proppath);
+	let storeValue = set? pvalue : DataStore.getValue(proppath);
 	let value = storeValue;
 
 	// What is rawValue?
@@ -509,11 +512,13 @@ const PropControl2 = (props) => {
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
 	let { storeValue, value, rawValue, setRawValue, type, optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
-	let { bg, saveFn, modelValueFromInput, ...otherStuff } = stuff;
-
+	let { bg, set, saveFn, modelValueFromInput, ...otherStuff } = stuff;
 	// update is undefined by default, false if fast. See DataStore.update()
 	let update;
 	if (fast) update = false;
+	if ( ! set) { // set can be a useState setter. If not, use DataStore
+		set = newVal => DSsetValue(proppath, newVal, update);
+	}
 
 	// HACK: Fill in modelValueFromInput differently depending on whether this is a plugin-type input
 	// Temporary while shifting everything to plugins
@@ -543,7 +548,7 @@ const PropControl2 = (props) => {
 			try {
 				// empty string is also a valid input - don't try to parse it though
 				const newVal = rawVal ? JSON.parse(rawVal) : null;
-				DSsetValue(proppath, newVal);
+				set(newVal);
 				if (saveFn) saveFn({ event, path, prop, value: newVal });
 			} catch (err) {
 				// TODO show error feedback
@@ -560,8 +565,7 @@ const PropControl2 = (props) => {
 				setRawValue(e.target.value);
 			}
 			let mv = modelValueFromInput(e.target.value, type, e, storeValue, props);
-			// console.warn("onChange", e.target.value, mv, e);
-			DSsetValue(proppath, mv, update);
+			set(mv);
 			if (saveFn) saveFn({ event: e, path, prop, value: mv });
 			// Enable piggybacking custom onChange functionality ??use-case vs saveFn??
 			if (stuff.onChange && typeof stuff.onChange === 'function') stuff.onChange(e);
@@ -608,7 +612,7 @@ const PropControl2 = (props) => {
 			// console.log("onchange", e); // minor TODO DataStore.onchange recognise and handle events
 			const isOn = e && e.target && e.target.checked;
 			const newVal = isOn ? onValue : offValue;
-			DSsetValue(proppath, newVal); // Debugging no-visual-update bug May 2022 on testmy.gl: tried update=true here -- no change :(
+			set(newVal); // Debugging no-visual-update bug May 2022 on testmy.gl: tried update=true here -- no change :(
 			setTimeout(() => DataStore.update(), 1); // HACK for no-visual-update bug May 2022 seen on testmy.gl
 			if (saveFn) saveFn({ event: e, path, prop, value: newVal });
 		};

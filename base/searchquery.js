@@ -112,7 +112,7 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	// unset? (but do allow prop:false and x:0)
 	if (propValue===null || propValue===undefined || propValue==="") {
 		if ( ! newq) {
-			console.warn("SearchQuery.js null + null!",sq,propName,propValue);
+			// console.warn("SearchQuery.js null + null!",sq,propName,propValue);
 			return new SearchQuery();
 		}
 		// already removed the old
