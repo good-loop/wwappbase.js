@@ -66,25 +66,25 @@ class NavProps {
  * @param {NavProps|DataClass} props e.g. brandLink brandName brandLogo, or an Advertiser or NGO
  */
 export const setNavProps = (props) => {
-	useEffect(() => {
-		// extract props from a DataItem
-		if (DataClass.isa(props)) {
-			const item = props;
-			props = { // advertiser link and logo			
-				brandId: getId(item),
-				brandType: getType(item),
-				brandLink: ""+window.location,
-				brandLogo: item.branding? (item.branding.logo_white || item.branding.logo) : item.logo,
-				brandName: item.name || getId(item)
-			};	
-		}
+	// useEffect(() => { // causes a "Rendered more hooks than during the previous render." error
+	// extract props from a DataItem
+	if (DataClass.isa(props)) {
+		const item = props;
+		props = { // advertiser link and logo			
+			brandId: getId(item),
+			brandType: getType(item),
+			brandLink: ""+window.location,
+			brandLogo: item.branding? (item.branding.logo_white || item.branding.logo) : item.logo,
+			brandName: item.name || getId(item)
+		};	
+	}
 
-		// NB: update if not equals, which avoids the infinite loop bug of default update behaviour
-		if (equals(getNavProps(), props)) {
-			return; // no-op
-		}
-		DataStore.setValue(['widget','NavBar'], props);
-	}, [JSON.stringify(props)]);
+	// NB: update if not equals, which avoids the infinite loop bug of default update behaviour
+	if (equals(getNavProps(), props)) {
+		return; // no-op
+	}
+	DataStore.setValue(['widget','NavBar'], props);
+	// }, [JSON.stringify(props)]);
 };
 
 /**
