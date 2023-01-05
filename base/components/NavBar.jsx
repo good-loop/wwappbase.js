@@ -66,7 +66,7 @@ class NavProps {
  * @param {NavProps|DataClass} props e.g. brandLink brandName brandLogo, or an Advertiser or NGO
  */
 export const setNavProps = (props) => {
-	// useEffect(() => { // causes a "Rendered more hooks than during the previous render." error
+	// useEffect(() => { // No - this causes a "Rendered more hooks than during the previous render." error
 	// extract props from a DataItem
 	if (DataClass.isa(props)) {
 		const item = props;
