@@ -87,7 +87,7 @@ const AddOrEditButton = ({arrayPath, i = -1, listValue, Editor, item, itemType})
 		{existingItem ? (
 			<Button size="sm" className="ml-1" color="outline-secondary" onClick={onClick}><Icon name="memo" /></Button>
 		) : (
-			<Button onClick={onClick}><Icon name="plus" />Add {itemType}</Button>
+			<Button onClick={onClick}><Icon name="plus" /> Add {itemType}</Button>
 		)}
 		<Modal isOpen={show} toggle={toggle} >
 			<ModalHeader toggle={toggle}>Add {itemType}</ModalHeader>
