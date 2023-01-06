@@ -258,7 +258,7 @@ class MainDivBase extends Component {
 					accountMenuItems={navbarAccountMenuItems}
 					accountLinkText={navbarAccountLinkText}
 					onToggle={onNavToggle}
-                    logoClass={navbarLogoClass}
+					logoClass={navbarLogoClass}
 				>
 				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 				</NavBar>
@@ -269,7 +269,7 @@ class MainDivBase extends Component {
 					<MessageBar />
 					<div className="page" id={page}>
 						<Page />
-					</div>					
+					</div>
 				</Row>
 				<Row>
 					{Footer && !undecorated && <Footer page={page} />}
