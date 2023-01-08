@@ -198,7 +198,6 @@ const doShareByLink2 = ({link, shareId, withXId, jwt}) => {
 	let pShare = doShareThing({shareId, withXId});
 	let link2 = setUrlParameter(link, "jwt", jwt);
 	copyTextToClipboard(link2);
-	console.warn("copied link",link2);
 	return link2;
 };
 
