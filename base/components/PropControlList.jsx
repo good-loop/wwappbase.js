@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-import PropControl, {registerControl, DSsetValue} from './PropControl';
+import PropControl, {registerControl, PropControlParams, DSsetValue} from './PropControl';
 import DataStore from '../plumbing/DataStore';
 import { Badge, Form, FormGroup, Input, Label, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import CloseButton from './CloseButton';
@@ -17,7 +17,7 @@ import Icon from './Icon';
  * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
  * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
-const PropControlList = ({rawValue, storeValue, Viewer=BasicViewer, Editor=BasicEditor, itemType, rowStyle, setRawValue, modelValueFromInput, 
+export const PropControlList2 = ({rawValue, storeValue, Viewer=BasicViewer, Editor=BasicEditor, itemType, rowStyle, setRawValue, modelValueFromInput, 
 	path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => 
 {
 	const listValue = asArray(storeValue);
@@ -38,7 +38,7 @@ const PropControlList = ({rawValue, storeValue, Viewer=BasicViewer, Editor=Basic
 
 	return 
 }; // ./radio
-registerControl({type:'list', $Widget: PropControlList});
+registerControl({type:'list', $Widget: PropControlList2});
 
 const BasicViewer = ({item, i}) => {
 	return <div>{i}: {str(item)}</div>;
@@ -99,5 +99,14 @@ const DeleteButton = ({arrayPath, i, listValue}) => {
 	return <Button size="sm" className="ml-1" color="outline-secondary" onClick={doDelete}><Icon name="trashcan"/></Button>;
 };
 
-export default PropControlList;
+/**
+ * A list-of-objects editor
+ * 
+ * @param {PropControlParams} p
+ * @param {?String} p.itemType Used for labels
+ * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
+ * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
+ */
+const PropControlList = (p) => <PropControl type="list" {...p} />
 
+export default PropControlList;
