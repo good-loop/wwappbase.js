@@ -1,7 +1,7 @@
 
 import React from 'react';
 
-import { registerControl } from './PropControl';
+import PropControl, {registerControl, PropControlParams, DSsetValue} from './PropControl';
 import DataStore from '../plumbing/DataStore';
 import { Badge, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { useState } from 'react';
@@ -18,7 +18,7 @@ import '../style/PropControls/PropControlList.less';
  * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
  * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
-const PropControlList = ({storeValue, Viewer = BasicViewer, Editor = BasicEditor, itemType, rowStyle, proppath }) => {
+export const PropControlList2 = ({ storeValue, Viewer = BasicViewer, Editor = BasicEditor, itemType, rowStyle, proppath }) => {
 	const listValue = asArray(storeValue);
 	if (!Viewer) Viewer = Editor;
 
@@ -41,7 +41,7 @@ const PropControlList = ({storeValue, Viewer = BasicViewer, Editor = BasicEditor
 	);
 };
 
-registerControl({type: 'list', $Widget: PropControlList});
+registerControl({type: 'list', $Widget: PropControlList2});
 
 
 const BasicViewer = ({item, i}) => <div>{i}: {str(item)}</div>;
@@ -115,6 +115,16 @@ const DeleteButton = ({arrayPath, i, listValue}) => {
 		</Button>
 	);
 };
+
+/**
+ * A list-of-objects editor
+ * 
+ * @param {PropControlParams} p
+ * @param {?String} p.itemType Used for labels
+ * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
+ * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
+ */
+const PropControlList = (p) => <PropControl type="list" {...p} />
 
 export default PropControlList;
 

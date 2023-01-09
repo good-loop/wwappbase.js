@@ -66,6 +66,7 @@ class NavProps {
  * @param {NavProps|DataClass} props e.g. brandLink brandName brandLogo, or an Advertiser or NGO
  */
 export const setNavProps = (props) => {
+	// useEffect(() => { // No - this causes a "Rendered more hooks than during the previous render." error
 	// extract props from a DataItem
 	if (DataClass.isa(props)) {
 		const item = props;
@@ -83,6 +84,7 @@ export const setNavProps = (props) => {
 		return; // no-op
 	}
 	DataStore.setValue(['widget','NavBar'], props);
+	// }, [JSON.stringify(props)]);
 };
 
 /**
@@ -101,12 +103,12 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', hom
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
 			<img className={space(logoClass, C.app.logoMobile && "d-none d-md-inline-block")} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
-            {C.app.logoMobile && <img className={space(logoClass, "d-md-none")} alt={C.app.name} src={C.app.logoMobile} />}
+			{C.app.logoMobile && <img className={space(logoClass, "d-md-none")} alt={C.app.name} src={C.app.logoMobile} />}
 			{isBeta && <span style={{position:'sticky',top:'100%',color:'grey'}}>beta</span>}
 		</C.A>
 		{brandLink && (brandLogo || brandName) && // a 2nd brand?
 			<div className='position-relative'>
-				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>				
+				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>
 					{brandLogo? <img className={space(logoClass, "brand-logo")} alt={brandName} src={brandLogo} /> : brandName}
 				</C.A>
 				{brandLink !== ""+window.location 

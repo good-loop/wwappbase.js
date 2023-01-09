@@ -111,6 +111,7 @@ const setMainDivClass = (newClass, regex) => {
 	navbarDarkTheme: {?boolean}
 	navbarBackgroundColour: {?String}
 	loginRequired: {?boolean}
+	{?String[]} loginServices e.g. ["twitter","facebook"] See LoginWidget({services})
 	securityCheck: ({page}) => throw error / return true
 	SecurityFailPage: ?JSX
 	defaultPage: {String|Function -> String},
@@ -154,10 +155,11 @@ class MainDivBase extends Component {
 			navbarAccountLinkText,
 			NavGuts, NavExpandSize="md",
 			fullWidthPages,
-			undecoratedPages, // TODO document props
+			undecoratedPages, // String[] pages with no navbar or footer
 			undecorated, // TODO document props
 			canRegister,
-			loginService, // TODO document props
+			loginService, // OLD code
+			loginServices,
 			Footer,
 			noLoginTitle, // TODO document props
 			loginLogo, // TODO document props
@@ -256,7 +258,7 @@ class MainDivBase extends Component {
 					accountMenuItems={navbarAccountMenuItems}
 					accountLinkText={navbarAccountLinkText}
 					onToggle={onNavToggle}
-                    logoClass={navbarLogoClass}
+					logoClass={navbarLogoClass}
 				>
 				{_.isFunction(navbarChildren)? navbarChildren() : navbarChildren}
 				</NavBar>
@@ -267,7 +269,7 @@ class MainDivBase extends Component {
 					<MessageBar />
 					<div className="page" id={page}>
 						<Page />
-					</div>					
+					</div>
 				</Row>
 				<Row>
 					{Footer && !undecorated && <Footer page={page} />}
@@ -277,9 +279,8 @@ class MainDivBase extends Component {
 				title={noLoginTitle ? null : `Welcome to ${C.app.name}`}
 				subtitle={loginSubtitle}
 				canRegister={canRegister}
-				loginService={loginService}
 				logo={loginLogo}
-				services={canRegister ? [] : loginService}
+				services={canRegister ? [] : (loginServices || loginService)}
 				noSocials={noSocials}
 				Guts={LoginGuts}
 			>

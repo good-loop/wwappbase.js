@@ -54,7 +54,7 @@ const endpoints = [
 endpoints.forEach(e => {
 	if (e.base) {
 		ServerIO[e.key] = `${C.HTTPS}://${C.SERVER_TYPE}${e.base}`;
-		e.prodValue = 'https://'+e.base;	
+		e.prodValue = 'https://'+e.base;
 	} else {
 		ServerIO[e.key] = e.prodValue;
 	}
@@ -149,11 +149,12 @@ const checkBase2_toggleTestEndpoints = () => {
 		return;
 	}
 	if (server === 'local') { // probably not needed
-		ServerIO.AS_ENDPOINT = 'http://localas.good-loop.com';
-		ServerIO.PORTAL_ENDPOINT = 'http://localportal.good-loop.com';
-		ServerIO.DATALOG_ENDPOINT = 'http://locallg.good-loop.com/data';
-		ServerIO.PROFILER_ENDPOINT = 'http://localprofiler.good-loop.com';
-		ServerIO.MEDIA_ENDPOINT = 'http://localuploads.good-loop.com';
+		const protocol = window.location.protocol;
+		ServerIO.AS_ENDPOINT = protocol+'//localas.good-loop.com';
+		ServerIO.PORTAL_ENDPOINT = protocol+'//localportal.good-loop.com';
+		ServerIO.DATALOG_ENDPOINT = protocol+'//locallg.good-loop.com/data';
+		ServerIO.PROFILER_ENDPOINT = protocol+'//localprofiler.good-loop.com';
+		ServerIO.MEDIA_ENDPOINT = protocol+'//localuploads.good-loop.com';
 		ServerIO.APIBASE = ''; // lets assume you're on local
 		return;
 	}

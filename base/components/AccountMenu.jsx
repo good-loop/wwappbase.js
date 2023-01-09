@@ -17,13 +17,15 @@ import { modifyPage } from '../plumbing/glrouter';
 
 /**
 The top-right menu
-active {boolean} true if on the account page
-account {boolean} true if we want to show the account option (true by default), needed by my-loop because it doesn't have an account page but needs logout
-logoutLink {string} what page should be loaded after logout ('#dashboard' by default), to allow it to go to the dashboard in portal, but the same page in my-loop
-accountMenuItems {?DropdownItem} add optional items to the account menu - used in MyGL/MyData where we show settings etc on the account page body (those don't fit into the layout mobile)
-linkType {string} HACK: Set to "C.A" for <C.A /> hrefs, "a" for normal hrefs. Fixes bug in T4G in which it wasn't loading the links correctly (since it's in an iFrame presumably)
+@param {Object} p
+@param {boolean} p.active true if on the account page
+@param {boolean} p.account true if we want to show the account option (true by default), needed by my-loop because it doesn't have an account page but needs logout
+@param {string} p.logoutLink what page should be loaded after logout ('#dashboard' by default), to allow it to go to the dashboard in portal, but the same page in my-loop
+@param {?{string:page, String:label}[]} p.accountMenuItems Add optional items to the account menu - used in MyGL/MyData where we show settings etc on the account page body (those don't fit into the layout mobile)
+@param {string} linkType  HACK: Set to "C.A" for <C.A /> hrefs, "a" for normal hrefs. Fixes bug in T4G in which it wasn't loading the links correctly (since it's in an iFrame presumably)
+
 */
-const AccountMenu = ({active, accountMenuItems, accountLinkText="Account", canRegister, customLogin, className, logoutLink, onLinkClick, style, small, accountLink, linkType="C.A", customImg, ...props}) => {
+const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Account", canRegister, customLogin, className, logoutLink, onLinkClick, style, small, accountLink, linkType="C.A", customImg, ...props}) => {
 	const [open, setOpen] = useState(false);
 	const onClickFn = () => {
 		setOpen(!open);
@@ -51,13 +53,6 @@ const AccountMenu = ({active, accountMenuItems, accountLinkText="Account", canRe
 		<Dropdown isOpen={open} toggle={() => setOpen(!open)} nav inNavbar>
 			<DropdownToggle nav caret>{customImg ? <img src={customImg} className="custom-img"/> : name}</DropdownToggle>
 			<DropdownMenu>
-				{/*<DropdownItem>
-					{linkType == "C.A"
-						? <C.A href={modifyPage(["account"], accountHref, true, true)} className="nav-link" onClick={onClickFn}>{accountLinkText}</C.A> 
-						: <a href={modifyPage(["account"], accountHref, true, true)}  className="nav-link" onClick={onClickFn}>{accountLinkText}</a> 
-					}	
-				</DropdownItem>
-				<DropdownItem divider />*/}
 				{accountMenuItems && accountMenuItems.map((item, i) => {
 					return <div key={i}>
 						<DropdownItem >

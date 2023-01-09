@@ -6,7 +6,7 @@ import { Input, Row, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, 
 import ListLoad, {CreateButton} from './ListLoad';
 
 import C from '../CBase';
-import { DSsetValue, registerControl } from './PropControl';
+import PropControl, { DSsetValue, PropControlParams, registerControl } from './PropControl';
 import ActionMan from '../plumbing/ActionManBase';
 import { getDataItem } from '../plumbing/Crud';
 import { getId, getName } from '../data/DataClass';
@@ -37,7 +37,7 @@ const SlimListItem = ({item, onClick, noClick, ...props}) => {
  * @param {?String} p.list Optional list to use (instead of querying the server). Usually unset.
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, proppath, rawValue, setRawValue, storeValue, modelValueFromInput, 
+const PropControlDataItem2 = ({canCreate, createProp="id", base, path, prop, proppath, rawValue, setRawValue, storeValue, modelValueFromInput, 
 	type, itemType, status=KStatus.PUB_OR_DRAFT, domain, list, q, sort, embed, pageSize=20, navpage, notALink, readOnly, showId=true,
 }) => {
 	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
@@ -141,7 +141,8 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 							ListItem={SlimListItem}
 							// TODO allow ListLoad to show if there are only a few options
 							noResults={`No ${itemType} found for "${rawValue}"`}
-							pageSize={pageSize} otherParams={{filterByShares:true}}
+							pageSize={pageSize} 
+							otherParams={{filterByShares:true}} // deprecated: filterByShares Dec 2022
 							onClickItem={item => doSet(item)}
 							q={q}
 							list={list}
@@ -158,5 +159,20 @@ const PropControlDataItem = ({canCreate, createProp="id", base, path, prop, prop
 		</Row>);
 };
 
-registerControl({ type: 'DataItem', $Widget: PropControlDataItem });
+registerControl({ type: 'DataItem', $Widget: PropControlDataItem2 });
+
+/**
+ * A picker with auto-complete for e.g. Advertiser, Agency
+ * @param {PropControlParams} p 
+ * @param {!String} p.itemType
+ * @param {?Object} p.base Used with canCreate, a base object for if a new item is created.
+ * @param {?boolean} p.canCreate Offer a create button
+ * @param {?String} p.createProp If a new item is created -- what property should the typed value set? Defaults to "id"
+ * @param {?String} p.status Defaulst to PUB_OR_DRAFT
+ * @param {?String} p.q Optional search query (user input will add to this). Usually unset.
+ * @param {?String} p.list Optional list to use (instead of querying the server). Usually unset.
+ * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
+ */
+const PropControlDataItem = (p) => <PropControl type="DataItem" {...p} />
+
 export default PropControlDataItem;

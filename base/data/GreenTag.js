@@ -103,6 +103,7 @@ const generators = {
 	JAVASCRIPT: (tag) => {
 		const url = new URL(PIXEL_BASE);
 		setBaseParams(url, tag);
+		// Why is this a fetch in js, and not a <script src={url.js}> tag (which would potentially allow for more data to be collected)??
 		return `<script type="text/javascript">var x=new XMLHttpRequest();x.open('GET', '${url.toString()}');x.send()</script>`;
 	},
 	REDIRECT: (tag) => {

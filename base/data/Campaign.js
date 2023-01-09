@@ -259,6 +259,7 @@ const sortAdsList = adsList => adsList.hits.sort((a, b) => {
 });
 
 /**
+ * HACK: access=public
  * NB: This function does chained promises, so we use async + await for convenience.
  * @returns Promise List(Advert) All ads -- hidden ones are marked with a truthy `_hidden` prop
  */
@@ -289,7 +290,8 @@ const pAds2 = async function({campaign, status, query, isSub}) {
 	// fetch ads
 	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
 	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
-	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
+	const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
+	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query, access});
 	let adl = await pvAds.promise;
 	List.assIsa(adl);
 	sortAdsList(adl);
@@ -364,7 +366,7 @@ Campaign.masterFor = campaign => {
 };
 
 /**
- * 
+ * * HACK: access=public
  * @param {!Campaign} campaign 
  * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
  */
@@ -378,8 +380,9 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 	// campaigns for this advertiser / agency
 	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
 	// exclude this? No: some (poorly configured) master campaigns are also leaves
-	// sq = SearchQuery.and(sq, "-id:"+campaign.id); 
-	const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query}); 
+	// sq = SearchQuery.and(sq, "-id:"+campaign.id); 	
+	const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
+	const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query, access}); 
 	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
 	return pvCampaigns;
 };
