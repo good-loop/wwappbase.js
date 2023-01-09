@@ -83,7 +83,7 @@ export const Help = ({ children, icon = <Icon name="info" />, color = 'primary',
 /**
  * Define a class for useful VS Code editor help
  */
-class PropControlParams {
+export class PropControlParams {
 	/** 
 	 * @type {?Function} 
 	 * inputs: `{path, prop, value, event}` 
