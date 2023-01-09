@@ -6,7 +6,7 @@ import { Input, Row, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, 
 import ListLoad, {CreateButton} from './ListLoad';
 
 import C from '../CBase';
-import { DSsetValue, PropControlParams, registerControl } from './PropControl';
+import PropControl, { DSsetValue, PropControlParams, registerControl } from './PropControl';
 import ActionMan from '../plumbing/ActionManBase';
 import { getDataItem } from '../plumbing/Crud';
 import { getId, getName } from '../data/DataClass';
