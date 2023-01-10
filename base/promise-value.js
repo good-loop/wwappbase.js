@@ -1,4 +1,6 @@
 
+// See test code: test.promise.value.js
+
 /**
  * {value: ?Object, promise: !Promise, error: ?Object, resolved: boolean} 
 * The promise part is always set.
@@ -54,9 +56,10 @@ class PromiseValue {
 			valueOrPromise = valueOrPromise.value || valueOrPromise.promise;
 		}
 		if (valueOrPromise === null || valueOrPromise === undefined) {
-			// const e = new Error("null value"); Misleadingly noisy - use an ersatz error instead
-			this.error = {message:"null value for PromiseValue", name:"Error"};
-			this.promise = Promise.reject(e);
+			// NB: new Error() is Misleadingly noisy in the console - So use an ersatz error instead (which is still noisy, but as bit less)
+			const e = {message:"null value for PromiseValue", name:"Error"};
+			this.error = e;
+			this.promise = Promise.reject(this.error);
 			this.resolved = true; // NB: resolved:true and no value implies an error
 			return;
 		}
