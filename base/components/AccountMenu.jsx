@@ -31,7 +31,7 @@ const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Accou
 		setOpen(!open);
 		onLinkClick && onLinkClick();
 	}
-	let ChosenLoginLink = customLogin ? customLogin : <LoginLink className="p-2">Sign in</LoginLink> ;
+	let $LoginLink = customLogin ? customLogin : <LoginLink className="p-2">Sign in</LoginLink> ;
 
 	// TODO see navbar dropdown
 	if ( ! Login.isLoggedIn()) {
@@ -39,7 +39,7 @@ const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Accou
 		return (
 			<Nav navbar style={props.style} className={space("justify-content-end", className)}>
 				{ ! canRegister && <NavItem id="register-link"><RegisterLink /></NavItem>}
-				<NavItem className="login-link">{ChosenLoginLink}</NavItem>
+				<NavItem className="login-link">{$LoginLink}</NavItem>
 			</Nav>
 		);
 	}
