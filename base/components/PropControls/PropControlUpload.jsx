@@ -273,7 +273,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
 				<div className={space('DropZone pull-left my-1 p-1', otherStuff.disabled && 'disabled')} {...getRootProps()}>
 					<input {...getInputProps()} />
-					Drop a {acceptDescs[type]} here
+					<small>Drop a {acceptDescs[type]} here</small>
 				</div>
 			</>}
 			{preview && <div className="pull-right" style={typesWithThumbnail[type] && thumbnailStyle}>{preview}</div>}
