@@ -618,6 +618,7 @@ const apost = (url, data, type="POST") => {
 	data.d = Login.dataspace;
 	data.withCredentials = true; // let the server know this is a with-credentials call
 	data.caller = document.location?.origin + document.location?.pathname; // provide some extra info. truncate the url to avoid shipping eg jwt tokens
+	
 	// add in local cookie auth
 	const cookies = Cookies.get();
 	let cbase = cookieBase();
@@ -628,6 +629,12 @@ const apost = (url, data, type="POST") => {
 			data["src"+c] = "js-cookie";
 		}
 	}
+
+	// Ignore url jwt if logged in
+	if ( data.jwt && Login.user ) {
+		data.jwt = null
+	}
+	
 	// auth on the user?
 	if ( ! data.jwt && Login.user && Login.user.jwt) {
 		data.jwt = Login.user.jwt;
