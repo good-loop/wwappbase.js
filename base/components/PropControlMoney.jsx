@@ -11,7 +11,7 @@ import { assert } from '../utils/assert';
  * @param currency {?String}
  * @param name {?String} (optional) Use this to set a name for this money, if it has one.
  */
-const PropControlMoney = ({ prop, storeValue, rawValue, setRawValue, path, proppath,
+const PropControlMoney = ({ prop, storeValue, rawValue, setRawValue, set, path, proppath,
 	bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff }) => {
 	// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend

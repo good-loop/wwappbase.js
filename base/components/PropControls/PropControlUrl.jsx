@@ -5,7 +5,7 @@ import { urlValidator } from './validators';
 
 
 // TODO Big similarities between url, img and uploader types - more code reuse?
-const PropControlUrl = ({https, prop, value, storeValue, label, ...rest}) => (
+const PropControlUrl = ({https, prop, value, storeValue, label, set, ...rest}) => (
 	// ??why pass ...rest into the control?? WHat are the use-cases??
 	<div>
 		<FormControl type="url" name={prop} value={storeValue} onBlur={rest.onChange} {...rest} />

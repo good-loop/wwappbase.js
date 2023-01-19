@@ -579,7 +579,7 @@ const PropControl2 = (props) => {
 	// Is there a plugin for this type?
 	if ($widgetForType[type]) {
 		const Widget = $widgetForType[type];
-		const props2 = { ...props, storeValue, onChange };
+		const props2 = { ...props, storeValue, set, onChange };
 		// Fill in default modelValueFromInput but don't override an explicitly provided one
 		if (!modelValueFromInput) props2.modelValueFromInput = rawToStoreForType[type] || standardModelValueFromInput;
 

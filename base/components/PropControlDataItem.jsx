@@ -35,9 +35,11 @@ const SlimListItem = ({item, onClick, noClick, ...props}) => {
  * @param {?String} p.status Defaulst to PUB_OR_DRAFT
  * @param {?String} p.q Optional search query (user input will add to this). Usually unset.
  * @param {?String} p.list Optional list to use (instead of querying the server). Usually unset.
- * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
+ * @param {?Boolean} p.embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem2 = ({canCreate, createProp="id", base, path, prop, proppath, rawValue, setRawValue, storeValue, modelValueFromInput, 
+const PropControlDataItem2 = ({canCreate, createProp="id", base, path, prop, proppath, rawValue, 
+set, 
+setRawValue, storeValue, modelValueFromInput, 
 	type, itemType, status=KStatus.PUB_OR_DRAFT, domain, list, q, sort, embed, pageSize=20, navpage, notALink, readOnly, showId=true,
 }) => {
 	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
@@ -81,27 +83,32 @@ const PropControlDataItem2 = ({canCreate, createProp="id", base, path, prop, pro
 		let id = e.target.value;
 		setRawValue(id);
 		// signal "user is typing, don't replace search box with item badge, even if this is a valid ID"
+		// NB: This fixes an issue where if "a" was a valid ID then you couldn't enter "apple"
 		setInputClean(false);
-		// if embed (store whole item, not just ID), only set modelvalue on-click
-		if (embed) return;
-		id = id.replace(/ $/g, "");
-		let mv = modelValueFromInput? modelValueFromInput(id, type, e, storeValue) : id;
-		DSsetValue(proppath, mv);
+		// Require the user to click to set
+		// // if embed (store whole item, not just ID), only set modelvalue on-click
+		// if (embed) return;
+		// id = id.replace(/ $/g, "");
+		// let mv = modelValueFromInput? modelValueFromInput(id, type, e, storeValue) : id;
+		// set(mv);
+		// DSsetValue(proppath, mv);
 	};
 
 	const doSet = item => {
-		const id = getId(item);
+		const id = getId(item); // NB: this will be trimmed as it came from an item
 		setRawValue(id);
 		let mv = embed? Object.assign({}, item) : id;
 		if (modelValueFromInput) mv = modelValueFromInput(mv, type, {}, storeValue);
-		DSsetValue(proppath, mv, true);
+		// DSsetValue(proppath, mv, true);
+		set(mv);
 		setShowLL(false); // hide ListLoad
 		setInputClean(true); // signal OK to replace search box with item badge
 	};
 
 	const doClear = () => {
 		setRawValue('');
-		DSsetValue(proppath, '');
+		set(null);
+		// DSsetValue(proppath, '');
 	};
 
 	// (default create behaviour) the input names the object
