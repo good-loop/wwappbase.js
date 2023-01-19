@@ -65,7 +65,7 @@ class Card extends React.Component {
 
 		// Clickable header takes a caret to signify it's clickable
 		const caret = onHeaderClick ? (
-			<Icon className="pull-right" name={`caret-${collapse ? 'down' : 'up'}`} />
+			<Icon title={collapse?"expand":"collapse"} className="pull-right" name={`caret${collapse ? 'down' : 'up'}`} />
 		) : null;
 
 		let showHeader = title || glyph || icon || logo || alert || caret;

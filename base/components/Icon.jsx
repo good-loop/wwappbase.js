@@ -12,6 +12,8 @@ import { space } from '../utils/miscutils';
   */
 const EMOJI = {
 	camera: "📷",
+	caretup:"△", // ‸⋀⋁△▽▵▾▿
+	caretdown:"▽",
 	copy: "⎘",
 	clipboard: "📋",
 	globe: "🌍",
