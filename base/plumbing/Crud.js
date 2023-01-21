@@ -351,6 +351,8 @@ ActionMan.unpublish = (type, id) => unpublish({type,id});
  * @param {?Item} item 
  */
 const publishEdits = (type, id, item) => {
+	if ( ! type) type = getType(item);
+	if ( ! id) id = getId(item);
 	assMatch(type, String);
 	assMatch(id, String, "Crud.js no id to publish to "+type);
 	// if no item - well its the draft we publish
@@ -671,6 +673,8 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  * 
  * WARNING: This should usually be run through DataStore.resolveDataList() before using
  * Namespace anything fetched from a non-default domain
+ * 
+ * @see DataStore.invalidateList()
  */
  const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {	
 	assert(C.TYPES.has(type), type);
