@@ -139,7 +139,7 @@ const FontThumbnail = ({url}) => {
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
-const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, onChange, collapse, size, version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
+const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
