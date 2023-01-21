@@ -19,7 +19,7 @@ import DataItemBadge from './DataItemBadge';
 import KStatus from '../data/KStatus';
 
 /**
- * TODO replace with DataItemBadge
+ * DataItemBadge
  */
 const SlimListItem = ({item, onClick, noClick, ...props}) => {
 	return <DataItemBadge item={item} onClick={onClick} href={!noClick} {...props} />;
@@ -168,7 +168,7 @@ registerControl({ type: 'DataItem', $Widget: PropControlDataItem2 });
  * @param {?Object} p.base Used with canCreate, a base object for if a new item is created.
  * @param {?boolean} p.canCreate Offer a create button
  * @param {?String} p.createProp If a new item is created -- what property should the typed value set? Defaults to "id"
- * @param {?String} p.status Defaulst to PUB_OR_DRAFT
+ * @param {?String} p.status Defaults to PUB_OR_DRAFT
  * @param {?String} p.q Optional search query (user input will add to this). Usually unset.
  * @param {?String} p.list Optional list to use (instead of querying the server). Usually unset.
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID

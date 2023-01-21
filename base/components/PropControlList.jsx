@@ -16,7 +16,7 @@ import '../style/PropControls/PropControlList.less';
  * @param {Object} p
  * @param {?String} p.itemType Used for labels
  * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
- * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
+ * @param {?JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
 export const PropControlList2 = ({ storeValue, Viewer = BasicViewer, Editor = BasicEditor, itemType, rowStyle, proppath }) => {
 	const listValue = asArray(storeValue);
@@ -29,14 +29,14 @@ export const PropControlList2 = ({ storeValue, Viewer = BasicViewer, Editor = Ba
 					{is(item) ? (
 						<Viewer item={item} i={i} path={proppath.concat(i)} />
 					) : '_'}
-					{Editor !== Viewer && (
+					{Editor && Editor !== Viewer && (
 						<AddOrEditButton arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} item={item} itemType={itemType} />
 					)}
 					{item && item.error && <Badge pill color="danger" title={getItemErrorMessage(item)}> 🐛 </Badge>}
 					<DeleteButton arrayPath={proppath} i={i} listValue={listValue} />
 				</li>
 			))}
-			<li><AddOrEditButton size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue} itemType={itemType} /></li>
+			{Editor && <li><AddOrEditButton size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue} itemType={itemType} /></li>}
 		</ul>
 	);
 };

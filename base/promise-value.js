@@ -75,8 +75,12 @@ class PromiseValue {
 					// Warning: this on-success function will also be called if the server
 					// returns a code 200 (OK http) but {status:error} (JSend error) response.
 					// Handling this should be done in the Ajax layer.
-					if (PromiseValue.isa(r)) {
-						console.warn("TODO unwrap constructor?", r);
+
+					if (PromiseValue.isa(r)) { // unwrap? (what triggers this??)
+						if ( ! r.resolved) {
+							console.error("promise done but nested pv not resolved??", r);
+						}
+						r = r.value;
 					}
 					vp.value = r;
 					vp.resolved = true;
