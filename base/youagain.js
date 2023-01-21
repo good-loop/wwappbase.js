@@ -192,6 +192,10 @@ class _Login {
 				// 50X? no-op
 				return res;
 			});
+		// Remove jwt in url after logged in to avoid logging in again after refresh
+		if (jwt) {
+			window.history.pushState({}, '', window.location.pathname + window.location.search.replace('jwt='+jwt, ''))
+		}
 		return pVerify;
 	};
 
