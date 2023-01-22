@@ -92,7 +92,7 @@ SearchQuery.prop = (sq, propName) => {
  * @param {?SearchQuery|string} sq
  * @param {!String} propName 
  * @param {?String|Boolean} propValue If unset (null,undefined, or "" -- but not false or 0!), clear the prop. The caller is responsible for converting non-strings to strings - apart from boolean which thie method will handle, 'cos we're nice like that.
- * @returns a NEW SearchQuery. Use .query to get the string
+ * @returns {SearchQuery} a NEW SearchQuery. Use .query to get the string
  */
 SearchQuery.setProp = (sq, propName, propValue) => {	
 	assMatch(propName, String);

@@ -13,6 +13,19 @@ import Roles from '../Roles';
  */
 const PortalLink = ({item,size,className,devOnly}) => {
     if (devOnly && ! Roles.isDev()) return null;
+    let href = getPortalLink(item);
+    if ( ! href) {
+        return null;
+    }
+    return <C.A className={space(size,devOnly&&"dev-link",className)} href={href}>{item.name}</C.A>;
+};
+
+/**
+ * 
+ * @param {?DataItem} item 
+ * @returns {?String} link or null
+ */
+export const getPortalLink = (item) => {
     if ( ! item) return null;
     const type = getType(item);
     if ( ! type) {
@@ -21,7 +34,9 @@ const PortalLink = ({item,size,className,devOnly}) => {
     }
     let url = ServerIO.getEndpointForType(type);
     url = url.replace("good-loop.com/", "good-loop.com/#"); // hack: switch from servlet to editor page    
-    return <C.A className={space(size,devOnly&&"dev-link",className)} href={url+"/"+encURI(getId(item))}>{item.name}</C.A>;
+    let href = url+"/"+encURI(getId(item));
+    return href;
 };
+
 
 export default PortalLink;

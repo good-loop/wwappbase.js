@@ -177,7 +177,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		{canFilter && <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter" />}
 
 		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
-		{total && !hideTotal ? <div>About {total} results in total</div> : null}
+		{total && !hideTotal ? <div>{total > 20 && "About "}{total} results in total</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
 		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} hideCsvColumns={hideCsvColumns} />}
 		{items.map((item, i) => (

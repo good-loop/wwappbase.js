@@ -4,7 +4,7 @@ import _ from 'lodash';
 import { assert, assMatch, match } from '../utils/assert';
 import C from '../CBase';
 import DataStore, { getDataPath, getListPath } from './DataStore';
-import {getId, getName, getType, nonce} from '../data/DataClass';
+import DataClass, {getId, getName, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from '../youagain';
 import {encURI, mapkv, parseHash} from '../utils/miscutils';
@@ -182,7 +182,7 @@ const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
 /**
  * 
  * @param {Object} p 
- * @returns ?DataItem null on error
+ * @returns {?DataClass} Item null on error
  */
 const crud2_processResponse = ({res, item, itemBefore, id, action, type, localStorage}) => {
 	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
@@ -344,19 +344,24 @@ const unpublish = ({type, id}) => {
 };
 ActionMan.unpublish = (type, id) => unpublish({type,id});
 
+
 /**
- * Thiss will save and publish
- * @param {!string} type 
- * @param {!string} id 
- * @param {?Item} item 
+ * This will save and publish
+ * @param {Object} p
+ * @param {!string} p.type 
+ * @param {!string} p.id 
+ * @param {?DataClass} p.item 
+ * @returns PromiseValue(DataClass)
  */
-const publishEdits = (type, id, item) => {
+export const publish = ({type,id,item}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(type, String);
 	assMatch(id, String, "Crud.js no id to publish to "+type);
 	// if no item - well its the draft we publish
-	if ( ! item) item = DataStore.getData({status:C.KStatus.DRAFT, type, id});
+	if ( ! item) {
+		item = DataStore.getData({status:C.KStatus.DRAFT, type, id});
+	}
 	assert(item, "Crud.js no item to publish "+type+" "+id);
 
 	// optimistic list mod
@@ -368,6 +373,17 @@ const publishEdits = (type, id, item) => {
 			DataStore.invalidateList(type);
 			return err;
 		}); // ./then
+};
+
+/**
+ * @deprecated Use publish() which has named inputs
+ * This will save and publish
+ * @param {!string} type 
+ * @param {!string} id 
+ * @param {?Item} item 
+ */
+const publishEdits = (type, id, item) => {
+	return publish({type, id, item});
 };
 ActionMan.publishEdits = publishEdits;
 

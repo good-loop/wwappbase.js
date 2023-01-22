@@ -16,9 +16,9 @@ import '../style/PropControls/PropControlList.less';
  * @param {Object} p
  * @param {?String} p.itemType Used for labels
  * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
- * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
+ * @param {?JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
-export const PropControlList2 = ({ storeValue, Viewer = BasicViewer, Editor = BasicEditor, itemType, rowStyle, proppath }) => {
+export const PropControlList2 = ({ storeValue, set, confirmDelete=true, Viewer=BasicViewer, Editor=BasicEditor, itemType, rowStyle, proppath }) => {
 	const listValue = asArray(storeValue);
 	if (!Viewer) Viewer = Editor;
 
@@ -29,14 +29,14 @@ export const PropControlList2 = ({ storeValue, Viewer = BasicViewer, Editor = Ba
 					{is(item) ? (
 						<Viewer item={item} i={i} path={proppath.concat(i)} />
 					) : '_'}
-					{Editor !== Viewer && (
-						<AddOrEditButton arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} item={item} itemType={itemType} />
+					{Editor && Editor !== Viewer && (
+						<AddOrEditButton set={set} arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} item={item} itemType={itemType} />
 					)}
 					{item && item.error && <Badge pill color="danger" title={getItemErrorMessage(item)}> 🐛 </Badge>}
-					<DeleteButton arrayPath={proppath} i={i} listValue={listValue} />
+					<DeleteWithConfirmButton confirmDelete={confirmDelete} set={set} arrayPath={proppath} i={i} listValue={listValue} />
 				</li>
 			))}
-			<li><AddOrEditButton size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue} itemType={itemType} /></li>
+			{Editor && <li><AddOrEditButton set={set} size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue} itemType={itemType} /></li>}
 		</ul>
 	);
 };
@@ -66,7 +66,7 @@ const getItemErrorMessage = item => {
  * @param {?string} p.itemType for the label/title "Add X"
  * @returns 
  */
-const AddOrEditButton = ({arrayPath, i = -1, listValue, Editor, item, itemType}) => {
+const AddOrEditButton = ({arrayPath, i = -1, listValue, Editor, item, itemType, set}) => {
 	assert(Editor, "No list Editor");
 	let [show, setShow] = useState();
 	const toggle = () => setShow(!show);
@@ -76,6 +76,7 @@ const AddOrEditButton = ({arrayPath, i = -1, listValue, Editor, item, itemType})
 	let epath = existingItem ? arrayPath.concat(i) : ['widget', 'AddButton'].concat(...arrayPath);
 	const doAdd = e => {
 		let form = DataStore.getValue(epath);
+		// TODO set(newList)
 		DataStore.setValue(arrayPath.concat(listValue.length), form);
 		DataStore.setValue(epath, null);
 		setShow(false);
@@ -100,26 +101,33 @@ const AddOrEditButton = ({arrayPath, i = -1, listValue, Editor, item, itemType})
 };
 
 
-const DeleteButton = ({arrayPath, i, listValue}) => {
+const DeleteWithConfirmButton = ({arrayPath, i, listValue, set, confirmDelete}) => {
 	const doDelete = () => {
-		if (!confirm(`Delete item ${i}?`)) return;
+		if (confirmDelete) {
+			if ( ! confirm(`Delete item ${i}?`)) return;
+		}
 		// Copy array before mutating, to break identity in simple equality checks
 		const newList = listValue.slice();
 		newList.splice(i, 1);
-		DataStore.setValue(arrayPath, newList);
+		set(newList);
+		// DataStore.setValue(arrayPath, newList);
 	};
 
 	return (
-		<Button size="sm" className="ml-1 delete-item" color="danger" onClick={doDelete} title="Delete">
-			<Icon name="trashcan"/>
+		<Button size="sm" className="ml-1 delete-item" 
+			color={confirmDelete? "danger" : "secondary"} 
+			onClick={doDelete} title={confirmDelete? "Delete" : "remove"} >
+			{confirmDelete? <Icon name="trashcan"/> : <span>&times;</span>}
 		</Button>
 	);
 };
+
 
 /**
  * A list-of-objects editor
  * 
  * @param {PropControlParams} p
+ * @param {?Boolean} confirmDelete = true
  * @param {?String} p.itemType Used for labels
  * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
  * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
