@@ -21,8 +21,8 @@ import KStatus from '../data/KStatus';
 /**
  * DataItemBadge
  */
-const SlimListItem = ({item, onClick, noClick, ...props}) => {
-	return <DataItemBadge item={item} onClick={onClick} href={!noClick} {...props} />;
+const SlimListItem = ({item, onClick, ...props}) => {
+	return <DataItemBadge style={{cursor:"pointer"}} item={item} onClick={onClick} href={false} {...props} />;
 };
 
 /**

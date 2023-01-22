@@ -144,6 +144,15 @@ export class PropControlParams {
 	/** @type {?boolean}  */
 	readOnly;
 
+	/** 
+	 * @type {?Function} (newItem) => () Called when a new value is entered.
+	 * If unset, uses DataStore via DSsetValue().
+	 * If set, it replaces this -- allowing use of useState or custom handling.
+	 * 
+	 * Warning:Not all controls support this yet!
+	 */
+	set;
+
 	/** Optional pass in of the current value */
 	value;
 
