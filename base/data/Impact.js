@@ -2,6 +2,7 @@
 import _ from 'lodash';
 import DataClass, {getType} from '../../base/data/DataClass';
 import Money from './Money';
+import Enum from 'easy-enums';
 
 /** Impact type. See Impact.java -- NB: copy-pasta from SoGive's Output.js. 
 */
@@ -50,3 +51,5 @@ Impact.isCarbonOffset = impact => impact?.name && impact.name.substring(0, 6)===
  * @param {Impact} impact 
  */
 Impact.amount = impact => impact?.amount;
+
+export const KImpactStage = new Enum("PLANNING CAMPAIGN_OPEN CAMPAIGN_DONE BRAND_PAID CHARITY_INVOICE_REQUESTED CHARITY_INVOICE_RECEIVED CHARITY_PAID PROJECT_DONE");	
