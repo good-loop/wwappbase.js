@@ -87,18 +87,6 @@ Advert.advertiserId = ad => Advert.assIsa(ad) && ad.vertiser;
 Advert.campaign = ad => ad.campaign;
 
 /**
- * This is the DRAFT budget
- * @param {!Advert} ad 
- * @returns {?Budget}
- */
-Advert.budget = ad => {
-	let tli = Advert.topLineItem(ad);
-	return tli? tli.budget : null;
-};
-
-Advert.topLineItem = ad => ad.topLineItem;
-
-/**
  * @param {!Advert} ad 
  * @returns {?Date}
  */

@@ -250,7 +250,7 @@ Misc.Icon = ({glyph, fa, size, className, prefix = 'fa', ...rest}) => {
 Misc.Thumbnail = ({item, className}) => {
 	if ( ! item) return null;
 	let img = getLogo(item);
-	return <Misc.ImgThumbnail url={img} alt={item.name || item.id} className={className} />;
+	return <Misc.ImgThumbnail url={img} alt={item.name || item.id || "thumbnail"} className={className} />;
 };
 
 
