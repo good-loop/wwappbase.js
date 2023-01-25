@@ -148,6 +148,7 @@ class GreenTag extends DataClass {
 	wrapped;
 	/** URL to the tagged advert's VAST tag or uploaded creative zip */
 	creativeURL;
+	creativeHtml;
 	/** The generated tag URL */
 	tag;
 	/** The size (in bytes) of the creative this tag represents */
