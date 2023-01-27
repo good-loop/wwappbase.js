@@ -44,7 +44,7 @@ const ShareLink = ({item, type, id, shareId, children, button, size, color="seco
 	}
 
 	return (
-		<a id='share-btn' onClick={doShow} title="Share">
+		<a id='dashboard-share-btn' onClick={doShow} title="Share">
 			<Icon name="share" />
 		</a>
 	);
