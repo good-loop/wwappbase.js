@@ -5,7 +5,7 @@ module.exports = {
 		es6: false,
 		browser: true
 	},
-	 globals: { // these are needed to avoid errors in puppeteer/node files
+	globals: { // these are needed to avoid errors in puppeteer/node files
 		window: true,
 		document: true,
 		page: true,
@@ -19,7 +19,10 @@ module.exports = {
 		sourceType: "module",
 		ecmaFeatures: {
 			jsx: true
-		}
+		},
+		babelOptions: {
+			presets: ["@babel/preset-react"]
+		},
 	},
 	extends: "airbnb",
 	plugins: [
