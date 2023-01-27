@@ -37,14 +37,14 @@ const ShareLink = ({item, type, id, shareId, children, button, size, color="seco
 	};
 
 	if (children) {
-		return <Button color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /> {children}</Button>;
+		return <Button id='share-btn' color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /> {children}</Button>;
 	}
 	if (button) {
-		return <Button color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /></Button>;
+		return <Button id='share-btn' color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /></Button>;
 	}
 
 	return (
-		<a onClick={doShow} title="Share">
+		<a id='share-btn' onClick={doShow} title="Share">
 			<Icon name="share" />
 		</a>
 	);
@@ -190,7 +190,7 @@ const ShareByLink = ({link, name, shareId}) => {
 	}; // ./ doShareByLink
 	
 	return <><h5>General Access</h5>
-		<Button onClick={doShareByLink} ><Icon name="clipboard" /> Copy Link for {withXId || "pseudo-user"}</Button>
+		<Button onClick={doShareByLink} id='copy-share-dashboard-link' ><Icon name="clipboard" /> Copy Link for {withXId || "pseudo-user"}</Button>
 	</>;
 };
 

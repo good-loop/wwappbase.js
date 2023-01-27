@@ -349,13 +349,13 @@ const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 	let noAgreement = agreeToTerms && (! person || ! person.agreeToTerms); // true if the user must tick a checkbox
 	return (
 		<form id="loginByEmail" onSubmit={doItFn} className={className}>
-			<PropControl label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
-			<PropControl label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
+			<PropControl id='loginByEmail-email' label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
+			<PropControl id='loginByEmail-password' label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
 			<div className='action-btns'>
 				<div className="form-group">
 					{agreeToTerms && <PropControl type="checkbox" label={agreeToTerms} path={path} prop="agreeToTerms" />}
 					{children}
-					<Button type="submit" size="lg" color="primary"
+					<Button id='loginByEmail-submit' type="submit" size="lg" color="primary"
 						disabled={C.STATUS.isloading(status) || noAgreement}
 						title={noAgreement? "You must agree to the terms if you want to use this service." : ""} >
 						{buttonText || verbButtonLabels[verb]}
