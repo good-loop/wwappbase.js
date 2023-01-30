@@ -290,7 +290,10 @@ const pAds2 = async function({campaign, status, query, isSub}) {
 	// fetch ads
 	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
 	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
-	const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
+	// ...HACK allow Impact Hub to fetch an unfiltered but cleansed list
+	//    But not for previews, as access=public cannot read DRAFT
+	const access = status==KStatus.PUBLISHED? "public" : null; 
+	// ...fetch
 	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query, access});
 	let adl = await pvAds.promise;
 	List.assIsa(adl);
