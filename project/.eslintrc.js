@@ -42,9 +42,8 @@ module.exports = {
 		},
 	},
 	rules: {
-		"array-bracket-spacing": "warn",
+		"array-bracket-spacing": "warn",		
 		"constructor-super": "warn", // DataClass has use-cases for not calling super
-		"jsx-a11y/tabindex-no-positive": "off",
 		"arrow-body-style": "off",
 		"block-spacing": "warn",
 		"no-empty-pattern": "warn",
@@ -78,12 +77,12 @@ module.exports = {
 		"jsx-a11y/click-events-have-key-events": "warn",
 		"jsx-a11y/img-redundant-alt": "warn",
 		"jsx-a11y/label-has-associated-control": "off",
-		"jsx-a11y/label-has-for": "warn",
+		"jsx-a11y/label-has-for": "off",
 		"jsx-a11y/media-has-caption": "warn",
 		"jsx-a11y/no-static-element-interactions": "warn",
 		"jsx-a11y/control-has-associated-label":"off", // triggers for <a> tags?! Seen Jul 2021
 		"jsx-a11y/accessible-emoji":"off",
-
+		"jsx-a11y/tabindex-no-positive": "off",
 		"jsx-quotes": ["warn", "prefer-double"],
 		"key-spacing": "off",
 		"keyword-spacing": "off",
@@ -160,6 +159,7 @@ module.exports = {
 		"react/no-array-index-key": "off",
 		"react/no-multi-comp": "off",
 		"react/no-unescaped-entities": "warn",
+		"react/no-unstable-nested-components": "warn",
 		"react/no-unused-state": "warn",
 		"react/prefer-stateless-function": "warn",
 		"react/prop-types": "off",
