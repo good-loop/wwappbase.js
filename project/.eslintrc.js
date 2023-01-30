@@ -138,6 +138,7 @@ module.exports = {
 		"react/button-has-type": "warn",
 		"react/destructuring-assignment": "off",
 		"react/forbid-prop-types": "warn",
+		"react/function-component-definition": "warn",
 		"react/jsx-boolean-value": "warn",
 		"react/jsx-closing-bracket-location": "warn",
 		"react/jsx-closing-tag-location": "off",
