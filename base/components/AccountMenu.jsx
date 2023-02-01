@@ -65,6 +65,8 @@ const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Accou
 					</div>
 				})}
 				{accountMenuItems && <DropdownItem divider />}
+				{children}
+				{(children && children.length) && <DropdownItem divider />}
 				<DropdownItem>
 					{logoutLink ? logoutLink : <LogoutLink className="nav-link">Logout</LogoutLink>}
 				</DropdownItem>
