@@ -25,7 +25,7 @@ The top-right menu
 @param {string} linkType  HACK: Set to "C.A" for <C.A /> hrefs, "a" for normal hrefs. Fixes bug in T4G in which it wasn't loading the links correctly (since it's in an iFrame presumably)
 
 */
-const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Account", canRegister, customLogin, className, logoutLink, onLinkClick, style, small, accountLink, linkType="C.A", customImg, ...props}) => {
+const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Account", canRegister, customLogin, className, logoutLink, onLinkClick, style, small, accountLink, linkType="C.A", customImg, noNav, ...props}) => {
 	const [open, setOpen] = useState(false);
 	const onClickFn = () => {
 		setOpen(!open);
@@ -47,10 +47,11 @@ const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Accou
 	let user = Login.getUser();
 	const accountHref = accountLink || {};
 	const name = small ? ((user.name && user.name.substr(0, 1)) || XId.prettyName(user.xid).substr(0,1)) : (user.name || XId.prettyName(user.xid));
+	const Wrapper = noNav ? 'div' : Nav;
 
 	return (
-	<Nav navbar style={style} className={space("account-menu", className)}>
-		<Dropdown isOpen={open} toggle={() => setOpen(!open)} nav inNavbar>
+	<Wrapper navbar style={style} className={space("account-menu", className)}>
+		<Dropdown isOpen={open} toggle={() => setOpen(!open)} nav={!noNav} inNavbar={!noNav}>
 			<DropdownToggle nav caret>{customImg ? <img src={customImg} className="custom-img"/> : name}</DropdownToggle>
 			<DropdownMenu>
 				{accountMenuItems && accountMenuItems.map((item, i) => {
@@ -69,7 +70,7 @@ const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Accou
 				</DropdownItem>
 			</DropdownMenu>
 		</Dropdown>
-	</Nav>
+	</Wrapper>
 	)
 };
 
