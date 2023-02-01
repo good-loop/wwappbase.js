@@ -88,7 +88,7 @@ const deleteShare = ({share}) => {
  *
  
 */
-const ShareWidget = ({shareId, item, type, id, name, hasButton, hasLink, children}) => {
+const ShareWidget = ({shareId, item, type, id, name, hasButton, hasLink, noEmails, children}) => {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -113,7 +113,9 @@ const ShareWidget = ({shareId, item, type, id, name, hasButton, hasLink, childre
 	// TODO share by url on/off
 	// TODO share message email for new sharers
 
-	const toggle = () => DataStore.setValue([...basePath, 'show'], !show);
+	const toggle = () => {
+		DataStore.setValue([...basePath, 'show'], !show)
+	};
 
 	const doShare = () => {
 		const {form} = DataStore.getValue(basePath) || {};
@@ -127,18 +129,20 @@ const ShareWidget = ({shareId, item, type, id, name, hasButton, hasLink, childre
 				<Icon name="share" /> {title}
 			</ModalHeader>
 			<ModalBody>
-				<div className="clearfix">
-					<p>Grant another user access to this item</p>
-					<PropControl inline label="Email to share with" path={formPath} prop="email" type="email" />
-					<Button color="primary" disabled={!emailOK} onClick={doShare}>Share</Button>
-					{/* TODO <PropControl path={formPath} prop="enableNotification" label="Send a notification email" type="checkbox"/> */}
-					{enableNotification ? (
-						<PropControl path={formPath} prop="optionalMessage" id="OptionalMessage" label="Attached message" type="textarea" />
-					) : null}
-					
-				</div>
-				<h5>Shared with</h5>
-				<ListShares list={shares} />
+				{!noEmails && <>
+					<div className="clearfix">
+						<p>Grant another user access to this item</p>
+						<PropControl inline label="Email to share with" path={formPath} prop="email" type="email" />
+						<Button color="primary" disabled={!emailOK} onClick={doShare}>Share</Button>
+						{/* TODO <PropControl path={formPath} prop="enableNotification" label="Send a notification email" type="checkbox"/> */}
+						{enableNotification ? (
+							<PropControl path={formPath} prop="optionalMessage" id="OptionalMessage" label="Attached message" type="textarea" />
+						) : null}
+						
+					</div>
+					<h5>Shared with</h5>
+					<ListShares list={shares} />
+				</>}
 				{hasLink && <ShareByLink name={name} shareId={shareId} />}
 			</ModalBody>
 		</Modal>
