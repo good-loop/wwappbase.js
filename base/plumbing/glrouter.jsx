@@ -18,15 +18,19 @@ const goto = (href, options={}) => {
 		console.warn("goto: no href");
 		return;
 	}
-	window.history.pushState({}, "", href);
+	// only pushState of it is a change (otheriwse the browser back button can get stuck on the current page)
+	const locn = ""+window.location;
+	if (href !== locn) {
+		window.history.pushState({}, "", href);
+		// update url vars
+		DataStore.parseUrlVars(true);
+	}
 	// scroll to the page top
 	if (options && options.scroll==='false') {
 		// no scroll
 	} else {
 		window.scrollTo(0,0);
-	}
-	// update
-	DataStore.parseUrlVars(true);
+	}	
 };
 
 
