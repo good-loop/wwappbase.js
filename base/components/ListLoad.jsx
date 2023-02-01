@@ -470,6 +470,12 @@ const DefaultCopy = ({ type, id, item, list, onCopy }) => {
 	</Button>);
 };
 
+/**
+ * lowercase and no punctuation, as users type names, but want invariance against details
+ * @param {!string} id 
+ * @returns {!string}
+ */
+const id2canonical = id => id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
 
 /**
  * Make a local blank, and set the nav url
@@ -481,8 +487,9 @@ const DefaultCopy = ({ type, id, item, list, onCopy }) => {
  * @param {?Function} p.make use to make the blank. base -> item. If unset, look for a DataClass for type, and use `new` constructor. Or just {}.
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn
  * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item. Set this to switch off navigation.
+ * @param {?Function} p.toCanonical id:string -> string Defaults to lowercase and no punctuation. Can be a custom function or falsy for no canonicalisation.
  */
-const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
+const createBlank = ({ type, navpage, base, id, toCanonical=id2canonical, make, saveFn, then }) => {
 	assert(!getId(base), "ListLoad - createBlank - ID not allowed (could be an object reuse bug) " + type + ". Safety hack: Pass in an id param instead");
 	// Call the make?
 	let newItem;
@@ -500,7 +507,7 @@ const createBlank = ({ type, navpage, base, id, make, saveFn, then }) => {
 	// specify the id?
 	if (id) {
 		// ...canon, as users type names
-		const canonId = id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
+		const canonId = toCanonical? toCanonical(id) : id;
 		newItem.id = canonId;
 		// ...and set the name for the same reason
 		if ( ! newItem.name) newItem.name = id;

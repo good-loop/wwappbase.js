@@ -172,4 +172,4 @@ export {
 	doShareThing,
 	claimItem, 
 	doDeleteShare
-}
+};

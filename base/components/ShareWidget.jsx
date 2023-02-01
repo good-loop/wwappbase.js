@@ -85,10 +85,11 @@ const deleteShare = ({share}) => {
  * @param {?String}	p.name - optional name for the thing
  * @param {?boolean} p.hasButton - Show the standard share button? Otherwise this would NOT include the share button -- see ShareLink for handling that separately.
  * @param {?boolean} p.hasLink offer a share-by-link option
+ * @param {?String}	p.email - optional, auto-populate the email field with this value
  *
  
 */
-const ShareWidget = ({shareId, item, type, id, name, hasButton, hasLink, noEmails, children}) => {
+const ShareWidget = ({shareId, item, type, id, name, email, hasButton, hasLink, noEmails, children}) => {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -132,7 +133,7 @@ const ShareWidget = ({shareId, item, type, id, name, hasButton, hasLink, noEmail
 				{!noEmails && <>
 					<div className="clearfix">
 						<p>Grant another user access to this item</p>
-						<PropControl inline label="Email to share with" path={formPath} prop="email" type="email" />
+						<PropControl inline label="Email to share with" path={formPath} prop="email" type="email" dflt={email || ""} />
 						<Button color="primary" disabled={!emailOK} onClick={doShare}>Share</Button>
 						{/* TODO <PropControl path={formPath} prop="enableNotification" label="Send a notification email" type="checkbox"/> */}
 						{enableNotification ? (
