@@ -76,6 +76,7 @@ module.exports = {
 		"jsx-a11y/anchor-is-valid": "warn",
 		"jsx-a11y/click-events-have-key-events": "warn",
 		"jsx-a11y/img-redundant-alt": "warn",
+		"jsx-a11y/interactive-supports-focus": "warn",
 		"jsx-a11y/label-has-associated-control": "off",
 		"jsx-a11y/label-has-for": "off",
 		"jsx-a11y/media-has-caption": "warn",
@@ -83,7 +84,7 @@ module.exports = {
 		"jsx-a11y/control-has-associated-label":"off", // triggers for <a> tags?! Seen Jul 2021
 		"jsx-a11y/accessible-emoji":"off",
 		"jsx-a11y/tabindex-no-positive": "off",
-		"jsx-quotes": ["warn", "prefer-double"],
+		"jsx-quotes": ["warn", "prefer-double"],		
 		"key-spacing": "off",
 		"keyword-spacing": "off",
 		"max-depth": ["warn", 4],
