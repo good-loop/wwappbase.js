@@ -171,7 +171,7 @@ class _Login {
 		console.log("start login...");
 		// support for a jwt in the url eg for a pseudo user to enable sharing
 		// ?? how does this interact with other jwts if the user is logged in??
-		let m = window.location.search.match(/jwt=([^&]+)/);
+		let m = (window.location.hash+window.location.search).match(/jwt=([^&]+)/);
 		let jwt = m? m[1] : null;
 		console.log("JWT from url", jwt);
 		// call the server...

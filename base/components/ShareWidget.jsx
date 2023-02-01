@@ -151,55 +151,60 @@ const ShareWidget = ({shareId, item, type, id, name, email, hasButton, hasLink, 
 }; // ./ShareWidget
 
 
+/**
+ * NB: Use an async function for nicer code around the server comms
+ * @param {Object} p See ShareWidget which calls this
+ * @returns 
+ */
+const doShareByLink = async({link, slink, setSlink, shareId}) => {
+	// NB: pseudeo-user is tied to the user, to allow the user to get access again later
+	const withXId =  shareId+"_by_"+Login.getId()+"@pseudo";
+	if (slink) {
+		copyTextToClipboard(slink);
+		return;
+	}
+	let shares = await getShareListPV(shareId).promise;
+	console.log("ShareByLink shares", shares);
+	let pseudoShare = shares.find(s => s._to === withXId);
+	if (pseudoShare) {
+		try {
+			// get the jwt for the already made pseudo user
+			let jwtres = await Login.getJWT({txid:withXId}); // TODO allow one pseudo-user for the item across users, via:shareId+"@share"});
+			let jwt = JSend.data(jwtres);
+			let link2 = doShareByLink2({link, shareId, withXId, jwt});
+			setSlink(link2);
+			return;
+		} catch(err) {
+			console.warn("cant use existing pseudoShare",pseudoShare," for "+withXId, err);
+		}
+	}	
+	// request a pseudo user jwt
+	console.log("ShareByLink make a new pseudo user...");
+	let res = await Login.registerStranger({name:"Pseudo user for "+name, person:withXId});
+	console.warn("pPseudoUser then", res, res?.cargo?.user);
+	let user = JSend.data(res).user;
+	let jwt = user.jwt;
+	// claim the pseudo-user
+	Login.claim(withXId);
+	// ?? share the pseudo-user with the shareId (modified to be an XId) (so TODO e.g. users of a dashbaord can access the pseudo-user)
+	// doShareThing({shareId:withXId, withXId:shareId+"@share"});
+	// share the item with the pseudo-user 
+	let link2 = doShareByLink2({link, shareId, withXId, jwt});
+	// copy to clipboards
+	setSlink(link2);	
+}; // ./ doShareByLink
+
+
 const ShareByLink = ({link, name, shareId}) => {
 	if ( ! link) link = window.location+"";
 	let [slink, setSlink] = useState();
-	const withXId =  shareId+"_by_"+Login.getId()+"@pseudo";
-	const doShareByLink = e => {
-		if (slink) {
-			copyTextToClipboard(slink);
-			return;
-		}
-		let pvShareList = getShareListPV(shareId);
-		pvShareList.promise.then(shares => {
-			console.log("ShareByLink shares", shares);
-			let pseudoShare = shares.find(s => s._to === withXId);
-			if (pseudoShare) {
-				// ?? how to get the jwt for the already made pseudo user??
-				let pjwt = Login.getJWT({txid:withXId, via:shareId+"@share"});
-				pjwt.then(res => {
-					let jwt = JSend.data(res);
-					let link2 = doShareByLink2({link, shareId, withXId, jwt});
-					setSlink(link2);
-				});
-				return;
-			}	
-			// request a pseudo user jwt
-			console.log("ShareByLink make a new pseudo user...");
-			let pPseudoUser = Login.registerStranger({name:"Pseudo user for "+name, person:withXId});
-			pPseudoUser.then(res => {
-				console.warn("pPseudoUser then", res, res?.cargo?.user);
-				let user = JSend.data(res).user;
-				let jwt = user.jwt;
-				// claim the pseudo-user
-				Login.claim(withXId);
-				// share the pseudo-user with the shareId (so TODO e.g. users of a dashbaord can access the pseudo-user)
-				doShareThing({shareId:withXId, withXId:shareId+"@share"});
-				// share the item with the seudo-user & copy to clipboard
-				let link2 = doShareByLink2({link, shareId, withXId, jwt});
-				setSlink(link2);
-			}, err => {
-				console.warn("pPseudoUser Error",err);
-			});	
-		}); // ./ shareList.then		
-	}; // ./ doShareByLink
-	
 	return <><h5>General Access</h5>
-		<Button onClick={doShareByLink} id='copy-share-dashboard-link' ><Icon name="clipboard" /> Copy Link for {withXId || "pseudo-user"}</Button>
+		<Button onClick={e => doShareByLink({link, slink, setSlink, shareId})} id='copy-share-dashboard-link' ><Icon name="clipboard" /> Copy access link</Button>
 	</>;
 };
 
 const doShareByLink2 = ({link, shareId, withXId, jwt}) => {
+	console.log("ShareByLink2...");
 	let pShare = doShareThing({shareId, withXId});
 	let link2 = setUrlParameter(link, "jwt", jwt);
 	copyTextToClipboard(link2);
