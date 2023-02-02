@@ -331,6 +331,12 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
 	const [rawValue, setRawValue] = useState(_.isString(storeValue) ? storeValue : null);
 	assMatch(rawValue, "?String", `PropControl: rawValue must be a string, path: "${path}", prop: "${prop}" type: "${type}""`);
+	// Reset raw value if code outside the PropControl changes the value
+	const [oldStoreValue, setOldStoreValue] = useState(storeValue);
+	if (oldStoreValue !== storeValue) {
+		setRawValue(_.isString(storeValue) ? storeValue : null);
+		setOldStoreValue(storeValue);
+	}
 
 	// old code
 	if (props.onChange) {
@@ -494,7 +500,10 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// ??Include a css class for styling or hacky code?? "control-"+prop,
 	// focus?? see https://blog.danieljohnson.io/react-ref-autofocus/
 	return (
-		<FormGroup check={isCheck} className={space(type, className, inline && !isCheck && 'form-inline', error && 'has-error')} size={size} >
+		<FormGroup check={isCheck} 
+			className={space(type, className, inline && !isCheck && 'form-inline', error && 'has-error')} 
+			size={size} 
+		>
 			{(label || tooltip) && !isCheck &&
 				<label className={space(sizeClass, 'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
