@@ -492,7 +492,8 @@ Misc.Help = ({children}) => {
  * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
  * @param onSuccess {JSX} TODO rename this! shown after a successful submit. This is not a function to call!
  */
-Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, title='Submit the form', children, size}) => {
+Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, 
+	title='Submit the form', children, size, disabled}) => {
 	assMatch(url, String);
 	// assMatch(path, 'String[]');
 	// track the submit request
@@ -525,8 +526,10 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', 
 	}
 	let isSaving = C.STATUS.issaving(submitStatus);
 	const vis = {visibility: isSaving? 'visible' : 'hidden'};
-	let disabled = isSaving || (once && submitStatus);
-	if (disabled) title = isSaving? "Saving..." : "Submitted :) To avoid errors, you cannot re-submit this form";
+	let isDisabled = disabled || isSaving || (once && submitStatus);
+	if (isDisabled && ! disabled) {
+		title = isSaving? "Saving..." : "Submitted :) To avoid errors, you cannot re-submit this form";		
+	}
 
 	return (
 		<Button onClick={doSubmit} size={size} color={color} className={className} disabled={disabled} title={title}>
