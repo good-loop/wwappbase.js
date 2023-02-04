@@ -489,11 +489,12 @@ Misc.Help = ({children}) => {
  * @param {?Object[]} p.formData
  * @param {?String[]} p.path DataStore path to the form-data to submit. Set this OR formData
  * @param {Boolean} p.once If set, this button can only be clicked once.
+ * @param {?Boolean|string} p.confirmSubmit If set, show a confirm dialog
  * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
  * @param onSuccess {JSX} TODO rename this! shown after a successful submit. This is not a function to call!
  */
 Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, 
-	title='Submit the form', children, size, disabled}) => {
+	title='Submit the form', children, size, disabled, confirmSubmit}) => {
 	assMatch(url, String);
 	// assMatch(path, 'String[]');
 	// track the submit request
@@ -505,6 +506,11 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', 
 		data: formData
 	};
 	const doSubmit = e => {
+		if (confirmSubmit) {
+			let msg = _.isString(confirmSubmit)? confirmSubmit : "Are you sure?";
+			let ok = confirm(msg);
+			if ( ! ok) return;
+		}
 		setSubmitStatus(C.STATUS.saving);
 		// DataStore.setValue(tpath, C.STATUS.saving);
 		ServerIO.load(url, params)
@@ -532,9 +538,10 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', 
 	}
 
 	return (
-		<Button onClick={doSubmit} size={size} color={color} className={className} disabled={disabled} title={title}>
+		<Button onClick={doSubmit} size={size} color={color} className={className} disabled={isDisabled} title={title}>
 			{children}
-			<span className="fa fa-circle-notch spinning" style={vis} />
+			<span style={vis}> ...</span>
+			{/* <Icon name="spinner" className="spinning" style={vis} /> */}
 		</Button>
 	);
 };

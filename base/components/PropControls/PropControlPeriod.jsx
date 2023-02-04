@@ -9,25 +9,38 @@ import PropControl, { fakeEvent, registerControl } from '../PropControl';
  * Really two PropControls - with TODO some handy buttons for setting both
  */
 function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
-    const setPeriod = (name) => {
-        const now = new Date();
+    const setPeriod = (name, now=new Date()) => {
+        // const now = new Date();
+        let s, e;
         if (name==="last-month") {
             // Do we have any handy date arithmetic code??
             // NB date.getMOnth() is zero index
-            let s = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-01";
+            s = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-01";
             let se = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-01";
             let de = new Date(se);
-            let e = new Date(de.getTime() - 1).toISOString().substring(0, 10);
-            // TODO bug where setting the value works but does not show in the UI
-            // because of [rawValue]=useState() in PropControl
-            DataStore.setValue(path.concat(propStart), s);
-            DataStore.setValue(path.concat(propEnd), e);
+            e = new Date(de.getTime() - 1).toISOString().substring(0, 10);
         }
+        if (name==="last-quarter") {
+            if (now.getMonth() < 3) {
+                // Q4 prev year
+                s = (now.getUTCFullYear()-1)+"-10-01";
+                e = (now.getUTCFullYear()-1)+"-12-31";
+            } else {
+                // start month of last quarter = -3 and round down
+                let sm = 1 + (3 * Math.floor((now.getMonth() - 3) / 3));
+                s = (now.getUTCFullYear()-1)+"-"+oh(sm)+"-01";
+                let se = now.getUTCFullYear()+"-"+oh(sm+3)+"-01";
+                let de = new Date(se);
+                e = new Date(de.getTime() - 1).toISOString().substring(0, 10);    
+            }
+        }
+        if (s) DataStore.setValue(path.concat(propStart), s);
+        if (e) DataStore.setValue(path.concat(propEnd), e);
     };
     return (<>
     <div className="flex-row">
         <Button color="outline-secondary" size="sm" onClick={e => setPeriod("last-month")}>Last Month</Button>
-        <Button className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("TODO last-quarter")}>Last Quarter</Button>
+        <Button className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-quarter")}>Last Quarter</Button>
     </div>
     <Row>
         <Col>
