@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { space, ellipsize } from '../utils/miscutils';
-import DataClass, {getName} from '../data/DataClass';
+import DataClass, {getId, getName} from '../data/DataClass';
 import { assert } from '../utils/assert';
 
 
@@ -23,11 +23,11 @@ const svgClass = (logoUrl) => {
  */
 const Logo = ({item, className, size, style, nameCap = 24, logoOnly}) => {
 	if (!item) return null;
-	assert(item.id || item.name === "Default Advertiser", 'Not a DataItem', item);
+	assert(getId(item) || item.name === "Default Advertiser", 'Not a DataItem', item);
 
 	// get branding
 	let branding = item.branding || item; // HACK: NGOs have .logo on the item
-	let altText = item.displayName || item.name || item.id;
+	let altText = item.displayName || item.name || getId(item);
 	if (nameCap) altText = ellipsize(altText, nameCap);
 
 	const classes = space('logo', size && `logo-${size}`, className, /*svgClass(branding.logo)*/);

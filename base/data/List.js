@@ -63,7 +63,7 @@ const This = List;
 export default List;
 
 /**
- * @param {?List} list 
+ * @param {?List} list Can be null (returns null)
  * @returns {?Item[]}
  */
 List.hits = list => list? (List.assIsa(list) && list.hits) : null;
