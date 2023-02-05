@@ -312,8 +312,8 @@ Misc.RelativeDate = ({date, ...rest}) => {
  */
 export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const shortWeekdays = WEEKDAYS.map(weekday => weekday.substr(0, 3));
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const shortMonths = months.map(month => month.substr(0, 3));
+export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const shortMonths = MONTHS.map(month => month.substr(0, 3));
 
 export const oh = (n) => n<10? '0'+n : n;
 
@@ -321,7 +321,7 @@ Misc.LongDate = ({date, noWeekday}) => {
 	if (!date) return null;
 	if (_.isString(date)) date = new Date(date);
 	const weekday = noWeekday ? '' : WEEKDAYS[date.getDay()];
-	return <time dateTime={date.toISOString()}>{weekday + ' '}{date.getDate()} {months[date.getMonth()]} {date.getFullYear()}</time>;
+	return <time dateTime={date.toISOString()}>{weekday + ' '}{date.getDate()} {MONTHS[date.getMonth()]} {date.getFullYear()}</time>;
 };
 
 /**
@@ -339,7 +339,7 @@ Misc.RoughDate = ({date}) => {
 
 	const time = daysSince > 2 ? null : (oh(date.getHours()) + ':' + oh(date.getMinutes())); // yesterday/today? show time
 	const day = thisYear ? date.getDate() : null; // just month+year if last year or older
-	const month = months[date.getMonth()]; // always show month
+	const month = MONTHS[date.getMonth()]; // always show month
 	const year = thisYear ? null : date.getFullYear(); // no year if it's the same
 
 	return <time dateTime={date.toISOString()}>{[time, day, month, year].filter(a => a).join(' ')}</time>;
@@ -363,29 +363,29 @@ Misc.DateDuration = ({startDate, endDate, invisOnEmpty}) => {
 	if (startDate && !endDate) {
 		// If only a start date is provided
 		// e.g. May 2020
-		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear();
+		durationString = MONTHS[startDate.getMonth()] + " " + startDate.getFullYear();
 	} else if (!startDate && endDate) {
 		// If only an end date is provided
 		// e.g. May 2020
-		durationString = months[endDate.getMonth()] + " " + endDate.getFullYear();
+		durationString = MONTHS[endDate.getMonth()] + " " + endDate.getFullYear();
 	} else if (startDate.getFullYear() === endDate.getFullYear()) {
 		if (startDate.getMonth() === endDate.getMonth()) {
 			// If the dates lie on the same month and year
 			// e.g. May 2020
-			durationString = months[startDate.getMonth()] + " " + startDate.getFullYear();
+			durationString = MONTHS[startDate.getMonth()] + " " + startDate.getFullYear();
 		} else {
 			// If the dates lie on the same year and different months
 			// e.g. June - November 2020
-			durationString = months[startDate.getMonth()] + " - " + months[endDate.getMonth()] + " " + startDate.getFullYear();
+			durationString = MONTHS[startDate.getMonth()] + " - " + MONTHS[endDate.getMonth()] + " " + startDate.getFullYear();
 		}
 	} else if (startDate.getMonth() == endDate.getMonth()) {
 		// If the dates lie on the same month of different years
 		// e.g. August 2018 - 2019
-		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + endDate.getFullYear();
+		durationString = MONTHS[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + endDate.getFullYear();
 	} else {
 		// If the dates are entirely different
 		// e.g. May 2019 - June 2020
-		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + months[endDate.getMonth()] + " " + endDate.getFullYear();
+		durationString = MONTHS[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + MONTHS[endDate.getMonth()] + " " + endDate.getFullYear();
 	}
 
 	return <span>{durationString}</span>

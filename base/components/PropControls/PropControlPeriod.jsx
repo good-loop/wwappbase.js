@@ -54,6 +54,14 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
 
 // registerControl({ type: 'period', $Widget: PropControlPeriod2 });
 
+/**
+ * This is NOT actually a PropControl -- it wraps TWO PropControls (start, end)
+ * @param {Object} p
+ * @param {?String[]} p.path 
+ * @param {?String} p.propStart default:start
+ * @param {?String} p.propEnd default:end
+ * @returns 
+ */
 function PropControlPeriod(p) {
     // HACK a bit of the machinery from PropControl
     if ( ! p?.path) {

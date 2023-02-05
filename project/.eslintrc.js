@@ -147,7 +147,7 @@ module.exports = {
 		"react/jsx-curly-brace-presence": "warn",
 		"react/jsx-filename-extension": [2, { extensions: [".js", ".jsx", ".ts", ".tsx"] }],
 		"react/jsx-first-prop-new-line": "off",
-		"react/jsx-indent-props": ["warn", "tab"],
+		"react/jsx-indent-props": ["off", "tab"],
 		"react/jsx-indent": ["off", "tab"],
 		"react/jsx-max-props-per-line": "off",
 		"react/jsx-no-bind": "warn",
