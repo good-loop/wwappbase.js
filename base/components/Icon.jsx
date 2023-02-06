@@ -11,6 +11,7 @@ import { space, randomPick } from '../utils/miscutils';
   * https://www.unicode.org/emoji/charts/full-emoji-list.html
   */
 const EMOJI = {
+	bug: "🐛", //🪲🐞
 	camera: "📷",
 	caretup:"△", // ‸⋀⋁△▽▵▾▿
 	caretdown:"▽",
