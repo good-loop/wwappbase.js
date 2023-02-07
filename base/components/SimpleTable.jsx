@@ -28,6 +28,7 @@ import Tree from '../data/Tree';
 import PropControl from './PropControl';
 import StyleBlock from './StyleBlock';
 import Wrap from './Wrap';
+import Money from '../data/Money';
 
 const str = printer.str;
 
@@ -911,7 +912,7 @@ const TotalCell = ({ dataTree, column }) => {
 		return <td></td>;
 	}
 	// sum the data for this column
-	let total = 0;
+	let total = 0, totalMoney;
 	if (column.total) {
 		total = column.total;
 	} else {
@@ -920,12 +921,14 @@ const TotalCell = ({ dataTree, column }) => {
 			const v = getter(rItem);
 			// NB: 1* to force coercion of numeric-strings
 			if (isNumeric(v)) total += 1 * v;
+			// HACK support Money as a common case
+			if (Money.isa(v)) totalMoney = totalMoney? Money.add(v, totalMoney) : v;
 		});
 	}
-	if (!total) return <td></td>;
+	if (!total && !totalMoney) return <td></td>;
 	// ??custom cell render might break on a Number. But Money seems to be robust about its input.
 	const render = column.Cell || defaultCellRender;
-	const cellGuts = render(total, column);
+	const cellGuts = render(total || totalMoney, column);
 	return <td>{cellGuts}</td>;
 };
 
