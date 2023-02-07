@@ -12,7 +12,7 @@ import C from '../CBase';
 // // import I18n from 'easyi18n';
 import DataClass, { getType, getId, nonce, getStatus, getName } from '../data/DataClass';
 import Messaging, { notifyUser } from '../plumbing/Messaging';
-import { publishEdits, saveEdits } from '../plumbing/Crud';
+import { publish, saveEdits } from '../plumbing/Crud';
 import Icon from './Icon';
 import { goto, modifyPage } from '../plumbing/glrouter';
 import Login from '../youagain';
@@ -96,7 +96,7 @@ const autoPublishFn = _.debounce(
 			return;
 		}
 		// Do it
-		publishEdits(type, id, item);
+		publish({type, id, item});
 		return true;
 	}, DEBOUNCE_MSECS
 );
@@ -303,7 +303,7 @@ const SavePublishDeleteEtc = ({
 
 			<Button name="publish" color="primary" size={size} className="ml-2"
 				disabled={disablePublish} title={publishTooltip}
-				onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publishEdits(type, id)}>
+				onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item})}>
 				Publish {pubExists && "Edits"} <Spinner vis={vis} />
 			</Button>
 
