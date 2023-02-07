@@ -102,6 +102,7 @@ function PropControlPeriodMonthYear({path, propStart="start",propEnd="end"}) {
  * @param {?String[]} p.path 
  * @param {?String} p.propStart default:start
  * @param {?String} p.propEnd default:end
+ * @param {?String} p.options HACK if "month-year" then use a simplified month/year picker
  * @returns 
  */
 function PropControlPeriod(p) {
@@ -109,6 +110,7 @@ function PropControlPeriod(p) {
     if ( ! p?.path) {
         p = Object.assign({path:['location', 'params']}, p);
     }
+    // HACK how shall we switch format?
     if (p.options && (""+p.options).includes("month")) {
         return <PropControlPeriodMonthYear {...p} />;
     }
