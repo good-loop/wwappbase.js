@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Input, InputGroup, Row } from 'reactstrap';
 import DataStore from '../../plumbing/DataStore';
-import { oh } from '../Misc';
+import { isoDate } from '../../utils/miscutils';
+import Misc, { MONTHS, oh } from '../Misc';
 
 import PropControl, { fakeEvent, registerControl } from '../PropControl';
 
@@ -67,6 +68,34 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
 
 // registerControl({ type: 'period', $Widget: PropControlPeriod2 });
 
+function PropControlPeriodMonthYear({path, propStart="start",propEnd="end"}) {
+    let startv = DataStore.getValue(path.concat(propStart));
+    let endv = DataStore.getValue(path.concat(propEnd));
+    let wpath = ["widget"].concat(path);
+    const now = new Date();
+    // change form convenience inputs into ImpactDebit fields
+    let month = DataStore.getValue(wpath.concat("month"));
+    let year = DataStore.getValue(wpath.concat("year"));
+    if (month && year) {
+        startv = year+"-"+oh(MONTHS.indexOf(month)+1)+"-01";
+        let startNextMonth = year+"-"+oh(MONTHS.indexOf(month)+2)+"-01";
+        if (startNextMonth.includes("-13-")) startNextMonth = (year+1)+"-01-01";
+        let dend = new Date(new Date(startNextMonth).getTime() - 1);
+        endv = isoDate(dend);
+        DataStore.setValue(path.concat(propStart), startv);
+        DataStore.setValue(path.concat(propEnd), endv);        
+    }
+
+    return (<><Row>
+        <Col><PropControl type="select" prop="month" label options={MONTHS} path={wpath} />
+        </Col><Col>
+        <PropControl type="select" prop="year" label options={[now.getFullYear()-1, now.getFullYear()]} path={wpath} dflt={now.getFullYear()} />
+        </Col>
+    </Row>
+    <p><small>start: <Misc.DateTag date={startv} /> end: <Misc.DateTag date={endv} /></small></p>
+    </>);
+}
+
 /**
  * This is NOT actually a PropControl -- it wraps TWO PropControls (start, end)
  * @param {Object} p
@@ -79,6 +108,9 @@ function PropControlPeriod(p) {
     // HACK a bit of the machinery from PropControl
     if ( ! p?.path) {
         p = Object.assign({path:['location', 'params']}, p);
+    }
+    if (p.options && (""+p.options).includes("month")) {
+        return <PropControlPeriodMonthYear {...p} />;
     }
   return <PropControlPeriod2 type="period" {...p} />;
 }
