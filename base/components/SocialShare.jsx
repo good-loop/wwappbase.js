@@ -20,7 +20,7 @@ import NGO from '../data/NGO';
  * TODO: Replace pngs with svgs (preferably inline)
  * @param children {?JSX} optionally specify the contents. If unset, default images are used.
  */
-const IntentLink = ({children, service, style={}, text, url}) => {
+function IntentLink({children, service, style={}, text, url}) {
 	service = service.toLowerCase();
 
 	url = encodeURIComponent(url);
@@ -49,7 +49,7 @@ const IntentLink = ({children, service, style={}, text, url}) => {
 			{ children || icon }
 		</a>
 	);
-};
+}
 
 export {
 	IntentLink

@@ -64,7 +64,7 @@ const dateValidator = (val, rawValue) => {
 
 
 /** Use Bootstrap popover to display help text on click */
-export const Help = ({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) => {
+export function Help({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) {
 	const [id] = useState(() => `help-${nonce()}`); // Prefixed because HTML ID must begin with a letter
 	const [open, setOpen] = useState(false);
 	const toggle = () => setOpen(!open);
@@ -77,7 +77,7 @@ export const Help = ({ children, icon = <Icon name="info" />, color = 'primary',
 			</PopoverBody>
 		</Popover>
 	</>;
-};
+}
 
 
 /**
@@ -219,7 +219,7 @@ const diffStringify = val => {
  * @param {props.className}
  * @returns 
  */
-const DiffWarning = ({path, prop, className}) => {
+function DiffWarning({path, prop, className}) {
 	const diff = diffProp(path, prop);
 	if (!diff) return null;
 	// Don't spew visual noise on every PropControl for an unpublished item
@@ -276,7 +276,7 @@ const DiffWarning = ({path, prop, className}) => {
 			{pBody}
 		</Popover>
 	</>;
-};
+}
 
 
 
@@ -294,7 +294,7 @@ or if extras like help and error text are wanted.
  
    * @param {PropControlParams} p
    */
-const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
+function PropControl({ className, warnOnUnpublished = true, ...props }) {
 	let { type, optional, required, path, prop, set, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
 	if (label === true) {
 		label = toTitleCase(prop); // convenience
@@ -517,14 +517,14 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 			{warning && <span className="help-block text-warning data-warning">{warning}</span>}
 		</FormGroup>
 	);
-}; // ./PropControl
+} // ./PropControl
 
 
 /**
    * The main part - the actual input.
    * @param {?String} props.rawValue Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
    */
-const PropControl2 = (props) => {
+function PropControl2(props) {
 	// track if the user edits, so we can preserve user-set-null/default vs initial-null/default
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up
@@ -751,7 +751,7 @@ const PropControl2 = (props) => {
 
 	// normal
 	return <FormControl type={type} name={prop} value={storeValue} onChange={onChange} {...otherStuff} />;
-}; //./PropControl2
+} //./PropControl2
 
 
 const FOCUS_PATH = ['widget', 'PropControl', 'focus'];
@@ -780,7 +780,7 @@ const setFocus = (proppath) => {
    * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
    * @param {?Boolean} canUnset If true, always offer an unset choice.
    */
-const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, inline, ...otherStuff }) => {
+function PropControlSelect({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, inline, ...otherStuff }) {
 	// NB inline does nothing here?
 	// NB: pull off internal attributes so the select is happy with rest
 	const { className, recursing, modelValueFromInput, label, ...rest } = otherStuff;
@@ -815,14 +815,14 @@ const PropControlSelect = ({ options, labels, storeValue, value, rawValue, setRa
 			{domOptions}
 		</select>
 	);
-};
+}
 
 /**
    * render multi select as multi checkbox 'cos React (Jan 2019) is awkward about multi-select
    * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
    * Deselect everything unless user holds Ctrl??? Really? -RM
    */
-const PropControlMultiSelect = ({ storeValue, value, prop, labelFn, options, modelValueFromInput, className, type, path, saveFn }) => {
+function PropControlMultiSelect({ storeValue, value, prop, labelFn, options, modelValueFromInput, className, type, path, saveFn }) {
 	assert(!value || value.length !== undefined, "value should be an array", value, prop);
 
 	let onChange = e => {
@@ -860,7 +860,7 @@ const PropControlMultiSelect = ({ storeValue, value, prop, labelFn, options, mod
 			{domOptions}
 		</Form>
 	);
-};
+}
 
 /**
    *
@@ -872,7 +872,7 @@ const PropControlMultiSelect = ({ storeValue, value, prop, labelFn, options, mod
    * @param {String} p.value
    * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
    */
-const PropControlRadio = ({ type, prop, storeValue, value, path, saveFn, options, labels, inline, size, rawValue, setRawValue, ...otherStuff }) => {
+function PropControlRadio({ type, prop, storeValue, value, path, saveFn, options, labels, inline, size, rawValue, setRawValue, ...otherStuff }) {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -906,7 +906,7 @@ const PropControlRadio = ({ type, prop, storeValue, value, path, saveFn, options
 			))}
 		</Form>
 	);
-}; // ./radio
+} // ./radio
 
 
 /**
@@ -935,7 +935,7 @@ const numFromAnything = v => {
    * 
    * ??should this be pills??
    */
-const PropControlArrayText = ({ storeValue, value, rawValue, setRawValue, prop, proppath, saveFn, ...otherStuff }) => {
+function PropControlArrayText({ storeValue, value, rawValue, setRawValue, prop, proppath, saveFn, ...otherStuff }) {
 	const onChange = e => {
 		const oldValue = DataStore.getValue(proppath) || [];
 		const oldString = oldValue.join(' ');
@@ -956,7 +956,7 @@ const PropControlArrayText = ({ storeValue, value, rawValue, setRawValue, prop, 
 	}
 	const safeValue = (storeValue || []).join(' ');
 	return <FormControl name={prop} value={safeValue} onChange={onChange} {...otherStuff} />;
-};
+}
 
 
 /**
@@ -966,7 +966,7 @@ const PropControlArrayText = ({ storeValue, value, rawValue, setRawValue, prop, 
    * TODO Should this be a literal special case of the PropControlEntrySet code?
    * @param {{String: Boolean}} value Can be null initially
    */
-const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
+function PropControlKeySet({ value, prop, proppath, saveFn }) {
 	const addRemoveKey = (key, remove) => {
 		const newValue = { ...value };
 		// Set false for "remove" instead of deleting because back-end performs a merge on update, which would lose simple key removal
@@ -1004,7 +1004,7 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
 			</Form>
 		</div>
 	);
-};
+}
 
 
 /**
@@ -1013,7 +1013,7 @@ const PropControlKeySet = ({ value, prop, proppath, saveFn }) => {
    * @param {?String} keyName Explanatory placeholder text for entry key
    * @param {?String} valueName Explanatory placeholder text for entry value
    */
-const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'Key', valueName = 'Value' }) => {
+function PropControlEntrySet({ value, prop, proppath, saveFn, keyName = 'Key', valueName = 'Value' }) {
 	const updateKV = (key, val, remove) => {
 		if (!key) return;
 		const newValue = { ...value };
@@ -1073,7 +1073,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'Key', v
 			</Form>
 		</div>
 	);
-};
+}
 
 
 /**
@@ -1083,7 +1083,7 @@ const PropControlEntrySet = ({ value, prop, proppath, saveFn, keyName = 'Key', v
  * @param {*} param0 
  * @returns 
  */
-const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }) => {
+function PropControlDate({ prop, storeValue, rawValue, onChange, ...otherStuff }) {
 	// Roll back to native editor on 27/04/2022
 	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
@@ -1100,9 +1100,9 @@ const PropControlDate = ({ prop, storeValue, rawValue, onChange, ...otherStuff }
 	return (<div>
 		<FormControl type="date" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
 	</div>);
-};
+}
 
-const PropControlDateOld = ({ prop, storeValue, rawValue, onChange, ...otherStuff }) => {
+function PropControlDateOld({ prop, storeValue, rawValue, onChange, ...otherStuff }) {
 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
 	// NB: parsing incomplete dates causes NaNs
 	let datePreview = null;
@@ -1128,11 +1128,11 @@ const PropControlDateOld = ({ prop, storeValue, rawValue, onChange, ...otherStuf
 		<div className="pull-right"><i>{datePreview}</i></div>
 		<div className="clearfix" />
 	</div>);
-};
+}
 
 
 /** Add "colour not set" indicator and "remove colour" button to <input type="color"> */
-const PropControlColor = ({ onChange, disabled, ...props }) => {
+function PropControlColor({ onChange, disabled, ...props }) {
 	const luminance = luminanceFromHex(props.value || '#000000')
 	const overlayClass = `form-control overlay ${!props.value ? 'no-color' : ''} ${luminance > 0.5 ? 'light-bg' : ''}`;
 	const overlayText = props.value || 'None';
@@ -1162,7 +1162,7 @@ const PropControlColor = ({ onChange, disabled, ...props }) => {
 			<div className={overlayClass}>{overlayText}</div>
 		</div>
 	);
-};
+}
 
 
 /**
@@ -1199,7 +1199,7 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
    * This replaces the react-bootstrap version 'cos we saw odd bugs there.
    * Plus since we're providing state handling, we don't need a full component.
    */
-const FormControl = ({ value, type, required, size, className, prepend, append, proppath, ...otherProps }) => {
+function FormControl({ value, type, required, size, className, prepend, append, proppath, ...otherProps }) {
 	if (value === null || value === undefined) value = '';
 
 	// add css classes for required fields
@@ -1241,7 +1241,7 @@ const FormControl = ({ value, type, required, size, className, prepend, append, 
 	);
 
 	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
-};
+}
 
 
 /**
@@ -1267,7 +1267,7 @@ PropControl.KControlType = new Enum(
    * @param {Function} removeFn Takes (map, key), returns new map - use if "removing" a key means something other than just deleting it
    * @param {Function} filterFn Takes (key, value), returns boolean - use if some entries should't be shown
    */
-const MapEditor = ({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filterFn = (() => true) }) => {
+function MapEditor({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filterFn = (() => true) }) {
 	assert($KeyProp && $ValProp, "PropControl MapEditor " + prop + ": missing $KeyProp or $ValProp jsx (probably PropControl) widgets");
 	const temppath = ['widget', 'MapEditor'].concat(proppath);
 	const kv = DataStore.getValue(temppath) || {};
@@ -1331,7 +1331,7 @@ const MapEditor = ({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filter
 		</Row>
 		{entryRows}
 	</>;
-}; // ./MapEditor
+} // ./MapEditor
 
 
 /** INPUT STATUS */

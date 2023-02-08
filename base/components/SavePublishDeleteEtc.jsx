@@ -140,7 +140,7 @@ const check = ok => {
  * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
  * A snapshot is taken the first time this renders.
  */
-const SavePublishDeleteEtc = ({
+function SavePublishDeleteEtc({
 	type, id,
 	hidden, position, className = "SavePublishDeleteEtc", 
 	size,
@@ -152,7 +152,7 @@ const SavePublishDeleteEtc = ({
 	saveAs, unpublish,
 	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
 	sendDiff
-}) => {
+}) {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
 		if (hidden) return null;
@@ -339,10 +339,12 @@ const SavePublishDeleteEtc = ({
 			{/* <div><small>Status: {item && item.status} | Unsaved changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div> */}
 		</div>
 	);
-};
+}
 
 
-const Spinner = ({ vis }) => <span className="fa fa-circle-notch spinning" style={vis} />;
+function Spinner({ vis }) {
+  return <span className="fa fa-circle-notch spinning" style={vis} />
+}
 
 // backwards compatibility
 Misc.SavePublishDiscard = SavePublishDeleteEtc;

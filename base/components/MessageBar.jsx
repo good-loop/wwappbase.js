@@ -14,7 +14,7 @@ import { match } from '../utils/assert.js';
  *
  * This displays messages
  */
-const MessageBar = () => {
+function MessageBar() {
 	// Retrieve messages & filter those intended for a particular page
 	let messages = Object.values(DataStore.getValue('misc', 'messages-for-user') || {})
 		.filter(m => m.path ? match(m.path, DataStore.getValue('location', 'path')) : true);
@@ -32,10 +32,10 @@ const MessageBar = () => {
 	}
 
 	return <div />;
-}; // ./Messagebar
+} // ./Messagebar
 
 
-const MessageBarItem = ({message}) => {
+function MessageBarItem({message}) {
 	if (message.closed) {
 		return null;
 	}
@@ -51,6 +51,6 @@ const MessageBarItem = ({message}) => {
 			<CloseButton onClick={ e => { message.closed=true; DataStore.update(); } } />
 		</div>
 	);
-};
+}
 
 export default MessageBar;

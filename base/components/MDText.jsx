@@ -9,7 +9,7 @@ import { Input, Label } from 'reactstrap';
 import C from '../CBase';
 import LinkOut from './LinkOut';
 
-const MDCheckbox = ({ setSource, source, checked, ...args }) => {
+function MDCheckbox({ setSource, source, checked, ...args }) {
 	if (!is(checked)) {
 		return ReactMarkdown.renderers.listItem(args);
 	}
@@ -32,7 +32,7 @@ const MDCheckbox = ({ setSource, source, checked, ...args }) => {
 			onChange={onChange} />
 		<Label check>{args.children}</Label>
 	</li>);
-};
+}
 
 /**
  * Remove non-standard characters and render Markdown.
@@ -44,7 +44,7 @@ const MDCheckbox = ({ setSource, source, checked, ...args }) => {
  * @param {Function} setSource newText => Function to make changes to the text source. If provided, then checkboxes can be clicked on/off.
  * @param {?boolean} linkOut Toggle for <a> links should use LinkOut
  */
-const MDText = ({ source, renderers = {}, components = {}, escapeHtml = false, setSource, linkOut }) => {
+function MDText({ source, renderers = {}, components = {}, escapeHtml = false, setSource, linkOut }) {
 	if (!source) {
 		return null;
 	}
@@ -78,6 +78,6 @@ const MDText = ({ source, renderers = {}, components = {}, escapeHtml = false, s
 			children={nsource}
 			components={components} />
 	</div>;
-};
+}
 
 export default MDText;

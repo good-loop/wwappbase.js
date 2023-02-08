@@ -19,5 +19,8 @@ import PropControlToggle from './PropControls/PropControlToggle';
 
 import PropControlImg from './PropControls/PropControlImg';
 
+let dummyProtectImportsFromLint = [PropControlUrl, PropControlUpload, PropControlPills, 
+    PropControlSelection, PropControlDataItem, PropControlMoney, PropControlDt];
+
 // no real export - use via PropControl
 export default {};

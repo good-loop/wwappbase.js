@@ -44,7 +44,7 @@ ChartJS.register(
  * @param {Object} p.options {scales: {x, y}, plugins}
  * @returns 
  */
-const NewChartWidget = ({type = 'line', data, datalabels, className, style, width, height, miny, maxy, legend, ...props}) => {
+function NewChartWidget({type = 'line', data, datalabels, className, style, width, height, miny, maxy, legend, ...props}) {
 	props.options = props.options || {};
 	props.options.maintainAspectRatio = props.options.maintainAspectRatio || false; // why??
 	if (datalabels) {
@@ -66,7 +66,7 @@ const NewChartWidget = ({type = 'line', data, datalabels, className, style, widt
 	return <div className={space("NewChartWidget position-relative", className)} style={style}>
 		<Chart data={data} width={width} height={height} {...props} />
 	</div>;
-};
+}
 
 /**
  * 

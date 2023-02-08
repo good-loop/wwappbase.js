@@ -98,7 +98,7 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  * @param {NavProps} p
  * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
  */
-const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems, accountLinkText}) => {
+function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems, accountLinkText}) {
 
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
@@ -128,7 +128,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', hom
 			</div>
 		</Collapse>
 	</>);
-};
+}
 
 
 /**
@@ -141,7 +141,7 @@ const DefaultNavGuts = ({pageLinks, currentPage, children, logoClass='logo', hom
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
-const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize="md", ...props}) => {
+function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize="md", ...props}) {
 	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
 	const navProps = getNavProps();
 	if (navProps) {
@@ -248,7 +248,7 @@ const NavBar = ({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 			</NavGuts>
 		</Navbar>
 	);
-};
+}
 // ./NavBar
 
 

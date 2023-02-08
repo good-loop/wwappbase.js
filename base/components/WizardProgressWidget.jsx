@@ -12,14 +12,14 @@ import { space } from '../utils/miscutils';
  * @param {Number} p.stageNum
  * @param {String[]} p.stagePath whereto store the current stage number
  */
-const WizardProgressWidget = ({stageNum, stages, stagePath}) => {
+function WizardProgressWidget({stageNum, stages, stagePath}) {
 	if ( ! stageNum) stageNum = 0;
 	return (<div className="WizardProgressWidget">
 		{stages.map((stage, i) => <Stage key={i} title={stage.title} stageNum={stageNum} i={i} stagePath={stagePath} canJumpAhead={stage.canJumpAhead} color={stage.color} />)}
 	</div>);
-};
+}
 
-const Stage = ({i, title, stageNum, stagePath, canJumpAhead, color}) => {
+function Stage({i, title, stageNum, stagePath, canJumpAhead, color}) {
 	// Display in progress as complete if left of the current page
 	let complete = i < stageNum;
 	// if (stage.complete === false) complete = false; TODO stage.error/warning?
@@ -46,7 +46,7 @@ const Stage = ({i, title, stageNum, stagePath, canJumpAhead, color}) => {
 			<h5 className="text-center below">{title}</h5>
 		</div>
 	);
-};
+}
 
 class StageNavStatus {
 	/** @type {Boolean} */
@@ -80,10 +80,9 @@ class StageNavStatus {
  * 
  * @param {?String} p.navPosition "top"|"bottom"|"both" Defaults to bottom. Usually set by parent Wizard tag
  */
-const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
+function WizardStage({stageKey, stageNum, stagePath, maxStage, next, previous,
 	sufficient=true, complete=false,
-	title, onNext, onPrev, children, canJumpAhead, navPosition="bottom"}) =>
-{
+	title, onNext, onPrev, children, canJumpAhead, navPosition="bottom"}) {
 	assert(stageNum !==null && stageNum !== undefined);
 	assMatch(maxStage, Number);
 	if (stageKey != stageNum) { // allow "1" == 1
@@ -122,7 +121,7 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
 			navPosition={navPosition}
 		/>}		
 	</div>);
-};
+}
 
 
 /**
@@ -131,7 +130,7 @@ const WizardStage = ({stageKey, stageNum, stagePath, maxStage, next, previous,
  * 	maxStage: {Number}
  * }
  */
-const NextButton = ({complete, stagePath, maxStage, onNext, ...rest}) => {
+function NextButton({complete, stagePath, maxStage, onNext, ...rest}) {
 	const colour = complete ? 'primary' : undefined;
 	assMatch(maxStage, Number);
 	return (
@@ -139,15 +138,15 @@ const NextButton = ({complete, stagePath, maxStage, onNext, ...rest}) => {
 			Next <b>&gt;</b>
 		</NextPrevTab>
 	);
-};
+}
 
-const PrevButton = ({stagePath, onPrev, ...rest}) => (
-	<NextPrevTab stagePath={stagePath} diff={-1} callback={onPrev} {...rest}>
+function PrevButton({stagePath, onPrev, ...rest}) {
+  return <NextPrevTab stagePath={stagePath} diff={-1} callback={onPrev} {...rest}>
 		<b>&lt;</b> Previous
 	</NextPrevTab>
-);
+}
 
-const NextPrevTab = ({stagePath, diff, children, colour = 'secondary', maxStage, callback, ...rest}) => {
+function NextPrevTab({stagePath, diff, children, colour = 'secondary', maxStage, callback, ...rest}) {
 
 	assMatch(stagePath, 'String[]');
 	assMatch(diff, Number);
@@ -176,14 +175,14 @@ const NextPrevTab = ({stagePath, diff, children, colour = 'secondary', maxStage,
 			{children}
 		</Button>
 	);
-};
+}
 
 /**
  * @param {Object} p
  * @param {?String} p.navPosition "top"|"bottom"|"both" Defaults to bottom
  * @returns 
  */
-const Wizard = ({widgetName, stagePath, navPosition, children}) => {
+function Wizard({widgetName, stagePath, navPosition, children}) {
 	// NB: React-BS provides Accordion, but it does not work with modular panel code. So sod that.
 	if ( ! stagePath) stagePath = ['widget', widgetName || 'Wizard', 'stage'];
 	let stageNum = DataStore.getValue(stagePath);
@@ -218,9 +217,9 @@ const Wizard = ({widgetName, stagePath, navPosition, children}) => {
 		<WizardProgressWidget stages={stages} stagePath={stagePath} stageNum={stageNum} />
 		{kids}
 	</div>);
-};
+}
 
-const WizardNavButtons = ({stagePath, maxStage, navStatus, onNext, onPrev, navPosition, title}) => {
+function WizardNavButtons({stagePath, maxStage, navStatus, onNext, onPrev, navPosition, title}) {
 	assert(stagePath, "WizardProgressWidget.jsx - WizardNavButtons: no stagePath");
 	let {next, previous, sufficient, complete} = navStatus;
 	// read from WizardStage props if set, or setNavStatus
@@ -236,7 +235,7 @@ const WizardNavButtons = ({stagePath, maxStage, navStatus, onNext, onPrev, navPo
 			<NextButton stagePath={stagePath} maxStage={maxStage} disabled={ ! sufficient} complete={complete} title={msg} onNext={onNext} />
 		}
 	</div>);
-};
+}
 
 export {Wizard, WizardStage, WizardProgressWidget};
 export default Wizard;
