@@ -79,7 +79,9 @@ function PropControlPeriodMonthYear({path, propStart="start",propEnd="end"}) {
     if (month && year) {
         startv = year+"-"+oh(MONTHS.indexOf(month)+1)+"-01";
         let startNextMonth = year+"-"+oh(MONTHS.indexOf(month)+2)+"-01";
-        if (startNextMonth.includes("-13-")) startNextMonth = (year+1)+"-01-01";
+        if (startNextMonth.includes("-13-")) {
+            startNextMonth = ((year*1)+1)+"-01-01"; // NB force year to be a number so we can +1
+        }
         let dend = new Date(new Date(startNextMonth).getTime() - 1);
         endv = isoDate(dend);
         DataStore.setValue(path.concat(propStart), startv);
