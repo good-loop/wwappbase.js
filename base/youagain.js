@@ -194,7 +194,7 @@ class _Login {
 			});
 		// Remove jwt in url after logged in to avoid logging in again after refresh
 		if (jwt) {
-			window.history.pushState({}, '', window.location.pathname + window.location.search.replace('jwt='+jwt, ''))
+			window.history.pushState({}, '', window.location.pathname + window.location.search.replace('&jwt='+jwt, ''))
 		}
 		return pVerify;
 	};
