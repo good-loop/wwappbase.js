@@ -12,6 +12,8 @@ import { getDataItem, getDataList, saveEdits } from '../plumbing/Crud';
 import PromiseValue from '../promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
+import Advertiser from './Advertiser';
+import Agency from './Agency';
 import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
 import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars, asDate } from '../utils/miscutils';
 import { getId } from './DataClass';
@@ -212,17 +214,36 @@ Campaign.makeFor = (advert) => {
  * @returns {PromiseValue} PV(List<ImpactDebit>)
  */
 Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
+	let p = getImpactDebits2();
+	return new PromiseValue(p);
+};
+
+/**
+ * Get the ImpactDebits for charity donation info
+ * @param {Object} p
+ * @returns {Promise} List<ImpactDebit>
+ */
+Campaign.getImpactDebits2 = async ({campaign, status=KStatus.PUBLISHED}) => {
 	let q;
 	// is it a master campaign?
 	if (Campaign.isMaster(campaign)) {
-		// search based on the brand/agency
-		let {type, id} = Campaign.masterFor(campaign);
-		q = SearchQuery.setProp(null, type==="Agency"?"agencyId":"vertiser", id);		
+		let {type, id} = Campaign.masterFor(campaign);		
+		// What if it's a master brand, e.g. Nestle > Nespresso?
+		// The only way to know is to look for children
+		let pvListAdvertisers = type==="Agency"? Agency.getChildren({id}) : Advertiser.getChildren({id});
+		let listAdvertisers = await pvListAdvertisers.promise;
+		let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
+		ids = ids.concat(id); // include the top-level brand
+		q = SearchQuery.setPropOr(null, type==="Agency"? "agencyId":"vertiser", ids);
 	} else {
-		q = SearchQuery.setProp(null, "campaign", campaign.id);
+		// just a single campaign
+		q = SearchQuery.setProp(null, "campaign", campaign.id);	
 	}
-	return getDataList({type:"ImpactDebit",status,q});
+	let pv = getDataList({type:"ImpactDebit",status,q});
+	let v = await pv.promise;
+	return v;
 };
+
 
 /**
  * 
