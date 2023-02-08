@@ -475,7 +475,7 @@ const DefaultCopy = ({ type, id, item, list, onCopy }) => {
  * @param {!string} id 
  * @returns {!string}
  */
-const id2canonical = id => id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
+export const id2canonical = id => id.toLowerCase().replace('&', "and").replace(/[^a-zA-Z0-9]/g,'-');
 
 /**
  * Make a local blank, and set the nav url
