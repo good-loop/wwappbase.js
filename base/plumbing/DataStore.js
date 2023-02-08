@@ -886,12 +886,17 @@ const getListPath = ({type,status,q,prefix,start,end,size,sort,domain, ...other}
 /**
  * @param {String[]} path
  */
-const getValue = DataStore.getValue.bind(DataStore); const setValue = DataStore.setValue.bind(DataStore);
+const getValue = DataStore.getValue.bind(DataStore); 
+const setValue = DataStore.setValue.bind(DataStore);
+
+const getUrlValue = DataStore.getUrlValue.bind(DataStore);
+
 export {
 	getPath,
 	getDataPath,
 	getListPath,
 	getValue, setValue,
+	getUrlValue,
 	Ref, Item
 };
 // accessible to debug

@@ -20,16 +20,19 @@ import ServerIO from './ServerIOBase';
  * @param {?String|Date} p.start Date/time of oldest results (natural language eg '1 week ago' is OK). Default: 1 month ago
  * @param {?String|Date} p.end Date/time of oldest results
  * @param {?String} p.name Just for debugging - makes it easy to spot in the network tab
+ * @param {?Number} p.prob [0,1] Probability for random sampling. -1 for auto-calc
  * @returns PromiseValue "ElasticSearch format" (buckets with a key)
  */
-const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",name,dataspace=ServerIO.DATALOG_DATASPACE}) => {
+const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,dataspace=ServerIO.DATALOG_DATASPACE}) => {
 	assert(dataspace);
-	let dspec = md5(JSON.stringify({q, start, end, breakdowns}));
+	let phack = prob? Math.round(10*prob) : prob; // (old code, Feb 23) handle DataServlet prob=[0,10] code
+	if (phack === -10) phack=88; // HACK (old code, Feb 23) special value for "pick a prob"
+	// NB: the server doesnt want an -s on breakdown
+	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, name, dataspace};	
+	let dspec = md5(JSON.stringify(glreq));
 	const dlpath = ['misc', 'DataLog', dataspace, dspec];
 
-	return DataStore.fetch(dlpath, () => {
-		// NB: the server doesnt want an -s on breakdown
-		const glreq = {q, start, end, breakdown:breakdowns, name, dataspace};		
+	return DataStore.fetch(dlpath, () => {		
 		let endpoint = ServerIO.DATALOG_ENDPOINT;
 		// This stats data is _usually_ non essential, so swallow errors.
 		const params = {data: glreq, swallow:true};

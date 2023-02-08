@@ -1,6 +1,6 @@
 import React from 'react';
 import C from '../CBase';
-import { space } from '../utils/miscutils';
+import { space, randomPick } from '../utils/miscutils';
 
 /**
  * TODO standardise use of icons and emojis
@@ -11,11 +11,14 @@ import { space } from '../utils/miscutils';
   * https://www.unicode.org/emoji/charts/full-emoji-list.html
   */
 const EMOJI = {
+	bug: "🐛", //🪲🐞
 	camera: "📷",
 	caretup:"△", // ‸⋀⋁△▽▵▾▿
 	caretdown:"▽",
+	circlearrow: "⟳",
 	copy: "⎘",
 	clipboard: "📋",
+	genie: "🧞",
 	globe: "🌍",
 	help: "?", // use the normal q-mark - though we also have ❓？
 	hourglass: "⏳",
@@ -28,12 +31,14 @@ const EMOJI = {
 	search: "🔍",
 	seedling: "🌱",
 	settings: "⚙", // gear
+	stopwatch: "⏱️",
 	tick: "✔",
 	trashcan: "🗑", //&#x1f5d1;
 	".txt":"🖹",	
 	"warning": "⚠",
 	mobile: "📱",
 	desktop: "💻", // or 🖳	
+	yinyang: "☯️",
  };
  const SVG = {
 	 // (cc) https://icons8.com/icons/set/share
@@ -55,6 +60,7 @@ const EMOJI = {
   * @param {?String} p.size xs|sm|lg|xl
   */
 const Icon = ({name,size="sm",className,color,...props}) => {
+	if (name==="spinner") name = randomPick("yinyang hourglass stopwatch genie circlearrow".split(" "));
 	if (EMOJI[name]) {
 		if (color && ! 'black white grey success info warning danger'.includes(color)) {
 			console.warn("Icon.jsx color not directly supported: "+color+" Icons can only reliably use a few set colors cross-device.");

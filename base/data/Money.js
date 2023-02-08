@@ -212,7 +212,7 @@ Money.GBP_VALUES = {
 	CNY: 8.625, // Chinese yuan / RMB
 	CAD: 1.612, // Canadian dollar
 	ZAR: 20.564, // South African rand
-}
+};
 
 Money.CURRENCY_NAMES = {
 	GBP: 'British pound',
@@ -225,7 +225,7 @@ Money.CURRENCY_NAMES = {
 	CNY: 'Chinese yuan',
 	CAD: 'Canadian dollar',
 	ZAR: 'South African rand'
-}
+};
 
 /**
  * Convert a money value to a different currency
