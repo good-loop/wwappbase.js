@@ -17,6 +17,8 @@ import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrl
 import { getId } from './DataClass';
 import NGO from './NGO';
 import Money from './Money';
+import Branding from './Branding';
+import XId from './XId';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -27,6 +29,18 @@ class Campaign extends DataClass {
 	
 	/** @type{?String} */
 	agencyId;
+
+	/** @type{?Branding} */
+	branding;
+
+	/** @type{?String} url */
+	caseStudy;
+
+	/** @type{?XId} Monday Deal */
+	crm;
+
+	/** @type{?boolean} */
+	master;
 
 	/** @type{?String} */
 	vertiser;
@@ -92,7 +106,7 @@ Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
 
 
 /**
- * 
+ * @deprecated Moved to ImpactDebits
  * @param {Campaign} campaign 
  * @returns {!Impact[]} can be empty. 
  * Does NOT include offsets from any child campaign. 
@@ -129,14 +143,12 @@ Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT)
 
 /**
  * Get all campaigns matching an advertiser
- * @param {Advertiser} vertiser
+ * @param {string} vertiserId
  * @param {KStatus} status
  * @returns PromiseValue(Campaign[])
  */
  Campaign.fetchForAdvertiser = (vertiserId, status=KStatus.DRAFT) => {
-    let q = SearchQuery.setProp(new SearchQuery(), "vertiser", vertiserId).query;
-    let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
-    return pvCampaigns;
+	return fetchForAdvertisers([vertiserId], status);
 }
 
 /**
@@ -192,6 +204,24 @@ Campaign.makeFor = (advert) => {
 		let baseCampaign = {id:cid, vertiser, vertiserName};
 		return saveEdits({type:"Campaign", id:cid, item:baseCampaign});
 	});	
+};
+
+/**
+ * Get the ImpactDebits for charity donation info
+ * @param {Object} p
+ * @returns {PromiseValue} PV(List<ImpactDebit>)
+ */
+Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
+	let q;
+	// is it a master campaign?
+	if (Campaign.isMaster(campaign)) {
+		// search based on the brand/agency
+		let {type, id} = Campaign.masterFor(campaign);
+		q = SearchQuery.setProp(null, type==="Agency"?"agencyId":"vertiser", id);		
+	} else {
+		q = SearchQuery.setProp(null, "campaign", campaign.id);
+	}
+	return getDataList({type:"ImpactDebit",status,q});
 };
 
 /**
@@ -327,7 +357,9 @@ const pAds3_labelHidden = ({campaign, ads}) => {
 	});
 };
 
-
+/**
+ * @deprecated ancient history - remove
+ */
 const tomsCampaigns = /(josh|sara|ella)/; // For matching TOMS campaign names needing special treatment
 
 
@@ -391,7 +423,9 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 };
 
 
-/** This is the total unlocked across all adverts in this campaign. See also maxDntn.
+/** 
+ * @deprecated
+ * This is the total unlocked across all adverts in this campaign. See also maxDntn.
  * Warning: This will change as data loads!!
  * @returns {?Money}
  */
@@ -429,6 +463,7 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 
 /**
  * Recursive and fetches dynamic data.
+ * @deprecated
  
  * @param {!Campaign} campaign 
 *  @param {?boolean} isSub set in recursive calls
