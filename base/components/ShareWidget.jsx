@@ -188,6 +188,7 @@ const doShareByLink = async({link, slink, setSlink, shareId}) => {
 	Login.claim(withXId);
 	// ?? share the pseudo-user with the shareId (modified to be an XId) (so TODO e.g. users of a dashbaord can access the pseudo-user)
 	// doShareThing({shareId:withXId, withXId:shareId+"@share"});
+	
 	// share the item with the pseudo-user 
 	let link2 = doShareByLink2({link, shareId, withXId, jwt});
 	// copy to clipboards
