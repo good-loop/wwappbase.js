@@ -329,6 +329,13 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	let storeValue = set? pvalue : DataStore.getValue(proppath);
 	let value = storeValue;
 
+	if (PropControl.KControlType.isnumber(type) && !validator && int) {
+		const roundedVal = Math.round(value);
+		if (!Number.isNaN(roundedVal)) {
+			value = roundedVal;
+		}
+	}
+
 	// What is rawValue?
 	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
 	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
@@ -367,7 +374,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
 	if (PropControl.KControlType.isdate(type) && !validator) validator = dateValidator;
-	if (PropControl.KControlType.isnumber(type) && !validator && int) validator = intValidator;
+	//if (PropControl.KControlType.isnumber(type) && !validator && int) validator = intValidator;
 
 	/** @type {JSend} */
 	let validatorStatus;
