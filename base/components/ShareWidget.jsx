@@ -44,7 +44,7 @@ function ShareLink({item, type, id, shareId, children, button, size, color="seco
 	}
 
 	return (
-		<a id='dashboard-share-btn' onClick={doShow} title="Share">
+		<a id='share-widget-btn' onClick={doShow} title="Share">
 			<Icon name="share" />
 		</a>
 	);
@@ -200,7 +200,7 @@ function ShareByLink({link, name, shareId}) {
 	if ( ! link) link = window.location+"";
 	let [slink, setSlink] = useState();
 	return <><h5>General Access</h5>
-		<Button onClick={e => doShareByLink({link, slink, setSlink, shareId})} id='copy-share-dashboard-link' ><Icon name="clipboard" /> Copy access link</Button>
+		<Button onClick={e => doShareByLink({link, slink, setSlink, shareId})} id='copy-share-widget-link' ><Icon name="clipboard" /> Copy access link</Button>
 	</>;
 }
 
