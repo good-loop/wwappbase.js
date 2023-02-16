@@ -18,7 +18,7 @@ import JSend from '../data/JSend';
 /**
  * a Share This button
  */
-function ShareLink({item, type, id, shareId, children, button, size, color="secondary"}) {
+function ShareLink({className, style, item, type, id, shareId, children, button, size, color="secondary"}) {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -37,14 +37,14 @@ function ShareLink({item, type, id, shareId, children, button, size, color="seco
 	};
 
 	if (children) {
-		return <Button id='share-btn' color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /> {children}</Button>;
+		return <Button id='share-widget-btn' className={className} style={style} color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /> {children}</Button>;
 	}
 	if (button) {
-		return <Button id='share-btn' color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /></Button>;
+		return <Button id='share-widget-btn' className={className} style={style} color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /></Button>;
 	}
 
 	return (
-		<a id='share-widget-btn' onClick={doShow} title="Share">
+		<a id='share-widget-btn' className={className} style={style} onClick={doShow} title="Share">
 			<Icon name="share" />
 		</a>
 	);
@@ -89,7 +89,7 @@ const deleteShare = ({share}) => {
  *
  
 */
-function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, noEmails, children}) {
+function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, noEmails, children, className, style}) {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -124,7 +124,7 @@ function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, 
 	};
 	
 	return <>
-		{hasButton && <ShareLink shareId={shareId}>{children}</ShareLink>}
+		{hasButton && <ShareLink className={className} style={style} shareId={shareId}>{children}</ShareLink>}
 		<Modal isOpen={show} className="share-modal" toggle={toggle}>
 			<ModalHeader toggle={toggle}>
 				<Icon name="share" /> {title}
