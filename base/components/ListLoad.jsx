@@ -91,6 +91,7 @@ function ListLoad({ type, status, servlet, navpage,
 	pageSize,
 	unwrapped,
 	onClickItem,
+	onClickWrapper,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) {
@@ -194,6 +195,7 @@ function ListLoad({ type, status, servlet, navpage,
 				navpage={navpage}
 				notALink={notALink}
 				itemClassName={itemClassName}
+				onClickWrapper={onClickWrapper}
 			>
 				<ListItem key={'li' + (getId(item) || i)}
 					type={type}
@@ -329,7 +331,7 @@ const onPick = ({ event, navpage, id, customParams }) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped }) {
+function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped, onClickWrapper }) {
 	if (unwrapped) {
 		return children;
 	}
@@ -355,6 +357,7 @@ function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, c
 	const linkOrDivProps = { key: `item${id}`, className: itemClassName || space('ListItem btn-default btn btn-outline-secondary', `status-${item.status}`, hasButtons && 'btn-space') };
 	if (!notALink) linkOrDivProps.href = itemUrl;
 	if (!cannotClick) linkOrDivProps.onClick = event => onPick({event, navpage, id});
+	if (!notALink && !cannotClick) linkOrDivProps.onClick = (event) => onClickWrapper(event, item)
 
 	return (
 		<div className="ListItemWrapper clearfix flex-row">
