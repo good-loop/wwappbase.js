@@ -62,6 +62,10 @@ const dateValidator = (val, rawValue) => {
 	}
 };
 
+/** Validator for making number inputs int only */
+const intValidator = (val, rawVal) => {
+	return Number.isInteger(val) ? null : "Number must be an integer!";
+}
 
 /** Use Bootstrap popover to display help text on click */
 export function Help({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) {
@@ -294,8 +298,8 @@ or if extras like help and error text are wanted.
  
    * @param {PropControlParams} p
    */
-function PropControl({ className, warnOnUnpublished = true, ...props }) {
-	let { type, optional, required, path, prop, set, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, ...stuff } = props;
+const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
+	let { type, optional, required, path, prop, set, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, int, ...stuff } = props;
 	if (label === true) {
 		label = toTitleCase(prop); // convenience
 		props = { ...props, label };
@@ -324,6 +328,13 @@ function PropControl({ className, warnOnUnpublished = true, ...props }) {
 	// HACK: for now, we use both as theres a lot of code that refers to value, but its fiddly to update it all)
 	let storeValue = set? pvalue : DataStore.getValue(proppath);
 	let value = storeValue;
+
+	if (PropControl.KControlType.isnumber(type) && !validator && int) {
+		const roundedVal = Math.round(value);
+		if (!Number.isNaN(roundedVal)) {
+			value = roundedVal;
+		}
+	}
 
 	// What is rawValue?
 	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
@@ -369,6 +380,7 @@ function PropControl({ className, warnOnUnpublished = true, ...props }) {
 	// HACK: catch bad dates and make an error message
 	// TODO generalise this with a validation function
 	if (PropControl.KControlType.isdate(type) && !validator) validator = dateValidator;
+	//if (PropControl.KControlType.isnumber(type) && !validator && int) validator = intValidator;
 
 	/** @type {JSend} */
 	let validatorStatus;
