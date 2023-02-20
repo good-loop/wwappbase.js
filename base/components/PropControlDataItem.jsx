@@ -21,9 +21,9 @@ import KStatus from '../data/KStatus';
 /**
  * DataItemBadge
  */
-const SlimListItem = ({item, onClick, ...props}) => {
+function SlimListItem({item, onClick, ...props}) {
 	return <DataItemBadge style={{cursor:"pointer"}} item={item} onClick={onClick} href={false} {...props} />;
-};
+}
 
 /**
  * A picker with auto-complete for e.g. Advertiser, Agency
@@ -37,11 +37,11 @@ const SlimListItem = ({item, onClick, ...props}) => {
  * @param {?String} p.list Optional list to use (instead of querying the server). Usually unset.
  * @param {?Boolean} p.embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem2 = ({canCreate, createProp="id", base, path, prop, proppath, rawValue, 
+function PropControlDataItem2({canCreate, createProp="id", base, path, prop, proppath, rawValue, 
 set, 
 setRawValue, storeValue, modelValueFromInput, 
 	type, itemType, status=KStatus.PUB_OR_DRAFT, domain, list, q, sort, embed, pageSize=20, navpage, notALink, readOnly, showId=true,
-}) => {
+}) {
 	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
 	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad
 	const [inputClean, setInputClean] = useState(true); // Has the user input anything since last pick?
@@ -125,7 +125,7 @@ setRawValue, storeValue, modelValueFromInput,
 
 	return (
 		<Row className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
-			{showItem ? (<>
+			{showItem ? (
 				<Col xs={12}>
 					<ButtonGroup>
 						<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
@@ -138,7 +138,7 @@ setRawValue, storeValue, modelValueFromInput,
 					</ButtonGroup>
 					{showId && <div><small>ID: <code>{rawValue || storeValue}</code></small></div>}
 				</Col>
-			</>) : (<>
+			) : (<>
 				<Col xs={canCreate ? 8 : 12}>
 				<div className="dropdown-sizer">
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
@@ -164,7 +164,7 @@ setRawValue, storeValue, modelValueFromInput,
 			</Col>
 		</>)}
 		</Row>);
-};
+}
 
 registerControl({ type: 'DataItem', $Widget: PropControlDataItem2 });
 
@@ -180,6 +180,8 @@ registerControl({ type: 'DataItem', $Widget: PropControlDataItem2 });
  * @param {?String} p.list Optional list to use (instead of querying the server). Usually unset.
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
-const PropControlDataItem = (p) => <PropControl type="DataItem" {...p} />
+function PropControlDataItem(p) {
+  return <PropControl type="DataItem" {...p} />;
+}
 
 export default PropControlDataItem;

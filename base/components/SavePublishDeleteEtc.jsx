@@ -12,7 +12,7 @@ import C from '../CBase';
 // // import I18n from 'easyi18n';
 import DataClass, { getType, getId, nonce, getStatus, getName } from '../data/DataClass';
 import Messaging, { notifyUser } from '../plumbing/Messaging';
-import { publishEdits, saveEdits } from '../plumbing/Crud';
+import { publish, saveEdits } from '../plumbing/Crud';
 import Icon from './Icon';
 import { goto, modifyPage } from '../plumbing/glrouter';
 import Login from '../youagain';
@@ -96,7 +96,7 @@ const autoPublishFn = _.debounce(
 			return;
 		}
 		// Do it
-		publishEdits(type, id, item);
+		publish({type, id, item});
 		return true;
 	}, DEBOUNCE_MSECS
 );
@@ -140,7 +140,7 @@ const check = ok => {
  * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
  * A snapshot is taken the first time this renders.
  */
-const SavePublishDeleteEtc = ({
+function SavePublishDeleteEtc({
 	type, id,
 	hidden, position, className = "SavePublishDeleteEtc", 
 	size,
@@ -152,7 +152,7 @@ const SavePublishDeleteEtc = ({
 	saveAs, unpublish,
 	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
 	sendDiff
-}) => {
+}) {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
 		if (hidden) return null;
@@ -303,7 +303,7 @@ const SavePublishDeleteEtc = ({
 
 			<Button name="publish" color="primary" size={size} className="ml-2"
 				disabled={disablePublish} title={publishTooltip}
-				onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publishEdits(type, id)}>
+				onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item})}>
 				Publish {pubExists && "Edits"} <Spinner vis={vis} />
 			</Button>
 
@@ -339,10 +339,12 @@ const SavePublishDeleteEtc = ({
 			{/* <div><small>Status: {item && item.status} | Unsaved changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div> */}
 		</div>
 	);
-};
+}
 
 
-const Spinner = ({ vis }) => <span className="fa fa-circle-notch spinning" style={vis} />;
+function Spinner({ vis }) {
+  return <span className="fa fa-circle-notch spinning" style={vis} />
+}
 
 // backwards compatibility
 Misc.SavePublishDiscard = SavePublishDeleteEtc;

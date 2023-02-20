@@ -67,7 +67,7 @@ import Roles from '../Roles';
  * @param {?Function} p.onClickItem  Custom non-navigation action when list item clicked
  * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
  */
-const ListLoad = ({ type, status, servlet, navpage,
+function ListLoad({ type, status, servlet, navpage,
 	checkboxes,
 	canDelete, canCopy, canCreate, 
 	canFilter,
@@ -93,7 +93,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 	onClickItem,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
-}) => {
+}) {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if ( ! status) {
 		if (!list) console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
@@ -216,7 +216,7 @@ const ListLoad = ({ type, status, servlet, navpage,
 		{isLoading && <Misc.Loading text={type.toLowerCase() + 's'} />}
 		<ErrAlert error={error} />
 	</div>);
-}; // ./ListLoad
+} // ./ListLoad
 //
 
 
@@ -225,7 +225,7 @@ const ListLoad = ({ type, status, servlet, navpage,
  * @param {*} param0 
  * @returns 
  */
-const ListLoadCSVDownload = ({items, csvColumns, hideCsvColumns}) => {
+function ListLoadCSVDownload({items, csvColumns, hideCsvColumns}) {
 	if ( ! items.length) return null;
 	if ( ! csvColumns) {
 		csvColumns = Object.keys(items[0]);
@@ -234,7 +234,7 @@ const ListLoadCSVDownload = ({items, csvColumns, hideCsvColumns}) => {
 		csvColumns = csvColumns.filter(col => !hideCsvColumns.includes(col))
 	}
 	return <DownloadCSVLink data={items} columns={csvColumns} />;	
-};
+}
 
 const paginate = ({ items, pageNum, pageSize }) => {
 	assert(pageSize, "paginate");
@@ -245,7 +245,7 @@ const paginate = ({ items, pageNum, pageSize }) => {
  * TODO
  * @param {boolean} canDelete 
  */
-const MassActionToolbar = ({ type, canDelete, items }) => {
+function MassActionToolbar({ type, canDelete, items }) {
 	// checked count
 	let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let checked4id = DataStore.getValue(checkedPath);
@@ -254,7 +254,7 @@ const MassActionToolbar = ({ type, canDelete, items }) => {
 	return (<div className="btn-toolbar" role="toolbar" aria-label="Toolbar for checked items">
 		{checkCnt} checked of {items.length}
 	</div>);
-};
+}
 
 /**
  * 
@@ -329,7 +329,7 @@ const onPick = ({ event, navpage, id, customParams }) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped }) => {
+function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped }) {
 	if (unwrapped) {
 		return children;
 	}
@@ -368,7 +368,7 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, c
 			</div>}
 		</div>
 	);
-};
+}
 
 
 /**
@@ -380,7 +380,7 @@ const ListItemWrapper = ({ item, type, checkboxes, canCopy, cannotClick, list, c
  * 	TODO If it's of a data type which has getName(), default to that
  * @param extraDetail {Element} e.g. used on AdvertPage to add a marker to active ads
  */
-const DefaultListItem = ({ type, item, checkboxes, canDelete, nameFn, extraDetail, button }) => {
+function DefaultListItem({ type, item, checkboxes, canDelete, nameFn, extraDetail, button }) {
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
@@ -396,12 +396,12 @@ const DefaultListItem = ({ type, item, checkboxes, canDelete, nameFn, extraDetai
 			{button || ''}
 		</div>
 	</>;
-};
+}
 
 /**
  * Like DefaultListItem, but with less details unless dev/debug=dev
  */
- export const SimplePrettyListItem = ({ type, item, checkboxes, canDelete, nameFn, extraDetail, button }) => {
+ export function SimplePrettyListItem({ type, item, checkboxes, canDelete, nameFn, extraDetail, button }) {
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
@@ -418,16 +418,16 @@ const DefaultListItem = ({ type, item, checkboxes, canDelete, nameFn, extraDetai
 			{button || ''}
 		</div>
 	</>;
-};
+}
 
-const DefaultDelete = ({ type, id }) => {
+function DefaultDelete({ type, id }) {
 	return (
 		<Button color="outline-danger" size="xs" className="pull-right p-1 pt-2 ml-2"
 			onClick={e => confirm(`Delete this ${type}?`) && ActionMan.delete(type, id)}
 			title="Delete">
 			<Icon name="trashcan" />
 		</Button>);
-};
+}
 
 
 /**
@@ -435,7 +435,7 @@ const DefaultDelete = ({ type, id }) => {
  * @param {?Function} p.onCopy newId -> any Respond to the new item e.g. by opening an editor
  * @returns 
  */
-const DefaultCopy = ({ type, id, item, list, onCopy }) => {
+function DefaultCopy({ type, id, item, list, onCopy }) {
 	let [isCopying, setIsCopying] = useState();
 
 	const doCopy = () => {
@@ -468,7 +468,7 @@ const DefaultCopy = ({ type, id, item, list, onCopy }) => {
 		title="Copy">
 		{isCopying ? <Icon name="hourglass" /> : <Icon name="copy" />}
 	</Button>);
-};
+}
 
 /**
  * lowercase and no punctuation, as users type names, but want invariance against details
@@ -553,7 +553,7 @@ const createBlank = ({ type, navpage, base, id, toCanonical=id2canonical, make, 
  * @param {?Function} p.saveFn {type, id, item} eg saveDraftFn Deprecated - prefer `then`
  * @param {?Function} p.then {type, id, item} Defaults to `onPick` which navigates to the item.
  */
-const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, children, className, disabled}) => {
+function CreateButton({type, props, navpage, base, id, make, saveFn, then, children, className, disabled}) {
 	assert(type);
 	assert(!base || !base.id, "ListLoad - dont pass in base.id (defence against object reuse bugs) " + type + ". You can use top-level `id` instead.");
 	if (!navpage) navpage = DataStore.getValue('location', 'path')[0];
@@ -577,7 +577,7 @@ const CreateButton = ({type, props, navpage, base, id, make, saveFn, then, child
 		{props.map(prop => <PropControl key={prop} label={prop} prop={prop} path={cpath} inline className="mr-2" />)}
 		{$createButton}
 	</Form></CardBody></Card>);
-};
+}
 
 export { CreateButton, DefaultListItem, createBlank };
 export default ListLoad;

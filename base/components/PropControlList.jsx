@@ -18,7 +18,7 @@ import '../style/PropControls/PropControlList.less';
  * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
  * @param {?JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
-export const PropControlList2 = ({ storeValue, set, confirmDelete=true, Viewer=BasicViewer, Editor=BasicEditor, itemType, rowStyle, proppath }) => {
+export function PropControlList2({ storeValue, set, confirmDelete=true, Viewer=BasicViewer, Editor=BasicEditor, itemType, rowStyle, proppath }) {
 	const listValue = asArray(storeValue);
 	if (!Viewer) Viewer = Editor;
 
@@ -39,18 +39,20 @@ export const PropControlList2 = ({ storeValue, set, confirmDelete=true, Viewer=B
 			{Editor && <li><AddOrEditButton set={set} size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue} itemType={itemType} /></li>}
 		</ul>
 	);
-};
+}
 
 registerControl({type: 'list', $Widget: PropControlList2});
 
 
-const BasicViewer = ({item, i}) => <div>{i}: {str(item)}</div>;
+function BasicViewer({item, i}) {
+  return <div>{i}: {str(item)}</div>
+}
 
 
-const BasicEditor = ({path}) => {
+function BasicEditor({path}) {
 	let item = DataStore.getValue(path);
 	return <div>TODO editor for {str(item)}</div>;
-};
+}
 
 
 const getItemErrorMessage = item => {
@@ -66,7 +68,7 @@ const getItemErrorMessage = item => {
  * @param {?string} p.itemType for the label/title "Add X"
  * @returns 
  */
-const AddOrEditButton = ({arrayPath, i = -1, listValue, Editor, item, itemType, set}) => {
+function AddOrEditButton({arrayPath, i = -1, listValue, Editor, item, itemType, set}) {
 	assert(Editor, "No list Editor");
 	let [show, setShow] = useState();
 	const toggle = () => setShow(!show);
@@ -98,10 +100,10 @@ const AddOrEditButton = ({arrayPath, i = -1, listValue, Editor, item, itemType, 
 			<ModalFooter>{i===-1 && <Button color="primary" onClick={doAdd}>Add</Button>}</ModalFooter>
 		</Modal>
 	</>;
-};
+}
 
 
-const DeleteWithConfirmButton = ({arrayPath, i, listValue, set, confirmDelete}) => {
+function DeleteWithConfirmButton({arrayPath, i, listValue, set, confirmDelete}) {
 	const doDelete = () => {
 		if (confirmDelete) {
 			if ( ! confirm(`Delete item ${i}?`)) return;
@@ -120,7 +122,7 @@ const DeleteWithConfirmButton = ({arrayPath, i, listValue, set, confirmDelete}) 
 			{confirmDelete? <Icon name="trashcan"/> : <span>&times;</span>}
 		</Button>
 	);
-};
+}
 
 
 /**
@@ -132,7 +134,9 @@ const DeleteWithConfirmButton = ({arrayPath, i, listValue, set, confirmDelete}) 
  * @param {JSX|boolean} p.Viewer {path, item, i} Set false to use the Editor.
  * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
-const PropControlList = (p) => <PropControl type="list" {...p} />
+function PropControlList(p) {
+  return <PropControl type="list" {...p} />;
+}
 
 export default PropControlList;
 

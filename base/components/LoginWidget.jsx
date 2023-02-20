@@ -123,7 +123,7 @@ const emailLogin = ({verb, app, email, password, onRegister, onLogin, onError, .
 /**
  * @param {String} verb "login"|"register"
  */
-const LoginLink = ({className, onClick, style, verb, children}) => {
+function LoginLink({className, onClick, style, verb, children}) {
 	if (!verb && !children) verb = 'login';
 	
 	const onClick2 = e => {
@@ -138,19 +138,23 @@ const LoginLink = ({className, onClick, style, verb, children}) => {
 			{children || toTitleCase(displayVerb[verb])}
 		</a>
 	);
-};
+}
 
-const LogoutLink = ({className, children}) => <a href={'#'} className={space(className,"LogoutLink")} onClick={() => Login.logout()}>{children || "Log out"}</a>;
+function LogoutLink({className, children}) {
+  return <a href={'#'} className={space(className,"LogoutLink")} onClick={() => Login.logout()}>{children || "Log out"}</a>
+}
 
-const RegisterLink = ({className, ...props}) => <LoginLink
+function RegisterLink({className, ...props}) {
+  return <LoginLink
 	className={className}
 	onClick={() => setLoginVerb('register')}
 	verb="Register"
 	{...props}
-/>;
+/>
+}
 
 
-const RegisteredThankYou = () => {
+function RegisteredThankYou() {
 	const user = Login.getUser();
 	const name = user.name || user.xid;
 	return (<>
@@ -158,7 +162,7 @@ const RegisteredThankYou = () => {
 		Welcome to {C.app.name}, {name}!<br/>
 		Check out your new account <C.A href={DataStore.localUrl+"account"}>here</C.A>.
 	</>);
-};
+}
 
 /**
 	Log In or Register (one widget)
@@ -166,7 +170,7 @@ const RegisteredThankYou = () => {
 	@param render {?JSX} default: LoginWidgetGuts
 	@param logo {?String} image url. If unset, guess via app.id
 */
-const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts, services, onLogin, onRegister, canRegister}) => {
+function LoginWidget({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts, services, onLogin, onRegister, canRegister}) {
 	const show = getShowLogin();
 	
 	// Login widget will vanish when an in-page navigation is made
@@ -218,10 +222,10 @@ const LoginWidget = ({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 			</ModalBody>
 		</Modal>
 	);
-}; // ./LoginWidget
+} // ./LoginWidget
 
 
-const SocialSignin = ({verb, services}) => {
+function SocialSignin({verb, services}) {
 	if (verb === 'reset') return null;
 	if (!services) return null;
 
@@ -239,9 +243,9 @@ const SocialSignin = ({verb, services}) => {
 			</small></p>
 		</div>
 	);
-};
+}
 
-const SocialSignInButton = ({className = "btn signin", children, service, verb = 'login', size}) => {
+function SocialSignInButton({className = "btn signin", children, service, verb = 'login', size}) {
 	if ( ! canSignIn[service]) return null;
 	if ( ! children) children = <>
 		<Misc.Logo size="xsmall" service={service} color={false} square={false} /> {toTitleCase(displayVerb[verb])} with {toTitleCase(service)}
@@ -261,10 +265,10 @@ const SocialSignInButton = ({className = "btn signin", children, service, verb =
 			{children}
 		</button>
 	);
-};
+}
 
 
-const EmailReset = ({}) => {
+function EmailReset({}) {
 	const verb = 'reset';
 	const requested = DataStore.getValue('widget', 'LoginWidget', 'reset-requested');
 	const path = PERSON_PATH;
@@ -304,7 +308,7 @@ const EmailReset = ({}) => {
 			<ErrAlert error={Login.error} />
 		</form>
 	);
-};
+}
 
 
 /**
@@ -316,7 +320,7 @@ const EmailReset = ({}) => {
  * @param children appears between the default form inputs and submission button
  * @param buttonText optional button text which can replace the default (default: verb used)
  */
-const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister, className, agreeToTerms, children, buttonText, disableLoginVerb}) => {
+function EmailSignin({verb, onLogin, onRegister, onSubmit, onError, canRegister, className, agreeToTerms, children, buttonText, disableLoginVerb}) {
 	// Reset: just email & submit
 	if (verb === 'reset') {
 		return <EmailReset />
@@ -367,10 +371,10 @@ const EmailSignin = ({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 			<ErrAlert error={Login.error} />
 		</form>
 	);
-}; // ./EmailSignin
+} // ./EmailSignin
 
 
-const ResetLink = ({verb}) => {
+function ResetLink({verb}) {
 	if (verb !== 'login') return null;
 	const toReset = e => {
 		stopEvent(e);
@@ -381,12 +385,12 @@ const ResetLink = ({verb}) => {
 	return (
 		<small className="reset-link"><a href="#" onClick={toReset}>Forgotten password?</a></small>
 	);
-};
+}
 
 /**
  * A non-modal login widget - stick it in a page. A thin wrapper on LoginWidgetGuts
  */
-const LoginWidgetEmbed = ({services, verb, onLogin, onRegister, canRegister}) => {
+function LoginWidgetEmbed({services, verb, onLogin, onRegister, canRegister}) {
 	// NB: prefer the user-set verb (so they can change it)
 	verb = DataStore.getValue(VERB_PATH) || verb || (canRegister? 'register' : 'login');
 	
@@ -404,9 +408,9 @@ const LoginWidgetEmbed = ({services, verb, onLogin, onRegister, canRegister}) =>
 			<LoginWidgetGuts services={services} verb={verb} onLogin={onLogin} onRegister={onRegister} canRegister={canRegister} />
 		</div>
 	);
-};
+}
 
-const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
+function SwitchVerb({verb = DataStore.getValue(VERB_PATH)}) {
 	let explain = (verb === 'register') ? 'Already have an account?' : 'Don\'t yet have an account?';
 	let switchText = {register: 'Log In', login: 'Register'}[verb];
 	let doIt = e => stopEvent(e) && setLoginVerb({login: 'register', register: 'login'}[verb]);
@@ -417,9 +421,9 @@ const SwitchVerb = ({verb = DataStore.getValue(VERB_PATH)}) => {
 			<a href="#" onClick={doIt}>{switchText}</a>
 		</div>
 	);
-};
+}
 
-const LoginWidgetGuts = ({services, verb, onLogin, onRegister, canRegister}) => {
+function LoginWidgetGuts({services, verb, onLogin, onRegister, canRegister}) {
 	if (!verb) verb = DataStore.getValue(VERB_PATH) || 'login';
 	return (
 		<div className="login-guts container-fluid">
@@ -438,14 +442,15 @@ const LoginWidgetGuts = ({services, verb, onLogin, onRegister, canRegister}) => 
 			</Row>
 		</div>
 	);
-};
+}
 
 
-const LoginPage = ({error}) => (
-	<div>
+function LoginPage({error}) {
+  return <div>
 		<h3 className="mt-2">Welcome to {C.app.name} - Please Sign-up or Login below</h3>
 		<LoginWidgetEmbed />
-	</div>);
+	</div>
+}
 
 export default LoginWidget;
 export {

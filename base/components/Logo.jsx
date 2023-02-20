@@ -21,7 +21,7 @@ const svgClass = (logoUrl) => {
  * @param {Object} p
  * @param {DataClass} p.item
  */
-const Logo = ({item, className, size, style, nameCap = 24, logoOnly}) => {
+function Logo({item, className, size, style, nameCap = 24, logoOnly}) {
 	if (!item) return null;
 	assert(getId(item) || item.name === "Default Advertiser", 'Not a DataItem', item);
 
@@ -40,6 +40,6 @@ const Logo = ({item, className, size, style, nameCap = 24, logoOnly}) => {
 
 	// 'logo' class forces the logos to be too small for the circle - so leaving it out
 	return <img className={classes} style={style} src={branding.logo} alt={`Logo for ${altText}`} title={altText} />;
-};
+}
 
 export default Logo;

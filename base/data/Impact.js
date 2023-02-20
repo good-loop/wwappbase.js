@@ -52,4 +52,4 @@ Impact.isCarbonOffset = impact => impact?.name && impact.name.substring(0, 6)===
  */
 Impact.amount = impact => impact?.amount;
 
-export const KImpactStage = new Enum("PLANNING CAMPAIGN_OPEN CAMPAIGN_DONE BRAND_PAID CHARITY_INVOICE_REQUESTED CHARITY_INVOICE_RECEIVED CHARITY_PAID PROJECT_DONE");	
+export const KImpactStage = new Enum("PLANNING CAMPAIGN_OPEN SUPPLIER CAMPAIGN_DONE BRAND_PAID CHARITY_INVOICE_REQUESTED CHARITY_INVOICE_RECEIVED CHARITY_PAID PROJECT_DONE");	

@@ -312,16 +312,16 @@ Misc.RelativeDate = ({date, ...rest}) => {
  */
 export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const shortWeekdays = WEEKDAYS.map(weekday => weekday.substr(0, 3));
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const shortMonths = months.map(month => month.substr(0, 3));
+export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+const shortMonths = MONTHS.map(month => month.substr(0, 3));
 
-const oh = (n) => n<10? '0'+n : n;
+export const oh = (n) => n<10? '0'+n : n;
 
 Misc.LongDate = ({date, noWeekday}) => {
 	if (!date) return null;
 	if (_.isString(date)) date = new Date(date);
 	const weekday = noWeekday ? '' : WEEKDAYS[date.getDay()];
-	return <time dateTime={date.toISOString()}>{weekday + ' '}{date.getDate()} {months[date.getMonth()]} {date.getFullYear()}</time>;
+	return <time dateTime={date.toISOString()}>{weekday + ' '}{date.getDate()} {MONTHS[date.getMonth()]} {date.getFullYear()}</time>;
 };
 
 /**
@@ -339,7 +339,7 @@ Misc.RoughDate = ({date}) => {
 
 	const time = daysSince > 2 ? null : (oh(date.getHours()) + ':' + oh(date.getMinutes())); // yesterday/today? show time
 	const day = thisYear ? date.getDate() : null; // just month+year if last year or older
-	const month = months[date.getMonth()]; // always show month
+	const month = MONTHS[date.getMonth()]; // always show month
 	const year = thisYear ? null : date.getFullYear(); // no year if it's the same
 
 	return <time dateTime={date.toISOString()}>{[time, day, month, year].filter(a => a).join(' ')}</time>;
@@ -363,29 +363,29 @@ Misc.DateDuration = ({startDate, endDate, invisOnEmpty}) => {
 	if (startDate && !endDate) {
 		// If only a start date is provided
 		// e.g. May 2020
-		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear();
+		durationString = MONTHS[startDate.getMonth()] + " " + startDate.getFullYear();
 	} else if (!startDate && endDate) {
 		// If only an end date is provided
 		// e.g. May 2020
-		durationString = months[endDate.getMonth()] + " " + endDate.getFullYear();
+		durationString = MONTHS[endDate.getMonth()] + " " + endDate.getFullYear();
 	} else if (startDate.getFullYear() === endDate.getFullYear()) {
 		if (startDate.getMonth() === endDate.getMonth()) {
 			// If the dates lie on the same month and year
 			// e.g. May 2020
-			durationString = months[startDate.getMonth()] + " " + startDate.getFullYear();
+			durationString = MONTHS[startDate.getMonth()] + " " + startDate.getFullYear();
 		} else {
 			// If the dates lie on the same year and different months
 			// e.g. June - November 2020
-			durationString = months[startDate.getMonth()] + " - " + months[endDate.getMonth()] + " " + startDate.getFullYear();
+			durationString = MONTHS[startDate.getMonth()] + " - " + MONTHS[endDate.getMonth()] + " " + startDate.getFullYear();
 		}
 	} else if (startDate.getMonth() == endDate.getMonth()) {
 		// If the dates lie on the same month of different years
 		// e.g. August 2018 - 2019
-		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + endDate.getFullYear();
+		durationString = MONTHS[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + endDate.getFullYear();
 	} else {
 		// If the dates are entirely different
 		// e.g. May 2019 - June 2020
-		durationString = months[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + months[endDate.getMonth()] + " " + endDate.getFullYear();
+		durationString = MONTHS[startDate.getMonth()] + " " + startDate.getFullYear() + " - " + MONTHS[endDate.getMonth()] + " " + endDate.getFullYear();
 	}
 
 	return <span>{durationString}</span>
@@ -489,10 +489,12 @@ Misc.Help = ({children}) => {
  * @param {?Object[]} p.formData
  * @param {?String[]} p.path DataStore path to the form-data to submit. Set this OR formData
  * @param {Boolean} p.once If set, this button can only be clicked once.
+ * @param {?Boolean|string} p.confirmSubmit If set, show a confirm dialog
  * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
  * @param onSuccess {JSX} TODO rename this! shown after a successful submit. This is not a function to call!
  */
-Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, title='Submit the form', children, size}) => {
+Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, 
+	title='Submit the form', children, size, disabled, confirmSubmit}) => {
 	assMatch(url, String);
 	// assMatch(path, 'String[]');
 	// track the submit request
@@ -504,6 +506,11 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', 
 		data: formData
 	};
 	const doSubmit = e => {
+		if (confirmSubmit) {
+			let msg = _.isString(confirmSubmit)? confirmSubmit : "Are you sure?";
+			let ok = confirm(msg);
+			if ( ! ok) return;
+		}
 		setSubmitStatus(C.STATUS.saving);
 		// DataStore.setValue(tpath, C.STATUS.saving);
 		ServerIO.load(url, params)
@@ -525,13 +532,16 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', 
 	}
 	let isSaving = C.STATUS.issaving(submitStatus);
 	const vis = {visibility: isSaving? 'visible' : 'hidden'};
-	let disabled = isSaving || (once && submitStatus);
-	if (disabled) title = isSaving? "Saving..." : "Submitted :) To avoid errors, you cannot re-submit this form";
+	let isDisabled = disabled || isSaving || (once && submitStatus);
+	if (isDisabled && ! disabled) {
+		title = isSaving? "Saving..." : "Submitted :) To avoid errors, you cannot re-submit this form";		
+	}
 
 	return (
-		<Button onClick={doSubmit} size={size} color={color} className={className} disabled={disabled} title={title}>
+		<Button onClick={doSubmit} size={size} color={color} className={className} disabled={isDisabled} title={title}>
 			{children}
-			<span className="fa fa-circle-notch spinning" style={vis} />
+			<span style={vis}> ...</span>
+			{/* <Icon name="spinner" className="spinning" style={vis} /> */}
 		</Button>
 	);
 };

@@ -18,7 +18,7 @@ import JSend from '../data/JSend';
 /**
  * a Share This button
  */
-const ShareLink = ({item, type, id, shareId, children, button, size, color="secondary"}) => {
+function ShareLink({className, style, item, type, id, shareId, children, button, size, color="secondary"}) {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -37,18 +37,18 @@ const ShareLink = ({item, type, id, shareId, children, button, size, color="seco
 	};
 
 	if (children) {
-		return <Button id='share-btn' color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /> {children}</Button>;
+		return <Button id='share-widget-btn' className={className} style={style} color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /> {children}</Button>;
 	}
 	if (button) {
-		return <Button id='share-btn' color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /></Button>;
+		return <Button id='share-widget-btn' className={className} style={style} color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /></Button>;
 	}
 
 	return (
-		<a id='dashboard-share-btn' onClick={doShow} title="Share">
+		<a id='share-widget-btn' className={className} style={style} onClick={doShow} title="Share">
 			<Icon name="share" />
 		</a>
 	);
-};
+}
 
 
 /**
@@ -89,7 +89,7 @@ const deleteShare = ({share}) => {
  *
  
 */
-const ShareWidget = ({shareId, item, type, id, name, email, hasButton, hasLink, noEmails, children}) => {
+function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, noEmails, children, className, style}) {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -124,7 +124,7 @@ const ShareWidget = ({shareId, item, type, id, name, email, hasButton, hasLink, 
 	};
 	
 	return <>
-		{hasButton && <ShareLink shareId={shareId}>{children}</ShareLink>}
+		{hasButton && <ShareLink className={className} style={style} shareId={shareId}>{children}</ShareLink>}
 		<Modal isOpen={show} className="share-modal" toggle={toggle}>
 			<ModalHeader toggle={toggle}>
 				<Icon name="share" /> {title}
@@ -148,7 +148,7 @@ const ShareWidget = ({shareId, item, type, id, name, email, hasButton, hasLink, 
 			</ModalBody>
 		</Modal>
 	</>;
-}; // ./ShareWidget
+} // ./ShareWidget
 
 
 /**
@@ -188,6 +188,7 @@ const doShareByLink = async({link, slink, setSlink, shareId}) => {
 	Login.claim(withXId);
 	// ?? share the pseudo-user with the shareId (modified to be an XId) (so TODO e.g. users of a dashbaord can access the pseudo-user)
 	// doShareThing({shareId:withXId, withXId:shareId+"@share"});
+	
 	// share the item with the pseudo-user 
 	let link2 = doShareByLink2({link, shareId, withXId, jwt});
 	// copy to clipboards
@@ -195,13 +196,13 @@ const doShareByLink = async({link, slink, setSlink, shareId}) => {
 }; // ./ doShareByLink
 
 
-const ShareByLink = ({link, name, shareId}) => {
+function ShareByLink({link, name, shareId}) {
 	if ( ! link) link = window.location+"";
 	let [slink, setSlink] = useState();
 	return <><h5>General Access</h5>
-		<Button onClick={e => doShareByLink({link, slink, setSlink, shareId})} id='copy-share-dashboard-link' ><Icon name="clipboard" /> Copy access link</Button>
+		<Button onClick={e => doShareByLink({link, slink, setSlink, shareId})} id='copy-share-widget-link' ><Icon name="clipboard" /> Copy access link</Button>
 	</>;
-};
+}
 
 const doShareByLink2 = ({link, shareId, withXId, jwt}) => {
 	console.log("ShareByLink2...");
@@ -217,7 +218,7 @@ const doShareByLink2 = ({link, shareId, withXId, jwt}) => {
  * @param {Share[]} p.list
  * @returns 
  */
-const ListShares = ({list}) => {
+function ListShares({list}) {
 	if (!list) return <Misc.Loading text="Loading current shares" />;
 	// dont show pseudo users
 	if ( ! Roles.isDev()) {
@@ -230,10 +231,10 @@ const ListShares = ({list}) => {
 			) : 'Not shared.'}
 		</ul>
 	);
-};
+}
 
 
-const SharedWithRow = ({share}) => {
+function SharedWithRow({share}) {
 	assert(share, 'SharedWithRow');
 	return (
 		<li className="clearfix">
@@ -244,10 +245,10 @@ const SharedWithRow = ({share}) => {
 				>🗙</Button>
 		</li>
 	);
-};
+}
 
 
-const AccessDenied = ({thingId}) => {
+function AccessDenied({thingId}) {
 	if (!getRoles().resolved) return <Misc.Loading text="Checking roles and access..." />;
 
 	return (
@@ -259,14 +260,14 @@ const AccessDenied = ({thingId}) => {
 			</div>
 		</Misc.Card>
 	);
-};
+}
 
 
 /**
  *
  * @param {String} id - The app item ID.
  */
-const ClaimButton = ({type, id}) => {
+function ClaimButton({type, id}) {
 	const sid = shareThingId(type, id);
 	const plist = Shares.getShareListPV(sid);
 	if (!plist.resolved) {
@@ -284,7 +285,7 @@ const ClaimButton = ({type, id}) => {
 			</Button>
 		</div>
 	</div>;
-};
+}
 
 
 export default ShareWidget;

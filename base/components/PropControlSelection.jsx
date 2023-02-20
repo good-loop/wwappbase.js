@@ -19,7 +19,7 @@ import { assert } from '../utils/assert';
  * @param {Object[]} p.options 
  * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
  */
-const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) => {
+function PropControlCheckboxes({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -48,7 +48,7 @@ const PropControlCheckboxes = ({rawValue, storeValue, setRawValue, modelValueFro
 	};
 	const isChecked = x => listValue.includes(x);
 	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn, tooltipFn}} />;
-}; // ./radio
+} // ./radio
 
 registerControl({type:'checkboxes', $Widget: PropControlCheckboxes});
 registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes}); // how does this differ from checkboxes??

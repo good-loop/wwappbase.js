@@ -30,6 +30,9 @@ class Branding extends DataClass {
 	/** @type{String} TODO move custom css here from advert.advanced["customcss"] */
 	customCss;
 
+	/** @type{String} Not yet used in most places! */
+	customHtml;
+
 	/** @type{String} End card background colour (#hex or HTML name) */
 	endCardBgColor;
 

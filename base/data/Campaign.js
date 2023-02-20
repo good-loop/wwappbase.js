@@ -12,11 +12,15 @@ import { getDataItem, getDataList, saveEdits } from '../plumbing/Crud';
 import PromiseValue from '../promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
+import Advertiser from './Advertiser';
+import Agency from './Agency';
 import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
 import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars, asDate } from '../utils/miscutils';
 import { getId } from './DataClass';
 import NGO from './NGO';
 import Money from './Money';
+import Branding from './Branding';
+import XId from './XId';
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -27,6 +31,18 @@ class Campaign extends DataClass {
 	
 	/** @type{?String} */
 	agencyId;
+
+	/** @type{?Branding} */
+	branding;
+
+	/** @type{?String} url */
+	caseStudy;
+
+	/** @type{?XId} Monday Deal */
+	crm;
+
+	/** @type{?boolean} */
+	master;
 
 	/** @type{?String} */
 	vertiser;
@@ -92,7 +108,7 @@ Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
 
 
 /**
- * 
+ * @deprecated Moved to ImpactDebits
  * @param {Campaign} campaign 
  * @returns {!Impact[]} can be empty. 
  * Does NOT include offsets from any child campaign. 
@@ -129,14 +145,12 @@ Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT)
 
 /**
  * Get all campaigns matching an advertiser
- * @param {Advertiser} vertiser
+ * @param {string} vertiserId
  * @param {KStatus} status
  * @returns PromiseValue(Campaign[])
  */
  Campaign.fetchForAdvertiser = (vertiserId, status=KStatus.DRAFT) => {
-    let q = SearchQuery.setProp(new SearchQuery(), "vertiser", vertiserId).query;
-    let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
-    return pvCampaigns;
+	return fetchForAdvertisers([vertiserId], status);
 }
 
 /**
@@ -193,6 +207,43 @@ Campaign.makeFor = (advert) => {
 		return saveEdits({type:"Campaign", id:cid, item:baseCampaign});
 	});	
 };
+
+/**
+ * Get the ImpactDebits for charity donation info
+ * @param {Object} p
+ * @returns {PromiseValue} PV(List<ImpactDebit>)
+ */
+Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
+	let p = getImpactDebits2();
+	return new PromiseValue(p);
+};
+
+/**
+ * Get the ImpactDebits for charity donation info
+ * @param {Object} p
+ * @returns {Promise} List<ImpactDebit>
+ */
+Campaign.getImpactDebits2 = async ({campaign, status=KStatus.PUBLISHED}) => {
+	let q;
+	// is it a master campaign?
+	if (Campaign.isMaster(campaign)) {
+		let {type, id} = Campaign.masterFor(campaign);		
+		// What if it's a master brand, e.g. Nestle > Nespresso?
+		// The only way to know is to look for children
+		let pvListAdvertisers = type==="Agency"? Agency.getChildren({id}) : Advertiser.getChildren({id});
+		let listAdvertisers = await pvListAdvertisers.promise;
+		let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
+		ids = ids.concat(id); // include the top-level brand
+		q = SearchQuery.setPropOr(null, type==="Agency"? "agencyId":"vertiser", ids);
+	} else {
+		// just a single campaign
+		q = SearchQuery.setProp(null, "campaign", campaign.id);	
+	}
+	let pv = getDataList({type:"ImpactDebit",status,q});
+	let v = await pv.promise;
+	return v;
+};
+
 
 /**
  * 
@@ -327,7 +378,9 @@ const pAds3_labelHidden = ({campaign, ads}) => {
 	});
 };
 
-
+/**
+ * @deprecated ancient history - remove
+ */
 const tomsCampaigns = /(josh|sara|ella)/; // For matching TOMS campaign names needing special treatment
 
 
@@ -391,7 +444,9 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 };
 
 
-/** This is the total unlocked across all adverts in this campaign. See also maxDntn.
+/** 
+ * @deprecated
+ * This is the total unlocked across all adverts in this campaign. See also maxDntn.
  * Warning: This will change as data loads!!
  * @returns {?Money}
  */
@@ -429,6 +484,7 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 
 /**
  * Recursive and fetches dynamic data.
+ * @deprecated
  
  * @param {!Campaign} campaign 
 *  @param {?boolean} isSub set in recursive calls

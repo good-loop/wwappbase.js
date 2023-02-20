@@ -28,6 +28,7 @@ import Tree from '../data/Tree';
 import PropControl from './PropControl';
 import StyleBlock from './StyleBlock';
 import Wrap from './Wrap';
+import Money from '../data/Money';
 
 const str = printer.str;
 
@@ -179,7 +180,7 @@ class TableSettings {
  * @param {TableSettings} props
  * 
  */
-const SimpleTable = (props) => {
+function SimpleTable(props) {
 	let {
 		data, dataObject, dataTree,
 		columns,
@@ -286,7 +287,7 @@ const SimpleTable = (props) => {
  * @param {Tree} p.dataTree Used for totals. This is the filtered dataTree (so not all rows are here)
  * @param {Tree} p.dataTreeUnfiltered Used for (un)collapse-all.
  */
-const THead = ({ visibleColumns, tableSettings, headerRender, topRow, dataTree, dataTreeUnfiltered}) => {
+function THead({ visibleColumns, tableSettings, headerRender, topRow, dataTree, dataTreeUnfiltered}) {
 	// c isn't used but will be off by 1 if scroller is true
 	return (<thead>
 		<tr>
@@ -308,7 +309,7 @@ const THead = ({ visibleColumns, tableSettings, headerRender, topRow, dataTree, 
 			</tr>}
 
 	</thead>);
-};
+}
 
 /**
  * 
@@ -474,7 +475,7 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
  * @param {!Tree} dataTree
  * 
  */
-const Rows = ({ dataTree, visibleColumns, tableSettings, rowNum = 0 }) => {
+function Rows({ dataTree, visibleColumns, tableSettings, rowNum = 0 }) {
 	if (!dataTree) return null;
 	// clip?
 	let min = tableSettings.rowsPerPage ? tableSettings.page * tableSettings.rowsPerPage : 0;
@@ -500,10 +501,10 @@ const Rows = ({ dataTree, visibleColumns, tableSettings, rowNum = 0 }) => {
 	// filter nulls (due to execute-but-don't-render-hidden behaviour)
 	$rows = $rows.filter(a => !!a); // NB: Row can return null
 	return $rows;
-};
+}
 
 
-const Th = ({ column, colNum, tableSettings, headerRender, dataTreeUnfiltered }) => {
+function Th({ column, colNum, tableSettings, headerRender, dataTreeUnfiltered }) {
 	assert(column, "SimpleTable.jsx - Th - no column?!");
 	let hText;
 	if (headerRender) hText = headerRender(column);
@@ -562,14 +563,14 @@ const Th = ({ column, colNum, tableSettings, headerRender, dataTreeUnfiltered })
 			{hasCollapse && <CollapseExpandButton all dataTreeUnfiltered={dataTreeUnfiltered} tableSettings={tableSettings} />}
 		</th>
 	);
-};
+}
 
 /**
  * A table row!
  * @param {!Number} rowNum Can be -1 for special rows ??0 or 1 indexed??
  * @param {?Number} depth Depth if a row tree was used. 0 indexed
  */
-const Row = ({ item, rowNum, node, columns, depth = 0, tableSettings}) => {
+function Row({ item, rowNum, node, columns, depth = 0, tableSettings}) {
 	const cells = columns.map((col, i) => (
 		<Cell key={i} colNum={i}
 			row={rowNum} depth={depth}
@@ -584,7 +585,7 @@ const Row = ({ item, rowNum, node, columns, depth = 0, tableSettings}) => {
 			{cells}
 		</tr>
 	);
-};
+}
 
 const getValue = ({ item, row, column }) => {
 	if (!item) {
@@ -854,7 +855,7 @@ const doCollapseAll = (dataTreeUnfiltered, tableSettings, allCollapsed) => {
 	tableSettings.collapsed4nodeid.all = allCollapsed;
 };
 
-const CollapseExpandButton = ({all, dataTreeUnfiltered, node, item, tableSettings}) => {	
+function CollapseExpandButton({all, dataTreeUnfiltered, node, item, tableSettings}) {	
 	if ( ! tableSettings) {
 		return null; // huh?
 	}
@@ -882,7 +883,7 @@ const CollapseExpandButton = ({all, dataTreeUnfiltered, node, item, tableSetting
 		onClick={onClick}
 	>{ncollapsed ? '▷' : '▼'}</button></div>); 
 	// NB: the wrapping div prevents the button growing vertically if the name in the rest of the cell is multi-line
-};
+}
 
 
 /**
@@ -906,12 +907,12 @@ const calcStyle = ({ style, cellValue, item, row, depth, column }) => {
  * @param {Column} p.column
  * @returns 
  */
-const TotalCell = ({ dataTree, column }) => {
+function TotalCell({ dataTree, column }) {
 	if (column.total === false) {
 		return <td></td>;
 	}
 	// sum the data for this column
-	let total = 0;
+	let total = 0, totalMoney;
 	if (column.total) {
 		total = column.total;
 	} else {
@@ -920,19 +921,21 @@ const TotalCell = ({ dataTree, column }) => {
 			const v = getter(rItem);
 			// NB: 1* to force coercion of numeric-strings
 			if (isNumeric(v)) total += 1 * v;
+			// HACK support Money as a common case
+			if (Money.isa(v)) totalMoney = totalMoney? Money.add(v, totalMoney) : v;
 		});
 	}
-	if (!total) return <td></td>;
+	if (!total && !totalMoney) return <td></td>;
 	// ??custom cell render might break on a Number. But Money seems to be robust about its input.
 	const render = column.Cell || defaultCellRender;
-	const cellGuts = render(total, column);
+	const cellGuts = render(total || totalMoney, column);
 	return <td>{cellGuts}</td>;
-};
+}
 
 /**
  * Editor for the use-case: each row = a DataStore data item.
  */
-const Editor = ({ row, column, value, item }) => {
+function Editor({ row, column, value, item }) {
 	// what DataStore path?
 	let path = column.path;
 	if (!path) {
@@ -965,12 +968,12 @@ const Editor = ({ row, column, value, item }) => {
 	return (<PropControl type={type} item={dummyItem} path={path} prop={prop}
 		saveFn={column.saveFn}
 	/>);
-}; // ./Editor
+} // ./Editor
 
 const CellFormat = new Enum("percent pounds string"); // What does a spreadsheet normally offer??
 
 
-const TableFoot = ({visibleColumns, topRow, dataTree, bottomRow, numPages, colSpan, tableSettings}) => {
+function TableFoot({visibleColumns, topRow, dataTree, bottomRow, numPages, colSpan, tableSettings}) {
 	if ( ! numPages || numPages < 2) {
 		return null;
 	}
@@ -979,9 +982,9 @@ const TableFoot = ({visibleColumns, topRow, dataTree, bottomRow, numPages, colSp
 			{numPages > 1 ? <TableFootPager tableSettings={tableSettings} numPages={numPages} /> : null}
 		</td>
 	</tr></tfoot>);
-};
+}
 
-const TableFootPager = ({tableSettings, numPages }) => {
+function TableFootPager({tableSettings, numPages }) {
 	// TODO https://getbootstrap.com/docs/4.5/components/pagination/
 	const page = tableSettings.page;
 	const setPage = p => {tableSettings.page = p; tableSettings.update()};
@@ -992,9 +995,9 @@ const TableFootPager = ({tableSettings, numPages }) => {
 		&nbsp; {page + 1 < numPages ? <a href='' onClick={e => stopEvent(e) && setPage(page + 1)}>&gt;</a> : <span className="disabled">&gt;</span>}
 		&nbsp; of {numPages}
 	</div>);
-};
+}
 
-const CSVDownload = ({tableSettings, visibleColumns, topRow, dataTree, bottomRow, children }) => {
+function CSVDownload({tableSettings, visibleColumns, topRow, dataTree, bottomRow, children }) {
 	const ref = useRef();
 	// assert(_.isArray(jsonArray), jsonArray);
 	// // https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs
@@ -1014,7 +1017,7 @@ const CSVDownload = ({tableSettings, visibleColumns, topRow, dataTree, bottomRow
 			{children || <>&#128229; Download .csv</>}
 		</a>
 	);
-};
+}
 
 const csvEscCell = s => {
 	if (!s) return "";
@@ -1035,11 +1038,11 @@ const csvEscCell = s => {
  * @param {!Column[]|string[]} p.columns
  * @param {!Object[]} p.data
  */
-const DownloadCSVLink = ({columns, data, name, children}) => {
+function DownloadCSVLink({columns, data, name, children}) {
 	let dataTree = standardiseData({data});
 	let tableSettings = {name};
 	return <CSVDownload dataTree={dataTree} visibleColumns={columns} tableSettings={tableSettings} children={children} />;
-};
+}
 
 export default SimpleTable;
 export { CellFormat, Column, DownloadCSVLink, TableSettings };

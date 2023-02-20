@@ -44,18 +44,12 @@ ChartJS.register(
  * @param {Object} p.options {scales: {x, y}, plugins}
  * @returns 
  */
-const NewChartWidget = ({type = 'line', data, datalabels, className, style, width, height, miny, maxy, ...props}) => {
+function NewChartWidget({type = 'line', data, datalabels, className, style, width, height, miny, maxy, legend, ...props}) {
 	props.options = props.options || {};
 	props.options.maintainAspectRatio = props.options.maintainAspectRatio || false; // why??
 	if (datalabels) {
-		if (props.plugins) {
-			if ( ! props.plugins.includes(ChartDataLabels)) {
-				props.plugins.push(ChartDataLabels);
-			}
-		} else {
-			props.plugins = [ChartDataLabels];
-		}
-	}
+		addPluginToProps(props, ChartDataLabels);
+	}	
 	// set y scale?
 	if (is(miny) || is(maxy)) {
 		if ( ! props.options.scales) props.options.scales = {};
@@ -63,11 +57,36 @@ const NewChartWidget = ({type = 'line', data, datalabels, className, style, widt
 		if (is(maxy)) props.options.scales.y.max = maxy;
 		if (is(miny)) props.options.scales.y.min = miny;
     }
+	// no legend?
+	if ( ! legend) {
+		addPluginToProps(props, Legend, {display:false});
+	}
 	let Chart = {line:Line, pie:Pie, bar:Bar, scatter:Scatter}[type];
 	
 	return <div className={space("NewChartWidget position-relative", className)} style={style}>
 		<Chart data={data} width={width} height={height} {...props} />
 	</div>;
-};
+}
+
+/**
+ * 
+ * @param {!Object} props The top level `props`
+ * @param plugin ChartJS Plugin e.g. Legend
+ * @param {?Object} options 
+ */
+function addPluginToProps(props, plugin, options) {
+	if (props.plugins) {
+		if ( ! props.plugins.includes(plugin)) {
+			props.plugins.push(plugin);
+		}
+	} else {
+		props.plugins = [plugin];
+	}
+	if (options) {
+		if ( ! props.options.plugins) props.options.plugins = {};
+		let po = props.options.plugins[plugin.id] || {};
+		props.options.plugins[plugin.id] = Object.assign(po, options);
+	}
+}
 
 export default NewChartWidget;
