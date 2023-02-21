@@ -25,7 +25,7 @@ The top-right menu
 @param {string} linkType  HACK: Set to "C.A" for <C.A /> hrefs, "a" for normal hrefs. Fixes bug in T4G in which it wasn't loading the links correctly (since it's in an iFrame presumably)
 
 */
-const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Account", canRegister, customLogin, className, logoutLink, onLinkClick, style, small, accountLink, linkType="C.A", customImg, noNav, ...props}) => {
+const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Account", canRegister, customLogin, className, logoutLink, onLinkClick, style, small, accountLink, linkType="C.A", customImg, noNav, shareWidget, ...props}) => {
 	const [open, setOpen] = useState(false);
 	const onClickFn = () => {
 		setOpen(!open);
@@ -50,7 +50,8 @@ const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Accou
 	const Wrapper = noNav ? 'div' : Nav;
 
 	return (
-	<Wrapper navbar style={style} className={space("account-menu", className)}>
+	<Wrapper navbar style={style} className={space("account-menu d-flex", className)}>
+		{shareWidget && shareWidget}
 		<Dropdown isOpen={open} toggle={() => setOpen(!open)} nav={!noNav} inNavbar={!noNav}>
 			<DropdownToggle nav caret>{customImg ? <img src={customImg} className="custom-img"/> : name}</DropdownToggle>
 			<DropdownMenu>
