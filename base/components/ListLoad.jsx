@@ -65,6 +65,8 @@ import Roles from '../Roles';
  * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
  * @param {JSX|String} p.noResults  Message to show if there are no results
  * @param {?Function} p.onClickItem  Custom non-navigation action when list item clicked
+ * @param {?Function} p.onClickWrapper  Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
+ Use-case??
  * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
  */
 function ListLoad({ type, status, servlet, navpage,
@@ -91,6 +93,7 @@ function ListLoad({ type, status, servlet, navpage,
 	pageSize,
 	unwrapped,
 	onClickItem,
+	onClickWrapper,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) {
@@ -194,6 +197,7 @@ function ListLoad({ type, status, servlet, navpage,
 				navpage={navpage}
 				notALink={notALink}
 				itemClassName={itemClassName}
+				onClickWrapper={onClickWrapper}
 			>
 				<ListItem key={'li' + (getId(item) || i)}
 					type={type}
@@ -329,7 +333,7 @@ const onPick = ({ event, navpage, id, customParams }) => {
 /**
  * checkbox, delete, on-click a wrapper
  */
-function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped }) {
+function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, canDelete, servlet, navpage, children, notALink, itemClassName, unwrapped, onClickWrapper }) {
 	if (unwrapped) {
 		return children;
 	}
@@ -355,6 +359,7 @@ function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, c
 	const linkOrDivProps = { key: `item${id}`, className: itemClassName || space('ListItem btn-default btn btn-outline-secondary', `status-${item.status}`, hasButtons && 'btn-space') };
 	if (!notALink) linkOrDivProps.href = itemUrl;
 	if (!cannotClick) linkOrDivProps.onClick = event => onPick({event, navpage, id});
+	if (!notALink && !cannotClick && onClickWrapper) linkOrDivProps.onClick = (event) => onClickWrapper(event, item)
 
 	return (
 		<div className="ListItemWrapper clearfix flex-row">
