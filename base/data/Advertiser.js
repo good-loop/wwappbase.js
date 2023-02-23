@@ -36,7 +36,16 @@ export default Advertiser;
  * @returns {PromiseValue} List<Advertiser>
  */
 Advertiser.getChildren = (adv, status=KStatus.PUBLISHED) => {
-    let q = SearchQuery.setProp(null, "parentId", adv.id);
+    let q = SearchQuery.setProp(null, "parentId", adv.id).query;
     return getDataList({type:"Advertiser",status,q});
 }
 
+/**
+ * Get the child brands of multiple advertisers at once
+ * @param {*} vertiserIds 
+ * @param {*} status 
+ */
+Advertiser.getManyChildren = (vertiserIds, status=KStatus.PUBLISHED) => {
+    let sqSubBrands = SearchQuery.setPropOr(new SearchQuery(), "parentId", vertiserIds).query;
+	return getDataList({type: C.TYPES.Advertiser, status, q:sqSubBrands});
+}
