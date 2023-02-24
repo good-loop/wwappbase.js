@@ -31,12 +31,12 @@ export default Advertiser;
 
 /**
  * 
- * @param {!Advertiser} adv Actually only the id is needed, so if you have that you can use {id} without having to fetch the Advertiser
+ * @param {!String} vertiserId 
  * @param {?KStatus} status 
  * @returns {PromiseValue} List<Advertiser>
  */
-Advertiser.getChildren = (adv, status=KStatus.PUBLISHED) => {
-    let q = SearchQuery.setProp(null, "parentId", adv.id).query;
+Advertiser.getChildren = (vertiserId, status=KStatus.PUBLISHED) => {
+    let q = SearchQuery.setProp(null, "parentId", vertiserId).query;
     return getDataList({type:"Advertiser",status,q});
 }
 

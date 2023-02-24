@@ -240,7 +240,7 @@ Campaign.getImpactDebits2 = async ({campaign, status=KStatus.PUBLISHED}) => {
 		let {type, id} = Campaign.masterFor(campaign);		
 		// What if it's a master brand, e.g. Nestle > Nespresso?
 		// The only way to know is to look for children
-		let pvListAdvertisers = type==="Agency"? Agency.getChildren({id}) : Advertiser.getChildren({id});
+		let pvListAdvertisers = type==="Agency"? Agency.getChildren(id) : Advertiser.getChildren(id);
 		let listAdvertisers = await pvListAdvertisers.promise;
 		let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
 		ids = ids.concat(id); // include the top-level brand
