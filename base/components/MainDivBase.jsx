@@ -23,7 +23,7 @@ import { BasicAccountPage } from './AccountPageWidgets';
 
 import E404Page from './E404Page';
 import { assert } from '../utils/assert';
-import PropControls from './PropControls';
+import PropControls from './propcontrols/PropControls';
 
 import StyleBlock from './StyleBlock';
 import { modifyPage } from '../plumbing/glrouter';
@@ -87,10 +87,10 @@ const setMainDivClass = (newClass, regex) => {
 	const mainDiv = document.querySelector('#mainDiv');
 	if (mainDiv) {
 		const prevClass = mainDiv.classList.values().find(cls => {
-			return cls.match(regex)
+			return cls.match(regex);
 		});
 		if (newClass !== prevClass) {
-			prevClass && mainDiv.classList.remove(prevClass);
+			if (prevClass) mainDiv.classList.remove(prevClass);
 			mainDiv.classList.add(newClass);
 		}
 	}
@@ -187,11 +187,12 @@ class MainDivBase extends Component {
 			// defaultPage may be dynamic
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
+				// TODO what is this code solving for? Is it needed??
 				// HACK allow my-loop render for now
 				window.location.hostname.endsWith('my.good-loop.com') || window.location.hostname.endsWith('mydata.good-loop.com') ? (
 					setTimeout(() => modifyPage([defaultPage]), 1)
 				) : (
-					setTimeout(() => modifyPage([defaultPage]), 1) ??foo
+					setTimeout(() => modifyPage([defaultPage]), 1)
 				);
 				// let the next render get it
 			}
@@ -239,9 +240,9 @@ class MainDivBase extends Component {
 		const onNavToggle = (open) => {
 			if (open) setMainDivClass('nav-open', /nav-\w+/);
 			else setMainDivClass('nav-closed', /nav-\w+/);
-		}
+		};
 		
-		return <div>
+		return (<div>
 			{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
 			{navbar && !undecorated && <>
 				<NavBar
@@ -286,14 +287,14 @@ class MainDivBase extends Component {
 			>
 			{_.isFunction(loginChildren)? loginChildren() : loginChildren}
 			</LoginWidget>
-		</div>
+		</div>);
 	} // ./render()
 } // ./MainDiv
 
 
 const DefaultErrorPage = ({error}) => (
 	<div>
-		<h3 className="mt-2">There was an Error :&#39;(</h3>
+		<h3 className="mt-2">There was an Error :&#39;</h3>
 		<p>Try navigating to a different tab, or reloading the page.
 			If this problem persists, please contact support.</p>
 		<p>

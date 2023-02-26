@@ -6,12 +6,12 @@
 
 
 import React, { useState } from 'react';
-import PropControl, {registerControl, DSsetValue} from './PropControl';
-import DataStore from '../plumbing/DataStore';
+import PropControl, {registerControl, DSsetValue} from '../PropControl';
+import DataStore from '../../plumbing/DataStore';
 import { Badge, Form, FormGroup, Input, Label } from 'reactstrap';
-import CloseButton from './CloseButton';
-import { asArray, labeller } from '../utils/miscutils';
-import { assert } from '../utils/assert';
+import CloseButton from '../CloseButton';
+import { asArray, labeller } from '../../utils/miscutils';
+import { assert } from '../../utils/assert';
 
 /**
  * @param {Object} p
