@@ -20,20 +20,21 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
     let lastMonthStart = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-01";
     let se = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-01";
     let de = new Date(se);
-    let lastMonthEnd = new Date(de.getTime() - 1).toISOString().substring(0, 10);
+    // NB: start of next month = end of day previous month
+    let lastMonthEnd = de.toISOString().substring(0, 10);
     // ...quarter
     let lastQuarterStart, lastQuarterEnd;
     if (now.getMonth() < 3) {
         // Q4 prev year
         lastQuarterStart = (now.getUTCFullYear()-1)+"-10-01";
-        lastQuarterEnd = (now.getUTCFullYear()-1)+"-12-31";
+        lastQuarterEnd = now.getUTCFullYear()+"-01-01";
     } else {
         // start month of last quarter = -3 and round down
         let sm = 1 + (3 * Math.floor((now.getMonth() - 3) / 3));
         lastQuarterStart = (now.getUTCFullYear()-1)+"-"+oh(sm)+"-01";
         let qe = now.getUTCFullYear()+"-"+oh(sm+3)+"-01";
         let dqe = new Date(qe);
-        lastQuarterEnd = new Date(dqe.getTime() - 1).toISOString().substring(0, 10);    
+        lastQuarterEnd = dqe.toISOString().substring(0, 10);    
     }
     // button click
     const setPeriod = (name) => {

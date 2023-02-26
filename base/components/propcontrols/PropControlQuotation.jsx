@@ -3,7 +3,6 @@ import { Input, InputGroup } from 'reactstrap';
 import { countryListAlpha2 } from '../../data/CountryRegion';
 
 import PropControl, { fakeEvent, registerControl } from '../PropControl';
-import PropControlSelection from '../PropControlSelection';
 import SubCard from '../SubCard';
 import PropControlPerson from './PropControlPerson';
 const dummy = PropControlPerson;

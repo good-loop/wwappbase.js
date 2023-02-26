@@ -6,21 +6,22 @@
  */
 
  // Just importing these gets them registered with PropControl
-import PropControlUrl from './PropControls/PropControlUrl';
-import PropControlUpload from './PropControls/PropControlUpload'
+import PropControlUrl from './PropControlUrl';
+import PropControlUpload from './PropControlUpload'
 import PropControlPills from './PropControlPills';
 import PropControlSelection from './PropControlSelection';
+import PropControlDate from './PropControlDate';
 import PropControlDataItem from './PropControlDataItem';
 import PropControlMoney from './PropControlMoney';
-import PropControlDt from './PropControls/PropControlDt';
+import PropControlDt from './PropControlDt';
 // import PropControlEgo from './PropControls/PropControlEgo';
 // import PropControlCode from './PropControls/PropControlCode'; this pulls in prism.js as a dependency, so not included in all projects
-import PropControlToggle from './PropControls/PropControlToggle';
+import PropControlToggle from './PropControlToggle';
 
-import PropControlImg from './PropControls/PropControlImg';
+import PropControlImg from './PropControlImg';
 
 let dummyProtectImportsFromLint = [PropControlUrl, PropControlUpload, PropControlPills, 
-    PropControlSelection, PropControlDataItem, PropControlMoney, PropControlDt];
+    PropControlSelection, PropControlDataItem, PropControlDate, PropControlMoney, PropControlDt, PropControlToggle];
 
 // no real export - use via PropControl
 export default {};

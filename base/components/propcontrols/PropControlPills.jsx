@@ -1,9 +1,8 @@
-import React from 'react';
+import React,{ useState } from 'react';
 
-import { registerControl, DSsetValue } from './PropControl';
+import { registerControl, DSsetValue } from '../PropControl';
 import { Badge } from 'reactstrap';
-import CloseButton from './CloseButton';
-import { useState } from 'react';
+import CloseButton from '../CloseButton';
 
 
 /**
