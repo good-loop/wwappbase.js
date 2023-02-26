@@ -1211,7 +1211,7 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
    * This replaces the react-bootstrap version 'cos we saw odd bugs there.
    * Plus since we're providing state handling, we don't need a full component.
    */
-function FormControl({ value, type, required, size, className, prepend, append, proppath, ...otherProps }) {
+function FormControl({ value, type, required, size, className, prepend, append, proppath, placeholder, ...otherProps }) {
 	if (value === null || value === undefined) value = '';
 
 	// add css classes for required fields
@@ -1244,15 +1244,17 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 	// const autoFocus = otherProps.name===focusPath; // TODO proppath.join(".") === focusPath;
 
 	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
-	if (prepend || append) return (
-		<InputGroup className={klass} size={size}>
-			{prepend ? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
-			<Input type={type} value={value} {...otherProps} />
-			{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
-		</InputGroup>
-	);
+	if (prepend || append) {
+		return (
+			<InputGroup className={klass} size={size}>
+				{prepend ? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
+				<Input type={type} value={value} placeholder={placeholder} {...otherProps} />
+				{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
+			</InputGroup>
+		);
+	}
 
-	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
+	return <Input className={klass} bsSize={size} type={type} value={value} placeholder={placeholder} {...otherProps} />;
 }
 
 

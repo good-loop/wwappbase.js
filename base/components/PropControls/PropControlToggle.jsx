@@ -81,7 +81,7 @@ const PropControlToggle = ({ path, prop, value, saveFn, left = {}, right = {}}) 
 };
 
 
-registerControl({type: 'yesNo', $Widget: PropControlToggle});
+registerControl({type: 'yesNo', $Widget: PropControlToggle}); // deprecated in favour of toggle
 registerControl({type: 'toggle', $Widget: PropControlToggle});
 
 export default {};
