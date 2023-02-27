@@ -37,6 +37,9 @@ ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
 ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}media.good-loop.com`;
 
+// Init ENPOINTS for typescript
+ServerIO.DATALOG_ENDPOINT = '';
+
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
 // "prodValue" is the expected / forcibly-reset-to-this value that production servers should have.

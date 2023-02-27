@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { registerControl, FormControl } from './PropControl';
+import { registerControl, FormControl } from '../PropControl';
 import { DropdownItem, DropdownMenu, DropdownToggle, InputGroup, InputGroupAddon, UncontrolledButtonDropdown } from 'reactstrap';
-import { is } from '../utils/miscutils';
-import Money from '../data/Money';
-import { assert } from '../utils/assert';
+import { is } from '../../utils/miscutils';
+import Money from '../../data/Money';
+import { assert } from '../../utils/assert';
 
 /**
  * See also: Money.js

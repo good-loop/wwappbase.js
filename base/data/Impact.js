@@ -3,6 +3,7 @@ import _ from 'lodash';
 import DataClass, {getType} from '../../base/data/DataClass';
 import Money from './Money';
 import Enum from 'easy-enums';
+import { is } from '../utils/miscutils';
 
 /** Impact type. See Impact.java -- NB: copy-pasta from SoGive's Output.js. 
 */
@@ -38,7 +39,17 @@ export default Impact;
  * @param {?Impact} impact 
  * @returns {boolean}
  */
-Impact.isDynamic = impact => impact && !! impact.rate;
+Impact.isDynamic = impact => {
+	if ( ! impact) return false;
+	if (is(impact.dynamic)) {
+		return impact.dynamic;
+	} 
+	if (impact.rate) {
+		console.log("Impact with old data - dynamic rate but not explicitly set as dynamic", impact);
+		return true;
+	}
+	return false;
+};
 
 /**
  * HACK says yes to "carbon" "carbon offset(s)" "carbon offset (kg)" etc.

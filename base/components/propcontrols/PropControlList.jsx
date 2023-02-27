@@ -1,15 +1,14 @@
 
-import React from 'react';
+import React, {useState} from 'react';
 
-import PropControl, {registerControl, PropControlParams, DSsetValue} from './PropControl';
-import DataStore from '../plumbing/DataStore';
+import PropControl, {registerControl, PropControlParams, DSsetValue} from '../PropControl';
+import DataStore from '../../plumbing/DataStore';
 import { Badge, Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
-import { useState } from 'react';
-import { asArray, is, str } from '../utils/miscutils';
-import { assert } from '../utils/assert';
-import Icon from './Icon';
+import { asArray, is, str } from '../../utils/miscutils';
+import { assert } from '../../utils/assert';
+import Icon from '../Icon';
 
-import '../style/PropControls/PropControlList.less';
+import '../../style/PropControls/PropControlList.less';
 
 /**
  * A list-of-objects editor
@@ -45,7 +44,7 @@ registerControl({type: 'list', $Widget: PropControlList2});
 
 
 function BasicViewer({item, i}) {
-  return <div>{i}: {str(item)}</div>
+  return <div>{i}: {str(item)}</div>;
 }
 
 
@@ -83,7 +82,7 @@ function AddOrEditButton({arrayPath, i = -1, listValue, Editor, item, itemType, 
 		DataStore.setValue(epath, null);
 		setShow(false);
 	};
-	const onClick = e => { DataStore.update(); setShow(true); }
+	const onClick = e => { DataStore.update(); setShow(true); };
 
 	
 	return <>

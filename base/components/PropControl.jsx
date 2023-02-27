@@ -719,13 +719,6 @@ function PropControl2(props) {
 
 		return <textarea className="form-control" name={prop} onChange={onChange} {...otherStuff} value={svalue} />;
 	}
-	// date
-	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the date editor. But we stopped using that
-	//  && value && ! value.match(/dddd-dd-dd/)
-	if (PropControl.KControlType.isdate(type)) {
-		const acprops = { prop, storeValue, rawValue, onChange, ...otherStuff };
-		return <PropControlDate {...acprops} />;
-	}
 
 	if (type === 'radio') {
 		return <PropControlRadio storeValue={storeValue} value={value} {...props} />
@@ -740,13 +733,13 @@ function PropControl2(props) {
 	// HACK just a few countries. TODO load in an iso list + autocomplete
 	if (type === 'country') {
 		let props2 = { onChange, value, ...props };
-		const countryMap = new Map(Object.entries(countryListAlpha2));
+		const countryMap = new Map(Object.entries(countryListAlpha2)); // Map??
 		let countryOptions = Array.from(countryMap.keys());
 		let countryLabels = Array.from(countryMap.values());
 
 		props2.options = countryOptions;
 		props2.labels = countryLabels;
-		return <PropControlSelect  {...props2} />
+		return <PropControlSelect {...props2} />;
 	}
 
 	if (type === 'gender') {
@@ -754,7 +747,7 @@ function PropControl2(props) {
 
 		props2.options = ["male", "female", "others", "nottosay"];
 		props2.labels = ["Male", "Female", "Others", "Preferred not to say"];
-		return <PropControlSelect  {...props2} />
+		return <PropControlSelect {...props2} />;
 	}
 
 	if (type === 'color') {
@@ -1088,61 +1081,6 @@ function PropControlEntrySet({ value, prop, proppath, saveFn, keyName = 'Key', v
 }
 
 
-/**
- * Note: `date` vs `datetime-local`
- * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
- * 
- * @param {*} param0 
- * @returns 
- */
-function PropControlDate({ prop, storeValue, rawValue, onChange, ...otherStuff }) {
-	// Roll back to native editor on 27/04/2022
-	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
-	// I don't think it will happen again, but it's worth keeping in mind.
-	if ( ! is(rawValue) && storeValue) {
-		rawValue = Misc.isoDate(storeValue);
-	}
-
-	// Strip out the time part!
-	// TODO support datetime-local
-	if (rawValue && rawValue.includes("T")) {
-		rawValue = rawValue.substr(0, rawValue.indexOf("T"));
-	}
-
-	return (<div>
-		<FormControl type="date" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
-	</div>);
-}
-
-function PropControlDateOld({ prop, storeValue, rawValue, onChange, ...otherStuff }) {
-	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
-	// NB: parsing incomplete dates causes NaNs
-	let datePreview = null;
-	if (!is(rawValue) && storeValue) {
-		rawValue = Misc.isoDate(storeValue);
-	}
-	if (rawValue) {
-		try {
-			let date = new Date(rawValue);
-			// use local settings??
-			datePreview = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-		} catch (er) {
-			// bad date
-			datePreview = 'Invalid date';
-		}
-	}
-
-	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
-	// Encourage ISO8601 format
-	if (!otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
-	return (<div>
-		<FormControl type="text" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
-		<div className="pull-right"><i>{datePreview}</i></div>
-		<div className="clearfix" />
-	</div>);
-}
-
-
 /** Add "colour not set" indicator and "remove colour" button to <input type="color"> */
 function PropControlColor({ onChange, disabled, ...props }) {
 	const luminance = luminanceFromHex(props.value || '#000000')
@@ -1211,7 +1149,7 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
    * This replaces the react-bootstrap version 'cos we saw odd bugs there.
    * Plus since we're providing state handling, we don't need a full component.
    */
-function FormControl({ value, type, required, size, className, prepend, append, proppath, ...otherProps }) {
+function FormControl({ value, type, required, size, className, prepend, append, proppath, placeholder, ...otherProps }) {
 	if (value === null || value === undefined) value = '';
 
 	// add css classes for required fields
@@ -1244,15 +1182,17 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 	// const autoFocus = otherProps.name===focusPath; // TODO proppath.join(".") === focusPath;
 
 	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
-	if (prepend || append) return (
-		<InputGroup className={klass} size={size}>
-			{prepend ? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
-			<Input type={type} value={value} {...otherProps} />
-			{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
-		</InputGroup>
-	);
+	if (prepend || append) {
+		return (
+			<InputGroup className={klass} size={size}>
+				{prepend ? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
+				<Input type={type} value={value} placeholder={placeholder} {...otherProps} />
+				{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
+			</InputGroup>
+		);
+	}
 
-	return <Input className={klass} bsSize={size} type={type} value={value} {...otherProps} />;
+	return <Input className={klass} bsSize={size} type={type} value={value} placeholder={placeholder} {...otherProps} />;
 }
 
 

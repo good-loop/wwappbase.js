@@ -3,7 +3,7 @@ import { Input, InputGroup } from 'reactstrap';
 import { countryListAlpha2 } from '../../data/CountryRegion';
 
 import PropControl, { fakeEvent, registerControl } from '../PropControl';
-import PropControlSelection from '../PropControlSelection';
+import PropControlSelection from './PropControlSelection';
 
 /**
  * See PersonLite.java

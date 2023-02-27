@@ -3,20 +3,20 @@ import React, { useEffect, useState } from 'react';
 import _ from 'lodash';
 import { Input, Row, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Button, ButtonGroup } from 'reactstrap';
 
-import ListLoad, {CreateButton} from './ListLoad';
+import ListLoad, {CreateButton} from '../ListLoad';
 
-import C from '../CBase';
-import PropControl, { DSsetValue, PropControlParams, registerControl } from './PropControl';
-import ActionMan from '../plumbing/ActionManBase';
-import { getDataItem } from '../plumbing/Crud';
-import { getId, getName } from '../data/DataClass';
-import { assert } from '../utils/assert';
-import { encURI, getLogo, space } from '../utils/miscutils';
-import {saveDraftFnFactory} from './SavePublishDeleteEtc';
-import { doShareThing } from '../Shares';
-import { A } from '../plumbing/glrouter';
-import DataItemBadge from './DataItemBadge';
-import KStatus from '../data/KStatus';
+import C from '../../CBase';
+import PropControl, { DSsetValue, PropControlParams, registerControl } from '../PropControl';
+import ActionMan from '../../plumbing/ActionManBase';
+import { getDataItem } from '../../plumbing/Crud';
+import { getId, getName } from '../../data/DataClass';
+import { assert } from '../../utils/assert';
+import { encURI, getLogo, space } from '../../utils/miscutils';
+import {saveDraftFnFactory} from '../SavePublishDeleteEtc';
+import { doShareThing } from '../../Shares';
+import { A } from '../../plumbing/glrouter';
+import DataItemBadge from '../DataItemBadge';
+import KStatus from '../../data/KStatus';
 
 /**
  * DataItemBadge
