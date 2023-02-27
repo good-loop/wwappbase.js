@@ -107,17 +107,17 @@ Campaign.isOngoing = campaign => {
 Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
 
 
-/**
- * @deprecated Moved to ImpactDebits
- * @param {Campaign} campaign 
- * @returns {!Impact[]} can be empty. 
- * Does NOT include offsets from any child campaign. 
- * Use with Campaign.pvSubCampaigns()
- */
- Campaign.offsets = (campaign) => {
-	Campaign.assIsa(campaign);
-	return campaign.offsets || [];
-};
+// /**
+//  * @deprecated Moved to ImpactDebits
+//  * @param {Campaign} campaign 
+//  * @returns {!Impact[]} can be empty. 
+//  * Does NOT include offsets from any child campaign. 
+//  * Use with Campaign.pvSubCampaigns()
+//  */
+//  Campaign.offsets = (campaign) => {
+// 	Campaign.assIsa(campaign);
+// 	return campaign.offsets || [];
+// };
 
 /**
  * 
