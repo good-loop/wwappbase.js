@@ -13,6 +13,9 @@ import { getDataLogData, pivotDataLogData } from '../plumbing/DataLog';
 import SearchQuery from '../searchquery';
 import ServerIO from '../plumbing/ServerIOBase';
 import Branding from './Branding';
+import Campaign from './Campaign';
+import List from './List';
+import PromiseValue from '../promise-value';
 
 /**
  * See Advertiser.java
@@ -28,6 +31,13 @@ export default Advertiser;
 // Advertiser.isMaster = (adv) => {
 //     return true;  
 // };
+
+/**
+ * Get the master campaign for a vertiser
+ */
+Advertiser.masterCampaign = (vertiser) => {
+    return vertiser.campaign;
+}
 
 /**
  * 
@@ -48,4 +58,14 @@ Advertiser.getChildren = (vertiserId, status=KStatus.PUBLISHED) => {
 Advertiser.getManyChildren = (vertiserIds, status=KStatus.PUBLISHED) => {
     let sqSubBrands = SearchQuery.setPropOr(new SearchQuery(), "parentId", vertiserIds).query;
 	return getDataList({type: C.TYPES.Advertiser, status, q:sqSubBrands});
+}
+
+Advertiser.getImpactDebits = ({vertiser, status=KStatus.PUBLISHED}) => {
+    let p = getImpactDebits2({vertiser, status});
+	return new PromiseValue(p);
+}
+
+const getImpactDebits2 = async ({vertiser, status=KStatus.PUBLISHED}) => {
+    let masterCampaign = await Campaign.fetchMasterCampaign(vertiser, status)?.promise;
+    return masterCampaign ? await Campaign.getImpactDebits({campaign:masterCampaign, status}).promise : new List();
 }
