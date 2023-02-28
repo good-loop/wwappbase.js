@@ -106,19 +106,6 @@ Campaign.isOngoing = campaign => {
  */
 Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
 
-
-// /**
-//  * @deprecated Moved to ImpactDebits
-//  * @param {Campaign} campaign 
-//  * @returns {!Impact[]} can be empty. 
-//  * Does NOT include offsets from any child campaign. 
-//  * Use with Campaign.pvSubCampaigns()
-//  */
-//  Campaign.offsets = (campaign) => {
-// 	Campaign.assIsa(campaign);
-// 	return campaign.offsets || [];
-// };
-
 /**
  * 
  * @param {Advert} advert 
@@ -209,21 +196,21 @@ Campaign.makeFor = (advert) => {
 };
 
 /**
- * Get the ImpactDebits for charity donation info
+ * Get the ImpactDebits for this campaign (and child campaigns)
  * @param {Object} p
  * @returns {PromiseValue} PV(List<ImpactDebit>)
  */
 Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
-	let p = getImpactDebits2();
+	let p = getImpactDebits2({campaign, status});
 	return new PromiseValue(p);
 };
 
 /**
- * Get the ImpactDebits for charity donation info
+ * async Get the ImpactDebits for charity donation info
  * @param {Object} p
  * @returns {Promise} List<ImpactDebit>
  */
-Campaign.getImpactDebits2 = async ({campaign, status=KStatus.PUBLISHED}) => {
+const getImpactDebits2 = async ({campaign, status}) => {
 	let q;
 	// is it a master campaign?
 	if (Campaign.isMaster(campaign)) {

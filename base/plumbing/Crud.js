@@ -680,7 +680,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  * Get a list of CRUD objects from the server
  * 
  * @param {Object} p
- * @param {?String} p.q search query string
+ * @param {?String|SearchQuery} p.q search query string
  * @param {?String[]} p.ids Convenience for a common use-case: batch fetching a set of IDs
  * @param {?String} p.sort e.g. "start-desc"
  * @param {?string|Date} p.start Add a time-filter. Usually unset.
@@ -694,11 +694,14 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  */
  const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {	
 	assert(C.TYPES.has(type), type);
-	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found
-	if (q) assMatch(q, String); // NB: q should not be a SearchQuery
+	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found	
 	if (ids && ids.length) {
 		q = SearchQuery.setPropOr(q, "id", ids).query;
 	}
+	if (SearchQuery.isa(q)) {
+		q = q.query;
+	}
+	if (q) assMatch(q, String); // NB: q should not be a SearchQuery for the functions below
 	const lpath = getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});
 	const pv = DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q, prefix, start, end, size, sort, domain, ...other});

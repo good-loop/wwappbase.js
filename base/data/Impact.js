@@ -44,7 +44,7 @@ Impact.isDynamic = impact => {
 	if (is(impact.dynamic)) {
 		return impact.dynamic;
 	} 
-	if (impact.rate) {
+	if (impact.rate && ! impact.n) {
 		console.log("Impact with old data - dynamic rate but not explicitly set as dynamic", impact);
 		return true;
 	}
