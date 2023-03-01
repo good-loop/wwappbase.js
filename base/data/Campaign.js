@@ -75,14 +75,14 @@ Campaign.TOTAL_IMPACT = "TOTAL_IMPACT";
 Campaign.budget = item => {
 	let tli = item.topLineItem;
 	return tli? tli.budget : null;
-}
+};
 /**
  * @returns {?Date}
  */
 Campaign.start = item => {
 	let tli = item.topLineItem;
 	return tli? asDate(tli.start) : null;
-}
+};
 /**
  * @returns {?Date}
  */
@@ -102,7 +102,7 @@ Campaign.isOngoing = campaign => {
 /**
  * See Campaign.pvSubCampaigns() for the child campaigns.
  * @param {!Campaign} campaign 
- * @returns {boolean}
+ * @returns {boolean} NB: false for the TOTAL_IMPACT root 
  */
 Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
 

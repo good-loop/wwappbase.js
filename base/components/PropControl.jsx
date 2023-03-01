@@ -65,7 +65,7 @@ const dateValidator = (val, rawValue) => {
 /** Validator for making number inputs int only */
 const intValidator = (val, rawVal) => {
 	return Number.isInteger(val) ? null : "Number must be an integer!";
-}
+};
 
 /** Use Bootstrap popover to display help text on click */
 export function Help({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) {
@@ -328,13 +328,6 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// HACK: for now, we use both as theres a lot of code that refers to value, but its fiddly to update it all)
 	let storeValue = set? pvalue : DataStore.getValue(proppath);
 	let value = storeValue;
-
-	if (PropControl.KControlType.isnumber(type) && !validator && int) {
-		const roundedVal = Math.round(value);
-		if (!Number.isNaN(roundedVal)) {
-			value = roundedVal;
-		}
-	}
 
 	// What is rawValue?
 	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
@@ -1129,7 +1122,14 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
 		return parseInt(inputValue);
 	}
 	if (type === 'number') {
-		return numFromAnything(inputValue);
+		let n = numFromAnything(inputValue);
+		if (props.int) {
+			const roundedVal = Math.round(n);
+			if (!Number.isNaN(roundedVal)) {
+				return roundedVal;
+			}
+		}
+		return n;
 	}
 	// url: add in https:// if missing
 	if (type === 'url' && event.type === 'blur') {
@@ -1168,6 +1168,7 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 	delete otherProps.modelValueFromInput;
 	delete otherProps.saveFn;
 	delete otherProps.item;
+	delete otherProps.int;
 
 	// if (otherProps.readonly) { nah, let react complain and the dev can fix the cause
 	// 	otherProps.readonly = otherProps.readOnly;
