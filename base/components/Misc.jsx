@@ -489,13 +489,14 @@ Misc.Help = ({children}) => {
  * @param {?Object[]} p.formData
  * @param {?String[]} p.path DataStore path to the form-data to submit. Set this OR formData
  * @param {Boolean} p.once If set, this button can only be clicked once.
+ * @param {?Function} p.onClick If set (eg instead of `url`), call this with ({data})
  * @param {?Boolean|string} p.confirmSubmit If set, show a confirm dialog
  * @param responsePath {?String[]} If set, the (JSend unwrapped) response data will be set in DataStore here.
  * @param onSuccess {JSX} TODO rename this! shown after a successful submit. This is not a function to call!
  */
-Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, 
+Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, onClick,
 	title='Submit the form', children, size, disabled, confirmSubmit}) => {
-	assMatch(url, String);
+	assert(url instanceof String || onClick instanceof Function, "Need submit url or onClick");
 	// assMatch(path, 'String[]');
 	// track the submit request
 	const [submitStatus, setSubmitStatus] = useState();
@@ -512,17 +513,22 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', 
 			if ( ! ok) return;
 		}
 		setSubmitStatus(C.STATUS.saving);
-		// DataStore.setValue(tpath, C.STATUS.saving);
-		ServerIO.load(url, params)
-			.then(res => {
-				setSubmitStatus(C.STATUS.clean); // DataStore.setValue(tpath,
-				if (responsePath) {
-					const resdata = JSend.data(res);
-					DataStore.setValue(responsePath, resdata);
-				}
-			}, err => {
-				setSubmitStatus(C.STATUS.dirty); // DataStore.setValue(tpath,
-			});
+		if (onClick) {
+			onClick(params);
+			setSubmitStatus(C.STATUS.clean);
+		}
+		if (url) {
+			ServerIO.load(url, params)
+				.then(res => {
+					setSubmitStatus(C.STATUS.clean);
+					if (responsePath) {
+						const resdata = JSend.data(res);
+						DataStore.setValue(responsePath, resdata);
+					}
+				}, err => {
+					setSubmitStatus(C.STATUS.dirty);
+				});
+		}
 	};
 
 	// let localStatus = DataStore.getValue(tpath);
