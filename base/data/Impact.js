@@ -41,6 +41,10 @@ export default Impact;
  */
 Impact.isDynamic = impact => {
 	if ( ! impact) return false;
+	if ( ! impact.name) {
+		console.warn("Impact without a name (ie thing-it-does like trees)", impact);
+		return false;
+	}
 	if (is(impact.dynamic)) {
 		return impact.dynamic;
 	} 
