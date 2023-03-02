@@ -496,7 +496,7 @@ Misc.Help = ({children}) => {
  */
 Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', className, onSuccess, onClick,
 	title='Submit the form', children, size, disabled, confirmSubmit}) => {
-	assert(url instanceof String || onClick instanceof Function, "Need submit url or onClick");
+	assert(typeof url === 'string' || onClick instanceof Function, "Need submit url or onClick");
 	// assMatch(path, 'String[]');
 	// track the submit request
 	const [submitStatus, setSubmitStatus] = useState();
