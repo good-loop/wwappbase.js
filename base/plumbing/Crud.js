@@ -353,7 +353,7 @@ ActionMan.unpublish = (type, id) => unpublish({type,id});
  * @param {?DataClass} p.item 
  * @returns PromiseValue(DataClass)
  */
-export const publish = ({type,id,item}) => {
+export const publish = ({type,id,item,swallow}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(type, String);
@@ -367,7 +367,7 @@ export const publish = ({type,id,item}) => {
 	// optimistic list mod
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
-	return crud({type, id, action: 'publish', item})
+	return crud({type, id, action: 'publish', item, swallow})
 		.promise.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
