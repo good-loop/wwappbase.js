@@ -679,7 +679,9 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 /**
  * Get a list of CRUD objects from the server
  * 
- * @param {Object} p
+ * @param {Object} p 
+ * @param {?} p.type C.TYPES
+ * @param {?} p.status KStatus
  * @param {?String|SearchQuery} p.q search query string
  * @param {?String[]} p.ids Convenience for a common use-case: batch fetching a set of IDs
  * @param {?String} p.sort e.g. "start-desc"
