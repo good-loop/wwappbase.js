@@ -6,7 +6,7 @@ import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
 import SearchQuery from '../../base/searchquery';
 import List from './List';
-import DataStore, { getDataPath } from '../plumbing/DataStore';
+import DataStore, { getDataPath, getListPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
 import { getDataItem, getDataList, saveEdits } from '../plumbing/Crud';
 import PromiseValue from '../promise-value';
@@ -201,34 +201,29 @@ Campaign.makeFor = (advert) => {
  * @returns {PromiseValue} PV(List<ImpactDebit>)
  */
 Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
-	let p = getImpactDebits2({campaign, status});
-	return new PromiseValue(p);
-};
-
-/**
- * async Get the ImpactDebits for charity donation info
- * @param {Object} p
- * @returns {Promise} List<ImpactDebit>
- */
-const getImpactDebits2 = async ({campaign, status}) => {
-	let q;
-	// is it a master campaign?
-	if (Campaign.isMaster(campaign)) {
-		let {type, id} = Campaign.masterFor(campaign);		
-		// What if it's a master brand, e.g. Nestle > Nespresso?
-		// The only way to know is to look for children
-		let pvListAdvertisers = type==="Agency"? Agency.getChildren({id}) : Advertiser.getChildren({id});
-		let listAdvertisers = await pvListAdvertisers.promise;
-		let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
-		ids = ids.concat(id); // include the top-level brand
-		q = SearchQuery.setPropOr(null, type==="Agency"? "agencyId":"vertiser", ids);
-	} else {
-		// just a single campaign
-		q = SearchQuery.setProp(null, "campaign", campaign.id);	
-	}
-	let pv = getDataList({type:"ImpactDebit",status,q});
-	let v = await pv.promise;
-	return v;
+	// We have a couple of chained async calls. So we use an async method inside DataStore.fetch().	
+	// NB: tried using plain async/await -- this is awkward with React render methods as the fresh Promise objects are always un-resolved at the moment of return.
+	// NB: tried using a PromiseValue.pending() without fetch() -- again having fresh objects returned means they're un-resolved at that moment.
+	return DataStore.fetch(getListPath({type:"ImpactDebit",status,q:campaign.id+":getImpactDebits"}), async () => {
+		let q;
+		// is it a master campaign?
+		if (Campaign.isMaster(campaign)) {
+			let {type, id} = Campaign.masterFor(campaign);		
+			// What if it's a master brand, e.g. Nestle > Nespresso?
+			// The only way to know is to look for children
+			let pvListAdvertisers = type==="Agency"? Agency.getChildren({id}) : Advertiser.getChildren({id});
+			let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
+			let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
+			ids = ids.concat(id); // include the top-level brand
+			q = SearchQuery.setPropOr(null, type==="Agency"? "agencyId":"vertiser", ids);
+		} else {
+			// just a single campaign
+			q = SearchQuery.setProp(null, "campaign", campaign.id);	
+		}
+		let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
+		let v = await pvListImpDs.promise;
+		return v;
+	});
 };
 
 
