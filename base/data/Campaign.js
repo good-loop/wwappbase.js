@@ -223,8 +223,8 @@ Campaign.makeFor = (advert) => {
  * @param {Object} p
  * @returns {PromiseValue} PV(List<ImpactDebit>)
  */
-Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
-	let p = getImpactDebits2({campaign, status});
+Campaign.getImpactDebits = ({campaign, period, status=KStatus.PUBLISHED}) => {
+	let p = getImpactDebits2({campaign, period, status});
 	return new PromiseValue(p);
 };
 
@@ -233,7 +233,7 @@ Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
  * @param {Object} p
  * @returns {Promise} List<ImpactDebit>
  */
-const getImpactDebits2 = async ({campaign, status=KStatus.PUBLISHED}) => {
+const getImpactDebits2 = async ({campaign, period, status=KStatus.PUBLISHED}) => {
 	let q;
 	// is it a master campaign?
 	if (Campaign.isMaster(campaign)) {
@@ -249,6 +249,10 @@ const getImpactDebits2 = async ({campaign, status=KStatus.PUBLISHED}) => {
 		// just a single campaign
 		q = SearchQuery.setProp(null, "campaign", campaign.id);	
 	}
+
+	// Query only between "start" and "end" dates
+	//q = SearchQuery.setProp()
+
 	let pv = getDataList({type:"ImpactDebit",status,q:q.query});
 	let v = await pv.promise;
 	return v;
