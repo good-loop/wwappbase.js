@@ -16,6 +16,7 @@ Assumes:
 	@property {!string} service e.g. "twitter"
 	@property {?string} img 
 	@property {?string} externalUrl 
+	@property {?string} status
  */
 
 // convert to npm style?? But its nice that this will work as is in any app.
@@ -108,6 +109,7 @@ class _Login {
 	redirectOnLogin;
 	/** The server url. Change this if you use a different login server. */
 	ENDPOINT = 'https://youagain.good-loop.com/youagain.json';
+	// ENDPOINT = 'https://localyouagain.good-loop.com/youagain.json'
 
 	PERMISSIONS = {
 		/** Get an ID to identify who this is, but no more. */
@@ -160,6 +162,14 @@ class _Login {
 			return null;
 		}
 		return u.xid;
+	};
+
+	getStatus(service) {
+		let u = Login.getUser(service);
+		if (!u) {
+			return null;
+		}
+		return u.status;
 	};
 
 	/** Is the user signed in? Check with the server.
@@ -612,6 +622,19 @@ Login.setPassword = function (email, currentPassword, newPassword) {
 	let request = apost(Login.ENDPOINT, params);
 	return request;
 };
+
+/**
+ * Verify email.
+ */
+Login.sendVerify = function (email) {
+	assert(email);
+	const params = {
+		email: email,
+		action: 'send-verify'
+	}
+	let request = apost(Login.ENDPOINT, params);
+	return request;
+}
 
 
 
