@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import Login from '../youagain';
 import C from '../CBase';
@@ -84,6 +84,11 @@ const RoleLine = ({ role }) => {
 };
 
 const StatusCard = () => {
+	/**
+	 * @param {boolean} emailSent
+	 */
+	const [emailSent, setEmailSent] = useState(false);
+
 	const doSendVerifyEmail = (e) => {
 		e.preventDefault();
 		let email = Login.getEmail();
@@ -91,16 +96,27 @@ const StatusCard = () => {
 		let call = Login.sendVerify(email)
 			.then((res) => {
 				console.log(res);
+				if (res.success) setEmailSent(true);
 			})
 			.catch((err) => {
 				console.log(err);
 			});
 	};
 
+	const status = Login.getStatus();
+
 	return (
 		<Misc.Card title='Verification'>
-			Verification Status: {Login.getStatus()} <br />
-			<Button onClick={doSendVerifyEmail}>doSendVerifyEmail</Button>
+			<div className='d-flex justify-content-between'>
+				<span>Verification Status: {status ? status : 'Loading...'}</span>
+				{!emailSent ? (
+					<Button disabled={status === 'VERIFIED'} onClick={doSendVerifyEmail}>
+						doSendVerifyEmail
+					</Button>
+				) : (
+					<Button disabled={true}>Email Sent</Button>
+				)}
+			</div>
 		</Misc.Card>
 	);
 };
