@@ -26,7 +26,7 @@ ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for
  * - so ServerIO.APIBASE === '' is prod on a prod server, test on a test server, local on local.
  * Basically: set this true for "empty APIBASE isn't the correct value for prod"
  */
-ServerIO.NO_API_AT_THIS_HOST;
+ServerIO.NO_API_AT_THIS_HOST = false;
 
 // HACK our special micro-services
 // also HACK: SoGive subdomains don't match the standard pattern & we don't want devs on local to need their own sogive server too
@@ -500,7 +500,7 @@ ServerIO.load = function(url, params) {
 				throw response;
 			}
 			// notify user of anything
-			if ( ! params.swallow) {
+			if ( ! params.swallow) {				
 				ServerIO.handleMessages(response);
 			}
 			return response;
@@ -556,6 +556,7 @@ ServerIO.handleMessages = function(response) {
 	if ( ! newMessages || newMessages.length===0) {
 		return response;
 	}
+	// Should we filter 409: Duplicate request ??
 	newMessages.forEach(msg => notifyUser(msg));
 	return response;
 };

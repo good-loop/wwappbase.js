@@ -74,6 +74,10 @@ const assMatch = function(value, matcher, msg) {
 const isa = function(obj, klass) {
 	if (obj === klass) return true; // This can be too lenient, e.g. Number is not a Number. But it's generally correct for a prototype language.
 	if (obj instanceof klass) return true;
+	// HACK for DataClass
+	if (klass.isa instanceof Function) {
+		return klass.isa(obj);
+	}
 	for(let i=0; i<10; i++) { // limit the recursion 10-deep for safety
 		if (obj === null || obj === undefined) return false;
 		if ( ! obj.constructor) return false;

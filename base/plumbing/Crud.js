@@ -353,7 +353,7 @@ ActionMan.unpublish = (type, id) => unpublish({type,id});
  * @param {?DataClass} p.item 
  * @returns PromiseValue(DataClass)
  */
-export const publish = ({type,id,item}) => {
+export const publish = ({type,id,item,swallow}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(type, String);
@@ -367,7 +367,7 @@ export const publish = ({type,id,item}) => {
 	// optimistic list mod
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
-	return crud({type, id, action: 'publish', item})
+	return crud({type, id, action: 'publish', item, swallow})
 		.promise.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
@@ -679,8 +679,10 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 /**
  * Get a list of CRUD objects from the server
  * 
- * @param {Object} p
- * @param {?String} p.q search query string
+ * @param {Object} p 
+ * @param {?} p.type C.TYPES
+ * @param {?} p.status KStatus
+ * @param {?String|SearchQuery} p.q search query string
  * @param {?String[]} p.ids Convenience for a common use-case: batch fetching a set of IDs
  * @param {?String} p.sort e.g. "start-desc"
  * @param {?string|Date} p.start Add a time-filter. Usually unset.
@@ -694,11 +696,14 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  */
  const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {	
 	assert(C.TYPES.has(type), type);
-	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found
-	if (q) assMatch(q, String); // NB: q should not be a SearchQuery
+	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found	
 	if (ids && ids.length) {
 		q = SearchQuery.setPropOr(q, "id", ids).query;
 	}
+	if (SearchQuery.isa(q)) {
+		q = q.query;
+	}
+	if (q) assMatch(q, String); // NB: q should not be a SearchQuery for the functions below
 	const lpath = getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});
 	const pv = DataStore.fetch(lpath, () => {
 		return ServerIO.list({type, status, q, prefix, start, end, size, sort, domain, ...other});

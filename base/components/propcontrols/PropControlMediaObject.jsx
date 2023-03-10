@@ -8,21 +8,25 @@ import SubCard from '../SubCard';
 import PropControlPerson from './PropControlPerson';
 const dummy = PropControlPerson;
 
-const PropControlMediaObject = ({path, prop, proppath, uploadType, storeValue, onChange, warnOnUnpublished}) => {
+function PropControlMediaObject({path, prop, proppath, uploadType, storeValue, onChange, warnOnUnpublished}) {
 	return (<>
-        <PropControl type={uploadType} prop='contentUrl' path={proppath} />	
-        <PropControl type="text" prop='caption' path={proppath} label size='sm' />	
+        <PropControl type={uploadType} prop="contentUrl" path={proppath} />	
+        <PropControl type="text" prop="caption" path={proppath} label size="sm" />	
 	</>);
-};
+}
 
 /**
  * See ImageObject.java
  */
-const PropControlImageObject = (props) => <PropControlMediaObject uploadType='imgUpload' {...props} />;
+function PropControlImageObject(props) {
+  return <PropControlMediaObject uploadType="imgUpload" {...props} />;
+}
 /**
  * See VideoObject.java
  */
- const PropControlVideoObject = (props) => <PropControlMediaObject uploadType='videoUpload' {...props} />;
+ function PropControlVideoObject(props) {
+  return <PropControlMediaObject uploadType="videoUpload" {...props} />;
+}
 
 registerControl({type: 'ImageObject', $Widget: PropControlImageObject});
 registerControl({type: 'VideoObject', $Widget: PropControlVideoObject});
