@@ -138,6 +138,7 @@ const check = ok => {
  * @param {?String} p.size Bootstrap size e.g. "lg"
  * @param {?string} p.position fixed|relative
  * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
+ * @param {?Boolean} p.oneButton render as a single button instead of a large footer bar (useful for embedding in smaller controls)
  * A snapshot is taken the first time this renders.
  */
 function SavePublishDeleteEtc({
@@ -151,7 +152,8 @@ function SavePublishDeleteEtc({
 	navpage,	
 	saveAs, unpublish,
 	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
-	sendDiff
+	sendDiff,
+	oneButton
 }) {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
@@ -206,6 +208,14 @@ function SavePublishDeleteEtc({
 	let disableDelete = isSaving || cannotDelete;
 
 	const vis = { visibility: (isSaving ? 'visible' : 'hidden') };
+
+	const PublishButton = () => <Button name="publish" color="primary" size={size} className="ml-2"
+		disabled={disablePublish} title={publishTooltip}
+		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item})}>
+		{!isSaving || !oneButton ? "Publish" : "Saving..."} {pubExists && "Edits"} <Spinner vis={vis} />
+	</Button>;
+
+	if (oneButton) return <PublishButton/>;
 
 	// debug info on DataStore state
 	let pubv = DataStore.getData({ status: C.KStatus.PUBLISHED, type, id });
@@ -301,11 +311,7 @@ function SavePublishDeleteEtc({
 				</ButtonDropdown>
 			}
 
-			<Button name="publish" color="primary" size={size} className="ml-2"
-				disabled={disablePublish} title={publishTooltip}
-				onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item})}>
-				Publish {pubExists && "Edits"} <Spinner vis={vis} />
-			</Button>
+			<PublishButton/>
 
 			{unpublish &&
 				<Button name="unpublish" color="outline-warning" size={size} className="ml-2"
