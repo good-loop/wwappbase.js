@@ -299,7 +299,7 @@ or if extras like help and error text are wanted.
    * @param {PropControlParams} p
    */
 const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
-	let { type, optional, required, path, prop, set, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, int, ...stuff } = props;
+	let { type, optional, required, path, prop, set, label, help, tooltip, customIcon, error, warning, validator, inline, dflt, fast, size, int, ...stuff } = props;
 	if (label === true) {
 		label = toTitleCase(prop); // convenience
 		props = { ...props, label };
@@ -424,7 +424,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
-	const helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
+	let helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
 
 	// Mark as required or explicitly-optional?
 	let optreq = null;
@@ -513,6 +513,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 				<label className={space(sizeClass, 'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
 			{help && !inline && !isCheck && <Help>{help}</Help>}
+			{customIcon}
 			{!isCheck && diffWarning}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
