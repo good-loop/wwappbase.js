@@ -948,3 +948,12 @@ export const mapNew = (num: number, func: Function) => {
 	if (!buttons) return decodeButtons(0);
 	return buttons.toString(2).padStart(5, '0').split('').reverse().map(digit => !!Number.parseInt(digit));
 };
+
+/**
+ * Add separating commas to a number
+ * @param x number
+ * @returns {String}
+ */
+export const addNumberCommas = (x: Number) => {
+	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
