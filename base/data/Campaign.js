@@ -416,6 +416,24 @@ Campaign.viewcount = ({campaign, status}) => {
 	return totalViewCount;
 };
 
+/**
+ * Get the viewcount for a campaign broken down by what countries impressions are from, summing the ads viewcounts in each country it's been viewed in
+ * @param {Object} p
+ * @param {Campaign} p.campaign 
+ * @returns {Number}
+ */
+Campaign.viewcountByCountry = ({campaign, status}) => {
+	if(!campaign){
+		console.log("res: no camp!")
+		return []
+	}
+	const pvAllAds = Campaign.pvAds({campaign, status});
+	let allAds = List.hits(pvAllAds.value) || [];
+	console.log("res allAds: ", allAds)
+	const viewcount4campaign = Advert.viewcountByCountry({ads:allAds});
+	return viewcount4campaign;
+};
+
 
 ////////////////////////////////////////////////////////////////////
 ////                     CHARITY LOGIC                           ///
