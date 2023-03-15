@@ -149,6 +149,29 @@ img {
 	opacity: 75%;
 }
 
+/** marker for dev-only debug/admin elements that users do not see */
+.dev-only {
+	border: 1px dotted yellow;
+	background-color: #bbffbb;
+	opacity: 75%;
+}
+// an on-hover popup -- actually it was annoying
+// .dev-only::after {
+// 	content: "developer only content";
+// 	padding: 2px;
+// 	display: none;
+// 	position: relative;
+// 	top: -20px;
+// 	right: -30px;
+// 	width: 150px;
+// 	text-align: center;
+// 	background-color: #fef4c5;
+// 	border: 1px solid #d4b943;
+// 	border-radius: 2px;	  	  
+// }
+// .dev-only:hover::after {
+// 	display: block;
+// }
 
 
 // MainDivBase puts every page in a Row (proper practice within a Container) - default to filling horizontally

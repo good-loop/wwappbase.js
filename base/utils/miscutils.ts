@@ -694,7 +694,7 @@ export const stopEvent = (e: Event) => {
  * 
  * Minor TODO: refactor printer.js to use `export` and use that directly
  */
-export const str = x => printer.str(x)
+export const str = x => printer.str(x);
 
 /**
  * Make sure it's a Date not a String
@@ -713,8 +713,9 @@ export const asDate = (s: String|Date) => {
  * Use-case: debounce with promise-style .then() follow-on code
  * @param fn Do the thing!
  * @param msecs Milliseconds to wait in debounce
+ * @returns {PromiseValue} Each call returns a fresh PV with a fresh debounced fn! You must cache this to get the debounce effect.
  */
-export const debouncePV = (fn: Function, msecs: Number) => {
+export const debouncePV = (fn: Function, msecs: number) => {
 	let pv = PromiseValue.pending();
 	const rpv = { ref: pv };
 	// debounce and resolve the PV
@@ -745,6 +746,49 @@ export const debouncePV = (fn: Function, msecs: Number) => {
 	};
 	return dfnpv;
 };
+
+
+/**
+ * Call a function, but not too often.
+ * Add persistence to debounce, allowing use with arguments.
+ * See https://lodash.com/docs/4.17.15#debounce
+ * @param {!Function} fn 
+ * @param {!Object[]} fixedParams These + fn define the persistent function. 
+ * The same base fn + the same fixedParams = the same debounced function.
+ * The same base fn with different fixedParams is treated as an independent function.
+ * @param {!Object[]} flexParams If these change, then cancel and repeat the function with the new values
+ * @param {?Number} wait milliseconds
+ * @param {?Object} options 
+ */
+export const debounced = (fn:Function, fixedParams, flexParams, wait:number, options) => {
+	const key = (fn.name || fn+"") + fixedParams.map(str).join("|");
+	const flexkey = flexParams.map(str).join("|");
+	let dfn_flex = debounced_flexkey4key[key];
+	// parameter change?
+	if (dfn_flex && dfn_flex[1] !== flexkey) {
+		console.log("debounced - cancel the old",key);
+		dfn_flex[0].cancel(); // cancel the old
+		dfn_flex = null; // make a new...
+	}
+	// make new debounce
+	if ( ! dfn_flex) {
+		const params = fixedParams.concat(flexParams);
+		const curried = () => fn(...params);
+		const dfn = _.debounce(curried, wait, options);
+		debounced_flexkey4key[key] = [dfn,flexkey]; // persist with flexkey to detect parameter changes
+		console.log("debounced - call it 1st",key);
+		return dfn(); // call it
+	}
+	// call it again
+	console.log("debounced - call it again",key);
+	return dfn_flex[0]();
+};
+
+/** persistent debounced functions for debounced()
+ * TODO clean these out periodically - can we check for which ones are done? No, but we can flush() them.
+ */
+const debounced_flexkey4key = {};
+
 
 /**
  * Convenience to de-dupe and remove falsy from an array
@@ -907,13 +951,22 @@ export const mapNew = (num: number, func: Function) => {
 };
 
 /**
+ * Add separating commas to a number
+ * @param x number
+ * @returns {String}
+ */
+ export const addNumberCommas = (x: Number) => {
+	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+/**
  * Convert a number into being expressed as units of billions, millions or thousands
  * 1000 -> 1k, 10,000 -> 10k, 1,000,000 -> 1M
  * note this doesn't round, so if the goal is to make your number look pretty you'll need to pass this a rounded num
  * @param {Number} num 
  * @returns {String} num expressed in units of billions, millions or 
  */
-export const addAmountSuffixToNumber = (num: number) => {
+ export const addAmountSuffixToNumber = (num: number) => {
 	// [suffix, how many 0's in number]
 	// if adding to this, keep it in descending order 
 	const suffixsAndDigits = [ // 

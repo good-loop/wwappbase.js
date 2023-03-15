@@ -50,7 +50,7 @@ const AccountMenu = ({active, accountMenuItems, children, accountLinkText="Accou
 	const Wrapper = noNav ? 'div' : Nav;
 
 	return (
-	<Wrapper navbar style={style} className={space("account-menu d-flex", className)}>
+	<Wrapper navbar={Wrapper===Nav? true : null /* stop React complaining about div+navbar*/} style={style} className={space("account-menu d-flex", className)}>
 		{shareWidget && shareWidget}
 		<Dropdown isOpen={open} toggle={() => setOpen(!open)} nav={!noNav} inNavbar={!noNav}>
 			<DropdownToggle nav caret>{customImg ? <img src={customImg} className="custom-img"/> : name}</DropdownToggle>

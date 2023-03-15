@@ -65,7 +65,7 @@ const dateValidator = (val, rawValue) => {
 /** Validator for making number inputs int only */
 const intValidator = (val, rawVal) => {
 	return Number.isInteger(val) ? null : "Number must be an integer!";
-}
+};
 
 /** Use Bootstrap popover to display help text on click */
 export function Help({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) {
@@ -299,7 +299,7 @@ or if extras like help and error text are wanted.
    * @param {PropControlParams} p
    */
 const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
-	let { type, optional, required, path, prop, set, label, help, tooltip, error, warning, validator, inline, dflt, fast, size, int, ...stuff } = props;
+	let { type, optional, required, path, prop, set, label, help, tooltip, customIcon, error, warning, validator, inline, dflt, fast, size, int, ...stuff } = props;
 	if (label === true) {
 		label = toTitleCase(prop); // convenience
 		props = { ...props, label };
@@ -328,13 +328,6 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// HACK: for now, we use both as theres a lot of code that refers to value, but its fiddly to update it all)
 	let storeValue = set? pvalue : DataStore.getValue(proppath);
 	let value = storeValue;
-
-	if (PropControl.KControlType.isnumber(type) && !validator && int) {
-		const roundedVal = Math.round(value);
-		if (!Number.isNaN(roundedVal)) {
-			value = roundedVal;
-		}
-	}
 
 	// What is rawValue?
 	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
@@ -431,7 +424,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
-	const helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
+	let helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
 
 	// Mark as required or explicitly-optional?
 	let optreq = null;
@@ -520,6 +513,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 				<label className={space(sizeClass, 'mr-1')} htmlFor={stuff.name}>{labelText} {helpIcon} {optreq}</label>}
 			{inline && ' '}
 			{help && !inline && !isCheck && <Help>{help}</Help>}
+			{customIcon}
 			{!isCheck && diffWarning}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
@@ -1129,7 +1123,14 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
 		return parseInt(inputValue);
 	}
 	if (type === 'number') {
-		return numFromAnything(inputValue);
+		let n = numFromAnything(inputValue);
+		if (props.int) {
+			const roundedVal = Math.round(n);
+			if (!Number.isNaN(roundedVal)) {
+				return roundedVal;
+			}
+		}
+		return n;
 	}
 	// url: add in https:// if missing
 	if (type === 'url' && event.type === 'blur') {
@@ -1168,6 +1169,7 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 	delete otherProps.modelValueFromInput;
 	delete otherProps.saveFn;
 	delete otherProps.item;
+	delete otherProps.int;
 
 	// if (otherProps.readonly) { nah, let react complain and the dev can fix the cause
 	// 	otherProps.readonly = otherProps.readOnly;

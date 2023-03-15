@@ -34,7 +34,7 @@
 		<script>
 			// Insert bundle[-debug].js - but allow dynamic test/production build switch.
 			// Default to debug build on test and local servers.
-			var isDebug = window.location.hostname.match(/^local/) || window.location.hostname.match(/^test/);
+			var isDebug = window.location.hostname.match(/^local/) || window.location.hostname.match(/^test/) || window.location.hostname.match(/^stage/);
 			
 			// Has the user specified debug/production build with a URL param?
 			var debugParam = (""+window.location).match(/debug=(\w+)/i); // NB: .search misses parameters after a #

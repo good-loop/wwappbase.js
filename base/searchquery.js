@@ -13,8 +13,7 @@ import { is } from './utils/miscutils';
  * 
  * TODO we'll want more search capabilities as we go on
  */
-class SearchQuery
-// extends DataClass 
+class SearchQuery extends DataClass
 {
 	/** @type {!String} */
 	query;
@@ -32,6 +31,8 @@ class SearchQuery
 	 * @param {?Object} options 
 	 */
 	constructor(query, options) {
+		super();
+		// DataClass._init(this, base); not needed??
 		this.query = query || "";
 		// NB: unwrap if the input is a SearchQuery
 		if (this.query.query) this.query = this.query.query;
@@ -40,7 +41,7 @@ class SearchQuery
 	}
 
 } // ./SearchQuery
-// DataClass.register(SearchQuery, "SearchQuery");
+DataClass.register(SearchQuery, "SearchQuery");
 
 
 SearchQuery._init = sq => {

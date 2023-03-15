@@ -35,16 +35,25 @@ const This = Impact;
 export default Impact;
 
 /**
+ * See KImpactNames.java
+ */
+Impact.KImpactNames = ["carbon offset", "tree(s)", "coral", "meal(s)"];
+
+/**
  * Is this a dynamic impact, which should be calculated from e.g. impressions*rate?
  * @param {?Impact} impact 
  * @returns {boolean}
  */
 Impact.isDynamic = impact => {
 	if ( ! impact) return false;
+	if ( ! impact.name) {
+		console.warn("Impact without a name (ie thing-it-does like trees)", impact);
+		return false;
+	}
 	if (is(impact.dynamic)) {
 		return impact.dynamic;
 	} 
-	if (impact.rate) {
+	if (impact.rate && ! impact.n) {
 		console.log("Impact with old data - dynamic rate but not explicitly set as dynamic", impact);
 		return true;
 	}

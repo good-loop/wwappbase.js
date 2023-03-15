@@ -20,7 +20,7 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
     let lastMonthStart = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-01";
     let se = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-01";
     let de = new Date(se);
-    // NB: start of next month = end of day previous month
+    // NB: start of next month = end of day previous month minus one day
     let lastMonthEnd = de.toISOString().substring(0, 10);
     // ...quarter
     let lastQuarterStart, lastQuarterEnd;
