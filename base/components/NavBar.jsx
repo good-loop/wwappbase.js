@@ -17,7 +17,7 @@ import { assMatch } from '../utils/assert';
 import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
-import { encURI, equals, labeller, space } from '../utils/miscutils';
+import { encURI, equals, labeller, space, stopEvent } from '../utils/miscutils';
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
 import DataClass, { getId, getType } from '../data/DataClass';
@@ -69,11 +69,13 @@ export const setNavProps = (props) => {
 	// useEffect(() => { // No - this causes a "Rendered more hooks than during the previous render." error
 	// extract props from a DataItem
 	if (DataClass.isa(props)) {
+		// This does NOT set the context, as used by ListItems
 		const item = props;
 		props = { // advertiser link and logo			
 			brandId: getId(item),
 			brandType: getType(item),
 			brandLink: ""+window.location,
+			// NB: prefer white silhouette for safe colours vs backdrop. HACK expects branding object
 			brandLogo: item.branding? (item.branding.logo_white || item.branding.logo) : item.logo,
 			brandName: item.name || getId(item)
 		};	
@@ -98,8 +100,10 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  * @param {NavProps} p
  * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
  */
-function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle, brandLink, brandLogo, brandName, onLinkClick, isBeta, accountMenuItems, accountLinkText}) {
-
+function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle, 
+							brandId, brandType, brandLink, brandLogo, brandName, 
+							onLinkClick, isBeta, accountMenuItems, accountLinkText}) 
+{
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
 			<img className={space(logoClass, C.app.logoMobile && "d-none d-md-inline-block")} alt={C.app.name} src={C.app.homeLogo || C.app.logo} />
@@ -111,8 +115,10 @@ function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', hom
 				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>
 					{brandLogo? <img className={space(logoClass, "brand-logo")} alt={brandName} src={brandLogo} /> : brandName}
 				</C.A>
-				{brandLink !== ""+window.location 
-					&& <CloseButton style={{position:"absolute", bottom:0, right:"0.8em"}} onClick={e => setNavProps(null)} size="sm" tooltip={`include content beyond ${brandName}'s micro-site`} />}
+				{brandLink !== ""+window.location && brandType && brandId 
+					&& <CloseButton style={{position:"absolute", bottom:0, right:"0.8em"}} 
+						onClick={e => stopEvent(e) && setNavContext(brandType, null, true)} size="sm" 
+						tooltip={`include content beyond ${brandName}'s micro-site`} />}
 			</div>
 		}
 		<NavbarToggler onClick={toggle}/>
@@ -157,8 +163,8 @@ function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 	const [scrolled, setScrolled] = useState(false);
 	const checkScroll = () => {
 		setScrolled(window.scrollY > 50);
-	}
-	useEffect (() => {
+	};
+	useEffect(() => {
 		checkScroll();
 		window.addEventListener('scroll', checkScroll);
 		return () => window.removeEventListener('scroll', checkScroll);
@@ -190,8 +196,8 @@ function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 			<C.A className={space("nav-link", className)} href={pageLink} onClick={onLinkClick} >
 				{children}
 			</C.A>
-		)
-	}
+		);
+	};
 
 	// make the page links
 	// Accepts a page links format as:
@@ -254,25 +260,34 @@ function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 
 const CONTEXT = {};
 
+/** reset blank */
+const setNavPropsBlank = () => setNavProps({brandId:null,brandType:null,brandLink:null,brandLogo:null,brandName:null}); 
+
+// TODO unify with setNavProps() to avoid (re)setting one and not the other.
 export const setNavContext = (type, id, processLogo) => {
 	CONTEXT[type] = id;
 	if ( ! processLogo) return;
-	// process for 2nd logo
-	// NB: bug Oct 2022: KStatus.PUB_OR_DRAFT was over-writing draft data
-	let pvAdvertiser = id && getDataItem({type, id, status:KStatus.PUBLISHED, swallow:true});
-	const advertiser = pvAdvertiser && pvAdvertiser.value;	
-	if ( ! advertiser) {		
-		setNavProps({brandLink:null,brandLogo:null,brandName:null}); // reset blank
+	if ( ! id) {
+		setNavPropsBlank();
 		return;
 	}
-
-	let nprops = { // advertiser link and logo
-		brandLink:'/#'+type.toLowerCase()+'/'+encURI(id), // HACK assumes our #type url layout
-		// prefer white silhouette for safe colours vs backdrop
-		brandLogo: (advertiser.branding && (advertiser.branding.logo_white || advertiser.branding.logo)) || advertiser.logo, // HACK assumes branding object
-		brandName: advertiser.name || id
-	};
-	setNavProps(nprops);
+	// process for 2nd logo
+	// NB: bug Oct 2022: KStatus.PUB_OR_DRAFT was over-writing draft data
+	let pvAdvertiser = getDataItem({type, id, status:KStatus.PUBLISHED, swallow:true});
+	pvAdvertiser.promise.then(advertiser => {
+		if ( ! advertiser) {		
+			setNavPropsBlank();
+			return;
+		}
+		// let nprops = { // advertiser link and logo
+		// 	brandId:id,
+		// 	brandLink:'/#'+type.toLowerCase()+'/'+encURI(id), // HACK assumes our #type url layout
+		// 	// prefer white silhouette for safe colours vs backdrop
+		// 	brandLogo: (advertiser.branding && (advertiser.branding.logo_white || advertiser.branding.logo)) || advertiser.logo, // HACK assumes branding object
+		// 	brandName: advertiser.name || id
+		// };
+		setNavProps(advertiser);
+	});
 };
 
 /**
@@ -287,4 +302,4 @@ export const getNavContext = (type) => {
 export default NavBar;
 export {
 	NavProps
-}
+};
