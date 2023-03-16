@@ -4,7 +4,7 @@ import Enum from 'easy-enums';
 import DataClass from './DataClass';
 import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
-import DataStore from '../plumbing/DataStore';
+import DataStore, { getDataPath, getListPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
 import { getDataItem, getDataList } from '../plumbing/Crud';
 import NGO from './NGO';
@@ -61,11 +61,21 @@ Advertiser.getManyChildren = (vertiserIds, status=KStatus.PUBLISHED) => {
 }
 
 Advertiser.getImpactDebits = ({vertiser, status=KStatus.PUBLISHED}) => {
-    let p = getImpactDebits2({vertiser, status});
-	return new PromiseValue(p);
-}
-
-const getImpactDebits2 = async ({vertiser, status=KStatus.PUBLISHED}) => {
+    /*
     let masterCampaign = await Campaign.fetchMasterCampaign(vertiser, status)?.promise;
-    return masterCampaign ? await Campaign.getImpactDebits({campaign:masterCampaign, status}).promise : new List();
+    return masterCampaign ? await Campaign.getImpactDebits({campaign:masterCampaign, status}).promise : new List();*/
+
+    return DataStore.fetch(getListPath({type:"ImpactDebit",status,q:vertiser.id+":getImpactDebits"}), async () => {
+		let q;
+        // What if it's a master brand, e.g. Nestle > Nespresso?
+        // The only way to know is to look for children
+        let pvListAdvertisers = Advertiser.getChildren(vertiser.id);
+        let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
+        let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
+        ids = ids.concat(vertiser.id); // include the top-level brand
+        q = SearchQuery.setPropOr(null, "vertiser", ids);
+		let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
+		let v = await pvListImpDs.promise;
+		return v;
+	});
 }

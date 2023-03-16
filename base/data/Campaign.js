@@ -218,7 +218,7 @@ Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
 		let q;
 		// is it a master campaign?
 		if (Campaign.isMaster(campaign)) {
-			let {type, id} = Campaign.masterFor(campaign);		
+			let {type, id} = Campaign.masterFor(campaign);
 			// What if it's a master brand, e.g. Nestle > Nespresso?
 			// The only way to know is to look for children
 			let pvListAdvertisers = type==="Agency"? Agency.getChildren(id) : Advertiser.getChildren(id);
