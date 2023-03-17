@@ -99,12 +99,12 @@ Campaign.isOngoing = campaign => {
 	return campaign.ongoing;
 };
 
-/**
- * See Campaign.pvSubCampaigns() for the child campaigns.
- * @param {!Campaign} campaign 
- * @returns {boolean} NB: false for the TOTAL_IMPACT root 
- */
-Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
+// /**
+//  * See Campaign.pvSubCampaigns() for the child campaigns.
+//  * @param {!Campaign} campaign 
+//  * @returns {boolean} NB: false for the TOTAL_IMPACT root 
+//  */
+// Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
 
 /**
  * 
@@ -119,16 +119,16 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 	return pvc;
 };
 
-/**
- * Get the master campaign of a multi campaign object
- * @param {Advertiser|Agency} advertiserOrAgency 
- * @returns ?PromiseValue(Campaign)
- */
-Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT) => {
-    if ( ! advertiserOrAgency.campaign) return null;
-    let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:advertiserOrAgency.campaign});
-    return pvCampaign;
-};
+// /**
+//  * Get the master campaign of a multi campaign object
+//  * @param {Advertiser|Agency} advertiserOrAgency 
+//  * @returns ?PromiseValue(Campaign)
+//  */
+// Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT) => {
+//     if ( ! advertiserOrAgency.campaign) return null;
+//     let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:advertiserOrAgency.campaign});
+//     return pvCampaign;
+// };
 
 /**
  * Get all campaigns matching an advertiser
