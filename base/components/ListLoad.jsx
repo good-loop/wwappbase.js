@@ -166,11 +166,16 @@ function ListLoad({ type, status, servlet, navpage,
 		total = items.length;
 	}
 	// paginate ??allow url to specify page? But what if we have a couple of ListLoad widgets on the page?
-	let [pageNum, setPageNum2] = pageSize ? useState(0) : [];
+//	console.log("res: setting page to : ", Number(DataStore.getUrlValue('test')) || -1)
+	const pageInRange = (n, max, min) => Math.max(Math.min(max, n), min)
+	let pageNum = pageSize ? pageInRange(Number(DataStore.getUrlValue('test') - 1), 3, 0) || 1 : [];
 	const setPageNum = n => {
-		setPageNum2(n);
+		DataStore.setUrlValue('test', pageInRange(n, 3, 0) + 1)
 		window.scrollTo(0, 0);
 	};
+
+
+	
 	let allItems = items; // don't paginate the csv download
 	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;
 
@@ -212,9 +217,15 @@ function ListLoad({ type, status, servlet, navpage,
 		))}
 		{(pageSize && total > pageSize) && (
 			<div className="pagination-controls flex-row justify-content-between align-items-center">
-				<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b>◀</b></Button>
-				page {(pageNum + 1)} of {Math.ceil(total / pageSize)}
-				<Button className="ml-2" color="secondary" disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b>▶</b></Button>
+				<div>
+					<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b> ◀ </b></Button>
+					<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(Math.max(pageNum - 10, 0))} ><b>◀◀◀</b></Button>
+				</div>
+				page {(pageNum)} of {Math.ceil(total / pageSize)}
+				<div>
+					<Button className="ml-2" color="secondary" disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(Math.min(pageNum + 10, Math.ceil(total / pageSize) - 1))} ><b>▶▶▶</b></Button>
+					<Button className="ml-2" color="secondary" disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b> ▶ </b></Button>
+				</div>
 			</div>
 		)}
 		{isLoading && <Misc.Loading text={type.toLowerCase() + 's'} />}
