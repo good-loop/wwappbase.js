@@ -66,7 +66,8 @@ import Roles from '../Roles';
  * @param {JSX|String} p.noResults  Message to show if there are no results
  * @param {?Function} p.onClickItem  Custom non-navigation action when list item clicked
  * @param {?Function} p.onClickWrapper  Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
- Use-case??
+ * @param {?Function} p.pageSelectID - If using multiple pages for items this is required to target the specific ListLoad
+Use-case??
  * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
  */
 function ListLoad({ type, status, servlet, navpage,
@@ -94,6 +95,7 @@ function ListLoad({ type, status, servlet, navpage,
 	unwrapped,
 	onClickItem,
 	onClickWrapper,
+	pageSelectID,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) {
@@ -165,17 +167,24 @@ function ListLoad({ type, status, servlet, navpage,
 		// filtered out locally - reduce the total
 		total = items.length;
 	}
-	// paginate ??allow url to specify page? But what if we have a couple of ListLoad widgets on the page?
-//	console.log("res: setting page to : ", Number(DataStore.getUrlValue('test')) || -1)
-	const pageInRange = (n, max, min) => Math.max(Math.min(max, n), min)
-	let pageNum = pageSize ? pageInRange(Number(DataStore.getUrlValue('test') - 1), 3, 0) || 1 : [];
+
+	// paginate only if we have an id for this listload - otherwise we can't distuingish if there's multiple ListLoads 
+	assert((pageSize && pageSelectID) || (!pageSize && !pageSelectID))
+
+	// keeps page within page limit [0, pageSize]
+	let pageCount = pageSize ? Math.ceil(total / pageSize) : 0
+	const pageInRange = n => Math.max(Math.min(pageCount, n), 0)
+
+	// read the url for what page we're on - if none are selected then set it to page 1
+	if(pageSize && !DataStore.getUrlValue(pageSelectID)) DataStore.setUrlValue(pageSelectID, 1)
+	let pageNum = pageSize ? pageInRange(Number(DataStore.getUrlValue(pageSelectID))) || 1 : [];
+	
+	// update url to selected new page
 	const setPageNum = n => {
-		DataStore.setUrlValue('test', pageInRange(n, 3, 0) + 1)
+		DataStore.setUrlValue(pageSelectID, pageInRange(n))
 		window.scrollTo(0, 0);
 	};
 
-
-	
 	let allItems = items; // don't paginate the csv download
 	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;
 
@@ -221,10 +230,10 @@ function ListLoad({ type, status, servlet, navpage,
 					<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b> ◀ </b></Button>
 					<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(Math.max(pageNum - 10, 0))} ><b>◀◀◀</b></Button>
 				</div>
-				page {(pageNum)} of {Math.ceil(total / pageSize)}
+				page {(pageNum)} of {pageCount}
 				<div>
-					<Button className="ml-2" color="secondary" disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(Math.min(pageNum + 10, Math.ceil(total / pageSize) - 1))} ><b>▶▶▶</b></Button>
-					<Button className="ml-2" color="secondary" disabled={pageNum + 1 === Math.ceil(total / pageSize)} onClick={e => setPageNum(pageNum + 1)} ><b> ▶ </b></Button>
+					<Button className="ml-2" color="secondary" disabled={pageNum === pageCount} onClick={e => setPageNum(Math.min(pageNum + 10, pageCount))} ><b>▶▶▶</b></Button>
+					<Button className="ml-2" color="secondary" disabled={pageNum === pageCount} onClick={e => setPageNum(pageNum + 1)} ><b> ▶ </b></Button>
 				</div>
 			</div>
 		)}
@@ -253,7 +262,7 @@ function ListLoadCSVDownload({items, csvColumns, hideCsvColumns}) {
 
 const paginate = ({ items, pageNum, pageSize }) => {
 	assert(pageSize, "paginate");
-	return items.slice(pageNum * pageSize, (pageNum + 1) * pageSize);
+	return items.slice((pageNum-1) * pageSize, (pageNum) * pageSize);
 };
 
 /**
