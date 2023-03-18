@@ -36,10 +36,17 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
         let dqe = new Date(qe);
         lastQuarterEnd = dqe.toISOString().substring(0, 10);    
     }
+    // ...yesterday
+    let yesterdayStart = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-"+oh(now.getUTCDate()-1);
+    let yesterdayEnd = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-"+oh(now.getUTCDate());
     // button click
     const setPeriod = (name) => {
         // const now = new Date();
         let s, e;
+        if (name==="yesterday") {
+            s = yesterdayStart;
+            e = yesterdayEnd;
+        }
         if (name==="last-month") {
             s = lastMonthStart;
             e = lastMonthEnd;
@@ -54,7 +61,8 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
     // jsx
     return (<>
     <div className="flex-row">
-        <Button active={startv===lastMonthStart && endv===lastMonthEnd} color="outline-secondary" size="sm" onClick={e => setPeriod("last-month")}>Last Month</Button>
+        <Button active={startv===yesterdayStart && endv===yesterdayEnd} color="outline-secondary" size="sm" onClick={e => setPeriod("yesterday")}>Yesterday</Button>
+        <Button active={startv===lastMonthStart && endv===lastMonthEnd} className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-month")}>Last Month</Button>
         <Button active={startv===lastQuarterStart && endv===lastQuarterEnd} className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-quarter")}>Last Quarter</Button>
     </div>
     <Row>
