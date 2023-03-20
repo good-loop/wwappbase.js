@@ -17,7 +17,7 @@ ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcEleme
  * @param {?number} p.width Set to null to inherit See https://github.com/reactchartjs/react-chartjs-2/issues/362
  * @param {?number} p.height Set to null to inherit
  * @param {Object} p.data { labels:string[], datasets:[{label, data:number[]}] } The labels and data arrays get paired up.
- * @param {Object} p.datalabels See https://www.npmjs.com/package/chartjs-plugin-datalabels
+ * @param {?Object} p.datalabels See https://www.npmjs.com/package/chartjs-plugin-datalabels
  * @param {?number} p.maxy max y scale (usually this is auto-fitted from the data)
  * @param {Object} p.options {scales: {x, y}, plugins}
  * @param {String} p.type line|pie|bar|scatter
