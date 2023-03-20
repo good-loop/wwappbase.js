@@ -24,12 +24,12 @@ export default Agency;
 
 /**
  * 
- * @param {!Agency} adv Actually only the id is needed, so if you have that you can use {id} without having to fetch the Advertiser
+ * @param {!Agency} agencyId
  * @param {?KStatus} status 
  * @returns {PromiseValue} List<Agency>
  */
-Agency.getChildren = (adv, status=KStatus.PUBLISHED) => {
-    let q = SearchQuery.setProp(null, "parentId", adv.id);
+Agency.getChildren = (agencyId, status=KStatus.PUBLISHED) => {
+    let q = SearchQuery.setProp(null, "parentId", agencyId);
     return getDataList({type:"Agency",status,q});
 }
 

@@ -126,7 +126,7 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
  * @returns PromiseValue(Campaign[])
  */
  Campaign.fetchForAdvertiser = (vertiserId, status=KStatus.DRAFT) => {
-	return fetchForAdvertisers([vertiserId], status);
+	return Campaign.fetchForAdvertisers([vertiserId], status);
 }
 
 /**
@@ -136,9 +136,19 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
  * @returns PromiseValue(Campaign)
  */
 Campaign.fetchForAdvertisers = (vertiserIds, status=KStatus.DRAFT) => {
-    let q = SearchQuery.setPropOr(new SearchQuery(), "vertiser", vertiserIds).query;
-    let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
-    return pvCampaigns;
+	let pv = DataStore.fetch(['misc','pvCampaignsForVertisers',status,'all',vertiserIds.join(",")], () => {
+		return fetchVertisers2(vertiserIds, status);
+	});
+	return pv;
+}
+
+const fetchVertisers2 = async (vertiserIds, status) => {
+	const pvSubBrands = Advertiser.getManyChildren(vertiserIds);
+	const subBrands = List.hits(await pvSubBrands.promise);
+	let allVertiserIds = [...vertiserIds, ...uniq(subBrands.map(brand => brand.id).filter(x=>x))]
+	let q = SearchQuery.setPropOr(new SearchQuery(), "vertiser", allVertiserIds).query;
+	let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
+	return await pvCampaigns.promise;
 }
 
 /**
