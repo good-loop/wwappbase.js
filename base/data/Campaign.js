@@ -99,12 +99,12 @@ Campaign.isOngoing = campaign => {
 	return campaign.ongoing;
 };
 
-// /**
-//  * See Campaign.pvSubCampaigns() for the child campaigns.
-//  * @param {!Campaign} campaign 
-//  * @returns {boolean} NB: false for the TOTAL_IMPACT root 
-//  */
-// Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
+/**
+ * @deprecated
+ * Master campaigns NO LONGER USED - but we still need to check for and hide old ones that are swimming around
+ * @param {*} campaign 
+ */
+ Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
 
 /**
  * 
@@ -118,17 +118,6 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
 	let pvc = getDataItem({type:"Campaign",status,id:cid});
 	return pvc;
 };
-
-// /**
-//  * Get the master campaign of a multi campaign object
-//  * @param {Advertiser|Agency} advertiserOrAgency 
-//  * @returns ?PromiseValue(Campaign)
-//  */
-// Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT) => {
-//     if ( ! advertiserOrAgency.campaign) return null;
-//     let pvCampaign = getDataItem({type:C.TYPES.Campaign,status,id:advertiserOrAgency.campaign});
-//     return pvCampaign;
-// };
 
 /**
  * Get all campaigns matching an advertiser
@@ -205,27 +194,12 @@ Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
 	// NB: tried using plain async/await -- this is awkward with React render methods as the fresh Promise objects are always un-resolved at the moment of return.
 	// NB: tried using a PromiseValue.pending() without fetch() -- again having fresh objects returned means they're un-resolved at that moment.
 	return DataStore.fetch(getListPath({type:"ImpactDebit",status,q:campaign.id+":getImpactDebits"}), async () => {
-		let q;
-		// is it a master campaign?
-		if (Campaign.isMaster(campaign)) {
-			let {type, id} = Campaign.masterFor(campaign);		
-			// What if it's a master brand, e.g. Nestle > Nespresso?
-			// The only way to know is to look for children
-			let pvListAdvertisers = type==="Agency"? Agency.getChildren({id}) : Advertiser.getChildren({id});
-			let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
-			let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
-			ids = ids.concat(id); // include the top-level brand
-			q = SearchQuery.setPropOr(null, type==="Agency"? "agencyId":"vertiser", ids);
-		} else {
-			// just a single campaign
-			q = SearchQuery.setProp(null, "campaign", campaign.id);	
-		}
+		let q = SearchQuery.setProp(null, "campaign", campaign.id);
 		let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
 		let v = await pvListImpDs.promise;
 		return v;
 	});
 };
-
 
 /**
  * 
@@ -298,28 +272,6 @@ const sortAdsList = adsList => adsList.hits.sort((a, b) => {
  */
 const pAds2 = async function({campaign, status, query, isSub}) {
 	Campaign.assIsa(campaign);
-	if (campaign.master && ! isSub) { // NB: a poorly configured campaign can be a master and a leaf
-		// Assume no direct ads
-		// recurse
-		const pvSubs = Campaign.pvSubCampaigns({campaign});
-		let subsl = await pvSubs.promise;
-		let subs = List.hits(subsl);
-		let AdListPs = subs.map(sub => {
-			let pSubAds = pAds2({campaign:sub, status:KStatus.PUBLISHED, query, isSub:true});
-			return pSubAds;
-		});
-		let adLists = await Promise.all(AdListPs);
-		let ads = [];
-		adLists.forEach(adl => ads.push(...List.hits(adl)));
-		// adds can be hidden at leaf or master
-		pAds3_labelHidden({campaign, ads});
-
-		const list = new List(ads);
-		sortAdsList(list);
-		return list;
-	}
-
-	// leaf campaign
 	// fetch ads
 	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
 	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
@@ -361,12 +313,6 @@ const pAds3_labelHidden = ({campaign, ads}) => {
 };
 
 /**
- * @deprecated ancient history - remove
- */
-const tomsCampaigns = /(josh|sara|ella)/; // For matching TOMS campaign names needing special treatment
-
-
-/**
  * Get the viewcount for a campaign, summing the ads (or using the override numPeople)
  * @param {Object} p
  * @param {Campaign} p.campaign 
@@ -384,326 +330,22 @@ Campaign.viewcount = ({campaign, status}) => {
 	return totalViewCount;
 };
 
-
-////////////////////////////////////////////////////////////////////
-////                     CHARITY LOGIC                           ///
-////////////////////////////////////////////////////////////////////
-
 /**
- * 
- * @param {!Campaign} campaign 
- * @returns {!Object} {type, id} a stub object for the master agency/advertiser, or {}. 
- * NB: advertiser takes precedence, so you can usefully call this on a leaf campaign.
- * NB: {} is to support `let {type, id} = Campaign.masterFor()` without an NPE
- */
-Campaign.masterFor = campaign => {
-	Campaign.assIsa(campaign);
-	if (campaign.vertiser) return {type:C.TYPES.Advertiser, id:campaign.vertiser};
-	if (campaign.agencyId) return {type:C.TYPES.Agency, id:campaign.agencyId};
-	return {};
-};
-
-/**
- * * HACK: access=public
- * @param {!Campaign} campaign 
- * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
- */
-Campaign.pvSubCampaigns = ({campaign, query}) => {
-	Campaign.assIsa(campaign);
-	if ( ! campaign.master) {
-		return new PromiseValue(new List([campaign]));
-	}
-	// fetch leaf campaigns	
-	let {id, type} = Campaign.masterFor(campaign);
-	// campaigns for this advertiser / agency
-	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
-	// exclude this? No: some (poorly configured) master campaigns are also leaves
-	// sq = SearchQuery.and(sq, "-id:"+campaign.id); 	
-	const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
-	const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query, access}); 
-	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
-	return pvCampaigns;
-};
-
-
-/** 
- * @deprecated
- * This is the total unlocked across all adverts in this campaign. See also maxDntn.
- * Warning: This will change as data loads!!
- * @returns {?Money}
- */
- Campaign.dntn = (campaign, isSub) => {
-	if ( ! campaign) return null;
-	Campaign.assIsa(campaign);
-	if (campaign.dntn) {
-		// HACK realtime=true forces a realtime fetch
-		if ( ! getUrlVars().realtime) {
-			return campaign.dntn;
-		}
-	}
-	if ( ! campaign.master || isSub) {
-		// Ask the backend
-		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
-		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
-			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
-			{cachePeriod:300*1000});
-		let total = pvDntnData.value && pvDntnData.value.total;
-		return total;
-	}
-	// recurse
-	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
-	// TODO: make it so datalog reconciles with that, so we can do batched requests
-	let pvSubs = Campaign.pvSubCampaigns({campaign});
-	if ( ! pvSubs.value) {
-		return null;
-	}
-	let subs = List.hits(pvSubs.value);
-	let dntns = subs.map(sub => Campaign.dntn(sub, true));
-	let total = Money.total(dntns);
-	return total;
-};
-
-
-/**
- * Recursive and fetches dynamic data.
- * @deprecated
- 
- * @param {!Campaign} campaign 
-*  @param {?boolean} isSub set in recursive calls
- * @returns {!Object} {cid: Money} Values may change as data loads
- * @see Campaign.dntn
- */
-Campaign.dntn4charity = (campaign, isSub) => {
-	assert( ! isSub || isSub===true, isSub);
-	Campaign.assIsa(campaign);
-	if ( ! campaign.master || isSub) {
-		// leaf
-		// hard set values?
-		let d4c = Object.assign({}, campaign.dntn4charity); // defensive copy, never null
-		// HACK realtime=true forces a realtime fetch
-		if (getUrlVars().realtime) {
-			d4c = {};
-		}
-		// are any missing?
-		let charities = Campaign.charities(campaign);
-		let missingNGOs = charities.filter(ngo => ! d4c[NGO.id(ngo)]);
-		if ( ! missingNGOs.length) {
-			return d4c;
-		}
-		// HACK realtime off??
-		if (getUrlVars().realtime === false) {
-			return d4c
-		}
-		// Ask the backend
-		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
-		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
-			() => ServerIO.getDonationsData({q:sq.query, name:"campaign-donations"}), 
-			{cachePeriod:300*1000});
-		if ( ! pvDntnData.value) {
-			return d4c;
-		}		
-		let by_cid = pvDntnData.value.by_cid;
-		// merge with top-level
-		let alld4c = Object.assign({}, by_cid, d4c);
-		return alld4c;
-	} // ./leaf
-	// Master - recurse - sum leaf campaigns
-	if ( ! isDntn4CharityEmpty(campaign.dntn4charity)) {
-		console.warn("Ignoring master.dntn4charity - it should not be set for masters 'cos it can confuse sums for e.g. reporting by-charity in T4G", campaign);
-	}
-	let pvSubs = Campaign.pvSubCampaigns({campaign});
-	if ( ! pvSubs.value) {
-		return {};
-	}
-	let subs = List.hits(pvSubs.value);
-	let dntn4charitys = subs.map(sub => Campaign.dntn4charity(sub, true));
-	// merge + sum subs
-	let subtotal4c = {};
-	for(let i=0; i<dntn4charitys.length; i++) {
-		const subd4c = dntn4charitys[i];
-		mapkv(subd4c, (k,v) => {
-			let old = subtotal4c[k];
-			subtotal4c[k] = old? Money.add(old, v) : v;
-		});
-	}
-	return subtotal4c;
-};
-
-
-
-
-/**
- * FIXME Get a list of charities for a campaign
- * @param {Object} p 
- * @param {Campaign} p.campaign 
- * @param {KStatus} p.status The status of ads and sub-campaigns to fetch
- * @returns {NGO[]} May change over time as things load!
- */
- Campaign.charities = (campaign, status=KStatus.DRAFT, isSub) => {
-	Campaign.assIsa(campaign);
-	KStatus.assert(status);
-	// charities listed here
-	let charityIds = [];
-	if (campaign.strayCharities) charityIds.push(...campaign.strayCharities);
-	if (campaign.dntn4charity) charityIds.push(...Object.keys(campaign.dntn4charity));
-	if (campaign.localCharities) charityIds.push(...Object.keys(campaign.localCharities));	
-
-	// Leaf campaign?
-	if ( ! campaign.master || isSub) {
-		let pvAds = Campaign.pvAds({campaign, status});
-		if ( ! pvAds.value) {
-			return charities2(campaign, charityIds, []);
-		}
-		let ads = List.hits(pvAds.value);
-		if ( ! ads.length) console.warn("No Ads?!", campaign, status);
-		// individual charity data, attaching ad ID
-		let vcharitiesFromAds = charities2_fromAds(ads);
-		// apply local edits
-		return charities2(campaign, charityIds, vcharitiesFromAds);
-	}
-
-	// Master campaign
-	let pvSubCampaigns = Campaign.pvSubCampaigns({campaign, status}); // ??if we request draft and there is only published, what happens??
-	let subCharities = [];
-	if (pvSubCampaigns.value) {
-		const scs = List.hits(pvSubCampaigns.value);
-		subCharities = _.flatten(scs.map(subCampaign => Campaign.charities(subCampaign, status, true)));
-		subCharities = uniqById(subCharities);
-	}
-	return charities2(campaign, charityIds, subCharities);
-}; // ./charities()
-
-/**
- * 
- * @param {!Campaign} campaign 
- * @param {?String[]} charityIds 
- * @param {!NGO[]} charities 
- * @returns {NGO[]}
- */
-const charities2 = (campaign, charityIds, charities) => {
-	Campaign.assIsa(campaign);	
-	// fetch NGOs
-	if (yessy(charityIds)) {
-		assMatch(charityIds, "String[]");
-		// TODO SoGive stores id as @id, which messes this up :(
-		// @id is the thing.org "standard", but sod that, its daft - We should switch SoGive to `id`
-		charityIds.forEach(cid => {
-			let pvSoGiveCharity = getDataItem({type: C.TYPES.NGO, status:KStatus.PUBLISHED, id:cid, swallow:true});
-			// Add them as they load (assume this function gets called repeatedly)
-			if (pvSoGiveCharity.value) {
-				charities.push(pvSoGiveCharity.value);
-			}	
-		});
-	}
-	// merge and de-dupe
-	let charityForId = {};
-	if (campaign.localCharities) {
-		Object.entries(campaign.localCharities).map(([k,v]) => {
-			if ( ! v.id) v.id = k; // No Id?! Seen Sep 2021
-			charityForId[k] = v;
-		});
-	}
-	charities.map(c => {
-		NGO.assIsa(c);
-		charityForId[getId(c)] = Object.assign({}, c, charityForId[getId(c)]); // NB: defensive copies, localCharities settings take priority
-	});
-	// any missing? Put in a blank
-	charityIds.forEach(cid => {
-		if (charityForId[cid]) return;
-		charityForId[cid] = new NGO({id:cid}); 
-	});
-	let cs = Object.values(charityForId);
-	// tag with campaign info (helpful when tracing, overlaps may mean this isnt the full list)
-	cs.map(cMerged => {
-		let allCampaigns = (cMerged._campaigns || []).concat(cMerged._campaigns).concat(campaign.id);
-		cMerged._campaigns = uniq(allCampaigns);
-	});	
-	return cs;
-};
-
-
-const charities2_fromAds = (ads) => {
-	// individual charity data, attaching ad ID
-	let charities = _.flatten(ads.map(ad => {
-		if (!ad.charities) return [];
-		const clist = (ad.charities && ad.charities.list).slice() || [];
-		return clist.map(c => {
-			if ( ! c) return null; // bad data paranoia
-			const cid = getId(c);
-			if ( ! cid || cid==="unset" || cid==="undefined" || cid==="null" || cid==="total") { // bad data paranoia						
-				// console.error("Campaign.js charities - Bad charity ID", c.id, c);
-				return null;
-			}
-			const id2 = normaliseSogiveId(cid);
-			if (id2 !== cid) {
-				c.id = id2;
-			}
-			c._adId = ad.id; // for Advert Editor dev button so sales can easily find which ad contains which charity
-			return c;
-		}); // ./clist.map
-	}));
-	charities = uniqById(charities);
-	return charities;
-};
-
-/**
+ * Get the viewcount for a campaign broken down by what countries impressions are from, summing the ads viewcounts in each country it's been viewed in
  * @param {Object} p
- * @param {?Money} p.donationTotal
- * @param {NGO[]} p.charities From adverts (not SoGive)
- * @param {Object} p.donation4charity 
- * @returns {NGO[]}
+ * @param {Campaign} p.campaign 
+ * @returns {Number}
  */
-Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4charity}) => {
-
-	// Low donation filtering data is represented as only 2 controls for portal simplicity
-	// lowDntn = the threshold at which to consider a charity a low donation
-	// hideCharities = a list of charity IDs to explicitly hide - represented by keySet as an object (explained more below line 103)
-
-	// Filter nulls and null-ID bad data
-	charities = charities.filter(x => x && x.id);
-
-	if (campaign.hideCharities) {
-		let hc = Campaign.hideCharities(campaign);
-        const charities2 = charities.filter(c => ! hc.includes(normaliseSogiveId(getId(c))));
-		charities = charities2;
+Campaign.viewcountByCountry = ({campaign, status}) => {
+	if(!campaign){
+		console.log("res: no camp!")
+		return []
 	}
-	
-	let lowDntn = campaign.lowDntn;	
-	if ( ! lowDntn || ! Money.value(lowDntn)) {
-		if ( ! donationTotal) {
-			return charities;
-		}
-		// default to 0	
-		lowDntn = new Money({currency:donationTotal.currency, value:0});
-	}
-    
-	/**
-	 * @param {!NGO} c 
-	 * @returns {?Money}
-	 */
-	const getDonation = c => {
-		let d = donation4charity[c.id] || donation4charity[c.originalId]; // TODO sum if the ids are different
-		return d;
-	};
-
-	charities = charities.filter(charity => {
-        const dntn = getDonation(charity);
-        let include = dntn && Money.lessThan(lowDntn, dntn);
-		return include;
-    });
-	return charities;
-} // ./filterLowDonations
-
-
-/**
- * 
- * @param {Object} d4c {charity-id: Money}
- * @returns 
- */
-const isDntn4CharityEmpty = (d4c) => {
-	if ( ! d4c) return true;
-	let nonEmpty = Object.values(d4c).find(v => v && Money.value(v));
-	return ! nonEmpty;
-}
+	const pvAllAds = Campaign.pvAds({campaign, status});
+	let allAds = List.hits(pvAllAds.value) || [];
+	console.log("res allAds: ", allAds)
+	const viewcount4campaign = Advert.viewcountByCountry({ads:allAds});
+	return viewcount4campaign;
+};
 
 export default Campaign;

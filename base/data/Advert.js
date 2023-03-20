@@ -145,6 +145,30 @@ Advert.viewcountByCampaign = ads => {
 	return viewcount4campaign;
 };
 
+/**
+ * @param {Item[]} ads 
+ * @returns {object} viewcount4campaign
+ */
+Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
+	if (!ads || ads.length === 0) {
+		console.log('res: ads is empty')
+		return {}
+	}
+	// Get ad viewing data
+	let sq = new SearchQuery("evt:minview");
+	let qads = ads.map(({ id }) => `vert:${id}`).join(' OR ');
+	sq = SearchQuery.and(sq, qads);
+	let pvViewData = getDataLogData({q:sq.query, breakdowns:['country'], start:start, end:end, name:"view-data",dataspace:'gl'});
+	let viewcount4campaign = {};
+	console.log("breakdown inside viewcountByCountry", viewcount4campaign, sq)
+	if (pvViewData.value) {
+		pvViewData.value
+		return viewcount4campaign = pivotDataLogData(pvViewData.value, ["country"]);
+	}
+	console.log("Shitfuck", pvViewData.value)
+	return viewcount4campaign;
+};
+
 // NB: banner=display
 const KAdFormat = new Enum("display video social");
 
