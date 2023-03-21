@@ -17,6 +17,7 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
     // NB date.getMOnth() is zero index
     const now=new Date();
     // TODO handle dec/jan
+    // NB: now.getMonth() is 0-index so actually one behind!
     let lastMonthStart = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-01";
     let se = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-01";
     let de = new Date(se);
@@ -37,8 +38,8 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
         lastQuarterEnd = dqe.toISOString().substring(0, 10);    
     }
     // ...yesterday
-    let yesterdayStart = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-"+oh(now.getUTCDate()-1);
-    let yesterdayEnd = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-"+oh(now.getUTCDate());
+    let yesterdayStart = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-"+oh(now.getUTCDate()-1);
+    let yesterdayEnd = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-"+oh(now.getUTCDate());
     // button click
     const setPeriod = (name) => {
         // const now = new Date();
