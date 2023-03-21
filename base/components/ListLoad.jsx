@@ -66,7 +66,7 @@ import Roles from '../Roles';
  * @param {JSX|String} p.noResults  Message to show if there are no results
  * @param {?Function} p.onClickItem  Custom non-navigation action when list item clicked
  * @param {?Function} p.onClickWrapper  Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
- * @param {?Function} p.pageSelectID - If using multiple pages for items this is required to target the specific ListLoad
+ * @param {?Function} p.pageSelectID - 1-indexed. If using multiple pages for items this is required to target the specific ListLoad from a url parameter.
 Use-case??
  * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
  */
@@ -168,20 +168,20 @@ function ListLoad({ type, status, servlet, navpage,
 		total = items.length;
 	}
 
-	// paginate only if we have an id for this listload - otherwise we can't distuingish if there's multiple ListLoads 
-	assert((pageSize && pageSelectID) || (!pageSize && !pageSelectID))
+	// NB: you can get truncated lists with pageSize but no pageSelectID (e.g. see PropControlDataItem)
 
 	// keeps page within page limit [0, pageSize]
-	let pageCount = pageSize ? Math.ceil(total / pageSize) : 0
-	const pageInRange = n => Math.max(Math.min(pageCount, n), 0)
+	let pageCount = pageSize ? Math.ceil(total / pageSize) : 0;
+	const pageInRange = n => Math.max(Math.min(pageCount, n), 0);
 
 	// read the url for what page we're on - if none are selected then set it to page 1
-	if(pageSize && !DataStore.getUrlValue(pageSelectID)) DataStore.setUrlValue(pageSelectID, 1)
-	let pageNum = pageSize ? pageInRange(Number(DataStore.getUrlValue(pageSelectID))) || 1 : [];
+	if (pageSize && pageSelectID && ! DataStore.getUrlValue(pageSelectID)) DataStore.setUrlValue(pageSelectID, 1);
+	let pageNum = 1;
+	if (pageSize && pageSelectID) pageNum = pageInRange(Number(DataStore.getUrlValue(pageSelectID)));
 	
 	// update url to selected new page
 	const setPageNum = n => {
-		DataStore.setUrlValue(pageSelectID, pageInRange(n))
+		DataStore.setUrlValue(pageSelectID, pageInRange(n));
 		window.scrollTo(0, 0);
 	};
 
@@ -224,7 +224,7 @@ function ListLoad({ type, status, servlet, navpage,
 				/>
 			</ListItemWrapper>
 		))}
-		{(pageSize && total > pageSize) && (
+		{(pageSize && total > pageSize && pageSelectID) && (
 			<div className="pagination-controls flex-row justify-content-between align-items-center">
 				<div>
 					<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b> ◀ </b></Button>
@@ -255,11 +255,19 @@ function ListLoadCSVDownload({items, csvColumns, hideCsvColumns}) {
 		csvColumns = Object.keys(items[0]);
 	}
 	if (hideCsvColumns) {
-		csvColumns = csvColumns.filter(col => !hideCsvColumns.includes(col))
+		csvColumns = csvColumns.filter(col => !hideCsvColumns.includes(col));
 	}
 	return <DownloadCSVLink data={items} columns={csvColumns} />;	
 }
 
+/**
+ * 
+ * @param {Object} p
+ * @param {!Object[]} p.items
+ * @param {!Number} p.pageNum
+ * @param {!Number} p.pageSize
+ * @returns {Object[]} slice of items
+ */
 const paginate = ({ items, pageNum, pageSize }) => {
 	assert(pageSize, "paginate");
 	return items.slice((pageNum-1) * pageSize, (pageNum) * pageSize);
@@ -379,7 +387,7 @@ function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, c
 	const linkOrDivProps = { key: `item${id}`, className: itemClassName || space('ListItem btn-default btn btn-outline-secondary', `status-${item.status}`, hasButtons && 'btn-space') };
 	if (!notALink) linkOrDivProps.href = itemUrl;
 	if (!cannotClick) linkOrDivProps.onClick = event => onPick({event, navpage, id});
-	if (!notALink && !cannotClick && onClickWrapper) linkOrDivProps.onClick = (event) => onClickWrapper(event, item)
+	if (!notALink && !cannotClick && onClickWrapper) linkOrDivProps.onClick = (event) => onClickWrapper(event, item);
 
 	return (
 		<div className="ListItemWrapper clearfix flex-row">
