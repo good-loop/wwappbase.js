@@ -23,7 +23,7 @@ import printer from '../utils/printer';
 import Enum from 'easy-enums';
 import { asNum, space, stopEvent, encURI, asDate, isNumeric } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
-import DataClass, { getClass, getType, Item } from '../data/DataClass';
+import DataClass, { getClass, getType } from '../data/DataClass';
 import Tree from '../data/Tree';
 import PropControl from './PropControl';
 import StyleBlock from './StyleBlock';
@@ -168,7 +168,7 @@ class TableSettings {
 	/**
 	 * A row Object. Provide an always visible (no filtering) top row, e.g. for totals including extra data.
 	* @type {Item} */
-	topRow
+	topRow;
 
 	// i=0; debug counter
 };
