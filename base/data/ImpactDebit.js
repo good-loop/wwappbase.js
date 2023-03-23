@@ -20,6 +20,12 @@ class ImpactDebit extends DataClass {
 	/** @type{?XId} Monday Deal */
 	crmDeal;
 	
+	/** @type{?string} */
+	start;
+
+	/** @type{?string} */
+	end;
+
 	/** @type{?String} */
 	vertiser;
 

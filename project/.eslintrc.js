@@ -192,6 +192,14 @@ module.exports = {
 				project: "./tsconfig.json",
 			},
 			plugins: ["@typescript-eslint"],
+			rules: {
+				2531:"warn",
+				"2531":"warn",
+				"prefer-const": "off",
+				"no-restricted-syntax":"warn",
+				"@typescript-eslint/ban-types":"warn",
+				"@typescript-eslint/no-inferrable-types":"warn"
+			}
 		}
 	]
 };
