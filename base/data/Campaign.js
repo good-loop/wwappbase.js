@@ -41,7 +41,9 @@ class Campaign extends DataClass {
 	/** @type{?XId} Monday Deal */
 	crm;
 
-	/** @type{?boolean} */
+	/**
+	 * @deprecated (kept for old data)
+	 *  @type{?boolean} */
 	master;
 
 	/** @type{?String} */
@@ -99,15 +101,7 @@ Campaign.isOngoing = campaign => {
 	return campaign.ongoing;
 };
 
-/**
- * @deprecated
- * Master campaigns NO LONGER USED - but we still need to check for and hide old ones that are swimming around
- * @param {*} campaign 
- */
- Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
-
-/**
- * 
+ /** 
  * @param {Advert} advert 
  * @param {?KStatus} status 
  * @returns PromiseValue(Campaign)
@@ -195,7 +189,7 @@ Campaign.makeFor = (advert) => {
 };
 
 /**
- * Get the ImpactDebits for this campaign (and child campaigns)
+ * Get the ImpactDebits for this campaign
  * @param {Object} p
  * @returns {PromiseValue} PV(List<ImpactDebit>)
  */
@@ -204,7 +198,7 @@ Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
 	// NB: tried using plain async/await -- this is awkward with React render methods as the fresh Promise objects are always un-resolved at the moment of return.
 	// NB: tried using a PromiseValue.pending() without fetch() -- again having fresh objects returned means they're un-resolved at that moment.
 	return DataStore.fetch(getListPath({type:"ImpactDebit",status,q:campaign.id+":getImpactDebits"}), async () => {
-		let q = SearchQuery.setProp(null, "campaign", campaign.id);
+		let q = SearchQuery.setProp(null, "campaign", campaign.id);			
 		let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
 		let v = await pvListImpDs.promise;
 		return v;
@@ -340,11 +334,45 @@ Campaign.viewcount = ({campaign, status}) => {
 	return totalViewCount;
 };
 
+
+////////////////////////////////////////////////////////////////////
+////                     CHARITY LOGIC                           ///
+////////////////////////////////////////////////////////////////////
+
 /**
- * Get the viewcount for a campaign broken down by what countries impressions are from, summing the ads viewcounts in each country it's been viewed in
- * @param {Object} p
+ * FIXME Get a list of charities for a campaign
+ * @param {Object} p 
  * @param {Campaign} p.campaign 
- * @returns {Number}
+ * @param {KStatus} p.status The status of ads and sub-campaigns to fetch
+ * @returns {NGO[]} May change over time as things load!
+ */
+ Campaign.charities = (campaign, status=KStatus.DRAFT, isSub) => {
+	Campaign.assIsa(campaign);
+	KStatus.assert(status);
+	// charities listed here
+	let charityIds = [];
+	if (campaign.strayCharities) charityIds.push(...campaign.strayCharities);
+	if (campaign.dntn4charity) charityIds.push(...Object.keys(campaign.dntn4charity));
+	if (campaign.localCharities) charityIds.push(...Object.keys(campaign.localCharities));	
+
+	let pvAds = Campaign.pvAds({campaign, status});
+	if ( ! pvAds.value) {
+		return charities2(campaign, charityIds, []);
+	}
+	let ads = List.hits(pvAds.value);
+	if ( ! ads.length) console.warn("No Ads?!", campaign, status);
+	// individual charity data, attaching ad ID
+	let vcharitiesFromAds = charities2_fromAds(ads);
+	// apply local edits
+	return charities2(campaign, charityIds, vcharitiesFromAds);
+}; // ./charities()
+
+/**
+ * 
+ * @param {!Campaign} campaign 
+ * @param {?String[]} charityIds 
+ * @param {!NGO[]} charities 
+ * @returns {NGO[]}
  */
 Campaign.viewcountByCountry = ({campaign, status}) => {
 	if(!campaign){
