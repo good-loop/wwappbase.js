@@ -64,7 +64,9 @@ const getAbsoluteUrl = urlString => {
 			let newMul = url.hash.match(/\b(\d+(\.\d*)?)x\b/);
 			if (newMul) newMul = Number.parseFloat(newMul[1]);
 			if (newMul) multiplier = newMul;
-		} catch (e) { }
+		} catch (e) {
+			// ignore
+		}
 
 		let targetSize = (width ? width : height) * multiplier;
 		// Step down through quantised image widths & find smallest one bigger than estimated pixel size
