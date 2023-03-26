@@ -240,6 +240,19 @@ class _Login {
 		let pLogin = apost(Login.ENDPOINT, loginInfo);
 		return pLogin;
 	};
+
+	/**
+	 * List things shared with user.
+	 * You are advised to cache this!
+	 * @returns {Promise<Share[]>}
+	 */
+	getSharedWith(args) {
+		let request = apost(Login.ENDPOINT, {
+			action: 'shared-with', 
+			prefix: args && args.prefix
+		});
+		return request;
+	}
 	
 }; // ./ Login class
 const Login = new _Login();
@@ -802,19 +815,6 @@ Login.claim = function (thingId) {
 	});
 	return request;
 };
-
-/**
- * List things shared with user.
- * You are advised to cache this!
- * @returns {Promise<Share[]>}
- */
-Login.getSharedWith = args => {
-	let request = apost(Login.ENDPOINT, {
-		action: 'shared-with', 
-		prefix: args && args.prefix
-	});
-	return request;
-}
 
 
 /**

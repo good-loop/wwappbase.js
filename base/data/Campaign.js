@@ -405,7 +405,8 @@ Campaign.masterFor = campaign => {
 
 /**
  * * HACK: access=public
- * @param {!Campaign} campaign 
+ * @param {Object} obj
+ * @param {!Campaign} obj.campaign 
  * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
  */
 Campaign.pvSubCampaigns = ({campaign, query}) => {
