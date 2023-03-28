@@ -3,7 +3,6 @@ import Enum from 'easy-enums';
 import { assert, assMatch } from './assert';
 import printer from './printer';
 import PromiseValue from '../promise-value';
-import { number } from 'yargs';
 
 // Switched back to js from ts March 2023 since the old ts file gave many errors. 
 // TODO properly write a ts port
