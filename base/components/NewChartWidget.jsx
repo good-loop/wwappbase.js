@@ -3,7 +3,7 @@ import React from 'react';
 import { Line, Pie, Bar, Scatter } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import Annotation from 'chartjs-plugin-annotation';
-import Misc from './Misc';
+import Misc, { oh } from './Misc';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { is, isoDate, space, asNum } from '../utils/miscutils';
 
@@ -85,7 +85,7 @@ export const timeSeriesChartFromKeyValue = (kvData, options={label:"By Time",col
 	const max = Math.max(...Object.keys(kvData));
 	const minDate = new Date(asNum(min));
 	const maxDate = new Date(asNum(max));
-	const dt = (max-min) / kvData.length;
+	const dt = (max-min) / Object.keys(kvData).length;
 	const showTime = dt < 12*60*60*1000; // under 12 hours?
 	const showYear = minDate.getYear() !== maxDate.getYear();
 	const labelFn = x => {
@@ -98,7 +98,7 @@ export const timeSeriesChartFromKeyValue = (kvData, options={label:"By Time",col
 		if (showTime) {
 			ds += " "+oh(d.getUTCHours())+":"+oh(d.getUTCMinutes());	
 		}		
-		return Misc.dateStr(d);
+		return ds;
 	};
 
 	const labels = [];

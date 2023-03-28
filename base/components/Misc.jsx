@@ -315,6 +315,11 @@ const shortWeekdays = WEEKDAYS.map(weekday => weekday.substr(0, 3));
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const shortMonths = MONTHS.map(month => month.substr(0, 3));
 
+/**
+ * Pad under 10 with "0"
+ * @param {Number} n 
+ * @returns {String} e.g. "03"
+ */
 export const oh = (n) => n<10? '0'+n : n;
 
 Misc.LongDate = ({date, noWeekday}) => {
