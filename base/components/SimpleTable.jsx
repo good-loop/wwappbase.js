@@ -23,12 +23,13 @@ import printer from '../utils/printer';
 import Enum from 'easy-enums';
 import { asNum, space, stopEvent, encURI, asDate, isNumeric } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
-import DataClass, { getClass, getType, Item } from '../data/DataClass';
+import DataClass, { getClass, getType } from '../data/DataClass';
 import Tree from '../data/Tree';
 import PropControl from './PropControl';
 import StyleBlock from './StyleBlock';
 import Wrap from './Wrap';
 import Money from '../data/Money';
+import KStatus from '../data/KStatus';
 
 const str = printer.str;
 
@@ -168,7 +169,7 @@ class TableSettings {
 	/**
 	 * A row Object. Provide an always visible (no filtering) top row, e.g. for totals including extra data.
 	* @type {Item} */
-	topRow
+	topRow;
 
 	// i=0; debug counter
 };
@@ -202,7 +203,7 @@ function SimpleTable(props) {
 
 	// Standardise the possible data inputs as a dataTree (which is the most general format)
 	const originalData = data; // for debug
-	dataTree = standardiseData({ data, dataObject, dataTree })
+	dataTree = standardiseData({ data, dataObject, dataTree });
 	assert(dataTree);	
 	if ( ! columns) {
 		assert(dataObject);
@@ -394,7 +395,7 @@ const standardiseData = ({ data, dataObject, dataTree }) => {
 	dataTree = new Tree();
 	data.forEach(row => Tree.add(dataTree, row));
 	return dataTree;
-}
+};
 
 /**
  * Filter columns, rows, and data + sort
@@ -466,7 +467,7 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 	}
 	// NB maxRows is done later to support csv-download being all data
 	return { dataTree, visibleColumns };
-} // ./filter
+}; // ./filter
 
 
 
@@ -605,7 +606,7 @@ const sortGetter = (column) => {
 	let getter = column.sortAccessor;
 	if (!getter) getter = a => getValue({ item: a, column: column });
 	return getter;
-}
+};
 
 /**
  * A default sort
@@ -660,7 +661,7 @@ const defaultCellRender = (v, column) => {
 		let significantDigits = 2; // set to the defualt value that was previously hard coded
 		let precision = 2;
 		if (column.precision) { precision = column.precision; }
-		if (column.significantDigits) { significantDigits = column.significantDigits }
+		if (column.significantDigits) { significantDigits = column.significantDigits; }
 
 		if (CellFormat.ispercent(column.format)) {
 			// Use precision if supplied - else default to 2 sig figs
@@ -712,7 +713,7 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 		if (!render) {
 			if (column.editable) {
 				// safety check we can edit this
-				assert(column.path || DataStore.getPathForItem(C.KStatus.DRAFT, item), "SimpleTable.jsx - Cell", item, column);
+				assert(column.path || DataStore.getPathForItem(KStatus.DRAFT, item), "SimpleTable.jsx - Cell", item, column);
 				render = val => <Editor value={val} row={row} column={column} item={citem} />;
 			} else {
 				render = defaultCellRender;
@@ -800,9 +801,9 @@ const endSelect= ({row, colNum, tableSettings}) => {
 		let data = tableSettings.selection.data;
 		let $tbl = document.createElement("table");
 		let $tblBody = document.createElement("tbody");
-		data.forEach(row => {
+		data.forEach(drow => {
 			let $tr = document.createElement("tr");
-			row.forEach(v => {
+			drow.forEach(v => {
 				let $td = document.createElement("td");
 				$td.innerHTML = v;
 				$tr.appendChild($td);
@@ -812,7 +813,7 @@ const endSelect= ({row, colNum, tableSettings}) => {
 		$tbl.appendChild($tblBody);	
 		// document.body.appendChild($tbl);
 		let range = document.createRange();
-		range.selectNodeContents($tbl)
+		range.selectNodeContents($tbl);
 		let select = window.getSelection();
 		select.removeAllRanges();
 		select.addRange(range);
@@ -831,7 +832,7 @@ const endSelect= ({row, colNum, tableSettings}) => {
 
 const clearSelect= ({row, colNum, tableSettings}) => {
 	tableSettings.selection = {};
-}
+};
 const addToSelection = ({selection, row, colNum, v}) => {
 	if ( ! selection.data) {
 		selection.data = [];
@@ -847,7 +848,7 @@ const addToSelection = ({selection, row, colNum, v}) => {
 /** (un)collapse all  */
 const doCollapseAll = (dataTreeUnfiltered, tableSettings, allCollapsed) => {	
 	// NB: unshift so we dont collapse the root node
-	Tree.flatten(dataTreeUnfiltered).slice(1).map(node => {
+	Tree.flatten(dataTreeUnfiltered).slice(1).forEach(node => {
 		if (!Tree.children(node).length) return;
 		let nodeid = Tree.id(node) || JSON.stringify(node.value);
 		tableSettings.collapsed4nodeid[nodeid] = allCollapsed;
@@ -941,7 +942,7 @@ function Editor({ row, column, value, item }) {
 	if (!path) {
 		try {
 			// we edit draft
-			path = DataStore.getPathForItem(C.KStatus.DRAFT, item);
+			path = DataStore.getPathForItem(KStatus.DRAFT, item);
 			// make sure we have a draft
 			if (!DataStore.getValue(path)) {
 				DataStore.setValue(path, item, false);
@@ -987,7 +988,7 @@ function TableFoot({visibleColumns, topRow, dataTree, bottomRow, numPages, colSp
 function TableFootPager({tableSettings, numPages }) {
 	// TODO https://getbootstrap.com/docs/4.5/components/pagination/
 	const page = tableSettings.page;
-	const setPage = p => {tableSettings.page = p; tableSettings.update()};
+	const setPage = p => {tableSettings.page = p; tableSettings.update(); };
 	return (<div className="pull-left pager">
 		Page
 		&nbsp; {page > 0 ? <a href='' onClick={e => stopEvent(e) && setPage(page - 1)} >&lt;</a> : <span className="disabled">&lt;</span>}
@@ -1041,7 +1042,7 @@ const csvEscCell = s => {
 function DownloadCSVLink({columns, data, name, children}) {
 	let dataTree = standardiseData({data});
 	let tableSettings = {name};
-	return <CSVDownload dataTree={dataTree} visibleColumns={columns} tableSettings={tableSettings} children={children} />;
+	return <CSVDownload dataTree={dataTree} visibleColumns={columns} tableSettings={tableSettings}>{children}</CSVDownload>;
 }
 
 export default SimpleTable;

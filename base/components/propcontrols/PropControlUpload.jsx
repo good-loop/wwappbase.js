@@ -33,7 +33,7 @@ const acceptTypes = {
 	videoUpload: videoTypes,
 	bothUpload: `${imgTypes}, ${videoTypes}`,
 	fontUpload: fontTypes,
-	spreadsheetUpload: spreadsheetTypes
+	spreadsheetUpload: spreadsheetTypes,
 };
 
 
@@ -93,7 +93,7 @@ const bytes = b => {
  * @param {Number} loaded Bytes sent so far
  * @param {Number} total Total size of file in bytes
  */
-const UploadProgress = ({ start, loaded = 0, total }) => {
+export const UploadProgress = ({ start, loaded = 0, total }) => {
 	if (!start) return null;
 	if (!total) return 'Starting upload...';
 
