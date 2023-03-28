@@ -101,6 +101,13 @@ Campaign.isOngoing = campaign => {
 	return campaign.ongoing;
 };
 
+/**
+ * @deprecated only retained so we can detect and filter out old master campaigns
+ * @param {!Campaign} campaign 
+ * @returns {boolean} NB: false for the TOTAL_IMPACT root 
+ */
+Campaign.isMaster = campaign => Campaign.assIsa(campaign) && campaign.master;
+
  /** 
  * @param {Advert} advert 
  * @param {?KStatus} status 

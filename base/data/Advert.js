@@ -169,6 +169,36 @@ Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
 	return viewcount4campaign;
 };
 
+Advert.fetchForAdvertiser = ({vertiserId, status}) => Advert.fetchForAdvertisers({vertiserIds:[vertiserId], status});
+
+Advert.fetchForAdvertisers = ({vertiserIds, status=KStatus.PUBLISHED}) => {
+	let pv = DataStore.fetch(['misc','pvAdsForVertisers',status,'all',vertiserIds.join(",")], () => {
+		return fetchForAdvertisers2(vertiserIds, status);
+	});
+	return pv;
+}
+
+const fetchForAdvertisers2 = async (vertiserIds, status) => {
+	let sq = SearchQuery.setPropOr(null, "vertiser", vertiserIds);
+	let pv = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
+	return await pv.promise;
+}
+
+Advert.fetchForCampaign = ({campaignId, status}) => Advert.fetchForCampaigns({campaignIds:[campaignId], status});
+
+Advert.fetchForCampaigns = ({campaignIds, status}) => {
+	let pv = DataStore.fetch(['misc','pvAdsForCampaigns',status,'all',campaignIds.join(",")], () => {
+		return fetchForCampaigns2(campaignIds, status);
+	});
+	return pv;
+}
+
+const fetchForCampaigns2 = async (campaignIds, status) => {
+	let sq = SearchQuery.setPropOr(null, "campaign", campaignIds);
+	let pv = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
+	return await pv.promise;
+};
+
 // NB: banner=display
 const KAdFormat = new Enum("display video social");
 

@@ -490,7 +490,7 @@ ServerIO.load = function(url, params) {
 		})
 		// on fail (inc a code-200-but-really-failed thrown above)
 		.catch(response => {
-			console.error('fail',url,params,response);
+			console.error('fail',url,params,response,new Error()); // add error so we can get a stacktrace to where the call came from
 			// error message
 			let text = response.status===404? 
 				"404: Sadly that content could not be found."
