@@ -954,7 +954,7 @@ export const decodeButtons = (buttons) => {
  * @param x number
  * @returns {String}
  */
- export const addNumberCommas = (x: Number) => {
+ export const addNumberCommas = (x) => {
 	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
@@ -965,7 +965,7 @@ export const decodeButtons = (buttons) => {
  * @param {Number} num 
  * @returns {String} num expressed in units of billions, millions or 
  */
- export const addAmountSuffixToNumber = (num: number) => {
+ export const addAmountSuffixToNumber = (num) => {
 	// [suffix, how many 0's in number]
 	// if adding to this, keep it in descending order 
 	const suffixsAndDigits = [ // 
