@@ -19,16 +19,20 @@ import ServerIO from './ServerIOBase';
  * but making the change server-side is expected to be very involved.
  * @param {?String|Date} p.start Date/time of oldest results (natural language eg '1 week ago' is OK). Default: 1 month ago
  * @param {?String|Date} p.end Date/time of oldest results
+ * @param {?boolean} p.incs include start
+ * @param {?boolean} p.ince include end
  * @param {?String} p.name Just for debugging - makes it easy to spot in the network tab
+ * @param {?String} p.op sum or coming-soon avg|stats
  * @param {?Number} p.prob [0,1] Probability for random sampling. -1 for auto-calc
+ * @param {?String} p.interval day / hour / 15 minutes etc time-bucket size
  * @returns PromiseValue "ElasticSearch format" (buckets with a key)
  */
-const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,dataspace=ServerIO.DATALOG_DATASPACE}) => {
+const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,interval,incs,ince,op="sum",dataspace=ServerIO.DATALOG_DATASPACE}) => {
 	assert(dataspace);
 	let phack = prob? Math.round(10*prob) : prob; // (old code, Feb 23) handle DataServlet prob=[0,10] code
 	if (phack === -10) phack=88; // HACK (old code, Feb 23) special value for "pick a prob"
 	// NB: the server doesnt want an -s on breakdown
-	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, name, dataspace};	
+	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, interval, name, dataspace, incs, ince, op};	
 	let dspec = md5(JSON.stringify(glreq));
 	const dlpath = ['misc', 'DataLog', dataspace, dspec];
 

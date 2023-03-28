@@ -25,7 +25,7 @@ class PromiseValue {
 	/** @type {!boolean} */
 	resolved;
 	/** 
-	 * @type {?Object} The result from the promise.
+	 * @type {?any} The result from the promise.
 	 * 
 	 * Note: If pending() is used, then is possible for `value` to be null. 
 	*/

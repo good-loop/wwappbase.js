@@ -5,12 +5,11 @@ import Login from '../youagain';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
 import {LoginLink, RegisterLink, LogoutLink} from './LoginWidget';
-import {isMobile} from '../utils/miscutils.ts';
 
 // import {XId,yessy,uid} from '../js/util/orla-utils.js';
 
 import Misc from './Misc';
-import { space } from '../utils/miscutils';
+import { space, isMobile } from '../utils/miscutils';
 import XId from '../data/XId';
 import { modifyPage } from '../plumbing/glrouter';
 

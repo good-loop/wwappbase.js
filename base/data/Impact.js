@@ -18,12 +18,14 @@ class Impact extends DataClass {
     input;
 	/** @type {Number} Number of units output, e.g. the number of malaria nets */
 	n;
-    /** @type {String} */
+    /** @type {String} The type of impact eg `carbon offset` */
 	name;
     notes;
     progress;
     rate;
     ref;
+	/** @type {?Impact} the dynamic original for a snapshot of a dynamic Impact */
+	src;
 	constructor(base) {
 		super();
 		DataClass._init(this, base);
