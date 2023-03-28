@@ -6,6 +6,7 @@ import { assert, assMatch } from '../utils/assert';
 import {asNum, isNumeric} from '../utils/miscutils';
 import DataClass, {getType} from './DataClass';
 import Settings from '../Settings';
+import { addNumberCommas } from '../utils/miscutils';
 
 /**
  *
@@ -156,6 +157,8 @@ const v100p = m => {
 
 
 Money.str = obj => (Money.CURRENCY[obj.currency]||'') + Money.value(obj);
+
+Money.prettyStr = obj => (Money.CURRENCY[obj.currency]||'') + addNumberCommas(Math.round(Money.value(obj)));
 
 /**
  * e.g. £1 = £1 != $1 != £1.50

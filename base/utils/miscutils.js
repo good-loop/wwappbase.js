@@ -3,6 +3,7 @@ import Enum from 'easy-enums';
 import { assert, assMatch } from './assert';
 import printer from './printer';
 import PromiseValue from '../promise-value';
+import { number } from 'yargs';
 
 // Switched back to js from ts March 2023 since the old ts file gave many errors. 
 // TODO properly write a ts port
@@ -947,3 +948,47 @@ export const decodeButtons = (buttons) => {
 		.reverse()
 		.map((digit) => !!Number.parseInt(digit));
 };
+
+/**
+ * Add separating commas to a number
+ * @param x number
+ * @returns {String}
+ */
+ export const addNumberCommas = (x: Number) => {
+	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+/**
+ * Convert a number into being expressed as units of billions, millions or thousands
+ * 1000 -> 1k, 10,000 -> 10k, 1,000,000 -> 1M
+ * note this doesn't round, so if the goal is to make your number look pretty you'll need to pass this a rounded num
+ * @param {Number} num 
+ * @returns {String} num expressed in units of billions, millions or 
+ */
+ export const addAmountSuffixToNumber = (num: number) => {
+	// [suffix, how many 0's in number]
+	// if adding to this, keep it in descending order 
+	const suffixsAndDigits = [ // 
+		["B",9],	// billions
+		["M",6],	// millions
+		["K", 3]	// thousands
+	]
+
+	// search through above sets in descending
+	for(const pair of suffixsAndDigits) {
+		const suffix = pair[0]
+		const power = Number(pair[1])
+		const comparisonNumber = Math.pow(10, power)
+
+		// if num can be expressed in terms of 10^power...
+		if (num >= comparisonNumber) {
+			console.log("suff", num, comparisonNumber, suffix, ((num / comparisonNumber).toString() + suffix))
+			// return it expressed in those terms + the suffix
+			return (num / comparisonNumber).toString() + suffix
+		}
+	}
+
+	// num was smaller than minimum value we were searching for, just return the num
+	return num.toString()
+	
+}

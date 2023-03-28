@@ -44,6 +44,12 @@ class Branding extends DataClass {
 	 */
 	endCardColor;
 
+	/**
+	 * @type{String} End card text colour (#hex or HTML name). Normally unset for
+	 * use-the-brand-colour.
+	 */
+	tadgEndTheme;
+
 	/** @type{String} Brand Facebook URL */
 	fb_url;
 
