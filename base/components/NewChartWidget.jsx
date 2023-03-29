@@ -4,11 +4,11 @@ import { Line, Pie, Bar, Scatter } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import Annotation from 'chartjs-plugin-annotation';
 import Misc, { oh } from './Misc';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Chart as ChartJS, CategoryScale, LinearScale, LogarithmicScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { is, isoDate, space, asNum } from '../utils/miscutils';
 
 /** TODO We should be able to do this dynamically/selectively when components are rendered */
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend, Annotation);
+ChartJS.register(CategoryScale, LinearScale, LogarithmicScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend, Annotation);
 
 /**
  * ?? How do we set the size of the chart??

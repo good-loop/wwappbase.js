@@ -50,6 +50,7 @@ Printer.prototype.toNSigFigs = function(x, n) {
  */
 Printer.prototype.prettyNumber = function(x, sigFigs=3, minimumFractionDigits) {
 	if (x===undefined || x===null) return '';
+	if (isNaN(x)) return '';
 	if (x==0) return "0";
 	try {
 		let options = {maximumSignificantDigits:sigFigs, minimumFractionDigits};
