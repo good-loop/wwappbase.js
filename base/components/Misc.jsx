@@ -57,7 +57,10 @@ E.g. "Loading your settings...""
 See https://www.w3schools.com/howto/howto_css_loader.asp
 http://tobiasahlin.com/spinkit/
 
-@param {?PromiseValue} pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
+@param {Object} obj
+@param {?PromiseValue} obj.pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
+@param {?string} obj.text
+@param {?boolean} obj.inline
 */
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	// handle ajax error?
