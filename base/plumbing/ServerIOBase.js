@@ -30,8 +30,8 @@ ServerIO.NO_API_AT_THIS_HOST = false;
 
 // HACK our special micro-services
 // also HACK: SoGive subdomains don't match the standard pattern & we don't want devs on local to need their own sogive server too
-const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test' }[C.SERVER_TYPE];
-const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http'}[SOGIVE_SUBDOMAIN];
+const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test', stage: 'stage'}[C.SERVER_TYPE];
+const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http', stage: 'https'}[SOGIVE_SUBDOMAIN];
 ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}.sogive.org/charity`;
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 // ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
@@ -109,7 +109,7 @@ ServerIO.checkBase = () => {
 			// For safety reasons (to prevent accidentally editing live campaigns), you cannot use production APIBASE on the test server
 			// (though server=production can still explicity override this, and local _can_ point to production as that can be handy when fixing stuff)
 			const server = DataStore.getUrlValue("server");
-			if (C.SERVER_TYPE === "test" && key === "APIBASE" && server !== "production") {
+			if ((C.SERVER_TYPE === "test" || C.SERVER_TYPE === "stage") && key === "APIBASE" && server !== "production") {
 				const err = new Error(`ServerIO.js - ServerIO.${key} is using PRODUCTION setting! Oops: ${endpointUrl} - Resetting to ''`);
 				ServerIO[key] = '';
 				console.warn(err);
