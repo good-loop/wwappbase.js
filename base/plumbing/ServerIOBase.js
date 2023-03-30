@@ -34,11 +34,11 @@ const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test', stage: 'stage
 const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http', stage: 'https'}[SOGIVE_SUBDOMAIN];
 ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}.sogive.org/charity`;
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
-// ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
-ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}media.good-loop.com`;
 
-// Init ENPOINTS for typescript
+// Init ENPOINTS for typescript ??
 ServerIO.DATALOG_ENDPOINT = '';
+ServerIO.MEDIA_ENDPOINT = '';
+ServerIO.MEASURE_ENDPOINT = '';
 
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
@@ -51,6 +51,7 @@ const endpoints = [
 	{name: 'Ad', key: 'AS_ENDPOINT', base: 'as.good-loop.com'},
 	/** Where uploads go */
 	{name: 'Media', key: 'MEDIA_ENDPOINT', base: 'uploads.good-loop.com'},
+	{name: 'Measure', key: 'MEASURE_ENDPOINT', base: 'measure.good-loop.com'},
 	{name: 'Portal', key: 'PORTAL_ENDPOINT', base: 'portal.good-loop.com'},
 ];
 // set defaults
@@ -126,6 +127,7 @@ ServerIO.checkBase = () => {
 /**
  * HACK allow using test/production ads, profiler, and datalog if requested.
  * To switch 
+ * TODO refactor into the endpoints loop above
  */
 const checkBase2_toggleTestEndpoints = () => {
 	const server = DataStore.getUrlValue("server");
@@ -138,6 +140,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com';
 		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
 		// hack for SoGive
 		if (ServerIO.APIBASE.includes("sogive")) {
@@ -158,6 +161,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = protocol+'//locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = protocol+'//localprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = protocol+'//localuploads.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com';
 		ServerIO.APIBASE = ''; // lets assume you're on local
 		return;
 	}
@@ -167,6 +171,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://measure.good-loop.com';
 		if (ServerIO.APIBASE) {
 			ServerIO.APIBASE = `https://${unprefixedHostname}`;
 		} else if (ServerIO.APIBASE === '' || ServerIO.APIBASE === '/') {

@@ -493,6 +493,8 @@ Misc.Help = ({children}) => {
 
 
 /**
+ * A button that you can only click once, until it clears.
+ * 
  * @param {Object} p
  * @param {?Object[]} p.formData
  * @param {?String[]} p.path DataStore path to the form-data to submit. Set this OR formData
