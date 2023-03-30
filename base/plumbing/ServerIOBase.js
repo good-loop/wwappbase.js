@@ -140,7 +140,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com/measure';
 		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
 		// hack for SoGive
 		if (ServerIO.APIBASE.includes("sogive")) {
@@ -161,7 +161,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = protocol+'//locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = protocol+'//localprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = protocol+'//localuploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com/measure';
 		ServerIO.APIBASE = ''; // lets assume you're on local
 		return;
 	}
@@ -171,7 +171,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = 'https://measure.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://measure.good-loop.com/measure';
 		if (ServerIO.APIBASE) {
 			ServerIO.APIBASE = `https://${unprefixedHostname}`;
 		} else if (ServerIO.APIBASE === '' || ServerIO.APIBASE === '/') {
@@ -451,7 +451,7 @@ ServerIO.getEndpointForType = (type) => {
  *
  * @param {String} url The url to which the request should be made.
  *
- * @param {Object} [params] Optional map of settings to modify the request.
+ * @param {Object} params Optional map of settings to modify the request.
  * See <a href="http://api.jquery.com/jQuery.ajax/">jQuery.ajax</a> for details.
  * IMPORTANT: To specify form data, use params.data
  *
