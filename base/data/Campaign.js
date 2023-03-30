@@ -43,13 +43,9 @@ class Campaign extends DataClass {
 	/** @type {?XId} Monday Deal */
 	crm;
 
-<<<<<<< HEAD
 	/**
 	 * @deprecated (kept for old data)
 	 *  @type{?boolean} */
-=======
-	/** @type {?boolean} */
->>>>>>> master
 	master;
 
 	/** @type {?String} */
