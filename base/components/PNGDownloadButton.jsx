@@ -54,7 +54,7 @@ const screenshotIcon = (
  * 
  * @returns a download button
  */
-export const PNGDownloadButton = ({querySelector, onCloneFn, title = 'Click to save this element as .PNG', opts = {}, fileName = 'image', delay=0, onClick}) => {
+export const PNGDownloadButton = ({querySelector, onCloneFn, title = 'Click to save this element as .PNG', opts = {}, fileName = 'image', delay=0}) => {
 	const doScreenshot = event => {
 		stopEvent(event);
 		setTimeout(() => {
@@ -75,7 +75,7 @@ export const PNGDownloadButton = ({querySelector, onCloneFn, title = 'Click to s
 	};
 
 	return (
-		<a className="png-export screenshot-hide" onClick={() => {onClick(); doScreenshot();}} title={title}>
+		<a className="png-export screenshot-hide" onClick={doScreenshot} title={title}>
 			{screenshotIcon}
 		</a>
 	);
