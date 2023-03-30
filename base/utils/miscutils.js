@@ -278,7 +278,7 @@ export const mapkv = function (obj, fn) {
 /**
  * Strip commas £/$/euro and parse float.
  * @param {Number|String} v
- * @returns Number. undefined/null/''/false/NaN are returned as undefined.
+ * @returns {?Number}. undefined/null/''/false/NaN are returned as undefined.
  * Bad inputs also return undefined (this makes for slightly simpler usage code
  *  -- you can't test `if (x)` cos 0 is falsy, but you can test `if (x!==undefined)`)
  */

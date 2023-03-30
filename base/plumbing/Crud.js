@@ -633,9 +633,9 @@ const SIO_getDataItem = function({type, id, status, domain, swallow, ...other}) 
  * @param {Object} p
  * @param {!String} p.type From C.TYPES
  * @param {!String} p.id 
- * @param {?KStatus} status If in doubt: use PUBLISHED for display, and DRAFT for editors. default: check url, then use PUBLISHED
+ * @param {?KStatus} p.status If in doubt: use PUBLISHED for display, and DRAFT for editors. default: check url, then use PUBLISHED
  * 	Default: look for a status= parameter in thre url, or use published.
- * @param {?string} action e.g. `getornew`
+ * @param {?string} p.action e.g. `getornew`
  * @param {?boolean} p.swallow If true, hide error messages from the server
  * @returns PromiseValue(type)
  */

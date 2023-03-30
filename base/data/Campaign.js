@@ -28,31 +28,37 @@ import XId from './XId';
  * See Campaign.java
  */
 class Campaign extends DataClass {
+	/** @type {?string} */
+	id
 	
-	/** @type{?String} */
+	/** @type {?String} */
 	agencyId;
 
-	/** @type{?Branding} */
+	/** @type {?Branding} */
 	branding;
 
-	/** @type{?String} url */
+	/** @type {?String} url */
 	caseStudy;
 
-	/** @type{?XId} Monday Deal */
+	/** @type {?XId} Monday Deal */
 	crm;
 
+<<<<<<< HEAD
 	/**
 	 * @deprecated (kept for old data)
 	 *  @type{?boolean} */
+=======
+	/** @type {?boolean} */
+>>>>>>> master
 	master;
 
-	/** @type{?String} */
+	/** @type {?String} */
 	vertiser;
 
-	/** @type{?Money} */
+	/** @type {?Money} */
 	dntn;
 
-	/** @type{?LineItem} */
+	/** @type {?LineItem} */
 	topLineItem;
 
 	/**
