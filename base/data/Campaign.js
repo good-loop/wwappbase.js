@@ -28,17 +28,19 @@ import XId from './XId';
  * See Campaign.java
  */
 class Campaign extends DataClass {
+	/** @type {?string} */
+	id
 	
-	/** @type{?String} */
+	/** @type {?String} */
 	agencyId;
 
-	/** @type{?Branding} */
+	/** @type {?Branding} */
 	branding;
 
-	/** @type{?String} url */
+	/** @type {?String} url */
 	caseStudy;
 
-	/** @type{?XId} Monday Deal */
+	/** @type {?XId} Monday Deal */
 	crm;
 
 	/**
@@ -46,13 +48,13 @@ class Campaign extends DataClass {
 	 *  @type{?boolean} */
 	master;
 
-	/** @type{?String} */
+	/** @type {?String} */
 	vertiser;
 
-	/** @type{?Money} */
+	/** @type {?Money} */
 	dntn;
 
-	/** @type{?LineItem} */
+	/** @type {?LineItem} */
 	topLineItem;
 
 	/**
@@ -347,6 +349,7 @@ Campaign.viewcount = ({campaign, status}) => {
 ////////////////////////////////////////////////////////////////////
 
 /**
+>>>>>>> master
  * FIXME Get a list of charities for a campaign
  * @param {Object} p 
  * @param {Campaign} p.campaign 

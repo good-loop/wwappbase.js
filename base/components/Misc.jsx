@@ -57,7 +57,10 @@ E.g. "Loading your settings...""
 See https://www.w3schools.com/howto/howto_css_loader.asp
 http://tobiasahlin.com/spinkit/
 
-@param {?PromiseValue} pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
+@param {Object} obj
+@param {?PromiseValue} obj.pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
+@param {?string} obj.text
+@param {?boolean} obj.inline
 */
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	// handle ajax error?
@@ -315,6 +318,11 @@ const shortWeekdays = WEEKDAYS.map(weekday => weekday.substr(0, 3));
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 const shortMonths = MONTHS.map(month => month.substr(0, 3));
 
+/**
+ * Pad under 10 with "0"
+ * @param {Number} n 
+ * @returns {String} e.g. "03"
+ */
 export const oh = (n) => n<10? '0'+n : n;
 
 Misc.LongDate = ({date, noWeekday}) => {
