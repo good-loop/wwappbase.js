@@ -41,7 +41,15 @@ const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,in
 		// This stats data is _usually_ non essential, so swallow errors.
 		const params = {data: glreq, swallow:true};
 		const url = endpoint + (name ? `?name=${encURI(name)}` : '');
-		return ServerIO.load(url, params);
+		let ajax = ServerIO.load(url, params);
+		return ajax.then(res => {
+			// unpack sampling
+			if (res.cargo?.sampling) {
+				Object.assign(res.cargo, res.cargo.sampling);
+				delete res.cargo.sampling;
+			}
+			return res;
+		});
 	});
 };
 
