@@ -106,7 +106,7 @@ const StatusCard = () => {
 	const status = Login.getStatus();
 
 	return (
-		<Misc.Card title='Verification'>
+		<Misc.Card title='Verification (Testing)'>
 			<div className='d-flex justify-content-between'>
 				<span>Verification Status: {status ? status : 'Loading...'}</span>
 				{!emailSent ? (
