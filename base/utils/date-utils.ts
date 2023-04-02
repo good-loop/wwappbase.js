@@ -4,6 +4,8 @@
  * TODO lets find a nice library that provides much of what we need.
  */
 
+import { getUrlVars } from "./miscutils";
+
 
 /**
  * 0 = Sunday
@@ -19,7 +21,7 @@ const shortMonths = MONTHS.map(month => month.substr(0, 3));
  * @param {Number} n 
  * @returns {String} e.g. "03"
  */
-export const oh = (n) => n<10? '0'+n : n;
+export const oh = (n:number) => n<10? '0'+n : n;
 
 
 /**
@@ -113,116 +115,89 @@ export const getPeriodYear = (date = new Date()) => {
 };
 
 
-
-/** 
- * Read URL params and extract a period object if one is present. Supports `period` or `start`/`end`.
- * @deprecated (partly) converted to typescript ??where is the typescript version??
- * @returns {?Object} {start:Date end:Date}
-*/
-export const periodFromUrl = () => {
+export const getPeriodFromUrlParams(urlParams:Object) : Period|null => {
+	if ( ! urlParams) urlParams = getUrlVars();
+	let {start, end, period} = urlParams;
+	const periodObjFromName = periodFromName(period);
 	// User has set a named period (year, quarter, month)
-	const periodName = DataStore.getUrlValue('period')
-	const periodObjFromName = periodFromName(periodName);
-	if (periodObjFromName) return periodObjFromName;
-
-	// Custom period with start/end values
-	const start = DataStore.getUrlValue('start');
-	const end = DataStore.getUrlValue('end');
-	if (start || end) {
-		const period = {};
-		if (start) {
-			const [, yyyy, mm, dd] = start.match(/(\d+)-(\d+)-(\d+)/);
-			period.start = new Date(yyyy, mm, dd);
-			period.start.setMonth(period.start.getMonth() - 1); // correct for Date taking zero-index months
-		}
-		if (end) {
-			const [, yyyy, mm, dd] = end.match(/(\d+)-(\d+)-(\d+)/);
-			period.end = new Date(yyyy, mm, dd);
-			period.end.setMonth(period.end.getMonth() - 1); // correct for Date taking zero-index months
-			// Intuitive form "Period ending 2022-03-31" --> machine form "Period ending 2022-04-01T00:00:00"
-			period.end.setDate(period.end.getDate() + 1);
-		}
-		return period;
+	if (periodObjFromName) {
+		return periodObjFromName;
 	}
 
-	// Nothing set in URL
+	// Custom period with start/end values
+	if (start || end) {
+		const periodFromStartEnd = {} as Period;
+		if (start) {			
+			period.start = asDate(start);
+		}
+		if (end) {
+			period.end = asDate(end);
+		}
+			// const [, yyyy, mm, dd] = end.match(/(\d+)-(\d+)-(\d+)/) as any[];
+			// period.end = new Date(yyyy, mm, dd);
+			// period.end.setMonth(period.end.getMonth() - 1); // correct for Date taking zero-index months
+			// // Intuitive form "Period ending 2022-03-31" --> machine form "Period ending 2022-04-01T00:00:00"
+			// period.end.setDate(period.end.getDate() + 1);		
+		return periodFromStartEnd;
+	}
 	return null;
 };
 
 /** Convert a name to a period object
- * @returns {?Object} {start:Date end:Date}
+ * @returns {?Period}
 */
-export const periodFromName = (periodName) => {
-	if (periodName) {
-		if (periodName === 'all') {
-			return {
-				start: new Date('1970-01-01'),
-				end: new Date('3000-01-01'),
-				name: 'all'
-			}
-		}
-		let refDate = new Date();
-		
-		// eg "2022-Q2"
-		const quarterMatches = periodName.match(quarterRegex);
-		if (quarterMatches) {
-			refDate.setFullYear(quarterMatches[1]);
-			refDate.setMonth(3 * (quarterMatches[2] - 1));
-			return getPeriodQuarter(refDate);
-		}
-		// eg "2022-04"
-		const monthMatches = periodName.match(monthRegex);
-		if (monthMatches) {
-			refDate.setFullYear(monthMatches[1]);
-			refDate.setMonth(monthMatches[2]);
-			return getPeriodMonth(refDate);
-		}
-		// eg "2022"
-		const yearMatches = periodName.match(yearRegex);
-		if (yearMatches) {
-			refDate.setFullYear(yearMatches[1]);
-			return getPeriodYear(refDate)
+export const periodFromName = (periodName:string) : Period|null  => {
+	if ( !periodName) {
+		return null;
+	}
+	if (periodName === 'all') {
+		return {
+			start: new Date('1970-01-01'),
+			end: new Date('3000-01-01'),
+			name: 'all'
 		}
 	}
-
-	// Custom period with start/end values
-	const start = DataStore.getUrlValue('start');
-	const end = DataStore.getUrlValue('end');
-	if (start || end) {
-		const period = {} as Period;
-		if (start) {
-			let [, yyyy, mm, dd] = start.match(/(\d+)-(\d+)-(\d+)/);
-			mm = Number.parseInt(mm);
-			period.start = new Date(yyyy, mm - 1, dd);// correct for Date taking zero-index months
-		}
-		if (end) {
-			let [, yyyy, mm, dd] = end.match(/(\d+)-(\d+)-(\d+)/);
-			mm = Number.parseInt(mm);
-			period.end = new Date(yyyy, mm - 1, dd); // correct for Date taking zero-index months
-			// Intuitive form "Period ending 2022-03-31" --> machine form "Period ending 2022-04-01T00:00:00"
-			period.end.setDate(period.end.getDate() + 1);
-		}
-		return period;
+	let refDate = new Date();
+	
+	// eg "2022-Q2"
+	const quarterMatches = periodName.match(quarterRegex);
+	if (quarterMatches) {
+		refDate.setFullYear(quarterMatches[1]);
+		refDate.setMonth(3 * (quarterMatches[2] - 1));
+		return getPeriodQuarter(refDate);
 	}
-
-	// Nothing set in URL
-	return null;
+	// eg "2022-04"
+	const monthMatches = periodName.match(monthRegex);
+	if (monthMatches) {
+		refDate.setFullYear(monthMatches[1]);
+		refDate.setMonth(monthMatches[2]);
+		return getPeriodMonth(refDate);
+	}
+	// eg "2022"
+	const yearMatches = periodName.match(yearRegex);
+	if (yearMatches) {
+		refDate.setFullYear(yearMatches[1]);
+		return getPeriodYear(refDate)
+	}
+	throw new Error("Unrecognised period "+periodName);
 };
 
 
 /** Take a period object and transform it to use as URL params */
-export const periodToParams = ({name, start, end}) => {
-	const newVals = {};
+export const periodToParams = ({name, start, end}) : Period => {
+	const newVals = {} as Period;
 	if (name) {
 		newVals.period = name;
 	} else {
 		// Custom period - remove period name from URL params and set start/end
-		if (start) newVals.start = isoDate(start);
+		if (start) newVals.start = asDate(start).toISOString();
 		if (end) {
-			// Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
-			end = new Date(end);
-			end.setDate(end.getDate() - 1);
-			newVals.end = isoDate(end);
+			// url params don't have to be pretty (push prettiness up to rendering code)
+			newVals.end = asDate(end).toISOString();
+			// // Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
+			// end = new Date(end);
+			// end.setDate(end.getDate() - 1);
+			// newVals.end = isoDate(end);
 		}
 	}
 	return newVals;
@@ -233,32 +208,34 @@ const quarterNames = [, '1st', '2nd', '3rd', '4th'];
 
 /**
  * Turn period object into clear human-readable text
- * @param {*} period Period object with either a name or at least one of start/end
- * @param {*} short True for condensed format
+ * @param {Period} period Period object with either a name or at least one of start/end
+ * @param {?Boolean} short True for condensed format
  * @returns 
  */
-export const printPeriod = ({start, end, name = ''}, short) => {
-	if (name === 'all') return 'All Time';
+export const printPeriod = ({start, end, name}:Period, short=false) => {
+	if (name) {
+		if (name === 'all') return 'All Time';
 
-	// Is it a named period (quarter, month, year)?
-	const quarterMatches = name.match(quarterRegex);
-	if (quarterMatches) {
-		const [, year, num] = quarterMatches;
-		if (short) return `Q${num} ${year}`; // eg "Q1 2022"
-		return `${year} ${quarterNames[num]} quarter`; // eg "2022 1st Quarter"
-	}
+		// Is it a named period (quarter, month, year)?
+		const quarterMatches = name.match(quarterRegex);
+		if (quarterMatches) {
+			const [, year, num] = quarterMatches;
+			if (short) return `Q${num} ${year}`; // eg "Q1 2022"
+			return `${year} ${quarterNames[num]} quarter`; // eg "2022 1st Quarter"
+		}
 
-	const monthMatches = name.match(monthRegex);
-	if (monthMatches) {
-		const [, month, year] = monthMatches;
-		return `${shortMonths[month]} ${year}`; // eg "Jan 2022"
-	}
+		const monthMatches = name.match(monthRegex);
+		if (monthMatches) {
+			const [, month, year] = monthMatches;
+			return `${shortMonths[month]} ${year}`; // eg "Jan 2022"
+		}
 
-	const yearMatches = name.match(yearRegex);
-	if (yearMatches) {
-		const [, year] = yearMatches;
-		if (short) return `${year}`; // eg "2022"
-		return `Year ${year}`; // eg "Year 2022"
+		const yearMatches = name.match(yearRegex);
+		if (yearMatches) {
+			const [, year] = yearMatches;
+			if (short) return `${year}`; // eg "2022"
+			return `Year ${year}`; // eg "Year 2022"
+		}
 	}
 
 	// Bump end date back by 1 second so eg 2022-03-01T00:00:00.000+0100 to 2022-04-01T00:00:00.000+0100
@@ -270,10 +247,10 @@ export const printPeriod = ({start, end, name = ''}, short) => {
 	return `${start ? pd(start) : ``} to ${end ? pd(end) : `now`}`;
 };
 
-export const periodKey = ({start, end, name}) : String => {
-	if (name) return name;
-	return `${start ? isoDate(start) : 'forever'}-to-${end ? isoDate(end) : 'now'}`
-};
+// export const periodKey = ({start, end, name}) : String => {
+// 	if (name) return name;
+// 	return `${start ? isoDate(start) : 'forever'}-to-${end ? isoDate(end) : 'now'}`
+// };
 
 const quarterRegex = /^(\d\d?\d?\d?)-Q(\d)$/;
 const monthRegex = /^(\d\d?\d?\d?)-(\d\d?)$/;
