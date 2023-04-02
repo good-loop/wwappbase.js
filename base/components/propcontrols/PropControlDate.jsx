@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Input, InputGroup } from 'reactstrap';
-import { asDate, is } from '../../utils/miscutils';
+import { is } from '../../utils/miscutils';
+import { asDate } from '../../utils/date-utils';
 import Misc from '../Misc';
 
 import PropControl, { fakeEvent, FormControl, registerControl } from '../PropControl';

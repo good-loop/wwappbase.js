@@ -4,6 +4,7 @@ import { assert, assMatch } from './assert';
 import printer from './printer';
 import PromiseValue from '../promise-value';
 
+
 // Switched back to js from ts March 2023 since the old ts file gave many errors. 
 // TODO properly write a ts port
 
@@ -654,12 +655,6 @@ export const decURI = function (urlPart) {
 };
 
 /**
- * @param {Date} d
- * @return {String} iso format e.g. 2020-10-18
- */
-export const isoDate = (d) => d.toISOString().replace(/T.+/, '');
-
-/**
  * preventDefault + stopPropagation
  * @param e {?Event|Object} a non-event is a no-op
  * @returns true (so it can be chained with &&)
@@ -686,16 +681,6 @@ export const stopEvent = (e) => {
  */
 export const str = (x) => printer.str(x);
 
-/**
- * Make sure it's a Date not a String
- * @param {?String|Date} s falsy returns null
- * @returns {?Date}
- */
-export const asDate = (s) => {
-	if (!s) return null;
-	if (typeof s === 'string') return new Date(s);
-	return s;
-};
 
 /**
  * Create a debounced function - which returns a PromiseValue.

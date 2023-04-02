@@ -17,11 +17,11 @@ import React, { useState, useRef } from 'react';
 
 import { assert, assMatch } from '../utils/assert';
 import _ from 'lodash';
-import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import { asNum, space, stopEvent, encURI, asDate, isNumeric } from '../utils/miscutils';
+import { asNum, space, stopEvent, encURI, isNumeric } from '../utils/miscutils';
+import { dateStr, asDate } from '../utils/date-utils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType } from '../data/DataClass';
 import Tree from '../data/Tree';
@@ -652,7 +652,7 @@ const defaultCellRender = (v, column) => {
 	// by type?
 	if (column.type === 'date' && v) {
 		let d = asDate(v);
-		return Misc.dateStr(d);
+		return dateStr(d);
 	}
 	if (column.format) {
 		if (typeof column.format === 'function') {
