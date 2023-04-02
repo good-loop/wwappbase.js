@@ -114,13 +114,15 @@ export const getPeriodYear = (date = new Date()) => {
 	return {start, end, name: `${start.getFullYear()}`};
 };
 
-
-export const getPeriodFromUrlParams(urlParams:Object) : Period|null => {
+/**
+ * @param {Object} urlParams If unset use getUrlVars()
+ */
+export const getPeriodFromUrlParams = (urlParams:Object|null) : Period|null => {
 	if ( ! urlParams) urlParams = getUrlVars();
 	let {start, end, period} = urlParams;
 	const periodObjFromName = periodFromName(period);
 	// User has set a named period (year, quarter, month)
-	if (periodObjFromName) {
+	if (periodObjFromName) {		
 		return periodObjFromName;
 	}
 
