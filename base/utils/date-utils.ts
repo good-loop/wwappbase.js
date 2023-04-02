@@ -115,6 +115,7 @@ export const getPeriodYear = (date = new Date()) => {
 };
 
 /**
+ * Read period (name) or start/end
  * @param {Object} urlParams If unset use getUrlVars()
  */
 export const getPeriodFromUrlParams = (urlParams:Object|null) : Period|null => {
@@ -130,10 +131,10 @@ export const getPeriodFromUrlParams = (urlParams:Object|null) : Period|null => {
 	if (start || end) {
 		const periodFromStartEnd = {} as Period;
 		if (start) {			
-			period.start = asDate(start);
+			periodFromStartEnd.start = asDate(start);
 		}
 		if (end) {
-			period.end = asDate(end);
+			periodFromStartEnd.end = asDate(end);
 		}
 			// const [, yyyy, mm, dd] = end.match(/(\d+)-(\d+)-(\d+)/) as any[];
 			// period.end = new Date(yyyy, mm, dd);
