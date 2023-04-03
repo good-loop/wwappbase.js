@@ -271,7 +271,9 @@ span.preview .DataItemBadge {
 	.items-dropdown {
 		display: block;
 		position: absolute;
-		width: 100%;
+		/* min/max width: size to the text input - but also allow overflow for small input vs showing the names */
+		min-width: 100%;
+		max-width: 20rem;
 		top: 100%;
 		left: 0;
 		z-index: 1;
