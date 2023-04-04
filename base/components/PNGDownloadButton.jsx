@@ -54,21 +54,24 @@ const screenshotIcon = (
  * 
  * @returns a download button
  */
-export const PNGDownloadButton = ({querySelector, onCloneFn, title = 'Click to save this element as .PNG', opts = {}, fileName = 'image'}) => {
+export const PNGDownloadButton = ({querySelector, onCloneFn, title = 'Click to save this element as .PNG', opts = {}, fileName = 'image', delay=0}) => {
 	const doScreenshot = event => {
 		stopEvent(event);
-		html2canvas(document.querySelector(querySelector), {
-			onclone: (document) => {
-				// Hide all elements with the "hide for screenshots" marker class (including this button)
-				document.querySelectorAll('.screenshot-hide').forEach(node => {
-					node.style.display = 'none';
-				});
-				onCloneFn && onCloneFn(document);
-			},
-			...opts
-		}).then(canvas => {
-			saveAs(canvas.toDataURL(), fileName);
-		});
+		setTimeout(() => {
+			html2canvas(document.querySelector(querySelector), {
+				onclone: (document) => {
+					// Hide all elements with the "hide for screenshots" marker class (including this button)
+					document.querySelectorAll('.screenshot-hide').forEach(node => {
+						node.style.display = 'none';
+					});
+					onCloneFn && onCloneFn(document);
+				},
+				...opts
+			}).then(canvas => {
+				saveAs(canvas.toDataURL(), fileName);
+			});
+		}, delay)
+
 	};
 
 	return (

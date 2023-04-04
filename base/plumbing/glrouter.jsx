@@ -37,6 +37,12 @@ const goto = (href, options={}) => {
 /** Which is the "open in new tab" modifier key - Ctrl or Meta (Command)? */
 const clickModKey = window.navigator.platform.match(/^(Mac|iPhone|iPad|iPod)/) ? 'metaKey' : 'ctrlKey';
 
+/**
+ * To use this, set C.A = A;
+ * @param {Object} x 
+ * @param {string} x.href
+ * @returns 
+ */
 const A = (x) => {
 	if (!x) return null;
 	const {href, children, onClick, ...args} = x;

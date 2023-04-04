@@ -15,7 +15,8 @@ import Advert from './Advert';
 import Advertiser from './Advertiser';
 import Agency from './Agency';
 import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
-import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars, asDate } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars } from '../utils/miscutils';
+import { asDate } from '../utils/date-utils';
 import { getId } from './DataClass';
 import NGO from './NGO';
 import Money from './Money';
@@ -28,29 +29,31 @@ import XId from './XId';
  * See Campaign.java
  */
 class Campaign extends DataClass {
+	/** @type {?string} */
+	id
 	
-	/** @type{?String} */
+	/** @type {?String} */
 	agencyId;
 
-	/** @type{?Branding} */
+	/** @type {?Branding} */
 	branding;
 
-	/** @type{?String} url */
+	/** @type {?String} url */
 	caseStudy;
 
-	/** @type{?XId} Monday Deal */
+	/** @type {?XId} Monday Deal */
 	crm;
 
-	/** @type{?boolean} */
+	/** @type {?boolean} */
 	master;
 
-	/** @type{?String} */
+	/** @type {?String} */
 	vertiser;
 
-	/** @type{?Money} */
+	/** @type {?Money} */
 	dntn;
 
-	/** @type{?LineItem} */
+	/** @type {?LineItem} */
 	topLineItem;
 
 	/**
@@ -137,7 +140,7 @@ Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT)
  * @returns PromiseValue(Campaign[])
  */
  Campaign.fetchForAdvertiser = (vertiserId, status=KStatus.DRAFT) => {
-	return fetchForAdvertisers([vertiserId], status);
+	return Campaign.fetchForAdvertisers([vertiserId], status);
 }
 
 /**
@@ -147,9 +150,19 @@ Campaign.fetchMasterCampaign = (advertiserOrAgency, status=KStatus.PUB_OR_DRAFT)
  * @returns PromiseValue(Campaign)
  */
 Campaign.fetchForAdvertisers = (vertiserIds, status=KStatus.DRAFT) => {
-    let q = SearchQuery.setPropOr(new SearchQuery(), "vertiser", vertiserIds).query;
-    let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
-    return pvCampaigns;
+	let pv = DataStore.fetch(['misc','pvCampaignsForVertisers',status,'all',vertiserIds.join(",")], () => {
+		return fetchVertisers2(vertiserIds, status);
+	});
+	return pv;
+}
+
+const fetchVertisers2 = async (vertiserIds, status) => {
+	const pvSubBrands = Advertiser.getManyChildren(vertiserIds);
+	const subBrands = List.hits(await pvSubBrands.promise);
+	let allVertiserIds = [...vertiserIds, ...uniq(subBrands.map(brand => brand.id).filter(x=>x))]
+	let q = SearchQuery.setPropOr(new SearchQuery(), "vertiser", allVertiserIds).query;
+	let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
+	return await pvCampaigns.promise;
 }
 
 /**
@@ -208,10 +221,10 @@ Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
 		let q;
 		// is it a master campaign?
 		if (Campaign.isMaster(campaign)) {
-			let {type, id} = Campaign.masterFor(campaign);		
+			let {type, id} = Campaign.masterFor(campaign);
 			// What if it's a master brand, e.g. Nestle > Nespresso?
 			// The only way to know is to look for children
-			let pvListAdvertisers = type==="Agency"? Agency.getChildren({id}) : Advertiser.getChildren({id});
+			let pvListAdvertisers = type==="Agency"? Agency.getChildren(id) : Advertiser.getChildren(id);
 			let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
 			let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
 			ids = ids.concat(id); // include the top-level brand
@@ -384,6 +397,24 @@ Campaign.viewcount = ({campaign, status}) => {
 	return totalViewCount;
 };
 
+/**
+ * Get the viewcount for a campaign broken down by what countries impressions are from, summing the ads viewcounts in each country it's been viewed in
+ * @param {Object} p
+ * @param {Campaign} p.campaign 
+ * @returns {Number}
+ */
+Campaign.viewcountByCountry = ({campaign, status}) => {
+	if(!campaign){
+		console.log("res: no camp!")
+		return []
+	}
+	const pvAllAds = Campaign.pvAds({campaign, status});
+	let allAds = List.hits(pvAllAds.value) || [];
+	console.log("res allAds: ", allAds)
+	const viewcount4campaign = Advert.viewcountByCountry({ads:allAds});
+	return viewcount4campaign;
+};
+
 
 ////////////////////////////////////////////////////////////////////
 ////                     CHARITY LOGIC                           ///
@@ -405,7 +436,9 @@ Campaign.masterFor = campaign => {
 
 /**
  * * HACK: access=public
- * @param {!Campaign} campaign 
+ * @param {Object} obj
+ * @param {!Campaign} obj.campaign 
+ * @param {?SearchQuery | string} obj.query
  * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
  */
 Campaign.pvSubCampaigns = ({campaign, query}) => {

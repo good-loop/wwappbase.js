@@ -6,7 +6,7 @@ import md5 from 'md5';
 import _ from 'lodash';
 
 import { assert, assMatch } from '../utils/assert';
-import { asDate, copyTextToClipboard, getLogo, isoDate, space, stopEvent, str } from '../utils/miscutils';
+import {copyTextToClipboard, getLogo, space, stopEvent, str } from '../utils/miscutils';
 
 import JSend from '../data/JSend';
 
@@ -22,7 +22,7 @@ import ErrAlert from './ErrAlert';
 import XId from '../data/XId';
 import Roles from '../Roles';
 import Icon from './Icon';
-
+import { oh, isoDate, dateStr, MONTHS } from '../utils/date-utils';
 
 const Misc = {};
 
@@ -57,7 +57,10 @@ E.g. "Loading your settings...""
 See https://www.w3schools.com/howto/howto_css_loader.asp
 http://tobiasahlin.com/spinkit/
 
-@param {?PromiseValue} pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
+@param {Object} obj
+@param {?PromiseValue} obj.pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
+@param {?string} obj.text
+@param {?boolean} obj.inline
 */
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
 	// handle ajax error?
@@ -307,15 +310,6 @@ Misc.RelativeDate = ({date, ...rest}) => {
 	return <span title={absoluteDate} {...rest}>{count} {counter} {relation}</span>;
 };
 
-/**
- * 0 = Sunday
- */
-export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const shortWeekdays = WEEKDAYS.map(weekday => weekday.substr(0, 3));
-export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const shortMonths = MONTHS.map(month => month.substr(0, 3));
-
-export const oh = (n) => n<10? '0'+n : n;
 
 Misc.LongDate = ({date, noWeekday}) => {
 	if (!date) return null;
@@ -391,21 +385,12 @@ Misc.DateDuration = ({startDate, endDate, invisOnEmpty}) => {
 	return <span>{durationString}</span>
 }
 
-/**
- * @deprecated use dateTimeTag
- * Human-readable, unambiguous date+time string which doesn't depend on toLocaleString support
- * ??wrap in <time>??
- */
-Misc.dateTimeString = (d) => (
-	`${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()} ${oh(d.getHours())}:${oh(d.getMinutes())}`
-);
 
 /**
  * Human-readable, unambiguous date+time string which doesn't depend on toLocaleString support
  */
 Misc.dateTimeTag = (d) => d?
-	<time datetime={d.toISOString()}>{d.getDate()} {shortMonths[d.getMonth()]} {d.getFullYear()} {oh(d.getHours())}:{oh(d.getMinutes())}</time>
-	: null;
+	<time datetime={d.toISOString()}>{dateTimeString(d)}</time> : null;
 
 /**
  * Human-readable, unambiguous date string which doesn't depend on toLocaleString support
@@ -416,8 +401,6 @@ Misc.DateTag = ({date}) => {
 	date = asDate(date);	
 	return <time dateTime={isoDate(date)}>{date.getDate()} {shortMonths[date.getMonth()]} {date.getFullYear()}</time>;
 };
-
-Misc.dateStr = d => `${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()}`;
 
 Misc.AvatarImg = ({peep, ...props}) => {
 	if ( ! peep) return null;
@@ -440,13 +423,6 @@ Misc.AvatarImg = ({peep, ...props}) => {
 
 	return <img className={`AvatarImg img-thumbnail ${className}`} alt={alt} src={img} {...rest} />;
 };
-
-
-/**
- * @param {?Date|String} d
- * @return {?String} iso format (date only, no time-of-day part)
- */
-Misc.isoDate = (d) => d? asDate(d).toISOString().replace(/T.+/, '') : null;
 
 
 /**
@@ -485,6 +461,8 @@ Misc.Help = ({children}) => {
 
 
 /**
+ * A button that you can only click once, until it clears.
+ * 
  * @param {Object} p
  * @param {?Object[]} p.formData
  * @param {?String[]} p.path DataStore path to the form-data to submit. Set this OR formData

@@ -53,7 +53,7 @@ const PropControlToggle = ({ path, prop, value, saveFn, left = {}, right = {}}) 
 	let shiftClass = 'ml-2 mr-2';
 	let btnColour = 'default';
 	let badgeContent = '\u00A0'; //&nbsp;
-	if (value === left.value) {
+	if (value === left.value || ! value) { // treat unset as No (as falsy logic is standard)
 		shiftClass = 'mr-3';
 		btnColour = left.colour;
 	} else if (value === right.value) {

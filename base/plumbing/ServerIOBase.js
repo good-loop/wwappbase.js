@@ -30,15 +30,15 @@ ServerIO.NO_API_AT_THIS_HOST = false;
 
 // HACK our special micro-services
 // also HACK: SoGive subdomains don't match the standard pattern & we don't want devs on local to need their own sogive server too
-const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test' }[C.SERVER_TYPE];
-const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http'}[SOGIVE_SUBDOMAIN];
+const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test', stage: 'stage'}[C.SERVER_TYPE];
+const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http', stage: 'https'}[SOGIVE_SUBDOMAIN];
 ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}.sogive.org/charity`;
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
-// ServerIO.ENDPOINT_TASK = 'http://localcalstat.good-loop.com/task';
-ServerIO.MEDIA_ENDPOINT = `${C.HTTPS}://${C.SERVER_TYPE}media.good-loop.com`;
 
-// Init ENPOINTS for typescript
+// Init ENPOINTS for typescript ??
 ServerIO.DATALOG_ENDPOINT = '';
+ServerIO.MEDIA_ENDPOINT = '';
+ServerIO.MEASURE_ENDPOINT = '';
 
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
@@ -51,6 +51,7 @@ const endpoints = [
 	{name: 'Ad', key: 'AS_ENDPOINT', base: 'as.good-loop.com'},
 	/** Where uploads go */
 	{name: 'Media', key: 'MEDIA_ENDPOINT', base: 'uploads.good-loop.com'},
+	{name: 'Measure', key: 'MEASURE_ENDPOINT', base: 'measure.good-loop.com'},
 	{name: 'Portal', key: 'PORTAL_ENDPOINT', base: 'portal.good-loop.com'},
 ];
 // set defaults
@@ -88,7 +89,7 @@ ServerIO.checkBase = () => {
 		if (!(key in ServerIO)) return; // Not defined, don't check it
 
 		// Normally a URL that doesn't say "test" or "local" (empty string included) is production...
-		let urlIsProd = !(endpointUrl.match(/(test|local)/));
+		let urlIsProd = !(endpointUrl.match(/(test|local|stage)/));
 		// ...but APIBASE is special - it's normally empty for "this host" (except for My-Loop, which doesn't have its own backend)
 		// So empty APIBASE (on non-production servers, with their own API) signifies NOT prod
 		if (key === 'APIBASE' && !C.isProduction() && !ServerIO.NO_API_AT_THIS_HOST && !endpointUrl) {
@@ -109,7 +110,7 @@ ServerIO.checkBase = () => {
 			// For safety reasons (to prevent accidentally editing live campaigns), you cannot use production APIBASE on the test server
 			// (though server=production can still explicity override this, and local _can_ point to production as that can be handy when fixing stuff)
 			const server = DataStore.getUrlValue("server");
-			if (C.SERVER_TYPE === "test" && key === "APIBASE" && server !== "production") {
+			if ((C.SERVER_TYPE === "test" || C.SERVER_TYPE === "stage") && key === "APIBASE" && server !== "production") {
 				const err = new Error(`ServerIO.js - ServerIO.${key} is using PRODUCTION setting! Oops: ${endpointUrl} - Resetting to ''`);
 				ServerIO[key] = '';
 				console.warn(err);
@@ -126,6 +127,8 @@ ServerIO.checkBase = () => {
 /**
  * HACK allow using test/production ads, profiler, and datalog if requested.
  * To switch 
+ * 
+ * TODO refactor to use an endpoints loop like above
  */
 const checkBase2_toggleTestEndpoints = () => {
 	const server = DataStore.getUrlValue("server");
@@ -138,6 +141,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com/measure';
 		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
 		// hack for SoGive
 		if (ServerIO.APIBASE.includes("sogive")) {
@@ -158,7 +162,18 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = protocol+'//locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = protocol+'//localprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = protocol+'//localuploads.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com/measure';
 		ServerIO.APIBASE = ''; // lets assume you're on local
+		return;
+	}
+	if (server === 'stage') {
+		ServerIO.AS_ENDPOINT = 'https://stageas.good-loop.com';
+		ServerIO.PORTAL_ENDPOINT = 'https://stageportal.good-loop.com';
+		ServerIO.DATALOG_ENDPOINT = 'https://stagelg.good-loop.com/data';
+		ServerIO.PROFILER_ENDPOINT = 'https://stageprofiler.good-loop.com';
+		ServerIO.MEDIA_ENDPOINT = 'https://stageuploads.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://stagemeasure.good-loop.com/measure';
+		// ServerIO.APIBASE = ''; // ?? fix in a refactor
 		return;
 	}
 	if (server === 'production') {
@@ -167,6 +182,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://measure.good-loop.com/measure';
 		if (ServerIO.APIBASE) {
 			ServerIO.APIBASE = `https://${unprefixedHostname}`;
 		} else if (ServerIO.APIBASE === '' || ServerIO.APIBASE === '/') {
@@ -446,7 +462,7 @@ ServerIO.getEndpointForType = (type) => {
  *
  * @param {String} url The url to which the request should be made.
  *
- * @param {Object} [params] Optional map of settings to modify the request.
+ * @param {Object} params Optional map of settings to modify the request.
  * See <a href="http://api.jquery.com/jQuery.ajax/">jQuery.ajax</a> for details.
  * IMPORTANT: To specify form data, use params.data
  *

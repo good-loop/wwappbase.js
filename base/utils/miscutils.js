@@ -4,6 +4,7 @@ import { assert, assMatch } from './assert';
 import printer from './printer';
 import PromiseValue from '../promise-value';
 
+
 // Switched back to js from ts March 2023 since the old ts file gave many errors. 
 // TODO properly write a ts port
 
@@ -278,7 +279,7 @@ export const mapkv = function (obj, fn) {
 /**
  * Strip commas £/$/euro and parse float.
  * @param {Number|String} v
- * @returns Number. undefined/null/''/false/NaN are returned as undefined.
+ * @returns {?Number}. undefined/null/''/false/NaN are returned as undefined.
  * Bad inputs also return undefined (this makes for slightly simpler usage code
  *  -- you can't test `if (x)` cos 0 is falsy, but you can test `if (x!==undefined)`)
  */
@@ -411,7 +412,7 @@ export const getDomain = (url) => {
  * @param {?string} url Optional, the string to be parsed, will default to window.location when not provided.
  * @param {?Boolean} lenient If true, if a decoding error is hit, it is swallowed and the raw string is used.
  * Use-case: for parsing urls that may contain adtech macros.
- * @returns a map */
+ * @returns {Object} */
 // NB: new UrlSearchParams(searchFragment) can now do much of this
 export const getUrlVars = (url, lenient) => {
 	// Future thought: Could this be replaced with location.search??
@@ -654,12 +655,6 @@ export const decURI = function (urlPart) {
 };
 
 /**
- * @param {Date} d
- * @return {String} iso format e.g. 2020-10-18
- */
-export const isoDate = (d) => d.toISOString().replace(/T.+/, '');
-
-/**
  * preventDefault + stopPropagation
  * @param e {?Event|Object} a non-event is a no-op
  * @returns true (so it can be chained with &&)
@@ -686,16 +681,6 @@ export const stopEvent = (e) => {
  */
 export const str = (x) => printer.str(x);
 
-/**
- * Make sure it's a Date not a String
- * @param {?String|Date} s falsy returns null
- * @returns {?Date}
- */
-export const asDate = (s) => {
-	if (!s) return null;
-	if (typeof s === 'string') return new Date(s);
-	return s;
-};
 
 /**
  * Create a debounced function - which returns a PromiseValue.
@@ -947,3 +932,47 @@ export const decodeButtons = (buttons) => {
 		.reverse()
 		.map((digit) => !!Number.parseInt(digit));
 };
+
+/**
+ * Add separating commas to a number
+ * @param x number
+ * @returns {String}
+ */
+ export const addNumberCommas = (x) => {
+	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+};
+
+/**
+ * Convert a number into being expressed as units of billions, millions or thousands
+ * 1000 -> 1k, 10,000 -> 10k, 1,000,000 -> 1M
+ * note this doesn't round, so if the goal is to make your number look pretty you'll need to pass this a rounded num
+ * @param {Number} num 
+ * @returns {String} num expressed in units of billions, millions or 
+ */
+ export const addAmountSuffixToNumber = (num) => {
+	// [suffix, how many 0's in number]
+	// if adding to this, keep it in descending order 
+	const suffixsAndDigits = [ // 
+		["B",9],	// billions
+		["M",6],	// millions
+		["K", 3]	// thousands
+	]
+
+	// search through above sets in descending
+	for(const pair of suffixsAndDigits) {
+		const suffix = pair[0]
+		const power = Number(pair[1])
+		const comparisonNumber = Math.pow(10, power)
+
+		// if num can be expressed in terms of 10^power...
+		if (num >= comparisonNumber) {
+			console.log("suff", num, comparisonNumber, suffix, ((num / comparisonNumber).toString() + suffix))
+			// return it expressed in those terms + the suffix
+			return (num / comparisonNumber).toString() + suffix
+		}
+	}
+
+	// num was smaller than minimum value we were searching for, just return the num
+	return num.toString()
+	
+}

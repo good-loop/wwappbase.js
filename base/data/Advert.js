@@ -64,7 +64,7 @@ C.DEFAULT_AD_ID = 'default-advert';
  * Note: race condition on app loading - this will be null for a second.
  */
 Advert.defaultAdvert = () => {
-	let swallow = C.SERVER_TYPE !== 'test'; // NB: local will often fail; production shouldn't, but should fail quietly if it does
+	let swallow = (C.SERVER_TYPE !== 'test' && C.SERVER_TYPE !== 'stage'); // NB: local will often fail; production shouldn't, but should fail quietly if it does
 	const pvAd = getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status: KStatus.PUBLISHED, swallow});
 	return pvAd.value;
 };
@@ -144,6 +144,31 @@ Advert.viewcountByCampaign = ads => {
 	}
 	return viewcount4campaign;
 };
+
+/**
+ * @param {Item[]} ads 
+ * @returns {object} viewcount4campaign
+ */
+ Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
+	if (!ads || ads.length === 0) {
+		console.log('res: ads is empty')
+		return {}
+	}
+	// Get ad viewing data
+	let sq = new SearchQuery("evt:minview");
+	let qads = ads.map(({ id }) => `vert:${id}`).join(' OR ');
+	sq = SearchQuery.and(sq, qads);
+	let pvViewData = getDataLogData({q:sq.query, breakdowns:['country'], start:start, end:end, name:"view-data",dataspace:'gl'});
+	let viewcount4campaign = {};
+	console.log("breakdown inside viewcountByCountry", viewcount4campaign, sq)
+	if (pvViewData.value) {
+		pvViewData.value
+		return viewcount4campaign = pivotDataLogData(pvViewData.value, ["country"]);
+	}
+	console.log("Shitfuck", pvViewData.value)
+	return viewcount4campaign;
+};
+
 
 // NB: banner=display
 const KAdFormat = new Enum("display video social");

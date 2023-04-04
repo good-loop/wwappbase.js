@@ -3,12 +3,12 @@ import React from 'react';
 import { Line, Pie, Bar, Scatter } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import Annotation from 'chartjs-plugin-annotation';
-import Misc from './Misc';
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { is, isoDate, space, asNum } from '../utils/miscutils';
+import { dateStr,oh } from '../utils/date-utils';
+import { Chart as ChartJS, CategoryScale, LinearScale, LogarithmicScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { is, space, asNum } from '../utils/miscutils';
 
 /** TODO We should be able to do this dynamically/selectively when components are rendered */
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend, Annotation);
+ChartJS.register(CategoryScale, LinearScale, LogarithmicScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend, Annotation);
 
 /**
  * ?? How do we set the size of the chart??
@@ -85,12 +85,12 @@ export const timeSeriesChartFromKeyValue = (kvData, options={label:"By Time",col
 	const max = Math.max(...Object.keys(kvData));
 	const minDate = new Date(asNum(min));
 	const maxDate = new Date(asNum(max));
-	const dt = (max-min) / kvData.length;
+	const dt = (max-min) / Object.keys(kvData).length;
 	const showTime = dt < 12*60*60*1000; // under 12 hours?
 	const showYear = minDate.getYear() !== maxDate.getYear();
 	const labelFn = x => {
 		const d = new Date(asNum(x));
-		let ds = Misc.dateStr(d);
+		let ds = dateStr(d);
 		// Omit year in labels if the period doesn't span a year boundary
 		if ( ! showYear) {
 			ds = ds.substring(0, ds.length - 5);
@@ -98,7 +98,7 @@ export const timeSeriesChartFromKeyValue = (kvData, options={label:"By Time",col
 		if (showTime) {
 			ds += " "+oh(d.getUTCHours())+":"+oh(d.getUTCMinutes());	
 		}		
-		return Misc.dateStr(d);
+		return ds;
 	};
 
 	const labels = [];
