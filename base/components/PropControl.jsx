@@ -493,7 +493,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		</>;
 	}
 
-	const diffWarning = warnOnUnpublished && warnOnUnpublished && <DiffWarning path={path} prop={prop} className="ml-1" />;
+	const diffWarning = warnOnUnpublished && <DiffWarning path={path} prop={prop} className="ml-1" />;
 
 	// NB: pass in recursing error to avoid an infinite loop with the date error handling above.
 	// let props2 = Object.assign({}, props);
@@ -505,7 +505,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// ??Include a css class for styling or hacky code?? "control-"+prop,
 	// focus?? see https://blog.danieljohnson.io/react-ref-autofocus/
 	return (
-		<FormGroup check={isCheck} 
+		<FormGroup check={isCheck}
 			className={space(type, className, inline && !isCheck && 'form-inline', error && 'has-error')} 
 			size={size} 
 		>
