@@ -168,6 +168,15 @@ function ListLoad({ type, status, servlet, navpage,
 		// filtered out locally - reduce the total
 		total = items.length;
 	}
+	
+	// HACK: an exact id match comes first (this is important for PropControlDataItem, and arguably useful elsewhere)
+	if (rawFilter) {
+		const exactMatch = items.find(item => getId(item)===rawFilter);
+		if (exactMatch) {
+			items = items.filter(item => item !== exactMatch);
+			items.unshift(exactMatch);
+		}
+	}
 
 	// NB: you can get truncated lists with pageSize but no pageSelectID (e.g. see PropControlDataItem)
 
