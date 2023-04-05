@@ -327,7 +327,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// TODO refactor to use `storeValue` in preference to `value` as it is unambiguous
 	// HACK: for now, we use both as theres a lot of code that refers to value, but its fiddly to update it all)
 	let storeValue = set? pvalue : DataStore.getValue(proppath);
-	let value = storeValue;
+	let value = storeValue; // TODO remove `value`
 
 	// What is rawValue?
 	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
@@ -535,7 +535,8 @@ function PropControl2(props) {
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
 	// unpack ??clean up
 	// Minor TODO: keep onUpload, which is a niche prop, in otherStuff
-	let { storeValue, value, rawValue, setRawValue, type, optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;
+	let { storeValue, value, rawValue, setRawValue, type, optional, required, path, prop, proppath, label, help, tooltip, error, validator, inline, onUpload, fast, ...stuff } = props;	
+	// Warning: by here, `value` should be ignored!
 	let { bg, set, saveFn, modelValueFromInput, ...otherStuff } = stuff;
 	// update is undefined by default, false if fast. See DataStore.update()
 	let update;
@@ -1204,8 +1205,8 @@ function FormControl({ value, type, required, size, className, prepend, append, 
    */
 PropControl.KControlType = new Enum(
 	"textarea html text search select radio password email color checkbox range"
-	// + " img imgUpload videoUpload bothUpload url yesNo" // Removed to avoid double-add
-	+ " location date year number arraytext keyset entryset address postcode json"
+	// + " img imgUpload videoUpload bothUpload url yesNo date " // Removed to avoid double-add
+	+ " location year number arraytext keyset entryset address postcode json"
 	// some Good-Loop data-classes
 	+ " XId keyvalue"
 	// My Data 

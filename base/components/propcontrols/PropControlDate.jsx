@@ -13,7 +13,7 @@ import PropControl, { fakeEvent, FormControl, registerControl } from '../PropCon
  * @param {Object} p 
  * @returns 
  */
-function PropControlDate2({ prop, storeValue, rawValue, onChange, ...otherStuff }) {
+function PropControlDate2({ prop, storeValue, rawValue, value, onChange, ...otherStuff }) {
 	// Roll back to native editor on 27/04/2022
 	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
@@ -26,6 +26,7 @@ function PropControlDate2({ prop, storeValue, rawValue, onChange, ...otherStuff 
 	if (rawValue && rawValue.includes("T")) {
 		rawValue = rawValue.substr(0, rawValue.indexOf("T"));
 	}
+	// NB: ignore "value" if it has been sent through -- if it has a time-part the widget would show blank. rawValue is what we use.
 
 	return (<div>
 		<FormControl type="date" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
