@@ -102,6 +102,8 @@ Advert.campaign = ad => ad.campaign;
 
 Advert.tags = ad => ad.tags;
 
+Advert.hideFromShowcase = ad => ad.hideFromShowcase;
+
 /**
  * @param {Advert} ad
  * @returns {!NGO[]}
@@ -165,36 +167,37 @@ Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
 		pvViewData.value
 		return viewcount4campaign = pivotDataLogData(pvViewData.value, ["country"]);
 	}
-	console.log("Shitfuck", pvViewData.value)
 	return viewcount4campaign;
 };
 
-Advert.fetchForAdvertiser = ({vertiserId, status}) => Advert.fetchForAdvertisers({vertiserIds:[vertiserId], status});
+Advert.fetchForAdvertiser = ({vertiserId, status, q}) => Advert.fetchForAdvertisers({vertiserIds:[vertiserId], status});
 
-Advert.fetchForAdvertisers = ({vertiserIds, status=KStatus.PUBLISHED}) => {
+Advert.fetchForAdvertisers = ({vertiserIds, status=KStatus.PUBLISHED, q}) => {
 	let pv = DataStore.fetch(['misc','pvAdsForVertisers',status,'all',vertiserIds.join(",")], () => {
-		return fetchForAdvertisers2(vertiserIds, status);
+		return fetchForAdvertisers2(vertiserIds, status, q);
 	});
 	return pv;
 }
 
-const fetchForAdvertisers2 = async (vertiserIds, status) => {
-	let sq = SearchQuery.setPropOr(null, "vertiser", vertiserIds);
+const fetchForAdvertisers2 = async (vertiserIds, status, q) => {
+	let sq = new SearchQuery(q);
+	sq = SearchQuery.setPropOr(sq, "vertiser", vertiserIds);
 	let pv = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
 	return await pv.promise;
 }
 
-Advert.fetchForCampaign = ({campaignId, status}) => Advert.fetchForCampaigns({campaignIds:[campaignId], status});
+Advert.fetchForCampaign = ({campaignId, status, q}) => Advert.fetchForCampaigns({campaignIds:[campaignId], status, q});
 
-Advert.fetchForCampaigns = ({campaignIds, status}) => {
+Advert.fetchForCampaigns = ({campaignIds, status, q}) => {
 	let pv = DataStore.fetch(['misc','pvAdsForCampaigns',status,'all',campaignIds.join(",")], () => {
-		return fetchForCampaigns2(campaignIds, status);
+		return fetchForCampaigns2(campaignIds, status, q);
 	});
 	return pv;
 }
 
-const fetchForCampaigns2 = async (campaignIds, status) => {
-	let sq = SearchQuery.setPropOr(null, "campaign", campaignIds);
+const fetchForCampaigns2 = async (campaignIds, status, q) => {
+	let sq = new SearchQuery(q);
+	sq = SearchQuery.setPropOr(sq, "campaign", campaignIds);
 	let pv = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
 	return await pv.promise;
 };
