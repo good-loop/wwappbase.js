@@ -114,12 +114,18 @@ export const getPeriodYear = (date = new Date()) => {
 	return {start, end, name: `${start.getFullYear()}`};
 };
 
+interface UrlParamPeriod extends Object {
+	start?: string,
+	end?: string, 
+	period?: string
+}
+
 /**
  * Read period (name) or start/end
  * @param {Object} urlParams If unset use getUrlVars()
  */
-export const getPeriodFromUrlParams = (urlParams:Object|null) : Period|null => {
-	if ( ! urlParams) urlParams = getUrlVars();
+export const getPeriodFromUrlParams = (urlParams: UrlParamPeriod | null) : Period|null => {
+	if ( ! urlParams) urlParams = getUrlVars(null, null);
 	let {start, end, period} = urlParams;
 	const periodObjFromName = periodFromName(period);
 	// User has set a named period (year, quarter, month)
@@ -129,12 +135,16 @@ export const getPeriodFromUrlParams = (urlParams:Object|null) : Period|null => {
 
 	// Custom period with start/end values
 	if (start || end) {
+		const dateFormat = /^\d{4}-\d{2}-\d{2}$/;
 		const periodFromStartEnd = {} as Period;
 		if (start) {			
-			periodFromStartEnd.start = asDate(start);
+			periodFromStartEnd.start = asDate(start)!;
 		}
 		if (end) {
-			periodFromStartEnd.end = asDate(end);
+			if (dateFormat.test(end)) {
+				end = end + `T23:59:59Z` // Our endpoint does not support 59.999Z
+			}
+			periodFromStartEnd.end = asDate(end)!;
 		}
 			// const [, yyyy, mm, dd] = end.match(/(\d+)-(\d+)-(\d+)/) as any[];
 			// period.end = new Date(yyyy, mm, dd);
@@ -149,7 +159,7 @@ export const getPeriodFromUrlParams = (urlParams:Object|null) : Period|null => {
 /** Convert a name to a period object
  * @returns {?Period}
 */
-export const periodFromName = (periodName:string) : Period|null  => {
+export const periodFromName = (periodName?:string) : Period|null  => {
 	if ( !periodName) {
 		return null;
 	}
