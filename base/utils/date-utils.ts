@@ -234,12 +234,11 @@ export const printPeriod = ({start, end, name}:Period, short=false) => {
 
 	// Prevent browsers in non UTC/ GMT Timezone shift the printing of the date
 	// E.g. 2023-03-28T23:59:59Z became 2023-03-29T07:59:59Z in Asia
-	const timezoneOffsetInMinutes = start.getTimezoneOffset();
-	const localStart = new Date(start.getTime() + timezoneOffsetInMinutes * 60 * 1000);
-	const localEnd = new Date(end.getTime() + timezoneOffsetInMinutes * 60 * 1000);
+	const startUTC = `${start.getUTCDate().toString()} ${shortMonths[start.getUTCMonth()]} ${start.getFullYear()}`;
+	const endUTC = `${end.getUTCDate().toString()} ${shortMonths[end.getUTCMonth()]} ${end.getFullYear()}`;
 
-	const pd = short ? printDateShort : dateStr;
-	return `${localStart ? pd(localStart) : ``} to ${localEnd ? pd(localEnd) : `now`}`;
+	// const pd = short ? printDateShort : dateStr;
+	return `${startUTC || ``} to ${endUTC || `now`}`;
 };
 
 // export const periodKey = ({start, end, name}) : String => {
