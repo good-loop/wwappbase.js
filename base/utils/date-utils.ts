@@ -232,8 +232,16 @@ export const printPeriod = ({start, end, name}:Period, short=false) => {
 	end = new Date(end);
 	end.setSeconds(end.getSeconds() - 1);
 
-	const pd = short ? printDateShort : dateStr;
-	return `${start ? pd(start) : ``} to ${end ? pd(end) : `now`}`;
+	// Prevent browsers in non UTC/ GMT Timezone shift the printing of the date
+	// E.g. 2023-03-28T23:59:59Z became 2023-03-29T07:59:59Z in Asia
+	let startUTC = `${start.getUTCDate().toString()} ${shortMonths[start.getUTCMonth()]} ${start.getFullYear()}`;
+	let endUTC = `${end.getUTCDate().toString()} ${shortMonths[end.getUTCMonth()]} ${end.getFullYear()}`;
+
+	if (short) {
+		startUTC = startUTC.substring(0, startUTC.length-5);
+		endUTC = endUTC.substring(0, endUTC.length-5);
+	}
+	return `${startUTC || ``} to ${endUTC || `now`}`;
 };
 
 // export const periodKey = ({start, end, name}) : String => {
