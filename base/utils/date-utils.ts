@@ -6,6 +6,11 @@
 
 import { getUrlVars } from "./miscutils";
 
+interface UrlParamPeriod extends Object {
+	start?: string,
+	end?: string, 
+	period?: string
+}
 
 /**
  * 0 = Sunday
@@ -36,10 +41,9 @@ export const asDate = (s: Date|String) : Date|null => {
 };
 
 /**
- * @param {?Date|String} d
- * @return {?String} iso format (date only, no time-of-day part) e.g. 2020-10-18
+ * @return string in iso format (date only, no time-of-day part) e.g. 2020-10-18
  */
-export const isoDate = (d: Date|String) => d? asDate(d).toISOString().replace(/T.+/, '') : null;
+export const isoDate = (d: Date|string): string => asDate(d)!.toISOString().replace(/T.+/, '');
 
 /**
  * Locale-independent
@@ -59,7 +63,7 @@ export const printDateShort = (date : Date) => {
 /**
  * Human-readable, unambiguous date+time string which doesn't depend on toLocaleString support
  */
-export const dateTimeString = (d) => (
+export const dateTimeString = (d: Date) => (
 	`${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()} ${oh(d.getHours())}:${oh(d.getMinutes())}`
 );
 
@@ -114,12 +118,6 @@ export const getPeriodYear = (date = new Date()) => {
 	return {start, end, name: `${start.getFullYear()}`};
 };
 
-interface UrlParamPeriod extends Object {
-	start?: string,
-	end?: string, 
-	period?: string
-}
-
 /**
  * Read period (name) or start/end
  * @param {Object} urlParams If unset use getUrlVars()
@@ -135,13 +133,13 @@ export const getPeriodFromUrlParams = (urlParams: UrlParamPeriod | null) : Perio
 
 	// Custom period with start/end values
 	if (start || end) {
-		const dateFormat = /^\d{4}-\d{2}-\d{2}$/;
+		
 		const periodFromStartEnd = {} as Period;
 		if (start) {			
 			periodFromStartEnd.start = asDate(start)!;
 		}
 		if (end) {
-			if (dateFormat.test(end)) {
+			if (dateFormatRegex.test(end)) {
 				end = end + `T23:59:59Z` // Our endpoint does not support 59.999Z
 			}
 			periodFromStartEnd.end = asDate(end)!;
@@ -173,21 +171,21 @@ export const periodFromName = (periodName?:string) : Period|null  => {
 	let refDate = new Date();
 	
 	// eg "2022-Q2"
-	const quarterMatches = periodName.match(quarterRegex);
+	const quarterMatches = periodName.match(quarterRegex) as unknown as number[];
 	if (quarterMatches) {
 		refDate.setFullYear(quarterMatches[1]);
 		refDate.setMonth(3 * (quarterMatches[2] - 1));
 		return getPeriodQuarter(refDate);
 	}
 	// eg "2022-04"
-	const monthMatches = periodName.match(monthRegex);
+	const monthMatches = periodName.match(monthRegex) as unknown as number[];
 	if (monthMatches) {
 		refDate.setFullYear(monthMatches[1]);
 		refDate.setMonth(monthMatches[2]);
 		return getPeriodMonth(refDate);
 	}
 	// eg "2022"
-	const yearMatches = periodName.match(yearRegex);
+	const yearMatches = periodName.match(yearRegex) as unknown as number[];
 	if (yearMatches) {
 		refDate.setFullYear(yearMatches[1]);
 		return getPeriodYear(refDate)
@@ -195,29 +193,7 @@ export const periodFromName = (periodName?:string) : Period|null  => {
 	throw new Error("Unrecognised period "+periodName);
 };
 
-
-/** Take a period object and transform it to use as URL params */
-export const periodToParams = ({name, start, end}) : Period => {
-	const newVals = {} as Period;
-	if (name) {
-		newVals.period = name;
-	} else {
-		// Custom period - remove period name from URL params and set start/end
-		if (start) newVals.start = asDate(start).toISOString();
-		if (end) {
-			// url params don't have to be pretty (push prettiness up to rendering code)
-			newVals.end = asDate(end).toISOString();
-			// // Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
-			// end = new Date(end);
-			// end.setDate(end.getDate() - 1);
-			// newVals.end = isoDate(end);
-		}
-	}
-	return newVals;
-}
-
 const quarterNames = [, '1st', '2nd', '3rd', '4th'];
-
 
 /**
  * Turn period object into clear human-readable text
@@ -232,12 +208,12 @@ export const printPeriod = ({start, end, name}:Period, short=false) => {
 		// Is it a named period (quarter, month, year)?
 		const quarterMatches = name.match(quarterRegex);
 		if (quarterMatches) {
-			const [, year, num] = quarterMatches;
+			const [, year, num] = quarterMatches as unknown as number[];
 			if (short) return `Q${num} ${year}`; // eg "Q1 2022"
 			return `${year} ${quarterNames[num]} quarter`; // eg "2022 1st Quarter"
 		}
 
-		const monthMatches = name.match(monthRegex);
+		const monthMatches = name.match(monthRegex) as unknown as number[];
 		if (monthMatches) {
 			const [, month, year] = monthMatches;
 			return `${shortMonths[month]} ${year}`; // eg "Jan 2022"
@@ -269,3 +245,4 @@ const quarterRegex = /^(\d\d?\d?\d?)-Q(\d)$/;
 const monthRegex = /^(\d\d?\d?\d?)-(\d\d?)$/;
 const yearRegex = /^(\d\d?\d?\d?)$/;
 
+const dateFormatRegex: RegExp = /^\d{4}-\d{2}-\d{2}$/;
