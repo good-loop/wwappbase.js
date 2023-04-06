@@ -232,8 +232,14 @@ export const printPeriod = ({start, end, name}:Period, short=false) => {
 	end = new Date(end);
 	end.setSeconds(end.getSeconds() - 1);
 
+	// Prevent browsers in non UTC/ GMT Timezone shift the printing of the date
+	// E.g. 2023-03-28T23:59:59Z became 2023-03-29T07:59:59Z in Asia
+	const timezoneOffsetInMinutes = start.getTimezoneOffset();
+	const localStart = new Date(start.getTime() + timezoneOffsetInMinutes * 60 * 1000);
+	const localEnd = new Date(end.getTime() + timezoneOffsetInMinutes * 60 * 1000);
+
 	const pd = short ? printDateShort : dateStr;
-	return `${start ? pd(start) : ``} to ${end ? pd(end) : `now`}`;
+	return `${localStart ? pd(localStart) : ``} to ${localEnd ? pd(localEnd) : `now`}`;
 };
 
 // export const periodKey = ({start, end, name}) : String => {
