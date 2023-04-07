@@ -73,7 +73,7 @@ export const dateTimeString = (d: Date) => (
 // FROM dashutils
 
 
-export type Period = {start:Date, end:Date, name:String|null};
+export type Period = {start:Date, end:Date, name:string|null};
 
 /**
  * ??timezone handling??
@@ -194,6 +194,29 @@ export const periodFromName = (periodName?:string) : Period|null  => {
 };
 
 const quarterNames = [, '1st', '2nd', '3rd', '4th'];
+
+/**
+ * Take a period object and transform it to use as URL params.
+ * This for handling name > peroid is filter.
+ */
+export const periodToParams = (period: Period) : Period => {
+	const newVals = {} as {[key: string]: Date | string};
+	if (period.name) {
+		newVals.period = period.name as string;
+	} else {
+		// Custom period - remove period name from URL params and set start/end
+		if (period.start) newVals.start = asDate(period.start)!.toISOString();
+		if (period.end) {
+			// url params don't have to be pretty (push prettiness up to rendering code)
+			newVals.end = asDate(period.end)!.toISOString();
+			// // Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
+			// end = new Date(end);
+			// end.setDate(end.getDate() - 1);
+			// newVals.end = isoDate(end);
+		}
+	}
+	return newVals as unknown as Period;
+}
 
 /**
  * Turn period object into clear human-readable text
