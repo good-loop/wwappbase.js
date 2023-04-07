@@ -6,13 +6,14 @@ import { getDataItem, getDataList, setWindowTitle } from '../plumbing/Crud';
 import C from '../../C';
 import DataStore from '../plumbing/DataStore';
 import SearchQuery from '../searchquery';
-import { space } from '../utils/miscutils';
+import { space, alphabetSort } from '../utils/miscutils';
 import ServerIO from '../../plumbing/ServerIO';
 import md5 from 'md5';
 import Campaign from './Campaign';
 import Advertiser from './Advertiser';
 import Advert from './Advert';
 import Money from './Money';
+import { assert } from '../utils/assert';
 
 /* ------- Data Functions --------- */
 
@@ -22,16 +23,23 @@ import Money from './Money';
  * @param {String} p.itemId
  * @param {String} p.itemType
  * @param {KStatus} p.status 
+ * @param {?Boolean} p.nocache
  * @returns {Object} {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads}
  */
-export const fetchImpactBaseObjects = ({itemId, itemType, status}) => {
+export const fetchImpactBaseObjects = ({itemId, itemType, status, nocache}) => {
+	assert(itemId);
+	assert(itemType);
+	assert(status);
+	
 	return DataStore.fetch(['misc','impactBaseObjects',itemType,status,'all',itemId], () => {
 		return fetchImpactBaseObjects2({itemId, itemType, status});
-	});
+	}, {cachePeriod:nocache?1:null});
 }
 
 
 const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
+
+	console.log("CALLED WOWWWEEEEEEEEEEEEEEEE DSAUEWQUEQDUSAU DOODADODADOOODADOODAOODADAOOODADOOODA??");
 
 	let pvCampaign, campaign;
 	let pvBrand, brand, brandId;
@@ -43,13 +51,13 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 	let ads;
 
 	// Fetch campaign object if specified
-	if (itemType === "campaign") {
+	if (itemType === "campaign" || itemType === C.TYPES.Campaign) {
 		pvCampaign = getDataItem({type: C.TYPES.Campaign, status, id:itemId});
 		campaign = await pvCampaign.promise;
 		//if (pvCampaign.error) throw pvCampaign.error;
 		// If we have a campaign, use it to find the brand
 		brandId = campaign?.vertiser;
-	} else if (itemType === "brand") {
+	} else if (itemType === "brand" || itemType === C.TYPES.Advertiser) {
 		// Otherwise use the URL
 		brandId = itemId;
 	}
@@ -65,7 +73,7 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 		//if (pvMasterBrand.error) throw pvMasterBrand.error;
 	}
 	// Find any subBrands of this brand (technically brands should only have a parent OR children - but might be handy to make longer brand trees in future)
-	pvSubBrands = Advertiser.getChildren(brand.id);
+	pvSubBrands = Advertiser.getChildren(brand.id, status);
 	subBrands = List.hits(await pvSubBrands.promise);
 	//if (pvSubBrands.error) throw pvSubBrands.error;
 	// Don't look for subCampaigns if this is a campaign
@@ -126,6 +134,7 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 	}
 	// Combine into one list
 	ads = [...adsFromBrands, ...adsFromCampaigns];
+	ads.sort(alphabetSort);
 
 	// Mark which campaigns and brands have any donations, and which don't
 	impactDebits.forEach(debit => {

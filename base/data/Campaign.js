@@ -139,10 +139,7 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
  * @returns PromiseValue(Campaign)
  */
 Campaign.fetchForAdvertisers = (vertiserIds, status=KStatus.DRAFT) => {
-	let pv = DataStore.fetch(['misc','pvCampaignsForVertisers',status,'all',vertiserIds.join(",")], () => {
-		return fetchVertisers2(vertiserIds, status);
-	});
-	return pv;
+	return new PromiseValue(fetchVertisers2(vertiserIds, status));
 }
 
 const fetchVertisers2 = async (vertiserIds, status) => {
@@ -206,13 +203,15 @@ Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
 	// We have a couple of chained async calls. So we use an async method inside DataStore.fetch().	
 	// NB: tried using plain async/await -- this is awkward with React render methods as the fresh Promise objects are always un-resolved at the moment of return.
 	// NB: tried using a PromiseValue.pending() without fetch() -- again having fresh objects returned means they're un-resolved at that moment.
-	return DataStore.fetch(getListPath({type:"ImpactDebit",status,q:campaign.id+":getImpactDebits"}), async () => {
-		let q = SearchQuery.setProp(null, "campaign", campaign.id);			
-		let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
-		let v = await pvListImpDs.promise;
-		return v;
-	});
+	return new PromiseValue(getImpactDebits2(campaign, status));
 };
+
+const getImpactDebits2 = async (campaign, status) => {
+	let q = SearchQuery.setProp(null, "campaign", campaign.id);			
+	let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
+	let v = await pvListImpDs.promise;
+	return v;
+}
 
 /**
  * 
