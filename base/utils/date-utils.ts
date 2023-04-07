@@ -6,10 +6,10 @@
 
 import { getUrlVars } from "./miscutils";
 
-interface UrlParamPeriod extends Object {
+export interface UrlParamPeriod extends Object {
 	start?: string,
 	end?: string, 
-	period?: string
+	period?: string | Period
 }
 
 /**
@@ -125,7 +125,7 @@ export const getPeriodYear = (date = new Date()) => {
 export const getPeriodFromUrlParams = (urlParams: UrlParamPeriod | null) : Period|null => {
 	if ( ! urlParams) urlParams = getUrlVars(null, null);
 	let {start, end, period} = urlParams;
-	const periodObjFromName = periodFromName(period);
+	const periodObjFromName = periodFromName(period as string);
 	// User has set a named period (year, quarter, month)
 	if (periodObjFromName) {		
 		return periodObjFromName;
