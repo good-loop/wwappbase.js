@@ -104,6 +104,9 @@ export class PropControlParams {
 	/** @type {?string|boolean} As a convenience for a common case: if true, use the prop with title-case */
 	label;
 
+	/** @type {?string} */
+	type
+
 	/** 
 	 * @type {string[]} The DataStore path to item, e.g. [data, NGO, id].
 	 * 	Default: ['location','params'] which codes for the url
@@ -160,13 +163,19 @@ export class PropControlParams {
 	/** Optional pass in of the current value */
 	value;
 
-	/** @type {?String} Warning message to show, regardless of validator output */
+	/** @type {?string} Warning message to show, regardless of validator output */
 	warning
 
 	/**
 	 * @type {boolean} If true (the default) show a "Not Published Yet" warning if an edit to a published object is in draft only
 	 */
 	warnOnUnpublished = true;
+
+	/** @type {?Object} */
+	left
+
+	/** @type {?Object} */
+	right
 }; // ./PropControlParams
 
 

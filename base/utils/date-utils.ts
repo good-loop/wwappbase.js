@@ -7,6 +7,7 @@
 import { getUrlVars } from "./miscutils";
 
 export interface UrlParamPeriod extends Object {
+	scale?: string;
 	start?: string,
 	end?: string, 
 	period?: string | Period
