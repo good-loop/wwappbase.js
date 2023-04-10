@@ -13,6 +13,7 @@ import { getDataLogData, pivotDataLogData } from '../plumbing/DataLog';
 import SearchQuery from '../searchquery';
 import ServerIO from '../plumbing/ServerIOBase';
 import Branding from './Branding';
+import PromiseValue from '../promise-value';
 
 /**
  * See Advert.java
@@ -34,7 +35,17 @@ class Advert extends DataClass {
 		assMatch(base.vertiser, String, "Advert.js make() - no vertiser ID", base);		
 		// copy CTA??, legacyUnitBranch, variant info, and onX pixels (but nothing else, eg id name etc) from the default
 		let dad = Advert.defaultAdvert();
-		Object.assign(this, {legacyUnitBranch:dad.legacyUnitBranch, variantSpec: deepCopy(dad.variantSpec)});
+
+		
+		let tee = legacyBranches.value
+		let pv = PromiseValue.then(legacyBranches, () => console.log("LEWIS: !!!"), () => console.log("LEWIS: ???"));
+
+		// if legacyBranch failed to find a result, default to just using most recent version 
+		const defaultBranch = (legacyBranches.resolved && legacyBranches.value.length > 1 && legacyBranches.value[1] || "") 
+		console.log("LEWIS: " , defaultBranch, legacyBranches, tee)
+		
+		// LEWIS HERE !!!
+		Object.assign(this, {legacyUnitBranch:defaultBranch, variantSpec: deepCopy(dad.variantSpec)});
 		// ..copy default onX pixels
 		if (dad.advanced) {
 			if ( ! this.advanced) this.advanced = {};
@@ -66,6 +77,12 @@ C.DEFAULT_AD_ID = 'default-advert';
 Advert.defaultAdvert = () => {
 	let swallow = (C.SERVER_TYPE !== 'test' && C.SERVER_TYPE !== 'stage'); // NB: local will often fail; production shouldn't, but should fail quietly if it does
 	const pvAd = getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status: KStatus.PUBLISHED, swallow});
+	const legacyBranches = DataStore.fetch(['misc', 'legacybranches'], () => {
+		return ServerIO.load(`${ServerIO.PORTAL_ENDPOINT}/data/legacy-adunit-branches.json`, {});
+	})
+	let leg = null
+	PromiseValue.then(legacyBranches, () => leg = legacyBranches.value[1], () => leg = "")
+	pvAd.value.legacyUnitBranch = leg;
 	return pvAd.value;
 };
 
@@ -151,7 +168,6 @@ Advert.viewcountByCampaign = ads => {
  */
  Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
 	if (!ads || ads.length === 0) {
-		console.log('res: ads is empty')
 		return {}
 	}
 	// Get ad viewing data
@@ -160,12 +176,10 @@ Advert.viewcountByCampaign = ads => {
 	sq = SearchQuery.and(sq, qads);
 	let pvViewData = getDataLogData({q:sq.query, breakdowns:['country'], start:start, end:end, name:"view-data",dataspace:'gl'});
 	let viewcount4campaign = {};
-	console.log("breakdown inside viewcountByCountry", viewcount4campaign, sq)
 	if (pvViewData.value) {
 		pvViewData.value
 		return viewcount4campaign = pivotDataLogData(pvViewData.value, ["country"]);
 	}
-	console.log("Shitfuck", pvViewData.value)
 	return viewcount4campaign;
 };
 
