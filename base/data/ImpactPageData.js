@@ -39,8 +39,6 @@ export const fetchImpactBaseObjects = ({itemId, itemType, status, nocache}) => {
 
 const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 
-	console.log("CALLED WOWWWEEEEEEEEEEEEEEEE DSAUEWQUEQDUSAU DOODADODADOOODADOODAOODADAOOODADOOODA??");
-
 	let pvCampaign, campaign;
 	let pvBrand, brand, brandId;
 	let pvMasterBrand, masterBrand;

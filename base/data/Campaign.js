@@ -208,7 +208,7 @@ Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
 
 const getImpactDebits2 = async (campaign, status) => {
 	let q = SearchQuery.setProp(null, "campaign", campaign.id);			
-	let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
+	let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
 	let v = await pvListImpDs.promise;
 	return v;
 }
