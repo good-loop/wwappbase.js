@@ -1,0 +1,27 @@
+.history-display {
+    position: fixed;
+    top: 5rem;
+    right: 2rem;
+    width: 20rem;
+    z-index: 99;
+
+    .card-body {
+        overflow: auto;
+        height: 25rem;
+
+        .entry {
+            border-bottom: 1px solid @gl-light-grey;
+            flex-grow: 1;
+            &:hover {
+                background-color: @gl-light-grey;
+                cursor: pointer;
+            }
+        }
+        .undo {
+            &:hover {
+                background-color: @gl-light-grey;
+                cursor: pointer;
+            }
+        }
+    }
+}

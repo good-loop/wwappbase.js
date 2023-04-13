@@ -4,7 +4,8 @@ import _ from 'lodash';
 import { assert, assMatch, match } from '../utils/assert';
 import C from '../CBase';
 import DataStore, { getDataPath, getListPath } from './DataStore';
-import DataClass, {getId, getName, getType, nonce} from '../data/DataClass';
+import DataDiff from './DataDiff';
+import DataClass, {getId, getName, getType, getStatus, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from '../youagain';
 import {encURI, mapkv, parseHash} from '../utils/miscutils';
@@ -24,10 +25,11 @@ import SearchQuery from '../searchquery';
  * @param {Object} p
  * @param {?Item} p.item Used for preserving local edits during the crud op. Can be null, in which case the item is got from DataStore
  * @param {?Item} p.previous If provided, do a diff based save
+ * @param {?Array} p.diffs If provided, overrides previous for a diff based save
  * @param {?KStatus} p.status Usually null
  * @returns PromiseValue(DataItem)
  */
-const crud = ({type, id, domain, status, action, item, previous, swallow, localStorage=false}) => {
+const crud = ({type, id, domain, status, action, item, previous, diffs, swallow, localStorage=false}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
@@ -67,7 +69,9 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 	// NB: get getornew COULD return fast if the item is in DS. However this is probably handled already in a DataStore.fetch() wrapper
 
 	// mark the widget as saving (defer 'cos this triggers a react redraw, which cant be done inside a render, where we might be)
-	_.defer(() => DataStore.setLocalEditsStatus(type, id, C.STATUS.saving));
+	_.defer(() => {
+		DataStore.setLocalEditsStatus(type, id, C.STATUS.saving)
+	});
 	
 	// const status = serverStatusForAction(action);
 	
@@ -75,8 +79,8 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 	const itemBefore = deepCopy(item);
 
 	// call the server
-	const p = SIO_crud(type, item, previous, action, {swallow})
-		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage}) )
+	const p = SIO_crud(type, item, previous, diffs, action, {swallow})
+		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage, diffSave:!!previous || diffs}) )
 		.catch(err => {
 			// bleurgh
 			console.warn(err);
@@ -151,7 +155,7 @@ const localLoad = path => {
  * @param {*} freshItem 
  * @param {*} recentLocalDiffs 
  */
-const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
+export const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
 	// Normal case
 	if ( ! Person.isa(freshItem)) {
 		jsonpatch.applyPatch(freshItem, recentLocalDiffs);
@@ -184,13 +188,17 @@ const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
  * @param {Object} p 
  * @returns {?DataClass} Item null on error
  */
-const crud2_processResponse = ({res, item, itemBefore, id, action, type, localStorage}) => {
+const crud2_processResponse = ({res, item, itemBefore, id, action, type, localStorage, diffSave}) => {
 	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
 	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 	const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
 	
 	// Update DS with the returned item, but only if the crud action went OK
 	const freshItem = JSend.success(res) && JSend.data(res);
+
+	// ...copy it to allow for edits ??by whom?
+	let draftItem = _.cloneDeep(freshItem);
+
 	if (freshItem) {
 		// Preserve very recent local edits (which we haven't yet told the server about)
 		let recentLocalDiffs = jsonpatch.compare(itemBefore, item);
@@ -199,22 +207,23 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 			applyPatch(freshItem, recentLocalDiffs, item, itemBefore);
 		}
 
-		if (action==='publish') {				
-			// set local published data				
-			DataStore.setValue(pubpath, freshItem);				
-			// update the draft version on a publish or a save
-			// ...copy it to allow for edits ??by whom?
-			let draftItem = _.cloneDeep(freshItem);
-			DataStore.setValue(draftpath, draftItem);
+		if (action==='publish') {
+			// set local published data
+			DataStore.setValue(pubpath, freshItem);
+			// update the draft version on a publish or a save - but only if not done by diff!
+			// if it's done by diff, the returned published obj will not contain other draft edits and it will get locally overriden
+			if (!diffSave) DataStore.setValue(draftpath, draftItem);
+			DataDiff.clearDataDiffs(type, id); // data history now matches server
 		}
 		if (action==='save') {	
 			// NB: the recent diff handling above should manage the latency issue around setting the draft item
-			console.log("post-save update", JSON.stringify(itemBefore), freshItem);
+			console.log("post-save update", itemBefore, freshItem);
 			// HACK to prevent MoneyScript flickering text bug
 			if (getType(item)==="PlanDoc" && item) {
 				freshItem.sheets = item.sheets;
 			}
 			DataStore.setValue(draftpath, freshItem);
+			DataDiff.clearDataDiffs(type, id); // data history now matches server
 		}
 		// save to local and DS?
 		if (localStorage) {
@@ -263,11 +272,11 @@ const errorPath = ({type, id, action}) => {
  * @param {Object} p
  * @returns PromiseValue(DataItem)
  */
-const saveEdits = ({type, id, item, previous, swallow}) => {
+const saveEdits = ({type, id, item, previous, diffs, swallow}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
-	return crud({type, id, action: 'save', item, previous, swallow});
+	return crud({type, id, action: 'save', item, previous, diffs, swallow});
 };
 ActionMan.saveEdits = saveEdits;
 
@@ -353,7 +362,7 @@ ActionMan.unpublish = (type, id) => unpublish({type,id});
  * @param {?DataClass} p.item 
  * @returns PromiseValue(DataClass)
  */
-export const publish = ({type,id,item,swallow}) => {
+export const publish = ({type,id,item,previous,swallow}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(type, String);
@@ -367,7 +376,7 @@ export const publish = ({type,id,item,swallow}) => {
 	// optimistic list mod
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
-	return crud({type, id, action: 'publish', item, swallow})
+	return crud({type, id, action: 'publish', item, previous, swallow})
 		.promise.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
@@ -382,8 +391,8 @@ export const publish = ({type,id,item,swallow}) => {
  * @param {!string} id 
  * @param {?Item} item 
  */
-const publishEdits = (type, id, item) => {
-	return publish({type, id, item});
+const publishEdits = (type, id, item, previous) => {
+	return publish({type, id, item, previous});
 };
 ActionMan.publishEdits = publishEdits;
 
@@ -538,7 +547,7 @@ const serverStatusForAction = (action) => {
  * @param {?Boolean} p.params.swallow
  * @returns {Promise} from ServerIO.load()
  */
-const SIO_crud = function(type, item, previous, action, params={}) {	
+const SIO_crud = function(type, item, previous, diffs, action, params={}) {	
 	assert(C.TYPES.has(type), type);
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
@@ -551,7 +560,10 @@ const SIO_crud = function(type, item, previous, action, params={}) {
 	// NB: don't send data for get
 	if (action!==C.CRUDACTION.get) {
 		// diff?
-		if (previous) {
+		if (diffs) {
+			console.log("crud", "using manual diffs", diffs);
+			data.diff = JSON.stringify(diffs);
+		} else if (previous) {
 			let diff = jsonDiff(previous, item);
 			// no edits and action=save? skip save
 			if ( ! diff.length && action==='save') {
@@ -579,6 +591,7 @@ const SIO_crud = function(type, item, previous, action, params={}) {
 	// NB: load() includes handle messages
 	let id = getId(item);
 	let url = ServerIO.getUrlForItem({type, id, status});
+	console.log("crud", params);
 	return ServerIO.load(url, params);
 	// NB: our data processing is then done in crud2_processResponse()
 };
@@ -687,6 +700,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  * @param {?String} p.sort e.g. "start-desc"
  * @param {?string|Date} p.start Add a time-filter. Usually unset.
  * @param {?string|Date} p.end Add a time-filter. Usually unset.
+ * @param {?Boolean} save save these objects also in their respective data paths, so they will update properly
  * @returns PromiseValue<{hits: Object[]}>
  * 
  * WARNING: This should usually be run through DataStore.resolveDataList() before using
@@ -696,6 +710,8 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  */
  const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {	
 	assert(C.TYPES.has(type), type);
+	assert(C.KStatus.has(status), status);
+	if (type===C.TYPES.Advert) console.log("Hubbah?? gooobah doobah daaah?? getDataList boi")
 	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found	
 	if (ids && ids.length) {
 		q = SearchQuery.setPropOr(q, "id", ids).query;
@@ -705,11 +721,32 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 	}
 	if (q) assMatch(q, String); // NB: q should not be a SearchQuery for the functions below
 	const lpath = getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});
-	const pv = DataStore.fetch(lpath, () => {
-		return ServerIO.list({type, status, q, prefix, start, end, size, sort, domain, ...other});
-	});	
-	// console.log("ActionMan.list", q, prefix, pv);
+	const pv = DataStore.fetch(lpath, () => getDataList2_syncData({type,status,q,prefix,start,end,size,sort,domain, ...other}))
 	return pv;
+};
+
+const getDataList2_syncData = async ({type,status,q,prefix,start,end,size,sort,domain, ...other}) => {
+	// console.log("ActionMan.list", q, prefix, pv);
+	const listData = await ServerIO.list({type, status, q, prefix, start, end, size, sort, domain, ...other});
+	const list = JSend.data(listData);
+	list.hits = List.hits(list).map(item => {
+		// check if we have a data version of this item stored already - if we do, update it before returning
+		// this will preserve any local edits done
+		// N.B: We do this below already, but it won't be updated after DataStore caches it the first time
+		if (getId(item)) {
+			const dataPath = DataStore.getPathForItem(status, item);
+			// don't use getDataItem - we've already fetched an object, no need to do so twice
+			const savedData = DataStore.getValue(dataPath);
+			if (!savedData) {
+				DataStore.setValue(dataPath, item);
+				return item;
+			} else {
+				return savedData;
+			}
+		}
+		return item;
+	});
+	return listData;
 };
 
 ActionMan.list = getDataList;
@@ -781,7 +818,6 @@ const setWindowTitle = item => {
 	}
 	window.document.title = title;
 };
-
 
 const CRUD = {
 };

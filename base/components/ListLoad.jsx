@@ -145,6 +145,7 @@ function ListLoad({ type, status, servlet, navpage,
 		// filter out duplicate-id (paranoia: this should already have been done server side)
 		// NB: this prefers the 1st occurrence and preserves the list order.
 		list = pvItems.value;
+		console.log("LISTLOAD items??", list, pvItems);
 		fastFilter = ! pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
 		isLoading = ! (pvItemsFiltered.resolved && pvItemsAll.resolved);
 		error = pvItems.error;

@@ -71,7 +71,10 @@ const intValidator = (val, rawVal) => {
 export function Help({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) {
 	const [id] = useState(() => `help-${nonce()}`); // Prefixed because HTML ID must begin with a letter
 	const [open, setOpen] = useState(false);
-	const toggle = () => setOpen(!open);
+	const toggle = (e) => {
+		stopEvent(e);
+		setOpen(!open);
+	}
 
 	return <>
 		<a id={id} className={space(className, `text-${color}`)} {...props}>{icon}</a>
@@ -507,6 +510,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	return (
 		<FormGroup check={isCheck} 
 			className={space(type, className, inline && !isCheck && 'form-inline', error && 'has-error')} 
+			id={proppath.join("-")}
 			size={size} 
 		>
 			{(label || tooltip) && !isCheck &&

@@ -6,6 +6,7 @@ import { assert, assMatch } from '../utils/assert';
 
 import Misc from './Misc';
 import DataStore, { getPath } from '../plumbing/DataStore';
+import DataDiff, { useDataHistory, useCtrlZCapture } from '../plumbing/DataDiff';
 import ServerIO from '../plumbing/ServerIOBase';
 import ActionMan from '../plumbing/ActionManBase';
 import C from '../CBase';
@@ -17,7 +18,7 @@ import Icon from './Icon';
 import { goto, modifyPage } from '../plumbing/glrouter';
 import Login from '../youagain';
 import { Help } from './PropControl';
-import { getObjectValueByPath, setObjectValueByPath } from '../utils/miscutils';
+import { getObjectValueByPath, setObjectValueByPath, space } from '../utils/miscutils';
 
 /**
  * 
@@ -63,7 +64,9 @@ const saveDraftFnFactory = ({type,key}) => {
 		sdfn = _.debounce(
 			({ type, id, item, previous }) => {
 				// console.log("...saveDraftFn :)");
-				let pv = saveEdits({ type, id, item, previous, swallow:true });
+				const diffs = DataDiff.getDataDiffs(type, id);
+				console.log("diffs???", diffs)
+				let pv = saveEdits({ type, id, item, previous, diffs, swallow:true });
 				// TODO how can we capture errors and show them on the save button??
 				return true;
 			}, DEBOUNCE_MSECS
@@ -140,9 +143,11 @@ const check = ok => {
  * @param {?String} p.size Bootstrap size e.g. "lg"
  * @param {?string} p.position fixed|relative
  * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
- * @param {?Boolean} p.oneButton render as a single button instead of a large footer bar (useful for embedding in smaller controls)
- * @param {?Array[]} p.targetPaths a list of paths to props in the item to target for saving - ignores any other changes. used with oneButton
  * A snapshot is taken the first time this renders.
+ * @param {?Boolean} p.oneButton render as a single button, for embedding controls for one object in a page dedicated to another
+ * @param {?Array[]} p.targetPaths a list of paths to props in the item to target for saving - ignores any other changes. used with oneButton.
+ * format: [[path1], [path2]] OR [path]
+ * 
  */
 function SavePublishDeleteEtc({
 	type, id,
@@ -166,18 +171,16 @@ function SavePublishDeleteEtc({
 
 	assert(C.TYPES.has(type), 'SavePublishDeleteEtc - not a type: ' + type);
 	assMatch(id, String);
+	
+	// For checking if we need to save with targetPaths
+	// Also for undo history
+	useDataHistory(type, id, true);
 
 	let localStatus = DataStore.getLocalEditsStatus(type, id) || C.STATUS.clean;
 	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.issaveerror(localStatus);
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
-	let item = DataStore.getData({ status, type, id });	
-	console.log("ITEM STATUS", item?.status, item?.name);
-	// Keep a copy of the draft in case we mess with it later (e.g. targetPaths)
-	let draftItem = _.cloneDeep(item);
-
-	// If we use target paths, our localStatus will not match what DataStore thinks - track it ourselves
-	const [targetPropsChanged, setTargetPropsChanged] = useState(false);
+	let item = DataStore.getData({ status, type, id });
 
 	// If target paths is set, diffs must be used
 	if (targetPaths) {
@@ -196,40 +199,45 @@ function SavePublishDeleteEtc({
 
 	// If targetPaths is true, use the published item as a clean comparison object
 	let previous = targetPaths ? pubv : null;
-	// If "sendDiff" is true, this will store an unchanged-from-server snapshot of the item
-	// Any time the target object status becomes "exists" and "unchanged from server", take a snapshot
-	if (sendDiff && !previous) {
-		// NB: If useState() were used to hold `previous`, there is a subtle bug: if the editor is changed in between debounced saves, then previous will reset to null.
-		const prevPath = ['widget', 'SavePublishDeleteEtc', type, id];
-		previous = DataStore.getValue(prevPath);
-		useEffect(() => {
-			if (item && !isdirty) {
-				// console.log("set previous")
-				DataStore.setValue(prevPath, _.cloneDeep(item));
-			}
-		}, [item, isdirty]);
-	}
 
 	// Restrict item changes to targeted paths
-	if (targetPaths && targetPaths.length && item && pubv) {
+	if (targetPaths && targetPaths.length) {
+		// format to be niceys :))
 		if (!_.isArray(targetPaths[0])) targetPaths = [[targetPaths[0]]]
-		let restrictedItem = _.cloneDeep(pubv);
-		targetPaths.forEach(targetPath => {
-			const draftVal = getObjectValueByPath(item, targetPath);
-			setObjectValueByPath(restrictedItem, targetPath, draftVal);
-		});
-		item = restrictedItem;
+		if (item && pubv) {
+			let restrictedItem = _.cloneDeep(pubv);
+			targetPaths.forEach(targetPath => {
+				const draftVal = getObjectValueByPath(item, targetPath);
+				setObjectValueByPath(restrictedItem, targetPath, draftVal);
+			});
+			restrictedItem.status = item.status;
+			item = restrictedItem;
+		}
 	}
 
 	// request a save/publish?
 	if (isdirty && !isSaving) {
-		if (autoPublish) {
-			// Use last published item as previous for comparison
-			autoPublishFn({ type, id, item, previous });
-		} else if (autoSave) {
-			const saveDraftFn = saveDraftFnFactory({type, key:id});
-			// Make sure we save the full draft - not just the restricted item targetPaths creates
-			saveDraftFn({ type, id, item, previous, swallow:true }); // auto-save hides errors TODO show a warning icon on the widget
+		let skip = false;
+		if (targetPaths) {
+			const lastDiff = DataDiff.getLastDataDiff(type, id);
+			if (lastDiff) {
+				const tpsAsStr = targetPaths.map(tp => "/"+tp.join("/"));
+				if (!tpsAsStr.includes(lastDiff.path)) {
+					skip = true;
+					console.log("SavePublishDeleteEtc: Skipping save of non-targeted change for "+type+":"+id, lastDiff);
+				}
+			} else {
+				console.log("SavePublishDeleteEtc: Doing precautionary no-history save for "+type+":"+id);
+			}
+		}
+		if (!skip) {
+			if (autoPublish) {
+				autoPublishFn({ type, id, item, previous });
+			} else if (autoSave) {
+				const saveDraftFn = saveDraftFnFactory({type, key:id});
+				// Make sure we save the full draft - not just the restricted item targetPaths creates
+				saveDraftFn({ type, id, item, swallow:true }); // auto-save hides errors TODO show a warning icon on the widget
+			}
 		}
 	}
 
@@ -239,7 +247,12 @@ function SavePublishDeleteEtc({
 	// if nothing has been edited, then we can't publish, save, or discard
 	// ??this no longer works as we force the item to be pulled from "DRAFT"
 	// will therefore never have status of "PUBLISHED" <- what about an unmodified published item??
-	let noEdits = false//item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && !targetPropsChanged;
+	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus);
+	// if we have target paths then above will be inaccurate - test individual props
+	if (targetPaths) {
+		let diffs = DataDiff.getDataDiffsForProps(type, id, targetPaths);
+		noEdits = diffs.length === 0;
+	}
 
 	let disablePublish = isSaving || noEdits || cannotPublish || (oneButton && !pubExists);
 	let publishTooltip = cannotPublish ? publishTooltipText : (noEdits ? 'Nothing to publish' : 'Publish your edits!');
@@ -247,19 +260,28 @@ function SavePublishDeleteEtc({
 
 	const vis = { visibility: (isSaving ? 'visible' : 'hidden') };
 
-	let pubLabel = !isSaving ? ("Publish" + (pubExists ? " Edits" : "")) : "Saving...";
+	let pubLabel = !isSaving ? ("Publish" + (oneButton ? " " + type : "") + (pubExists ? " Edits" : "")) : "Saving...";
+	let help = null;
+	if (targetPaths) help = "This only saves " + targetPaths.map(tp => tp[tp.length - 1]).join(", ")+"!";
 	if (oneButton) {
-		if (!pubExists) pubLabel = "Not Published!";
+		if (!pubExists) {
+			pubLabel = "Not Published!";
+			help = "For safety, you can only publish a new item from it's own editor page";
+		}
 		else if (noEdits) pubLabel = "No changes!";
 	}
 
-	const PublishButton = () => <Button name="publish" color="primary" size={size} className="ml-2"
+	const PublishButton = ({className, ...props}) => <Button name="publish" color="primary" size={size} className={space("ml-2", className)}
 		disabled={disablePublish} title={publishTooltip}
-		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item, previous})}>
-		{pubLabel} {oneButton && !pubExists && <Help color='white'>For safety, you can only publish a new item from it's own editor page</Help>} <Spinner vis={vis} />
+		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item, previous})}
+		{...props}>
+		{pubLabel} <Spinner vis={vis} />
 	</Button>;
 
-	if (oneButton) return <PublishButton/>;
+	if (oneButton) return <div className='d-flex flex-row justify-content-between'>
+		<PublishButton style={{flexGrow:1}} className="mr-2"/>
+		{help && <Help>{help}</Help>}
+	</div>;
 
 	// merge discard / unpublish / delete into one button with a dropdown of options??
 	// merge save / saveAs into one button with a dropdown of options?
@@ -297,7 +319,7 @@ function SavePublishDeleteEtc({
 		color={C.STATUS.issaveerror(localStatus) ? 'danger' : 'secondary'}
 		title={C.STATUS.issaveerror(localStatus) ? 'There was an error when saving' : null}
 		disabled={isSaving || C.STATUS.isclean(localStatus)}
-		onClick={() => saveEdits({ type, id, item, previous })}
+		onClick={() => saveEdits({ type, id, item })}
 	>
 		Save Edits <Spinner vis={vis} />
 	</Button>); // ./SaveEditsButton
@@ -377,6 +399,8 @@ function SavePublishDeleteEtc({
 					<Icon name="trashcan" /> <Spinner vis={vis} />
 				</Button>
 			}
+
+			{help && <Help className="ml-2">{help}</Help>}
 			{/* <div><small>Status: {item && item.status} | Unsaved changes: {localStatus}{isSaving ? ', saving...' : null} | DataStore: {dsi}</small></div> */}
 		</div>
 	);

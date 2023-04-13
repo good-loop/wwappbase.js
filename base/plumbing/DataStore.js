@@ -1,4 +1,5 @@
 
+import { useEffect, useState } from 'react';
 import JSend from '../data/JSend';
 import C from '../CBase';
 import _ from 'lodash';
@@ -6,10 +7,11 @@ import PromiseValue from '../promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
-import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI} from '../utils/miscutils';
+import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectValueByPath, setObjectValueByPath, stopEvent} from '../utils/miscutils';
 import KStatus from '../data/KStatus';
 import { modifyPage } from './glrouter';
 
+import DataDiff, { makeDataDiff, mergeDataDiffs } from './DataDiff';
 
 /**
  * Hold data in a simple json tree, and provide some utility methods to update it - and to attach a listener.
@@ -231,7 +233,8 @@ class Store {
 	 * the DataStore path for this item, or null if item is null;
 	 */
 	getPathForItem(status, item) {
-		if ( ! status) status = getStatus(item);
+		if ( ! status || status === KStatus.ALL_BAR_TRASH ) status = getStatus(item); // ALL_BAR_TRASH has no node
+		console.log("STATUS FOR " + getType(item)+":"+getId(item) + ":", status);
 		assert(KStatus.has(status), "DataStore.getPath bad status: "+status);
 		if ( ! item) {
 			return null;
@@ -255,7 +258,7 @@ class Store {
 		if ( ! KStatus.has(status)) {
 			console.warn("DataStore.getPath bad status: "+status+" (treat as DRAFT)");
 			status=KStatus.DRAFT;
-		} 
+		}
 		if ( ! type) type = getType(restOfItem);
 		assert(C.TYPES.has(type), "DataStore.js bad type: "+type);
 		assMatch(id, String, "DataStore.js bad id "+id);
@@ -316,18 +319,8 @@ class Store {
 		}
 		assert(this.appstate[path[0]],
 			"DataStore.getValue: "+path[0]+" is not a json element in appstate - As a safety check against errors, the root element must already exist to use getValue()");
-		let tip = this.appstate;
-		for(let pi=0; pi < path.length; pi++) {
-			let pkey = path[pi];
-			assert(pkey || pkey===0, "DataStore.getValue falsy is not allowed in path: "+path); // no falsy in a path - except that 0 is a valid key
-			let newTip = tip[pkey];
-			// Test for hard null -- falsy are valid values
-			if (newTip===null || newTip===undefined) return null;
-			tip = newTip;
-		}
-		return tip;
+		return getObjectValueByPath(this.appstate, path);
 	}
-
 
 	/**
 	 * Update a single path=value.
@@ -341,11 +334,12 @@ class Store {
 	 * @param {String[]} path This path will be created if it doesn't exist (except if value===null)
 	 * @param {*} value The new value. Can be null to null-out a value.
 	 * @param {boolean} update Set to false to switch off sending out an update. Set to true to force an update even if it looks like a no-op.
+	 * @param {?boolean} mergeAll INTERNAL for when we want to ignore fancy merging in history diffs (e.g. undos)
 	 * undefined is true-without-force
 	 * @returns value
 	 */
 	// TODO handle setValue(pathbit, pathbit, pathbit, value) too
-	setValue(path, value, update) {
+	setValue(path, value, update, mergeAll) {
 		assert(_.isArray(path), "DataStore.setValue: "+path+" is not an array.");
 		assert(this.appstate[path[0]],
 			"DataStore.setValue: "+path[0]+" is not a node in appstate - As a safety check against errors, the root node must already exist to use setValue()");
@@ -375,36 +369,31 @@ class Store {
 			modifyPage(null, newParams);
 		}
 
-		let tip = this.appstate;
-		for(let pi = 0; pi < path.length; pi++) {
-			let pkey = path[pi];
-			if (pi === path.length-1) {
-				// Set it!
-				tip[pkey] = value;
-				break;
-			}
-			assert(pkey || pkey === 0, `falsy in path ${path.join(' -> ')}`); // no falsy in a path - except that 0 is a valid key
-			let newTip = tip[pkey];
-			if (!newTip) {
-				if (value === null) {
-					// don't make path for null values
-					return value;
-				}
-				newTip = tip[pkey] = {};
-			}
-			tip = newTip;
-		}
+		// Do the set!
+		setObjectValueByPath(this.appstate, path, value);
+
 		// HACK: update a data value => mark it as modified
 		// ...but not for setting the whole-object (path.length=3)
 		// // (off?) ...or for value=null ??why? It's half likely that won't save, but why ignore it here??
-		if ((path[0] === 'data' || path[0] === 'draft')
-			&& path.length > 3 && DataStore.DATA_MODIFIED_PROPERTY)
+		if ((path[0] === 'data' || path[0] === 'draft') && path.length > 3)
 		{
 			// chop path down to [data, type, id]
 			const itemPath = path.slice(0, 3);
 			const item = this.getValue(itemPath);
-			if (getType(item) && getId(item)) {
-				this.setLocalEditsStatus(getType(item), getId(item), C.STATUS.dirty, false);
+			if (DataStore.DATA_MODIFIED_PROPERTY) {
+				if (getType(item) && getId(item)) {
+					this.setLocalEditsStatus(getType(item), getId(item), C.STATUS.dirty, false);
+				}
+			}
+			const trackers = DataDiff.getHistoryTrackers();
+			if (DataDiff.DATA_HISTORY_PROPERTY && trackers.length > 0) {
+				if (getType(item) && getId(item)) {
+					// Get path to just prop
+					const propPath = path.slice(3, path.length);
+					// Create history diff object for change
+					const diff = makeDataDiff(propPath, oldVal, value);
+					DataDiff.registerDataChange(getType(item), getId(item), diff, mergeAll, false);
+				}
 			}
 		}
 		// Tell e.g. React to re-render
@@ -455,9 +444,11 @@ class Store {
 		assert(C.STATUS.has(status));
 		assert(id, "DataStore.setLocalEditsStatus: No id?! getData "+type);
 		if ( ! DataStore.DATA_MODIFIED_PROPERTY) return null;
+		if (C.STATUS.issaveerror(status)) {
+			console.log("ITEM "+type+":"+id+" IS BECOMING "+status+" OHHH YEAAAHH");
+		}
 		return this.setValue(['transient', type, id, DataStore.DATA_MODIFIED_PROPERTY], status, update);
 	}
-
 
 	/**
 	 * @param {!String[]} path - the full path to the value being edited
@@ -575,7 +566,6 @@ class Store {
 		this.update();
 		return hits;
 	} //./updateFromServer()
-
 
 	/**
 	 * get local, or fetch by calling fetchFn (but only once).
@@ -711,7 +701,6 @@ class Store {
 		return pv;
 	} // ./fetch2()
 
-
 	/**
 	 * Remove any list(s) stored under ['list', type].
 	 * 
@@ -732,14 +721,6 @@ class Store {
 		// also remove any promises for these lists -- see fetch()
 		let ppath = ['transient', 'PromiseValue', 'list', type];
 		this.setValue(ppath, null, false);
-	}
-
-	/**
-	 * @deprecated
-	 */	
-	getDataList(listOfRefs, preferStatus) {
-		console.warn("Switch to resolveDataList");
-		return this.resolveDataList(listOfRefs, preferStatus);
 	}
 
 	/**
@@ -785,6 +766,82 @@ class Store {
 		}
 		// falback to the input ref
 		return ref;
+	}
+
+	/**
+	 * Recursively resolve any DataItems in an object
+	 * Also performs a free deep copy
+	 * @param {*} obj 
+	 */
+	deepResolve (obj, status) {
+		assert(status, "DataStore.deepResolve no status??", status);
+		if (!obj) return obj;
+		const id = getId(obj);
+		const type = getType(obj);
+		if (id && type && C.TYPES.has(type)) { // we have a DataItem!
+			const dataObj = this.getData({id, type, status});
+			return dataObj || _.cloneDeep(obj); // We might not have the DataItem already stored - in which case, make sure to stick to our deep copy promise
+		}
+		// We're not a DataItem... at this level, but maybe deeper!
+		// Deep search array, while preserving array structure
+		if (_.isArray(obj)) {
+			const dataObj = obj.map(item => this.deepResolve(item, status));
+			return dataObj;
+		}
+		// Deep search object and deep copy
+		const keys = Object.keys(obj);
+		if (keys.length) {
+			const dataObj = {}; // We'll append to a fresh copy, meaning we're doing a deep clone too for no extra cost
+			keys.forEach(key => {
+				dataObj[key] = this.deepResolve(obj[key], status);
+			});
+			return dataObj;
+		}
+		// Looks like a primitive!
+		return obj;
+	}
+
+	/**
+	 * PromiseValue friendly resolve
+	 * @param {PromiseValue | Promise | Object} promiseOrValue 
+	 */
+	resolve (promiseOrValue) {
+		// only ask once
+		const fpath = ['transient', 'PromiseValue', 'misc'];
+		const prevpvs = this.getValue(fpath);
+		if (prevpvs.includes(promiseOrValue)) {
+			return prevpv;
+		}
+		let promiseValueWrap = promiseOrValue instanceof PromiseValue ? promiseOrValue : new PromiseValue(promiseOrValue);
+		// process the result async
+		let promiseValueUnwrap = promiseValueWrap.promise.then(res => {
+			if ( ! res) return res;
+			// HACK handle WW standard json wrapper: unwrap cargo
+			// NB: success/fail is checked at the ajax level in ServerIOBase
+			// TODO let's make unwrap a configurable setting
+			if (JSend.isa(res)) {
+				// console.log("unwrapping cargo to store at "+path, res);
+				res = JSend.data(res) || res; // HACK: stops login widget forcing rerender on each key stroke
+			}
+			return res;
+		}).catch(response => {
+			// what if anything to do here??
+			console.warn("DataStore resolve fail", path, response);
+			// BV: Typically ServerIO will call notifyUser
+			throw response;
+		});
+		const pv = new PromiseValue(promiseValueUnwrap);
+		pv.promise.then(res => {
+			this.setValue(fpath, null);
+			return deepResolve(res);
+		}).catch(res => {
+			// keep the fpath promise to avoid repeated ajax calls??
+			// update e.g. React
+			this.update();
+			throw res;
+		});
+		this.setValue(fpath, pv, false);
+		return pv;
 	}
 } // ./Store
 
@@ -882,6 +939,21 @@ const getListPath = ({type,status,q,prefix,start,end,size,sort,domain, ...other}
 	];
 };
 
+export const useValue = (...path) => {
+	assert(_.isArray(path), "DataStore.getValue - "+path);
+	// If a path array was passed in, use it correctly.
+	if (path.length===1 && _.isArray(path[0])) {
+		path = path[0];
+	}
+	const [val, setVal] = useState(getObjectValueByPath(DataStore.appstate, path));
+	useEffect(() => {
+		assert(DataStore.appstate[path[0]],
+			"DataStore.getValue: "+path[0]+" is not a json element in appstate - As a safety check against errors, the root element must already exist to use getValue()");
+		setVal(getObjectValueByPath(DataStore.appstate, path));
+	},[getObjectValueByPath(DataStore.appstate, path), path]);
+	return val;
+}
+
 
 /**
  * @param {String[]} path
@@ -890,6 +962,7 @@ const getValue = DataStore.getValue.bind(DataStore);
 const setValue = DataStore.setValue.bind(DataStore);
 
 const getUrlValue = DataStore.getUrlValue.bind(DataStore);
+
 
 export {
 	getPath,
