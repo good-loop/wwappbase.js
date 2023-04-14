@@ -5,12 +5,20 @@
  */
 
 import { getUrlVars } from './miscutils';
+import moment from 'moment-timezone';
 
-export interface UrlParamPeriod extends Object {
+/** All string */
+export interface UrlParams extends Object {
 	scale?: string;
 	start?: string;
 	end?: string;
-	period?: string | Period;
+	period?: string;
+	timezone?: string;
+}
+
+/** period as Date object, with start and end */
+export interface UrlParamsPeriod extends UrlParams {
+	periodPeriod: Period;
 }
 
 /**
@@ -29,34 +37,18 @@ const shortMonths = MONTHS.map((month) => month.substr(0, 3));
  */
 export const oh = (n: number) => (n < 10 ? '0' + n : n);
 
-export const dateUTCfromString = (s: string): Date => {
-	const dateParts = s.split('T')[0].split('-');
-	const year = parseInt(dateParts[0]);
-	const month = parseInt(dateParts[1]) - 1; // Months are 0-based in JS, so subtract 1
-	const day = parseInt(dateParts[2]);
-	let hour = 0;
-	let minute = 0;
-	let second = 0;
-
-	if (s.includes('T')) {
-		const timeParts = s.split('T')[1].split(':');
-		hour = parseInt(timeParts[0]);
-		minute = parseInt(timeParts[1]);
-		second = parseInt(timeParts[2].split('Z')[0]);
-	}
-	return new Date(Date.UTC(year, month, day, hour, minute, second));
-};
-
 /**
  * Make sure it's a Date not a String
  * @param {?String|Date} s falsy returns null
  * @returns {?Date}
  */
-export const asDate = (s: Date | String): Date | null => {
+export const asDate = (s: Date | String, timezone: string = 'UTC'): Date | null => {
 	if (!s) return null;
 	// Create the Date Object in UTC
 	if (typeof s === 'string') {
-		return dateUTCfromString(s);
+		// console.log(s, moment.tz(s, 'Asia/Hong_Kong'), moment.utc(s))
+		// return moment.tz(s, 'Asia/Hong_Kong').toDate();
+		return moment.tz(s, timezone).toDate();
 	}
 	return s as Date;
 };
@@ -86,57 +78,52 @@ export const dateTimeString = (d: Date) => `${d.getDate()} ${shortMonths[d.getMo
 
 // FROM dashutils
 
-export type Period = { start: Date; end: Date; name: string | null };
+export type Period = { start: Date; end: Date; name: string | null, timezone: string };
 
 /**
- * ??timezone handling??
- *
  * Returns a period object for the quarter enclosing the given date
- * @param {?Date} date Default "now"
- * @returns {start, end, name}
+ * @param date Default "now"
  */
-export const getPeriodQuarter = (date = new Date()) => {
+export const getPeriodQuarter = (timezone: string = 'UTC', date = moment.tz(timezone).toDate()): Period => {
 	const qIndex = Math.floor(date.getMonth() / 3);
-	const start = new Date(date);
+	const start = moment.tz(date, timezone).toDate();
 	start.setMonth(qIndex * 3, 1);
 	start.setHours(0, 0, 0, 0);
-	const end = new Date(start);
+	const end = moment.tz(start, timezone).toDate();
 	end.setMonth(end.getMonth() + 3);
-	return { start, end, name: `${start.getFullYear()}-Q${qIndex + 1}` };
+	return { start, end, name: `${start.getFullYear()}-Q${qIndex + 1}` , timezone};
 };
 
 /**
- * ??timezone handling??
  * Returns a period object for the month enclosing the given date
- * @param {?Date} date
- * @returns {Period}
+ * @param date
  */
-export const getPeriodMonth = (date = new Date()): Period => {
-	const start = new Date(date);
+export const getPeriodMonth = (timezone: string = 'UTC', date = moment.tz(timezone).toDate()): Period => {
+	const start = moment.tz(date, timezone).toDate();
 	start.setDate(1);
 	start.setHours(0, 0, 0, 0);
-	const end = new Date(start);
+	const end = moment.tz(start, timezone).toDate();
 	end.setMonth(end.getMonth() + 1);
-	return { start, end, name: `${start.getFullYear()}-${end.getMonth()}` };
+	return { start, end, name: `${start.getFullYear()}-${end.getMonth()}`, timezone };
 };
 
-export const getPeriodYear = (date = new Date()) => {
-	const start = new Date(date);
+export const getPeriodYear = (timezone: string = 'UTC', date = moment.tz(timezone).toDate()): Period => {
+	const start = moment.tz(date, timezone).toDate();
 	start.setMonth(0, 1);
 	start.setHours(0, 0, 0, 0);
-	const end = new Date(date);
+	const end = moment.tz(date, timezone).toDate();
 	end.setMonth(12);
-	return { start, end, name: `${start.getFullYear()}` };
+	return { start, end, name: `${start.getFullYear()}`, timezone };
 };
 
 /**
  * Read period (name) or start/end
  * @param {Object} urlParams If unset use getUrlVars()
  */
-export const getPeriodFromUrlParams = (urlParams: UrlParamPeriod | null): Period | null => {
+export const getPeriodFromUrlParams = (urlParams: UrlParams | null): Period | null => {
 	if (!urlParams) urlParams = getUrlVars(null, null);
 	let { start, end, period } = urlParams;
-	const periodObjFromName = periodFromName(period as string);
+	const periodObjFromName = periodFromName(period);
 	// User has set a named period (year, quarter, month)
 	if (periodObjFromName) {
 		return periodObjFromName;
@@ -167,38 +154,39 @@ export const getPeriodFromUrlParams = (urlParams: UrlParamPeriod | null): Period
 /** Convert a name to a period object
  * @returns {?Period}
  */
-export const periodFromName = (periodName?: string): Period | null => {
+export const periodFromName = (periodName?: string, timezone: string = 'UTC'): Period | null => {
 	if (!periodName) {
 		return null;
 	}
 	if (periodName === 'all') {
 		return {
-			start: new Date('1970-01-01'),
-			end: new Date('3000-01-01'),
+			start: moment.tz('1970-01-01', timezone).toDate(),
+			end: moment.tz('3000-01-01', timezone).toDate(),
 			name: 'all',
+			timezone
 		};
 	}
-	let refDate = new Date();
+	let refDate = moment.tz(timezone).toDate();
 
 	// eg "2022-Q2"
 	const quarterMatches = periodName.match(quarterRegex) as unknown as number[];
 	if (quarterMatches) {
 		refDate.setFullYear(quarterMatches[1]);
 		refDate.setMonth(3 * (quarterMatches[2] - 1));
-		return getPeriodQuarter(refDate);
+		return getPeriodQuarter(timezone, refDate);
 	}
 	// eg "2022-04"
 	const monthMatches = periodName.match(monthRegex) as unknown as number[];
 	if (monthMatches) {
 		refDate.setFullYear(monthMatches[1]);
 		refDate.setMonth(monthMatches[2]);
-		return getPeriodMonth(refDate);
+		return getPeriodMonth(timezone, refDate);
 	}
 	// eg "2022"
 	const yearMatches = periodName.match(yearRegex) as unknown as number[];
 	if (yearMatches) {
 		refDate.setFullYear(yearMatches[1]);
-		return getPeriodYear(refDate);
+		return getPeriodYear(timezone, refDate);
 	}
 	throw new Error('Unrecognised period ' + periodName);
 };
@@ -215,10 +203,10 @@ export const periodToParams = (period: Period): Period => {
 		newVals.period = period.name as string;
 	} else {
 		// Custom period - remove period name from URL params and set start/end
-		if (period.start) newVals.start = asDate(period.start)!.toISOString().substring(0,10);
+		if (period.start) newVals.start = moment(asDate(period.start)!).tz('Asia/Hong_Kong').format('YYYY-MM-DD');
 		if (period.end) {
 			// url params don't have to be pretty (push prettiness up to rendering code)
-			newVals.end = asDate(period.end)!.toISOString().substring(0,10);
+			newVals.end = moment(asDate(period.end)!).tz('Asia/Hong_Kong').format('YYYY-MM-DD');
 			// // Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
 			// end = new Date(end);
 			// end.setDate(end.getDate() - 1);
@@ -234,7 +222,7 @@ export const periodToParams = (period: Period): Period => {
  * @param {?Boolean} short True for condensed format
  * @returns
  */
-export const printPeriod = ({ start, end, name }: Period, short = false) => {
+export const printPeriod = ({ start, end, name, timezone }: Period, short = false) => {
 	if (name) {
 		if (name === 'all') return 'All Time';
 
@@ -267,14 +255,14 @@ export const printPeriod = ({ start, end, name }: Period, short = false) => {
 
 	// Prevent browsers in non UTC/ GMT Timezone shift the printing of the date
 	// E.g. 2023-03-28T23:59:59Z became 2023-03-29T07:59:59Z in Asia
-	let startUTC = `${start.getUTCDate().toString()} ${shortMonths[start.getUTCMonth()]} ${start.getFullYear()}`;
-	let endUTC = `${end.getUTCDate().toString()} ${shortMonths[end.getUTCMonth()]} ${end.getFullYear()}`;
+	let startPrint = moment.tz(start, timezone).format('DD MMM YYYY');
+	let endPrint = moment.tz(end, timezone).format('DD MMM YYYY');
 
 	if (short) {
-		startUTC = startUTC.substring(0, startUTC.length - 5);
-		endUTC = endUTC.substring(0, endUTC.length - 5);
+		startPrint = startPrint.substring(0, startPrint.length - 5);
+		endPrint = startPrint.substring(0, startPrint.length - 5);
 	}
-	return `${startUTC || ``} to ${endUTC || `now`}`;
+	return `${startPrint || ``} to ${endPrint || `now`}`;
 };
 
 // export const periodKey = ({start, end, name}) : String => {
