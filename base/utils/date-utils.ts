@@ -46,11 +46,9 @@ export const asDate = (s: Date | String, timezone: string = 'UTC'): Date | null 
 	if (!s) return null;
 	// Create the Date Object in UTC
 	if (typeof s === 'string') {
-		// console.log(s, moment.tz(s, 'Asia/Hong_Kong'), moment.utc(s))
-		// return moment.tz(s, 'Asia/Hong_Kong').toDate();
 		return moment.tz(s, timezone).toDate();
 	}
-	return s as Date;
+	return moment.tz(s, timezone).toDate();
 };
 
 /**
@@ -78,7 +76,7 @@ export const dateTimeString = (d: Date) => `${d.getDate()} ${shortMonths[d.getMo
 
 // FROM dashutils
 
-export type Period = { start: Date; end: Date; name: string | null, timezone: string };
+export type Period = { start: Date; end: Date; name: string | null; timezone: string };
 
 /**
  * Returns a period object for the quarter enclosing the given date
@@ -91,7 +89,7 @@ export const getPeriodQuarter = (timezone: string = 'UTC', date = moment.tz(time
 	start.setHours(0, 0, 0, 0);
 	const end = moment.tz(start, timezone).toDate();
 	end.setMonth(end.getMonth() + 3);
-	return { start, end, name: `${start.getFullYear()}-Q${qIndex + 1}` , timezone};
+	return { start, end, name: `${start.getFullYear()}-Q${qIndex + 1}`, timezone };
 };
 
 /**
@@ -122,7 +120,7 @@ export const getPeriodYear = (timezone: string = 'UTC', date = moment.tz(timezon
  */
 export const getPeriodFromUrlParams = (urlParams: UrlParams | null): Period | null => {
 	if (!urlParams) urlParams = getUrlVars(null, null);
-	let { start, end, period } = urlParams;
+	let { start, end, period, timezone } = urlParams;
 	const periodObjFromName = periodFromName(period);
 	// User has set a named period (year, quarter, month)
 	if (periodObjFromName) {
@@ -130,22 +128,18 @@ export const getPeriodFromUrlParams = (urlParams: UrlParams | null): Period | nu
 	}
 
 	// Custom period with start/end values
+	if (!timezone) timezone = 'UTC';
 	if (start || end) {
 		const periodFromStartEnd = {} as Period;
+		periodFromStartEnd.timezone = timezone;
 		if (start) {
-			periodFromStartEnd.start = asDate(start)!;
+			periodFromStartEnd.start = asDate(start, timezone)!;
 		}
 		if (end) {
-			if (dateFormatRegex.test(end)) {
-				end = end + `T23:59:59Z`; // Our endpoint does not support 59.999Z
-			}
-			periodFromStartEnd.end = asDate(end)!;
+			const endTemp: Date = asDate(end, timezone)!;
+			endTemp.setDate(endTemp.getDate() + 1);
+			periodFromStartEnd.end = endTemp;
 		}
-		// const [, yyyy, mm, dd] = end.match(/(\d+)-(\d+)-(\d+)/) as any[];
-		// period.end = new Date(yyyy, mm, dd);
-		// period.end.setMonth(period.end.getMonth() - 1); // correct for Date taking zero-index months
-		// // Intuitive form "Period ending 2022-03-31" --> machine form "Period ending 2022-04-01T00:00:00"
-		// period.end.setDate(period.end.getDate() + 1);
 		return periodFromStartEnd;
 	}
 	return null;
@@ -163,7 +157,7 @@ export const periodFromName = (periodName?: string, timezone: string = 'UTC'): P
 			start: moment.tz('1970-01-01', timezone).toDate(),
 			end: moment.tz('3000-01-01', timezone).toDate(),
 			name: 'all',
-			timezone
+			timezone,
 		};
 	}
 	let refDate = moment.tz(timezone).toDate();
@@ -203,15 +197,13 @@ export const periodToParams = (period: Period): Period => {
 		newVals.period = period.name as string;
 	} else {
 		// Custom period - remove period name from URL params and set start/end
-		if (period.start) newVals.start = moment(asDate(period.start)!).tz('Asia/Hong_Kong').format('YYYY-MM-DD');
+		if (period.start) newVals.start = moment.tz(asDate(period.start)!, period.timezone).format('YYYY-MM-DD');
 		if (period.end) {
 			// url params don't have to be pretty (push prettiness up to rendering code)
-			newVals.end = moment(asDate(period.end)!).tz('Asia/Hong_Kong').format('YYYY-MM-DD');
-			// // Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
-			// end = new Date(end);
-			// end.setDate(end.getDate() - 1);
-			// newVals.end = isoDate(end);
+			// Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
+			newVals.end = moment.tz(asDate(period.end)!, period.timezone).add(-1, 'day').format('YYYY-MM-DD');
 		}
+		newVals.timezone = period.timezone || 'UTC';
 	}
 	return newVals as unknown as Period;
 };
@@ -255,8 +247,8 @@ export const printPeriod = ({ start, end, name, timezone }: Period, short = fals
 
 	// Prevent browsers in non UTC/ GMT Timezone shift the printing of the date
 	// E.g. 2023-03-28T23:59:59Z became 2023-03-29T07:59:59Z in Asia
-	let startPrint = moment.tz(start, timezone).format('DD MMM YYYY');
-	let endPrint = moment.tz(end, timezone).format('DD MMM YYYY');
+	let startPrint = moment.tz(start, timezone).format('DD MMM YYYY HH:mm:ss');
+	let endPrint = moment.tz(end, timezone).format('DD MMM YYYY HH:mm:ss');
 
 	if (short) {
 		startPrint = startPrint.substring(0, startPrint.length - 5);
