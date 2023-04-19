@@ -257,6 +257,8 @@ export const printPeriod = ({ start, end, name, timezone }: Period, short = fals
 	return `${startPrint || ``} to ${endPrint || `now`}`;
 };
 
+export const padZero = (num: number): string => num < 10 ? `0${num}` : `${num}`;
+
 // export const periodKey = ({start, end, name}) : String => {
 // 	if (name) return name;
 // 	return `${start ? isoDate(start) : 'forever'}-to-${end ? isoDate(end) : 'now'}`
@@ -267,3 +269,4 @@ const monthRegex = /^(\d\d?\d?\d?)-(\d\d?)$/;
 const yearRegex = /^(\d\d?\d?\d?)$/;
 
 const dateFormatRegex: RegExp = /^\d{4}-\d{2}-\d{2}$/;
+
