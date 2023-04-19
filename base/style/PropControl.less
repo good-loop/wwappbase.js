@@ -58,8 +58,8 @@
 /* checkbox layout vs sizing - BS default looks a bit broken */
 
 // Make small well, _smaller_
-.form-control-sm {
-	height: 1.3em;
+:not(select).form-control-sm { // NB: select gets too squished by this height (seen April 2023)
+	height: 1.3em; 
 	line-height: 1;
 }
 

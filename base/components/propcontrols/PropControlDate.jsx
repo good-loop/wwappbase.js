@@ -55,34 +55,6 @@ function PropControlDateTime2({ prop, type, storeValue, rawValue, onChange, ...o
 }
 
 
-// function PropControlDateOld({ prop, storeValue, rawValue, onChange, ...otherStuff }) {
-// 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
-// 	// NB: parsing incomplete dates causes NaNs
-// 	let datePreview = null;
-// 	if (!is(rawValue) && storeValue) {
-// 		rawValue = Misc.isoDate(storeValue);
-// 	}
-// 	if (rawValue) {
-// 		try {
-// 			let date = new Date(rawValue);
-// 			// use local settings??
-// 			datePreview = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-// 		} catch (er) {
-// 			// bad date
-// 			datePreview = 'Invalid date';
-// 		}
-// 	}
-
-// 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
-// 	// Encourage ISO8601 format
-// 	if (!otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
-// 	return (<div>
-// 		<FormControl type="text" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
-// 		<div className="pull-right"><i>{datePreview}</i></div>
-// 		<div className="clearfix" />
-// 	</div>);
-// }
-
 /** TODO refactor this Default validator for date values */
 const dateValidator = (val, rawValue) => {
 	if (!val) {

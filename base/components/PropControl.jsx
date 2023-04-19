@@ -789,7 +789,7 @@ const setFocus = (proppath) => {
    * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
    * @param {?Boolean} canUnset If true, always offer an unset choice.
    */
-function PropControlSelect({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, inline, ...otherStuff }) {
+function PropControlSelect({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, inline, size, ...otherStuff }) {
 	// NB inline does nothing here?
 	// NB: pull off internal attributes so the select is happy with rest
 	const { className, recursing, modelValueFromInput, label, ...rest } = otherStuff;
@@ -800,7 +800,7 @@ function PropControlSelect({ options, labels, storeValue, value, rawValue, setRa
 
 	// Multi-select is a usability mess, so we use a row of checkboxes.
 	if (multiple) {
-		return PropControlMultiSelect({ storeValue, value, rawValue, setRawValue, prop, onChange, labelFn, options, className, modelValueFromInput, ...rest });
+		return PropControlMultiSelect({ storeValue, value, rawValue, setRawValue, prop, onChange, labelFn, options, size, className, modelValueFromInput, ...rest });
 	}
 
 	// make the options html
@@ -816,7 +816,7 @@ function PropControlSelect({ options, labels, storeValue, value, rawValue, setRa
 	** so that unknown values are grayed out TODO do this in the my-loop DigitalMirrorCard.jsx perhaps via labeller or via css */
 	const safeValue = storeValue || ''; // "correct usage" - controlled selects shouldn't have null/undef value
 	return (
-		<select className={space('form-control', className)}
+		<select className={space('form-control', size && "form-control-"+size, className)}
 			name={prop} value={safeValue} onChange={onChange}
 			{...rest}
 		>

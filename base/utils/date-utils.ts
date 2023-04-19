@@ -2,9 +2,40 @@
  * Collect adhoc date processing in one place to avoid repeatedly reinventing the wheel
  *
  * TODO lets find a nice library that provides much of what we need.
+ * 
+ * day.js looks good
+ * 
+ * https://day.js.org/docs/en/timezone/set-default-timezone
  */
 
 import { getUrlVars } from './miscutils';
+
+import dayjs from 'dayjs';
+// import utc from 'dayjs-plugin-utc';
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+console.warn("dayjs.tz", dayjs.tz);
+console.warn("dayjs.tz.guess", dayjs.tz.guess());
+
+let _timezone = dayjs.tz.guess();
+// presumably guess() is doing Intl.DateTimeFormat().resolvedOptions().timeZone
+export const getTimezone = () => {
+	return _timezone;
+};
+export const setTimezone = (timezone:string) => {	
+	console.warn("setTimezone "+timezone+" from "+_timezone);
+	dayjs.tz.setDefault(timezone);
+	_timezone = timezone;
+};
+// initialise from url TODO handle changes
+if (getUrlVars().tz) {
+	setTimezone(getUrlVars().tz);
+}
+
 
 export interface UrlParamPeriod extends Object {
 	scale?: string;
