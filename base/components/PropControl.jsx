@@ -789,7 +789,7 @@ const setFocus = (proppath) => {
    * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
    * @param {?Boolean} canUnset If true, always offer an unset choice.
    */
-function PropControlSelect({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, inline, size, ...otherStuff }) {
+function PropControlSelect({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, set, canUnset, inline, size, ...otherStuff }) {
 	// NB inline does nothing here?
 	// NB: pull off internal attributes so the select is happy with rest
 	const { className, recursing, modelValueFromInput, label, ...rest } = otherStuff;

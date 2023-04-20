@@ -7,7 +7,7 @@ import Misc from '../Misc';
 import PropControl, { fakeEvent, registerControl } from '../PropControl';
 
 /**
- * Really two PropControls - with TODO some handy buttons for setting both
+ * Really two PropControls - with some handy buttons for setting both
  */
 function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
     // start/end button logic (ugly)

@@ -11,31 +11,57 @@
 import { getUrlVars } from './miscutils';
 
 import dayjs from 'dayjs';
-// import utc from 'dayjs-plugin-utc';
-import utc from "dayjs/plugin/utc";
-import timezone from "dayjs/plugin/timezone";
+// // import utc from 'dayjs-plugin-utc';
+// import utc from "dayjs/plugin/utc";
+// import timezone from "dayjs/plugin/timezone";
 
-dayjs.extend(utc);
-dayjs.extend(timezone);
+// dayjs.extend(utc);
+// dayjs.extend(timezone);
+window.dayjs = dayjs; // DEBUG
 
-console.warn("dayjs.tz", dayjs.tz);
-console.warn("dayjs.tz.guess", dayjs.tz.guess());
+// console.warn("dayjs.tz", dayjs.tz);
+// console.warn("dayjs.tz.guess", dayjs.tz.guess());
 
-let _timezone = dayjs.tz.guess();
-// presumably guess() is doing Intl.DateTimeFormat().resolvedOptions().timeZone
-export const getTimezone = () => {
+const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+let _timezone = localTimeZone;
+// dayjs.tz.guess();
+// presumably guess() is doing 
+export const getTimeZone = () => {
 	return _timezone;
 };
-export const setTimezone = (timezone:string) => {	
+export const setTimeZone = (timezone:string) => {	
 	console.warn("setTimezone "+timezone+" from "+_timezone);
-	dayjs.tz.setDefault(timezone);
+	// dayjs.tz.setDefault(timezone);
 	_timezone = timezone;
+	return timezone;
 };
+
 // initialise from url TODO handle changes
 if (getUrlVars().tz) {
-	setTimezone(getUrlVars().tz);
+	setTimeZone(getUrlVars().tz);
 }
 
+export const getTimeZoneShortName = (timezone:string|null) => {
+	if ( ! timezone) timezone = _timezone;
+	// js does know it -- but how to get it??
+	return timezone;
+	// let [, tzName] = /.*\s(.+)/.exec((new Date()).toLocaleDateString(navigator.language, { timeZoneName: 'short' }));
+}
+console.log("getTimeZoneShortName", getTimeZoneShortName());
+console.log("getTimeZoneShortName", getTimeZoneShortName("America/Los_Angeles"));
+
+/** 
+ * @param {Date} date Daylight savings means the offset can change. Provide a date to give the answer for that date.
+ * @returns A timezone offset in minutes from UTC */
+// Thanks: https://stackoverflow.com/a/68593283/346629
+export const getTimeZoneOffset = (timeZone:string, date = new Date()) : number => {
+	const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
+	const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
+	return (tzDate.getTime() - utcDate.getTime()) / 6e4;
+}
+console.log("getTimeZoneOffset", "America/Los_Angeles", getTimeZoneOffset("America/Los_Angeles"));
+console.log("getTimeZoneOffset", getTimeZone(), getTimeZoneOffset(getTimeZone()));
+window.getTimeZoneOffset = getTimeZoneOffset;
 
 export interface UrlParamPeriod extends Object {
 	scale?: string;
@@ -97,23 +123,60 @@ export const asDate = (s: Date | String): Date | null => {
  */
 export const isoDate = (d: Date | string): string => asDate(d)!.toISOString().replace(/T.+/, '');
 
-/**
- * Locale-independent
+/** 
+ * Locale and timezone aware
  * @param {!Date} d
  * @returns {!string} e.g "13 Mar 2023"
  */
-export const dateStr = (d: Date) => `${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()}`;
+export const dateStr = (d: Date) => {
+	let options = {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric'
+	};
+	  const timeZone = getTimeZone();
+	if (timeZone !== localTimeZone) {
+		options.timeZone = timeZone;
+		options.timeZoneName = "shortGeneric";
+	  }
+	return d.toLocaleDateString(navigator.language, options);
+};
 
-/** Locale-independent date (without year) to string, formatted like "25 Apr" */
+/** date (without year) to string, formatted like "25 Apr"
+ * This is timezone aware, but will not include the timezone.
+ * Use-case: labelling charts
+ */
 export const printDateShort = (date: Date) => {
-	let ds = dateStr(date);
-	return ds.substring(0, ds.length - 5);
+	return date.toLocaleDateString(
+		navigator.language,
+		{
+		//   year: 'numeric',
+		  month: 'short',
+		  day: 'numeric',
+		  timeZone: getTimeZone(),
+		//   timeZoneName: 'shortGeneric'
+		}
+	  );
 };
 
 /**
- * Human-readable, unambiguous date+time string which doesn't depend on toLocaleString support
+ * Human-readable, minute level date+time string
  */
-export const dateTimeString = (d: Date) => `${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()} ${oh(d.getHours())}:${oh(d.getMinutes())}`;
+export const dateTimeString = (d: Date) => {
+	let options = {
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric',
+		hour: '2-digit',
+		minute: '2-digit'
+	};
+	const timeZone = getTimeZone();
+	if (timeZone !== localTimeZone) {
+		options.timeZone = timeZone;
+		options.timeZoneName = "shortGeneric";
+	  }
+	return d.toLocaleDateString(navigator.language, options);
+};
 
 // FROM dashutils
 
@@ -246,10 +309,10 @@ export const periodToParams = (period: Period): Period => {
 		newVals.period = period.name as string;
 	} else {
 		// Custom period - remove period name from URL params and set start/end
-		if (period.start) newVals.start = asDate(period.start)!.toISOString().substring(0,10);
+		if (period.start) newVals.start = asDate(period.start)!.toISOString(); // full date! .substring(0,10);
 		if (period.end) {
 			// url params don't have to be pretty (push prettiness up to rendering code)
-			newVals.end = asDate(period.end)!.toISOString().substring(0,10);
+			newVals.end = asDate(period.end)!.toISOString(); // full date.substring(0,10);
 			// // Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
 			// end = new Date(end);
 			// end.setDate(end.getDate() - 1);
@@ -263,7 +326,7 @@ export const periodToParams = (period: Period): Period => {
  * Turn period object into clear human-readable text
  * @param {Period} period Period object with either a name or at least one of start/end
  * @param {?Boolean} short True for condensed format
- * @returns
+ * @returns in UTC TODO timezone support
  */
 export const printPeriod = ({ start, end, name }: Period, short = false) => {
 	if (name) {

@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Input, InputGroup } from 'reactstrap';
 import { is } from '../../utils/miscutils';
-import { asDate } from '../../utils/date-utils';
-import Misc from '../Misc';
+import { asDate, isoDate } from '../../utils/date-utils';
 
 import PropControl, { fakeEvent, FormControl, registerControl } from '../PropControl';
 
@@ -13,12 +12,12 @@ import PropControl, { fakeEvent, FormControl, registerControl } from '../PropCon
  * @param {Object} p 
  * @returns 
  */
-function PropControlDate2({ prop, storeValue, rawValue, value, onChange, ...otherStuff }) {
+function PropControlDate2({ prop, storeValue, rawValue, value, onChange, set, ...otherStuff }) {
 	// Roll back to native editor on 27/04/2022
 	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
 	if ( ! is(rawValue) && storeValue) {
-		rawValue = Misc.isoDate(storeValue);
+		rawValue = isoDate(storeValue);
 	}
 
 	// Strip out the time part!
@@ -41,7 +40,7 @@ function PropControlDate2({ prop, storeValue, rawValue, value, onChange, ...othe
  * @param {Object} p 
  * @returns 
  */
-function PropControlDateTime2({ prop, type, storeValue, rawValue, onChange, ...otherStuff }) {
+function PropControlDateTime2({ prop, type, storeValue, rawValue, onChange, set, ...otherStuff }) {
 	// Roll back to native editor on 27/04/2022
 	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
