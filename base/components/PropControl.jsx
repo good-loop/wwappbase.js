@@ -97,7 +97,9 @@ export class PropControlParams {
 	* Save utils:
 	* SavePublishDeleteEtc `saveDraftFn` 
 	* or instead of saveFn, place a SavePublishDeleteEtc on the page.
-	 * 
+	 *
+	 * Relationship to `set`: Called just after set(), and with extra inputs.
+	 * `saveFn` adds to the basic DataStore update normally done by set.
 	*/
 	saveFn;
 
@@ -157,6 +159,8 @@ export class PropControlParams {
 	 * If set, it replaces this -- allowing use of useState or custom handling.
 	 * 
 	 * Warning:Not all controls support this yet!
+	 * 
+	 * Relationship to `saveFn`: Called just before saveFn(), and with just the new-value as input.
 	 */
 	set;
 

@@ -1,6 +1,11 @@
 /**
  * Collect adhoc date processing in one place to avoid repeatedly reinventing the wheel
- *
+
+Modern js is surprisingly good!
+
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/RelativeTimeFormat
+
+*
  * TODO lets find a nice library that provides much of what we need.
  * 
  * day.js looks good
@@ -12,12 +17,12 @@ import { getUrlVars } from './miscutils';
 
 import dayjs from 'dayjs';
 // // import utc from 'dayjs-plugin-utc';
-// import utc from "dayjs/plugin/utc";
-// import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
 
-// dayjs.extend(utc);
-// dayjs.extend(timezone);
-window.dayjs = dayjs; // DEBUG
+dayjs.extend(utc);
+dayjs.extend(timezone);
+// window.dayjs = dayjs; // DEBUG
 
 // console.warn("dayjs.tz", dayjs.tz);
 // console.warn("dayjs.tz.guess", dayjs.tz.guess());
@@ -29,8 +34,8 @@ let _timezone = localTimeZone;
 export const getTimeZone = () => {
 	return _timezone;
 };
-export const setTimeZone = (timezone:string) => {	
-	console.warn("setTimezone "+timezone+" from "+_timezone);
+export const setTimeZone = (timezone: string) => {
+	console.warn("setTimezone " + timezone + " from " + _timezone);
 	// dayjs.tz.setDefault(timezone);
 	_timezone = timezone;
 	return timezone;
@@ -41,20 +46,24 @@ if (getUrlVars().tz) {
 	setTimeZone(getUrlVars().tz);
 }
 
-export const getTimeZoneShortName = (timezone:string|null) => {
-	if ( ! timezone) timezone = _timezone;
-	// js does know it -- but how to get it??
-	return timezone;
-	// let [, tzName] = /.*\s(.+)/.exec((new Date()).toLocaleDateString(navigator.language, { timeZoneName: 'short' }));
+export const getTimeZoneShortName = (timeZone: string | null) => {
+	if (!timeZone) timeZone = getTimeZone();
+	let ds = new Date().toLocaleDateString(
+		navigator.language,
+		{
+			timeZone,
+			timeZoneName: "short" // Hm... "short" gives UTC and BST, vs 'shortGeneric' which gives GMT and United Kingdom Time
+		}
+	);
+	let spi = ds.indexOf(" ");
+	return ds.substring(spi + 1);
 }
-console.log("getTimeZoneShortName", getTimeZoneShortName());
-console.log("getTimeZoneShortName", getTimeZoneShortName("America/Los_Angeles"));
 
 /** 
  * @param {Date} date Daylight savings means the offset can change. Provide a date to give the answer for that date.
- * @returns A timezone offset in minutes from UTC */
+ * @returns A timezone offset in minutes from UTC So e.g. New York is about -300  */
 // Thanks: https://stackoverflow.com/a/68593283/346629
-export const getTimeZoneOffset = (timeZone:string, date = new Date()) : number => {
+export const getTimeZoneOffset = (timeZone: string, date = new Date()): number => {
 	const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
 	const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
 	return (tzDate.getTime() - utcDate.getTime()) / 6e4;
@@ -134,11 +143,11 @@ export const dateStr = (d: Date) => {
 		month: 'short',
 		day: 'numeric'
 	};
-	  const timeZone = getTimeZone();
+	const timeZone = getTimeZone();
 	if (timeZone !== localTimeZone) {
 		options.timeZone = timeZone;
 		options.timeZoneName = "shortGeneric";
-	  }
+	}
 	return d.toLocaleDateString(navigator.language, options);
 };
 
@@ -150,13 +159,13 @@ export const printDateShort = (date: Date) => {
 	return date.toLocaleDateString(
 		navigator.language,
 		{
-		//   year: 'numeric',
-		  month: 'short',
-		  day: 'numeric',
-		  timeZone: getTimeZone(),
-		//   timeZoneName: 'shortGeneric'
+			//   year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			timeZone: getTimeZone(),
+			//   timeZoneName: 'shortGeneric'
 		}
-	  );
+	);
 };
 
 /**
@@ -174,13 +183,61 @@ export const dateTimeString = (d: Date) => {
 	if (timeZone !== localTimeZone) {
 		options.timeZone = timeZone;
 		options.timeZoneName = "shortGeneric";
-	  }
+	}
 	return d.toLocaleDateString(navigator.language, options);
 };
 
 // FROM dashutils
 
 export type Period = { start: Date; end: Date; name: string | null };
+
+const equalPeriod = (periodA:Period, periodB:Period) => {
+	if (periodA.name !== periodB.name) return false; // Least-surprise - consider "Q1" and "1 jan - 31 mar" different
+	if (periodA.start?.getTime() !== periodB.start?.getTime()) return false;
+	if (periodA.end?.getTime() !== periodB.end?.getTime()) return false;
+	return true; // Unchanged!
+};
+
+
+
+/** Are these two Dates on the same day? */
+export const sameDate = (d1: Date, d2: Date) => {
+	if (!d1 || !d2) return false;
+	return dateStr(d1) === dateStr(d2);
+	//(d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate()) <- no tz awareness
+};
+
+/** 00:00:00.000 on the same day as the given Date. TimeZone aware (not UTC!) */
+export const dayStartTZ = (date = new Date()) => {
+	return dayjs.tz(date, getTimeZone()).startOf('day').toDate();
+};
+	// let d = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()); // local timezone midnight
+	// if (localTimeZone===_timezone) return d;
+	// let offset1 = getTimeZoneOffset(getTimeZone(), date);
+	// let offset2 = getTimeZoneOffset(localTimeZone, date);
+	// let offset = offset1 + offset2;
+	// return new Date(d.getTime() + offset * 60000);
+
+
+/**
+ * E.g. midnight on 21st Jan, but in New York
+ * @param isoDate e.g. 2023-01-21
+ * @returns 
+ */
+export const newDateTZ = (isoDate:string) => {
+	let d = newDateUTC(isoDate);
+	let offset = getTimeZoneOffset();
+	d.setMinutes(-offset);
+	return d;
+};
+/**
+ * So: `new Date(year,month,day)` is local-time, but `new Date("year-month-day")` is UTC
+ * @param isoDate e.g. 2023-01-21
+ */
+const newDateUTC = (isoDate:string) => {
+	return new Date(isoDate); // easy
+};
+
 
 /**
  * ??timezone handling??
@@ -303,8 +360,8 @@ const quarterNames = [, '1st', '2nd', '3rd', '4th'];
  * Take a period object and transform it to use as URL params.
  * This for handling name > peroid is filter.
  */
-export const periodToParams = (period: Period): Period => {
-	const newVals = {} as { [key: string]: Date | string };
+export const periodToParams = (period: Period) => {
+	const newVals = {} as { [key: string]: string };
 	if (period.name) {
 		newVals.period = period.name as string;
 	} else {
@@ -319,7 +376,7 @@ export const periodToParams = (period: Period): Period => {
 			// newVals.end = isoDate(end);
 		}
 	}
-	return newVals as unknown as Period;
+	return newVals;
 };
 
 /**

@@ -5,21 +5,22 @@ import { oh, isoDate, MONTHS } from '../../utils/date-utils';
 import Misc from '../Misc';
 
 import PropControl, { fakeEvent, registerControl } from '../PropControl';
+import PropControlTimezone from './PropControlTimezone';
 
 /**
  * Really two PropControls - with some handy buttons for setting both
  */
-function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
+function PropControlPeriod2({ path, propStart = "start", propEnd = "end", saveFn }) {
     // start/end button logic (ugly)
     let startv = DataStore.getValue(path.concat(propStart));
     let endv = DataStore.getValue(path.concat(propEnd));
     // Do we have any handy date arithmetic code??
     // NB date.getMOnth() is zero index
-    const now=new Date();
+    const now = new Date();
     // TODO handle dec/jan
     // NB: now.getMonth() is 0-index so actually one behind!
-    let lastMonthStart = now.getUTCFullYear()+"-"+oh(now.getMonth())+"-01";
-    let se = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-01";
+    let lastMonthStart = now.getUTCFullYear() + "-" + oh(now.getMonth()) + "-01";
+    let se = now.getUTCFullYear() + "-" + oh(now.getMonth() + 1) + "-01";
     let de = new Date(se);
     // NB: start of next month = end of day previous month minus one day
     let lastMonthEnd = de.toISOString().substring(0, 10);
@@ -27,32 +28,32 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
     let lastQuarterStart, lastQuarterEnd;
     if (now.getMonth() < 3) {
         // Q4 prev year
-        lastQuarterStart = (now.getUTCFullYear()-1)+"-10-01";
-        lastQuarterEnd = now.getUTCFullYear()+"-01-01";
+        lastQuarterStart = (now.getUTCFullYear() - 1) + "-10-01";
+        lastQuarterEnd = now.getUTCFullYear() + "-01-01";
     } else {
         // start month of last quarter = -3 and round down
         let sm = 1 + (3 * Math.floor((now.getMonth() - 3) / 3));
-        lastQuarterStart = (now.getUTCFullYear()-1)+"-"+oh(sm)+"-01";
-        let qe = now.getUTCFullYear()+"-"+oh(sm+3)+"-01";
+        lastQuarterStart = (now.getUTCFullYear() - 1) + "-" + oh(sm) + "-01";
+        let qe = now.getUTCFullYear() + "-" + oh(sm + 3) + "-01";
         let dqe = new Date(qe);
-        lastQuarterEnd = dqe.toISOString().substring(0, 10);    
+        lastQuarterEnd = dqe.toISOString().substring(0, 10);
     }
     // ...yesterday
-    let yesterdayStart = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-"+oh(now.getUTCDate()-1);
-    let yesterdayEnd = now.getUTCFullYear()+"-"+oh(now.getMonth()+1)+"-"+oh(now.getUTCDate());
+    let yesterdayStart = now.getUTCFullYear() + "-" + oh(now.getMonth() + 1) + "-" + oh(now.getUTCDate() - 1);
+    let yesterdayEnd = now.getUTCFullYear() + "-" + oh(now.getMonth() + 1) + "-" + oh(now.getUTCDate());
     // button click
     const setPeriod = (name) => {
         // const now = new Date();
         let s, e;
-        if (name==="yesterday") {
+        if (name === "yesterday") {
             s = yesterdayStart;
             e = yesterdayEnd;
         }
-        if (name==="last-month") {
+        if (name === "last-month") {
             s = lastMonthStart;
             e = lastMonthEnd;
         }
-        if (name==="last-quarter") {
+        if (name === "last-quarter") {
             s = lastQuarterStart;
             e = lastQuarterEnd;
         }
@@ -61,24 +62,26 @@ function PropControlPeriod2({path, propStart="start",propEnd="end"}) {
     };
     // jsx
     return (<>
-    <div className="flex-row">
-        <Button active={startv===yesterdayStart && endv===yesterdayEnd} color="outline-secondary" size="sm" onClick={e => setPeriod("yesterday")}>Yesterday</Button>
-        <Button active={startv===lastMonthStart && endv===lastMonthEnd} className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-month")}>Last Month</Button>
-        <Button active={startv===lastQuarterStart && endv===lastQuarterEnd} className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-quarter")}>Last Quarter</Button>
-    </div>
-    <Row>
-        <Col>
-        <PropControl prop={propStart} path={path} label type="date" />
-    </Col><Col>
-            <PropControl prop={propEnd} path={path} label type="date" />
-        </Col>
-    </Row></>);
+        <div className="flex-row">
+            <Button active={startv === yesterdayStart && endv === yesterdayEnd} color="outline-secondary" size="sm" onClick={e => setPeriod("yesterday")}>Yesterday</Button>
+            <Button active={startv === lastMonthStart && endv === lastMonthEnd} className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-month")}>Last Month</Button>
+            <Button active={startv === lastQuarterStart && endv === lastQuarterEnd} className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-quarter")}>Last Quarter</Button>
+        </div>
+        <Row>
+            <Col>
+                <PropControl prop={propStart} path={path} label type="date" />
+            </Col><Col>
+                <PropControl prop={propEnd} path={path} label type="date" />
+            </Col><Col>
+                <PropControlTimezone size="sm" label="Timezone" prop="tz" />
+            </Col>
+        </Row></>);
 }
 
 
 // registerControl({ type: 'period', $Widget: PropControlPeriod2 });
 
-function PropControlPeriodMonthYear({path, propStart="start",propEnd="end"}) {
+function PropControlPeriodMonthYear({ path, propStart = "start", propEnd = "end" }) {
     let startv = DataStore.getValue(path.concat(propStart));
     let endv = DataStore.getValue(path.concat(propEnd));
     let wpath = ["widget"].concat(path);
@@ -87,24 +90,24 @@ function PropControlPeriodMonthYear({path, propStart="start",propEnd="end"}) {
     let month = DataStore.getValue(wpath.concat("month"));
     let year = DataStore.getValue(wpath.concat("year"));
     if (month && year) {
-        startv = year+"-"+oh(MONTHS.indexOf(month)+1)+"-01";
-        let startNextMonth = year+"-"+oh(MONTHS.indexOf(month)+2)+"-01";
+        startv = year + "-" + oh(MONTHS.indexOf(month) + 1) + "-01";
+        let startNextMonth = year + "-" + oh(MONTHS.indexOf(month) + 2) + "-01";
         if (startNextMonth.includes("-13-")) {
-            startNextMonth = ((year*1)+1)+"-01-01"; // NB force year to be a number so we can +1
+            startNextMonth = ((year * 1) + 1) + "-01-01"; // NB force year to be a number so we can +1
         }
         let dend = new Date(new Date(startNextMonth).getTime() - 1);
         endv = isoDate(dend);
         DataStore.setValue(path.concat(propStart), startv);
-        DataStore.setValue(path.concat(propEnd), endv);        
+        DataStore.setValue(path.concat(propEnd), endv);
     }
 
     return (<><Row>
         <Col><PropControl type="select" prop="month" label options={MONTHS} path={wpath} />
         </Col><Col>
-        <PropControl type="select" prop="year" label options={[now.getFullYear()-1, now.getFullYear()]} path={wpath} dflt={now.getFullYear()} />
+            <PropControl type="select" prop="year" label options={[now.getFullYear() - 1, now.getFullYear()]} path={wpath} dflt={now.getFullYear()} />
         </Col>
     </Row>
-    <p><small>start: <Misc.DateTag date={startv} /> end: <Misc.DateTag date={endv} /></small></p>
+        <p><small>start: <Misc.DateTag date={startv} /> end: <Misc.DateTag date={endv} /></small></p>
     </>);
 }
 
@@ -119,13 +122,13 @@ function PropControlPeriodMonthYear({path, propStart="start",propEnd="end"}) {
  */
 function PropControlPeriod(p) {
     // HACK a bit of the machinery from PropControl
-    if ( ! p?.path) {
-        p = Object.assign({path:['location', 'params']}, p);
+    if (!p?.path) {
+        p = Object.assign({ path: ['location', 'params'] }, p);
     }
     // HACK how shall we switch format?
-    if (p.options && (""+p.options).includes("month")) {
+    if (p.options && ("" + p.options).includes("month")) {
         return <PropControlPeriodMonthYear {...p} />;
     }
-  return <PropControlPeriod2 type="period" {...p} />;
+    return <PropControlPeriod2 type="period" {...p} />;
 }
 export default PropControlPeriod;
