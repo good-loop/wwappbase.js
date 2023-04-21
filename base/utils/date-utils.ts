@@ -16,7 +16,6 @@ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects
 import { getUrlVars } from './miscutils';
 
 import dayjs from 'dayjs';
-// // import utc from 'dayjs-plugin-utc';
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 
@@ -231,7 +230,7 @@ export const newDateTZ = (isoDate:string) => {
 	return d;
 };
 /**
- * So: `new Date(year,month,day)` is local-time, but `new Date("year-month-day")` is UTC
+ * So (unlike Java) `new Date(year,month,day)` is local-time, but `new Date("year-month-day")` is UTC
  * @param isoDate e.g. 2023-01-21
  */
 const newDateUTC = (isoDate:string) => {
