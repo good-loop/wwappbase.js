@@ -27,7 +27,7 @@ dayjs.extend(timezone);
 // console.warn("dayjs.tz.guess", dayjs.tz.guess());
 
 const localTimeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-let _timezone = localTimeZone;
+let _timezone = "UTC"; // default to UTC! not localTimeZone;
 // dayjs.tz.guess();
 // presumably guess() is doing 
 export const getTimeZone = () => {
@@ -63,6 +63,7 @@ export const getTimeZoneShortName = (timeZone: string | null) => {
  * @returns A timezone offset in minutes from UTC So e.g. New York is about -300  */
 // Thanks: https://stackoverflow.com/a/68593283/346629
 export const getTimeZoneOffset = (timeZone: string, date = new Date()): number => {
+	if ( ! timeZone) timeZone = getTimeZone();
 	const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }));
 	const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
 	return (tzDate.getTime() - utcDate.getTime()) / 6e4;
@@ -121,6 +122,7 @@ export const asDate = (s: Date | String): Date | null => {
 	if (!s) return null;
 	// Create the Date Object in UTC
 	if (typeof s === 'string') {
+		// FIXME This strips timezone! 
 		return dateUTCfromString(s);
 	}
 	return s as Date;
@@ -130,6 +132,15 @@ export const asDate = (s: Date | String): Date | null => {
  * @return string in iso format (date only, no time-of-day part) e.g. 2020-10-18
  */
 export const isoDate = (d: Date | string): string => asDate(d)!.toISOString().replace(/T.+/, '');
+
+export const isoDateTZ = (d: Date | string): string => {
+	let date = new Date(asDate(d));
+	let offset = getTimeZoneOffset(getTimeZone(), date);
+	// HACK: for eastern countries ahead of UTC, e.g. "1st June 00:00" in Paris = "31st May 23:00" UTC
+	// so use a shifted time, then get the UTC date
+	date.setMinutes(date.getMinutes() + offset);
+	return isoDate(date);	
+};
 
 /** 
  * Locale and timezone aware
@@ -168,7 +179,7 @@ export const printDateShort = (date: Date) => {
 };
 
 /**
- * Human-readable, minute level date+time string
+ * Human-readable, timezone aware, minute level date+time string
  */
 export const dateTimeString = (d: Date) => {
 	let options = {
@@ -206,9 +217,15 @@ export const sameDate = (d1: Date, d2: Date) => {
 	//(d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate()) <- no tz awareness
 };
 
-/** 00:00:00.000 on the same day as the given Date. TimeZone aware (not UTC!) */
+/** 00:00:00.000 on the same day as the given Date. TimeZone aware (not UTC unless timezone=utc!) */
 export const dayStartTZ = (date = new Date()) => {
 	return dayjs.tz(date, getTimeZone()).startOf('day').toDate();
+};
+/** 00:00:00.000 on the NEXT day as the given Date. TimeZone aware (not UTC unless timezone=utc!) */
+export const dayEndTZ = (date = new Date()) => {
+	let nextDay = new Date(date); // copy
+	nextDay.setDate(nextDay.getDate()+1);
+	return dayStartTZ(nextDay);
 };
 	// let d = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()); // local timezone midnight
 	// if (localTimeZone===_timezone) return d;
@@ -230,11 +247,13 @@ export const newDateTZ = (isoDate:string) => {
 	return d;
 };
 /**
- * So (unlike Java) `new Date(year,month,day)` is local-time, but `new Date("year-month-day")` is UTC
+ * So (unlike Java) `new Date(year,month,day)` and new Date(isodate) is local-time
  * @param isoDate e.g. 2023-01-21
+ * @returns midnight GMT for isoDate
  */
 const newDateUTC = (isoDate:string) => {
-	return new Date(isoDate); // easy
+	let m = isoDate.match(/(\d{4})-(\d{2})-(\d{2})/);
+	return new Date(Date.UTC(m[1],m[2]-1,m[3])); // zero-indexed month!
 };
 
 

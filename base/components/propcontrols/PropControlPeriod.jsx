@@ -69,9 +69,9 @@ function PropControlPeriod2({ path, propStart = "start", propEnd = "end", saveFn
         </div>
         <Row>
             <Col>
-                <PropControl prop={propStart} path={path} label type="date" />
+                <PropControl prop={propStart} path={path} label type="date" time="start" />
             </Col><Col>
-                <PropControl prop={propEnd} path={path} label type="date" />
+                <PropControl prop={propEnd} path={path} label type="date" time="end" />
             </Col><Col>
                 <PropControlTimezone size="sm" label="Timezone" prop="tz" />
             </Col>
