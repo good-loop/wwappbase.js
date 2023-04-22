@@ -1,83 +1,51 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Col, Input, InputGroup, Row } from 'reactstrap';
 import DataStore from '../../plumbing/DataStore';
-import { oh, isoDate, MONTHS } from '../../utils/date-utils';
+import { oh, isoDate, MONTHS, dayStartTZ, periodFromName } from '../../utils/date-utils';
 import Misc from '../Misc';
 
 import PropControl, { fakeEvent, registerControl } from '../PropControl';
 import PropControlTimezone from './PropControlTimezone';
+import { stopEvent, toTitleCase } from '../../utils/miscutils';
 
 /**
  * Really two PropControls - with some handy buttons for setting both
  */
-function PropControlPeriod2({ path, propStart = "start", propEnd = "end", saveFn }) {
-    // start/end button logic (ugly)
-    let startv = DataStore.getValue(path.concat(propStart));
-    let endv = DataStore.getValue(path.concat(propEnd));
-    // Do we have any handy date arithmetic code??
-    // NB date.getMOnth() is zero index
-    const now = new Date();
-    // TODO handle dec/jan
-    // NB: now.getMonth() is 0-index so actually one behind!
-    let lastMonthStart = now.getUTCFullYear() + "-" + oh(now.getMonth()) + "-01";
-    let se = now.getUTCFullYear() + "-" + oh(now.getMonth() + 1) + "-01";
-    let de = new Date(se);
-    // NB: start of next month = end of day previous month minus one day
-    let lastMonthEnd = de.toISOString().substring(0, 10);
-    // ...quarter
-    let lastQuarterStart, lastQuarterEnd;
-    if (now.getMonth() < 3) {
-        // Q4 prev year
-        lastQuarterStart = (now.getUTCFullYear() - 1) + "-10-01";
-        lastQuarterEnd = now.getUTCFullYear() + "-01-01";
-    } else {
-        // start month of last quarter = -3 and round down
-        let sm = 1 + (3 * Math.floor((now.getMonth() - 3) / 3));
-        lastQuarterStart = (now.getUTCFullYear() - 1) + "-" + oh(sm) + "-01";
-        let qe = now.getUTCFullYear() + "-" + oh(sm + 3) + "-01";
-        let dqe = new Date(qe);
-        lastQuarterEnd = dqe.toISOString().substring(0, 10);
-    }
-    // ...yesterday
-    let yesterdayStart = now.getUTCFullYear() + "-" + oh(now.getMonth() + 1) + "-" + oh(now.getUTCDate() - 1);
-    let yesterdayEnd = now.getUTCFullYear() + "-" + oh(now.getMonth() + 1) + "-" + oh(now.getUTCDate());
-    // button click
-    const setPeriod = (name) => {
-        // const now = new Date();
-        let s, e;
-        if (name === "yesterday") {
-            s = yesterdayStart;
-            e = yesterdayEnd;
-        }
-        if (name === "last-month") {
-            s = lastMonthStart;
-            e = lastMonthEnd;
-        }
-        if (name === "last-quarter") {
-            s = lastQuarterStart;
-            e = lastQuarterEnd;
-        }
-        if (s) DataStore.setValue(path.concat(propStart), s);
-        if (e) DataStore.setValue(path.concat(propEnd), e);
-    };
-    // jsx
-    return (<>
-        <div className="flex-row">
-            <Button active={startv === yesterdayStart && endv === yesterdayEnd} color="outline-secondary" size="sm" onClick={e => setPeriod("yesterday")}>Yesterday</Button>
-            <Button active={startv === lastMonthStart && endv === lastMonthEnd} className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-month")}>Last Month</Button>
-            <Button active={startv === lastQuarterStart && endv === lastQuarterEnd} className="ml-2" color="outline-secondary" size="sm" onClick={e => setPeriod("last-quarter")}>Last Quarter</Button>
-        </div>
-        <Row>
-            <Col>
+function PropControlPeriod2({className, style, path, propStart = "start", propEnd = "end", buttons=["yesterday", "this-month"], saveFn }) {
+    return (<div className={className} style={style} >
+        {buttons && <div className="flex-row">
+            {buttons.map(b => <PeriodButton key={b} name={b} path={path} propStart={propStart} propEnd={propEnd} />)}
+        </div>}
+        <Row className='mt-2'>
+            <Col sm={6}>
                 <PropControl prop={propStart} path={path} label type="date" time="start" />
-            </Col><Col>
+            </Col><Col sm={6}>
                 <PropControl prop={propEnd} path={path} label type="date" time="end" />
-            </Col><Col>
-                <PropControlTimezone size="sm" label="Timezone" prop="tz" />
             </Col>
-        </Row></>);
+        </Row>
+        <Row>
+            <Col sm={12}>
+                <PropControlTimezone className="mt-2" size="sm" label="Timezone" prop="tz" />
+            </Col>
+        </Row>
+    </div>);
 }
 
+
+const PeriodButton = ({name, label, path, propStart, propEnd}) => {
+    const now = new Date();
+    let period = periodFromName(name);
+    const setPeriod = _evt => {
+        DataStore.setValue(path.concat("period"), period.name);
+        DataStore.setValue(path.concat(propStart), period.start?.toISOString());
+        DataStore.setValue(path.concat(propEnd), period.end?.toISOString());
+    };
+    let startv = DataStore.getValue(path.concat(propStart));
+    let endv = DataStore.getValue(path.concat(propEnd));
+    let isActive = false; // TODO
+    return <Button active={isActive} color="outline-secondary" size="sm" className="mr-2" 
+        onClick={setPeriod}>{label || toTitleCase(name)}</Button>;
+}
 
 // registerControl({ type: 'period', $Widget: PropControlPeriod2 });
 

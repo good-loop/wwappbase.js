@@ -13,11 +13,13 @@ https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects
  * https://day.js.org/docs/en/timezone/set-default-timezone
  */
 
-import { getUrlVars } from './miscutils';
+import { getUrlVars, toTitleCase } from './miscutils';
 
 import dayjs from 'dayjs';
 import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
+import { modifyPage } from '../plumbing/glrouter';
+import DataStore from '../plumbing/DataStore';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -261,14 +263,14 @@ const newDateUTC = (isoDate:string) => {
  * ??timezone handling??
  *
  * Returns a period object for the quarter enclosing the given date
- * @param {?Date} date Default "now"
+ * @param {!Date} date 
  * @returns {start, end, name}
  */
-export const getPeriodQuarter = (date = new Date()) => {
+export const getPeriodQuarter = (date : Date) => {	
 	const qIndex = Math.floor(date.getMonth() / 3);
-	const start = new Date(date);
-	start.setMonth(qIndex * 3, 1);
-	start.setHours(0, 0, 0, 0);
+	const month = qIndex*3 + 1;
+	let year = date.getFullYear();
+	let start = newDateTZ(year+"-"+oh(month)+"-01");
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 3);
 	return { start, end, name: `${start.getFullYear()}-Q${qIndex + 1}` };
@@ -281,22 +283,21 @@ export const getPeriodQuarter = (date = new Date()) => {
  * @returns {Period}
  */
 export const getPeriodMonth = (date = new Date()): Period => {
-	const start = new Date(date);
+	const start = newDateTZ(isoDate(date));
 	start.setDate(1);
-	start.setHours(0, 0, 0, 0);
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 1);
-	return { start, end, name: `${start.getFullYear()}-${end.getMonth()}` };
+	// let name = start.toLocaleDateString(
+	// 	"en-gb", //fixed language for matching
+	// 	{
+	// 		year: 'numeric',
+	// 		month: '2-digit',
+	// 		timeZone: getTimeZone(),
+	// 	}
+	// );
+	return { start, end }; //, name currently buggy for matching
 };
 
-export const getPeriodYear = (date = new Date()) => {
-	const start = new Date(date);
-	start.setMonth(0, 1);
-	start.setHours(0, 0, 0, 0);
-	const end = new Date(date);
-	end.setMonth(12);
-	return { start, end, name: `${start.getFullYear()}` };
-};
 
 /**
  * Read period (name) or start/end
@@ -305,9 +306,13 @@ export const getPeriodYear = (date = new Date()) => {
 export const getPeriodFromUrlParams = (urlParams: UrlParamPeriod | null): Period | null => {
 	if (!urlParams) urlParams = getUrlVars(null, null);
 	let { start, end, period } = urlParams;
+	// named?
 	const periodObjFromName = periodFromName(period as string);
 	// User has set a named period (year, quarter, month)
 	if (periodObjFromName) {
+		// fill in the start/end
+		DataStore.setUrlValue("start", periodObjFromName.start, false);
+		DataStore.setUrlValue("end", periodObjFromName.end, false);
 		return periodObjFromName;
 	}
 
@@ -342,13 +347,30 @@ export const periodFromName = (periodName?: string): Period | null => {
 	}
 	if (periodName === 'all') {
 		return {
-			start: new Date('1970-01-01'),
+			start: new Date(0),
 			end: new Date('3000-01-01'),
 			name: 'all',
 		};
 	}
 	let refDate = new Date();
-
+	// yesterday
+	if (periodName === "yesterday") {
+		let end = dayStartTZ(refDate);
+		let start = new Date(end);
+		start.setDate(start.getDate() - 1);
+		return {
+			name:periodName, start, end
+		};
+	}
+	if (periodName === "tomorrow") {
+		let start = dayEndTZ(refDate);
+		let end = new Date(start);
+		end.setDate(end.getDate() + 1);
+		return {
+			name:periodName, start, end
+		};
+	}
+	// TODO this-month, last-month, last-quarter
 	// eg "2022-Q2"
 	const quarterMatches = periodName.match(quarterRegex) as unknown as number[];
 	if (quarterMatches) {
@@ -356,19 +378,38 @@ export const periodFromName = (periodName?: string): Period | null => {
 		refDate.setMonth(3 * (quarterMatches[2] - 1));
 		return getPeriodQuarter(refDate);
 	}
-	// eg "2022-04"
-	const monthMatches = periodName.match(monthRegex) as unknown as number[];
-	if (monthMatches) {
-		refDate.setFullYear(monthMatches[1]);
-		refDate.setMonth(monthMatches[2]);
-		return getPeriodMonth(refDate);
+	// this-month, last-month
+	if (periodName==="this-month") {
+		let p = getPeriodMonth(new Date());
+		p.name = periodName;
+		return p;
 	}
-	// eg "2022"
-	const yearMatches = periodName.match(yearRegex) as unknown as number[];
-	if (yearMatches) {
-		refDate.setFullYear(yearMatches[1]);
-		return getPeriodYear(refDate);
+	if (periodName==="last-month") {
+		let d = new Date();
+		d.setMonth(d.getMonth() - 1);
+		let p = getPeriodMonth(d);
+		p.name = periodName;
+		return p;
 	}
+	// // eg "2022-04"
+	// const monthMatches = periodName.match(monthRegex) as unknown as number[];
+	// if (monthMatches) {
+	// 	refDate.setFullYear(monthMatches[1]);
+	// 	refDate.setMonth(monthMatches[2]);
+	// 	return getPeriodMonth(refDate);
+	// }
+	// const monthMatches2 = periodName.match(monthRegex2) as unknown as number[];
+	// if (monthMatches2) {
+	// 	refDate.setFullYear(monthMatches[1]);
+	// 	refDate.setMonth(monthMatches[2]);
+	// 	return getPeriodMonth(refDate);
+	// }
+	// // eg "2022" TODO
+	// const yearMatches = periodName.match(yearRegex) as unknown as number[];
+	// if (yearMatches) {
+	// 	refDate.setFullYear(yearMatches[1]);
+	// 	return getPeriodYear(refDate);
+	// }
 	throw new Error('Unrecognised period ' + periodName);
 };
 
@@ -427,6 +468,8 @@ export const printPeriod = ({ start, end, name }: Period, short = false) => {
 			if (short) return `${year}`; // eg "2022"
 			return `Year ${year}`; // eg "Year 2022"
 		}
+		// e.g. yesterday
+		return toTitleCase(name);
 	}
 
 	// Bump end date back by 1 second so eg 2022-03-01T00:00:00.000+0100 to 2022-04-01T00:00:00.000+0100

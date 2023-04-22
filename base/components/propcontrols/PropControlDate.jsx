@@ -12,7 +12,7 @@ import { newDateTZ } from '../../utils/date-utils';
  * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
  * 
  * @param {Object} p 
- * @param {string} p.time start|end|none start/end of day, or "none" for no-time (date part only)
+ * @param {string} p.time start|end|none start/end of day, or "none" for no-time (date part only, timezone logic off)
  * NB: we like sending full timestamps for clarity around timezone issues
  * @returns 
  */
@@ -25,8 +25,7 @@ function PropControlDate2({ prop, type, storeValue, rawValue, setRawValue, value
 		rawValue = isoDateTZ(storeValue);
 	}
 
-	// Strip out the time part!
-	// TODO support datetime-local
+	// Strip out the time part
 	if (rawValue && rawValue.includes("T")) {
 		try {
 			rawValue = isoDateTZ(new Date(rawValue));
@@ -43,7 +42,7 @@ function PropControlDate2({ prop, type, storeValue, rawValue, setRawValue, value
 		rawValue = isoDate(d);
 	}
 
-	// replace the default onChange to use full-iso-date-time. timezone aware
+	// replace the default onChange to use full-iso-date-time (rather than just the date part). timezone aware
 	const onChangeDate = e => {
 		stopEvent(e);
 		setRawValue(e.target.value);

@@ -90,6 +90,7 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
 	if ( ! newpath) newpath = path || [];
 	let hash = encURI(newpath.join('/'));
 	if (yessy(allparams)) {
+		// ?? what if a Date is passed in??
 		let kvs = mapkv(allparams, (k, v) => encURI(k) + "=" + (v === null || v === undefined ? '' : encURI(v)));
 		hash += "?" + kvs.join('&');
 	}
