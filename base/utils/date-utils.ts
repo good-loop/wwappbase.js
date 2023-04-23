@@ -74,13 +74,6 @@ console.log("getTimeZoneOffset", "America/Los_Angeles", getTimeZoneOffset("Ameri
 console.log("getTimeZoneOffset", getTimeZone(), getTimeZoneOffset(getTimeZone()));
 window.getTimeZoneOffset = getTimeZoneOffset;
 
-export interface UrlParamPeriod extends Object {
-	scale?: string;
-	start?: string;
-	end?: string;
-	period?: string | Period;
-}
-
 /**
  * 0 = Sunday
  */
@@ -299,11 +292,21 @@ export const getPeriodMonth = (date = new Date()): Period => {
 };
 
 
+
+export interface PeriodFromUrlParams extends Object {
+	/** iso date */
+	start?: string;
+	/** iso date */
+	end?: string;
+	/** period name e.g. last-month */
+	period?: string;
+}
+
 /**
  * Read period (name) or start/end
  * @param {Object} urlParams If unset use getUrlVars()
  */
-export const getPeriodFromUrlParams = (urlParams: UrlParamPeriod | null): Period | null => {
+export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefined): Period | null => {
 	if (!urlParams) urlParams = getUrlVars(null, null);
 	let { start, end, period } = urlParams;
 	// named?

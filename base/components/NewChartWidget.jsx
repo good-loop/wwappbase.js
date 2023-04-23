@@ -11,6 +11,11 @@ import { is, space, asNum } from '../utils/miscutils';
 ChartJS.register(CategoryScale, LinearScale, LogarithmicScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend, Annotation);
 
 /**
+ * axes scaling
+ */
+export const KScale = new Enum("linear logarithmic");
+
+/**
  * ?? How do we set the size of the chart??
  *
  * @param {Object} p
