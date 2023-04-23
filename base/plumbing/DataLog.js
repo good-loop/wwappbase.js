@@ -8,9 +8,11 @@ import { assert } from '../utils/assert';
 import { encURI } from '../utils/miscutils';
 import DataStore from './DataStore';
 import ServerIO from './ServerIOBase';
+import { getTimeZone } from '../utils/date-utils';
 
 /**
  * @param {Object} p
+ * @param {?String} p.btz Bucket timezone, works with interval. Defaults to getTimeZone() 
  * @param {String} p.q
  * @param {!String} p.dataspace
  * @param {?String[]} p.breakdowns - e.g. ['campaign'] will result in by_campaign results.
@@ -27,12 +29,13 @@ import ServerIO from './ServerIOBase';
  * @param {?String} p.interval day / hour / 15 minutes etc time-bucket size
  * @returns PromiseValue "ElasticSearch format" (buckets with a key)
  */
-const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,interval,incs,ince,op="sum",dataspace=ServerIO.DATALOG_DATASPACE}) => {
+const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,interval,btz,incs,ince,op="sum",dataspace=ServerIO.DATALOG_DATASPACE}) => {
 	assert(dataspace);
 	let phack = prob? Math.round(10*prob) : prob; // (old code, Feb 23) handle DataServlet prob=[0,10] code
 	if (phack === -10) phack=88; // HACK (old code, Feb 23) special value for "pick a prob"
 	// NB: the server doesnt want an -s on breakdown
-	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, interval, name, dataspace, incs, ince, op};	
+	if ( ! btz) btz = getTimeZone();
+	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, interval, btz, name, dataspace, incs, ince, op};	
 	let dspec = md5(JSON.stringify(glreq));
 	const dlpath = ['misc', 'DataLog', dataspace, dspec];
 
