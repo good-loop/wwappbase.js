@@ -42,30 +42,34 @@ const encodePreserveMacros = (targetUrl, macroType) => {
 const macroAdders = {
 	[KMacroType.DV360]: (url) => {
 		// creative ID, site url
-		url.search += '&vert=${CREATIVE_ID}&url=${SOURCE_URL_ENC}';
+		// TODO PUBLISHER_ID and UNIVERSAL_SITE_ID?? Let's log them (harmlessly) so we can see https://support.google.com/displayvideo/answer/2789508?hl=en
+		url.search += '&macro=dv360&vert=${CREATIVE_ID}&url=${SOURCE_URL_ENC}&pid=${PUBLISHER_ID}&usi=${UNIVERSAL_SITE_ID}';
 	},
 	[KMacroType.GOOGLE]: (url) => {
 		// width, height, site domain, site url
 		// https://support.google.com/admanager/answer/2376981?hl=en
-		url.search += '&width=%%WIDTH%%&height=%%HEIGHT%%&pub=%%SITE%%&url=%%REFERRER_URL_ESC%%';
+		url.search += '&macro=gam&width=%%WIDTH%%&height=%%HEIGHT%%&pub=%%SITE%%&url=%%REFERRER_URL_ESC%%';
 	},
 	[KMacroType.TTD]: (url) => {
 		// creative ID, size string, device type, site domain
-		url.search += '&vert=%%TTD_CREATIVEID%%&size=%%TTD_ADFORMAT%%&env=%%TTD_DEVICETYPE%%&pub=%%TTD_SITE%%';
+		url.search += '&macro=ttd&vert=%%TTD_CREATIVEID%%&size=%%TTD_ADFORMAT%%&env=%%TTD_DEVICETYPE%%&pub=%%TTD_SITE%%';
 	},
 	[KMacroType.XANDR]: (url) => {
 		// creative ID, size string, width, height, site URL
-		// Removed "&pub=${SITE_ID}" as it was polluting records with numeric values, xandr does not have a "site domain" macro
+		// (TODO reinstate somehow) Removed "&pub=${SITE_ID}" as it was polluting records with numeric values, xandr does not have a "site domain" macro
 		// https://docs.xandr.com/bundle/invest_invest-standard/page/topics/supported-creative-macros.html
-		url.search += '&vert=${CREATIVE_ID}&size=${CREATIVE_SIZE}&width=${WIDTH}&height=${HEIGHT}&url=${REFERER_URL_ENC}';
+		url.search += '&macro=xandr&vert=${CREATIVE_ID}&size=${CREATIVE_SIZE}&width=${WIDTH}&height=${HEIGHT}&url=${REFERER_URL_ENC}&site_id=${SITE_ID}';
 	},
     [KMacroType.YAHOO]: (url) => {
-		// creative ID, device type
-		url.search += '&vert={creative}&env={device}';
+		// creative ID, device type 
+		// TODO pub/domain?!
+		url.search += '&macro=yahoo&vert={creative}&env={device}';
 	},
     [KMacroType.AMAZON]: (url) => {
+		// doc - maybe this?? https://advertising.amazon.com/en-gb/resources/ad-policy/mmp-measurement-urls
+		// Has this been tested??
         // creative ID, size string
-        url.search += '&vert=__CS_CREATIVE_ID__&size=__CS_AD_SIZE__'
+        url.search += '&macro=amzn&vert=__CS_CREATIVE_ID__&size=__CS_AD_SIZE__&pub=__AAX_SITE_NAME__'
     },
 };
 
