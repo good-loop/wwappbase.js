@@ -36,8 +36,12 @@ const str = printer.str;
 class Column extends DataClass {
 	/** @type {?String|Function} Extract the column value from an item. If a string, this is the property name. */
 	accessor;
+	/** @type {?String|Function} (optional) Define a different extract for csv */
+	accessorCSV;	
 	/** @type {?Function} (value, column, item) -> string|jsx */
 	Cell;
+	/** @type {?boolean} set false to skip this column in the csv */
+	csv;
 	/** @type {?String} */
 	Header;
 	/** @type {?Boolean} */
@@ -58,7 +62,6 @@ class Column extends DataClass {
 	total;
 	/** @type {?Object|Function} custom css styling. If a function, it does (cellValue, item, column) -> css-style-object */
 	style;
-
 	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
 	ui;
 	/** @significantDigits {?integer} used used to specify significant digits for numbers */
@@ -319,8 +322,8 @@ function THead({ visibleColumns, tableSettings, headerRender, topRow, dataTree, 
  * @param {!TableSettings} params.tableSettings
  */
 const createCSVData = ({ visibleColumns, topRow, tableSettings, dataTree, bottomRow }) => {
-	// No UI buttons
-	visibleColumns = visibleColumns.filter(c => !c.ui);
+	// No UI buttons, no explicit csv:false
+	visibleColumns = visibleColumns.filter(c => !c.ui && c.csv !== false);
 	// build up an array view of the table
 	let dataArray = [];
 	// csv gets the text, never jsx from headerRender!
@@ -372,7 +375,7 @@ const createCSVData2_row = ({ visibleColumns, item }) => {
  */
 const createCSVData3_cell = ({ item, column }) => {
 	// See Cell = (
-	const v = getValue({ item, column });
+	const v = getValueCSV({ item, column });
 	return defaultCellRender(v, column);
 };
 
@@ -594,6 +597,17 @@ const getValue = ({ item, row, column }) => {
 		return undefined;
 	}
 	let accessor = column.accessor || column;
+	let v = _.isFunction(accessor) ? accessor(item) : item[accessor];
+	return v;
+};
+
+
+const getValueCSV = ({ item, row, column }) => {
+	if (!item) {
+		console.error("SimpleTable.jsx getValue: null item", column);
+		return undefined;
+	}
+	let accessor = column.accessorCSV || column.accessor || column;
 	let v = _.isFunction(accessor) ? accessor(item) : item[accessor];
 	return v;
 };

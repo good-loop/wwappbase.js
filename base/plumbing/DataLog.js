@@ -18,7 +18,7 @@ import { getTimeZone } from '../utils/date-utils';
  * @param {?String[]} p.breakdowns - e.g. ['campaign'] will result in by_campaign results.
  * NB: the server parameter is currently `breakdown` (no -s).
  * Eventually we want to standardise on `breakdowns` as it's more intuitive for an array type,
- * but making the change server-side is expected to be very involved.
+ * but making the change server-side is expected to be involved.
  * @param {?String|Date} p.start Date/time of oldest results (natural language eg '1 week ago' is OK). Default: 1 month ago
  * @param {?String|Date} p.end Date/time of oldest results
  * @param {?boolean} p.incs include start
@@ -42,7 +42,7 @@ const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,in
 	return DataStore.fetch(dlpath, () => {		
 		let endpoint = ServerIO.DATALOG_ENDPOINT;
 		// This stats data is _usually_ non essential, so swallow errors.
-		const params = {data: glreq, swallow:true};
+		const params = {data: glreq, swallow:true, method:"POST"};
 		const url = endpoint + (name ? `?name=${encURI(name)}` : '');
 		let ajax = ServerIO.load(url, params);
 		return ajax.then(res => {
@@ -63,6 +63,9 @@ const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,in
  * @returns e.g. {myevent: {monday:1, tuesday:2, total:3}}
  */
 const pivotDataLogData = (data, breakdowns) => {
+	if (data.sampling) {
+		data = data.sampling; // unwrap sampling
+	}
 	// HACK 1/2 only
 	assert(breakdowns.length===1 || breakdowns.length===2, breakdowns);
 	const b0 = breakdowns[0];
@@ -87,7 +90,7 @@ const pivotDataLogData = (data, breakdowns) => {
 
 
 /**
- * Convert from "ElasticSearch format" (buckets with a key) into `{key: value}` format
+ * Convert from "ElasticSearch format" (buckets with a key) into rows format [{key1, key2, count}]
  * @param {Object} data Output from getDataLogData()
  * @param {!String} breakdown e.g. 'brand/campaign{"co2":"sum"}'
  * @returns {Object[]} e.g. [{brand, campaign, count, co2}, ...]
@@ -96,6 +99,9 @@ const pivotDataLogData = (data, breakdowns) => {
 	let ei = breakdown.indexOf("{");
 	let b = ei===-1? breakdown : breakdown.substring(0, ei);
 	let bits = b.split("/");
+	if (data.sampling) { // unwrap sampling if present
+		data = data.sampling;
+	}
 	// NB: multiple keys named "key" means pivot() wont work
 	let rows = pivotDataLogToRows2(data, bits);
 	// console.log("pivotDataLogToRows", data, breakdown, rows);
@@ -109,6 +115,7 @@ const pivotDataLogToRows2 = (data, bits) => {
 	let bit = bits[0];
 	let byKey = "by_"+bits.join("_");
 	let byBit = data[byKey];
+	assert(byBit, "No data for breakdown "+byKey, Object.keys(data));
 	let buckets = byBit.buckets;
 	let rows = [];
 	const bits2 = bits.slice(1);
