@@ -9,16 +9,17 @@ import Enum from 'easy-enums';
 import { encURI } from '../utils/miscutils';
 
 const KGreenTagType = new Enum('PIXEL JAVASCRIPT REDIRECT WRAPPER');
-const KMacroType = new Enum('NONE DV360 GOOGLE TTD XANDR YAHOO AMAZON');
+const KMacroType = new Enum('NONE DV360 CM360 GOOGLE TTD XANDR YAHOO AMAZON');
 
 /** Used by Green Ad Tag generator */
 const REDIRECT_BASE = `${C.HTTPS}://${C.SERVER_TYPE}lg.good-loop.com/lg?t=redirect`;
 const PIXEL_BASE = `${C.HTTPS}://${C.SERVER_TYPE}lg.good-loop.com/pxl.png?t=pixel`;
 const WRAPPER_BASE = `${C.HTTPS}://${C.SERVER_TYPE}as.good-loop.com/greenvast.xml`;
 
-/* When URL-encoding URLs - eg for redirect tags - use these regexes to separate and preserve macros in the target URL, so the user's DSP can process them. */
+/** When URL-encoding URLs - eg for redirect tags - use these regexes to separate and preserve macros in the target URL, so the user's DSP can process them. */
 const macroRegexes = {
 	[KMacroType.DV360]: /(\$\{\w+\})/g, // eg ${CREATIVE_ID}
+	[KMacroType.CM360]: /(%\w+!?)/g, // eg %s or %esid!
 	[KMacroType.GOOGLE]: /(%%\w+%%)/g, // eg %%SITE%%
 	[KMacroType.TTD]: /(%%\w+%%)/g, // eg %%TTD_CREATIVE_ID%%
 	[KMacroType.XANDR]: /(\$\{\w+\})/g, // eg ${CREATIVE_ID}
@@ -27,7 +28,7 @@ const macroRegexes = {
     //[KMacroType.QUANTCAST]: /(\[%\w+%\])/g // eg [%orderid%]   left out for now - cant find Quantcast specific ad macros??
 };
 
-// Split out macros and preserve delimiters before URL-component-encoding the rest
+/** Split out macros and preserve delimiters before URL-component-encoding the rest */
 const encodePreserveMacros = (targetUrl, macroType) => {
 	const macroRegex = macroRegexes[macroType];
 	if (!macroRegex) return encodeURIComponent(targetUrl);
@@ -44,6 +45,11 @@ const macroAdders = {
 		// creative ID, site url
 		// TODO PUBLISHER_ID and UNIVERSAL_SITE_ID?? Let's log them (harmlessly) so we can see https://support.google.com/displayvideo/answer/2789508?hl=en
 		url.search += '&macro=dv360&vert=${CREATIVE_ID}&url=${SOURCE_URL_ENC}&pid=${PUBLISHER_ID}&usi=${UNIVERSAL_SITE_ID}';
+	},
+	[KMacroType.CM360]: (url) => {
+		// 
+		// https://support.google.com/campaignmanager/table/6096962?hl=en#server		
+		url.search += '&macro=cm360&pid=%s,%esid!&vert=%ecid!';
 	},
 	[KMacroType.GOOGLE]: (url) => {
 		// width, height, site domain, site url
