@@ -9,16 +9,17 @@ import Enum from 'easy-enums';
 import { encURI } from '../utils/miscutils';
 
 const KGreenTagType = new Enum('PIXEL JAVASCRIPT REDIRECT WRAPPER');
-const KMacroType = new Enum('NONE DV360 GOOGLE TTD XANDR YAHOO AMAZON');
+const KMacroType = new Enum('NONE DV360 CM360 GOOGLE TTD XANDR YAHOO AMAZON');
 
 /** Used by Green Ad Tag generator */
 const REDIRECT_BASE = `${C.HTTPS}://${C.SERVER_TYPE}lg.good-loop.com/lg?t=redirect`;
 const PIXEL_BASE = `${C.HTTPS}://${C.SERVER_TYPE}lg.good-loop.com/pxl.png?t=pixel`;
 const WRAPPER_BASE = `${C.HTTPS}://${C.SERVER_TYPE}as.good-loop.com/greenvast.xml`;
 
-/* When URL-encoding URLs - eg for redirect tags - use these regexes to separate and preserve macros in the target URL, so the user's DSP can process them. */
+/** When URL-encoding URLs - eg for redirect tags - use these regexes to separate and preserve macros in the target URL, so the user's DSP can process them. */
 const macroRegexes = {
 	[KMacroType.DV360]: /(\$\{\w+\})/g, // eg ${CREATIVE_ID}
+	[KMacroType.CM360]: /(%\w+!?)/g, // eg %s or %esid!
 	[KMacroType.GOOGLE]: /(%%\w+%%)/g, // eg %%SITE%%
 	[KMacroType.TTD]: /(%%\w+%%)/g, // eg %%TTD_CREATIVE_ID%%
 	[KMacroType.XANDR]: /(\$\{\w+\})/g, // eg ${CREATIVE_ID}
@@ -27,7 +28,7 @@ const macroRegexes = {
     //[KMacroType.QUANTCAST]: /(\[%\w+%\])/g // eg [%orderid%]   left out for now - cant find Quantcast specific ad macros??
 };
 
-// Split out macros and preserve delimiters before URL-component-encoding the rest
+/** Split out macros and preserve delimiters before URL-component-encoding the rest */
 const encodePreserveMacros = (targetUrl, macroType) => {
 	const macroRegex = macroRegexes[macroType];
 	if (!macroRegex) return encodeURIComponent(targetUrl);
@@ -42,30 +43,39 @@ const encodePreserveMacros = (targetUrl, macroType) => {
 const macroAdders = {
 	[KMacroType.DV360]: (url) => {
 		// creative ID, site url
-		url.search += '&vert=${CREATIVE_ID}&url=${SOURCE_URL_ENC}';
+		// TODO PUBLISHER_ID and UNIVERSAL_SITE_ID?? Let's log them (harmlessly) so we can see https://support.google.com/displayvideo/answer/2789508?hl=en
+		url.search += '&macro=dv360&vert=${CREATIVE_ID}&url=${SOURCE_URL_ENC}&pid=${PUBLISHER_ID}&usi=${UNIVERSAL_SITE_ID}';
+	},
+	[KMacroType.CM360]: (url) => {
+		// 
+		// https://support.google.com/campaignmanager/table/6096962?hl=en#server		
+		url.search += '&macro=cm360&pid=%s,%esid!&vert=%ecid!';
 	},
 	[KMacroType.GOOGLE]: (url) => {
 		// width, height, site domain, site url
 		// https://support.google.com/admanager/answer/2376981?hl=en
-		url.search += '&width=%%WIDTH%%&height=%%HEIGHT%%&pub=%%SITE%%&url=%%REFERRER_URL_ESC%%';
+		url.search += '&macro=gam&width=%%WIDTH%%&height=%%HEIGHT%%&pub=%%SITE%%&url=%%REFERRER_URL_ESC%%';
 	},
 	[KMacroType.TTD]: (url) => {
 		// creative ID, size string, device type, site domain
-		url.search += '&vert=%%TTD_CREATIVEID%%&size=%%TTD_ADFORMAT%%&env=%%TTD_DEVICETYPE%%&pub=%%TTD_SITE%%';
+		url.search += '&macro=ttd&vert=%%TTD_CREATIVEID%%&size=%%TTD_ADFORMAT%%&env=%%TTD_DEVICETYPE%%&pub=%%TTD_SITE%%';
 	},
 	[KMacroType.XANDR]: (url) => {
 		// creative ID, size string, width, height, site URL
-		// Removed "&pub=${SITE_ID}" as it was polluting records with numeric values, xandr does not have a "site domain" macro
+		// (TODO reinstate somehow) Removed "&pub=${SITE_ID}" as it was polluting records with numeric values, xandr does not have a "site domain" macro
 		// https://docs.xandr.com/bundle/invest_invest-standard/page/topics/supported-creative-macros.html
-		url.search += '&vert=${CREATIVE_ID}&size=${CREATIVE_SIZE}&width=${WIDTH}&height=${HEIGHT}&url=${REFERER_URL_ENC}';
+		url.search += '&macro=xandr&vert=${CREATIVE_ID}&size=${CREATIVE_SIZE}&width=${WIDTH}&height=${HEIGHT}&url=${REFERER_URL_ENC}&site_id=${SITE_ID}';
 	},
     [KMacroType.YAHOO]: (url) => {
-		// creative ID, device type
-		url.search += '&vert={creative}&env={device}';
+		// creative ID, device type 
+		// TODO pub/domain?!
+		url.search += '&macro=yahoo&vert={creative}&env={device}';
 	},
     [KMacroType.AMAZON]: (url) => {
+		// doc - maybe this?? https://advertising.amazon.com/en-gb/resources/ad-policy/mmp-measurement-urls
+		// Has this been tested??
         // creative ID, size string
-        url.search += '&vert=__CS_CREATIVE_ID__&size=__CS_AD_SIZE__'
+        url.search += '&macro=amzn&vert=__CS_CREATIVE_ID__&size=__CS_AD_SIZE__&pub=__AAX_SITE_NAME__'
     },
 };
 

@@ -24,10 +24,12 @@ const EMOJI = {
 	hourglass: "⏳",
 	info: "ⓘ", // ℹ or 🛈
 	intray: "📥",
+	link:"🔗",
 	memo: "📝",
 	outtray: "📤",
 	plus: "⨁", // ⊕
 	reload: "↻", // clockwise open circle arrow ♺⥁
+	scroll: "📜",
 	search: "🔍",
 	seedling: "🌱",
 	settings: "⚙", // gear
