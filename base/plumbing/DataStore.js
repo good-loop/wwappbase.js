@@ -13,6 +13,8 @@ import { modifyPage } from './glrouter';
 
 import DataDiff, { makeDataDiff, mergeDataDiffs } from './DataDiff';
 
+const LOGO_BASE64 = "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA3NTMuNzg2IDExNy4xMzY1Ij4KICA8ZyBmaWxsPSIjMWQxZDFiIj4KICAgIDxwYXRoIGQ9Ik0xODcuODQgNTcuMjVoMTUuNDV2MjUuNDZjLTcuMTYgNS4wOC0xNi45NSA3LjgtMjUuOTYgNy44LTE5LjcgMC0zNC4wOC0xMy4yNS0zNC4wOC0zMS45NCAwLTE4LjcgMTQuMzgtMzEuOTUgMzQuNDMtMzEuOTUgMTEuNTcgMCAyMC45MyAzLjk1IDI3LjAyIDExLjI0bC0xMS4xMiAxMEExOS4zNSAxOS4zNSAwIDAwMTc4LjU2IDQxYy0xMC42IDAtMTcuNjUgNi45NC0xNy42NSAxNy41NiAwIDEwLjM1IDcuMDYgMTcuNTUgMTcuNDggMTcuNTVhMjIuMzQgMjIuMzQgMCAwMDkuNDUtMi4wMnoiLz4KICAgIDxwYXRoIGQ9Ik0yNjIuMyA1OC41N2MwLTEwLjYyLTcuMzItMTcuNTUtMTYuNjgtMTcuNTVzLTE2LjY4IDYuOTMtMTYuNjggMTcuNTVjMCAxMC42MiA3LjMyIDE3LjU2IDE2LjY4IDE3LjU2czE2LjY5LTYuOTQgMTYuNjktMTcuNTZtLTUxLjAzIDBjMC0xOC40MyAxNC41Ni0zMS45NSAzNC4zNC0zMS45NXMzNC4zNSAxMy41MiAzNC4zNSAzMS45NS0xNC41NyAzMS45NS0zNC4zNSAzMS45NVMyMTEuMjggNzcgMjExLjI4IDU4LjU3Ii8+CiAgICA8cGF0aCBkPSJNMzM3LjA1IDU4LjU3YzAtMTAuNjItNy4zMy0xNy41NS0xNi42OS0xNy41NS05LjM2IDAtMTYuNjggNi45My0xNi42OCAxNy41NSAwIDEwLjYyIDcuMzIgMTcuNTYgMTYuNjggMTcuNTYgOS4zNyAwIDE2LjY5LTYuOTQgMTYuNjktMTcuNTZtLTUxLjAzIDBjMC0xOC40MyAxNC41Ny0zMS45NSAzNC4zNC0zMS45NSAxOS43OCAwIDM0LjM1IDEzLjUyIDM0LjM1IDMxLjk1cy0xNC41NyAzMS45NS0zNC4zNSAzMS45NWMtMTkuNzcgMC0zNC4zNC0xMy41Mi0zNC4zNC0zMS45NSIvPgogICAgPHBhdGggZD0iTTM5Mi40NiA3NS40MmMxMC41IDAgMTcuNTctNi4yMyAxNy41Ny0xNi44NSAwLTEwLjYyLTcuMDYtMTYuODUtMTcuNTYtMTYuODVoLTExLjA1djMzLjd6bS0yOC41Mi00Ny41N2gyOS4yM2MyMC40OCAwIDM0LjUyIDExLjg1IDM0LjUyIDMwLjcyIDAgMTguODctMTQuMDQgMzAuNzItMzQuNTIgMzAuNzJoLTI5LjIzeiIvPgogIDwvZz4KICA8cGF0aCBmaWxsPSIjMWQxZDFiIiBkPSJNNTEzLjE0IDc1LjUxaDI5LjV2MTMuNzhoLTQ2Ljk4VjI3Ljg1aDE3LjQ4eiIvPgogIDxnIGZpbGw9IiMxZDFkMWIiPgogICAgPHBhdGggZD0iTTU5Ni40NCA1OC41N2MwLTEwLjYyLTcuMzMtMTcuNTUtMTYuNjktMTcuNTUtOS4zNiAwLTE2LjY5IDYuOTMtMTYuNjkgMTcuNTUgMCAxMC42MiA3LjMzIDE3LjU2IDE2LjcgMTcuNTYgOS4zNSAwIDE2LjY4LTYuOTQgMTYuNjgtMTcuNTZtLTUxLjA0IDBjMC0xOC40MyAxNC41Ny0zMS45NSAzNC4zNS0zMS45NXMzNC4zNSAxMy41MiAzNC4zNSAzMS45NS0xNC41NyAzMS45NS0zNC4zNSAzMS45NVM1NDUuNCA3NyA1NDUuNCA1OC41NyIvPgogICAgPHBhdGggZD0iTTY3MS4xOCA1OC41N2MwLTEwLjYyLTcuMzItMTcuNTUtMTYuNjgtMTcuNTVzLTE2LjcgNi45My0xNi43IDE3LjU1YzAgMTAuNjIgNy4zMyAxNy41NiAxNi43IDE3LjU2IDkuMzYgMCAxNi42OC02Ljk0IDE2LjY4LTE3LjU2bS01MS4wMyAwYzAtMTguNDMgMTQuNTctMzEuOTUgMzQuMzUtMzEuOTUgMTkuNzcgMCAzNC4zNCAxMy41MiAzNC4zNCAzMS45NXMtMTQuNTcgMzEuOTUtMzQuMzQgMzEuOTVjLTE5Ljc4IDAtMzQuMzUtMTMuNTItMzQuMzUtMzEuOTUiLz4KICAgIDxwYXRoIGQ9Ik03MzYuMTMgNTAuNThjMC01LjctMy42My05LjA0LTEwLjg3LTkuMDRoLTkuNzF2MThoOS43MWM3LjI1IDAgMTAuODctMy4zNCAxMC44Ny04Ljk2bTE3LjY2IDBjMCAxMy45NS0xMC42IDIyLjY0LTI3LjQ2IDIyLjY0aC0xMC43OFY4OS4zaC0xNy40OFYyNy44NWgyOC4yNmMxNi44NiAwIDI3LjQ2IDguNjkgMjcuNDYgMjIuNzMiLz4KICA8L2c+CiAgPHBhdGggZmlsbD0iIzFkMWQxYiIgZD0iTTQ0Mi41MyA0OC42N2gzMi43MnYxOC4xMmgtMzIuNzJ6Ii8+CiAgPHBhdGggZmlsbD0iI2FmMjAwOSIgZD0iTTkzLjgzIDExLjM5YzEuODEgOC40LS45NyAxOS4yMy00LjA0IDI1LjI2YTY3LjQyIDY3LjQyIDAgMDEtOC40NCAxMi41Yy0xLjA2IDEuMjYtMi4xNSAyLjUtMy4yNiAzLjcyYTQ4Ljc0IDQ4Ljc0IDAgMDEtMS4zNS00LjExYy0xLjE0IDEuNC0yLjM0IDIuODItMy42NiA0LjI4YTQ2LjA4IDQ2LjA4IDAgMDAyLjMgNi4yNWMxLjU3IDMuNCA0LjM1IDkuNiA4LjQ3IDEwLjU0IDEuNTUuMzUgMi45NC0uNjEgMy44OC0zLjc3YTIyLjg5IDIyLjg5IDAgMDAuNjUtMy4wNSAzLjEyIDMuMTIgMCAwMTMuNjQtMi44MiA0LjU4IDQuNTggMCAwMTEuMzYuMzQgNC4yNCA0LjI0IDAgMDEyLjY4IDQuNTkgMTguNDIgMTguNDIgMCAwMS0yLjcyIDcuNDNjLTMgNC41Ni03LjkgNi40NS0xMi44NSA0LjY3YTE2LjA1IDE2LjA1IDAgMDEtNi4xMy00LjE2Yy0zLjI3LTMuNDQtNS40My03Ljg1LTcuMDgtMTIuMjQtLjE3LS40NC0uMzEtLjg5LS40Ny0xLjMzLTEuMiAxLjE3LTIuMzkgMi4zLTMuNTQgMy40YTQ5LjggNDkuOCAwIDAwMS42MSAzLjVjLTEuMTMgMS4xMy0yLjI4IDIuMjYtMy4zNyAzLjRhMjA0LjggMjA0LjggMCAwMC02LjQgNi45IDQ3LjE0IDQ3LjE0IDAgMDAtMy43LTIuOTJMNDcuODIgNzdhMzAuODQgMzAuODQgMCAwMTguNjMgOS43MyAyMy45NiAyMy45NiAwIDAxMS45NiA0LjQ0YzIuOTcgOS4yNy0uMiAyMS41Ni05LjkgMjUuMDNhNTkuNDUgNTkuNDUgMCAwMDEwLjQuOTQgNTguNSA1OC41IDAgMDAzNC45LTEwNS43NSIvPgogIDxwYXRoIGZpbGw9IiM3NzBmMDAiIGQ9Ik03NS41IDQzLjQ1YTc0LjYzIDc0LjYzIDAgMDAzLjQtNC4zNGM0LjM3LTYuMSA3LjE1LTEyLjU2IDcuMjYtMjAuMi4wNi0zLjUyLS42Ny05LjA0LTMuNjgtMTAuNDVhNC43NyA0Ljc3IDAgMDAtNC4zLjRjLS4xMy4wNi0uMjUuMTUtLjM3LjIyLTYuNiAzLjczLTcuMzMgMTUuMDItNy40NyAyMS41LS4wNiAyLjUuMDMgNS4wMi4yMSA3LjU0YTMuNDcgMy40NyAwIDAwLjA0LjY3IDcxLjIgNzEuMiAwIDAwMi40OSAxNC4yNWMxLjMxLTEuNDYgMi41Mi0yLjg4IDMuNjYtNC4yOHEtLjc1LTIuNjItMS4yNC01LjMxIi8+CiAgPHBhdGggZmlsbD0iIzc3MGYwMCIgZD0iTTUwLjg5IDczLjM5cS0xLjA2LS43NS0yLjE0LTEuNDdjMS40OC0xLjY5IDIuOTgtMy4zMyA0LjQyLTQuODggMi43Mi0yLjkyIDUuNTctNS43NSA4LjQzLTguNTkuMjYuOC41NCAxLjU5LjgzIDIuMzcuMjYuNjkuNTUgMS4zOC44NCAyLjA2bDMuNTUtMy4zOUE4NS43NyA4NS43NyAwIDAxNjIuOCA0MC4zYy0xLTkuNzEtLjc2LTIwLjQ1IDMuNS0yOS4zNGEyMS43NiAyMS43NiAwIDAxNi4yMy03LjY4IDE3LjkxIDE3LjkxIDAgMDExLjg0LTEuMjNBNTguOTcgNTguOTcgMCAwMDAgNTguNTdhNTguNDcgNTguNDcgMCAwMDI5LjE3IDUwLjU0Yy00LjQzLTguMTMtLjctMTkuNDUgNS42NS0yNS42bDEuMDYtLjk4YTMxLjcxIDMxLjcxIDAgMDEzLjQ4IDIuNTNjLjg4LS45MSAxLjgzLTEuODYgMi44NC0yLjgzYTEwMy43OCAxMDMuNzggMCAwMC02LjM2LTQuNjVjLTIuOS0xLjk1LTUuOTgtMy45NC04LjI2LTYuNjMtNy4xMi04LjM4LTguMDItMjIuMTItMS4wNi0zMC44NWExOS45NCAxOS45NCAwIDAxMi0yLjE5IDE2LjQgMTYuNCAwIDAxMTEuNzItNC42NmM2LjA3LjE0IDExLjk4IDMuNzQgMTUuNjggOS41NEEzLjU2IDMuNTYgMCAwMTU0LjU2IDQ4YTQuNjEgNC42MSAwIDAxLTEuNDIuNTQgMy44IDMuOCAwIDAxLTQuMDktMS43NmMtMy4xNy00Ljk3LTguMzktNi45OC0xMi44Ni00LjYzYTExLjEgMTEuMSAwIDAwLTMuNyAzLjIzbC0uMzYuNTRjLTQuMDQgNS45Ny0yLjk0IDE0LjY0IDEuNTcgMjAgMy43OCA0LjQ5IDkuMDQgNy40NCAxMy44NCAxMC44NGwuMjkuMjQgMy41Ny0zLjIzLS41MS0uMzgiLz4KICA8cGF0aCBmaWxsPSIjYWYyMDA5IiBkPSJNMzkuMzYgODUuMDZhMTkuNiAxOS42IDAgMDEyLjU0IDIuNWMuMTEuMTQtMi44OCAzLjIzLTMuMTggMy42YTE1LjcxIDE1LjcxIDAgMDAtMyA1Ljk2Yy0xLjAxIDQuMDctLjIgOS42MiAzLjkgMTEuNzggNi4yNyAzLjMgMTIuMjItNC4zMiAxMi4wMS0xMC40NC0uMTgtNS4zNS0yLjE2LTEwLjI4LTYuMjMtMTMuNjYtMS4wNy0uODktMi4xMy0xLjc0LTMuMi0yLjU4LTEgLjk4LTEuOTYgMS45Mi0yLjg0IDIuODMiLz4KPC9zdmc+Cg==";
+
 /**
  * Hold data in a simple json tree, and provide some utility methods to update it - and to attach a listener.
  * E.g. in a top-of-the-app React container, you might do `DataStore.addListener((mystate) => this.setState(mystate));`
@@ -60,8 +62,49 @@ class Store {
 			this.parseUrlVars( ! this.updating);
 			return true;
 		});
+		this.initDebugLogging();
 	}
 
+	initDebugLogging () {
+		const ogLog = console.log;
+		const welcomeStyle = `font-size:50px; font-weight:bold; padding-bottom:30px; padding-left:30px;
+				color: #fff;
+  				text-shadow: -4px 4px #ef3550,
+					-8px 8px #f48fb1,
+					-12px 12px #7e57c2,
+					-16px 16px #2196f3,
+					-20px 20px #26c6da,
+					-24px 24px #43a047,
+					-28px 28px #eeff41,
+					-32px 32px #f9a825,
+					-36px 36px #ff5722;
+				background: linear-gradient(to right, #ef5350, #f48fb1, #7e57c2, #2196f3, #26c6da, #43a047, #eeff41, #f9a825, #ff5722);`;
+		//https://good-loop.com/img/logo/good-loop-logo-text.svg
+		const logoStyle = 'background-image:url(' + LOGO_BASE64 + '); font-size:50px; color:rgba(0,0,0,0); background-position:center; background-repeat: no-repeat;';
+		if (this._debug) ogLog("%c GOOD-LOOP%c\n%cfancy debug", logoStyle, '', welcomeStyle);
+		//console.meme("I am in", "the Good-Loop debug console", "https://i.kym-cdn.com/photos/images/newsfeed/001/913/858/3d4.png", 680, 383)
+		console.log = (...m) => {
+			if (DataStore._debug) {
+				const err = new Error("Debug");
+				let stack = err.stack?.split("\n");
+				stack.splice(1, 1); // Remove the reference to this function N.B: can't remove "Error" line without console not linking src correctly
+				stack = stack.join("\n");
+				const stackRegex = /at ((\w*)\.)?(.*) \((.*)\.js:[0-9]+:[0-9]+\)/m
+				const [,,className,funcName] = stack?.match(stackRegex);
+				// Include/Exclude by class and function (either-or)
+				if (this._include && this._include.length) {
+					if (!this._include.includes(className) && !this._include.includes(funcName)) return;
+				}
+				if (this._exclude && this._exclude.length) {
+					if (this._exclude.includes(className) || this._exclude.includes(funcName)) return;
+				}
+				console.groupCollapsed("%c["+(className?className+":":"")+funcName+"]", "color:blue", ...m);
+				ogLog(stack);
+				console.groupEnd();
+			}
+		};
+	}
+	
 	/**
 	 * Keep navigation state in the url, after the hash, so we have shareable urls.
 	 * To set a nav variable, use setUrlValue(key, value);
@@ -80,7 +123,15 @@ class Store {
 		if (path.length > 2) location.slug = path[1];
 		if (path.length > 3) location.subslug = path[2];
 		location.params = params;
+		this.parseDebugOptions(params);
 		this.setValue(['location'], location, update);
+	}
+
+	parseDebugOptions (params) {
+		this._debug = params["gl.debug"] || params["debug"];
+		this._stackTrace = params["gl.stacktrace"] || params["stacktrace"];
+		this._include = params["gl.include"] || params["include"];
+		this._exclude = params["gl.exclude"] || params["exclude"];
 	}
 	
 	parseUrlVars2() {
@@ -269,6 +320,39 @@ class Store {
 			return [s, type, id];
 		}
 	}
+	
+	getDataPathClean({status, type, id, domain, ...restOfItem}) {
+		let path = getDataPath({status, type, id, domain, ...restOfItem});
+		return this.getCleanFromPath(path);
+	}
+
+	getCleanFromPath(path) {
+		assert(this.isDataPath(path), "getCleanFromPath not a data path?? "+path);
+		if (path[1] === 'clean') return path;
+		let newPath = [...path];
+		newPath.splice(1, 0, 'clean');
+		return newPath;
+	}
+
+	isDataPath(path) {
+		assert(_.isArray(path));
+		if (path.length < 3) return false;
+		if (path[0] !== 'draft' && path[0] !== 'data') return false;
+		if (!C.TYPES.has(path[1])) return false;
+		return true; // as far as we can tell
+	}
+
+	/**
+	 * Get the details of a data item from it's full path
+	 * @param {String[]} path 
+	 * @returns {Object} { status, type, id, proppath }
+	 */
+	breakdownDataPath(path) {
+		assert(this.isDataPath(path), "breakdownDataPath not a data path??", path);
+		let proppath = [...path];
+		const details = proppath.splice(0, 3);
+		return {status:details[0], type:details[1], id:details[2], proppath};
+	}
 
 	/**
 	 * The draft DataStore path for this item, or null if item is null. This is a convenience for `getDataPath(status:DRAFT, type, id)`.
@@ -319,7 +403,8 @@ class Store {
 		}
 		assert(this.appstate[path[0]],
 			"DataStore.getValue: "+path[0]+" is not a json element in appstate - As a safety check against errors, the root element must already exist to use getValue()");
-		return getObjectValueByPath(this.appstate, path);
+		let result = getObjectValueByPath(this.appstate, path);
+		return result;
 	}
 
 	/**
@@ -344,6 +429,8 @@ class Store {
 		assert(this.appstate[path[0]],
 			"DataStore.setValue: "+path[0]+" is not a node in appstate - As a safety check against errors, the root node must already exist to use setValue()");
 		// console.log('DataStore.setValue', path, value);
+		if (path[path.length-1] === this._debugProp || "/"+path.join("/") === this._debugPath)
+			console.log("[DataStore DEBUG] setValue", path, value, new Error());
 		const oldVal = this.getValue(path);
 		if (oldVal === value && update !== true && ! _.isObject(value)) {
 			// The no-op test only considers String and Number 'cos in place edits of objects are common and would cause problems here.
@@ -375,7 +462,8 @@ class Store {
 		// HACK: update a data value => mark it as modified
 		// ...but not for setting the whole-object (path.length=3)
 		// // (off?) ...or for value=null ??why? It's half likely that won't save, but why ignore it here??
-		if ((path[0] === 'data' || path[0] === 'draft') && path.length > 3)
+		if (path[0] === 'data') console.warn("Modifying published property?? Won't register changes or save correctly!"); // let's not add a whole lot of logic for tracking changes to values that shouldn't be changed
+		else if (path[0] === 'draft' && path.length > 3)
 		{
 			// chop path down to [data, type, id]
 			const itemPath = path.slice(0, 3);
@@ -386,7 +474,7 @@ class Store {
 				}
 			}
 			const trackers = DataDiff.getHistoryTrackers();
-			if (DataDiff.DATA_HISTORY_PROPERTY && trackers.length > 0) {
+			if (DataDiff.DATA_LOCAL_DIFF_PROPERTY && trackers.length > 0) {
 				if (getType(item) && getId(item)) {
 					// Get path to just prop
 					const propPath = path.slice(3, path.length);
@@ -606,6 +694,7 @@ class Store {
 		}
 		// end backwards compatability
 		assert(path, "DataStore.js - missing input",path);
+
 		// in the store?
 		let item = this.getValue(path);
 		if (item!==null && item!==undefined) {
@@ -773,8 +862,15 @@ class Store {
 	 * Also performs a free deep copy
 	 * @param {*} obj 
 	 */
-	deepResolve (obj, status) {
-		assert(status, "DataStore.deepResolve no status??", status);
+	deepResolve (obj, status, path) {
+		assert(path || status, "DataStore.deepResolve no path or status??", path, status);
+		if (!status) {
+			path.forEach(p => {
+				if (['data', 'draft', ...KStatus.values].includes(p)) {
+					if (status) console.warn("Conflicting ")
+				}
+			});
+		}
 		if (!obj) return obj;
 		const id = getId(obj);
 		const type = getType(obj);
@@ -799,49 +895,6 @@ class Store {
 		}
 		// Looks like a primitive!
 		return obj;
-	}
-
-	/**
-	 * PromiseValue friendly resolve
-	 * @param {PromiseValue | Promise | Object} promiseOrValue 
-	 */
-	resolve (promiseOrValue) {
-		// only ask once
-		const fpath = ['transient', 'PromiseValue', 'misc'];
-		const prevpvs = this.getValue(fpath);
-		if (prevpvs.includes(promiseOrValue)) {
-			return prevpv;
-		}
-		let promiseValueWrap = promiseOrValue instanceof PromiseValue ? promiseOrValue : new PromiseValue(promiseOrValue);
-		// process the result async
-		let promiseValueUnwrap = promiseValueWrap.promise.then(res => {
-			if ( ! res) return res;
-			// HACK handle WW standard json wrapper: unwrap cargo
-			// NB: success/fail is checked at the ajax level in ServerIOBase
-			// TODO let's make unwrap a configurable setting
-			if (JSend.isa(res)) {
-				// console.log("unwrapping cargo to store at "+path, res);
-				res = JSend.data(res) || res; // HACK: stops login widget forcing rerender on each key stroke
-			}
-			return res;
-		}).catch(response => {
-			// what if anything to do here??
-			console.warn("DataStore resolve fail", path, response);
-			// BV: Typically ServerIO will call notifyUser
-			throw response;
-		});
-		const pv = new PromiseValue(promiseValueUnwrap);
-		pv.promise.then(res => {
-			this.setValue(fpath, null);
-			return deepResolve(res);
-		}).catch(res => {
-			// keep the fpath promise to avoid repeated ajax calls??
-			// update e.g. React
-			this.update();
-			throw res;
-		});
-		this.setValue(fpath, pv, false);
-		return pv;
 	}
 } // ./Store
 
@@ -951,6 +1004,7 @@ export const useValue = (...path) => {
 			"DataStore.getValue: "+path[0]+" is not a json element in appstate - As a safety check against errors, the root element must already exist to use getValue()");
 		setVal(getObjectValueByPath(DataStore.appstate, path));
 	},[getObjectValueByPath(DataStore.appstate, path), path]);
+
 	return val;
 }
 
@@ -963,6 +1017,8 @@ const setValue = DataStore.setValue.bind(DataStore);
 
 const getUrlValue = DataStore.getUrlValue.bind(DataStore);
 
+const isDataPath = DataStore.isDataPath.bind(DataStore); // unnecessary bind but just in case
+
 
 export {
 	getPath,
@@ -970,6 +1026,7 @@ export {
 	getListPath,
 	getValue, setValue,
 	getUrlValue,
+	isDataPath,
 	Ref, Item
 };
 // accessible to debug

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-import { Button, ButtonDropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap';
+import { Button, ButtonDropdown, DropdownMenu, DropdownToggle, DropdownItem, Row, Col } from 'reactstrap';
 
 import { assert, assMatch } from '../utils/assert';
 
@@ -18,7 +18,7 @@ import Icon from './Icon';
 import { goto, modifyPage } from '../plumbing/glrouter';
 import Login from '../youagain';
 import { Help } from './PropControl';
-import { getObjectValueByPath, setObjectValueByPath, space } from '../utils/miscutils';
+import { getObjectValueByPath, setObjectValueByPath, space, uniq } from '../utils/miscutils';
 
 /**
  * 
@@ -62,11 +62,10 @@ const saveDraftFnFactory = ({type,key}) => {
 	let sdfn = _saveDraftFn4typeid[k];
 	if ( ! sdfn) {
 		sdfn = _.debounce(
-			({ type, id, item, previous }) => {
+			({ type, id, item }) => {
 				// console.log("...saveDraftFn :)");
-				const diffs = DataDiff.getDataDiffs(type, id);
-				console.log("diffs???", diffs)
-				let pv = saveEdits({ type, id, item, previous, diffs, swallow:true });
+				const diffs = DataDiff.getLocalDataDiffs(type, id);
+				let pv = saveEdits({ type, id, item, diffs, swallow:true });
 				// TODO how can we capture errors and show them on the save button??
 				return true;
 			}, DEBOUNCE_MSECS
@@ -84,7 +83,7 @@ const saveDraftFnFactory = ({type,key}) => {
  * * @param {type, id, item, path}
  */
 const autoPublishFn = _.debounce(
-	({ type, id, path, item }) => {
+	({ type, id, path, item, diffs }) => {
 		if (!type || !id) {
 			item = item || DataStore.getValue(path);
 			id = id || getId(item);
@@ -93,15 +92,12 @@ const autoPublishFn = _.debounce(
 		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad/missing type: " + type + " id: " + id);
 		assMatch(id, String, "Misc.jsx publishDraftFn id?! " + type + " id: " + id);
 		// still wanted?
-		const localEditStatus = DataStore.getLocalEditsStatus(type, id);
-		const status = getStatus(item);
-		const isdirty = C.STATUS.isdirty(localEditStatus) || C.STATUS.issaveerror(localEditStatus);
-		const isSaving = C.STATUS.issaving(localEditStatus);
-		if (status === C.KStatus.PUBLISHED && !isdirty) {
+		if (!diffs) diffs = DataDiff.getDraftDataDiffs(type, id);
+		if (!diffs.length) {
 			return;
 		}
 		// Do it
-		publish({type, id, item});
+		publish({type, id, item, diffs});
 		return true;
 	}, DEBOUNCE_MSECS
 );
@@ -142,7 +138,6 @@ const check = ok => {
  * @param {?String} p.navpage Used to redirect after a delete
  * @param {?String} p.size Bootstrap size e.g. "lg"
  * @param {?string} p.position fixed|relative
- * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
  * A snapshot is taken the first time this renders.
  * @param {?Boolean} p.oneButton render as a single button, for embedding controls for one object in a page dedicated to another
  * @param {?Array[]} p.targetPaths a list of paths to props in the item to target for saving - ignores any other changes. used with oneButton.
@@ -160,7 +155,6 @@ function SavePublishDeleteEtc({
 	navpage,	
 	saveAs, unpublish,
 	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
-	sendDiff,
 	oneButton, targetPaths
 }) {
 	// No anon edits
@@ -171,10 +165,10 @@ function SavePublishDeleteEtc({
 
 	assert(C.TYPES.has(type), 'SavePublishDeleteEtc - not a type: ' + type);
 	assMatch(id, String);
-	
-	// For checking if we need to save with targetPaths
+
+	// For checking if we need to save with targetPathsprevious
 	// Also for undo history
-	useDataHistory(type, id, true);
+	//useDataHistory(type, id, true);
 
 	let localStatus = DataStore.getLocalEditsStatus(type, id) || C.STATUS.clean;
 	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.issaveerror(localStatus);
@@ -185,44 +179,34 @@ function SavePublishDeleteEtc({
 	// If target paths is set, diffs must be used
 	if (targetPaths) {
 		assert(_.isArray(targetPaths), "targetPaths not array??");
-		sendDiff = true;
 	}
 
-	// debug info on DataStore state
-	let pubv = DataStore.getData({ status: C.KStatus.PUBLISHED, type, id });
-	let draftv = DataStore.getData({ status: C.KStatus.DRAFT, type, id });
-	let dsi = pubv ? (draftv ? (pubv === draftv ? "published = draft" : "published & draft") : "published only")
-		: (draftv ? "draft only" : "nothing loaded");
-	// Does a published version exist? (for if we show unpublish)
-	// NB: item.status = MODIFIED should be reliable but lets not entirely count on it.
-	let pubExists = pubv || (item && item.status !== C.KStatus.DRAFT);
+	// Easier to compare string paths than arrays
+	let targetPathStrings = [];
 
-	// If targetPaths is true, use the published item as a clean comparison object
-	let previous = targetPaths ? pubv : null;
-
-	// Restrict item changes to targeted paths
+	// Format target paths to be niceys :)) i.e. an array of String[] paths
 	if (targetPaths && targetPaths.length) {
-		// format to be niceys :))
-		if (!_.isArray(targetPaths[0])) targetPaths = [[targetPaths[0]]]
-		if (item && pubv) {
-			let restrictedItem = _.cloneDeep(pubv);
-			targetPaths.forEach(targetPath => {
-				const draftVal = getObjectValueByPath(item, targetPath);
-				setObjectValueByPath(restrictedItem, targetPath, draftVal);
-			});
-			restrictedItem.status = item.status;
-			item = restrictedItem;
+		if (!_.isArray(targetPaths[0])) {
+			if (_.isString(targetPaths[0]) && targetPaths[0].startsWith("/")) {
+				targetPaths = targetPaths.map(t => t.substring(1).split("/"));
+			} else targetPaths = [[targetPaths[0]]];	
 		}
+		targetPathStrings = targetPaths.map(tp => "/"+tp.join("/"));
 	}
+
+	let localDiffs = DataDiff.getLocalDataDiffs(type, id);
+	let draftDiffs = DataDiff.getDraftDataDiffs(type, id).value;
+	if (targetPaths && draftDiffs) draftDiffs = draftDiffs.filter(diff => targetPathStrings.includes(diff.path));
+	// getDraftDataDiffs returns null if no pub exists
+	let pubExists = !!draftDiffs;
 
 	// request a save/publish?
 	if (isdirty && !isSaving) {
 		let skip = false;
 		if (targetPaths) {
-			const lastDiff = DataDiff.getLastDataDiff(type, id);
+			const lastDiff = DataDiff.getLastLocalDataDiff(type, id);
 			if (lastDiff) {
-				const tpsAsStr = targetPaths.map(tp => "/"+tp.join("/"));
-				if (!tpsAsStr.includes(lastDiff.path)) {
+				if (!targetPathStrings.includes(lastDiff.path)) {
 					skip = true;
 					console.log("SavePublishDeleteEtc: Skipping save of non-targeted change for "+type+":"+id, lastDiff);
 				}
@@ -232,11 +216,11 @@ function SavePublishDeleteEtc({
 		}
 		if (!skip) {
 			if (autoPublish) {
-				autoPublishFn({ type, id, item, previous });
+				autoPublishFn({ type, id, item, diffs:draftDiffs });
 			} else if (autoSave) {
 				const saveDraftFn = saveDraftFnFactory({type, key:id});
 				// Make sure we save the full draft - not just the restricted item targetPaths creates
-				saveDraftFn({ type, id, item, swallow:true }); // auto-save hides errors TODO show a warning icon on the widget
+				saveDraftFn({ type, id, item, diffs:localDiffs, swallow:true }); // auto-save hides errors TODO show a warning icon on the widget
 			}
 		}
 	}
@@ -247,12 +231,7 @@ function SavePublishDeleteEtc({
 	// if nothing has been edited, then we can't publish, save, or discard
 	// ??this no longer works as we force the item to be pulled from "DRAFT"
 	// will therefore never have status of "PUBLISHED" <- what about an unmodified published item??
-	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus);
-	// if we have target paths then above will be inaccurate - test individual props
-	if (targetPaths) {
-		let diffs = DataDiff.getDataDiffsForProps(type, id, targetPaths);
-		noEdits = diffs.length === 0;
-	}
+	let noEdits = !draftDiffs?.length;
 
 	let disablePublish = isSaving || noEdits || cannotPublish || (oneButton && !pubExists);
 	let publishTooltip = cannotPublish ? publishTooltipText : (noEdits ? 'Nothing to publish' : 'Publish your edits!');
@@ -262,7 +241,7 @@ function SavePublishDeleteEtc({
 
 	let pubLabel = !isSaving ? ("Publish" + (oneButton ? " " + type : "") + (pubExists ? " Edits" : "")) : "Saving...";
 	let help = null;
-	if (targetPaths) help = "This only saves " + targetPaths.map(tp => tp[tp.length - 1]).join(", ")+"!";
+	if (targetPaths) help = "Watching " + targetPaths.map(tp => tp[tp.length - 1]).join(", ");
 	if (oneButton) {
 		if (!pubExists) {
 			pubLabel = "Not Published!";
@@ -273,12 +252,12 @@ function SavePublishDeleteEtc({
 
 	const PublishButton = ({className, ...props}) => <Button name="publish" color="primary" size={size} className={space("ml-2", className)}
 		disabled={disablePublish} title={publishTooltip}
-		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item, previous})}
+		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item, diffs:draftDiffs})}
 		{...props}>
 		{pubLabel} <Spinner vis={vis} />
 	</Button>;
 
-	if (oneButton) return <div className='d-flex flex-row justify-content-between'>
+	if (oneButton) return <div className='d-flex flex-row justify-content-between save-publish-delete-etc'>
 		<PublishButton style={{flexGrow:1}} className="mr-2"/>
 		{help && <Help>{help}</Help>}
 	</div>;
@@ -319,7 +298,7 @@ function SavePublishDeleteEtc({
 		color={C.STATUS.issaveerror(localStatus) ? 'danger' : 'secondary'}
 		title={C.STATUS.issaveerror(localStatus) ? 'There was an error when saving' : null}
 		disabled={isSaving || C.STATUS.isclean(localStatus)}
-		onClick={() => saveEdits({ type, id, item })}
+		onClick={() => saveEdits({ type, id, item, diffs:localDiffs })}
 	>
 		Save Edits <Spinner vis={vis} />
 	</Button>); // ./SaveEditsButton
@@ -349,7 +328,7 @@ function SavePublishDeleteEtc({
 	};
 
 	return (
-		<div className={className} style={{ position }} title={item && item.status}>
+		<div className={space("save-publish-delete-etc", className)} style={{ position }} title={item && item.status}>
 
 			{ ! saveAs && <SaveEditsButton />}
 

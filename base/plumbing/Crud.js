@@ -24,12 +24,11 @@ import SearchQuery from '../searchquery';
 /**
  * @param {Object} p
  * @param {?Item} p.item Used for preserving local edits during the crud op. Can be null, in which case the item is got from DataStore
- * @param {?Item} p.previous If provided, do a diff based save
- * @param {?Array} p.diffs If provided, overrides previous for a diff based save
+ * @param {?Array} p.diffs If provided, do a diff based save
  * @param {?KStatus} p.status Usually null
  * @returns PromiseValue(DataItem)
  */
-const crud = ({type, id, domain, status, action, item, previous, diffs, swallow, localStorage=false}) => {
+const crud = ({type, id, domain, status, action, item, diffs, swallow, localStorage=false}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(id, String);
@@ -79,8 +78,8 @@ const crud = ({type, id, domain, status, action, item, previous, diffs, swallow,
 	const itemBefore = deepCopy(item);
 
 	// call the server
-	const p = SIO_crud(type, item, previous, diffs, action, {swallow})
-		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage, diffSave:!!previous || diffs}) )
+	const p = SIO_crud(type, item, diffs, action, {swallow})
+		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage, diffSave:!!diffs}) )
 		.catch(err => {
 			// bleurgh
 			console.warn(err);
@@ -88,7 +87,7 @@ const crud = ({type, id, domain, status, action, item, previous, diffs, swallow,
 			// HACK remove the stacktrace which our servers put in for debug
 			msg = msg.replace(/<details>[\s\S]*<\/details>/, "").trim();
 			if ( ! swallow) {
-				notifyUser(new Error(action+" failed: "+msg));			
+				notifyUser(new Error(action+" failed: "+msg));
 				// If it is a 401 - check the login status
 				if (err.status && err.status===401) {
 					Login.verify().catch(() => {
@@ -158,6 +157,10 @@ const localLoad = path => {
 export const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
 	// Normal case
 	if ( ! Person.isa(freshItem)) {
+		// Make sure to unwrap items before patching
+		if (JSend.isa(freshItem)) {
+			freshItem = JSend.data(freshItem) || freshItem;
+		}
 		jsonpatch.applyPatch(freshItem, recentLocalDiffs);
 		return;
 	}
@@ -209,11 +212,16 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 
 		if (action==='publish') {
 			// set local published data
+			DataStore.setValue(DataStore.getCleanFromPath(pubpath), freshItem);
 			DataStore.setValue(pubpath, freshItem);
+			
+			// always update our clean draft item
+			DataStore.setValue(DataStore.getCleanFromPath(draftpath), draftItem);
 			// update the draft version on a publish or a save - but only if not done by diff!
 			// if it's done by diff, the returned published obj will not contain other draft edits and it will get locally overriden
 			if (!diffSave) DataStore.setValue(draftpath, draftItem);
-			DataDiff.clearDataDiffs(type, id); // data history now matches server
+			DataDiff.clearLocalDataDiffs(type, id, false); // data history now matches server
+			DataDiff.clearDraftDataDiffs(type, id);
 		}
 		if (action==='save') {	
 			// NB: the recent diff handling above should manage the latency issue around setting the draft item
@@ -222,8 +230,9 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 			if (getType(item)==="PlanDoc" && item) {
 				freshItem.sheets = item.sheets;
 			}
+			DataStore.setValue(DataStore.getCleanFromPath(draftpath), freshItem);
 			DataStore.setValue(draftpath, freshItem);
-			DataDiff.clearDataDiffs(type, id); // data history now matches server
+			DataDiff.clearLocalDataDiffs(type, id); // data history now matches server
 		}
 		// save to local and DS?
 		if (localStorage) {
@@ -362,7 +371,7 @@ ActionMan.unpublish = (type, id) => unpublish({type,id});
  * @param {?DataClass} p.item 
  * @returns PromiseValue(DataClass)
  */
-export const publish = ({type,id,item,previous,swallow}) => {
+export const publish = ({type,id,item,diffs,swallow}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(type, String);
@@ -376,7 +385,7 @@ export const publish = ({type,id,item,previous,swallow}) => {
 	// optimistic list mod
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
-	return crud({type, id, action: 'publish', item, previous, swallow})
+	return crud({type, id, action: 'publish', item, diffs, swallow})
 		.promise.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
@@ -547,7 +556,7 @@ const serverStatusForAction = (action) => {
  * @param {?Boolean} p.params.swallow
  * @returns {Promise} from ServerIO.load()
  */
-const SIO_crud = function(type, item, previous, diffs, action, params={}) {	
+const SIO_crud = function(type, item, diffs, action, params={}) {	
 	assert(C.TYPES.has(type), type);
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
@@ -563,15 +572,6 @@ const SIO_crud = function(type, item, previous, diffs, action, params={}) {
 		if (diffs) {
 			console.log("crud", "using manual diffs", diffs);
 			data.diff = JSON.stringify(diffs);
-		} else if (previous) {
-			let diff = jsonDiff(previous, item);
-			// no edits and action=save? skip save
-			if ( ! diff.length && action==='save') {
-				console.log("crud", "skip no-diff save", item, previous);
-				const jsend = new JSend();
-				return Promise.resolve(jsend); // ?? is this the right thing to return
-			}
-			data.diff = JSON.stringify(diff);
 		} else {
 			data.item = JSON.stringify(item);
 		}
@@ -660,11 +660,39 @@ const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
 	if ( ! status) status = DataStore.getUrlValue('status') || KStatus.PUBLISHED;
 	assert(KStatus.has(status), 'Crud.js - ActionMan - bad status '+status+" for get "+type);
 	let path = DataStore.getDataPath({status, type, id, domain});
-	return DataStore.fetch(path, () => {
-		return SIO_getDataItem({type, id, status, domain, swallow, action, ...other});
+	return DataStore.fetch(path, async () => {
+		let dataItem = await SIO_getDataItem({type, id, status, domain, swallow, action, ...other});
+		// also save this to "clean" on first load
+		DataStore.setValue(DataStore.getCleanFromPath(path), JSend.data(dataItem) || dataItem, false);
+		// ... and if we've just fetched Draft, let's generate a diff
+		if (status === KStatus.DRAFT) {
+			DataDiff.getDraftDataDiffs(type, id);
+		}
+		return dataItem;
 	});
 };
 ActionMan.getDataItem = getDataItem;
+
+export const getDataItemClean = ({type, id, status, domain, swallow, action, ...other}) => {
+	let path = DataStore.getDataPathClean({status, type, id});
+	return DataStore.fetch(path, () => {
+		return getDataItemClean2({type, id, status, domain, swallow, action, ...other});
+	});
+}
+
+const getDataItemClean2 = async ({type, id, status, domain, swallow, action, ...other}) => {
+	let item = await getDataItem({type, id, status, domain, swallow, action, ...other}).promise;
+	if (JSend.isa(item)) item = JSend.data(item); // unwrap that boi
+	if (!item || (status || getStatus(item) !== KStatus.DRAFT)) return item; // Only draft items can be locally edited - so there should be no differences otherwise
+	const history = DataDiff.getLocalDataHistory(type, id);
+	// We can't apply diffs to a wrapped item - so we need to unwrap it ourselves here
+	let itemClean = _.cloneDeep(item);
+	const patch = history.map(diff => {
+		return {op:diff.op, path:diff.path, value:diff.from};
+	});
+	applyPatch(itemClean, patch);
+	return itemClean;
+}
 
 /**
  * Smooth update: Get an update from the server without null-ing out the local copy.
@@ -711,7 +739,6 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {	
 	assert(C.TYPES.has(type), type);
 	assert(C.KStatus.has(status), status);
-	if (type===C.TYPES.Advert) console.log("Hubbah?? gooobah doobah daaah?? getDataList boi")
 	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found	
 	if (ids && ids.length) {
 		q = SearchQuery.setPropOr(q, "id", ids).query;

@@ -10,21 +10,24 @@ import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectV
 import KStatus from '../data/KStatus';
 import { modifyPage } from './glrouter';
 import DataStore, {getDataPath} from './DataStore';
+import { jsonDiff, getDataItemClean } from './Crud';
 
 
 class DataDiff {}
 
-/** Track change history on an object. */
-DataDiff.DATA_HISTORY_PROPERTY = 'localHistory';
+/** Track change history on an object locally. */
+DataDiff.DATA_LOCAL_DIFF_PROPERTY = 'localDiffs';
+/** Track diffs on objects from draft to published */
+DataDiff.DATA_DRAFT_DIFF_PROPERTY = 'draftDiffs';
 /** Limit how many changes are saved globally. Set to 0 for no limit */
 DataDiff.GLOBAL_HISTORY_LIMIT = 100;
 /** What needs to record history? Set to falsy to disable history tracking */
-DataDiff.DATA_HISTORY_TRACKING = 'trackingHistory';
+DataDiff.DATA_HISTORY_TRACKERS = 'trackers';
 /** Configuration for data diff tracking (e.g. ctrl+z captures, storing url, etc) */
 DataDiff.DATA_TRACKING_OPTIONS = 'trackingOptions';
 
 /**
- * Tell DataStore about a change to an object to record in history
+ * Tell DataStore about a change to a draft object to record in history
  * @param {C.TYPES} type
  * @param {!String} id
  * @param {C.STATUS} diff property change
@@ -36,11 +39,11 @@ DataDiff.registerDataChange = (type, id, diff, mergeAll, update) => {
     assert(C.TYPES.has(type));
     assert(id, "DataStore.registerLocalChange: No id?! getData "+type);
     assert(diff, "DataStore.registerLocalChange: No diff?! "+type+":"+id);
-    if ( ! DataDiff.DATA_HISTORY_PROPERTY) return null;
+    if ( ! DataDiff.DATA_LOCAL_DIFF_PROPERTY) return null;
 
     // register change in global history
     const dataPath = getDataPath({status:C.KStatus.DRAFT, type, id});
-    let globalHistoryPath = ['transient', 'global', DataDiff.DATA_HISTORY_PROPERTY];
+    let globalHistoryPath = ['transient', 'global', DataDiff.DATA_LOCAL_DIFF_PROPERTY];
     let globalHistory = DataStore.getValue(globalHistoryPath) || [];
     const globalDiff = _.cloneDeep(diff);
     globalDiff.path = "/"+dataPath.join("/")+diff.path;
@@ -57,12 +60,18 @@ DataDiff.registerDataChange = (type, id, diff, mergeAll, update) => {
     DataStore.setValue(globalHistoryPath, globalHistory, false); // let's not update twice
 
     // register change in object history
-    let objHistoryPath = DataDiff.getDataHistoryPath(type, id);
+    let objHistoryPath = DataDiff.getLocalDataDiffPath(type, id);
     let objHistory = DataStore.getValue(objHistoryPath) || [];
     // We add the extra history data into data item diffs too - needed for merging
     // Is ommitted when asked for however (see getDataDiffs)
     objHistory = DataDiff.addOrMergeDataDiff(objHistory, diff);
-    return DataStore.setValue(objHistoryPath, objHistory, update);
+    DataStore.setValue(objHistoryPath, objHistory, false);
+
+    // register the change as a new diff from draft and published
+    let draftHistoryPath = DataDiff.getDraftDataDiffPath(type, id);
+    let draftHistory = DataStore.getValue(draftHistoryPath) || [];
+    draftHistory = DataDiff.addOrMergeDataDiff(draftHistory, diff);
+    DataStore.setValue(draftHistoryPath, draftHistory, update);
 }
 
 /**
@@ -151,20 +160,35 @@ DataDiff.addOrMergeGlobalDiffPretty = (history, diff) => {
     return history;
 }
 
-DataDiff.getDataHistoryPath = (type, id) => {
-    return ['transient', type, id, DataDiff.DATA_HISTORY_PROPERTY];
+DataDiff.getLocalDataDiffPath = (type, id) => {
+    return ['transient', type, id, DataDiff.DATA_LOCAL_DIFF_PROPERTY];
+}
+
+DataDiff.getDraftDataDiffPath = (type, id) => {
+    return ['transient', type, id, DataDiff.DATA_DRAFT_DIFF_PROPERTY];
 }
 
 /**
- * Get the local edit diffs of a data item - json-patch compatible
+ * Get the local edit diffs of a data item - json-patch compatible.
+ * Unlike getDraftDataDiffs, this is an immediate operation
  * @param {C.TYPE} type 
  * @param {String} id 
+ * @returns {Array}
  */
-DataDiff.getDataDiffs = (type, id) => {
+DataDiff.getLocalDataDiffs = (type, id) => {
     assert(C.TYPES.has(type), "DataStore.getDataDiffs "+type);
     assert(id, "DataStore.getDataDiffs: No id?! getData "+type);
     // Remove extra data so these diffs are json-patch compatible
-    return (DataStore.getValue(DataDiff.getDataHistoryPath(type, id)) || []).map(d => {return {op:d.op, path:d.path, value:d.value}});
+    return (DataStore.getValue(DataDiff.getLocalDataDiffPath(type, id)) || []).map(d => {return {op:d.op, path:d.path, value:d.value}});
+}
+
+/**
+ * Diffs including history data - not json-patch compatible
+ */
+DataDiff.getLocalDataHistory = (type, id) => {
+    assert(C.TYPES.has(type), "DataStore.getDataHistory "+type);
+    assert(id, "DataStore.getDataHistory: No id?! getData "+type);
+    return DataStore.getValue(DataDiff.getLocalDataDiffPath(type, id)) || [];
 }
 
 /**
@@ -173,37 +197,88 @@ DataDiff.getDataDiffs = (type, id) => {
  * @param {*} id 
  * @param {*} path 
  */
-DataDiff.getDataDiffsForProp = (type, id, path) => {
+DataDiff.getLocalDataDiffsForProp = (type, id, path) => {
     assert(C.TYPES.has(type), "DataStore.getDataDiffsForProp "+type);
     assert(id, "DataStore.getDataDiffsForProp: No id?! getData "+type);
     assert(path, "DataStore.getDataDiffsForProp No path? "+path);
-    return DataDiff.getDataDiffs(type, id).filter(diff => diff.path === "/"+path.join("/"));
+    return DataDiff.getLocalDataDiffs(type, id).filter(diff => diff.path === "/"+path.join("/"));
 }
 
-DataDiff.getDataDiffsForProps = (type, id, paths) => {
+DataDiff.getLocalDataDiffsForProps = (type, id, paths) => {
     assert(C.TYPES.has(type), "DataStore.getDataDiffsForProps "+type);
     assert(id, "DataStore.getDataDiffsForProps: No id?! getData "+type);
     assert(paths, "DataStore.getDataDiffsForProps No paths? "+paths);
     let strPaths = paths.map(path => "/"+path.join("/"));
-    return DataDiff.getDataDiffs(type, id).filter(diff => strPaths.includes(diff.path));
+    return DataDiff.getLocalDataDiffs(type, id).filter(diff => strPaths.includes(diff.path));
 }
 
-DataDiff.clearDataDiffs = (type, id, update) => {
+DataDiff.clearLocalDataDiffs = (type, id, update) => {
     assert(C.TYPES.has(type), "DataStore.clearDataHistory "+type);
     assert(id, "DataStore.clearDataHistory: No id?! getData "+type);
-    return DataStore.setValue(['transient', type, id, DataDiff.DATA_HISTORY_PROPERTY], null, update);
+    return DataStore.setValue(['transient', type, id, DataDiff.DATA_LOCAL_DIFF_PROPERTY], null, update);
+}
+
+/**
+ * Get diffs between a draft and published item - json-patch compatible.
+ * As this can incur server fetching, it is not guaranteed to be immediate.
+ * If no published item exists, the promise-value will yield null.
+ * @returns {PromiseValue}
+ */
+DataDiff.getDraftDataDiffs = (type, id) => {
+    assert(C.TYPES.has(type), "DataStore.getDataDiffsForProp "+type);
+    assert(id, "DataStore.getDataDiffsForProp: No id?! getData "+type);
+    return DataStore.fetch(DataDiff.getDraftDataDiffPath(type, id), async () => {
+        const pubItem = await getDataItemClean({type, id, status:KStatus.PUBLISHED}).promise;
+        if (!pubItem) return null;
+        const draftItem = await getDataItemClean({type, id, status:KStatus.DRAFT}).promise;
+        const diffs = generateDataItemDiffs(pubItem, draftItem);
+        return diffs;
+    });
+}
+
+DataDiff.getDraftDataHistory = (type, id) => {
+    assert(C.TYPES.has(type), "DataStore.getDataDiffsForProp "+type);
+    assert(id, "DataStore.getDataDiffsForProp: No id?! getData "+type);
+    return DataStore.fetch(DataDiff.getDraftDataDiffPath(type, id), async () => {
+        const pubItem = await getDataItemClean({type, id, status:KStatus.PUBLISHED}).promise;
+        if (!pubItem) return null;
+        const draftItem = await getDataItemClean({type, id, status:KStatus.DRAFT}).promise;
+        const diffs = generateDataItemDiffs(pubItem, draftItem);
+        return diffs;
+    });
+}
+
+DataDiff.getDraftDataDiffsForProp = (type, id, path) => {
+    assert(C.TYPES.has(type), "DataStore.getDataDiffsForProp "+type);
+    assert(id, "DataStore.getDataDiffsForProp: No id?! getData "+type);
+    assert(path, "DataStore.getDataDiffsForProp No path? "+path);
+    return (DataDiff.getDraftDataDiffs(type, id).value || []).filter(diff => diff.path === "/"+path.join("/"));
+}
+
+DataDiff.getDraftDataDiffsForProps = (type, id, paths) => {
+    assert(C.TYPES.has(type), "DataStore.getDataDiffsForProps "+type);
+    assert(id, "DataStore.getDataDiffsForProps: No id?! getData "+type);
+    assert(paths, "DataStore.getDataDiffsForProps No paths? "+paths);
+    let strPaths = paths.map(path => "/"+path.join("/"));
+    return (DataDiff.getDraftDataDiffs(type, id).value || []).filter(diff => strPaths.includes(diff.path));
+}
+
+DataDiff.clearDraftDataDiffs = (type, id, update) => {
+    assert(C.TYPES.has(type), "DataStore.clearDataHistory "+type);
+    assert(id, "DataStore.clearDataHistory: No id?! getData "+type);
+    return DataStore.setValue(['transient', type, id, DataDiff.DATA_DRAFT_DIFF_PROPERTY], null, update);
 }
 
 DataDiff.getGlobalHistory = () => {
-    return DataStore.getValue(['transient', 'global', DataDiff.DATA_HISTORY_PROPERTY]) || [];
+    return DataStore.getValue(['transient', 'global', DataDiff.DATA_LOCAL_DIFF_PROPERTY]) || [];
 }
 
 DataDiff.clearGlobalHistory = (update) => {
-    return DataStore.setValue(['transient', 'global', DataDiff.DATA_HISTORY_PROPERTY], null, update);
+    return DataStore.setValue(['transient', 'global', DataDiff.DATA_LOCAL_DIFF_PROPERTY], null, update);
 }
 
 DataDiff.setGlobalHistory = (newHistory, update) => {
-    return DataStore.setValue(['transient', 'global', DataDiff.DATA_HISTORY_PROPERTY], newHistory, update);
+    return DataStore.setValue(['transient', 'global', DataDiff.DATA_LOCAL_DIFF_PROPERTY], newHistory, update);
 }
 
 /**
@@ -211,10 +286,10 @@ DataDiff.setGlobalHistory = (newHistory, update) => {
  * @param {*} type 
  * @param {*} id 
  */
-DataDiff.getLastDataDiff = (type, id) => {
+DataDiff.getLastLocalDataDiff = (type, id) => {
     assert(C.TYPES.has(type), "DataStore.getLastDataDiff "+type);
     assert(id, "DataStore.getLastDataDiff: No id?! getData "+type);
-    const history = DataDiff.getDataDiffs(type, id);
+    const history = DataDiff.getLocalDataDiffs(type, id);
     if (history.length) return history[history.length - 1];
     return null;
 }
@@ -253,15 +328,23 @@ DataDiff.undoNGlobalDiffs = (n, update) => {
  * Will warn if we have multiple components trying to track the same history
  * @returns {Object} tracker {type, id}
  */
-DataDiff.registerHistoryTracker = (type, id) => {
-    const path = ['transient', type, id, DataDiff.DATA_HISTORY_TRACKING];
+DataDiff.registerHistoryTracker = (type, id, proppath) => {
+    let trackpath = proppath;
+    if (_.isArray(proppath)) trackpath = "/"+proppath.join("/"); // convert to easily comparible and json-patch compatible string
+    const path = ['transient', type, id, DataDiff.DATA_HISTORY_TRACKERS];
     const tracker = DataStore.getValue(path);
     if (tracker) {
-        // we already have some - keep count
-        console.warn("DataDiff.registerHistoryTracker 2 trackers targeting the same item! This could indicate multiple components trying to save the same data");
-        DataStore.setValue(path.concat("number"), tracker.number + 1);
+        // Add onto tracker list
+        if (tracker[trackpath]) {
+            console.warn("DataDiff.registerHistoryTracker multiple trackers on same prop! Might indicate a conflict.", type+":"+id, trackpath);
+            tracker[trackpath] += 1;
+        } else tracker[trackpath] = 1;
+        DataStore.setValue(path, tracker);
     } else {
-        DataStore.setValue(path, {type, id, number:1});
+        // Newly tracked item
+        const newTracker = {};
+        newTracker[trackpath] = 1;
+        DataStore.setValue(path, newTracker);
     }
 }
 
@@ -270,32 +353,46 @@ DataDiff.registerHistoryTracker = (type, id) => {
  * Any components tracking history should call this when they unmount/are no longer needed
  * @param {Object} tracker
  */
-DataDiff.unregisterHistoryTracker = (type, id) => {
-    let tracking = DataStore.getValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKING]);
-    if (!tracking) console.error("DataStore.unregisterTracker item not tracked?? Count is out of order!!", type, id);
-    else if (tracking.number > 1) {
-        DataStore.setValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKING, 'number'], tracking.number - 1);
-        return;
+DataDiff.unregisterHistoryTracker = (type, id, proppath) => {
+    let trackpath = proppath;
+    if (_.isArray(proppath)) trackpath = "/"+proppath.join("/"); // convert to easily comparible and json-patch compatible string
+    let tracker = DataStore.getValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKERS]);
+    if (!tracker) console.error("DataStore.unregisterTracker item not tracked?? Hooks probably being called out of order", type, id);
+    else if (tracker[trackpath]) {
+        if (tracker[trackpath] > 1) {
+            DataStore.setValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKERS, trackpath], tracker[trackpath] - 1);
+        } else {
+            delete tracker[trackpath];
+            DataStore.setValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKERS], tracker);
+        }
     }
-    // Tidy up
-    DataDiff.clearDataDiffs(type, id, false);
+
+    // Get updated list to see if anything is tracking anymore
+    tracker = DataStore.getValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKERS]);
+    if (Object.keys(tracker).length === 0) {
+        // Tidy up
+        DataStore.setValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKERS], null);
+        DataDiff.clearLocalDataDiffs(type, id, false);
+    }
     // Remove any references to changes made to this now untracked object in the global history
     /*let dataPath = "/"+DataStore.getDataPath({status:C.KStatus.DRAFT, type, id}).join("/");
     let globalHistory = DataDiff.getGlobalHistory();
     globalHistory = globalHistory.filter(diff => !diff.path.startsWith(dataPath));
     DataDiff.setGlobalHistory(globalHistory, false);*/
-    DataStore.setValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKING], false);
+    //DataStore.setValue(['transient', type, id, DataDiff.DATA_HISTORY_TRACKERS], false);
 }
 
 DataDiff.getHistoryTrackers = () => {
     let trackers = [];
     const transient = DataStore.getValue(['transient']);
-    Object.keys(transient).forEach(k => {
-        if (!C.TYPES.has(k)) return;
-        const type = transient[k];
-        Object.values(type).forEach(id => {
-            const tracker = id[DataDiff.DATA_HISTORY_TRACKING];
-            if (tracker) trackers.push(tracker);
+    Object.keys(transient).forEach(type => {
+        if (!C.TYPES.has(type)) return;
+        const obj = transient[type];
+        Object.keys(obj).forEach(id => {
+            let trackpaths = obj[id][DataDiff.DATA_HISTORY_TRACKERS];
+            if (!trackpaths) return;
+            trackpaths = Object.keys(trackpaths);
+            if (trackpaths) trackers.push({type, id, trackpaths});
         });
     });
     return trackers;
@@ -334,6 +431,23 @@ export const mergeDataDiffs = (oldDiff, newDiff, deleteNoOp) => {
 		value: newDiff.value,
 		from: oldDiff.from
 	}
+}
+
+/**
+ * Generate a comparison of diffs between 2 data items
+ * @param {DataItem} item1 
+ * @param {DataItem} item2 
+ */
+export const generateDataItemDiffs = (item1, item2) => {
+    let diffs = jsonDiff(item1, item2);
+    diffs = diffs.map(diff => {
+        if (diff.path === "/status"
+            || diff.path === "/lastModified") return null; // ignore internal properties
+        const diffPath = diff.path.substring(1).split("/");
+        diff.from = getObjectValueByPath(item1, diffPath);
+        return diff;
+    }).filter(x=>x);
+    return diffs;
 }
 
 const captureUndoEvent = e => {
@@ -382,17 +496,18 @@ export const useCtrlZCapture = (redirectOnUndo) => {
  * Custom React hook for components that need to track the history of a data item
  * @param {C.TYPE} type
  * @param {String} id
+ * @param {String[]} proppath
  */
-export const useDataHistory = (type, id) => {
+export const useDataHistory = (type, id, proppath) => {
 	assert(type, "useDataHistory no type??");
 	assert(id, "useDataHistory no id??");
 
 	// Register this as a history tracker on mount
 	useEffect(() => {
-		DataDiff.registerHistoryTracker(type, id);
+		DataDiff.registerHistoryTracker(type, id, proppath);
 		// Unregister on unmount
 		return () => {
-			DataDiff.unregisterHistoryTracker(type, id);
+			DataDiff.unregisterHistoryTracker(type, id, proppath);
 		}
 	}, [type, id]);
 }

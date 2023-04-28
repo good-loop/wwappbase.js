@@ -34,7 +34,7 @@ class ErrBoundary extends React.Component {
 			return <div className="alert alert-danger"><h1>Something went wrong.</h1>{""+this.state.error}</div>;
 		}
 
-		return this.props.children;
+		return this.props.children || null;
 	}
 }
 export default ErrBoundary;

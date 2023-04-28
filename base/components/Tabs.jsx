@@ -6,8 +6,8 @@ import { space } from '../utils/miscutils';
  * @param {string} tabId NB: this is what BS calls it. Will use the title if unset
  * @param {string} title This will be the tab label
  */
-const Tab = ({tabId, title, disabled, onTabClick, children}) => {
-	return <TabPane tabId={tabId || title}>
+const Tab = ({tabId, title, disabled, onTabClick, children, ...props}) => {
+	return <TabPane tabId={tabId || title} {...props}>
 		{children}
 	</TabPane>
 };

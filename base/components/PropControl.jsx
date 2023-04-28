@@ -25,6 +25,7 @@ import KStatus from '../data/KStatus';
 
 import Misc, { CopyToClipboardButton } from './Misc';
 import DataStore from '../plumbing/DataStore';
+import { useDataHistory } from '../plumbing/DataDiff';
 import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
 import { nonce } from '../data/DataClass';
@@ -211,7 +212,7 @@ const diffProp = (path, prop) => {
 
 
 /** Longhand string representation of a value for disambiguating diffs. */
-const diffStringify = val => {
+export const diffStringify = val => {
 	// Anything with explicitly defined toString should use it...
 	if (val?.hasOwnProperty('toString')) return val.toString();
 	// Stringify kills the [Object object] problem & explicitly differentiates e.g. 123 vs "123"
@@ -302,7 +303,7 @@ or if extras like help and error text are wanted.
    * @param {PropControlParams} p
    */
 const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
-	let { type, optional, required, path, prop, set, label, help, tooltip, customIcon, error, warning, validator, inline, dflt, fast, size, int, ...stuff } = props;
+	let { type, optional, required, path, prop, set, label, help, tooltip, customIcon, error, warning, validator, inline, dflt, fast, size, int, disabled, ...stuff } = props;
 	if (label === true) {
 		label = toTitleCase(prop); // convenience
 		props = { ...props, label };
@@ -436,6 +437,13 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	} else if (required) {
 		optreq = <small className={storeValue === undefined ? 'text-danger' : null}>*</small>
 	}
+
+	// Hook into history (if we're editing!)
+	if (DataStore.isDataPath(path)) {
+		const breakdown = DataStore.breakdownDataPath(proppath);
+		useDataHistory(breakdown.type, breakdown.id, breakdown.proppath);
+	}
+	
 
 	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
 	if (props.modal) {
