@@ -81,7 +81,7 @@ export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday',
 const shortWeekdays = WEEKDAYS.map((weekday) => weekday.substr(0, 3));
 export const WEEKDAYS_FROM_MONDAY = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
 export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const shortMonths = MONTHS.map((month) => month.substr(0, 3));
+export const shortMonths = MONTHS.map((month) => month.substr(0, 3));
 
 /**
  * Pad under 10 with "0". Especially useful with dates.
@@ -306,7 +306,7 @@ export interface PeriodFromUrlParams extends Object {
  * Read period (name) or start/end
  * @param {Object} urlParams If unset use getUrlVars()
  */
-export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefined): Period | null => {
+export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefined = undefined): Period | null => {
 	if (!urlParams) urlParams = getUrlVars(null, null);
 	let { start, end, period } = urlParams;
 	// named?
