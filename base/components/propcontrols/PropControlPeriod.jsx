@@ -11,16 +11,20 @@ import { stopEvent, toTitleCase } from '../../utils/miscutils';
 /**
  * Really two PropControls - with some handy buttons for setting both
  */
-function PropControlPeriod2({className, style, path, propStart = "start", propEnd = "end", buttons=["yesterday", "this-month"], saveFn }) {
+function PropControlPeriod2({className, style, path, propStart = "start", propEnd = "end", propPeriodName="period", buttons=["yesterday", "this-month"], saveFn }) 
+{
+    const clearPeriodName = () => {
+        DataStore.setValue(path.concat(propPeriodName), null);
+    };
     return (<div className={className} style={style} >
         {buttons && <div className="flex-row">
-            {buttons.map(b => <PeriodButton key={b} name={b} path={path} propStart={propStart} propEnd={propEnd} />)}
+            {buttons.map(b => <PeriodButton key={b} name={b} path={path} propStart={propStart} propEnd={propEnd} propPeriodName={propPeriodName} />)}
         </div>}
         <Row className='mt-2'>
             <Col sm={6}>
-                <PropControl prop={propStart} path={path} label type="date" time="start" />
+                <PropControl prop={propStart} path={path} label type="date" time="start" saveFn={clearPeriodName} />
             </Col><Col sm={6}>
-                <PropControl prop={propEnd} path={path} label type="date" time="end" />
+                <PropControl prop={propEnd} path={path} label type="date" time="end" saveFn={clearPeriodName} />
             </Col>
         </Row>
         <Row>
@@ -32,11 +36,11 @@ function PropControlPeriod2({className, style, path, propStart = "start", propEn
 }
 
 
-const PeriodButton = ({name, label, path, propStart, propEnd}) => {
+const PeriodButton = ({name, label, path, propStart, propEnd, propPeriodName}) => {
     const now = new Date();
     let period = periodFromName(name);
     const setPeriod = _evt => {
-        DataStore.setValue(path.concat("period"), period.name);
+        DataStore.setValue(path.concat(propPeriodName), period.name);
         DataStore.setValue(path.concat(propStart), period.start?.toISOString());
         DataStore.setValue(path.concat(propEnd), period.end?.toISOString());
     };

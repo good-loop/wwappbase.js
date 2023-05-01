@@ -314,8 +314,9 @@ export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefine
 	// User has set a named period (year, quarter, month)
 	if (periodObjFromName) {
 		// fill in the start/end
-		DataStore.setUrlValue("start", periodObjFromName.start, false);
-		DataStore.setUrlValue("end", periodObjFromName.end, false);
+		// NB: when adjusting start/end with PropControlPeriod, there is a moment where the name is wrong.
+		if ( ! start) DataStore.setUrlValue("start", periodObjFromName.start, false);
+		if ( ! end) DataStore.setUrlValue("end", periodObjFromName.end, false);
 		return periodObjFromName;
 	}
 
