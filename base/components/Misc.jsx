@@ -22,7 +22,7 @@ import ErrAlert from './ErrAlert';
 import XId from '../data/XId';
 import Roles from '../Roles';
 import Icon from './Icon';
-import { oh, isoDate, dateStr, MONTHS } from '../utils/date-utils';
+import { oh, isoDate, MONTHS, asDate, shortMonths } from '../utils/date-utils';
 
 const Misc = {};
 
