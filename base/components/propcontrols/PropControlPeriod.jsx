@@ -16,15 +16,16 @@ function PropControlPeriod2({className, style, path, propStart = "start", propEn
     const clearPeriodName = () => {
         DataStore.setValue(path.concat(propPeriodName), null);
     };
+    let dobj = DataStore.getValue(path);
     return (<div className={className} style={style} >
         {buttons && <div className="flex-row">
             {buttons.map(b => <PeriodButton key={b} name={b} path={path} propStart={propStart} propEnd={propEnd} propPeriodName={propPeriodName} />)}
         </div>}
         <Row className='mt-2'>
-            <Col sm={6}>
-                <PropControl prop={propStart} path={path} label type="date" time="start" saveFn={clearPeriodName} />
-            </Col><Col sm={6}>
-                <PropControl prop={propEnd} path={path} label type="date" time="end" saveFn={clearPeriodName} />
+            <Col sm={6} >
+                <PropControl prop={propStart} path={path} label type="date" time="start" saveFn={clearPeriodName} max={dobj?.end} />
+            </Col><Col sm={6} className='pl-1'>
+                <PropControl prop={propEnd} path={path} label type="date" time="end" saveFn={clearPeriodName} min={dobj?.start} />
             </Col>
         </Row>
         <Row>
