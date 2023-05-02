@@ -374,7 +374,6 @@ export const periodFromName = (periodName?: string): Period | null => {
 			name:periodName, start, end
 		};
 	}
-	// TODO this-month, last-month, last-quarter
 	// eg "2022-Q2"
 	const quarterMatches = periodName.match(quarterRegex) as unknown as number[];
 	if (quarterMatches) {
@@ -392,6 +391,15 @@ export const periodFromName = (periodName?: string): Period | null => {
 		let d = new Date();
 		d.setMonth(d.getMonth() - 1);
 		let p = getPeriodMonth(d);
+		p.name = periodName;
+		return p;
+	}
+	if (periodName==="last-quarter") {
+		let d = new Date();
+		let pnow = getPeriodQuarter(d); // this quarter
+		d = pnow.start;
+		d.setMonth(d.getMonth() - 1);
+		let p = getPeriodQuarter(d); // this quarter
 		p.name = periodName;
 		return p;
 	}

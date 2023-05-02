@@ -11,7 +11,8 @@ import { stopEvent, toTitleCase } from '../../utils/miscutils';
 /**
  * Really two PropControls - with some handy buttons for setting both
  */
-function PropControlPeriod2({className, style, path, propStart = "start", propEnd = "end", propPeriodName="period", buttons=["yesterday", "this-month"], saveFn }) 
+function PropControlPeriod2({className, style, path, propStart = "start", propEnd = "end", propPeriodName="period", 
+    buttons=["yesterday", "this-month"], saveFn }) 
 {
     const clearPeriodName = () => {
         DataStore.setValue(path.concat(propPeriodName), null);
@@ -91,6 +92,7 @@ function PropControlPeriodMonthYear({ path, propStart = "start", propEnd = "end"
  * @param {?String} p.propStart default:start
  * @param {?String} p.propEnd default:end
  * @param {?String} p.options HACK if "month-year" then use a simplified month/year picker
+ * @param {?String} buttons =["yesterday", "this-month"]
  * @returns 
  */
 function PropControlPeriod(p) {
