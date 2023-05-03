@@ -319,8 +319,8 @@ export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefine
 	if (periodObjFromName) {
 		// fill in the start/end
 		// NB: when adjusting start/end with PropControlPeriod, there is a moment where the name is wrong.
-		if ( ! start) DataStore.setUrlValue("start", periodObjFromName.start, false);
-		if ( ! end) DataStore.setUrlValue("end", periodObjFromName.end, false);
+		if ( ! start) DataStore.setUrlValue("start", dayjs(periodObjFromName.start).format("YYYY-MM-DD"), false);
+		if ( ! end) DataStore.setUrlValue("end", dayjs(periodObjFromName.end).format("YYYY-MM-DD"), false);
 		return periodObjFromName;
 	}
 
@@ -441,10 +441,10 @@ export const periodToParams = (period: Period) => {
 		newVals.period = period.name as string;
 	} else {
 		// Custom period - remove period name from URL params and set start/end
-		if (period.start) newVals.start = asDate(period.start)!.toISOString(); // full date! .substring(0,10);
+		if (period.start) newVals.start = dayjs(asDate(period.start)).format("YYYY-MM-DD");
 		if (period.end) {
 			// url params don't have to be pretty (push prettiness up to rendering code)
-			newVals.end = asDate(period.end)!.toISOString(); // full date.substring(0,10);
+			newVals.end = dayjs(asDate(period.end)).format("YYYY-MM-DD"); 
 			// // Machine form "Period ending 2022-04-01T00:00:00" --> intuitive form "Period ending 2022-03-31"
 			// end = new Date(end);
 			// end.setDate(end.getDate() - 1);
