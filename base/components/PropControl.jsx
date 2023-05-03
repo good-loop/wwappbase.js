@@ -27,7 +27,7 @@ import Misc, { CopyToClipboardButton } from './Misc';
 import DataStore from '../plumbing/DataStore';
 import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
-import { nonce } from '../data/DataClass';
+import DataClass, { nonce } from '../data/DataClass';
 
 import { countryListAlpha2 } from '../data/CountryRegion';
 import C from '../CBase';
@@ -350,9 +350,12 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	assMatch(rawValue, "?String", `PropControl: rawValue must be a string, path: "${path}", prop: "${prop}" type: "${type}""`);
 	// Reset raw value if code outside the PropControl changes the value
 	const [oldStoreValue, setOldStoreValue] = useState(storeValue);
-	if (oldStoreValue !== storeValue) {
-		setRawValue(_.isString(storeValue) ? storeValue : null);
-		setOldStoreValue(storeValue);
+	if (oldStoreValue !== storeValue) { 
+		// HACK: Have to be careful e.g. PropControlMoney changes the object as you type. TODO an updating state flag to handle this properly
+		if (DataClass.str(oldStoreValue) !== DataClass.str(storeValue)) {
+			setRawValue(_.isString(storeValue) ? storeValue : null);
+			setOldStoreValue(storeValue);
+		}
 	}
 
 	// old code
