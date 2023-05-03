@@ -112,6 +112,9 @@ export const dateUTCfromString = (s: string): Date => {
 /**
  * Make sure it's a Date not a String
  * @param {?String|Date} s falsy returns null
+ * @param {?String} tz If set and if s is a string, then apply timezone=tz. 
+ * TODO use the browser-default _timezone -- but paranoia check needed: Would this break any current use-cases
+ * that might assume UTC??
  * @returns {?Date}
  */
 export const asDate = (s: Date | string, tz?: string): Date | null => {
