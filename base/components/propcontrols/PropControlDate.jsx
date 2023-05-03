@@ -6,7 +6,6 @@ import { asDate, dayEndTZ, isoDate, isoDateTZ } from '../../utils/date-utils';
 import PropControl, { fakeEvent, FormControl, registerControl } from '../PropControl';
 import { dayStartTZ } from '../../utils/date-utils';
 import { newDateTZ } from '../../utils/date-utils';
-import dayjs from 'dayjs';
 
 /**
  * This is for dates only. It is timezone aware. Note: `date` vs `datetime-local`
@@ -54,7 +53,7 @@ function PropControlDate2({ path, prop, type, storeValue, rawValue, setRawValue,
 			} else {
 				let date = newDateTZ(e.target.value);				
 				date = "end"===time? dayEndTZ(date) : dayStartTZ(date); // start/end of day			
-				mv = dayjs(date).format("YYYY-MM-DD")
+				mv = date.toISOString();
 			}
 		}
 		set(mv);

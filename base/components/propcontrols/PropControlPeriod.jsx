@@ -7,7 +7,6 @@ import Misc from '../Misc';
 import PropControl, { fakeEvent, registerControl } from '../PropControl';
 import PropControlTimezone from './PropControlTimezone';
 import { stopEvent, toTitleCase } from '../../utils/miscutils';
-import dayjs from 'dayjs';
 
 /**
  * Really two PropControls - with some handy buttons for setting both
@@ -44,8 +43,8 @@ const PeriodButton = ({name, label, path, propStart, propEnd, propPeriodName}) =
     let period = periodFromName(name);
     const setPeriod = _evt => {
         DataStore.setValue(path.concat(propPeriodName), period.name);
-        DataStore.setValue(path.concat(propStart), dayjs(period.start).format("YYYY-MM-DD"));
-        DataStore.setValue(path.concat(propEnd), dayjs(period.end).format("YYYY-MM-DD"));
+        DataStore.setValue(path.concat(propStart), period.start?.toISOString());
+        DataStore.setValue(path.concat(propEnd), period.end?.toISOString());
     };
     let startv = DataStore.getValue(path.concat(propStart));
     let endv = DataStore.getValue(path.concat(propEnd));
