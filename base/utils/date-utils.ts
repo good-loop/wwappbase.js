@@ -20,6 +20,7 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { modifyPage } from '../plumbing/glrouter';
 import DataStore from '../plumbing/DataStore';
+import { tsncs } from '../../../../GLAppManifest';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -72,6 +73,7 @@ export const getTimeZoneOffset = (timeZone: string, date = new Date()): number =
 }
 console.log("getTimeZoneOffset", "America/Los_Angeles", getTimeZoneOffset("America/Los_Angeles"));
 console.log("getTimeZoneOffset", getTimeZone(), getTimeZoneOffset(getTimeZone()));
+// @ts-ignore
 window.getTimeZoneOffset = getTimeZoneOffset;
 
 /**
@@ -113,12 +115,11 @@ export const dateUTCfromString = (s: string): Date => {
  * @param {?String|Date} s falsy returns null
  * @returns {?Date}
  */
-export const asDate = (s: Date | String): Date | null => {
+export const asDate = (s: Date | string, tz?: string): Date | null => {
 	if (!s) return null;
-	// Create the Date Object in UTC
 	if (typeof s === 'string') {
-		// FIXME This strips timezone! 
-		return dateUTCfromString(s);
+		if (!tz) tz = "UTC";
+		return dayjs.tz(s, tz).toDate();
 	}
 	return s as Date;
 };
@@ -300,6 +301,7 @@ export interface PeriodFromUrlParams extends Object {
 	end?: string;
 	/** period name e.g. last-month */
 	period?: string;
+	tz: string;
 }
 
 /**
@@ -307,8 +309,8 @@ export interface PeriodFromUrlParams extends Object {
  * @param {Object} urlParams If unset use getUrlVars()
  */
 export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefined = undefined): Period | null => {
-	if (!urlParams) urlParams = getUrlVars(null, null);
-	let { start, end, period } = urlParams;
+	if (!urlParams) urlParams = getUrlVars(null, null) as PeriodFromUrlParams;
+	let { start, end, period, tz } = urlParams;
 	// named?
 	const periodObjFromName = periodFromName(period as string);
 	// User has set a named period (year, quarter, month)
@@ -324,13 +326,13 @@ export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefine
 	if (start || end) {
 		const periodFromStartEnd = {} as Period;
 		if (start) {
-			periodFromStartEnd.start = asDate(start)!;
+			periodFromStartEnd.start = asDate(start, tz)!;
 		}
 		if (end) {
 			if (dateFormatRegex.test(end)) {
 				end = end + `T23:59:59Z`; // Our endpoint does not support 59.999Z
 			}
-			periodFromStartEnd.end = asDate(end)!;
+			periodFromStartEnd.end = asDate(end, tz)!;
 		}
 		// const [, yyyy, mm, dd] = end.match(/(\d+)-(\d+)-(\d+)/) as any[];
 		// period.end = new Date(yyyy, mm, dd);
