@@ -20,7 +20,6 @@ import utc from "dayjs/plugin/utc";
 import timezone from "dayjs/plugin/timezone";
 import { modifyPage } from '../plumbing/glrouter';
 import DataStore from '../plumbing/DataStore';
-import { tsncs } from '../../../../GLAppManifest';
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -195,7 +194,7 @@ export const dateTimeString = (d: Date) => {
 
 // FROM dashutils
 
-export type Period = { start: Date; end: Date; name: string | null };
+export type Period = { start?: Date; end?: Date; name?: string | null };
 
 const equalPeriod = (periodA:Period, periodB:Period) => {
 	if (periodA.name !== periodB.name) return false; // Least-surprise - consider "Q1" and "1 jan - 31 mar" different
