@@ -72,7 +72,6 @@ export const getTimeZoneOffset = (timeZone: string, date = new Date()): number =
 }
 console.log("getTimeZoneOffset", "America/Los_Angeles", getTimeZoneOffset("America/Los_Angeles"));
 console.log("getTimeZoneOffset", getTimeZone(), getTimeZoneOffset(getTimeZone()));
-// @ts-ignore
 window.getTimeZoneOffset = getTimeZoneOffset;
 
 /**
@@ -117,11 +116,12 @@ export const dateUTCfromString = (s: string): Date => {
  * that might assume UTC??
  * @returns {?Date}
  */
-export const asDate = (s: Date | string, tz?: string): Date | null => {
+export const asDate = (s: Date | String): Date | null => {
 	if (!s) return null;
+	// Create the Date Object in UTC
 	if (typeof s === 'string') {
-		if (!tz) tz = "UTC";
-		return dayjs.tz(s, tz).toDate();
+		// FIXME This strips timezone! 
+		return dateUTCfromString(s);
 	}
 	return s as Date;
 };
@@ -303,7 +303,6 @@ export interface PeriodFromUrlParams extends Object {
 	end?: string;
 	/** period name e.g. last-month */
 	period?: string;
-	tz: string;
 }
 
 /**
@@ -311,8 +310,8 @@ export interface PeriodFromUrlParams extends Object {
  * @param {Object} urlParams If unset use getUrlVars()
  */
 export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefined = undefined): Period | null => {
-	if (!urlParams) urlParams = getUrlVars(null, null) as PeriodFromUrlParams;
-	let { start, end, period, tz } = urlParams;
+	if (!urlParams) urlParams = getUrlVars(null, null);
+	let { start, end, period } = urlParams;
 	// named?
 	const periodObjFromName = periodFromName(period as string);
 	// User has set a named period (year, quarter, month)
@@ -328,13 +327,13 @@ export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefine
 	if (start || end) {
 		const periodFromStartEnd = {} as Period;
 		if (start) {
-			periodFromStartEnd.start = asDate(start, tz)!;
+			periodFromStartEnd.start = asDate(start)!;
 		}
 		if (end) {
 			if (dateFormatRegex.test(end)) {
 				end = end + `T23:59:59Z`; // Our endpoint does not support 59.999Z
 			}
-			periodFromStartEnd.end = asDate(end, tz)!;
+			periodFromStartEnd.end = asDate(end)!;
 		}
 		// const [, yyyy, mm, dd] = end.match(/(\d+)-(\d+)-(\d+)/) as any[];
 		// period.end = new Date(yyyy, mm, dd);
