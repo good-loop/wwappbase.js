@@ -17,6 +17,11 @@ function PropControlPeriod2({className, style, path, propStart = "start", propEn
     const clearPeriodName = () => {
         DataStore.setValue(path.concat(propPeriodName), null);
     };
+
+    const clearStartEnd = () => {
+        DataStore.setValue(path.concat(propStart), null);
+        DataStore.setValue(path.concat(propEnd), null);
+    }
     let dobj = DataStore.getValue(path);
     return (<div className={className} style={style} >
         {buttons && <div className="flex-row">
@@ -31,7 +36,7 @@ function PropControlPeriod2({className, style, path, propStart = "start", propEn
         </Row>
         <Row>
             <Col sm={12}>
-                <PropControlTimezone className="mt-2" size="sm" label="Timezone" prop="tz" />
+                <PropControlTimezone className="mt-2" size="sm" label="Timezone" prop="tz" saveFn={clearStartEnd} />
             </Col>
         </Row>
     </div>);

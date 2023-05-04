@@ -240,7 +240,7 @@ export const dayEndTZ = (date = new Date()) => {
  */
 export const newDateTZ = (isoDate:string) => {
 	let d = newDateUTC(isoDate);
-	let offset = getTimeZoneOffset();
+	let offset = getTimeZoneOffset(getTimeZone(), d);
 	d.setMinutes(-offset);
 	return d;
 };
