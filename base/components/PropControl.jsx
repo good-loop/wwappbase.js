@@ -352,6 +352,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	const [oldStoreValue, setOldStoreValue] = useState(storeValue);
 	if (oldStoreValue !== storeValue) {
 		// HACK: Have to be careful e.g. PropControlMoney changes the object as you type. TODO an updating state flag to handle this properly
+		// (Date in PropControlPeriod will return undefined in DataClass.str(), but we still want to let it through)
 		if (DataClass.str(oldStoreValue) !== DataClass.str(storeValue) || (DataClass.str(oldStoreValue) === undefined && DataClass.str(storeValue) == undefined)) {
 			setRawValue(_.isString(storeValue) ? storeValue : null);
 			setOldStoreValue(storeValue);
