@@ -18,9 +18,11 @@ function PropControlPeriod2({className, style, path, propStart = "start", propEn
         DataStore.setValue(path.concat(propPeriodName), null);
     };
 
-    const clearStartEnd = () => {
-        DataStore.setValue(path.concat(propStart), null);
-        DataStore.setValue(path.concat(propEnd), null);
+    const adjustStartEnd = (props) => {
+        const start = isoDate(DataStore.getValue(path.concat(propStart)));
+        const end = isoDate(DataStore.getValue(path.concat(propEnd)));
+        DataStore.setValue(path.concat(propStart), dayStartTZ(start).toISOString());
+        DataStore.setValue(path.concat(propEnd), dayStartTZ(end).toISOString());
     }
     let dobj = DataStore.getValue(path);
     return (<div className={className} style={style} >
@@ -36,7 +38,7 @@ function PropControlPeriod2({className, style, path, propStart = "start", propEn
         </Row>
         <Row>
             <Col sm={12}>
-                <PropControlTimezone className="mt-2" size="sm" label="Timezone" prop="tz" saveFn={clearStartEnd} />
+                <PropControlTimezone className="mt-2" size="sm" label="Timezone" prop="tz" saveFn={adjustStartEnd} />
             </Col>
         </Row>
     </div>);
