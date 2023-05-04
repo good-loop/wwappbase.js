@@ -350,9 +350,9 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	assMatch(rawValue, "?String", `PropControl: rawValue must be a string, path: "${path}", prop: "${prop}" type: "${type}""`);
 	// Reset raw value if code outside the PropControl changes the value
 	const [oldStoreValue, setOldStoreValue] = useState(storeValue);
-	if (oldStoreValue !== storeValue) { 
+	if (oldStoreValue !== storeValue) {
 		// HACK: Have to be careful e.g. PropControlMoney changes the object as you type. TODO an updating state flag to handle this properly
-		if (DataClass.str(oldStoreValue) !== DataClass.str(storeValue)) {
+		if (DataClass.str(oldStoreValue) !== DataClass.str(storeValue) || (DataClass.str(oldStoreValue) === undefined && DataClass.str(storeValue) == undefined)) {
 			setRawValue(_.isString(storeValue) ? storeValue : null);
 			setOldStoreValue(storeValue);
 		}
