@@ -237,11 +237,11 @@ export const dayEndTZ = (date = new Date()) => {
  * @param isoDate e.g. 2023-01-21
  * @returns 
  */
-export const newDateTZ = (isoDate:string) => {
-	let d = newDateUTC(isoDate);
-	let offset = getTimeZoneOffset(getTimeZone(), d);
-	d.setMinutes(-offset);
-	return d;
+export const newDateTZ = (isoDate:string): Date => {
+	// let d = newDateUTC(isoDate);
+	// let offset = getTimeZoneOffset(getTimeZone(), d);
+	// d.setMinutes(-offset);
+	return dayjs.tz(isoDate, getTimeZone()).toDate();
 };
 /**
  * So (unlike Java) `new Date(year,month,day)` and new Date(isodate) is local-time
@@ -278,18 +278,9 @@ export const getPeriodQuarter = (date : Date) => {
  * @returns {Period}
  */
 export const getPeriodMonth = (date = new Date()): Period => {
-	const start = newDateTZ(isoDate(date));
-	start.setDate(1);
+	const start = newDateTZ(dayjs(date).format('YYYY-MM') + "01");
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 1);
-	// let name = start.toLocaleDateString(
-	// 	"en-gb", //fixed language for matching
-	// 	{
-	// 		year: 'numeric',
-	// 		month: '2-digit',
-	// 		timeZone: getTimeZone(),
-	// 	}
-	// );
 	return { start, end }; //, name currently buggy for matching
 };
 
