@@ -48,7 +48,6 @@ function PropControlPeriod2({className, style, path, propStart = "start", propEn
 const PeriodButton = ({name, label, path, propStart, propEnd, propPeriodName}) => {
     const now = new Date();
     let period = periodFromName(name);
-    console.log('PeriodButton', name, period.start, period.end);
     const setPeriod = _evt => {
         DataStore.setValue(path.concat(propPeriodName), period.name);
         DataStore.setValue(path.concat(propStart), period.start?.toISOString());
