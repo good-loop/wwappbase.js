@@ -70,9 +70,8 @@ export const getTimeZoneOffset = (timeZone: string, date = new Date()): number =
 	const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
 	return (tzDate.getTime() - utcDate.getTime()) / 6e4;
 }
-console.log("getTimeZoneOffset", "America/Los_Angeles", getTimeZoneOffset("America/Los_Angeles"));
-console.log("getTimeZoneOffset", getTimeZone(), getTimeZoneOffset(getTimeZone()));
-window.getTimeZoneOffset = getTimeZoneOffset;
+// console.log("getTimeZoneOffset", getTimeZone(), getTimeZoneOffset(getTimeZone()));
+// window.getTimeZoneOffset = getTimeZoneOffset;
 
 /**
  * 0 = Sunday
@@ -150,7 +149,7 @@ export const dateStr = (d: Date) => {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric'
-	};
+	} as Intl.DateTimeFormatOptions;
 	const timeZone = getTimeZone();
 	if (timeZone !== localTimeZone) {
 		options.timeZone = timeZone;
@@ -186,7 +185,7 @@ export const dateTimeString = (d: Date) => {
 		day: 'numeric',
 		hour: '2-digit',
 		minute: '2-digit'
-	};
+	} as Intl.DateTimeFormatOptions;
 	const timeZone = getTimeZone();
 	if (timeZone !== localTimeZone) {
 		options.timeZone = timeZone;
