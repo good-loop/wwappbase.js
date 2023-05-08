@@ -108,11 +108,14 @@ class Store {
 	/**
 	 * Set a key=value in the url for navigation. This modifies the window.location and DataStore.appstore.location.params, and does an update.
 	 * @param {String} key
-	 * @param {String} value
+	 * @param {?string|boolean|number|Date} value
 	 * @returns {String} value
 	 */
 	setUrlValue(key, value, update) {
 		assMatch(key, String);
+		if (value instanceof Date) {
+			value = value.toISOString();
+		}
 		if (value) assMatch(value, "String|Boolean|Number");
 		// the modifyPage hack is in setValue() so that PropControl can use it too
 		return this.setValue(['location', 'params', key], value, update);
@@ -124,6 +127,7 @@ class Store {
 	 * See also getValue('location','path') for the path.
 	 * Use `getValue('location','params')` for all the url parameters
 	 * @param {String} key
+	 * @returns {?string}
 	 */
 	getUrlValue(key) {
 		assMatch(key, String);

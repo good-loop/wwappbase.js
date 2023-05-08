@@ -89,7 +89,7 @@ ServerIO.checkBase = () => {
 		if (!(key in ServerIO)) return; // Not defined, don't check it
 
 		// Normally a URL that doesn't say "test" or "local" (empty string included) is production...
-		let urlIsProd = !(endpointUrl.match(/(test|local)/));
+		let urlIsProd = !(endpointUrl.match(/(test|local|stage)/));
 		// ...but APIBASE is special - it's normally empty for "this host" (except for My-Loop, which doesn't have its own backend)
 		// So empty APIBASE (on non-production servers, with their own API) signifies NOT prod
 		if (key === 'APIBASE' && !C.isProduction() && !ServerIO.NO_API_AT_THIS_HOST && !endpointUrl) {
@@ -127,7 +127,8 @@ ServerIO.checkBase = () => {
 /**
  * HACK allow using test/production ads, profiler, and datalog if requested.
  * To switch 
- * TODO refactor into the endpoints loop above
+ * 
+ * TODO refactor to use an endpoints loop like above
  */
 const checkBase2_toggleTestEndpoints = () => {
 	const server = DataStore.getUrlValue("server");
@@ -163,6 +164,16 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.MEDIA_ENDPOINT = protocol+'//localuploads.good-loop.com';
 		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com/measure';
 		ServerIO.APIBASE = ''; // lets assume you're on local
+		return;
+	}
+	if (server === 'stage') {
+		ServerIO.AS_ENDPOINT = 'https://stageas.good-loop.com';
+		ServerIO.PORTAL_ENDPOINT = 'https://stageportal.good-loop.com';
+		ServerIO.DATALOG_ENDPOINT = 'https://stagelg.good-loop.com/data';
+		ServerIO.PROFILER_ENDPOINT = 'https://stageprofiler.good-loop.com';
+		ServerIO.MEDIA_ENDPOINT = 'https://stageuploads.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://stagemeasure.good-loop.com/measure';
+		// ServerIO.APIBASE = ''; // ?? fix in a refactor
 		return;
 	}
 	if (server === 'production') {
