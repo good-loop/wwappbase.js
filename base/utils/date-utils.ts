@@ -70,9 +70,8 @@ export const getTimeZoneOffset = (timeZone: string, date = new Date()): number =
 	const tzDate = new Date(date.toLocaleString('en-US', { timeZone }));
 	return (tzDate.getTime() - utcDate.getTime()) / 6e4;
 }
-console.log("getTimeZoneOffset", "America/Los_Angeles", getTimeZoneOffset("America/Los_Angeles"));
-console.log("getTimeZoneOffset", getTimeZone(), getTimeZoneOffset(getTimeZone()));
-window.getTimeZoneOffset = getTimeZoneOffset;
+// console.log("getTimeZoneOffset", getTimeZone(), getTimeZoneOffset(getTimeZone()));
+// window.getTimeZoneOffset = getTimeZoneOffset;
 
 /**
  * 0 = Sunday
@@ -111,6 +110,9 @@ export const dateUTCfromString = (s: string): Date => {
 /**
  * Make sure it's a Date not a String
  * @param {?String|Date} s falsy returns null
+ * @param {?String} tz If set and if s is a string, then apply timezone=tz. 
+ * TODO use the browser-default _timezone -- but paranoia check needed: Would this break any current use-cases
+ * that might assume UTC??
  * @returns {?Date}
  */
 export const asDate = (s: Date | String): Date | null => {
@@ -147,7 +149,7 @@ export const dateStr = (d: Date) => {
 		year: 'numeric',
 		month: 'short',
 		day: 'numeric'
-	};
+	} as Intl.DateTimeFormatOptions;
 	const timeZone = getTimeZone();
 	if (timeZone !== localTimeZone) {
 		options.timeZone = timeZone;
@@ -183,7 +185,7 @@ export const dateTimeString = (d: Date) => {
 		day: 'numeric',
 		hour: '2-digit',
 		minute: '2-digit'
-	};
+	} as Intl.DateTimeFormatOptions;
 	const timeZone = getTimeZone();
 	if (timeZone !== localTimeZone) {
 		options.timeZone = timeZone;
@@ -194,7 +196,7 @@ export const dateTimeString = (d: Date) => {
 
 // FROM dashutils
 
-export type Period = { start: Date; end: Date; name: string | null };
+export type Period = { start?: Date; end?: Date; name?: string | null };
 
 const equalPeriod = (periodA:Period, periodB:Period) => {
 	if (periodA.name !== periodB.name) return false; // Least-surprise - consider "Q1" and "1 jan - 31 mar" different
@@ -222,25 +224,16 @@ export const dayEndTZ = (date = new Date()) => {
 	nextDay.setDate(nextDay.getDate()+1);
 	return dayStartTZ(nextDay);
 };
-	// let d = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()); // local timezone midnight
-	// if (localTimeZone===_timezone) return d;
-	// let offset1 = getTimeZoneOffset(getTimeZone(), date);
-	// let offset2 = getTimeZoneOffset(localTimeZone, date);
-	// let offset = offset1 + offset2;
-	// return new Date(d.getTime() + offset * 60000);
-
 
 /**
  * E.g. midnight on 21st Jan, but in New York
  * @param isoDate e.g. 2023-01-21
  * @returns 
  */
-export const newDateTZ = (isoDate:string) => {
-	let d = newDateUTC(isoDate);
-	let offset = getTimeZoneOffset();
-	d.setMinutes(-offset);
-	return d;
+export const newDateTZ = (isoDate:string): Date => {
+	return dayjs.tz(isoDate, getTimeZone()).toDate();
 };
+
 /**
  * So (unlike Java) `new Date(year,month,day)` and new Date(isodate) is local-time
  * @param isoDate e.g. 2023-01-21
@@ -266,7 +259,13 @@ export const getPeriodQuarter = (date : Date) => {
 	let start = newDateTZ(year+"-"+oh(month)+"-01");
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 3);
-	return { start, end, name: `${start.getFullYear()}-Q${qIndex + 1}` };
+
+	// Calcuate correct year
+	let quarterYear = end.getFullYear()
+	if (start.getFullYear() != end.getFullYear()) {
+		if (end.getMonth() === 0) quarterYear = start.getFullYear();
+	}
+	return { start, end, name: `${quarterYear}-Q${qIndex + 1}` };
 };
 
 /**
@@ -276,18 +275,9 @@ export const getPeriodQuarter = (date : Date) => {
  * @returns {Period}
  */
 export const getPeriodMonth = (date = new Date()): Period => {
-	const start = newDateTZ(isoDate(date));
-	start.setDate(1);
+	const start = newDateTZ(dayjs(date).format('YYYY-MM') + "01");
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 1);
-	// let name = start.toLocaleDateString(
-	// 	"en-gb", //fixed language for matching
-	// 	{
-	// 		year: 'numeric',
-	// 		month: '2-digit',
-	// 		timeZone: getTimeZone(),
-	// 	}
-	// );
 	return { start, end }; //, name currently buggy for matching
 };
 
@@ -314,8 +304,9 @@ export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefine
 	// User has set a named period (year, quarter, month)
 	if (periodObjFromName) {
 		// fill in the start/end
-		DataStore.setUrlValue("start", periodObjFromName.start, false);
-		DataStore.setUrlValue("end", periodObjFromName.end, false);
+		// NB: when adjusting start/end with PropControlPeriod, there is a moment where the name is wrong.
+		if ( ! start) DataStore.setUrlValue("start", periodObjFromName.start, false);
+		if ( ! end) DataStore.setUrlValue("end", periodObjFromName.end, false);
 		return periodObjFromName;
 	}
 
@@ -373,7 +364,6 @@ export const periodFromName = (periodName?: string): Period | null => {
 			name:periodName, start, end
 		};
 	}
-	// TODO this-month, last-month, last-quarter
 	// eg "2022-Q2"
 	const quarterMatches = periodName.match(quarterRegex) as unknown as number[];
 	if (quarterMatches) {
@@ -391,6 +381,15 @@ export const periodFromName = (periodName?: string): Period | null => {
 		let d = new Date();
 		d.setMonth(d.getMonth() - 1);
 		let p = getPeriodMonth(d);
+		p.name = periodName;
+		return p;
+	}
+	if (periodName==="last-quarter") {
+		let d = new Date();
+		let pnow = getPeriodQuarter(d); // this quarter
+		d = pnow.start;
+		d.setMonth(d.getMonth() - 1);
+		let p = getPeriodQuarter(d); // this quarter
 		p.name = periodName;
 		return p;
 	}

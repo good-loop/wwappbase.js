@@ -15,12 +15,18 @@ const PropControlDt2 = ({prop, storeValue, onChange, unitOptions = Object.keys(l
 	// Default to unit=SECOND if available
 	const [unitVal, setUnitVal] = useState(storeValue.unit || (() => unitOptions.find(a => a === 'SECOND') ? 'SECOND' : unitOptions[0]));
 
-	// useEffect makes sure that _onChange fires AFTER state update, to prevent updates being out of sync
-	useEffect (() => {
-		// Ignore no change - will fire on first render otherwise
-		if (nVal === storeValue.n && unitVal === storeValue.unit) return;
+	// Detect local changes and send to store
+	useEffect(() => {
+		if (nVal === storeValue.n && unitVal === storeValue.unit) return; // don't fire unnecessarily
 		_onChange();
 	}, [nVal, unitVal]);
+
+	// Detect store changes and update local
+	useEffect(() => {
+		if (nVal === storeValue.n && unitVal === storeValue.unit) return; // don't fire unnecessarily
+		setNVal(storeValue.n);
+		setUnitValue(storeValue.unit);
+	}, [storeValue.n, storeValue.unit]);
 	
 	// When the inputs change, synthesise an input-change event to pass up to PropControl and DataStore
 	const _onChange = () => {
@@ -47,7 +53,6 @@ registerControl({type: 'dt', $Widget: PropControlDt2});
 
 /**
  * See Dt.java - this control bundles two inputs (numeric for count, drop-down for unit) into a time-duration editor.
-
  * @param {PropControlParams} p 
  */
 function PropControlDt(p) {
