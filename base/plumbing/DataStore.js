@@ -460,14 +460,17 @@ class Store {
 			modifyPage(null, newParams);
 		}
 
+		if (path[0] === 'data' && oldVal) {
+			console.warn("Modifying published property?? Won't register changes or save correctly!", oldVal); // let's not add a whole lot of logic for tracking changes to values that shouldn't be changed
+		}
+
 		// Do the set!
 		setObjectValueByPath(this.appstate, path, value);
 
 		// HACK: update a data value => mark it as modified
 		// ...but not for setting the whole-object (path.length=3)
 		// // (off?) ...or for value=null ??why? It's half likely that won't save, but why ignore it here??
-		if (path[0] === 'data') console.warn("Modifying published property?? Won't register changes or save correctly!"); // let's not add a whole lot of logic for tracking changes to values that shouldn't be changed
-		else if (path[0] === 'draft' && path.length > 3)
+		if (path[0] === 'draft' && path.length > 3)
 		{
 			// chop path down to [data, type, id]
 			const itemPath = path.slice(0, 3);
@@ -694,11 +697,12 @@ class Store {
 			options = {};
 		}
 		if (cachePeriod) {
-			options.cachePeriod = cachePeriod; 
+			options.cachePeriod = cachePeriod;
 		}
 		// end backwards compatability
 		assert(path, "DataStore.js - missing input",path);
 
+		
 		// in the store?
 		let item = this.getValue(path);
 		if (item!==null && item!==undefined) {
@@ -862,18 +866,29 @@ class Store {
 	}
 
 	/**
-	 * Recursively resolve any DataItems in an object
+	 * Recursively resolve any DataItems in an object.
 	 * Also performs a free deep copy
-	 * @param {*} obj 
+	 * @param {*} obj Object to search for DataItems
+	 * @param {KStatus} status 
+	 * @param {String[]?} path if status is unknown, can attempt to derive one from path
 	 */
-	deepResolve (obj, status, path) {
+	deepResolve ({obj, status, path}) {
 		assert(path || status, "DataStore.deepResolve no path or status??", path, status);
 		if (!status) {
+			// get status from path - and check for conflicts
+			let s = [];
 			path.forEach(p => {
-				if (['data', 'draft', ...KStatus.values].includes(p)) {
-					if (status) console.warn("Conflicting ")
-				}
+				if (['data', 'draft', ...KStatus.values].includes(p)) s.push(p);
 			});
+			if (!s.length) {
+				console.warn("Resolve abandoned: no status", status, path);
+				return;
+			}
+			if (s.length > 1) {
+				console.warn("Resolve abandoned: conflicting status from path!", s, path);
+				return;
+			}
+			status = s[0];
 		}
 		if (!obj) return obj;
 		const id = getId(obj);
@@ -885,7 +900,7 @@ class Store {
 		// We're not a DataItem... at this level, but maybe deeper!
 		// Deep search array, while preserving array structure
 		if (_.isArray(obj)) {
-			const dataObj = obj.map(item => this.deepResolve(item, status));
+			const dataObj = obj.map(item => this.deepResolve({obj:item, status}));
 			return dataObj;
 		}
 		// Deep search object and deep copy
@@ -893,7 +908,7 @@ class Store {
 		if (keys.length) {
 			const dataObj = {}; // We'll append to a fresh copy, meaning we're doing a deep clone too for no extra cost
 			keys.forEach(key => {
-				dataObj[key] = this.deepResolve(obj[key], status);
+				dataObj[key] = this.deepResolve({obj:obj[key], status});
 			});
 			return dataObj;
 		}
