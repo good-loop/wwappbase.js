@@ -238,9 +238,6 @@ export const dayEndTZ = (date = new Date()) => {
  * @returns 
  */
 export const newDateTZ = (isoDate:string): Date => {
-	// let d = newDateUTC(isoDate);
-	// let offset = getTimeZoneOffset(getTimeZone(), d);
-	// d.setMinutes(-offset);
 	return dayjs.tz(isoDate, getTimeZone()).toDate();
 };
 /**
@@ -268,7 +265,13 @@ export const getPeriodQuarter = (date : Date) => {
 	let start = newDateTZ(year+"-"+oh(month)+"-01");
 	const end = new Date(start);
 	end.setMonth(end.getMonth() + 3);
-	return { start, end, name: `${start.getFullYear()}-Q${qIndex + 1}` };
+
+	// Calcuate correct year
+	let quarterYear = end.getFullYear()
+	if (start.getFullYear() != end.getFullYear()) {
+		if (end.getMonth() === 0) quarterYear = start.getFullYear();
+	}
+	return { start, end, name: `${quarterYear}-Q${qIndex + 1}` };
 };
 
 /**
