@@ -224,13 +224,6 @@ export const dayEndTZ = (date = new Date()) => {
 	nextDay.setDate(nextDay.getDate()+1);
 	return dayStartTZ(nextDay);
 };
-	// let d = new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()); // local timezone midnight
-	// if (localTimeZone===_timezone) return d;
-	// let offset1 = getTimeZoneOffset(getTimeZone(), date);
-	// let offset2 = getTimeZoneOffset(localTimeZone, date);
-	// let offset = offset1 + offset2;
-	// return new Date(d.getTime() + offset * 60000);
-
 
 /**
  * E.g. midnight on 21st Jan, but in New York
@@ -240,6 +233,7 @@ export const dayEndTZ = (date = new Date()) => {
 export const newDateTZ = (isoDate:string): Date => {
 	return dayjs.tz(isoDate, getTimeZone()).toDate();
 };
+
 /**
  * So (unlike Java) `new Date(year,month,day)` and new Date(isodate) is local-time
  * @param isoDate e.g. 2023-01-21
