@@ -6,7 +6,7 @@ import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataStore from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
-import { getDataItem, getDataList } from '../plumbing/Crud';
+import { getDataItem } from '../plumbing/Crud';
 import NGO from './NGO';
 import KStatus from './KStatus';
 import { getDataLogData, pivotDataLogData } from '../plumbing/DataLog';
@@ -15,21 +15,24 @@ import ServerIO from '../plumbing/ServerIOBase';
 import Branding from './Branding';
 
 /**
- * See Agency.java
+ * An extension of the branding class, contains impact page specific settings
  */
-class Agency extends DataClass {
+class ImpactSettings extends Branding {
+	
+    /**
+     * @type {Boolean} show ads that haven't served on this page
+     */
+	showNonServedAds;
+
 }
-DataClass.register(Agency, "Agency"); 
-export default Agency;
+
+DataClass.register(ImpactSettings, "ImpactSettings"); 
 
 /**
  * 
- * @param {!Agency} agencyId
- * @param {?KStatus} status 
- * @returns {PromiseValue} List<Agency>
+ * @param {DataClass} item 
+ * @returns {?ImpactSettings} 
  */
-Agency.getChildren = (agencyId, status=KStatus.PUBLISHED) => {
-    let q = SearchQuery.setProp(null, "parentId", agencyId);
-    return getDataList({type:"Agency",status,q,save:true});
-}
+ImpactSettings.get = item => item && item.impactSettings;
 
+export default ImpactSettings;

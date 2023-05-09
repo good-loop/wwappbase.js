@@ -47,7 +47,7 @@ Advertiser.masterCampaign = (vertiser) => {
  */
 Advertiser.getChildren = (vertiserId, status=KStatus.PUBLISHED) => {
     let q = SearchQuery.setProp(null, "parentId", vertiserId).query;
-    return getDataList({type:"Advertiser",status,q});
+    return getDataList({type:"Advertiser",status,q, save:true});
 }
 
 /**
@@ -57,7 +57,7 @@ Advertiser.getChildren = (vertiserId, status=KStatus.PUBLISHED) => {
  */
 Advertiser.getManyChildren = (vertiserIds, status=KStatus.PUBLISHED) => {
     let sqSubBrands = SearchQuery.setPropOr(new SearchQuery(), "parentId", vertiserIds).query;
-	return getDataList({type: C.TYPES.Advertiser, status, q:sqSubBrands});
+	return getDataList({type: C.TYPES.Advertiser, status, q:sqSubBrands, save:true});
 }
 
 Advertiser.getImpactDebits = ({vertiser, status=KStatus.PUBLISHED}) => {
@@ -65,17 +65,19 @@ Advertiser.getImpactDebits = ({vertiser, status=KStatus.PUBLISHED}) => {
     let masterCampaign = await Campaign.fetchMasterCampaign(vertiser, status)?.promise;
     return masterCampaign ? await Campaign.getImpactDebits({campaign:masterCampaign, status}).promise : new List();*/
 
-    return DataStore.fetch(getListPath({type:"ImpactDebit",status,q:vertiser.id+":getImpactDebits"}), async () => {
-		let q;
-        // What if it's a master brand, e.g. Nestle > Nespresso?
-        // The only way to know is to look for children
-        let pvListAdvertisers = Advertiser.getChildren(vertiser.id);
-        let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
-        let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
-        ids = ids.concat(vertiser.id); // include the top-level brand
-        q = SearchQuery.setPropOr(null, "vertiser", ids);
-		let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
-		let v = await pvListImpDs.promise;
-		return v;
-	});
+    return new PromiseValue(getImpactDebits2(vertiser, status));
+}
+
+const getImpactDebits2 = async (vertiser, status) => {
+    let q;
+    // What if it's a master brand, e.g. Nestle > Nespresso?
+    // The only way to know is to look for children
+    let pvListAdvertisers = Advertiser.getChildren(vertiser.id);
+    let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
+    let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
+    ids = ids.concat(vertiser.id); // include the top-level brand
+    q = SearchQuery.setPropOr(null, "vertiser", ids);
+    let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
+    let v = await pvListImpDs.promise;
+    return v;
 }
