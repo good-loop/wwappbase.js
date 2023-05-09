@@ -17,11 +17,11 @@ import React, { useState, useRef } from 'react';
 
 import { assert, assMatch } from '../utils/assert';
 import _ from 'lodash';
-import Misc from './Misc';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import { asNum, space, stopEvent, encURI, asDate, isNumeric } from '../utils/miscutils';
+import { asNum, space, stopEvent, encURI, isNumeric } from '../utils/miscutils';
+import { dateStr, asDate } from '../utils/date-utils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType } from '../data/DataClass';
 import Tree from '../data/Tree';
@@ -36,8 +36,12 @@ const str = printer.str;
 class Column extends DataClass {
 	/** @type {?String|Function} Extract the column value from an item. If a string, this is the property name. */
 	accessor;
+	/** @type {?String|Function} (optional) Define a different extract for csv */
+	accessorCSV;	
 	/** @type {?Function} (value, column, item) -> string|jsx */
 	Cell;
+	/** @type {?boolean} set false to skip this column in the csv */
+	csv;
 	/** @type {?String} */
 	Header;
 	/** @type {?Boolean} */
@@ -58,12 +62,11 @@ class Column extends DataClass {
 	total;
 	/** @type {?Object|Function} custom css styling. If a function, it does (cellValue, item, column) -> css-style-object */
 	style;
-
 	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
 	ui;
-	/** @significantDigits {?integer} used used to specify significant digits for numbers */
+	/** @type {?number} used used to specify significant digits for numbers */
 	significantDigits;
-	/** @precision {?integer} used used to specify precision for numbers (digits after the decimal point) */
+	/** @type {?number} used used to specify precision for numbers (digits after the decimal point) */
 	precision;
 
 	/**
@@ -171,6 +174,12 @@ class TableSettings {
 	* @type {Item} */
 	topRow;
 
+	/** @type {?number} used used to specify significant digits for numbers */
+	significantDigits;
+
+	/** @type {?number} used used to specify precision for numbers (digits after the decimal point) */
+	precision;
+
 	// i=0; debug counter
 };
 
@@ -187,7 +196,9 @@ function SimpleTable(props) {
 		columns,
 		headerRender,
 		topRow,
-		bottomRow,		
+		bottomRow,
+		significantDigits,
+		precision,
 	} = props;
 
 	let [tableSettings, setTableSettings] = useState(new TableSettings());
@@ -319,8 +330,8 @@ function THead({ visibleColumns, tableSettings, headerRender, topRow, dataTree, 
  * @param {!TableSettings} params.tableSettings
  */
 const createCSVData = ({ visibleColumns, topRow, tableSettings, dataTree, bottomRow }) => {
-	// No UI buttons
-	visibleColumns = visibleColumns.filter(c => !c.ui);
+	// No UI buttons, no explicit csv:false
+	visibleColumns = visibleColumns.filter(c => !c.ui && c.csv !== false);
 	// build up an array view of the table
 	let dataArray = [];
 	// csv gets the text, never jsx from headerRender!
@@ -372,7 +383,7 @@ const createCSVData2_row = ({ visibleColumns, item }) => {
  */
 const createCSVData3_cell = ({ item, column }) => {
 	// See Cell = (
-	const v = getValue({ item, column });
+	const v = getValueCSV({ item, column });
 	return defaultCellRender(v, column);
 };
 
@@ -465,6 +476,13 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 			return false;
 		});
 	}
+
+	if (tableSettings.precision || tableSettings.significantDigits) {
+		visibleColumns = visibleColumns.map((val) => {
+			return {...val, "precision": tableSettings.precision, "significantDigits": tableSettings.significantDigits}
+		});
+	}
+
 	// NB maxRows is done later to support csv-download being all data
 	return { dataTree, visibleColumns };
 }; // ./filter
@@ -598,6 +616,17 @@ const getValue = ({ item, row, column }) => {
 	return v;
 };
 
+
+const getValueCSV = ({ item, row, column }) => {
+	if (!item) {
+		console.error("SimpleTable.jsx getValue: null item", column);
+		return undefined;
+	}
+	let accessor = column.accessorCSV || column.accessor || column;
+	let v = _.isFunction(accessor) ? accessor(item) : item[accessor];
+	return v;
+};
+
 /**
  * @param {Column} column
  * @returns {Function} item -> value for use in sorts and totals
@@ -652,16 +681,18 @@ const defaultCellRender = (v, column) => {
 	// by type?
 	if (column.type === 'date' && v) {
 		let d = asDate(v);
-		return Misc.dateStr(d);
+		return dateStr(d);
 	}
+
+	let significantDigits = 10;
+	let precision = 2;
+	if (column.precision) { precision = column.precision; }
+	if (column.significantDigits) { significantDigits = column.significantDigits; }
+
 	if (column.format) {
 		if (typeof column.format === 'function') {
 			return column.format(v);
 		}
-		let significantDigits = 2; // set to the defualt value that was previously hard coded
-		let precision = 2;
-		if (column.precision) { precision = column.precision; }
-		if (column.significantDigits) { significantDigits = column.significantDigits; }
 
 		if (CellFormat.ispercent(column.format)) {
 			// Use precision if supplied - else default to 2 sig figs
@@ -682,10 +713,9 @@ const defaultCellRender = (v, column) => {
 	// number or numeric string
 	let nv = asNum(v);
 	if (nv !== undefined && nv !== null && !Number.isNaN(nv)) {
-		// 1 decimal place
-		nv = Math.round(nv * 10) / 10;
+		nv = nv.toFixed(precision);
 		// commas
-		const sv = printer.prettyNumber(nv, 10);
+		const sv = printer.prettyNumber(nv, significantDigits);
 		return sv;
 	}
 	// e.g. Money has a to-string

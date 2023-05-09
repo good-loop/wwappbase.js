@@ -177,11 +177,14 @@ Money.CURRENCY = {
 	GBP: "£",
 	USD: "$",
 	AUD: "A$",
+	CAD: "C$",
 	EUR: "€",
 	MXN: "MX$",
+	NZD: "NZ$",
+	SGD: "S$",
+	TRY: "₺",
 	JPY: "¥",
-	CAD: "C$",
-	CNY: "¥", // Same symbol with Yen
+	CNY: "C¥", // Chinese Renminbi also sort of called the Yuan. Same symbol with Yen
 	TRY: "₺",
 	ZAR: "R", // Just a regular R.
 };

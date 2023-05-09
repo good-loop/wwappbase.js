@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
+import { space } from '../utils/miscutils';
 
 import { UploadProgress } from './propcontrols/PropControlUpload';
 
 /**
  * An upload widget that doesn't act as a URL input, it just sends the file to the endpoint and executes any provided callback.
  */
-function BlindUpload({endpoint, uploadParams, onUpload, label}) {
+function BlindUpload({endpoint, uploadParams, onUpload, label, className, ...props}) {
 	const [uploading, setUploading] = useState(false);
 
 	// When file picked/dropped, upload to the media cluster
@@ -35,7 +36,7 @@ function BlindUpload({endpoint, uploadParams, onUpload, label}) {
 	const { getRootProps, getInputProps } = useDropzone({accept: null, onDrop, disabled: false});
 
 	return (
-		<div className="DropZone" {...getRootProps()}>
+		<div className={space('DropZone', className)} {...props} {...getRootProps()} >
 			<input {...getInputProps()} />
 			<small>{label}</small>
 			{uploading ? <UploadProgress {...uploading} /> : null}

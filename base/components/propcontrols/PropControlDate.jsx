@@ -1,34 +1,69 @@
 import React, { useEffect, useState } from 'react';
 import { Input, InputGroup } from 'reactstrap';
-import { asDate, is } from '../../utils/miscutils';
-import Misc from '../Misc';
+import { is, stopEvent } from '../../utils/miscutils';
+import { asDate, dayEndTZ, isoDate, isoDateTZ } from '../../utils/date-utils';
 
 import PropControl, { fakeEvent, FormControl, registerControl } from '../PropControl';
+import { dayStartTZ } from '../../utils/date-utils';
+import { newDateTZ } from '../../utils/date-utils';
 
 /**
- * Note: `date` vs `datetime-local`
+ * This is for dates only. It is timezone aware. Note: `date` vs `datetime-local`
  * See https://developer.mozilla.org/en-US/docs/Web/HTML/Element/input/datetime-local
  * 
  * @param {Object} p 
+ * @param {string} p.time start|end|none start/end of day, or "none" for no-time (date part only, timezone logic off)
+ * NB: we like sending full timestamps for clarity around timezone issues
  * @returns 
  */
-function PropControlDate2({ prop, storeValue, rawValue, onChange, ...otherStuff }) {
+function PropControlDate2({ path, prop, type, storeValue, rawValue, setRawValue, value, onChange, saveFn, set, time, min, max, ...otherStuff }) {
 	// Roll back to native editor on 27/04/2022
-	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
+	// The bug that caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
+
 	if ( ! is(rawValue) && storeValue) {
-		rawValue = Misc.isoDate(storeValue);
+		rawValue = isoDateTZ(storeValue);
 	}
 
-	// Strip out the time part!
-	// TODO support datetime-local
+	// Strip out the time part
 	if (rawValue && rawValue.includes("T")) {
-		rawValue = rawValue.substr(0, rawValue.indexOf("T"));
+		try {
+			rawValue = isoDateTZ(new Date(rawValue));
+		} catch(err) {
+			console.warn(err); // rawValue is allowed to be bogus in principle, though that shouldnt happen here since it comes from a native date widget
+		}
+	}
+	// NB: ignore "value" if it has been sent through -- if it has a time-part the widget would show blank. rawValue is what we use.
+
+	// HACK end day = start next day, so display day-1 in the widget
+	if (rawValue && "end"===time) {
+		let d = new Date(rawValue);
+		d.setDate(d.getDate() - 1);
+		rawValue = isoDate(d);
 	}
 
-	return (<div>
-		<FormControl type="date" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
-	</div>);
+	// replace the default onChange to use full-iso-date-time (rather than just the date part). timezone aware
+	const onChangeDate = e => {
+		stopEvent(e);
+		setRawValue(e.target.value);
+		let mv = null;
+		if (e.target.value) {
+			if ("none" === time) {
+				mv = e.target.value; // No time wanted? value should be yyyy-mm-dd already, so no need to mess around with timezone
+			} else {
+				let date = newDateTZ(e.target.value);				
+				date = "end"===time? dayEndTZ(date) : dayStartTZ(date); // start/end of day			
+				mv = date.toISOString();
+			}
+		}
+		set(mv);
+		if (saveFn) saveFn({ event: e, path, prop, value: mv });		
+	};
+
+	let minDate = min? isoDateTZ(min) : undefined;
+	let maxDate = max? isoDateTZ(max) : undefined;
+
+	return <FormControl type="date" name={prop} value={rawValue} onChange={onChangeDate} min={minDate} max={maxDate} {...otherStuff} />;
 }
 
 
@@ -39,7 +74,7 @@ function PropControlDate2({ prop, storeValue, rawValue, onChange, ...otherStuff 
  * @param {Object} p 
  * @returns 
  */
-function PropControlDateTime2({ prop, type, storeValue, rawValue, onChange, ...otherStuff }) {
+function PropControlDateTime2({ prop, type, storeValue, rawValue, onChange, set, ...otherStuff }) {
 	// Roll back to native editor on 27/04/2022
 	// The bug caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
@@ -52,34 +87,6 @@ function PropControlDateTime2({ prop, type, storeValue, rawValue, onChange, ...o
 	</div>);
 }
 
-
-// function PropControlDateOld({ prop, storeValue, rawValue, onChange, ...otherStuff }) {
-// 	// NB dates that don't fit the mold yyyy-MM-dd get ignored by the native date editor. But we stopped using that.
-// 	// NB: parsing incomplete dates causes NaNs
-// 	let datePreview = null;
-// 	if (!is(rawValue) && storeValue) {
-// 		rawValue = Misc.isoDate(storeValue);
-// 	}
-// 	if (rawValue) {
-// 		try {
-// 			let date = new Date(rawValue);
-// 			// use local settings??
-// 			datePreview = date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
-// 		} catch (er) {
-// 			// bad date
-// 			datePreview = 'Invalid date';
-// 		}
-// 	}
-
-// 	// let's just use a text entry box -- c.f. bugs reported https://github.com/winterstein/sogive-app/issues/71 & 72
-// 	// Encourage ISO8601 format
-// 	if (!otherStuff.placeholder) otherStuff.placeholder = 'yyyy-mm-dd, e.g. today is ' + Misc.isoDate(new Date());
-// 	return (<div>
-// 		<FormControl type="text" name={prop} value={rawValue} onChange={onChange} {...otherStuff} />
-// 		<div className="pull-right"><i>{datePreview}</i></div>
-// 		<div className="clearfix" />
-// 	</div>);
-// }
 
 /** TODO refactor this Default validator for date values */
 const dateValidator = (val, rawValue) => {

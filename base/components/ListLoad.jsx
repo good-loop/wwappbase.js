@@ -54,7 +54,7 @@ import Roles from '../Roles';
  * @param {?Function} p.ListItem JSX if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item.   
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
- * 	Input props: {type, servlet, navpage, item, sort}
+ * 	Input props: {type, servlet, navpage, item, sort, items, nameFn, onClick}
  * @param {?Function} p.nameFn passed to ListItem, to have custom name extraction
  * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which don't nest).* 
  * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
@@ -85,7 +85,8 @@ function ListLoad({ type, status, servlet, navpage,
 	itemClassName,
 	transformFn,
 	list,
-	ListItem=DefaultListItem, nameFn,
+	ListItem=DefaultListItem, 
+	nameFn,
 	hasCsv, csvColumns, hideCsvColumns,
 	noResults,
 	notALink,
@@ -167,6 +168,15 @@ function ListLoad({ type, status, servlet, navpage,
 		// filtered out locally - reduce the total
 		total = items.length;
 	}
+	
+	// HACK: an exact id match comes first (this is important for PropControlDataItem, and arguably useful elsewhere)
+	if (rawFilter) {
+		const exactMatch = items.find(item => getId(item)===rawFilter);
+		if (exactMatch) {
+			items = items.filter(item => item !== exactMatch);
+			items.unshift(exactMatch);
+		}
+	}
 
 	// NB: you can get truncated lists with pageSize but no pageSelectID (e.g. see PropControlDataItem)
 
@@ -219,6 +229,7 @@ function ListLoad({ type, status, servlet, navpage,
 					navpage={navpage}
 					item={item}
 					sort={DataStore.getValue(['misc', 'sort'])}
+					items={allItems} /* dont paginate */
 					nameFn={nameFn}
 					onClick={() => onClickItem(item)}
 				/>

@@ -6,7 +6,7 @@ import md5 from 'md5';
 import _ from 'lodash';
 
 import { assert, assMatch } from '../utils/assert';
-import { asDate, copyTextToClipboard, getLogo, isoDate, space, stopEvent, str } from '../utils/miscutils';
+import {copyTextToClipboard, getLogo, space, stopEvent, str } from '../utils/miscutils';
 
 import JSend from '../data/JSend';
 
@@ -22,7 +22,7 @@ import ErrAlert from './ErrAlert';
 import XId from '../data/XId';
 import Roles from '../Roles';
 import Icon from './Icon';
-
+import { oh, isoDate, MONTHS, asDate, shortMonths } from '../utils/date-utils';
 
 const Misc = {};
 
@@ -41,7 +41,7 @@ Misc.normalise = s => {
 
 // Pulled out so we can override it with a site-specific graphic
 Misc.spinnerSvg = (
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+	<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 100 100">
 		<g style={{stroke: 'none'}}>
 				<path style={{fill: '#f6ecd1'}} d="M 50 0 a 50 50 0 0 0 -50 50 L 10 50 a 40 40 0 0 1 40 -40 Z" />
 				<path style={{fill: '#507e88'}} d="M 0 50 a 50 50 0 0 0 50 50 L 50 90 a 40 40 0 0 1 -40 -40 Z" />
@@ -310,20 +310,6 @@ Misc.RelativeDate = ({date, ...rest}) => {
 	return <span title={absoluteDate} {...rest}>{count} {counter} {relation}</span>;
 };
 
-/**
- * 0 = Sunday
- */
-export const WEEKDAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-const shortWeekdays = WEEKDAYS.map(weekday => weekday.substr(0, 3));
-export const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-const shortMonths = MONTHS.map(month => month.substr(0, 3));
-
-/**
- * Pad under 10 with "0"
- * @param {Number} n 
- * @returns {String} e.g. "03"
- */
-export const oh = (n) => n<10? '0'+n : n;
 
 Misc.LongDate = ({date, noWeekday}) => {
 	if (!date) return null;
@@ -399,21 +385,12 @@ Misc.DateDuration = ({startDate, endDate, invisOnEmpty}) => {
 	return <span>{durationString}</span>
 }
 
-/**
- * @deprecated use dateTimeTag
- * Human-readable, unambiguous date+time string which doesn't depend on toLocaleString support
- * ??wrap in <time>??
- */
-Misc.dateTimeString = (d) => (
-	`${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()} ${oh(d.getHours())}:${oh(d.getMinutes())}`
-);
 
 /**
  * Human-readable, unambiguous date+time string which doesn't depend on toLocaleString support
  */
 Misc.dateTimeTag = (d) => d?
-	<time datetime={d.toISOString()}>{d.getDate()} {shortMonths[d.getMonth()]} {d.getFullYear()} {oh(d.getHours())}:{oh(d.getMinutes())}</time>
-	: null;
+	<time datetime={d.toISOString()}>{dateTimeString(d)}</time> : null;
 
 /**
  * Human-readable, unambiguous date string which doesn't depend on toLocaleString support
@@ -424,8 +401,6 @@ Misc.DateTag = ({date}) => {
 	date = asDate(date);	
 	return <time dateTime={isoDate(date)}>{date.getDate()} {shortMonths[date.getMonth()]} {date.getFullYear()}</time>;
 };
-
-Misc.dateStr = d => `${d.getDate()} ${shortMonths[d.getMonth()]} ${d.getFullYear()}`;
 
 Misc.AvatarImg = ({peep, ...props}) => {
 	if ( ! peep) return null;
@@ -448,13 +423,6 @@ Misc.AvatarImg = ({peep, ...props}) => {
 
 	return <img className={`AvatarImg img-thumbnail ${className}`} alt={alt} src={img} {...rest} />;
 };
-
-
-/**
- * @param {?Date|String} d
- * @return {?String} iso format (date only, no time-of-day part)
- */
-Misc.isoDate = (d) => d? asDate(d).toISOString().replace(/T.+/, '') : null;
 
 
 /**

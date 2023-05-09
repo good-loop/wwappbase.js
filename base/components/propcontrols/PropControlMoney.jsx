@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { registerControl, FormControl } from '../PropControl';
+import PropControl, { registerControl, FormControl } from '../PropControl';
 import { DropdownItem, DropdownMenu, DropdownToggle, InputGroup, InputGroupAddon, UncontrolledButtonDropdown } from 'reactstrap';
 import { is } from '../../utils/miscutils';
 import Money from '../../data/Money';
@@ -11,7 +11,7 @@ import { assert } from '../../utils/assert';
  * @param currency {?String}
  * @param name {?String} (optional) Use this to set a name for this money, if it has one.
  */
-function PropControlMoney({ prop, storeValue, rawValue, setRawValue, set, path, proppath,
+function PropControlMoney2({ prop, storeValue, rawValue, setRawValue, set, path, proppath,
 	bg, saveFn, modelValueFromInput, onChange, append, ...otherStuff }) {
 	// special case, as this is an object.
 	// Which stores its value in two ways, straight and as a x100 no-floats format for the backend
@@ -113,9 +113,19 @@ const moneyValidator = ({value, props}) => {
 
 registerControl({
 	type: 'Money',
-	$Widget: PropControlMoney,
+	$Widget: PropControlMoney2,
 	validator: moneyValidator,
 	rawToStore: rawToStoreMoney
 });
+
+/**
+ * See also: Money.js
+ * @param {Object} p
+ * @param {?String} p.currency 
+ * @param {?String} p.name (optional) Use this to set a name for this money, if it has one.
+ */
+function PropControlMoney(p) {
+	return <PropControl type="Money" {...p} />
+}
 
 export default PropControlMoney;

@@ -29,7 +29,7 @@ const PropControlToggle = ({ path, prop, value, saveFn, left = {}, right = {}}) 
 	// Try to fix bad values on first render
 	useEffect(() => {
 		if (value === left.value || value === right.value) return; // Type & value good!
-		console.error("PropControlToggle - value not one of specified options!", prop, value, left.value, right.value);
+		console.log("PropControlToggle - value not one of specified options!", prop, "value:", value, left.value, right.value);
 		// Everything else we can do relies on toString
 		if (!value?.toString) return;
 		let vString = value.toString().toLowerCase();
