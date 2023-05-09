@@ -325,6 +325,23 @@ ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], sta
 };
 
 
+/** 
+ * @param q {String} e.g. pub:myblog cid:mycharity campaign:mycampaign
+ * @returns Promise {
+ * 	by_cid: {String: Money}
+ * 	total: {Money},
+ * 	stats: {}
+ * }
+ * @param {?String} name Just for debugging - makes it easy to spot in the network tab 
+ */
+ServerIO.getDonationsData = ({q, start, end, name}) => {
+	let url = ServerIO.PORTAL_ENDPOINT+'/datafn/donations';
+	const params = {
+		data: {name, q, start, end}
+	};
+	return ServerIO.load(url, params);
+};
+
 /**
  * Contains some hacks: 
  * NGO (charity) -> SoGive (except for SoGive)
@@ -511,7 +528,7 @@ ServerIO.load = function(url, params) {
 		})
 		// on fail (inc a code-200-but-really-failed thrown above)
 		.catch(response => {
-			console.error('fail',url,params,response,new Error()); // add error so we can get a stacktrace to where the call came from
+			console.error('fail',url,params,response);
 			// error message
 			let text = response.status===404? 
 				"404: Sadly that content could not be found."

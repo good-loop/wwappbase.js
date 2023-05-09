@@ -30,6 +30,6 @@ export default Agency;
  */
 Agency.getChildren = (agencyId, status=KStatus.PUBLISHED) => {
     let q = SearchQuery.setProp(null, "parentId", agencyId);
-    return getDataList({type:"Agency",status,q,save:true});
+    return getDataList({type:"Agency",status,q});
 }
 

@@ -21,8 +21,7 @@ import Icon from './Icon';
  * @param {any} error - If set, colour the card red
  * @param {?string} warning - If set, colour the card yellow
  * @param {?String} className - Added to the BS panel classes
- * @param {?Boolean} collapse - If true, the children are not rendered. If used with uncontrolled, sets starting collapsed state.
- * @param {?Boolean} uncontrolled - Handle open/closed state internally
+ * @param {?Boolean} collapse - If true, the children are not rendered.
  */
 
 class Card extends React.Component {
@@ -35,29 +34,14 @@ class Card extends React.Component {
 		if (window.onerror) window.onerror("Card caught error", null, null, null, error);
 	}
 
-	constructor(props) {
-		super(props);
-		this.state = {
-			stateCollapsed: props?.collapse
-		}
-	}
-
 	render() {
 		// ??HACK expose this card to its innards via a global
 		// Card.current = this;
 
-		let { title, glyph, icon, logo, children, className, style, onHeaderClick, collapse, warning, error, uncontrolled } = this.props;
+		let { title, glyph, icon, logo, children, className, style, onHeaderClick, collapse, warning, error } = this.props;
 		// no body = no card. Use case: so card guts (where the business logic often is) can choose to hide the card.
 		// Note: null should be returned from the top-level. If the null is returned from a nested tag, it may not be null yet, leading to the card showing.
 		if (!children) return null;
-
-		const setStateCollapsed = (c) => {
-			this.setState({stateCollapsed: c});
-		}
-
-		const {stateCollapsed} = this.state;
-
-		const shouldCollapse = uncontrolled ? stateCollapsed : collapse;
 
 		const color = error ? 'danger' : warning ? 'warning' : null;
 		
@@ -66,7 +50,7 @@ class Card extends React.Component {
 
 		// Header modifiers
 		let headerClasses = [];
-		if (onHeaderClick || uncontrolled) headerClasses.push('btn btn-link');
+		if (onHeaderClick) headerClasses.push('btn btn-link');
 		if (color) {
 			headerClasses.push(`bg-${color}`);
 			headerClasses.push(error ? 'text-white' : warning ? 'text-dark' : null)
@@ -80,27 +64,22 @@ class Card extends React.Component {
 		) : null;
 
 		// Clickable header takes a caret to signify it's clickable
-		const caret = onHeaderClick || uncontrolled ? (
-			<Icon title={shouldCollapse?"expand":"collapse"} className="pull-right" name={`caret${shouldCollapse ? 'down' : 'up'}`} />
+		const caret = onHeaderClick ? (
+			<Icon title={collapse?"expand":"collapse"} className="pull-right" name={`caret${collapse ? 'down' : 'up'}`} />
 		) : null;
 
 		let showHeader = title || glyph || icon || logo || alert || caret;
 
-		const fullHeaderClick = (e) => {
-			if (uncontrolled) setStateCollapsed(!stateCollapsed);
-			if (onHeaderClick) onHeaderClick();
-		}
-
 		return (
 			<BSCard color={color} outline className={space(className, 'mb-3')} style={style} >
-				{showHeader && <CardHeader className={space(headerClasses)} onClick={fullHeaderClick} title={titleText}>
+				{showHeader && <CardHeader className={space(headerClasses)} onClick={onHeaderClick} title={titleText}>
 					{(glyph || icon) && <Icon glyph={glyph} name={icon} className="mr-2"/>}
 					{title && <span className="mr-2">{title}</span>}
 					{logo && <img className="logo-sm rounded" src={logo} />}
 					{alert}
 					{caret}
 				</CardHeader>}
-				{shouldCollapse ? null : <CardBody>{children}</CardBody>}
+				{collapse ? null : <CardBody>{children}</CardBody>}
 			</BSCard>
 		);
 	};
