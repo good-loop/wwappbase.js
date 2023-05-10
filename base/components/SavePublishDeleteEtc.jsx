@@ -195,19 +195,15 @@ function SavePublishDeleteEtc({
 
 	// If targetPaths is true, use the published item as a clean comparison object
 	let previous = targetPaths ? pubv : null;
-	// If "sendDiff" is true, this will store an unchanged-from-server snapshot of the item
-	// Any time the target object status becomes "exists" and "unchanged from server", take a snapshot
-	if (sendDiff && !previous) {
-		// NB: If useState() were used to hold `previous`, there is a subtle bug: if the editor is changed in between debounced saves, then previous will reset to null.
-		const prevPath = ['widget', 'SavePublishDeleteEtc', type, id];
-		previous = DataStore.getValue(prevPath);
-		useEffect(() => {
-			if (item && !isdirty) {
-				// console.log("set previous")
-				DataStore.setValue(prevPath, _.cloneDeep(item));
-			}
-		}, [item, isdirty]);
-	}
+
+	const prevPath = ['widget', 'SavePublishDeleteEtc', type, id];
+	if (!previous) previous = DataStore.getValue(prevPath);
+	useEffect(() => {
+		if (item && !isdirty) {
+			// console.log("set previous")
+			DataStore.setValue(prevPath, _.cloneDeep(item));
+		}
+	}, [item, isdirty]);
 
 	// Restrict item changes to targeted paths
 	if (targetPaths && targetPaths.length && item && pubv) {
