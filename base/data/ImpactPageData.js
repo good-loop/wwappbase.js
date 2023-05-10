@@ -14,6 +14,7 @@ import Advertiser from './Advertiser';
 import Advert from './Advert';
 import Money from './Money';
 import { assert } from '../utils/assert';
+import ActionMan from '../plumbing/ActionManBase';
 
 /* ------- Data Functions --------- */
 
