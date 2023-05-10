@@ -17,6 +17,7 @@ import Icon from './Icon';
 import { goto, modifyPage } from '../plumbing/glrouter';
 import Login from '../youagain';
 import { Help } from './PropControl';
+import { getObjectValueByPath, setObjectValueByPath } from '../utils/miscutils';
 
 /**
  * 
