@@ -6,7 +6,7 @@ import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
 import DataStore from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
-import { getDataItem } from '../plumbing/Crud';
+import { getDataItem, getDataList } from '../plumbing/Crud';
 import NGO from './NGO';
 import KStatus from './KStatus';
 import { getDataLogData, pivotDataLogData } from '../plumbing/DataLog';
@@ -190,7 +190,7 @@ Advert.fetchForAdvertisers = ({vertiserIds, status=KStatus.PUBLISHED, q}) => {
 const fetchForAdvertisers2 = async (vertiserIds, status, q) => {
 	let sq = new SearchQuery(q);
 	sq = SearchQuery.setPropOr(sq, "vertiser", vertiserIds);
-	let pv = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
+	let pv = getDataList({type: C.TYPES.Advert, status, q:sq.query, save:true});
 	return await pv.promise;
 }
 
@@ -204,7 +204,7 @@ Advert.fetchForCampaigns = ({campaignIds, status, q}) => {
 const fetchForCampaigns2 = async (campaignIds, status, q) => {
 	let sq = new SearchQuery(q);
 	sq = SearchQuery.setPropOr(sq, "campaign", campaignIds);
-	let pv = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
+	let pv = getDataList({type: C.TYPES.Advert, status, q:sq.query, save:true});
 	return await pv.promise;
 };
 

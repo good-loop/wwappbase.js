@@ -76,7 +76,7 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 
 	// call the server
 	const p = SIO_crud(type, item, previous, action, {swallow})
-		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage}) )
+		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage, diffSave:!!previous}) )
 		.catch(err => {
 			// bleurgh
 			console.warn(err);
@@ -184,13 +184,17 @@ const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
  * @param {Object} p 
  * @returns {?DataClass} Item null on error
  */
-const crud2_processResponse = ({res, item, itemBefore, id, action, type, localStorage}) => {
+const crud2_processResponse = ({res, item, itemBefore, id, action, type, localStorage, diffSave}) => {
 	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
 	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 	const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
 	
 	// Update DS with the returned item, but only if the crud action went OK
 	const freshItem = JSend.success(res) && JSend.data(res);
+
+	// ...copy it to allow for edits ??by whom?
+	let draftItem = _.cloneDeep(freshItem);
+
 	if (freshItem) {
 		// Preserve very recent local edits (which we haven't yet told the server about)
 		let recentLocalDiffs = jsonpatch.compare(itemBefore, item);
@@ -199,13 +203,12 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 			applyPatch(freshItem, recentLocalDiffs, item, itemBefore);
 		}
 
-		if (action==='publish') {				
-			// set local published data				
-			DataStore.setValue(pubpath, freshItem);				
-			// update the draft version on a publish or a save
-			// ...copy it to allow for edits ??by whom?
-			let draftItem = _.cloneDeep(freshItem);
-			DataStore.setValue(draftpath, draftItem);
+		if (action==='publish') {
+			// set local published data
+			DataStore.setValue(pubpath, freshItem);
+			// update the draft version on a publish or a save - but only if not done by diff!
+			// if it's done by diff, the returned published obj will not contain other draft edits and it will get locally overriden
+			if (!diffSave) DataStore.setValue(draftpath, draftItem);
 		}
 		if (action==='save') {	
 			// NB: the recent diff handling above should manage the latency issue around setting the draft item
@@ -353,7 +356,7 @@ ActionMan.unpublish = (type, id) => unpublish({type,id});
  * @param {?DataClass} p.item 
  * @returns PromiseValue(DataClass)
  */
-export const publish = ({type,id,item,swallow}) => {
+export const publish = ({type,id,item,previous,swallow}) => {
 	if ( ! type) type = getType(item);
 	if ( ! id) id = getId(item);
 	assMatch(type, String);
@@ -367,7 +370,7 @@ export const publish = ({type,id,item,swallow}) => {
 	// optimistic list mod
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
-	return crud({type, id, action: 'publish', item, swallow})
+	return crud({type, id, action: 'publish', item, previous, swallow})
 		.promise.catch(err => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
@@ -382,8 +385,8 @@ export const publish = ({type,id,item,swallow}) => {
  * @param {!string} id 
  * @param {?Item} item 
  */
-const publishEdits = (type, id, item) => {
-	return publish({type, id, item});
+const publishEdits = (type, id, item, previous) => {
+	return publish({type, id, item, previous});
 };
 ActionMan.publishEdits = publishEdits;
 
@@ -579,6 +582,7 @@ const SIO_crud = function(type, item, previous, action, params={}) {
 	// NB: load() includes handle messages
 	let id = getId(item);
 	let url = ServerIO.getUrlForItem({type, id, status});
+	console.log("crud", params);
 	return ServerIO.load(url, params);
 	// NB: our data processing is then done in crud2_processResponse()
 };
@@ -734,7 +738,8 @@ ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', 
 		url = ServerIO.APIBASE + url;
 	}
 	let params = {
-		data: {status, q, start, end, prefix, sort, size, ...other}
+		data: {status, q, start, end, prefix, sort, size, ...other},
+		method: "POST"
 	};	
 	// HACK: sogive? include unlisted charities (which sogive itself filters by default)
 	if (url.includes("sogive.org/charity")) {

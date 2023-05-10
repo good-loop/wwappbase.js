@@ -217,10 +217,15 @@ ServerIO.LGDATASPACE = 'gl';
 window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {
 	// NB: source & line num are not much use in a minified file
 	let msg = error? ""+error+"\n\n"+error.stack : ""+messageOrEvent;
-	$.ajax(ServerIO.LOGENDPOINT, {data: {
-		msg: window.location+' '+msg+' user-id: '+Login.getId(), // NB: browser type (user agent) will be sent as a header
-		type: "error"
-	}});
+	$.ajax({
+		url: ServerIO.LOGENDPOINT,
+		type: 'POST',
+		data: {
+		  msg: window.location + ' ' + msg + ' user-id: ' + Login.getId(), // NB: browser type (user agent) will be sent as a header
+		  type: 'error'
+		}
+	  });
+	  
 });
 // quiet asserts in production
 if (C.isProduction()) {

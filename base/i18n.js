@@ -439,14 +439,14 @@ I18N.prototype._uncanon2_pluralise = function(text, vars) {
 	}
 	// Plural forms: 
 	// Normal: +s, +es (eg potatoes, boxes), y->ies (eg parties), +en (e.g. oxen)
-	// See http://www.englisch-hilfen.de/en/grammar/plural.htm, or https://en.wikipedia.org/wiki/English_plurals for the full horror.
+	// See https://www.englisch-hilfen.de/en/grammar/plural.htm, or https://en.wikipedia.org/wiki/English_plurals for the full horror.
 	// We also cover some French, German (+e, +n) and Spanish.
 	// regex matches letter(es)	
 	if (isPlural===true) {
 		// Get the correction from the translation
 		text = text.replace(/(\w)\((s|es|en|e|n)\)/g, '$1$2');
 		// Inline complex form: e.g. "child (plural: children)" or "children (sing: child)"
-		// NB: The OED has pl, sing as abbreviations, c.f. http://public.oed.com/how-to-use-the-oed/abbreviations/
+		// NB: The OED has pl, sing as abbreviations, c.f. https://public.oed.com/how-to-use-the-oed/abbreviations/
 		text = text.replace(/(\w+)\s*\((plural|pl): ?(\w+)\)/g, '$3');
 		text = text.replace(/(\w+)\s*\((singular|sing): ?(\w+)\)/g, '$1');
 	} else if (isPlural===false) {

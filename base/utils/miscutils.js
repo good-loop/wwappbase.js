@@ -412,7 +412,7 @@ export const getDomain = (url) => {
  * @param {?string} url Optional, the string to be parsed, will default to window.location when not provided.
  * @param {?Boolean} lenient If true, if a decoding error is hit, it is swallowed and the raw string is used.
  * Use-case: for parsing urls that may contain adtech macros.
- * @returns {Object} */
+ * @returns {any} */
 // NB: new UrlSearchParams(searchFragment) can now do much of this
 export const getUrlVars = (url, lenient) => {
 	// Future thought: Could this be replaced with location.search??
@@ -976,3 +976,59 @@ export const decodeButtons = (buttons) => {
 	return num.toString()
 	
 }
+
+/**
+ * Search an object for a value via an array path
+ * @param {Object} obj 
+ * @param {String[]} path 
+ */
+export const getObjectValueByPath = (obj, path) => {
+	assert(_.isObject(obj), "getObjectValueByPath obj not object?? "+obj);
+	assert(_.isArray(path), "getObjectValueByPath path not array?? "+path);
+	let tip = obj;
+	for(let pi=0; pi < path.length; pi++) {
+		let pkey = path[pi];
+		assert(pkey || pkey===0, "getObjectValueByPath falsy is not allowed in path: "+path); // no falsy in a path - except that 0 is a valid key
+		let newTip = tip[pkey];
+		// Test for hard null -- falsy are valid values
+		if (newTip===null || newTip===undefined) return null;
+		tip = newTip;
+	}
+	return tip;
+};
+
+/**
+ * Set an object value via an array path
+ * @param {Object} obj 
+ * @param {String[]} path 
+ */
+export const setObjectValueByPath = (obj, path, value) => {
+	assert(_.isObject(obj), "setObjectValueByPath obj not object?? "+obj);
+	assert(_.isArray(path), "setObjectValueByPath path not array?? "+path);
+	let tip = obj;
+	for(let pi = 0; pi < path.length; pi++) {
+		let pkey = path[pi];
+		if (pi === path.length-1) {
+			// Set it!
+			tip[pkey] = value;
+			break;
+		}
+		assert(pkey || pkey === 0, `falsy in path ${path.join(' -> ')}`); // no falsy in a path - except that 0 is a valid key
+		let newTip = tip[pkey];
+		if (!newTip) {
+			if (value === null) {
+				// don't make path for null values
+				return value;
+			}
+			newTip = tip[pkey] = {};
+		}
+		tip = newTip;
+	}
+}
+
+/**
+ * Sort a data item alphabetically
+ * @param {*} item1 
+ * @param {*} item2 
+ */
+export const alphabetSort = (item1, item2) => (item1.name || item1.id).localeCompare(item2.name || item2.id);

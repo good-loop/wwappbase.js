@@ -16,7 +16,7 @@ import { newDateTZ } from '../../utils/date-utils';
  * NB: we like sending full timestamps for clarity around timezone issues
  * @returns 
  */
-function PropControlDate2({ prop, type, storeValue, rawValue, setRawValue, value, onChange, saveFn, set, time, ...otherStuff }) {
+function PropControlDate2({ path, prop, type, storeValue, rawValue, setRawValue, value, onChange, saveFn, set, time, min, max, ...otherStuff }) {
 	// Roll back to native editor on 27/04/2022
 	// The bug that caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
@@ -60,7 +60,10 @@ function PropControlDate2({ prop, type, storeValue, rawValue, setRawValue, value
 		if (saveFn) saveFn({ event: e, path, prop, value: mv });		
 	};
 
-	return <FormControl type="date" name={prop} value={rawValue} onChange={onChangeDate} {...otherStuff} />;
+	let minDate = min? isoDateTZ(min) : undefined;
+	let maxDate = max? isoDateTZ(max) : undefined;
+
+	return <FormControl type="date" name={prop} value={rawValue} onChange={onChangeDate} min={minDate} max={maxDate} {...otherStuff} />;
 }
 
 

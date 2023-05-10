@@ -66,7 +66,9 @@ import { assert } from '../../utils/assert';
  * @param {Object[]} p.options 
  * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
  */
-function PropControlCheckboxes({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, options, labels, tooltips, inline, fcolor, saveFn}) {
+function PropControlCheckboxes({rawValue, storeValue, setRawValue, modelValueFromInput, path, prop, proppath, type, 
+	options, labels, tooltips, inline, fcolor, saveFn, disabled}) 
+{
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
 
@@ -94,7 +96,7 @@ function PropControlCheckboxes({rawValue, storeValue, setRawValue, modelValueFro
 		if (saveFn) saveFn({ event: e, path, prop, value: newList2});		
 	};
 	const isChecked = x => listValue.includes(x);
-	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn, tooltipFn}} />;
+	return <Checkboxes {...{options, inline, prop, isChecked, onChange, labelFn, tooltipFn, disabled}} />;
 } // ./radio
 
 registerControl({type:'checkboxes', $Widget: PropControlCheckboxes});
@@ -104,9 +106,10 @@ registerControl({type:'checkboxArray', $Widget: PropControlCheckboxes}); // how 
  * 
  * @param {Object} p
  */
-const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn, tooltipFn}) => options.map(option => (
+const Checkboxes = ({options, inline, prop, isChecked, onChange, labelFn, tooltipFn, disabled}) => options.map(option => (
 	<FormGroup check inline={inline} key={option} title={tooltipFn && tooltipFn(option)}>
 		<Input type="checkbox" key={`option_${option}`}
+			disabled={disabled}
 			className="form-check-input"
 			name={prop} value={option}
 			checked={!!isChecked(option)}
