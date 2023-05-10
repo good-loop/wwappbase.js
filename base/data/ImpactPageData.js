@@ -39,7 +39,6 @@ export const fetchImpactBaseObjects = ({itemId, itemType, status, nocache}) => {
 
 
 const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
-
 	let pvCampaign, campaign;
 	let pvBrand, brand, brandId;
 	let pvMasterBrand, masterBrand;
