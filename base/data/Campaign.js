@@ -15,7 +15,8 @@ import Advert from './Advert';
 import Advertiser from './Advertiser';
 import Agency from './Agency';
 import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
-import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars, asDate } from '../utils/miscutils';
+import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars } from '../utils/miscutils';
+import { asDate } from '../utils/date-utils';
 import { getId } from './DataClass';
 import NGO from './NGO';
 import Money from './Money';
@@ -139,10 +140,7 @@ Campaign.fetchFor = (advert,status=KStatus.DRAFT) => {
  * @returns PromiseValue(Campaign)
  */
 Campaign.fetchForAdvertisers = (vertiserIds, status=KStatus.DRAFT) => {
-	let pv = DataStore.fetch(['misc','pvCampaignsForVertisers',status,'all',vertiserIds.join(",")], () => {
-		return fetchVertisers2(vertiserIds, status);
-	});
-	return pv;
+	return new PromiseValue(fetchVertisers2(vertiserIds, status));
 }
 
 const fetchVertisers2 = async (vertiserIds, status) => {
@@ -206,13 +204,15 @@ Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
 	// We have a couple of chained async calls. So we use an async method inside DataStore.fetch().	
 	// NB: tried using plain async/await -- this is awkward with React render methods as the fresh Promise objects are always un-resolved at the moment of return.
 	// NB: tried using a PromiseValue.pending() without fetch() -- again having fresh objects returned means they're un-resolved at that moment.
-	return DataStore.fetch(getListPath({type:"ImpactDebit",status,q:campaign.id+":getImpactDebits"}), async () => {
-		let q = SearchQuery.setProp(null, "campaign", campaign.id);			
-		let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
-		let v = await pvListImpDs.promise;
-		return v;
-	});
+	return new PromiseValue(getImpactDebits2(campaign, status));
 };
+
+const getImpactDebits2 = async (campaign, status) => {
+	let q = SearchQuery.setProp(null, "campaign", campaign.id);			
+	let pvListImpDs = getDataList({type:"ImpactDebit",status,q});
+	let v = await pvListImpDs.promise;
+	return v;
+}
 
 /**
  * 
@@ -349,7 +349,154 @@ Campaign.viewcount = ({campaign, status}) => {
 ////////////////////////////////////////////////////////////////////
 
 /**
->>>>>>> master
+<<<<<<<<< Temporary merge branch 1
+=========
+ * 
+ * @param {!Campaign} campaign 
+ * @returns {!Object} {type, id} a stub object for the master agency/advertiser, or {}. 
+ * NB: advertiser takes precedence, so you can usefully call this on a leaf campaign.
+ * NB: {} is to support `let {type, id} = Campaign.masterFor()` without an NPE
+ */
+Campaign.masterFor = campaign => {
+	Campaign.assIsa(campaign);
+	if (campaign.vertiser) return {type:C.TYPES.Advertiser, id:campaign.vertiser};
+	if (campaign.agencyId) return {type:C.TYPES.Agency, id:campaign.agencyId};
+	return {};
+};
+
+/**
+ * * HACK: access=public
+ * @param {Object} obj
+ * @param {!Campaign} obj.campaign 
+ * @param {?SearchQuery | string} obj.query
+ * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
+ */
+Campaign.pvSubCampaigns = ({campaign, query}) => {
+	Campaign.assIsa(campaign);
+	if ( ! campaign.master) {
+		return new PromiseValue(new List([campaign]));
+	}
+	// fetch leaf campaigns	
+	let {id, type} = Campaign.masterFor(campaign);
+	// campaigns for this advertiser / agency
+	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
+	// exclude this? No: some (poorly configured) master campaigns are also leaves
+	// sq = SearchQuery.and(sq, "-id:"+campaign.id); 	
+	const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
+	const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query, access}); 
+	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
+	return pvCampaigns;
+};
+
+
+/** 
+ * @deprecated
+ * This is the total unlocked across all adverts in this campaign. See also maxDntn.
+ * Warning: This will change as data loads!!
+ * @returns {?Money}
+ */
+ Campaign.dntn = (campaign, isSub) => {
+	if ( ! campaign) return null;
+	Campaign.assIsa(campaign);
+	if (campaign.dntn) {
+		// HACK realtime=true forces a realtime fetch
+		if ( ! getUrlVars().realtime) {
+			return campaign.dntn;
+		}
+	}
+	if ( ! campaign.master || isSub) {
+		// Ask the backend
+		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
+			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
+			{cachePeriod:300*1000});
+		let total = pvDntnData.value && pvDntnData.value.total;
+		return total;
+	}
+	// recurse
+	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
+	// TODO: make it so datalog reconciles with that, so we can do batched requests
+	let pvSubs = Campaign.pvSubCampaigns({campaign});
+	if ( ! pvSubs.value) {
+		return null;
+	}
+	let subs = List.hits(pvSubs.value);
+	let dntns = subs.map(sub => Campaign.dntn(sub, true));
+	let total = Money.total(dntns);
+	return total;
+};
+
+
+/**
+ * Recursive and fetches dynamic data.
+ * @deprecated
+ 
+ * @param {!Campaign} campaign 
+*  @param {?boolean} isSub set in recursive calls
+ * @returns {!Object} {cid: Money} Values may change as data loads
+ * @see Campaign.dntn
+ */
+Campaign.dntn4charity = (campaign, isSub) => {
+	assert( ! isSub || isSub===true, isSub);
+	Campaign.assIsa(campaign);
+	if ( ! campaign.master || isSub) {
+		// leaf
+		// hard set values?
+		let d4c = Object.assign({}, campaign.dntn4charity); // defensive copy, never null
+		// HACK realtime=true forces a realtime fetch
+		if (getUrlVars().realtime) {
+			d4c = {};
+		}
+		// are any missing?
+		let charities = Campaign.charities(campaign);
+		let missingNGOs = charities.filter(ngo => ! d4c[NGO.id(ngo)]);
+		if ( ! missingNGOs.length) {
+			return d4c;
+		}
+		// HACK realtime off??
+		if (getUrlVars().realtime === false) {
+			return d4c
+		}
+		// Ask the backend
+		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+		let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
+			() => ServerIO.getDonationsData({q:sq.query, name:"campaign-donations"}), 
+			{cachePeriod:300*1000});
+		if ( ! pvDntnData.value) {
+			return d4c;
+		}		
+		let by_cid = pvDntnData.value.by_cid;
+		// merge with top-level
+		let alld4c = Object.assign({}, by_cid, d4c);
+		return alld4c;
+	} // ./leaf
+	// Master - recurse - sum leaf campaigns
+	if ( ! isDntn4CharityEmpty(campaign.dntn4charity)) {
+		console.warn("Ignoring master.dntn4charity - it should not be set for masters 'cos it can confuse sums for e.g. reporting by-charity in T4G", campaign);
+	}
+	let pvSubs = Campaign.pvSubCampaigns({campaign});
+	if ( ! pvSubs.value) {
+		return {};
+	}
+	let subs = List.hits(pvSubs.value);
+	let dntn4charitys = subs.map(sub => Campaign.dntn4charity(sub, true));
+	// merge + sum subs
+	let subtotal4c = {};
+	for(let i=0; i<dntn4charitys.length; i++) {
+		const subd4c = dntn4charitys[i];
+		mapkv(subd4c, (k,v) => {
+			let old = subtotal4c[k];
+			subtotal4c[k] = old? Money.add(old, v) : v;
+		});
+	}
+	return subtotal4c;
+};
+
+
+
+
+/**
+>>>>>>>>> Temporary merge branch 2
  * FIXME Get a list of charities for a campaign
  * @param {Object} p 
  * @param {Campaign} p.campaign 

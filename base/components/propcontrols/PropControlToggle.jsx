@@ -29,7 +29,7 @@ const PropControlToggle = ({ path, prop, value, saveFn, left = {}, right = {}}) 
 	// Try to fix bad values on first render
 	useEffect(() => {
 		if (value === left.value || value === right.value) return; // Type & value good!
-		console.error("PropControlToggle - value not one of specified options!", prop, value, left.value, right.value);
+		console.log("PropControlToggle - value not one of specified options!", prop, "value:", value, left.value, right.value);
 		// Everything else we can do relies on toString
 		if (!value?.toString) return;
 		let vString = value.toString().toLowerCase();
@@ -53,7 +53,7 @@ const PropControlToggle = ({ path, prop, value, saveFn, left = {}, right = {}}) 
 	let shiftClass = 'ml-2 mr-2';
 	let btnColour = 'default';
 	let badgeContent = '\u00A0'; //&nbsp;
-	if (value === left.value) {
+	if (value === left.value || ! value) { // treat unset as No (as falsy logic is standard)
 		shiftClass = 'mr-3';
 		btnColour = left.colour;
 	} else if (value === right.value) {

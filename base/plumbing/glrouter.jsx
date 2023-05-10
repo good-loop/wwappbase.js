@@ -37,6 +37,12 @@ const goto = (href, options={}) => {
 /** Which is the "open in new tab" modifier key - Ctrl or Meta (Command)? */
 const clickModKey = window.navigator.platform.match(/^(Mac|iPhone|iPad|iPod)/) ? 'metaKey' : 'ctrlKey';
 
+/**
+ * To use this, set C.A = A;
+ * @param {Object} x 
+ * @param {string} x.href
+ * @returns 
+ */
 const A = (x) => {
 	if (!x) return null;
 	const {href, children, onClick, ...args} = x;
@@ -84,6 +90,7 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
 	if ( ! newpath) newpath = path || [];
 	let hash = encURI(newpath.join('/'));
 	if (yessy(allparams)) {
+		// ?? what if a Date is passed in??
 		let kvs = mapkv(allparams, (k, v) => encURI(k) + "=" + (v === null || v === undefined ? '' : encURI(v)));
 		hash += "?" + kvs.join('&');
 	}
