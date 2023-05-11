@@ -7,7 +7,7 @@ import Enum from 'easy-enums';
 import DataClass from './DataClass';
 import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
-import SearchQuery from '../../base/searchquery';
+import SearchQuery from '../searchquery';
 import List from './List';
 import DataStore, { getDataPath, getListPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
