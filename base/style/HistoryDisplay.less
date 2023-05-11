@@ -1,0 +1,55 @@
+.history-display {
+    position: fixed;
+    top: 5rem;
+    right: 2rem;
+    width: 20rem;
+    z-index: 99;
+
+    .card-body {
+        height: 25rem;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: stretch;
+
+        .entries {
+            overflow-y: auto;
+            overflow-x: hidden;
+            flex-grow: 1;
+            padding-top: 0.5rem;
+        }
+        .entry {
+            border-bottom: 1px solid @gl-light-grey;
+            flex-grow: 1;
+            &:hover {
+                background-color: @gl-light-grey;
+                cursor: pointer;
+            }
+        }
+        .undo {
+            &:hover {
+                background-color: @gl-light-grey;
+                cursor: pointer;
+            }
+        }
+        .diff-prop {
+            &:hover {
+                background-color: @gl-light-grey;
+                cursor: pointer;
+            }
+            .tracked {
+                font-weight: bold;
+            }
+        }
+    }
+}
+
+.save-publish-delete-etc {
+    
+}
+
+.watching-preview .watched-prop {
+    border-bottom: 1px solid @gl-light-grey;
+    padding-top: 0.5rem;
+}

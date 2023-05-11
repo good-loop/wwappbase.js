@@ -37,7 +37,7 @@ class PromiseValue {
 	reject;
 
 	/**
-	 * @param {?Object|Promise} valueOrPromise If null, the PV will have a rejected promise and an error.
+	 * @param {?Object|Promise|PromiseValue} valueOrPromise If null, the PV will have a rejected promise and an error.
 	 * @returns {value: ?Object, promise: !Promise, error: ?Object, resolved: boolean} 
 	 *  The return is never null, and the promise part is always set.
 	 * 	The behaviour depends on valueOrPromise:
@@ -53,7 +53,9 @@ class PromiseValue {
 		if (valueOrPromise instanceof PromiseValue) {
 			console.warn("Double wrapped PromiseValue", valueOrPromise);
 			// Hm -- keep on trucking?? Or would it better to throw an error?
-			valueOrPromise = valueOrPromise.value || valueOrPromise.promise;
+			//valueOrPromise = valueOrPromise.value || valueOrPromise.promise;
+			// Just return what we have - then we can use this to wrap possible PVs without extra checks
+			return valueOrPromise;
 		}
 		if (valueOrPromise === null || valueOrPromise === undefined) {
 			// NB: new Error() is Misleadingly noisy in the console - So use an ersatz error instead (which is still noisy, but as bit less)

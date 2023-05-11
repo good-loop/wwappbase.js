@@ -5,6 +5,7 @@
 import React, { Component } from 'react';
 import { encURI, mapkv, modifyHash, stopEvent, yessy } from '../utils/miscutils';
 import DataStore from './DataStore';
+import _ from 'lodash';
 
 /**
  * Navigate without a page reload. Also scrolls to the page top
@@ -30,7 +31,7 @@ const goto = (href, options={}) => {
 		// no scroll
 	} else {
 		window.scrollTo(0,0);
-	}	
+	}
 };
 
 
@@ -81,10 +82,14 @@ const usePath = () => ""+window.location;
  * @param {?boolean} clearParams - If true, remove all existing url parameters
  */
 const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
+	const { path, params } = DataStore.getValue('location');
+	if ((!newpath || _.isEqual(newpath, path)) &&
+		(!params || _.isEqual(newparams, params))) {
+		return null;
+	}
 	if (DataStore.localUrl !== '/') {
 		return modifyHash(newpath, newparams, returnOnly);
 	}
-	const { path, params } = DataStore.getValue('location');
 	let allparams = clearParams? {} : (params || {});
 	allparams = Object.assign(allparams, newparams);
 	if ( ! newpath) newpath = path || [];

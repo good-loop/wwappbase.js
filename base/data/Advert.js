@@ -13,6 +13,7 @@ import { getDataLogData, pivotDataLogData } from '../plumbing/DataLog';
 import SearchQuery from '../searchquery';
 import ServerIO from '../plumbing/ServerIOBase';
 import Branding from './Branding';
+import PromiseValue from '../promise-value';
 
 /**
  * See Advert.java
@@ -102,6 +103,17 @@ Advert.campaign = ad => ad.campaign;
 
 Advert.tags = ad => ad.tags;
 
+Advert.served = ad => ad.hasServed || ad.serving;
+
+Advert.hideFromShowcase = ad => ad.hideFromShowcase;
+
+Advert.isHiddenFromImpact = (ad, impactSettings) => {
+	assert(ad);
+	assert(impactSettings);
+	if (ad.hideFromShowcase) return ad.id;
+	if (!impactSettings.showNonServedAds && !Advert.served(ad)) return "non-served";
+}
+
 /**
  * @param {Advert} ad
  * @returns {!NGO[]}
@@ -149,7 +161,7 @@ Advert.viewcountByCampaign = ads => {
  * @param {Item[]} ads 
  * @returns {object} viewcount4campaign
  */
- Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
+Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
 	if (!ads || ads.length === 0) {
 		console.log('res: ads is empty')
 		return {}
@@ -165,10 +177,36 @@ Advert.viewcountByCampaign = ads => {
 		pvViewData.value
 		return viewcount4campaign = pivotDataLogData(pvViewData.value, ["country"]);
 	}
-	console.log("Shitfuck", pvViewData.value)
 	return viewcount4campaign;
 };
 
+Advert.fetchForAdvertiser = ({vertiserId, status, q}) => Advert.fetchForAdvertisers({vertiserIds:[vertiserId], status});
+
+Advert.fetchForAdvertisers = ({vertiserIds, status=KStatus.PUBLISHED, q}) => {
+	let pv = new PromiseValue(fetchForAdvertisers2(vertiserIds, status, q));
+	return pv;
+}
+
+const fetchForAdvertisers2 = async (vertiserIds, status, q) => {
+	let sq = new SearchQuery(q);
+	sq = SearchQuery.setPropOr(sq, "vertiser", vertiserIds);
+	let pv = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
+	return await pv.promise;
+}
+
+Advert.fetchForCampaign = ({campaignId, status, q}) => Advert.fetchForCampaigns({campaignIds:[campaignId], status, q});
+
+Advert.fetchForCampaigns = ({campaignIds, status, q}) => {
+	let pv = new PromiseValue(fetchForCampaigns2(campaignIds, status, q));
+	return pv;
+}
+
+const fetchForCampaigns2 = async (campaignIds, status, q) => {
+	let sq = new SearchQuery(q);
+	sq = SearchQuery.setPropOr(sq, "campaign", campaignIds);
+	let pv = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query});
+	return await pv.promise;
+};
 
 // NB: banner=display
 const KAdFormat = new Enum("display video social");

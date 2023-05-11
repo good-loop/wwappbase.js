@@ -24,6 +24,7 @@ import { BasicAccountPage } from './AccountPageWidgets';
 import E404Page from './E404Page';
 import { assert } from '../utils/assert';
 import PropControls from './propcontrols/PropControls';
+import HistoryDisplay from './HistoryDisplay';
 
 import StyleBlock from './StyleBlock';
 import { modifyPage } from '../plumbing/glrouter';
@@ -167,7 +168,8 @@ class MainDivBase extends Component {
 			noSocials, // TODO document props
 			loginChildren, // TODO document props
 			LoginGuts,
-			isBeta // HACK to place a beta label over the logo for SoGive Mar 2022
+			isBeta, // HACK to place a beta label over the logo for SoGive Mar 2022
+			showHistory
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -276,6 +278,7 @@ class MainDivBase extends Component {
 					{Footer && !undecorated && <Footer page={page} />}
 				</Row>
 			</Container>
+			{showHistory && <HistoryDisplay/>}
 			<LoginWidget
 				title={noLoginTitle ? null : `Welcome to ${C.app.name}`}
 				subtitle={loginSubtitle}

@@ -17,6 +17,7 @@ import { doShareThing } from '../../Shares';
 import { A } from '../../plumbing/glrouter';
 import DataItemBadge from '../DataItemBadge';
 import KStatus from '../../data/KStatus';
+import SearchQuery from '../../searchquery';
 
 /**
  * DataItemBadge
@@ -144,7 +145,10 @@ setRawValue, storeValue, modelValueFromInput,
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
 					{rawValue && showLL && <div className="items-dropdown card card-body">
 						<ListLoad hideTotal type={itemType} status={status}
-							domain={domain} filter={rawValue} unwrapped sort={sort}
+							domain={domain} 
+							filter={rawValue} 
+							filterFn={item => ! item.redirect /* avoid deprecated redirect objects */}
+							unwrapped sort={sort}
 							ListItem={SlimListItem}
 							// TODO allow ListLoad to show if there are only a few options
 							noResults={`No ${itemType} found for "${rawValue}"`}
