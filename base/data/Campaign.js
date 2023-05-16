@@ -185,15 +185,15 @@ Campaign.makeFor = (advert) => {
  * @param {Object} p
  * @returns {PromiseValue} PV(List<ImpactDebit>)
  */
-Campaign.getImpactDebits = ({campaign, status=KStatus.PUBLISHED}) => {
+Campaign.getImpactDebits = ({campaign, campaignId, status=KStatus.PUBLISHED}) => {
 	// We have a couple of chained async calls. So we use an async method inside DataStore.fetch().	
 	// NB: tried using plain async/await -- this is awkward with React render methods as the fresh Promise objects are always un-resolved at the moment of return.
 	// NB: tried using a PromiseValue.pending() without fetch() -- again having fresh objects returned means they're un-resolved at that moment.
-	return new PromiseValue(getImpactDebits2(campaign, status));
+	return new PromiseValue(getImpactDebits2(campaign?.id || campaignId, status));
 };
 
-const getImpactDebits2 = async (campaign, status) => {
-	let q = SearchQuery.setProp(null, "campaign", campaign.id);			
+const getImpactDebits2 = async (campaignId, status) => {
+	let q = SearchQuery.setProp(null, "campaign", campaignId);			
 	let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
 	let v = await pvListImpDs.promise;
 	return v;
