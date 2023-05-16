@@ -1165,10 +1165,11 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
 
 
 /**
-   * This replaces the react-bootstrap version 'cos we saw odd bugs there.
-   * Plus since we're providing state handling, we don't need a full component.
-   */
-function FormControl({ value, type, required, size, className, prepend, append, proppath, placeholder, ...otherProps }) {
+ * 
+*/
+function FormControl({ value, type, required, size, className, prepend, append, proppath, placeholder,
+	 onChange, onEnter, onKeyDown, ...otherProps }) 
+{
 	if (value === null || value === undefined) value = '';
 
 	// add css classes for required fields
@@ -1201,18 +1202,33 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 	// const focusPath = DataStore.getValue(FOCUS_PATH)
 	// const autoFocus = otherProps.name===focusPath; // TODO proppath.join(".") === focusPath;
 
+	// submit if the user types return?
+	let onKeyDown2 = onKeyDown;
+	if (onEnter) {		
+		let onEnter2 = e => {
+			if (e.key === "Enter") {
+				onEnter(new FakeEvent(value));
+			}
+		};		
+		if (onKeyDown) {
+			onKeyDown2 = e => { onKeyDown(e); onEnter2(e); };
+		} else {
+			onKeyDown2 = onEnter2;
+		}
+	}
+
 	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
 	if (prepend || append) {
 		return (
 			<InputGroup className={klass} size={size}>
 				{prepend ? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
-				<Input type={type} value={value} placeholder={placeholder} {...otherProps} />
+				<Input type={type} value={value} placeholder={placeholder} onChange={onChange} onKeyDown={onKeyDown2} {...otherProps} />
 				{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
 			</InputGroup>
 		);
 	}
 
-	return <Input className={klass} bsSize={size} type={type} value={value} placeholder={placeholder} {...otherProps} />;
+	return <Input className={klass} bsSize={size} type={type} value={value} placeholder={placeholder} onChange={onChange} onKeyDown={onKeyDown2} {...otherProps} />;
 }
 
 
@@ -1396,6 +1412,7 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	if (rawToStore) rawToStoreForType[type] = rawToStore;
 };
 
+// @deprecated use the FakeEvent instead
 // Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it
 // TODO Copy-paste from PropControlUpload.jsx - factor out?
 export const fakeEvent = {
@@ -1404,10 +1421,23 @@ export const fakeEvent = {
 	cooked: true, // Signal PropControl wrapper code NOT to call setRawValue
 };
 
+/**
+ * Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it.
+ */
+class FakeEvent {
+	preventDefault() { return null; }	
+	stopPropagation() { return null; }
+	cooked=true; // Signal PropControl wrapper code NOT to call setRawValue
+	target;
+	constructor(value) {
+		this.target = {value};
+	}
+}
 
 export {
 	registerControl,
 	FormControl,
+	FakeEvent,
 	InputStatus,
 	setInputStatus,
 	getInputStatus,

@@ -141,7 +141,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com/measure';
+		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com';
 		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
 		// hack for SoGive
 		if (ServerIO.APIBASE.includes("sogive")) {
@@ -162,7 +162,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = protocol+'//locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = protocol+'//localprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = protocol+'//localuploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com/measure';
+		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com';
 		ServerIO.APIBASE = ''; // lets assume you're on local
 		return;
 	}
@@ -172,7 +172,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://stagelg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://stageprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://stageuploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = 'https://stagemeasure.good-loop.com/measure';
+		ServerIO.MEASURE_ENDPOINT = 'https://stagemeasure.good-loop.com';
 		// ServerIO.APIBASE = ''; // ?? fix in a refactor
 		return;
 	}
@@ -182,7 +182,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = 'https://measure.good-loop.com/measure';
+		ServerIO.MEASURE_ENDPOINT = 'https://measure.good-loop.com';
 		if (ServerIO.APIBASE) {
 			ServerIO.APIBASE = `https://${unprefixedHostname}`;
 		} else if (ServerIO.APIBASE === '' || ServerIO.APIBASE === '/') {
