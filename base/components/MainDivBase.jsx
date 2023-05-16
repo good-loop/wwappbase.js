@@ -218,7 +218,7 @@ class MainDivBase extends Component {
 
 		// must login?
 		if (loginRequired && !Login.isLoggedIn()) {
-			if (page.noLoginRequired) { // HACK
+			if (Page.noLoginRequired) { // HACK
 				// OK
 			} else {
 				Page = LoginPage;
