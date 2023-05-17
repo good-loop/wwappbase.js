@@ -61,11 +61,9 @@ Advertiser.getManyChildren = (vertiserIds, status=KStatus.PUBLISHED) => {
 }
 
 Advertiser.getImpactDebits = ({vertiser, vertiserId, status=KStatus.PUBLISHED}) => {
-    /*
-    let masterCampaign = await Campaign.fetchMasterCampaign(vertiser, status)?.promise;
-    return masterCampaign ? await Campaign.getImpactDebits({campaign:masterCampaign, status}).promise : new List();*/
-
-    return new PromiseValue(getImpactDebits2(vertiser?.id || vertiserId, status));
+    
+    if (!vertiserId) vertiserId = vertiser.id;
+    return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, for:vertiserId}), () => getImpactDebits2(vertiser?.id || vertiserId, status));
 }
 
 const getImpactDebits2 = async (vertiserId, status) => {

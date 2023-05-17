@@ -35,11 +35,9 @@ Agency.getChildren = (agencyId, status=KStatus.PUBLISHED) => {
 }
 
 Agency.getImpactDebits = ({agency, agencyId, status=KStatus.PUBLISHED}) => {
-    /*
-    let masterCampaign = await Campaign.fetchMasterCampaign(vertiser, status)?.promise;
-    return masterCampaign ? await Campaign.getImpactDebits({campaign:masterCampaign, status}).promise : new List();*/
-
-    return new PromiseValue(getImpactDebits2(agency?.id || agencyId, status));
+    
+    if (!agencyId) agencyId = agency.id;
+    return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, for:agencyId}), () => getImpactDebits2(agencyId, status));
 }
 
 const getImpactDebits2 = async (agencyId, status) => {
