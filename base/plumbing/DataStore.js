@@ -6,7 +6,7 @@ import PromiseValue from '../promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
-import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI} from '../utils/miscutils';
+import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectValueByPath, setObjectValueByPath} from '../utils/miscutils';
 import KStatus from '../data/KStatus';
 import { modifyPage } from './glrouter';
 
@@ -320,16 +320,7 @@ class Store {
 		}
 		assert(this.appstate[path[0]],
 			"DataStore.getValue: "+path[0]+" is not a json element in appstate - As a safety check against errors, the root element must already exist to use getValue()");
-		let tip = this.appstate;
-		for(let pi=0; pi < path.length; pi++) {
-			let pkey = path[pi];
-			assert(pkey || pkey===0, "DataStore.getValue falsy is not allowed in path: "+path); // no falsy in a path - except that 0 is a valid key
-			let newTip = tip[pkey];
-			// Test for hard null -- falsy are valid values
-			if (newTip===null || newTip===undefined) return null;
-			tip = newTip;
-		}
-		return tip;
+		return getObjectValueByPath(this.appstate, path);
 	}
 
 
@@ -379,25 +370,9 @@ class Store {
 			modifyPage(null, newParams);
 		}
 
-		let tip = this.appstate;
-		for(let pi = 0; pi < path.length; pi++) {
-			let pkey = path[pi];
-			if (pi === path.length-1) {
-				// Set it!
-				tip[pkey] = value;
-				break;
-			}
-			assert(pkey || pkey === 0, `falsy in path ${path.join(' -> ')}`); // no falsy in a path - except that 0 is a valid key
-			let newTip = tip[pkey];
-			if (!newTip) {
-				if (value === null) {
-					// don't make path for null values
-					return value;
-				}
-				newTip = tip[pkey] = {};
-			}
-			tip = newTip;
-		}
+		// Do the set!
+		setObjectValueByPath(this.appstate, path, value);
+
 		// HACK: update a data value => mark it as modified
 		// ...but not for setting the whole-object (path.length=3)
 		// // (off?) ...or for value=null ??why? It's half likely that won't save, but why ignore it here??

@@ -16,6 +16,8 @@ import { publish, saveEdits } from '../plumbing/Crud';
 import Icon from './Icon';
 import { goto, modifyPage } from '../plumbing/glrouter';
 import Login from '../youagain';
+import { Help } from './PropControl';
+import { getObjectValueByPath, setObjectValueByPath } from '../utils/miscutils';
 
 /**
  * 
@@ -139,6 +141,7 @@ const check = ok => {
  * @param {?string} p.position fixed|relative
  * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
  * @param {?Boolean} p.oneButton render as a single button instead of a large footer bar (useful for embedding in smaller controls)
+ * @param {?Array[]} p.targetPaths a list of paths to props in the item to target for saving - ignores any other changes. used with oneButton
  * A snapshot is taken the first time this renders.
  */
 function SavePublishDeleteEtc({
@@ -153,7 +156,7 @@ function SavePublishDeleteEtc({
 	saveAs, unpublish,
 	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
 	sendDiff,
-	oneButton
+	oneButton, targetPaths
 }) {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
@@ -168,29 +171,60 @@ function SavePublishDeleteEtc({
 	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.issaveerror(localStatus);
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
-	let item = DataStore.getData({ status, type, id });
+	let item = DataStore.getData({ status, type, id });	
+	console.log("ITEM STATUS", item?.status, item?.name);
+	// Keep a copy of the draft in case we mess with it later (e.g. targetPaths)
+	let draftItem = _.cloneDeep(item);
 
-	// If "sendDiff" is true, this will store an unchanged-from-server snapshot of the item
-	// Any time the target object status becomes "exists" and "unchanged from server", take a snapshot
-	let previous = null;
-	if (sendDiff) {
-		// NB: If useState() were used to hold `previous`, there is a subtle bug: if the editor is changed in between debounced saves, then previous will reset to null.
-		const prevPath = ['widget', 'SavePublishDeleteEtc', type, id];
-		previous = DataStore.getValue(prevPath);
-		useEffect(() => {
-			if (item && !isdirty) {
-				// console.log("set previous")
-				DataStore.setValue(prevPath, _.cloneDeep(item));
-			}
-		}, [item, isdirty]);
+	// If we use target paths, our localStatus will not match what DataStore thinks - track it ourselves
+	const [targetPropsChanged, setTargetPropsChanged] = useState(false);
+
+	// If target paths is set, diffs must be used
+	if (targetPaths) {
+		assert(_.isArray(targetPaths), "targetPaths not array??");
+		sendDiff = true;
+	}
+
+	// debug info on DataStore state
+	let pubv = DataStore.getData({ status: C.KStatus.PUBLISHED, type, id });
+	let draftv = DataStore.getData({ status: C.KStatus.DRAFT, type, id });
+	let dsi = pubv ? (draftv ? (pubv === draftv ? "published = draft" : "published & draft") : "published only")
+		: (draftv ? "draft only" : "nothing loaded");
+	// Does a published version exist? (for if we show unpublish)
+	// NB: item.status = MODIFIED should be reliable but lets not entirely count on it.
+	let pubExists = pubv || (item && item.status !== C.KStatus.DRAFT);
+
+	// If targetPaths is true, use the published item as a clean comparison object
+	let previous = targetPaths ? pubv : null;
+
+	const prevPath = ['widget', 'SavePublishDeleteEtc', type, id];
+	if (!previous) previous = DataStore.getValue(prevPath);
+	useEffect(() => {
+		if (item && !isdirty) {
+			// console.log("set previous")
+			DataStore.setValue(prevPath, _.cloneDeep(item));
+		}
+	}, [item, isdirty]);
+
+	// Restrict item changes to targeted paths
+	if (targetPaths && targetPaths.length && item && pubv) {
+		if (!_.isArray(targetPaths[0])) targetPaths = [[targetPaths[0]]]
+		let restrictedItem = _.cloneDeep(pubv);
+		targetPaths.forEach(targetPath => {
+			const draftVal = getObjectValueByPath(item, targetPath);
+			setObjectValueByPath(restrictedItem, targetPath, draftVal);
+		});
+		item = restrictedItem;
 	}
 
 	// request a save/publish?
 	if (isdirty && !isSaving) {
 		if (autoPublish) {
+			// Use last published item as previous for comparison
 			autoPublishFn({ type, id, item, previous });
 		} else if (autoSave) {
 			const saveDraftFn = saveDraftFnFactory({type, key:id});
+			// Make sure we save the full draft - not just the restricted item targetPaths creates
 			saveDraftFn({ type, id, item, previous, swallow:true }); // auto-save hides errors TODO show a warning icon on the widget
 		}
 	}
@@ -201,30 +235,27 @@ function SavePublishDeleteEtc({
 	// if nothing has been edited, then we can't publish, save, or discard
 	// ??this no longer works as we force the item to be pulled from "DRAFT"
 	// will therefore never have status of "PUBLISHED" <- what about an unmodified published item??
-	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus);
+	let noEdits = false//item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && !targetPropsChanged;
 
-	let disablePublish = isSaving || noEdits || cannotPublish;
+	let disablePublish = isSaving || noEdits || cannotPublish || (oneButton && !pubExists);
 	let publishTooltip = cannotPublish ? publishTooltipText : (noEdits ? 'Nothing to publish' : 'Publish your edits!');
 	let disableDelete = isSaving || cannotDelete;
 
 	const vis = { visibility: (isSaving ? 'visible' : 'hidden') };
 
+	let pubLabel = !isSaving ? ("Publish" + (pubExists ? " Edits" : "")) : "Saving...";
+	if (oneButton) {
+		if (!pubExists) pubLabel = "Not Published!";
+		else if (noEdits) pubLabel = "No changes!";
+	}
+
 	const PublishButton = () => <Button name="publish" color="primary" size={size} className="ml-2"
 		disabled={disablePublish} title={publishTooltip}
-		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item})}>
-		{!isSaving || !oneButton ? "Publish" : "Saving..."} {pubExists && "Edits"} <Spinner vis={vis} />
+		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item, previous})}>
+		{pubLabel} {oneButton && !pubExists && <Help color='white'>For safety, you can only publish a new item from it's own editor page</Help>} <Spinner vis={vis} />
 	</Button>;
 
 	if (oneButton) return <PublishButton/>;
-
-	// debug info on DataStore state
-	let pubv = DataStore.getData({ status: C.KStatus.PUBLISHED, type, id });
-	let draftv = DataStore.getData({ status: C.KStatus.DRAFT, type, id });
-	let dsi = pubv ? (draftv ? (pubv === draftv ? "published = draft" : "published & draft") : "published only")
-		: (draftv ? "draft only" : "nothing loaded");
-	// Does a published version exist? (for if we show unpublish)
-	// NB: item.status = MODIFIED should be reliable but lets not entirely count on it.
-	let pubExists = pubv || (item && item.status !== C.KStatus.DRAFT);
 
 	// merge discard / unpublish / delete into one button with a dropdown of options??
 	// merge save / saveAs into one button with a dropdown of options?
@@ -262,7 +293,7 @@ function SavePublishDeleteEtc({
 		color={C.STATUS.issaveerror(localStatus) ? 'danger' : 'secondary'}
 		title={C.STATUS.issaveerror(localStatus) ? 'There was an error when saving' : null}
 		disabled={isSaving || C.STATUS.isclean(localStatus)}
-		onClick={() => saveEdits({ type, id, item })}
+		onClick={() => saveEdits({ type, id, item, previous })}
 	>
 		Save Edits <Spinner vis={vis} />
 	</Button>); // ./SaveEditsButton
