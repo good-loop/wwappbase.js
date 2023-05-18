@@ -221,6 +221,8 @@ function SimpleTable(props) {
 		columns=["key","value"];
 	}
 	assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
+	// columns use Column not String
+	columns = columns.map(col => _.isString(col)? {accessor:col} : col);
 
 	// Filter settings
 	if (tableSettings.hasFilter && tableSettings.hasFilter.length) {
