@@ -25,7 +25,7 @@ const PropControlDt2 = ({prop, storeValue, onChange, unitOptions = Object.keys(l
 	useEffect(() => {
 		if (nVal === storeValue.n && unitVal === storeValue.unit) return; // don't fire unnecessarily
 		setNVal(storeValue.n);
-		setUnitValue(storeValue.unit);
+		setUnitVal(storeValue.unit);
 	}, [storeValue.n, storeValue.unit]);
 	
 	// When the inputs change, synthesise an input-change event to pass up to PropControl and DataStore

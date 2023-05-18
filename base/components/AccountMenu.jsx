@@ -16,6 +16,7 @@ import { modifyPage } from '../plumbing/glrouter';
 
 /**
 The top-right menu
+@component
 @param {Object} p
 @param {boolean} p.active true if on the account page
 @param {boolean} p.account true if we want to show the account option (true by default), needed by my-loop because it doesn't have an account page but needs logout
