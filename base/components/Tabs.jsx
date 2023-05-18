@@ -16,8 +16,8 @@ const Tab = ({tabId, title, disabled, onTabClick, children}) => {
  * Shim for switching from react-bootstrap, which has integrated state management for e.g. these tabs, to reactstrap, which doesn't
  * 
  * @param {Tab[]} children
- * @param {?string} activeTabId Only needed if the app is controlling which tab.
- * @param {?Function} setActiveTabId Only needed if the app is controlling which tab.
+ * @param {?string} activeTabId Only needed if the app is controlling which tab. e.g. a url parameter DataStore.getUrlValue("tab")
+ * @param {?Function} setActiveTabId Only needed if the app is controlling which tab. e.g.tabId =>  DataStore.setUrlValue("tab",tabId)
  */
 const Tabs = ({activeTabId, setActiveTabId, defaultTabId, children, ...props}) => {
 	// We can manage tab-ID locally with useState() or have it passed in.
