@@ -211,7 +211,8 @@ Campaign.viewcount = ({campaign, status}) => {
 	if (campaign.numPeople) {
 		return campaign.numPeople;
 	}
-	const pvAllAds = Advert.fetchForCampaign({campaignId:campaign.id, status});
+	//	const pvAllAds = Advert.fetchForCampaign({campaignId:campaign.id, status});
+	const pvAllAds = Campaign.pvAds({campaign:campaign, status:status});
 	let allAds = List.hits(pvAllAds.value) || [];
 	const viewcount4campaign = Advert.viewcountByCampaign(allAds);
 	let totalViewCount = sum(Object.values(viewcount4campaign));
@@ -232,10 +233,107 @@ Campaign.viewcountByCountry = ({campaign, status}) => {
 	}
 	const pvAllAds = Advert.fetchForCampaign({campaignId:campaign.id, status});
 	let allAds = List.hits(pvAllAds.value) || [];
-	console.log("res allAds: ", allAds)
 	const viewcount4campaign = Advert.viewcountByCountry({ads:allAds});
-	console.log("VIEWS BY COUNTRY", viewcount4campaign);
 	return viewcount4campaign;
 };
+
+/**
+ * Code below is a temporary patch (as of 19/05/23)
+ * It was all removed during the master campaign culling but the replacement code doesn't seem to work.
+ * Vera will be back in a week and we can cover the new code then but right now this works. 
+ * Gonna keep poking at the new code for a bit though & hopefully get rid of this patch
+ *  - lewis
+ */
+
+/**
+ * Get (and cache) all ads associated with the given campaign. This will apply hide-list and never-served filters 
+* @param {Object} p 
+ * @param {Campaign} p.campaign 
+ * @param {?KStatus} p.status
+ * @param {?String} p.query Filter by whatever you want, eg data
+ * @returns PromiseValue(List(Advert)) HACK Adverts get `_hidden` added if they're excluded.
+ */
+Campaign.pvAds = ({campaign,status=KStatus.DRAFT,query}) => {
+	let pv = DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
+		return pAds2({campaign,status,query});
+	});
+	return pv;
+};
+
+/**
+ * HACK: access=public
+ * NB: This function does chained promises, so we use async + await for convenience.
+ * @returns Promise List(Advert) All ads -- hidden ones are marked with a truthy `_hidden` prop
+ */
+ const pAds2 = async function({campaign, status, query, isSub}) {
+	Campaign.assIsa(campaign);
+	if (campaign.master && ! isSub) { // NB: a poorly configured campaign can be a master and a leaf
+		// Assume no direct ads
+		// recurse
+		const pvSubs = Campaign.pvSubCampaigns({campaign});
+		let subsl = await pvSubs.promise;
+		let subs = List.hits(subsl);
+		let AdListPs = subs.map(sub => {
+			let pSubAds = pAds2({campaign:sub, status:KStatus.PUBLISHED, query, isSub:true});
+			return pSubAds;
+		});
+		let adLists = await Promise.all(AdListPs);
+		let ads = [];
+		adLists.forEach(adl => ads.push(...List.hits(adl)));
+		// adds can be hidden at leaf or master
+		pAds3_labelHidden({campaign, ads});
+
+		const list = new List(ads);
+		sortAdsList(list);
+		return list;
+	}
+
+	// leaf campaign
+	// fetch ads
+	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
+	// ...HACK allow Impact Hub to fetch an unfiltered but cleansed list
+	//    But not for previews, as access=public cannot read DRAFT
+	const access = status==KStatus.PUBLISHED? "public" : null; 
+	// ...fetch
+	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query, access});
+	let adl = await pvAds.promise;
+	List.assIsa(adl);
+
+	// Label ads using hide list and non-served
+	let ads = List.hits(adl);
+	pAds3_labelHidden({campaign, ads});
+
+	return adl;
+};
+
+/** Newest first. Safe default for pretty much everywhere here. */
+const sortAdsList = adsList => adsList.hits.sort((a, b) => {
+	if (a.created === b.created) return 0;
+	return a.created < b.created ? 1 : -1;
+});
+
+const pAds3_labelHidden = ({campaign, ads}) => {
+	// manually hidden
+	const hideAdverts = Campaign.hideAdverts(campaign);
+	for (let hi = 0; hi < hideAdverts.length; hi++) {
+		const hadid = hideAdverts[hi];
+		const ad = ads.find(ad => ad.id === hadid);
+		if (ad) {
+			ad._hidden = campaign.id; // truthy + tracks why it's hidden
+		}
+	}
+	// non served
+	if (campaign.showNonServed) {
+		return;
+	}
+	ads.forEach(ad => {
+		if ( ! ad.hasServed && ! ad.serving) {
+			ad._hidden = "non-served";
+		}
+	});
+};
+
+// End of temporary patch code
 
 export default Campaign;
