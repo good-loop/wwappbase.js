@@ -43,8 +43,8 @@ export const setTimeZone = (timezone: string) => {
 };
 
 // initialise from url TODO handle changes
-if (getUrlVars().tz) {
-	setTimeZone(getUrlVars().tz);
+if (getUrlVars(null, null).tz) {
+	setTimeZone(getUrlVars(null, null).tz);
 }
 
 export const getTimeZoneShortName = (timeZone: string | null) => {
@@ -109,13 +109,11 @@ export const dateUTCfromString = (s: string): Date => {
 
 /**
  * Make sure it's a Date not a String
- * @param {?String|Date} s falsy returns null
- * @param {?String} tz If set and if s is a string, then apply timezone=tz. 
+ * @param s falsy returns null
  * TODO use the browser-default _timezone -- but paranoia check needed: Would this break any current use-cases
  * that might assume UTC??
- * @returns {?Date}
  */
-export const asDate = (s: Date | String): Date | null => {
+export const asDate = (s: Date | string | null): Date | null => {
 	if (!s) return null;
 	// Create the Date Object in UTC
 	if (typeof s === 'string') {
@@ -131,7 +129,7 @@ export const asDate = (s: Date | String): Date | null => {
 export const isoDate = (d: Date | string): string => asDate(d)!.toISOString().replace(/T.+/, '');
 
 export const isoDateTZ = (d: Date | string): string => {
-	let date = new Date(asDate(d));
+	let date = new Date(asDate(d)!);
 	let offset = getTimeZoneOffset(getTimeZone(), date);
 	// HACK: for eastern countries ahead of UTC, e.g. "1st June 00:00" in Paris = "31st May 23:00" UTC
 	// so use a shifted time, then get the UTC date
@@ -240,8 +238,8 @@ export const newDateTZ = (isoDate:string): Date => {
  * @returns midnight GMT for isoDate
  */
 const newDateUTC = (isoDate:string) => {
-	let m = isoDate.match(/(\d{4})-(\d{2})-(\d{2})/);
-	return new Date(Date.UTC(m[1],m[2]-1,m[3])); // zero-indexed month!
+	let m = isoDate.match(/(\d{4})-(\d{2})-(\d{2})/) as RegExpMatchArray;
+	return new Date(Date.UTC(parseInt(m[1]), parseInt(m[2]) - 1, parseInt(m[3]))); // zero-indexed month!
 };
 
 
@@ -298,15 +296,15 @@ export interface PeriodFromUrlParams extends Object {
  */
 export const getPeriodFromUrlParams = (urlParams: PeriodFromUrlParams | undefined = undefined): Period | null => {
 	if (!urlParams) urlParams = getUrlVars(null, null);
-	let { start, end, period } = urlParams;
+	let { start, end, period } = urlParams!;
 	// named?
 	const periodObjFromName = periodFromName(period as string);
 	// User has set a named period (year, quarter, month)
 	if (periodObjFromName) {
 		// fill in the start/end
 		// NB: when adjusting start/end with PropControlPeriod, there is a moment where the name is wrong.
-		if ( ! start) DataStore.setUrlValue("start", periodObjFromName.start, false);
-		if ( ! end) DataStore.setUrlValue("end", periodObjFromName.end, false);
+		if ( ! start) DataStore.setUrlValue("start", periodObjFromName.start!, false);
+		if ( ! end) DataStore.setUrlValue("end", periodObjFromName.end!, false);
 		return periodObjFromName;
 	}
 
@@ -476,12 +474,12 @@ export const printPeriod = ({ start, end, name }: Period, short = false) => {
 
 	// Bump end date back by 1 second so eg 2022-03-01T00:00:00.000+0100 to 2022-04-01T00:00:00.000+0100
 	// gets printed as "1 March 2022 to 31 March 2022"
-	end = new Date(end);
+	end = new Date(end!);
 	end.setSeconds(end.getSeconds() - 1);
 
 	// Prevent browsers in non UTC/ GMT Timezone shift the printing of the date
 	// E.g. 2023-03-28T23:59:59Z became 2023-03-29T07:59:59Z in Asia
-	let startUTC = `${start.getUTCDate().toString()} ${shortMonths[start.getUTCMonth()]} ${start.getFullYear()}`;
+	let startUTC = `${start!.getUTCDate().toString()} ${shortMonths[start!.getUTCMonth()]} ${start!.getFullYear()}`;
 	let endUTC = `${end.getUTCDate().toString()} ${shortMonths[end.getUTCMonth()]} ${end.getFullYear()}`;
 
 	if (short) {
