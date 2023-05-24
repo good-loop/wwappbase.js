@@ -19,7 +19,7 @@ class Store {
 	
 	callbacks = [];
 
-	/** HACK: charcter to start a local path # or /  */
+	/** HACK: character to start a local path # or /  See glrouter */
 	localUrl = '#';
 
 	constructor() {
