@@ -1412,9 +1412,10 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	if (rawToStore) rawToStoreForType[type] = rawToStore;
 };
 
-// @deprecated use the FakeEvent instead
+/** @deprecated use the FakeEvent instead
 // Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it
 // TODO Copy-paste from PropControlUpload.jsx - factor out?
+ */
 export const fakeEvent = {
 	preventDefault: () => null,
 	stopPropagation: () => null,
@@ -1429,6 +1430,7 @@ class FakeEvent {
 	stopPropagation() { return null; }
 	cooked=true; // Signal PropControl wrapper code NOT to call setRawValue
 	target;
+	/** Base for a dummy event. */
 	constructor(value) {
 		this.target = {value};
 	}
