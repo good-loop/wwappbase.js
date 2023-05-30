@@ -33,8 +33,10 @@ NGO.imageList = (ngo) => ngo.imageList;
  * @returns {Object[]}
  */
 NGO.images = ngo => {
+	console.log(ngo)
 	if ( ! ngo) return [];
-	let allImages = [ngo.photo, ngo.images, ngo.highResPhoto].concat(ngo.imageList);
+	let stockPhotos = ngo.category ? (NGO.STOCK_IMAGES[ngo.category]) : []
+	let allImages = [ngo.photo, ngo.images, ngo.highResPhoto, ...stockPhotos].concat(ngo.imageList);
 	return allImages.filter(x => x);
 };
 
@@ -150,3 +152,66 @@ NGO.CATEGORY = {
 		"Religious Media and Broadcasting"
 	]
 };
+
+// TODO add more stock images, all of these are just elk right now
+NGO.STOCK_IMAGES = {
+	"animals":[	
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"culture":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"community":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"education":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"environment":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"health":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"civil rights": [
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"human services":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"international":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"research":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+
+	"religion":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	],
+	
+	"default":[
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
+		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
+	]
+}

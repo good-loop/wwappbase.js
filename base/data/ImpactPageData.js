@@ -14,6 +14,7 @@ import Advertiser from './Advertiser';
 import Advert from './Advert';
 import Money from './Money';
 import { assert } from '../utils/assert';
+import ActionMan from '../plumbing/ActionManBase';
 
 /* ------- Data Functions --------- */
 
@@ -38,7 +39,6 @@ export const fetchImpactBaseObjects = ({itemId, itemType, status, nocache}) => {
 
 
 const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
-
 	let pvCampaign, campaign;
 	let pvBrand, brand, brandId;
 	let pvMasterBrand, masterBrand;

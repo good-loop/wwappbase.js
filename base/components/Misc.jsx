@@ -22,7 +22,7 @@ import ErrAlert from './ErrAlert';
 import XId from '../data/XId';
 import Roles from '../Roles';
 import Icon from './Icon';
-import { oh, isoDate, dateStr, MONTHS } from '../utils/date-utils';
+import { oh, isoDate, MONTHS, asDate, shortMonths } from '../utils/date-utils';
 
 const Misc = {};
 
@@ -41,7 +41,7 @@ Misc.normalise = s => {
 
 // Pulled out so we can override it with a site-specific graphic
 Misc.spinnerSvg = (
-	<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+	<svg xmlns="https://www.w3.org/2000/svg" viewBox="0 0 100 100">
 		<g style={{stroke: 'none'}}>
 				<path style={{fill: '#f6ecd1'}} d="M 50 0 a 50 50 0 0 0 -50 50 L 10 50 a 40 40 0 0 1 40 -40 Z" />
 				<path style={{fill: '#507e88'}} d="M 0 50 a 50 50 0 0 0 50 50 L 50 90 a 40 40 0 0 1 -40 -40 Z" />

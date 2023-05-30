@@ -27,15 +27,16 @@ import { getTimeZone } from '../utils/date-utils';
  * @param {?String} p.op sum or coming-soon avg|stats
  * @param {?Number} p.prob [0,1] Probability for random sampling. -1 for auto-calc
  * @param {?String} p.interval day / hour / 15 minutes etc time-bucket size
+ * @param {?number} p.size for examples (10 by default)
  * @returns PromiseValue "ElasticSearch format" (buckets with a key)
  */
-const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,interval,btz,incs,ince,op="sum",dataspace=ServerIO.DATALOG_DATASPACE}) => {
+const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,interval,btz,incs,ince,op="sum",dataspace=ServerIO.DATALOG_DATASPACE,size}) => {
 	assert(dataspace);
 	let phack = prob? Math.round(10*prob) : prob; // (old code, Feb 23) handle DataServlet prob=[0,10] code
 	if (phack === -10) phack=88; // HACK (old code, Feb 23) special value for "pick a prob"
 	// NB: the server doesnt want an -s on breakdown
 	if ( ! btz) btz = getTimeZone();
-	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, interval, btz, name, dataspace, incs, ince, op};	
+	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, interval, btz, name, dataspace, incs, ince, op, size};	
 	let dspec = md5(JSON.stringify(glreq));
 	const dlpath = ['misc', 'DataLog', dataspace, dspec];
 

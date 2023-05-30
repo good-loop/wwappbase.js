@@ -798,7 +798,8 @@ ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', 
 		url = ServerIO.APIBASE + url;
 	}
 	let params = {
-		data: {status, q, start, end, prefix, sort, size, ...other}
+		data: {status, q, start, end, prefix, sort, size, ...other},
+		method: "POST"
 	};	
 	// HACK: sogive? include unlisted charities (which sogive itself filters by default)
 	if (url.includes("sogive.org/charity")) {

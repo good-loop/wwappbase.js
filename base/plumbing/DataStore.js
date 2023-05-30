@@ -7,7 +7,7 @@ import PromiseValue from '../promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
-import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectValueByPath, setObjectValueByPath, stopEvent} from '../utils/miscutils';
+import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectValueByPath, setObjectValueByPath} from '../utils/miscutils';
 import KStatus from '../data/KStatus';
 import { modifyPage } from './glrouter';
 
@@ -23,7 +23,7 @@ class Store {
 	
 	callbacks = [];
 
-	/** HACK: charcter to start a local path # or /  */
+	/** HACK: character to start a local path # or /  See glrouter */
 	localUrl = '#';
 
 	constructor() {
@@ -407,8 +407,7 @@ class Store {
 		}
 		assert(this.appstate[path[0]],
 			"DataStore.getValue: "+path[0]+" is not a json element in appstate - As a safety check against errors, the root element must already exist to use getValue()");
-		let result = getObjectValueByPath(this.appstate, path);
-		return result;
+		return getObjectValueByPath(this.appstate, path);
 	}
 
 	/**

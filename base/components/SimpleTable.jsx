@@ -64,9 +64,9 @@ class Column extends DataClass {
 	style;
 	/** @type {?Boolean} true for internally made UI columns, which should not be included in the csv export */
 	ui;
-	/** @significantDigits {?integer} used used to specify significant digits for numbers */
+	/** @type {?number} used used to specify significant digits for numbers */
 	significantDigits;
-	/** @precision {?integer} used used to specify precision for numbers (digits after the decimal point) */
+	/** @type {?number} used used to specify precision for numbers (digits after the decimal point) */
 	precision;
 
 	/**
@@ -174,6 +174,12 @@ class TableSettings {
 	* @type {Item} */
 	topRow;
 
+	/** @type {?number} used used to specify significant digits for numbers */
+	significantDigits;
+
+	/** @type {?number} used used to specify precision for numbers (digits after the decimal point) */
+	precision;
+
 	// i=0; debug counter
 };
 
@@ -190,7 +196,9 @@ function SimpleTable(props) {
 		columns,
 		headerRender,
 		topRow,
-		bottomRow,		
+		bottomRow,
+		significantDigits,
+		precision,
 	} = props;
 
 	let [tableSettings, setTableSettings] = useState(new TableSettings());
@@ -213,6 +221,8 @@ function SimpleTable(props) {
 		columns=["key","value"];
 	}
 	assert(_.isArray(columns), "SimpleTable.jsx - columns", columns);
+	// columns use Column not String
+	columns = columns.map(col => _.isString(col)? {accessor:col} : col);
 
 	// Filter settings
 	if (tableSettings.hasFilter && tableSettings.hasFilter.length) {
@@ -468,6 +478,13 @@ const rowFilter = ({ dataTree, columns, tableSettings }) => {
 			return false;
 		});
 	}
+
+	if (tableSettings.precision || tableSettings.significantDigits) {
+		visibleColumns = visibleColumns.map((val) => {
+			return {...val, "precision": tableSettings.precision, "significantDigits": tableSettings.significantDigits}
+		});
+	}
+
 	// NB maxRows is done later to support csv-download being all data
 	return { dataTree, visibleColumns };
 }; // ./filter
@@ -668,14 +685,16 @@ const defaultCellRender = (v, column) => {
 		let d = asDate(v);
 		return dateStr(d);
 	}
+
+	let significantDigits = 10;
+	let precision = 2;
+	if (column.precision) { precision = column.precision; }
+	if (column.significantDigits) { significantDigits = column.significantDigits; }
+
 	if (column.format) {
 		if (typeof column.format === 'function') {
 			return column.format(v);
 		}
-		let significantDigits = 2; // set to the defualt value that was previously hard coded
-		let precision = 2;
-		if (column.precision) { precision = column.precision; }
-		if (column.significantDigits) { significantDigits = column.significantDigits; }
 
 		if (CellFormat.ispercent(column.format)) {
 			// Use precision if supplied - else default to 2 sig figs
@@ -696,10 +715,9 @@ const defaultCellRender = (v, column) => {
 	// number or numeric string
 	let nv = asNum(v);
 	if (nv !== undefined && nv !== null && !Number.isNaN(nv)) {
-		// 1 decimal place
-		nv = Math.round(nv * 10) / 10;
+		nv = nv.toFixed(precision);
 		// commas
-		const sv = printer.prettyNumber(nv, 10);
+		const sv = printer.prettyNumber(nv, significantDigits);
 		return sv;
 	}
 	// e.g. Money has a to-string

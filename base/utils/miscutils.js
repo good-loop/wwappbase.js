@@ -412,7 +412,7 @@ export const getDomain = (url) => {
  * @param {?string} url Optional, the string to be parsed, will default to window.location when not provided.
  * @param {?Boolean} lenient If true, if a decoding error is hit, it is swallowed and the raw string is used.
  * Use-case: for parsing urls that may contain adtech macros.
- * @returns {Object} */
+ * @returns {any} */
 // NB: new UrlSearchParams(searchFragment) can now do much of this
 export const getUrlVars = (url, lenient) => {
 	// Future thought: Could this be replaced with location.search??

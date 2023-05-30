@@ -28,7 +28,7 @@ import DataStore from '../plumbing/DataStore';
 import { useDataHistory } from '../plumbing/DataDiff';
 import Icon from './Icon';
 import { luminanceFromHex } from './Colour';
-import { nonce } from '../data/DataClass';
+import DataClass, { nonce } from '../data/DataClass';
 
 import { countryListAlpha2 } from '../data/CountryRegion';
 import C from '../CBase';
@@ -355,8 +355,12 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// Reset raw value if code outside the PropControl changes the value
 	const [oldStoreValue, setOldStoreValue] = useState(storeValue);
 	if (oldStoreValue !== storeValue) {
-		setRawValue(_.isString(storeValue) ? storeValue : null);
-		setOldStoreValue(storeValue);
+		// HACK: Have to be careful e.g. PropControlMoney changes the object as you type. TODO an updating state flag to handle this properly
+		// (Date in PropControlPeriod will return undefined in DataClass.str(), but we still want to let it through)
+		if (DataClass.str(oldStoreValue) !== DataClass.str(storeValue) || (DataClass.str(oldStoreValue) === undefined && DataClass.str(storeValue) == undefined)) {
+			setRawValue(_.isString(storeValue) ? storeValue : null);
+			setOldStoreValue(storeValue);
+		}
 	}
 
 	// old code
@@ -1173,10 +1177,11 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
 
 
 /**
-   * This replaces the react-bootstrap version 'cos we saw odd bugs there.
-   * Plus since we're providing state handling, we don't need a full component.
-   */
-function FormControl({ value, type, required, size, className, prepend, append, proppath, placeholder, ...otherProps }) {
+ * 
+*/
+function FormControl({ value, type, required, size, className, prepend, append, proppath, placeholder,
+	 onChange, onEnter, onKeyDown, ...otherProps }) 
+{
 	if (value === null || value === undefined) value = '';
 
 	// add css classes for required fields
@@ -1209,18 +1214,33 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 	// const focusPath = DataStore.getValue(FOCUS_PATH)
 	// const autoFocus = otherProps.name===focusPath; // TODO proppath.join(".") === focusPath;
 
+	// submit if the user types return?
+	let onKeyDown2 = onKeyDown;
+	if (onEnter) {		
+		let onEnter2 = e => {
+			if (e.key === "Enter") {
+				onEnter(new FakeEvent(value));
+			}
+		};		
+		if (onKeyDown) {
+			onKeyDown2 = e => { onKeyDown(e); onEnter2(e); };
+		} else {
+			onKeyDown2 = onEnter2;
+		}
+	}
+
 	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
 	if (prepend || append) {
 		return (
 			<InputGroup className={klass} size={size}>
 				{prepend ? <InputGroupAddon addonType="prepend"><InputGroupText>{prepend}</InputGroupText></InputGroupAddon> : null}
-				<Input type={type} value={value} placeholder={placeholder} {...otherProps} />
+				<Input type={type} value={value} placeholder={placeholder} onChange={onChange} onKeyDown={onKeyDown2} {...otherProps} />
 				{append ? <InputGroupAddon addonType="append">{append}</InputGroupAddon> : null}
 			</InputGroup>
 		);
 	}
 
-	return <Input className={klass} bsSize={size} type={type} value={value} placeholder={placeholder} {...otherProps} />;
+	return <Input className={klass} bsSize={size} type={type} value={value} placeholder={placeholder} onChange={onChange} onKeyDown={onKeyDown2} {...otherProps} />;
 }
 
 
@@ -1404,18 +1424,34 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	if (rawToStore) rawToStoreForType[type] = rawToStore;
 };
 
+/** @deprecated use the FakeEvent instead
 // Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it
 // TODO Copy-paste from PropControlUpload.jsx - factor out?
+ */
 export const fakeEvent = {
 	preventDefault: () => null,
 	stopPropagation: () => null,
 	cooked: true, // Signal PropControl wrapper code NOT to call setRawValue
 };
 
+/**
+ * Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it.
+ */
+class FakeEvent {
+	preventDefault() { return null; }	
+	stopPropagation() { return null; }
+	cooked=true; // Signal PropControl wrapper code NOT to call setRawValue
+	target;
+	/** Base for a dummy event. */
+	constructor(value) {
+		this.target = {value};
+	}
+}
 
 export {
 	registerControl,
 	FormControl,
+	FakeEvent,
 	InputStatus,
 	setInputStatus,
 	getInputStatus,
