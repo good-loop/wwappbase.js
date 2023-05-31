@@ -15,6 +15,7 @@ import Advert from './Advert';
 import Money from './Money';
 import { assert } from '../utils/assert';
 import ActionMan from '../plumbing/ActionManBase';
+import { getId } from './DataClass';
 
 /* ------- Data Functions --------- */
 
@@ -47,6 +48,7 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 	let pvImpactDebits, impactDebits;
 	let pvCharities, charities;
 	let ads;
+	let subCampaignsWithDebits, subBrandsWithDebits;
 
 	// Fetch campaign object if specified
 	if (itemType === "campaign" || itemType === C.TYPES.Campaign) {
@@ -165,7 +167,24 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 		throw new Error("404: Not found");
 	}
 
-	return {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads};
+	// Filter sub brands and campaigns to only those with debits attached, for convenience
+	let cidsWithDebits = [];
+	let bidsWithDebits = [];
+	impactDebits.forEach(debit => {
+		if (debit.campaign && !cidsWithDebits.includes(debit.campaign)) cidsWithDebits.push(debit.campaign);
+		if (debit.vertiser && !bidsWithDebits.includes(debit.vertiser)) bidsWithDebits.push(debit.vertiser);
+	});
+	subCampaignsWithDebits = subCampaigns.filter(c => cidsWithDebits.includes(getId(c)));
+	subBrandsWithDebits = subBrands.filter(b => bidsWithDebits.includes(getId(b)));
+
+	// Allow URL flag to override
+	const showAll = DataStore.getUrlValue("showAll");
+	if (showAll) {
+		subBrandsWithDebits = subBrands;
+		subCampaignsWithDebits = subCampaigns;
+	}
+
+	return {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads, subCampaignsWithDebits, subBrandsWithDebits};
 }
 
 
