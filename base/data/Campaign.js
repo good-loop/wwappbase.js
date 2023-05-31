@@ -232,9 +232,7 @@ Campaign.viewcountByCountry = ({campaign, status}) => {
 	}
 	const pvAllAds = Advert.fetchForCampaign({campaignId:campaign.id, status});
 	let allAds = List.hits(pvAllAds.value) || [];
-	console.log("res allAds: ", allAds)
 	const viewcount4campaign = Advert.viewcountByCountry({ads:allAds});
-	console.log("VIEWS BY COUNTRY", viewcount4campaign);
 	return viewcount4campaign;
 };
 
