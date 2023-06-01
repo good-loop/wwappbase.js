@@ -680,7 +680,7 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 };
 
 
-/* How many IDs can be requested from _list at a time before we break the request down? (/
+/* How many IDs can be requested from _list at a time before we break the request down? */
 const MAX_ID_LIST_LENGTH = 100;
 /* How many items should we ask for at a time in a multi-request list-by-query? */
 const PAGINATION_LENGTH = 1000;
