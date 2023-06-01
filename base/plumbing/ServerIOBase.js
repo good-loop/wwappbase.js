@@ -35,7 +35,7 @@ const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http', stage: 'ht
 ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}.sogive.org/charity`;
 ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 
-// Init ENPOINTS for typescript ??
+// Init ENDPOINTS for typescript ??
 ServerIO.DATALOG_ENDPOINT = '';
 ServerIO.MEDIA_ENDPOINT = '';
 ServerIO.MEASURE_ENDPOINT = '';
@@ -51,7 +51,7 @@ const endpoints = [
 	{name: 'Ad', key: 'AS_ENDPOINT', base: 'as.good-loop.com'},
 	/** Where uploads go */
 	{name: 'Media', key: 'MEDIA_ENDPOINT', base: 'uploads.good-loop.com'},
-	{name: 'Measure', key: 'MEASURE_ENDPOINT', base: 'measure.good-loop.com'},
+	{name: 'Measure', key: 'MEASURE_ENDPOINT', base: 'measure.good-loop.com/measure'},
 	{name: 'Portal', key: 'PORTAL_ENDPOINT', base: 'portal.good-loop.com'},
 ];
 // set defaults
@@ -141,7 +141,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://testlg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com/measure';
 		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
 		// hack for SoGive
 		if (ServerIO.APIBASE.includes("sogive")) {
@@ -162,7 +162,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = protocol+'//locallg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = protocol+'//localprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = protocol+'//localuploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = protocol+'//localmeasure.good-loop.com/measure';
 		ServerIO.APIBASE = ''; // lets assume you're on local
 		return;
 	}
@@ -172,7 +172,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://stagelg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://stageprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://stageuploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = 'https://stagemeasure.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://stagemeasure.good-loop.com/measure';
 		// ServerIO.APIBASE = ''; // ?? fix in a refactor
 		return;
 	}
@@ -182,7 +182,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.DATALOG_ENDPOINT = 'https://lg.good-loop.com/data';
 		ServerIO.PROFILER_ENDPOINT = 'https://profiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://uploads.good-loop.com';
-		ServerIO.MEASURE_ENDPOINT = 'https://measure.good-loop.com';
+		ServerIO.MEASURE_ENDPOINT = 'https://measure.good-loop.com/measure';
 		if (ServerIO.APIBASE) {
 			ServerIO.APIBASE = `https://${unprefixedHostname}`;
 		} else if (ServerIO.APIBASE === '' || ServerIO.APIBASE === '/') {
@@ -448,23 +448,15 @@ ServerIO.getEndpointForType = (type) => {
  * (to handle partial returns, security filtered returns, etc).
  * Methods like Crud's ActionMan.getDataItem *do* store into DataStore.
  *
- * @param {String} url The url to which the request should be made.
+ * @param {string} url The url to which the request should be made.
+ * @param {object} [params] Optional map of settings to modify the request.
+ * @param {boolean} [params.swallow] Don't display messages returned by the server
+ * jQuery parameters (partial notes only)
+ * @param {object} [params.data] data to send - this should be a simple key -> primitive-value map.
+ * @param {Function} [params.xhr] Used for special requests, e.g. file upload
+ * @see {@link https://api.jquery.com/jQuery.ajax/|jQuery AJAX} for more
  *
- * @param {Object} params Optional map of settings to modify the request.
- * See <a href="http://api.jquery.com/jQuery.ajax/">jQuery.ajax</a> for details.
- * IMPORTANT: To specify form data, use params.data
- *
- * {
- * 	// Our parameters
- * 	swallow: true to swallow any messages returned by the server.
- * 
- * 	// jQuery parameters (partial notes only)
- * 	data: {Object} data to send - this should be a simple key -> primitive-value map.
- * 	xhr: {Function} Used for special requests, e.g. file upload
- * }
- 
- *
- * @returns A <a href="http://api.jquery.com/jQuery.ajax/#jqXHR">jqXHR object</a>.
+ * @returns A {@link https://api.jquery.com/jQuery.ajax/#jqXHR|jqXHR object}.
  * NB: a PromiseValue would be nicer, but the refactor would affect lots of code.
 **/
 ServerIO.load = function(url, params) {
