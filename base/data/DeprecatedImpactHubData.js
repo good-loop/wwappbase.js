@@ -341,6 +341,70 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
     return mergedHideAds;
 }
 
+/**
+ * @deprecated
+* Get (and cache) all ads associated with the given campaign. This will apply hide-list and never-served filters 
+* @param {Object} p 
+* @param {Campaign} p.campaign 
+* @param {?KStatus} p.status
+* @param {?String} p.query Filter by whatever you want, eg data
+* @returns PromiseValue(List(Advert)) HACK Adverts get `_hidden` added if they're excluded.
+*/
+Campaign.pvAdsLegacy = ({campaign,status=KStatus.DRAFT,query}) => {
+   let pv = DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
+       return pAds2({campaign,status,query});
+   });
+   return pv;
+};
+
+/**
+ * HACK: access=public
+ * NB: This function does chained promises, so we use async + await for convenience.
+ * @returns Promise List(Advert) All ads -- hidden ones are marked with a truthy `_hidden` prop
+ */
+const pAds2 = async function({campaign, status, query, isSub}) {
+	Campaign.assIsa(campaign);
+	if (campaign.master && ! isSub) { // NB: a poorly configured campaign can be a master and a leaf
+		// Assume no direct ads
+		// recurse
+		const pvSubs = Campaign.pvSubCampaigns({campaign});
+		let subsl = await pvSubs.promise;
+		let subs = List.hits(subsl);
+		let AdListPs = subs.map(sub => {
+			let pSubAds = pAds2({campaign:sub, status:KStatus.PUBLISHED, query, isSub:true});
+			return pSubAds;
+		});
+		let adLists = await Promise.all(AdListPs);
+		let ads = [];
+		adLists.forEach(adl => ads.push(...List.hits(adl)));
+		// adds can be hidden at leaf or master
+		pAds3_labelHidden({campaign, ads});
+
+		const list = new List(ads);
+		sortAdsList(list);
+		return list;
+	}
+
+	// leaf campaign
+	// fetch ads
+	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
+	// ...HACK allow Impact Hub to fetch an unfiltered but cleansed list
+	//    But not for previews, as access=public cannot read DRAFT
+	const access = status==KStatus.PUBLISHED? "public" : null; 
+	// ...fetch
+	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query, access});
+	let adl = await pvAds.promise;
+	List.assIsa(adl);
+	sortAdsList(adl);
+
+	// Label ads using hide list and non-served
+	let ads = List.hits(adl);
+	pAds3_labelHidden({campaign, ads});
+
+	return adl;
+};
+
 const pAds3_labelHidden = ({campaign, ads}) => {
 	// manually hidden
 	const hideAdverts = Campaign.hideAdverts(campaign);
@@ -360,49 +424,6 @@ const pAds3_labelHidden = ({campaign, ads}) => {
 			ad._hidden = "non-served";
 		}
 	});
-};
-
-/**
- * @deprecated
-* Get (and cache) all ads associated with the given campaign. This will apply hide-list and never-served filters 
-* @param {Object} p 
-* @param {Campaign} p.campaign 
-* @param {?KStatus} p.status
-* @param {?String} p.query Filter by whatever you want, eg data
-* @returns PromiseValue(List(Advert)) HACK Adverts get `_hidden` added if they're excluded.
-*/
-Campaign.pvAdsLegacy = ({campaign,status=KStatus.DRAFT,query}) => {
-   let pv = DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
-       return pAds2Legacy({campaign,status,query});
-   });
-   return pv;
-};
-
-/**
- * @deprecated
- * HACK: access=public
- * NB: This function does chained promises, so we use async + await for convenience.
- * @returns Promise List(Advert) All ads -- hidden ones are marked with a truthy `_hidden` prop
- */
-const pAds2Legacy = async function({campaign, status, query, isSub}) {
-	Campaign.assIsa(campaign);
-	// fetch ads
-	let sq = SearchQuery.setProp(null, "campaign", campaign.id);
-	if (query) sq = SearchQuery.and(sq, new SearchQuery(query));
-	// ...HACK allow Impact Hub to fetch an unfiltered but cleansed list
-	//    But not for previews, as access=public cannot read DRAFT
-	const access = status==KStatus.PUBLISHED? "public" : null; 
-	// ...fetch
-	const pvAds = ActionMan.list({type: C.TYPES.Advert, status, q:sq.query, access});
-	let adl = await pvAds.promise;
-	List.assIsa(adl);
-	sortAdsList(adl);
-
-	// Label ads using hide list and non-served
-	let ads = List.hits(adl);
-    pAds3_labelHidden({campaign, ads})
-
-	return adl;
 };
 
 /** Newest first. Safe default for pretty much everywhere here. */
