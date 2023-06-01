@@ -4,7 +4,7 @@ import Enum from 'easy-enums';
 import DataClass from './DataClass';
 import C from '../CBase';
 import ActionMan from '../plumbing/ActionManBase';
-import DataStore from '../plumbing/DataStore';
+import DataStore, { getListPath } from '../plumbing/DataStore';
 import deepCopy from '../utils/deepCopy';
 import { getDataItem, getDataList } from '../plumbing/Crud';
 import NGO from './NGO';
@@ -197,7 +197,7 @@ const fetchForAdvertisers2 = async (vertiserIds, status, q) => {
 Advert.fetchForCampaign = ({campaignId, status, q}) => Advert.fetchForCampaigns({campaignIds:[campaignId], status, q});
 
 Advert.fetchForCampaigns = ({campaignIds, status, q}) => {
-	let pv = new PromiseValue(fetchForCampaigns2(campaignIds, status, q));
+	let pv = DataStore.fetch(getListPath({type:C.TYPES.Advert, status, q, campaignIds}), () => fetchForCampaigns2(campaignIds, status, q));
 	return pv;
 }
 
