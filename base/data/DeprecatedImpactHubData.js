@@ -510,5 +510,22 @@ ServerIO.getDonationsData = ({q, start, end, name}) => {
 	return ServerIO.load(url, params);
 };
 
+/**
+ * Get the viewcount for a campaign, summing the ads (or using the override numPeople)
+ * @param {Object} p
+ * @param {Campaign} p.campaign 
+ * @returns {Number}
+ */
+Campaign.viewcountDeprecated = ({campaign, status}) => {
+	// manually set?
+	if (campaign.numPeople) {
+		return campaign.numPeople;
+	}
+	const pvAllAds = Campaign.pvAdsLegacy({campaign, status});
+	let allAds = List.hits(pvAllAds.value) || [];
+	const viewcount4campaign = Advert.viewcountByCampaign(allAds);
+	let totalViewCount = sum(Object.values(viewcount4campaign));
+	return totalViewCount;
+};
 
 export default Campaign;
