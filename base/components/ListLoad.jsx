@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
-import { Button, Card, CardBody, Form } from 'reactstrap';
+import { Button, Card, CardBody, Form, Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 
 import { assert, assMatch } from '../utils/assert';
 
@@ -21,6 +21,8 @@ import AThing from '../data/AThing';
 import List from '../data/List';
 import { A, modifyPage } from '../plumbing/glrouter';
 import Roles from '../Roles';
+
+const DEFAULT_PAGE_SIZE = 100;
 
 /**
  * Provide a list of items of a given type.
@@ -58,7 +60,7 @@ import Roles from '../Roles';
  * @param {?Function} p.nameFn passed to ListItem, to have custom name extraction
  * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which don't nest).* 
  * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
- * @param {?boolean} p.hideTotal - If true, don't show the "Total about 17" line
+ * @param {?boolean} p.hideTotal - Don't show the "About X results in total" line
  * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
  * @param {?KStatus} p.preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  * @param {?Boolean} p.hasFilter - deprecated - use canFilter
@@ -85,14 +87,14 @@ function ListLoad({ type, status, servlet, navpage,
 	itemClassName,
 	transformFn,
 	list,
-	ListItem=DefaultListItem, 
+	ListItem = DefaultListItem,
 	nameFn,
 	hasCsv, csvColumns, hideCsvColumns,
 	noResults,
 	notALink,
 	preferStatus,
 	hideTotal,
-	pageSize,
+	pageSize = DEFAULT_PAGE_SIZE,
 	unwrapped,
 	onClickItem,
 	onClickWrapper,
@@ -101,7 +103,7 @@ function ListLoad({ type, status, servlet, navpage,
 	otherParams = {}
 }) {
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
-	if ( ! status) {
+	if (!status) {
 		if (!list) console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
 		status = KStatus.ALL_BAR_TRASH;
 	}
@@ -136,7 +138,7 @@ function ListLoad({ type, status, servlet, navpage,
 	if (filter) filter = filter.toLowerCase(); // normalise
 
 	let fastFilter, isLoading, error;
-	if ( ! list) { // Load!
+	if (!list) { // Load!
 		// Load via ActionMan -- both filtered and un-filtered
 		// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 		// while fetching from the backedn using the filter)
@@ -179,80 +181,181 @@ function ListLoad({ type, status, servlet, navpage,
 	}
 
 	// NB: you can get truncated lists with pageSize but no pageSelectID (e.g. see PropControlDataItem)
-
-	// keeps page within page limit [0, pageSize]
-	let pageCount = pageSize ? Math.ceil(total / pageSize) : 0;
-	const pageInRange = n => Math.max(Math.min(pageCount, n), 0);
-
 	// read the url for what page we're on - if none are selected then set it to page 1
-	if (pageSize && pageSelectID && ! DataStore.getUrlValue(pageSelectID)) DataStore.setUrlValue(pageSelectID, 1);
-	let pageNum = 1;
-	if (pageSize && pageSelectID) pageNum = pageInRange(Number(DataStore.getUrlValue(pageSelectID)));
-	
-	// update url to selected new page
-	const setPageNum = n => {
-		DataStore.setUrlValue(pageSelectID, pageInRange(n));
-		window.scrollTo(0, 0);
+
+	const pageCount = Math.ceil(total / (pageSize || total)); // no paging = total/total = 1 page
+	const clampPage = n => Math.max(Math.min(pageCount || Infinity, n), 1); // Clamp page number to [1 .. pageCount]
+	const pageFromUrl = pageSelectID ? DataStore.getUrlValue(pageSelectID) : 0;
+
+	// Internal value for page - URL value or 1
+	const [page, setPageRaw] = useState(pageFromUrl);
+	// Go to page number, update URL param if used, and scroll to top
+	const setPage = (n, scroll = true) => {
+		n = clampPage(n);
+		if (pageSelectID && n !== pageFromUrl) DataStore.setUrlValue(pageSelectID, n);
+		if (n === page) return;
+		setPageRaw(n);
+		if (scroll) window.scrollTo(0, 0);
 	};
 
-	let allItems = items; // don't paginate the csv download
-	items = pageSize ? paginate({ items, pageNum, pageSize }) : items;
+	// Page number pulled from URL may be out-of-range when item list comes in - fix if so
+	useEffect(() => {
+		if (!items) return;
+		if (page !== clampPage(page)) setPage(clampPage(page), false);
+	}, [pageCount]);
+
+	// Initialise page URL value if absent? -- No, don't cram stuff into URL prematurely
+	// if (items && pageSelectID && !pageFromUrl) setPage(1, false);
+	
+	const allItems = items; // Keep filtered but unpaginated list for e.g. CSV download
+	if (pageSize) items = paginate({ items, page, pageSize });
+
+	// Generate the pagination links, if applicable
+	const pageControls = <PageControls setPage={setPage} current={page} pageCount={pageCount} />;
+
+	// Static props common to all ListItemWrappers & ListItems
+	const wrapperCommon = { type, servlet, navpage, unwrapped, checkboxes, canCopy, cannotClick, canDelete, notALink, itemClassName, onClickWrapper };
+	const itemCommon = { type, servlet, navpage, nameFn, items: allItems, sort: DataStore.getValue(['misc', 'sort'])};
 
 	return (<div className={space('ListLoad', className, ListItem === DefaultListItem ? 'DefaultListLoad' : null)} >
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
 
 		{canFilter && <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter" />}
 
-		{ ! items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
-		{total && !hideTotal ? <div>{total > 20 && "About "}{total} results in total</div> : null}
+		{!items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
+
+		{(total && !hideTotal) ? <div>
+			{pageControls && `Showing ${1 + ((page - 1) * pageSize)} to ${page * pageSize} of `}
+			{total} results{!pageControls && ' in total'}.</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
 		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} hideCsvColumns={hideCsvColumns} />}
+		{pageControls}
 		{items.map((item, i) => (
-			<ListItemWrapper key={getId(item) || i}
-				unwrapped={unwrapped}
-				item={item}
-				type={type}
-				checkboxes={checkboxes}
-				canCopy={canCopy}
-				cannotClick={cannotClick}
-				list={list}
-				canDelete={canDelete}
-				servlet={servlet}
-				navpage={navpage}
-				notALink={notALink}
-				itemClassName={itemClassName}
-				onClickWrapper={onClickWrapper}
-			>
-				<ListItem key={'li' + (getId(item) || i)}
-					type={type}
-					servlet={servlet}
-					navpage={navpage}
-					item={item}
-					sort={DataStore.getValue(['misc', 'sort'])}
-					items={allItems} /* dont paginate */
-					nameFn={nameFn}
-					onClick={() => onClickItem(item)}
-				/>
+			<ListItemWrapper key={getId(item) || i} item={item} {...wrapperCommon} >
+				<ListItem key={'li' + (getId(item) || i)} item={item} onClick={() => onClickItem(item)} {...itemCommon} />
 			</ListItemWrapper>
 		))}
-		{(pageSize && total > pageSize && pageSelectID) && (
-			<div className="pagination-controls flex-row justify-content-between align-items-center">
-				<div>
-					<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(pageNum - 1)} ><b> ◀ </b></Button>
-					<Button className="mr-2" color="secondary" disabled={!pageNum} onClick={e => setPageNum(Math.max(pageNum - 10, 0))} ><b>◀◀◀</b></Button>
-				</div>
-				page {(pageNum)} of {pageCount}
-				<div>
-					<Button className="ml-2" color="secondary" disabled={pageNum === pageCount} onClick={e => setPageNum(Math.min(pageNum + 10, pageCount))} ><b>▶▶▶</b></Button>
-					<Button className="ml-2" color="secondary" disabled={pageNum === pageCount} onClick={e => setPageNum(pageNum + 1)} ><b> ▶ </b></Button>
-				</div>
-			</div>
-		)}
+		{pageControls}
 		{isLoading && <Misc.Loading text={type.toLowerCase() + 's'} />}
 		<ErrAlert error={error} />
 	</div>);
 } // ./ListLoad
-//
+
+
+/**
+ * Generates a Reactstrap <Pagination> for the current ListLoad.
+ *
+ * @param {Object} props All passed down to PageBtn
+ */
+function PageControls(props) {
+	const { pageCount, current, setPage } = props;
+	if (!pageCount || pageCount <= 1) return null;
+
+	const [pagerEl, setPagerEl] = useState();
+	const [items, setItems] = useState([]);
+	const [showButtonCount, setShowButtonCount] = useState(null); // How many buttons do we have room for?
+	const [measured, setMeasured] = useState(false); // Has the pager been rendered with a properly set button count?
+
+	// Fit item count to available space
+	useEffect(() => {
+		// Previously measured but container width changed - invalidate size calibration.
+		if (measured) {
+			setMeasured(false);
+			setShowButtonCount(null);
+			return;
+		}
+		if (!pagerEl) return;
+
+		// How wide - on average - are the pager buttons?
+		const itemEls = pagerEl.querySelectorAll('li.page-item');
+		let avgSize = 0;
+		itemEls.forEach(el => avgSize += el.clientWidth);
+		avgSize /= itemEls.length;
+
+		// How many non-number buttons are also taking up space?
+		let extraItems = 2; // prev and next
+		if (pageCount > 2) extraItems += 2; // first and last
+
+		// So - this is how many number buttons (including ... skipped-item indicators) there's room for.
+		setShowButtonCount(Math.floor((pagerEl.clientWidth / avgSize) - extraItems));
+	}, [pagerEl?.clientWidth]);
+
+	// Only create list when key props change
+	useEffect(() => {
+		if (!pageCount) return;
+		// Render once, invisible, with all page buttons to calibrate sizing
+		let firstButton = 1, lastButton = pageCount;
+		if (showButtonCount) {
+			firstButton = Math.max(1, Math.ceil(current - (showButtonCount / 2)));
+			lastButton = Math.min(pageCount, Math.floor(current + (showButtonCount / 2)));
+			if (firstButton === 1) lastButton = Math.min(pageCount, showButtonCount);
+			if (lastButton === pageCount) firstButton = Math.max(1, pageCount - showButtonCount);
+		}
+
+		const nextItems = [];
+		if (pageCount > 2) nextItems.push(<PageBtn key="first" first {...props} />);
+		nextItems.push(<PageBtn key="prev" previous {...props} />);
+		for (let i = firstButton; i <= lastButton; i++) {
+			// Dummy "..." buttons still take up space - so they come out of the button allowance.
+			if (i === firstButton && firstButton > 1) {
+				nextItems.push(<PageBtn key="skip-low" dummy />);
+			} else if (i === lastButton && lastButton < pageCount) {
+				nextItems.push(<PageBtn key="skip-high" dummy />);
+			} else {
+				nextItems.push(<PageBtn key={`page-${i}`} target={i} {...props} />);
+			}
+		}
+		nextItems.push(<PageBtn key="next" next {...props} />);
+		if (pageCount > 2) nextItems.push(<PageBtn key="last" last {...props} />);
+
+		setItems(nextItems);
+		// The rendered item list should be the right length to fit its container & can be made visible.
+		if (showButtonCount) setMeasured(true);
+	}, [pageCount, current, setPage, showButtonCount]);
+
+
+	// Override default <nav> to <div> to play nicely with our CSS.
+	return <div className={space('pager', measured && 'measured')} ref={setPagerEl}>
+		<Pagination>
+			{items}
+		</Pagination>
+	</div>;
+}
+
+
+/**
+ * Handles a lot of boilerplate for generating <PaginationItem>s and <PaginationLink>s
+ *
+ * @param {Object} p
+ * @param {!Function} p.setPage On-click for each button. Takes a target page number.
+ * @param {!Number} p.target Page the link should go to
+ * @param {!Number} p.current Current page number
+ * @param {!Number} p.pageCount Total page count
+ * @param {!Boolean} p.dummy Not a link, just a "page buttons omitted" ellipsis
+ */
+function PageBtn({setPage, target, current, pageCount, dummy, ...linkProps}) {
+	if (dummy) return <PaginationItem disabled><PaginationLink>…</PaginationLink></PaginationItem>;
+
+	const {first, previous, next, last} = linkProps;
+	const itemProps = {};
+	let text = null;
+	if (first || previous) {
+		target = first ? 1 : (current - 1);
+		itemProps.disabled = (current === 1);
+	} else if (next || last) {
+		target = last ? pageCount : (current + 1);
+		itemProps.disabled = (current === pageCount);
+	} else {
+		text = target;
+		itemProps.active = (current === target);
+	}
+
+	return <PaginationItem {...itemProps}>
+		<PaginationLink {...linkProps} onClick={() => setPage(target)}>{text}</PaginationLink>
+	</PaginationItem>;
+}
+
+
 
 
 /**
@@ -271,18 +374,20 @@ function ListLoadCSVDownload({items, csvColumns, hideCsvColumns}) {
 	return <DownloadCSVLink data={items} columns={csvColumns} />;	
 }
 
+
 /**
  * 
  * @param {Object} p
- * @param {!Object[]} p.items
- * @param {!Number} p.pageNum
- * @param {!Number} p.pageSize
+ * @param {!Object[]} p.items Raw list of items
+ * @param {!Number} p.page Page number to generate
+ * @param {!Number} p.pageSize Size of pages
  * @returns {Object[]} slice of items
  */
-const paginate = ({ items, pageNum, pageSize }) => {
-	assert(pageSize, "paginate");
-	return items.slice((pageNum-1) * pageSize, (pageNum) * pageSize);
+const paginate = ({ items, page, pageSize }) => {
+	assert(pageSize, 'paginate');
+	return items.slice((page - 1) * pageSize, (page) * pageSize);
 };
+
 
 /**
  * TODO

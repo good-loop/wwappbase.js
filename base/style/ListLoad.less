@@ -10,6 +10,23 @@
 		justify-content: space-evenly;
 		margin: 0.5em;
 	}
+
+	// Expand / squeeze pagination items to fill container
+	// ...once we measure their natural size & can estimate how many will fit.
+	.pager {
+		visibility: hidden;
+		&.measured {
+			visibility: visible;
+			// squeeze
+			.page-item {
+				flex-shrink: 1;
+				flex-grow: 1;
+			}
+			.page-link {
+				width: 100%;
+			}
+		}
+	}
 }
 
 

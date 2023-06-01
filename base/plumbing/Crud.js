@@ -680,6 +680,14 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 };
 
 
+/* How many IDs can be requested from _list at a time before we break the request down? (/
+const MAX_ID_LIST_LENGTH = 100;
+/* How many items should we ask for at a time in a multi-request list-by-query? */
+const PAGINATION_LENGTH = 1000;
+/* Safety backstop - don't batch up requests for more than 5000 items.
+TODO ListLoad will need to be smarter about fetching, and CrudServlet will need to be be more precise about total results. */
+const MAX_COLLECTED_LIST = 5000;
+
 /**
  * Get a list of CRUD objects from the server
  * 
@@ -698,10 +706,12 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
  * 
  * @see DataStore.invalidateList()
  */
- const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {	
+ const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {
 	assert(C.TYPES.has(type), type);
 	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found	
 	if (ids && ids.length) {
+		// Long list of IDs? Break it down into pages.
+		if (ids.length > MAX_ID_LIST_LENGTH) return getDataListPagedIds(...arguments);
 		q = SearchQuery.setPropOr(q, "id", ids).query;
 	}
 	if (SearchQuery.isa(q)) {
@@ -709,14 +719,58 @@ ActionMan.refreshDataItem = ({type, id, status, domain, ...other}) => {
 	}
 	if (q) assMatch(q, String); // NB: q should not be a SearchQuery for the functions below
 	const lpath = getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});
+
 	const pv = DataStore.fetch(lpath, () => {
-		return ServerIO.list({type, status, q, prefix, start, end, size, sort, domain, ...other});
-	});	
+		const listParams = {type, status, q, prefix, start, end, size, sort, domain, ...other};
+		const listPromise = ServerIO.list(listParams);
+		return listPromise.then(res => {
+			// Check that the server has returned all available results - if not, make additional requests.
+			// No pagination to resolve? Just return the result.
+			if (!res || (res.cargo.hits.length >= res.cargo.total)) return res;
+			// OK, load all subsequent pages - up to the safety max.
+			let fromIndex = res.cargo.hits.length;
+			const pagePromises = [listPromise];
+			while (fromIndex < Math.min(res.cargo.total, MAX_COLLECTED_LIST)) {
+				pagePromises.push(ServerIO.list({...listParams, from: fromIndex}));
+				fromIndex += PAGINATION_LENGTH;
+			}
+			// Let original promise resolve once all requests are complete.
+			return collectListPromises(pagePromises);
+		});
+	});
 	// console.log("ActionMan.list", q, prefix, pv);
 	return pv;
 };
 
 ActionMan.list = getDataList;
+
+
+/** Get a long list of CRUDable objects from the server by ID - to dodge URL length limitations. */
+const getDataListPagedIds = ({ids, ...params}) => {
+	const idsBatched = ids.slice(); // splice below is in-place, so copy before modify
+	const promises = [];
+
+	// Pull out blocks of 100 ids at a time to fetch, and hold the promise for each request
+	while (idsBatched.length) {
+		promises.push(getDataList({...params, ids: ids.splice(0, MAX_ID_LIST_LENGTH)})).promise;
+	}
+
+	// When all requests have resolved, collect their responses together & resolve the PV.
+	return new PromiseValue(collectPromises(promises));
+};
+
+
+/** Synthesises a larger list response promise from a collection of paged ones. */
+const collectListPromises = promises => Promise.all(promises).then(results => {
+	return results.reduce((acc, res) => {
+		if (acc === null) return res;
+		acc.cargo.hits.push(...res.cargo.hits);
+		acc.errors.push(...res.errors);
+		acc.messages.push(...res.messages);
+		acc.success = acc.success && res.success;
+		return acc;
+	}, null);
+});
 
 
 /**
@@ -739,8 +793,8 @@ ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', 
 	}
 	let params = {
 		data: {status, q, start, end, prefix, sort, size, ...other},
-		method: "POST"
-	};	
+		method: 'POST'
+	};
 	// HACK: sogive? include unlisted charities (which sogive itself filters by default)
 	if (url.includes("sogive.org/charity")) {
 		params.data.unlisted=true;
