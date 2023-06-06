@@ -109,66 +109,44 @@ Campaign.dntn = (campaign, isSub) => {
 /**
 * Recursive and fetches dynamic data.
 * @deprecated
-
-* @param {!Campaign} campaign 
-*  @param {?boolean} isSub set in recursive calls
-* @returns {!Object} {cid: Money} Values may change as data loads
+* @param {Campaign} campaign
+* @param {boolean} [isSub] set in recursive calls
+* @returns {Object} {cid: Money} Values may change as data loads
 * @see Campaign.dntn
 */
 Campaign.dntn4charity = (campaign, isSub) => {
-   assert( ! isSub || isSub===true, isSub);
-   Campaign.assIsa(campaign);
-   if ( ! campaign.master || isSub) {
-       // leaf
-       // hard set values?
-       let d4c = Object.assign({}, campaign.dntn4charity); // defensive copy, never null
-       // HACK realtime=true forces a realtime fetch
-       if (getUrlVars().realtime) {
-           d4c = {};
-       }
-       // are any missing?
-       let charities = Campaign.charities(campaign);
-       let missingNGOs = charities.filter(ngo => ! d4c[NGO.id(ngo)]);
-       if ( ! missingNGOs.length) {
-           return d4c;
-       }
-       // HACK realtime off??
-       if (getUrlVars().realtime === false) {
-           return d4c
-       }
-       // Ask the backend
-       let sq = SearchQuery.setProp(null, "campaign", campaign.id);
-       let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
-           () => ServerIO.getDonationsData({q:sq.query, name:"campaign-donations"}), 
-           {cachePeriod:300*1000});
-       if ( ! pvDntnData.value) {
-           return d4c;
-       }		
-       let by_cid = pvDntnData.value.by_cid;
-       // merge with top-level
-       let alld4c = Object.assign({}, by_cid, d4c);
-       return alld4c;
-   } // ./leaf
-   // Master - recurse - sum leaf campaigns
-   if ( ! isDntn4CharityEmpty(campaign.dntn4charity)) {
-       console.warn("Ignoring master.dntn4charity - it should not be set for masters 'cos it can confuse sums for e.g. reporting by-charity in T4G", campaign);
-   }
-   let pvSubs = Campaign.pvSubCampaigns({campaign});
-   if ( ! pvSubs.value) {
-       return {};
-   }
-   let subs = List.hits(pvSubs.value);
-   let dntn4charitys = subs.map(sub => Campaign.dntn4charity(sub, true));
-   // merge + sum subs
-   let subtotal4c = {};
-   for(let i=0; i<dntn4charitys.length; i++) {
-       const subd4c = dntn4charitys[i];
-       mapkv(subd4c, (k,v) => {
-           let old = subtotal4c[k];
-           subtotal4c[k] = old? Money.add(old, v) : v;
-       });
-   }
-   return subtotal4c;
+	assert(!isSub || isSub === true, `Campaign.dntn4charity called with ambiguous value for isSub arg: ${isSub}`);
+	Campaign.assIsa(campaign);
+
+	// Leaf campaigns
+	// Hard-set values on campaigns only.
+	// Removed all realtime code - depends on /datafn/donations endpoint which is deprecated & doesn't rerurn trustworthy data
+	if (!campaign.master || isSub) {
+		return Object.assign({}, campaign.dntn4charity);
+	}
+
+	// Master campaigns: recurse over leaf campaigns & sum
+	if (!isDntn4CharityEmpty(campaign.dntn4charity)) {
+		console.warn("Ignoring master.dntn4charity - it should not be set for masters 'cos it can confuse sums for e.g. reporting by-charity in T4G", campaign);
+	}
+
+	let pvSubs = Campaign.pvSubCampaigns({campaign});
+	if (!pvSubs.value) return {};
+
+	let subs = List.hits(pvSubs.value);
+	let dntn4charitys = subs.map(sub => Campaign.dntn4charity(sub, true));
+
+	// merge + sum subs
+	let subtotal4c = {};
+	for (let i = 0; i < dntn4charitys.length; i++) {
+		const subd4c = dntn4charitys[i];
+		mapkv(subd4c, (k,v) => {
+			let old = subtotal4c[k];
+			subtotal4c[k] = old ? Money.add(old, v) : v;
+		});
+	}
+
+	return subtotal4c;
 };
 
 
