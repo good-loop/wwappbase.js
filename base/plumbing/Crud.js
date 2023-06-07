@@ -744,7 +744,8 @@ const MAX_COLLECTED_LIST = 5000;
 		if (ids?.length) return listByIds(params);
 
 		// Check that the server has returned all available results - if not, make additional requests.
-		return ServerIO.list(params).then(res => {
+		const listPromise = ServerIO.list(params);
+		return listPromise.then(res => {
 			// No pagination to resolve? Just return the result.
 			if (!res || (res.cargo.hits.length >= res.cargo.total)) {
 				return res;
