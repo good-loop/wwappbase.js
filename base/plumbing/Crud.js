@@ -736,9 +736,9 @@ const MAX_COLLECTED_LIST = 5000;
 	// Get by ID list? Special case handling.
 	if (ids?.length) return getDataListByIds(params);
 
-	// NB: q should not be a string, not a SearchQuery, for the functions below
-	if (SearchQuery.isa(q)) q = q.query;
-	if (q) assMatch(q, String);
+	// NB: q should be a string, not a SearchQuery, before passing to ServerIO.list
+	if (SearchQuery.isa(q)) params.q = q.query;
+	if (params.q) assMatch(params.q, String);
 
 	// Execute!
 	return DataStore.fetch(getListPath(params), () => {
