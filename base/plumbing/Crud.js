@@ -7,7 +7,7 @@ import DataStore, { getDataPath, getListPath } from './DataStore';
 import DataClass, {getId, getName, getType, nonce} from '../data/DataClass';
 import JSend from '../data/JSend';
 import Login from '../youagain';
-import {encURI, mapkv, parseHash} from '../utils/miscutils';
+import {mapkv, parseHash} from '../utils/miscutils';
 
 import ServerIO from './ServerIOBase';
 import ActionMan from './ActionManBase';
@@ -19,6 +19,7 @@ import KStatus from '../data/KStatus';
 import Person from '../data/Person';
 import PromiseValue from '../promise-value';
 import SearchQuery from '../searchquery';
+
 
 /**
  * @param {Object} p
@@ -124,6 +125,7 @@ const localSave = (path, person) => {
 	}
 };
 
+
 /**
  * 
  * @param {!String[]} path
@@ -178,6 +180,7 @@ const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
 	freshItem.claims.push(...newClaims);
 	console.log("applyPatch preserve local new claims",JSON.stringify(newClaims), JSON.stringify(freshItem));	
 };
+
 
 /**
  * 
@@ -254,12 +257,14 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 	return freshItem;
 };
 
+
 /**
  * @returns DataStore path for crud errors from this
  */
 const errorPath = ({type, id, action}) => {
 	return ['transient', type, id, action, 'error'];
 };
+
 
 /**
  * 
@@ -273,6 +278,7 @@ const saveEdits = ({type, id, item, previous, swallow}) => {
 	return crud({type, id, action: 'save', item, previous, swallow});
 };
 ActionMan.saveEdits = saveEdits;
+
 
 /**
  * AKA copy!
@@ -328,6 +334,7 @@ ActionMan.saveEdits = saveEdits;
 };
 ActionMan.saveAs = saveAs;
 
+
 /**
  * 
  * @returns PromiseValue(DataItem)
@@ -378,6 +385,7 @@ export const publish = ({type,id,item,previous,swallow}) => {
 		}); // ./then
 };
 
+
 /**
  * @deprecated Use publish() which has named inputs
  * This will save and publish
@@ -389,6 +397,7 @@ const publishEdits = (type, id, item, previous) => {
 	return publish({type, id, item, previous});
 };
 ActionMan.publishEdits = publishEdits;
+
 
 const preCrudListMod = ({type, id, item, action}) => {
 	assert(type && (item || id) && action);
@@ -429,6 +438,7 @@ const preCrudListMod = ({type, id, item, action}) => {
 	}
 };
 
+
 /**
  * @param {!Object} treeOfLists Must have no cycles!
  * @returns {Number} removals made
@@ -448,9 +458,11 @@ const recursivePruneFromTreeOfLists = (item, treeOfLists) => {
 	return cnt;
 };
 
+
 ActionMan.discardEdits = (type, id) => {
 	return crud({type, id, action:C.CRUDACTION.discardEdits});	
 };
+
 
 /**
  * 
@@ -474,6 +486,7 @@ ActionMan.delete = (type, pubId) => {
 	});
 };
 
+
 /**
  * Archive this item
  * @returns PromiseValue(DataItem)
@@ -485,6 +498,7 @@ ActionMan.archive = ({type, item}) => {
 	preCrudListMod({type, item, action: 'archive'});
 	return crud({ type, item, action: C.CRUDACTION.archive });
 };
+
 
 // ServerIO //
 
@@ -508,6 +522,8 @@ const startStatusForAction = (action) => {
 	}
 	throw new Error("TODO startStatusForAction "+action);
 };
+
+
 /**
  * What status do we send to the server? e.g. publish is published, save is draft.
  */
@@ -529,6 +545,7 @@ const serverStatusForAction = (action) => {
 	}
 	throw new Error("TODO serverStatusForAction "+action);
 };
+
 
 /**
  * ServerIO (ie this does not use our client side datastore) crud call 
@@ -589,6 +606,7 @@ const SIO_crud = function(type, item, previous, action, params={}) {
 // debug hack
 window.SIO_crud = SIO_crud;
 
+
 /**
  * Wrap jsonpatch and clean-up null handling
  * @param {*} previous 
@@ -614,6 +632,7 @@ ServerIO.discardEdits = function(type, item, previous) {
 ServerIO.archive = function(type, item, previous) {
 	return SIO_crud(type, item, previous, 'archive');
 };
+
 
 /**
  * get an item from the backend -- does not save it into DataStore
@@ -657,6 +676,7 @@ const getDataItem = ({type, id, status, domain, swallow, action, ...other}) => {
 };
 ActionMan.getDataItem = getDataItem;
 
+
 /**
  * Smooth update: Get an update from the server without null-ing out the local copy.
  */
@@ -688,82 +708,95 @@ const PAGINATION_LENGTH = 1000;
 TODO ListLoad will need to be smarter about fetching, and CrudServlet will need to be be more precise about total results. */
 const MAX_COLLECTED_LIST = 5000;
 
+
 /**
  * Get a list of CRUD objects from the server
  * 
  * @param {Object} p 
- * @param {?} p.type C.TYPES
- * @param {?} p.status KStatus
- * @param {?String|SearchQuery} p.q search query string
- * @param {?String[]} p.ids Convenience for a common use-case: batch fetching a set of IDs
- * @param {?String} p.sort e.g. "start-desc"
- * @param {?string|Date} p.start Add a time-filter. Usually unset.
- * @param {?string|Date} p.end Add a time-filter. Usually unset.
- * @returns PromiseValue<{hits: Object[]}>
+ * @param {String} [p.type] C.TYPES
+ * @param {String} [p.status] KStatus
+ * @param {String|SearchQuery} [p.q] search query string
+ * @param {String[]} [p.ids] Convenience for a common use-case: batch fetching a set of IDs
+ * @param {String} [p.sort] e.g. "start-desc"
+ * @param {string|Date} [p.start] Add a time-filter. Usually unset.
+ * @param {string|Date} [p.end] Add a time-filter. Usually unset.
+ * 
+ * @returns {PromiseValue<{hits: Object[]}>}
  * 
  * WARNING: This should usually be run through DataStore.resolveDataList() before using
  * Namespace anything fetched from a non-default domain
  * 
  * @see DataStore.invalidateList()
  */
- const getDataList = ({type, status, q, prefix, ids, start, end, size, sort, domain, ...other}) => {
-	assert(C.TYPES.has(type), type);
-	if (domain) console.warn("Who uses domain?",domain); // HACK is this used and how?? document it when found	
-	if (ids && ids.length) {
-		// Long list of IDs? Break it down into pages.
-		if (ids.length > MAX_ID_LIST_LENGTH) return getDataListPagedIds(...arguments);
-		q = SearchQuery.setPropOr(q, "id", ids).query;
-	}
-	if (SearchQuery.isa(q)) {
-		q = q.query;
-	}
-	if (q) assMatch(q, String); // NB: q should not be a SearchQuery for the functions below
-	const lpath = getListPath({type,status,q,prefix,start,end,size,sort,domain, ...other});
+ const getDataList = (params) => {
+	const { type, domain, q, ids } = params;
+	assert(C.TYPES.has(type), `getDataList with bad type: ${type}`);
+	// HACK What's the domain param and where is it used? Document it when found
+	if (domain) console.warn('getDataList: Who uses domain param?', domain);
+	// Get by ID list? Special case handling.
+	if (ids?.length) return getDataListByIds(params);
 
-	const pv = DataStore.fetch(lpath, () => {
-		const listParams = {type, status, q, prefix, start, end, size, sort, domain, ...other};
-		const listPromise = ServerIO.list(listParams);
+	// NB: q should not be a string, not a SearchQuery, for the functions below
+	if (SearchQuery.isa(q)) q = q.query;
+	if (q) assMatch(q, String);
+
+	// Execute!
+	return DataStore.fetch(getListPath(params), () => {
+		const listPromise = ServerIO.list(params);
+		// Check that the server has returned all available results - if not, make additional requests.
 		return listPromise.then(res => {
-			// Check that the server has returned all available results - if not, make additional requests.
 			// No pagination to resolve? Just return the result.
-			if (!res || (res.cargo.hits.length >= res.cargo.total)) return res;
-			// OK, load all subsequent pages - up to the safety max.
-			let fromIndex = res.cargo.hits.length;
-			const pagePromises = [listPromise];
-			while (fromIndex < Math.min(res.cargo.total, MAX_COLLECTED_LIST)) {
-				pagePromises.push(ServerIO.list({...listParams, from: fromIndex}));
-				fromIndex += PAGINATION_LENGTH;
+			if (!res || (res.cargo.hits.length >= res.cargo.total)) {
+				return res;
 			}
-			// Let original promise resolve once all requests are complete.
+
+			// Hits stops short, so load more pages - up to total count or the safety max.
+			let from = res.cargo.hits.length; // index to start next page
+			const pagePromises = [listPromise];
+			while (from < Math.min(res.cargo.total, MAX_COLLECTED_LIST)) {
+				pagePromises.push(ServerIO.list({...params, from}));
+				from += PAGINATION_LENGTH;
+			}
+
+			// Resolve once all requests are complete.
 			return collectListPromises(pagePromises);
 		});
 	});
-	// console.log("ActionMan.list", q, prefix, pv);
-	return pv;
 };
-
 ActionMan.list = getDataList;
 
 
-/** Get a long list of CRUDable objects from the server by ID - to dodge URL length limitations. */
-const getDataListPagedIds = ({ids, ...params}) => {
-	const idsBatched = ids.slice(); // splice below is in-place, so copy before modify
+/**
+ * Get a list of CRUDable objects from the server by ID - with code to break down to dodge URL length limitations.
+ * @param {object} p
+ * @param {string[]} p.ids The list of object IDs to fetch
+ * @param {SearchQuery|string} [p.q] A search query
+ * 
+ * @returns {PromiseValue<{hits: object[]}>}
+ */
+const getDataListByIds = ({ids, q, ...params}) => {
+	ids = ids.slice(); // Call to splice() below modifies list in-place, so copy first.
 	const promises = [];
-
-	// Pull out blocks of 100 ids at a time to fetch, and hold the promise for each request
-	while (idsBatched.length) {
-		promises.push(getDataList({...params, ids: ids.splice(0, MAX_ID_LIST_LENGTH)})).promise;
+	// Pull out pages of MAX_ID_LIST_LENGTH ids to fetch in each request...
+	while (ids.length) {
+		// Augment any existing query with one page of the IDs list
+		params.q = SearchQuery.setPropOr(q, "id", ids.splice(0, MAX_ID_LIST_LENGTH)).query;
+		promises.push(getDataList(params)).promise;
 	}
-
-	// When all requests have resolved, collect their responses together & resolve the PV.
+	// ...and when all requests have resolved, collect their responses together & resolve the PV.
 	return new PromiseValue(collectPromises(promises));
 };
 
 
-/** Synthesises a larger list response promise from a collection of paged ones. */
+/**
+ * Synthesises a larger list response promise from a collection of paged ones.
+ * @param {Promise[]} promises A list of getDataList() promises
+ * 
+ * @returns {Promise<{hits: object[]}>} Yields and object with the same signature as getDataList()
+ */
 const collectListPromises = promises => Promise.all(promises).then(results => {
 	return results.reduce((acc, res) => {
-		if (acc === null) return res;
+		if (acc === null) return res; // build on top of first result to return
 		acc.cargo.hits.push(...res.cargo.hits);
 		acc.errors.push(...res.errors);
 		acc.messages.push(...res.messages);
@@ -774,8 +807,8 @@ const collectListPromises = promises => Promise.all(promises).then(results => {
 
 
 /**
- * @param {?Object} p.other Optional extra parameters which will be sent as url parameters in data. Usually unset.
- * @returns promise(List) 
+ * @param {Object} [p.other] Optional extra parameters which will be sent as url parameters in data. Usually unset.
+ * @returns {Promise<{hits: object[]}>}
  * List has form {hits: Object[], total: Number} -- see List.js
  */
 ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', ...other}) => {
@@ -803,6 +836,7 @@ ServerIO.list = ({type, status, q, prefix, start, end, size, sort, domain = '', 
 	return p;
 };
 
+
 /**
  * The id from a /servlet/id# RESTful url. 
  * Assumes: the last segment is the id.
@@ -816,6 +850,8 @@ const restId = () => {
 	}
 	return path[1];
 };
+
+
 /**
  * The id and dataspace from a /servlet/dataspace/id# RESTful url. 
  * @returns {id, dataspace}
@@ -827,6 +863,7 @@ const restIdDataspace = () => {
 	const id = path[2];
 	return {id, dataspace};
 };
+
 
 /**
  * 
@@ -842,9 +879,10 @@ const setWindowTitle = item => {
 };
 
 
-const CRUD = {
-};
+const CRUD = {};
+
 export default CRUD;
+
 export {
 	crud,
 	saveAs,
