@@ -733,8 +733,6 @@ const MAX_COLLECTED_LIST = 5000;
 	assert(C.TYPES.has(type), `getDataList with bad type: ${type}`);
 	// HACK What's the domain param and where is it used? Document it when found
 	if (domain) console.warn('getDataList: Who uses domain param?', domain);
-	// Get by ID list? Special case handling.
-	if (ids?.length) return getDataListByIds(params);
 
 	// NB: q should be a string, not a SearchQuery, before passing to ServerIO.list
 	if (SearchQuery.isa(q)) params.q = q.query;
@@ -742,9 +740,11 @@ const MAX_COLLECTED_LIST = 5000;
 
 	// Execute!
 	return DataStore.fetch(getListPath(params), () => {
-		const listPromise = ServerIO.list(params);
+		// Get by ID list? Special case handling.
+		if (ids?.length) return listByIds(params);
+
 		// Check that the server has returned all available results - if not, make additional requests.
-		return listPromise.then(res => {
+		return ServerIO.list(params).then(res => {
 			// No pagination to resolve? Just return the result.
 			if (!res || (res.cargo.hits.length >= res.cargo.total)) {
 				return res;
@@ -774,17 +774,17 @@ ActionMan.list = getDataList;
  * 
  * @returns {PromiseValue<{hits: object[]}>}
  */
-const getDataListByIds = ({ids, q, ...params}) => {
+const listByIds = ({ids, q, ...params}) => {
 	ids = ids.slice(); // Call to splice() below modifies list in-place, so copy first.
 	const promises = [];
 	// Pull out pages of MAX_ID_LIST_LENGTH ids to fetch in each request...
 	while (ids.length) {
-		// Augment any existing query with one page of the IDs list
-		params.q = SearchQuery.setPropOr(q, "id", ids.splice(0, MAX_ID_LIST_LENGTH)).query;
-		promises.push(getDataList(params)).promise;
+		// Augment existing query with one page of the IDs list
+		params.q = SearchQuery.setPropOr(q, 'id', ids.splice(0, MAX_ID_LIST_LENGTH)).query;
+		promises.push(ServerIO.list(params)).promise;
 	}
-	// ...and when all requests have resolved, collect their responses together & resolve the PV.
-	return new PromiseValue(collectPromises(promises));
+	// ...and when all requests have resolved, collect their responses together
+	return collectListPromises(promises);
 };
 
 
