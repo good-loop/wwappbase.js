@@ -1,13 +1,9 @@
 
 import React, { useEffect, useRef } from 'react';
 import Roles from '../Roles';
-import { space } from '../utils/miscutils';
 
 const STYLE_TODO = { background: 'rgba(255,128,128,0.5)' };
 
-const getStyle = () => {
-	return 
-}
 /**
  Marker for work in progress. If it should slip into production, it is hidden from non-devs
  */

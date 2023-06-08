@@ -33,44 +33,44 @@ const DEFAULT_PAGE_SIZE = 100;
  * 	const itemId = path[1];
  *
  * @param {Object} p
- * @param {!String} p.type from C.TYPES
- * @param {?String} p.q - Optional query e.g. advertiser-id=pepsi. See `filter` for prefix search
+ * @param {String} p.type from C.TYPES
+ * @param {String} [p.q] - Optional query e.g. advertiser-id=pepsi. See `filter` for prefix search
  * Note: that filter can add to this
- * @param {?String} p.sort -  Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
+ * @param {String} [p.sort] - Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
- * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
- * @param {?Function} p.filterFn - A local filter function. Can be combined with filter/canFilter
- * @param {?Function} p.transformFn - do some transformation on the list after all filtering/sorting. should return a new array
- * @param {?List} p.list No loading - just use this list of hits
- * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
- * @param {?Boolean} p.canCreate - If set, show a Create button
- * @param {?Boolean} p.canDelete - If set, show delete buttons
- * @param {?Boolean} p.cannotClick - If set, do not use an a wrapper or have an onPick handler. Use-case: for lists which don't link through to pages.
- * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
- * @param {?String} p.start - optional date filter
- * @param {?String} p.status - e.g. "Draft"
- * @param {?String} p.servlet - Deprecated - use navpage instead
- * @param {?String} p.navpage - e.g. "publisher" If unset, a default is taken from the url.
+ * @param {String} [p.filter] - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
+ * @param {Function} [p.filterFn] - A local filter function. Can be combined with filter/canFilter
+ * @param {Function} [p.transformFn] - do some transformation on the list after all filtering/sorting. should return a new array
+ * @param {List} [p.list] No loading - just use this list of hits
+ * @param {Boolean} [p.canFilter] - If true, offer a text filter. This will be added to q as a prefix filter.
+ * @param {Boolean} [p.canCreate] - If set, show a Create button
+ * @param {Boolean} [p.canDelete] - If set, show delete buttons
+ * @param {Boolean} [p.cannotClick] - If set, do not use an a wrapper or have an onPick handler. Use-case: for lists which don't link through to pages.
+ * @param {boolean} [p.filterLocally] - If true, do not call the server for filtering
+ * @param {String} [p.start] - optional date filter
+ * @param {String} [p.status] - e.g. "Draft"
+ * @param {String} [p.servlet] - Deprecated - use navpage instead
+ * @param {String} [p.navpage] - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
- * @param {?Function} p.ListItem JSX if set, replaces DefaultListItem.
+ * @param {Function} [p.ListItem] JSX if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item.   
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
  * 	Input props: {type, servlet, navpage, item, sort, items, nameFn, onClick}
- * @param {?Function} p.nameFn passed to ListItem, to have custom name extraction
- * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which don't nest).* 
- * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
- * @param {?boolean} p.hideTotal - Don't show the "About X results in total" line
- * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
- * @param {?KStatus} p.preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
- * @param {?Boolean} p.hasFilter - deprecated - use canFilter
- * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
- * @param {JSX|String} p.noResults  Message to show if there are no results
- * @param {?Function} p.onClickItem  Custom non-navigation action when list item clicked
- * @param {?Function} p.onClickWrapper  Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
- * @param {?Function} p.pageSelectID - 1-indexed. If using multiple pages for items this is required to target the specific ListLoad from a url parameter.
+ * @param {Function} [p.nameFn] passed to ListItem, to have custom name extraction
+ * @param {boolean} [p.notALink] - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which don't nest).* 
+ * @param {String} [p.itemClassName] - If set, overrides the standard ListItem btn css classes
+ * @param {boolean} [p.hideTotal] - If true, don't show the "Total about 17" line
+ * @param {Object} [p.createBase] - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
+ * @param {KStatus} [p.preferStatus] See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
+ * @param {Boolean} [p.hasFilter] - deprecated - use canFilter
+ * @param {Boolean} [p.unwrapped] If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
+ * @param {React.Element|String} [p.noResults]  Message to show if there are no results
+ * @param {Function} [p.onClickItem]  Custom non-navigation action when list item clicked
+ * @param {Function} [p.onClickWrapper]  Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
+ * @param {Function} [p.pageSelectID] - 1-indexed. If using multiple pages for items this is required to target the specific ListLoad from a url parameter.
 Use-case??
- * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
+ * @param {Object} [p.otherParams] Optional extra params to pass to ActionMan.list() and on to the server.
  */
 function ListLoad({ type, status, servlet, navpage,
 	checkboxes,

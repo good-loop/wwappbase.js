@@ -335,7 +335,7 @@ class Store {
 	 * 
 	 * @param {String[]} path This path will be created if it doesn't exist (except if value===null)
 	 * @param {*} value The new value. Can be null to null-out a value.
-	 * @param {boolean} update Set to false to switch off sending out an update. Set to true to force an update even if it looks like a no-op.
+	 * @param {Boolean} [update] Set to false to switch off sending out an update. Set to true to force an update even if it looks like a no-op.
 	 * undefined is true-without-force
 	 * @returns value
 	 */
@@ -566,18 +566,18 @@ class Store {
 	 * NB: an advantage of this is that the server can return partial data (e.g. search results)
 	 * without over-writing the fuller data.
 	 * 
-	 * @param {Object} p
-	 * @param {!String[]} p.path
-	 * @param {!Function} p.fetchFn () -> Promise/value, which will be wrapped using promise-value.
+	 * @param {string[]} path
+	 * @param {Function} fetchFn () -> Promise/value, which will be wrapped using promise-value.
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
 	 * As a convenience hack, this method will use `JSend` to extract `data` or `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * If unset, the call will return an inprogress PV, but will not do a fresh fetch.
-	 * @param {?Object} p.options
-	 * @param {?Number} p.options.cachePeriod milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
+	 * @param {object} [options]
+	 * @param {number} [options.cachePeriod] milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
 	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience.
 	 * 	NB: Cache info is stored in `appstate.transient.fetchDate...`
-	 * @param {?Boolean} p.options.localStorage
+	 * @param {boolean} [options.localStorage]
+	 * @param {number} [cachePeriod] Convenience dupe of options.cachePeriod (???)
 	 * @returns {!PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, options, cachePeriod) { // TODO allow retry after 10 seconds
@@ -715,7 +715,7 @@ class Store {
 
 	/**
 	 * @deprecated
-	 */	
+	 */
 	getDataList(listOfRefs, preferStatus) {
 		console.warn("Switch to resolveDataList");
 		return this.resolveDataList(listOfRefs, preferStatus);
@@ -783,7 +783,7 @@ class Item extends DataClass {
 	name;
 
 	constructor() {
-		DataClass._init(this, base);		
+		DataClass._init(this, base);
 	}
 }
 

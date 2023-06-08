@@ -75,10 +75,10 @@ const usePath = () => ""+window.location;
 /**
  * Backwards compatible replacement for modifyHash
  * 
- * @param {?String[]} newpath Can be null for no-change
- * @param {?Object} newparams Can be null for no-change
- * @param {?boolean} returnOnly If true, do not modify the hash -- just return what the new value would be (starting with #)
- * @param {?boolean} clearParams - If true, remove all existing url parameters
+ * @param {string[]} [newpath] Can be null for no-change
+ * @param {Object} [newparams] Can be null for no-change
+ * @param {boolean} [returnOnly] If true, do not modify the hash -- just return what the new value would be (starting with #)
+ * @param {boolean} [clearParams] If true, remove all existing url parameters
  */
 const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
 	if (DataStore.localUrl !== '/') {

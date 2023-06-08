@@ -66,7 +66,7 @@ registerControl({type: 'dt', $Widget: PropControlDt2});
  * @param {PropControlParams} p 
  */
 function PropControlDt(p) {
-    return <PropControl type="dt" {...p} />;
+	return <PropControl type="dt" {...p} />;
 }
 
 export default PropControlDt;
