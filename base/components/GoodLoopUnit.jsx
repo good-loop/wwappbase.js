@@ -159,11 +159,11 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 const GoodLoopUnit = ({vertId, className, style, css, size = 'landscape', status, play = 'onvisible', endCard, noab, debug: shouldDebug, extraParams, Editor, iframeCallback, useScreenshot}) => {
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
-	let debug = shouldDebug || !C.isProduction();
+	let debug = shouldDebug;
+	if (shouldDebug === undefined) shouldDebug = !C.isProduction();
 	// Allow overriding by URL param
 	const debugParam = DataStore.getUrlValue('gl.debug');
-	if (debug && debugParam === false) debug = false;
-	if (!debug && debugParam === true) debug = true;
+	if (debugParam === false || debugParam === true) debug = debugParam;
 
 	// Generate gl.* URL parameter list - add gl.delivery=direct as shim for "adunit overwrites variant.delivery" issue
 	const glParams = normaliseParams({vert: vertId, status, size, play, endCard, noab, debug, delivery: 'direct', ...extraParams});

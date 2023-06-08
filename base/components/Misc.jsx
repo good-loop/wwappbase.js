@@ -57,28 +57,26 @@ E.g. "Loading your settings...""
 See https://www.w3schools.com/howto/howto_css_loader.asp
 http://tobiasahlin.com/spinkit/
 
-@param {Object} obj
-@param {?PromiseValue} obj.pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
-@param {?string} obj.text
-@param {?boolean} obj.inline
+@param {Object} props
+@param {PromiseValue} [props.pv] If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
+@param {String} [props.text] Static text message
+@param {Boolean} [props.inline] Lay out elements horizontally
 */
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
-	// handle ajax error?
-	if (pv) {		
-		if (pv.error) {
-			return <ErrAlert error={pv.error} />;
-		}
+	// Handle ajax error / completion
+	if (pv) {
+		if (pv.error) return <ErrAlert error={pv.error} />;
 		if (pv.value) return null;
 	}
 
 	return (
-		<div className={'loader-box' + (inline ? ' inline' : '')} style={{textAlign: 'center'}}>
+		<div className={space('loader-box', inline && 'inline')} style={{textAlign: 'center'}}>
 			<div className="spinner-box">
 				{Misc.spinnerSvg}
 			</div>
 			<div className="loader-text">{text}</div>
 		</div>
-	)
+	);
 };
 
 
@@ -346,7 +344,6 @@ Misc.RoughDate = ({date}) => {
  */
 Misc.DateDuration = ({startDate, endDate, invisOnEmpty}) => {
 	if (!startDate && !endDate) {
-		console.warn("No dates provided to DateDuration!");
 		if (!invisOnEmpty) return null;
 		else return <span className="invisible">No date</span>
 	}

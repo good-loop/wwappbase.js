@@ -176,7 +176,6 @@ Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
 	sq = SearchQuery.and(sq, qads);
 	let pvViewData = getDataLogData({q:sq.query, breakdowns:['country'], start:start, end:end, name:"view-data",dataspace:'gl'});
 	let viewcount4campaign = {};
-	console.log("breakdown inside viewcountByCountry", viewcount4campaign, sq)
 	if (pvViewData.value) {
 		pvViewData.value
 		return viewcount4campaign = pivotDataLogData(pvViewData.value, ["country"]);

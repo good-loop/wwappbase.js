@@ -218,10 +218,11 @@ Campaign.viewcount = ({campaign, status}) => {
 	if (campaign.numPeople) {
 		return campaign.numPeople;
 	}
-	const pvAllAds = Advert.fetchForCampaign({campaignId:campaign.id, status});
-	let allAds = List.hits(pvAllAds.value) || [];
-	const viewcount4campaign = Advert.viewcountByCampaign(allAds);
+	const pvAds = Advert.fetchForCampaign({campaignId:campaign.id, status});
+	if (!pvAds.resolved) return 0;
 
+	const ads = List.hits(pvAds.value) || [];
+	const viewcount4campaign = Advert.viewcountByCampaign(ads);
 	return sum(Object.values(viewcount4campaign));
 };
 
@@ -237,12 +238,13 @@ Campaign.viewcount = ({campaign, status}) => {
 Campaign.viewcountByCountry = ({campaign, status}) => {
 	if (!campaign) {
 		console.log('Campaign.viewcountByCountry: no campaign!');
-		return [];
+		return {};
 	}
 
 	const pvAds = Advert.fetchForCampaign({ campaignId: campaign.id, status });
-	let ads = List.hits(pvAds.value) || [];
+	if (!pvAds.resolved) return {};
 
+	let ads = List.hits(pvAds.value) || [];
 	return Advert.viewcountByCountry({ ads });
 };
 

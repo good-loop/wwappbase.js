@@ -1,19 +1,26 @@
 
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import Roles from '../Roles';
 import { space } from '../utils/miscutils';
 
+const STYLE_TODO = { background: 'rgba(255,128,128,0.5)' };
+
+const getStyle = () => {
+	return 
+}
 /**
  Marker for work in progress. If it should slip into production, it is hidden from non-devs
  */
 const TODO = ({children}) => {
-    let ref = useRef();    
-    console.error("TODO", ref.current?.innerText);    
-    let style = {background:"rgba(255,128,128,0.5)"};
-    if (C.isProduction() && ! Roles.isDev()) {
-        style = {display:"none"};
-    } 
-	return <div ref={ref} style={style}>{children}</div>;
+	if (C.isProduction() && !Roles.isDev()) return null;
+
+	let ref = useRef();
+	useEffect(() => {
+		if (!ref.current) return;
+		console.error("TODO", ref.current.innerText);
+	}, [ref.current]);
+	
+	return <div ref={ref} style={STYLE_TODO}>{children}</div>;
 };
 
 export default TODO;
