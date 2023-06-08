@@ -2,7 +2,7 @@
 import KStatus from './KStatus';
 import List from './List';
 import PromiseValue from '../promise-value';
-import { getDataItem, getDataList, setWindowTitle } from '../plumbing/Crud';
+import { collectListPromises, getDataItem, getDataList, setWindowTitle } from '../plumbing/Crud';
 import C from '../../C';
 import DataStore from '../plumbing/DataStore';
 import SearchQuery from '../searchquery';
@@ -16,6 +16,8 @@ import Money from './Money';
 import { assert } from '../utils/assert';
 import ActionMan from '../plumbing/ActionManBase';
 import { getId } from './DataClass';
+import { uniqBy } from 'lodash';
+import GreenTag from './GreenTag';
 
 /* ------- Data Functions --------- */
 
@@ -26,16 +28,16 @@ import { getId } from './DataClass';
  * @param {String} p.itemType
  * @param {KStatus} p.status 
  * @param {?Boolean} p.nocache
- * @returns {Object} {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads}
+ * @returns {PromiseValue<Object>} {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads}
  */
 export const fetchImpactBaseObjects = ({itemId, itemType, status, nocache}) => {
 	assert(itemId);
 	assert(itemType);
 	assert(status);
-	
-	return DataStore.fetch(['misc','impactBaseObjects',itemType,status,'all',itemId], () => {
+
+	return DataStore.fetch(['misc', 'impactBaseObjects', itemType, status, 'all', itemId], () => {
 		return fetchImpactBaseObjects2({itemId, itemType, status});
-	}, {cachePeriod:nocache?1:null});
+	}, {cachePeriod: nocache ? 1 : null});
 }
 
 
@@ -47,7 +49,8 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 	let pvSubCampaigns, subCampaigns;
 	let pvImpactDebits, impactDebits;
 	let pvCharities, charities;
-	let ads;
+	let greenTags = [];
+	let ads = [];
 	let subCampaignsWithDebits, subBrandsWithDebits;
 
 	// Fetch campaign object if specified
@@ -101,40 +104,31 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 	if (!impactDebits) impactDebits = [];
 
 	// If we aren't looking at a campaign, but this brand only has one - just pretend we are
-	if (subCampaigns.length === 1) {
-		campaign = subCampaigns[0];
-		subCampaigns = [];
+	if (subCampaigns.length === 1) campaign = subCampaigns.pop();
+
+	// Determine which items to fetch ads & green tags for:
+	// If we're focused on a master brand, all of em.
+	// If we're focused on a brand, just its child brands.
+	// If we're focused on a campaign, just that campaign.
+	let vertiserIds = campaign ? null : [brand, ...subBrands].map(b => b.id);
+	let campaignIds = campaign ? [campaign.id] : subCampaigns.map(c => c.id);
+
+	// Get the ads & green tags
+	if (vertiserIds) {
+		ads.push(...List.hits(await Advert.fetchForAdvertisers({vertiserIds, status}).promise));
+		greenTags.push(...List.hits(await GreenTag.fetchForAdvertisers({ids: vertiserIds, status}).promise));
+	}
+	if (campaignIds) {
+		ads.push(...List.hits(await Advert.fetchForCampaigns({campaignIds, status}).promise));
+		greenTags.push(...List.hits(await GreenTag.fetchForCampaigns({ids: campaignIds, status}).promise));
 	}
 
-	// Determine which items to fetch ads for
-	// If were focused on a master brand, all of em
-	// If were focused on a brand, just its children
-	// If were focused on a campaign, just it
-	let brandsToFetchFrom = [];
-	let campaignsToFetchFrom = [];
-	if (!campaign) {
-		brandsToFetchFrom = [brand, ...subBrands];
-		campaignsToFetchFrom = subCampaigns;
-	} else {
-		campaignsToFetchFrom = [campaign];
-	}
-	// Get the ads
-	let adsFromBrands = [];
-	if (brandsToFetchFrom.length) {
-		let pvAdsFromBrands = Advert.fetchForAdvertisers({vertiserIds:brandsToFetchFrom.map(b => b.id), status});
-		adsFromBrands = List.hits(await pvAdsFromBrands.promise);
-	}
-	let adsFromCampaigns = [];
-	if (campaignsToFetchFrom.length) {
-		let pvAdsFromCampaigns = Advert.fetchForCampaigns({campaignIds:campaignsToFetchFrom.map(c => c.id), status});
-		adsFromCampaigns = List.hits(await pvAdsFromCampaigns.promise);
-		// Remove duplicates already fetched from brands
-		const adIdsFromBrands = adsFromBrands.map(ad => ad.id);
-		adsFromCampaigns = adsFromCampaigns.filter(ad => !adIdsFromBrands.includes(ad.id));
-	}
-	// Combine into one list
-	ads = [...adsFromBrands, ...adsFromCampaigns];
+	// Collect, de-duplicate, and sort
+	ads = uniqBy(ads, 'id');
 	ads.sort(alphabetSort);
+	greenTags = uniqBy(greenTags, 'id');
+	greenTags.sort(alphabetSort);
+
 
 	// Mark which campaigns and brands have any donations, and which don't
 	impactDebits.forEach(debit => {
@@ -184,42 +178,41 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 		subCampaignsWithDebits = subCampaigns;
 	}
 
-	return {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads, subCampaignsWithDebits, subBrandsWithDebits};
+	return {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads, greenTags, subCampaignsWithDebits, subBrandsWithDebits};
 }
 
 
-export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField='country', ...rest }) => {
-
-	let {campaign, subCampaigns} = baseObjects
-	if(!campaign && (!subCampaigns || subCampaigns.length == 0)) return []
+export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField = 'country', ...rest }) => {
+	let { campaign, subCampaigns } = baseObjects
+	if (!campaign && (!subCampaigns || subCampaigns.length == 0)) return []
 
 	let searchData = campaign ? [campaign] : subCampaigns // if campaign is set, then the user has filtered to a single campaign (no subcampaigns)
 
 	let campaignImpsByCountry = searchData.map(country => Campaign.viewcountByCountry({campaign: country, status: KStatus.PUBLISHED}))
 
 
-	if(!campaignImpsByCountry || campaignImpsByCountry.length === 0) return []
+	if (!campaignImpsByCountry || campaignImpsByCountry.length === 0) return []
 
 	// for every campaign we can search through, find the viewcount for it's target country & unset countries
 	let campaignViews = campaignImpsByCountry.reduce((regionMap, regions) => {
-		// ASSUMPTION: 	afaik, a campaign will have a country it's aimed at that decision is not handled by us.
-		// 				as a result, we don't access to that info. Instead, guess by what country has the most views,
-		//				this is usually higher by several orders of magnitude so it's *usually* a safe bet.
+	// ASSUMPTION: 	afaik, a campaign will have a country it's aimed at that decision is not handled by us.
+	// 				as a result, we don't access to that info. Instead, guess by what country has the most views,
+	//				this is usually higher by several orders of magnitude so it's *usually* a safe bet.
 
-		if(!regions || regions.length == 0) return regionMap // handle campaign still loading and campaigns with no results 
+		if (!regions || regions.length == 0) return regionMap // handle campaign still loading and campaigns with no results 
 
-		let campaignRegions = Object.keys(regions)	// all regions this campaign was in
+		let campaignRegions = Object.keys(regions) // all regions this campaign was in
 		let currentRegion = campaignRegions.find((val) => val !== "unset") // set country with most impressions
 		let targetedRegions = Object.keys(regionMap) // all regions already seen (used if multiple campaigns are being read)
 
-		if(currentRegion){
-			if(targetedRegions.includes(currentRegion)){
+		if (currentRegion) {
+			if (targetedRegions.includes(currentRegion)) {
 				regionMap[currentRegion].impressions += regions[currentRegion];
 				regionMap[currentRegion].campaignsInRegion += 1;
 			} else {
 				regionMap[currentRegion] = {impressions: regions[currentRegion], campaignsInRegion: 1}
 			}
-		}		
+		}
 
 		// also track unset, needed to describe discrepency in campaigns used before we stored impression locations
 		if (campaignRegions.includes("unset")){
@@ -233,6 +226,33 @@ export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end
 	)
 
 	return campaignViews;
+};
+
+
+/**
+ * Which products are in use under the given focus?
+ * WTD = Watch To Donate, ETD = Engage To Donate, TADG = This Ad Does Good, GAT: Green Ad Tag
+ * @param {Object} p
+ * @param {Object[]} [p.ads] Adverts under the current impact page's focus
+ * @param {Object[]} [p.greenTags] Green Ad Tags under the current impact page's focus
+ * @return {Object} of form {wtd: boolean, tadg: boolean, etd: boolean, gat: boolean}
+ */
+export const getActiveTypes = ({ ads, greenTags }) => {
+	const typesFound = { wtd: false, tadg: false, etd: false, gat: false };
+	if (greenTags?.length) typesFound.gat = true;
+
+	ads.forEach(ad => {
+		// TODO sniff ad type: trees variant for TADG, social for ETD, everything else is WTD
+		if (ad.advanced?.playerVariant === 'trees') {
+			typesFound.tadg = true;
+		} else if (ad.format === 'video') {
+			typesFound.wtd = true;
+		} else if (ad.format === 'social') {
+			typesFound.etd = true;
+		}
+	});
+
+	return typesFound;
 };
 
 /* ------- End of Data Functions --------- */

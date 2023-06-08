@@ -119,10 +119,10 @@ Advert.isHiddenFromImpact = (ad, impactSettings) => {
  * @returns {!NGO[]}
  */
 Advert.charityList = ad => {
-	if ( ! ad.charities) ad.charities ={};
-	if ( ! ad.charities.list) ad.charities.list = [];
+	if (!ad.charities) ad.charities = {};
+	if (!ad.charities.list) ad.charities.list = [];
 	// WTF? we're getting objects like {0:'foo', 1:'bar'} here instead of arrays :( 
-	if ( ! ad.charities.list.map) {
+	if (!ad.charities.list.map) {
 		console.warn("Advert.js - patching charity list Object to []");
 		ad.charities.list = Object.values(ad.charities.list);
 	}
@@ -132,10 +132,12 @@ Advert.charityList = ad => {
 		console.warn("Advert.js - patching charity list null");
 		ad.charities.list = clist;
 	}
-	return clist; 
+	return clist;
 };
 
 /**
+ * FIXME This hides a LOT of asynchronous work behind a PV and relies on the "redraw whole tree when anything at all happens" model to work
+ * Refactor this - and dependent code - to expose the PromiseValue
  * @param {Item[]} ads 
  * @returns {object} viewcount4campaign
  */
@@ -158,6 +160,8 @@ Advert.viewcountByCampaign = ads => {
 };
 
 /**
+ * FIXME This hides a LOT of asynchronous work behind a PV and relies on the "redraw whole tree when anything at all happens" model to work
+ * Refactor this - and dependent code - to expose the PromiseValue
  * @param {Item[]} ads 
  * @returns {object} viewcount4campaign
  */
@@ -180,32 +184,23 @@ Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
 	return viewcount4campaign;
 };
 
-Advert.fetchForAdvertiser = ({vertiserId, status, q}) => Advert.fetchForAdvertisers({vertiserIds:[vertiserId], status});
+Advert.fetchForAdvertiser = ({vertiserId, status, q}) => Advert.fetchFor('vertiser', vertiserId, status, q);
+Advert.fetchForAdvertisers = ({vertiserIds, status, q}) => Advert.fetchFor('vertiser', vertiserIds, status, q);
 
-Advert.fetchForAdvertisers = ({vertiserIds, status=KStatus.PUBLISHED, q}) => {
-	let pv = new PromiseValue(fetchForAdvertisers2(vertiserIds, status, q));
-	return pv;
-}
+Advert.fetchForCampaign = ({campaignId, status, q}) => Advert.fetchFor('campaign', campaignId, status, q);
+Advert.fetchForCampaigns = ({campaignIds, status, q}) => Advert.fetchFor('campaign', campaignIds, status, q);
 
-const fetchForAdvertisers2 = async (vertiserIds, status, q) => {
-	let sq = new SearchQuery(q);
-	sq = SearchQuery.setPropOr(sq, "vertiser", vertiserIds);
-	let pv = getDataList({type: C.TYPES.Advert, status, q:sq.query, save:true});
-	return await pv.promise;
-}
-
-Advert.fetchForCampaign = ({campaignId, status, q}) => Advert.fetchForCampaigns({campaignIds:[campaignId], status, q});
-
-Advert.fetchForCampaigns = ({campaignIds, status, q}) => {
-	let pv = DataStore.fetch(getListPath({type:C.TYPES.Advert, status, q, campaignIds}), () => fetchForCampaigns2(campaignIds, status, q));
-	return pv;
-}
-
-const fetchForCampaigns2 = async (campaignIds, status, q) => {
-	let sq = new SearchQuery(q);
-	sq = SearchQuery.setPropOr(sq, "campaign", campaignIds);
-	let pv = getDataList({type: C.TYPES.Advert, status, q:sq.query, save:true});
-	return await pv.promise;
+/**
+ * Common functionality across fetchForAdvertiser(s) / fetchForCampaign(s).
+ * @param {string} typeKey The member to construct a match-ID query on, eg "vertiser" for q=vertiser:xxxxx
+ * @param {string|string[]} ids ID or list of IDs that advert[typeKey] should match
+ * @param {KStatus} [status] Status of adverts to fetch
+ * @param {SearchQuery|string} [rawQ] A search query - if given, will be augmented with ID list
+ */
+Advert.fetchFor = (typeKey, ids, status = KStatus.PUBLISHED, rawQ) => {
+	if (!Array.isArray(ids)) ids = [ids];
+	const q = SearchQuery.setPropOr(rawQ, typeKey, ids);
+	return getDataList({ type: C.TYPES.Advert, status, q, save: true });
 };
 
 // NB: banner=display
