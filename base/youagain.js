@@ -67,7 +67,6 @@ const setCookie = (key, val) => {
 	COOKIE_DOMAINS.forEach(
 		domain => Cookies.set(key, val, { path: COOKIE_PATH, sameSite: 'None', secure: true, domain})
 	);
-	
 };
 const getCookie = key => Cookies.get(key);
 // NB: the remove path MUST match the set path or remove fails
@@ -75,7 +74,6 @@ const removeCookie = key => {
 	COOKIE_DOMAINS.forEach(
 		domain => Cookies.remove(key, { path: COOKIE_PATH, domain })
 	);
-	
 }
 
 // Does the url reuqest that we set a first party cookie? The server sets a redirect parameter, and we set a my-site cookie
@@ -253,7 +251,6 @@ class _Login {
 		});
 		return request;
 	}
-	
 }; // ./ Login class
 const Login = new _Login();
 

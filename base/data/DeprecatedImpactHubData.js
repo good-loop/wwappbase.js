@@ -55,7 +55,7 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
    if ( ! campaign.master) {
        return new PromiseValue(new List([campaign]));
    }
-   // fetch leaf campaigns	
+   // fetch leaf campaign
    let {id, type} = Campaign.masterFor(campaign);
    // campaigns for this advertiser / agency
    let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
@@ -75,34 +75,34 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 * @returns {?Money}
 */
 Campaign.dntn = (campaign, isSub) => {
-   if ( ! campaign) return null;
-   Campaign.assIsa(campaign);
-   if (campaign.dntn) {
-       // HACK realtime=true forces a realtime fetch
-       if ( ! getUrlVars().realtime) {
-           return campaign.dntn;
-       }
-   }
-   if ( ! campaign.master || isSub) {
-       // Ask the backend
-       let sq = SearchQuery.setProp(null, "campaign", campaign.id);
-       let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
-           () => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
-           {cachePeriod:300*1000});
-       let total = pvDntnData.value && pvDntnData.value.total;
-       return total;
-   }
-   // recurse
-   // NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
-   // TODO: make it so datalog reconciles with that, so we can do batched requests
-   let pvSubs = Campaign.pvSubCampaigns({campaign});
-   if ( ! pvSubs.value) {
-       return null;
-   }
-   let subs = List.hits(pvSubs.value);
-   let dntns = subs.map(sub => Campaign.dntn(sub, true));
-   let total = Money.total(dntns);
-   return total;
+	if ( ! campaign) return null;
+	Campaign.assIsa(campaign);
+	if (campaign.dntn) {
+		// HACK realtime=true forces a realtime fetch
+		if ( ! getUrlVars().realtime) {
+			return campaign.dntn;
+		}
+	}
+	if ( ! campaign.master || isSub) {
+		// Ask the backend
+		let sq = SearchQuery.setProp(null, "campaign", campaign.id);
+		let pvDntnData = DataStore.fetch(['misc','donations',campaign],
+			() => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}),
+			{cachePeriod:300*1000});
+		let total = pvDntnData.value && pvDntnData.value.total;
+		return total;
+	}
+	// recurse
+	// NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
+	// TODO: make it so datalog reconciles with that, so we can do batched requests
+	let pvSubs = Campaign.pvSubCampaigns({campaign});
+	if ( ! pvSubs.value) {
+		return null;
+	}
+	let subs = List.hits(pvSubs.value);
+	let dntns = subs.map(sub => Campaign.dntn(sub, true));
+	let total = Money.total(dntns);
+	return total;
 };
 
 
@@ -165,7 +165,7 @@ Campaign.charities = (campaign, status=KStatus.DRAFT, isSub) => {
 	let charityIds = [];
 	if (campaign.strayCharities) charityIds.push(...campaign.strayCharities);
 	if (campaign.dntn4charity) charityIds.push(...Object.keys(campaign.dntn4charity));
-	if (campaign.localCharities) charityIds.push(...Object.keys(campaign.localCharities));	
+	if (campaign.localCharities) charityIds.push(...Object.keys(campaign.localCharities));
 
 	let pvAds = Campaign.pvAdsLegacy({campaign, status});
 	if ( ! pvAds.value) {
@@ -187,7 +187,7 @@ Campaign.charities = (campaign, status=KStatus.DRAFT, isSub) => {
  * @returns {NGO[]}
  */
 const charities2 = (campaign, charityIds, charities) => {
-	Campaign.assIsa(campaign);	
+	Campaign.assIsa(campaign);
 	// fetch NGOs
 	if (yessy(charityIds)) {
 		assMatch(charityIds, "String[]");
@@ -198,7 +198,7 @@ const charities2 = (campaign, charityIds, charities) => {
 			// Add them as they load (assume this function gets called repeatedly)
 			if (pvSoGiveCharity.value) {
 				charities.push(pvSoGiveCharity.value);
-			}	
+			}
 		});
 	}
 	// merge and de-dupe
@@ -223,7 +223,7 @@ const charities2 = (campaign, charityIds, charities) => {
 	cs.map(cMerged => {
 		let allCampaigns = (cMerged._campaigns || []).concat(cMerged._campaigns).concat(campaign.id);
 		cMerged._campaigns = uniq(allCampaigns);
-	});	
+	});
 	return cs;
 };
 
@@ -308,15 +308,15 @@ Campaign.hideCharities = campaign => {
  * @returns {!String[]} hideAdverts IDs
  */
 Campaign.hideAdverts = (topCampaign, campaigns) => {
-    Campaign.assIsa(topCampaign);
-    // Merge all hide advert lists together from all campaigns
-    let allHideAds = topCampaign.hideAdverts ? keysetObjToArray(topCampaign.hideAdverts) : [];
-    if (campaigns) {
+	Campaign.assIsa(topCampaign);
+	// Merge all hide advert lists together from all campaigns
+	let allHideAds = topCampaign.hideAdverts ? keysetObjToArray(topCampaign.hideAdverts) : [];
+	if (campaigns) {
 		campaigns.forEach(campaign => allHideAds.push(... campaign.hideAdverts ? keysetObjToArray(campaign.hideAdverts) : []));
 	}
-    // Copy array
-    const mergedHideAds = allHideAds.slice();
-    return mergedHideAds;
+	// Copy array
+	const mergedHideAds = allHideAds.slice();
+	return mergedHideAds;
 }
 
 /**
@@ -329,10 +329,10 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
 * @returns PromiseValue(List(Advert)) HACK Adverts get `_hidden` added if they're excluded.
 */
 Campaign.pvAdsLegacy = ({campaign,status=KStatus.DRAFT,query}) => {
-   let pv = DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
-       return pAds2({campaign,status,query});
-   });
-   return pv;
+	let pv = DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
+		return pAds2({campaign,status,query});
+	});
+	return pv;
 };
 
 /**
@@ -429,19 +429,19 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 
 	if (campaign.hideCharities) {
 		let hc = Campaign.hideCharities(campaign);
-        const charities2 = charities.filter(c => ! hc.includes(normaliseSogiveId(getId(c))));
+		const charities2 = charities.filter(c => ! hc.includes(normaliseSogiveId(getId(c))));
 		charities = charities2;
 	}
-	
-	let lowDntn = campaign.lowDntn;	
+
+	let lowDntn = campaign.lowDntn;
 	if ( ! lowDntn || ! Money.value(lowDntn)) {
 		if ( ! donationTotal) {
 			return charities;
 		}
-		// default to 0	
+		// default to 0
 		lowDntn = new Money({currency:donationTotal.currency, value:0});
 	}
-    
+
 	/**
 	 * @param {!NGO} c 
 	 * @returns {?Money}
@@ -452,10 +452,10 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 	};
 
 	charities = charities.filter(charity => {
-        const dntn = getDonation(charity);
-        let include = dntn && Money.lessThan(lowDntn, dntn);
+		const dntn = getDonation(charity);
+		let include = dntn && Money.lessThan(lowDntn, dntn);
 		return include;
-    });
+	});
 	return charities;
 } // ./filterLowDonations
 

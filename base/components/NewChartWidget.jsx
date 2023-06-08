@@ -1,11 +1,12 @@
 import React from 'react';
 
+import { Chart as ChartJS, CategoryScale, LinearScale, LogarithmicScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { Line, Pie, Bar, Scatter } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import Annotation from 'chartjs-plugin-annotation';
 import Enum from 'easy-enums';
-import { dateStr,oh } from '../utils/date-utils';
-import { Chart as ChartJS, CategoryScale, LinearScale, LogarithmicScale, PointElement, LineElement, ArcElement, BarElement, Title, Tooltip, Legend } from 'chart.js';
+
+import { dateStr, oh } from '../utils/date-utils';
 import { is, space, asNum } from '../utils/miscutils';
 
 /** TODO We should be able to do this dynamically/selectively when components are rendered */

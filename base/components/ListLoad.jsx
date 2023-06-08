@@ -163,14 +163,14 @@ function ListLoad({ type, status, servlet, navpage,
 	}
 	const hits = List.hits(list);
 	let total = list && List.total(list); // FIXME this ignores local filtering
-	
+
 	// ...filter / resolve
 	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter, transformFn });
 	if (items && hits && items.length < hits.length) {
 		// filtered out locally - reduce the total
 		total = items.length;
 	}
-	
+
 	// HACK: an exact id match comes first (this is important for PropControlDataItem, and arguably useful elsewhere)
 	if (rawFilter) {
 		const exactMatch = items.find(item => getId(item)===rawFilter);
@@ -206,7 +206,7 @@ function ListLoad({ type, status, servlet, navpage,
 
 	// Initialise page URL value if absent? -- No, don't cram stuff into URL prematurely
 	// if (items && pageSelectID && !pageFromUrl) setPage(1, false);
-	
+
 	const allItems = items; // Keep filtered but unpaginated list for e.g. CSV download
 	if (pageSize) items = paginate({ items, page, pageSize });
 
@@ -580,7 +580,7 @@ function DefaultDelete({ type, id }) {
 
 
 /**
- 
+ * 
  * @param {?Function} p.onCopy newId -> any Respond to the new item e.g. by opening an editor
  * @returns 
  */

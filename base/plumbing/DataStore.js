@@ -16,7 +16,6 @@ import { modifyPage } from './glrouter';
  * E.g. in a top-of-the-app React container, you might do `DataStore.addListener((mystate) => this.setState(mystate));`
  */
 class Store {
-	
 	callbacks = [];
 
 	/** HACK: character to start a local path # or /  See glrouter */
@@ -80,7 +79,7 @@ class Store {
 		location.params = params;
 		this.setValue(['location'], location, update);
 	}
-	
+
 	parseUrlVars2() {
 		if (this.localUrl !== '/') {
 			return parseHash();
@@ -222,10 +221,10 @@ class Store {
 		let status = statusTypeItemUpdateObject.status || statusTypeItemUpdateObject;
 		if (!status || !KStatus.has(status)) status = getStatus(item);
 		// end hack
-		
+
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
 		assert(C.TYPES.has(getType(item)), item);
-		
+
 		const path = this.getPathForItem(status, item);
 		this.setValue(path, item, update);
 	}

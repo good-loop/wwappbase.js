@@ -8,9 +8,9 @@ import { yessy } from '../utils/miscutils';
  * 
  */
 const Wrap = ({children, ...props}) => {
-    if ( ! children) return null;
-    if ( ! yessy(props)) return children;
-    return <div {...props}>{children}</div>;
+	if ( ! children) return null;
+	if ( ! yessy(props)) return children;
+	return <div {...props}>{children}</div>;
 };
 
 export default Wrap;

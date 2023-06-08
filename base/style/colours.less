@@ -23,9 +23,11 @@ They should all be commented with matching labels
 .color(@color) {
 	color: @color !important;
 	// Some CSS rules will override links inside headers with !important, make sure anything tagged with this class is covered
-	h1>a,h2>a,h3>a,h4>a,h5>a {
-        color: @color !important;
-    }
+	h1, h2, h3, h4, h5 {
+		& > a {
+			color: @color !important;
+		}
+	}
 }
 
 // See https://drive.google.com/drive/folders/0Bz6LfeTw60y3UXlIbVVPRmlpNnc
@@ -120,19 +122,19 @@ They should all be commented with matching labels
 	.bg(@gl-red);
 }
 .bg-gl-light-red {
-    .bg(@gl-light-red);
+	.bg(@gl-light-red);
 }
 .bg-gl-impact-red {
-    .bg(@gl-impact-red);
+	.bg(@gl-impact-red);
 }
 .color-gl-red {
 	.color(@gl-red);
 }
 .color-gl-light-red {
-    .color(@gl-light-red);
+	.color(@gl-light-red);
 }
 .color-gl-impact-red {
-    .color(@gl-impact-red);
+	.color(@gl-impact-red);
 }
 
 // Pink
@@ -140,13 +142,13 @@ They should all be commented with matching labels
 	.bg(@gl-pink);
 }
 .bg-gl-light-pink {
-    .bg(@gl-light-pink);
+	.bg(@gl-light-pink);
 }
 .color-gl-pink {
 	.color(@gl-pink);
 }
 .color-gl-light-pink {
-    .color(@gl-light-pink);
+	.color(@gl-light-pink);
 }
 
 // Orange
@@ -154,7 +156,7 @@ They should all be commented with matching labels
 	.bg(@gl-orange);
 }
 .bg-gl-light-orange {
-    .bg(@gl-light-orange);
+	.bg(@gl-light-orange);
 }
 .bg-gl-pale-orange {
 	.bg(@gl-pale-orange);
@@ -163,7 +165,7 @@ They should all be commented with matching labels
 	.color(@gl-orange);
 }
 .color-gl-light-orange {
-    .color(@gl-light-orange);
+	.color(@gl-light-orange);
 }
 .color-gl-pale-orange {
 	.color(@gl-pale-orange);
@@ -201,7 +203,7 @@ They should all be commented with matching labels
 	.color(@gl-desat-blue);
 }
 .color-gl-light-blue {
-    .color(@gl-light-blue);
+	.color(@gl-light-blue);
 }
 
 // Grey
@@ -212,7 +214,7 @@ They should all be commented with matching labels
 	.bg(@gl-dark-grey);
 }
 .bg-gl-light-grey {
-    .bg(@gl-light-grey);
+	.bg(@gl-light-grey);
 }
 .color-gl-darker-grey {
 	.color(@gl-darker-grey);
@@ -221,7 +223,7 @@ They should all be commented with matching labels
 	.color(@gl-dark-grey);
 }
 .color-gl-light-grey {
-    .color(@gl-light-grey);
+	.color(@gl-light-grey);
 }
 
 // Turquoise

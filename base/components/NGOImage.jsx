@@ -19,15 +19,15 @@ import BG from "./BG";
  * @param {?Boolean} alwaysDisplayChildren if true, will return children on empty background when no image can be sourced instead of null (with bg option)
  */
 const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, hardFallback, children, alwaysDisplayChildren, ...props}) => {
-    assert(imgIdx !== undefined || main || header || backdrop); // temporary
+	assert(imgIdx !== undefined || main || header || backdrop); // temporary
 
 	const [useUrl, setUseUrl] = useState();
 	const [randIdx, setRandIdx] = useState(-1);
 
-    const ImgType = bg ? BG : "img";
-    if (children && !bg) {
-        console.warn("NGOImage set to normal image but given children - will not correctly render!");
-    }
+	const ImgType = bg ? BG : "img";
+	if (children && !bg) {
+		console.warn("NGOImage set to normal image but given children - will not correctly render!");
+	}
 
 	useEffect (() => {
 		if (ngo) {
@@ -66,15 +66,14 @@ const NGOImage = ({ngo, main, header, backdrop, imgIdx, bg, src, hardFallback, c
 
 	const finalUrl = useUrl || src;
 	if ( ! finalUrl) {
-        if (bg && alwaysDisplayChildren) {
-            return {children};
-        }
-        return null; // no fallback? then no render
-    }
+		if (bg && alwaysDisplayChildren) {
+			return {children};
+		}
+		return null; // no fallback? then no render
+	}
 
 	// ??what is the id used for? Is it for debug purposes??
-    return <ImgType src={finalUrl} id={"imageList-" + imgIdx + "-contentUrl"} {...props}>{children}</ImgType>;
-
+	return <ImgType src={finalUrl} id={"imageList-" + imgIdx + "-contentUrl"} {...props}>{children}</ImgType>;
 };
 
 export default NGOImage;

@@ -25,13 +25,14 @@ const DataItemBadge = ({item, id, type, status=KStatus.PUBLISHED, onClick, href,
 	if (href === true) {
 		href = getPortalLink(item);
 	}
-	if ( ! href) href = null; // avoid a react error message
-	
-	return <Tag className={space("DataItemBadge",className)} style={style} 
+	if (!href) href = null; // avoid a react error message
+
+	return <Tag className={space("DataItemBadge", className)} style={style}
 		onClick={onClick} href={href} 
-		title={getName(item) || `ID: ${getId(item)}`} >
-	{getLogo(item) ? <img src={getLogo(item)} className="logo logo-sm" /> : <span className="d-inline-block logo logo-sm" />}{' '}
-	{getName(item) || getId(item)}
+		title={getName(item) || `ID: ${getId(item)}`}
+	>
+		{getLogo(item) ? <img src={getLogo(item)} className="logo logo-sm" /> : <span className="d-inline-block logo logo-sm" />}{' '}
+		{getName(item) || getId(item)}
 	</Tag>;
 };
 
@@ -45,5 +46,3 @@ const DataItemBadge = ({item, id, type, status=KStatus.PUBLISHED, onClick, href,
 // };
 
 export default DataItemBadge;
-
-

@@ -29,7 +29,7 @@ function PropControlMoney2({ prop, storeValue, rawValue, setRawValue, set, path,
 	let currencyValue = otherStuff.currency || (storeValue && storeValue.currency) || "GBP";
 	let currLabel = Money.CURRENCY[currencyValue] || currencyValue;
 	//Money.assIsa(value); // type can be blank
-	
+
 	let $currency;
 	let changeCurrency = otherStuff.changeCurrency !== false && ! otherStuff.currency;
 	if (changeCurrency) {		

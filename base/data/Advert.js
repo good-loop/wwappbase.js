@@ -19,7 +19,6 @@ import PromiseValue from '../promise-value';
  * See Advert.java
  */
 class Advert extends DataClass {
-	
 	/** @type{String} */
 	vertiser;
 
@@ -167,8 +166,8 @@ Advert.viewcountByCampaign = ads => {
  */
 Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
 	if (!ads || ads.length === 0) {
-		console.log('res: ads is empty')
-		return {}
+		console.log('res: ads is empty');
+		return {};
 	}
 	// Get ad viewing data
 	let sq = new SearchQuery("evt:minview");

@@ -84,7 +84,6 @@ function AddOrEditButton({arrayPath, i = -1, listValue, Editor, item, itemType, 
 	};
 	const onClick = e => { DataStore.update(); setShow(true); };
 
-	
 	return <>
 		{existingItem ? (
 			<Button size="sm" className="ml-1" color="outline-secondary" onClick={onClick}><Icon name="memo" /></Button>

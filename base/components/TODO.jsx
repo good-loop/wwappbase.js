@@ -15,7 +15,7 @@ const TODO = ({children}) => {
 		if (!ref.current) return;
 		console.error("TODO", ref.current.innerText);
 	}, [ref.current]);
-	
+
 	return <div ref={ref} style={STYLE_TODO}>{children}</div>;
 };
 

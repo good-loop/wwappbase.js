@@ -18,7 +18,7 @@ const rgbFromHex = hex => {
 		console.warn('Hex value provided to rgbFromHex does not conform to format #f3f3f3 (hash may be omitted)', {hex, colourCodes});
 		return {};
 	}
-	
+
 	return {
 		r: parseInt(colourCodes[0], 16),
 		g: parseInt(colourCodes[1], 16),

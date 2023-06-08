@@ -54,7 +54,7 @@ class Person extends DataClass {
 
 	constructor(base) {
 		super(base);
-		Object.assign(this, base);		
+		Object.assign(this, base);
 	}
 }
 DataClass.register(Person, "Person");
@@ -81,7 +81,7 @@ Person.img = peep => {
 		const hash = md5(XId.id(xid).trim().toLowercase());
 		return 'https://www.gravatar.com/avatar/'+hash;
 	}
-	return null;	
+	return null;
 };
 
 /**
@@ -118,10 +118,10 @@ Person.getLinks = (peep, service) => {
 	}
 	// NB: Test claims too? No - lets enforce clean data for ourselves
 	// ??filter old trks?
-	let matchedLinks = peep.links; //.filter(link => link.v && XId.service(link.v) !== "trk" || link.t);	
+	let matchedLinks = peep.links; //.filter(link => link.v && XId.service(link.v) !== "trk" || link.t);
 	if (service) {
-		matchedLinks = peep.links.filter(link => link.v && XId.service(link.v) === service);	
-	}	
+		matchedLinks = peep.links.filter(link => link.v && XId.service(link.v) === service);
+	}
 	links.push(...matchedLinks);
 	return links.length && links;
 };
@@ -165,7 +165,7 @@ const getPersonDataPath = ({id,status=KStatus.PUBLISHED}) => {
 	assert(id, "getPersonDataPath() no `id`");
 	let domain = C.app.dataspace || ServerIO.dataspace;
 	const dsi = {type:"Person", status, id, domain};
-	const dpath = getDataPath(dsi);	
+	const dpath = getDataPath(dsi);
 	return dpath;
 };
 
@@ -197,10 +197,10 @@ const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) =>
 	}
 
 	// Use DS.fetch to avoid spamming the server
-	let pvProfile = DataStore.fetch(dpath, () => {			
-		// Do it!		
+	let pvProfile = DataStore.fetch(dpath, () => {
+		// Do it!
 		let p = crud({action:"get", type:'Person', status, id:xid, item:interim, swallow, localStorage:false});
-		return p;		
+		return p;
 	}, {cachePeriod}); // ./DS.fetch
 
 	// NB: DS.fetch will cache and return a promise, so don't set the new interim if we already had one
@@ -219,7 +219,7 @@ const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) =>
  */
 Person.getEmail = person => {
 	if ( ! person) return null;
-	let id = Person.getId(person);	
+	let id = Person.getId(person);
 	let e = XId.id(id);
 	if (isEmail(e)) {
 		return e;
@@ -241,7 +241,7 @@ Person.getEmail = person => {
  */
 const getProfileFor = ({xid,service}) => {
 	const pvPeep = getProfile({xid});
-	if ( ! pvPeep.resolved) return pvPeep; // HACK not quite correct! e.g. If you attach a then!	
+	if ( ! pvPeep.resolved) return pvPeep; // HACK not quite correct! e.g. If you attach a then!
 	if (XId.service(xid) === service) {
 		return pvPeep;
 	}
@@ -270,7 +270,7 @@ const getProfilesNow = xids => {
 	if ( ! xids) xids = getAllXIds();
 	assert(_.isArray(xids), "Person.js getProfilesNow "+xids);
 	xids = xids.filter(x => x); // no nulls
-	let pvsPeep = xids.map(xid => getProfile({xid}));	
+	let pvsPeep = xids.map(xid => getProfile({xid}));
 	let peeps = pvsPeep.map(pvp => pvp.value || pvp.interim).filter(x => x);
 	console.log("xids", xids, "pvsPeep", pvsPeep, "peeps", peeps);
 	return peeps;
@@ -289,7 +289,7 @@ const savePersons = debouncePV(({person, persons}) => {
 	if (person) {
 		assert( ! persons);
 		persons = [person];
-	}	
+	}
 	// one save per person ?? TODO batch
 	let pSaves = persons.map(peep => {
 		Person.assIsa(peep);
@@ -481,7 +481,7 @@ const getAllXIds = () => {
 	if (Login.aliases) {
 		let axids = Login.aliases.map(a => a.xid);
 		axids.forEach(a => all.add(a));
-	}	
+	}
 	// linked IDs?
 	getAllXIds2(all, Array.from(all));
 	// turn into an array
@@ -503,13 +503,13 @@ const getAllXIds2 = (all, agendaXIds) => {
 	// It can be considered done when DataStore holds a profile for each xid
 	pvsPeep.filter(pvp => pvp.value).forEach(pvp => {
 		let peep = pvp.value;
-		let linkedIds = Person.getLinks(peep).map(Link.to);	
+		let linkedIds = Person.getLinks(peep).map(Link.to);
 		if ( ! linkedIds) return;
 		// loop test (must not already be in all) and recurse
 		let newIds = linkedIds.filter(li => li && ! all.has(li));
 		newIds.forEach(li => {
 			all.add(li);
-			getAllXIds2(all, [li]);					
+			getAllXIds2(all, [li]);
 		});
 	});
 };
@@ -528,7 +528,7 @@ const doRegisterEmail = (data) => {
 		return;
 	}
 	if ( ! data.controller) data.controller = ServerIO.dataspace;
-	if ( ! data.ref) data.ref = ""+window.location;	
+	if ( ! data.ref) data.ref = ""+window.location;
 	// This will become a standard consent "I grant consent purpose=email_mailing_list to the data-controller"
 	if ( ! data.purpose) {
 		data.purpose = PURPOSES.email_mailing_list;
@@ -536,7 +536,7 @@ const doRegisterEmail = (data) => {
 	if ( ! data.evt) data.evt = "register";
 	data.app = C.app.id;
 
-	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data});	
+	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data})
 };
 
 /**
@@ -579,7 +579,7 @@ const setClaimValue = ({person, persons, key, value, consent}) => {
 	console.log("setClaimValue "+key+" = "+value, persons.map(p => p.id));
 	let from = Login.getId() || XId.ANON;
 	let consents = [consent || DEFAULT_CONSENT]; // the "what is my current default?" setting
-	let claim = new Claim({key,value,from,consent:consents});	
+	let claim = new Claim({key,value,from,consent:consents});
 	persons.map(peep => {
 		addClaim(peep, claim);
 	});
@@ -601,7 +601,7 @@ const addClaim = (peep, claim) => {
 	Person.assIsa(peep);
 	Claim.assIsa(claim);
 	if ( ! peep.claims) peep.claims = [];
-	
+
 	// Does it replace a claim? - remove overlaps
 	let overlaps = peep.claims.filter(oldClaim => Claim.overlap(claim, oldClaim));
 	// NB: called `newclaims` cos it will replace peep.claims below
@@ -647,7 +647,7 @@ const getClaim = ({person, persons, key, from}) => {
 	if (claims.length > 1) {
 		// prefer the login id
 		let myclaims = claims.filter(c => c.f && c.f.length===1 && c.f[0] === Login.getId());
-		if (myclaims.length) claims = myclaims;		
+		if (myclaims.length) claims = myclaims;
 		// prefer the most recent
 		claims.sort(sortByDate(c => c.t));
 	}
@@ -685,7 +685,7 @@ const getClaims = ({person, persons, key}) => {
 	if (person) persons = [person];
 	assMatch(key, String);
 	let allClaims = [];
-	persons.forEach(peep => allClaims.push(...peep.claims));	
+	persons.forEach(peep => allClaims.push(...peep.claims));
 	let keyClaims = allClaims.filter(claim => claim.k===key);
 	return keyClaims;
 };
@@ -697,7 +697,7 @@ const getClaims = ({person, persons, key}) => {
 Person.claims = person => person.claims || [];
 
 export {
-	doRegisterEmail,	
+	doRegisterEmail,
 	convertConsents,
 	getAllXIds,
 	getProfile, getProfileFor,

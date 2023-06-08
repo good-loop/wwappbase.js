@@ -116,15 +116,15 @@ class TableSettings {
 	/**
 	* @type {?Tree<Item>} Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items. */	
 	dataTree;
-	
+
 	/** @type {?String} Filter rows by keyword */
 	filter;
- 
+
 	/** @param {?Boolean|String[]} If truthy, offer a filter widget. If String[], then store the filter at this datastore path. */
 	hasFilter;
-	
+
 	hasCollapse;
-	
+
 	/** @param {?Boolean|String} If true, offer csv download. See also DownloadCSVLink. Set to "top" to position the link above the table. */
 	hasCsv;
 
@@ -134,7 +134,7 @@ class TableSettings {
 	numRows;
 	/** @type {Number} */
 	numCols;
-	
+
 	/** @type {?Function} optional support for selections. input: ({data:[][], start:{row,colNum}, end:{row,colNum}}) TODO true gives the copy-selection */
 	onSelect;
 
@@ -145,7 +145,7 @@ class TableSettings {
 	* @type {Boolean} default true
 	*/
 	showSortButtons = true;
-	
+
 	/**
 	 * @type {Column}
 	 */
@@ -162,7 +162,7 @@ class TableSettings {
 	/** @type {?Number} Cap the number of rows shown. This cap is applied after filtering and sorting */ 
 	rowsPerPage;
 
-	
+
 	/** @type {?String}  Used to name the csv download */ 
 	tableName = 'Table';
 
@@ -707,7 +707,7 @@ const defaultCellRender = (v, column) => {
 			v = v.toFixed(precision).replace(/(\d)(?=(\d{3})+(?!\d))/g, '$1,');
 			return "£" + v;
 		}
-		
+
 		if (CellFormat.isstring(column.format)) {
 			return str(v); // Even if it looks like a number
 		}
@@ -765,7 +765,7 @@ const Cell = ({ item, row, colNum, depth, node, column, tableSettings}) => {
 		// collapse? Done by an extra column
 		let style = calcStyle({ style: column.style, cellValue: v, item, row, depth, column }) || {};
 		let tooltip = calcStyle({ style: column.tooltip, cellValue: v, item, row, depth, column });
-		
+
 		// keep first col visible NB first row is a Th
 		if (colNum===0 && tableSettings && tableSettings.scroller && tableSettings.scrollLeft) {
 			style = Object.assign({

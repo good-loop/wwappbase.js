@@ -635,11 +635,10 @@ const fIdentity = (x) => x;
  * 
  * Why? When there are 2 built in functions:
  * 
- * 1. escape() robust but doesn't handle unicode. 
- * 2. encodeURIComponent() has better unicode handling -- however it doesn't escape 's which makes it dangerous, 
+ * 1. escape() robust but doesn't handle unicode.
+ * 2. encodeURIComponent() has better unicode handling -- however it doesn't escape 's which makes it dangerous,
  * and it does (often unhelpfully) encode /s and other legitimate url characters.
- 
- This is a super-solid best-of-both.
+ * This is a super-solid best-of-both.
 */
 export const encURI = function (urlPart) {
 	urlPart = encodeURIComponent(urlPart);

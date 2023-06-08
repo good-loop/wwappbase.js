@@ -211,7 +211,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 		const faSize = (size === 'xsmall') ? null : (size === 'small') ? '2x' : '4x'; // default to xlarge size, allow normal or large
 		return <Misc.Icon className={className} fa={fa} prefix={Misc.FontAwesome===5?'fab':"fa"} size={faSize} />
 	};
-	
+
 	// The rest we have to use images for (Instagram's mesh gradient can't be done in SVG)
 	let file = url || '/img/' + service + '-logo.svg';
 	if (service === 'instagram') file = '/img/instagram-logo.png';
@@ -239,7 +239,7 @@ Misc.Icon = ({glyph, fa, size, className, prefix = 'fa', ...rest}) => {
 		classes.push('fa-' + size);
 	}
 	if (className) classes.push(className);
-	
+
 	return <Tag className={classes.join(' ')} aria-hidden="true" {...rest} />;
 };
 
@@ -546,7 +546,7 @@ Misc.Tabs = ({children, path}) => {
 	// Option currently selected
 	// Could use state hook for this, but would be inconsistent with the rest of the code base
 	const selected = DataStore.getValue(path) || children[0].props.option;
-	
+
 	// Options to display
 	const headers = children.reduce((headers, child) => [...headers, child.props.option], []);
 

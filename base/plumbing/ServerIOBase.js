@@ -221,11 +221,10 @@ window.onerror = _.once(function(messageOrEvent, source, lineno, colno, error) {
 		url: ServerIO.LOGENDPOINT,
 		type: 'POST',
 		data: {
-		  msg: window.location + ' ' + msg + ' user-id: ' + Login.getId(), // NB: browser type (user agent) will be sent as a header
-		  type: 'error'
+			msg: window.location + ' ' + msg + ' user-id: ' + Login.getId(), // NB: browser type (user agent) will be sent as a header
+			type: 'error'
 		}
-	  });
-	  
+	});
 });
 // quiet asserts in production
 if (C.isProduction()) {
@@ -339,13 +338,13 @@ ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
 		id = normaliseSogiveId(id);
 		const endpoint = ServerIO.ENDPOINT_NGO;
 		return endpoint+"/"+encURI(id)+'.json'+(status? '?status='+status : '');
-	}	
+	}
 	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);
 	let url = domain + servlet+'/' 
 		+ (ServerIO.dataspace? ServerIO.dataspace+'/' : '')
 		+ encURI(id)+'.json'
-		+ (status? '?status='+status : '');	
+		+ (status? '?status='+status : '');
 	return url;
 };
 
@@ -398,7 +397,7 @@ const normaliseSogiveId = id => {
 		'weforest':'we-forest'
 	}[canonId];
 
-	return sid || canonId;	
+	return sid || canonId;
 };
 
 /**
@@ -437,7 +436,7 @@ ServerIO.getEndpointForType = (type) => {
 	if (type==="Person" && ServerIO.USE_PROFILER) {
 		return ServerIO.PROFILER_ENDPOINT+"/person";
 	}
-	// normal = this domain's backend	
+	// normal = this domain's backend
 	return '/'+type.toLowerCase();
 };
 

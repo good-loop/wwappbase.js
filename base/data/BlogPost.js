@@ -7,7 +7,6 @@ import DataClass from './DataClass';
  * See Campaign.java
  */
 class BlogPost extends DataClass {
-	
 	/** @type{String} */
 	title;
 

@@ -9,7 +9,7 @@ class ChatLine extends DataClass {
 	from;
 	/** @type {String} */
 	text;
-	
+
 	created;
 
 	/**

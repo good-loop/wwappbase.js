@@ -20,7 +20,7 @@ import PromiseValue from '../promise-value';
  */
 class Agency extends DataClass {
 }
-DataClass.register(Agency, "Agency"); 
+DataClass.register(Agency, "Agency");
 export default Agency;
 
 /**
@@ -30,26 +30,25 @@ export default Agency;
  * @returns {PromiseValue} List<Agency>
  */
 Agency.getChildren = (agencyId, status=KStatus.PUBLISHED) => {
-    let q = SearchQuery.setProp(null, "parentId", agencyId);
-    return getDataList({type:"Agency",status,q,save:true});
-}
+	let q = SearchQuery.setProp(null, "parentId", agencyId);
+	return getDataList({type:"Agency",status,q,save:true});
+};
 
 Agency.getImpactDebits = ({agency, agencyId, status=KStatus.PUBLISHED}) => {
-    
-    if (!agencyId) agencyId = agency.id;
-    return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, for:agencyId}), () => getImpactDebits2(agencyId, status));
-}
+	if (!agencyId) agencyId = agency.id;
+	return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, for:agencyId}), () => getImpactDebits2(agencyId, status));
+};
 
 const getImpactDebits2 = async (agencyId, status) => {
-    let q;
-    // What if it's a master brand, e.g. Nestle > Nespresso?
-    // The only way to know is to look for children
-    let pvListAgencies = Agency.getChildren(agencyId);
-    let listAgencies = await pvListAgencies.promise; // ...wait for the results
-    let ids = List.hits(listAgencies).map(adv => adv.id); // may be [], which is fine
-    ids = ids.concat(agencyId); // include the top-level brand
-    q = SearchQuery.setPropOr(null, "agency", ids);
-    let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
-    let v = await pvListImpDs.promise;
-    return v;
-}
+	let q;
+	// What if it's a master brand, e.g. Nestle > Nespresso?
+	// The only way to know is to look for children
+	let pvListAgencies = Agency.getChildren(agencyId);
+	let listAgencies = await pvListAgencies.promise; // ...wait for the results
+	let ids = List.hits(listAgencies).map(adv => adv.id); // may be [], which is fine
+	ids = ids.concat(agencyId); // include the top-level brand
+	q = SearchQuery.setPropOr(null, "agency", ids);
+	let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
+	let v = await pvListImpDs.promise;
+	return v;
+};

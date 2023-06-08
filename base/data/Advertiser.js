@@ -22,22 +22,22 @@ import PromiseValue from '../promise-value';
  */
 class Advertiser extends DataClass {
 }
-DataClass.register(Advertiser, "Advertiser"); 
+DataClass.register(Advertiser, "Advertiser");
 export default Advertiser;
 
-// /** 
+// /**
 //  * Not stored on the parent - find out by looking for children
 //  */
 // Advertiser.isMaster = (adv) => {
-//     return true;  
+// 	return true;
 // };
 
 /**
  * Get the master campaign for a vertiser
  */
 Advertiser.masterCampaign = (vertiser) => {
-    return vertiser.campaign;
-}
+	return vertiser.campaign;
+};
 
 /**
  * 
@@ -46,9 +46,9 @@ Advertiser.masterCampaign = (vertiser) => {
  * @returns {PromiseValue} List<Advertiser>
  */
 Advertiser.getChildren = (vertiserId, status=KStatus.PUBLISHED) => {
-    let q = SearchQuery.setProp(null, "parentId", vertiserId).query;
-    return getDataList({type:"Advertiser",status,q, save:true});
-}
+	let q = SearchQuery.setProp(null, "parentId", vertiserId).query;
+	return getDataList({type:"Advertiser",status,q, save:true});
+};
 
 /**
  * Get the child brands of multiple advertisers at once
@@ -56,27 +56,26 @@ Advertiser.getChildren = (vertiserId, status=KStatus.PUBLISHED) => {
  * @param {*} status 
  */
 Advertiser.getManyChildren = (vertiserIds, status=KStatus.PUBLISHED) => {
-    let sqSubBrands = SearchQuery.setPropOr(new SearchQuery(), "parentId", vertiserIds).query;
+	let sqSubBrands = SearchQuery.setPropOr(new SearchQuery(), "parentId", vertiserIds).query;
 	return getDataList({type: C.TYPES.Advertiser, status, q:sqSubBrands, save:true});
-}
+};
 
 Advertiser.getImpactDebits = ({vertiser, vertiserId, status=KStatus.PUBLISHED}) => {
-    
-    if (!vertiserId) vertiserId = vertiser.id;
-    return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, for:vertiserId}), () => getImpactDebits2(vertiser?.id || vertiserId, status));
-}
+	if (!vertiserId) vertiserId = vertiser.id;
+	return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, for:vertiserId}), () => getImpactDebits2(vertiser?.id || vertiserId, status));
+};
 
 const getImpactDebits2 = async (vertiserId, status) => {
-    let q;
-    console.log("VERTISER ID", vertiserId);
-    // What if it's a master brand, e.g. Nestle > Nespresso?
-    // The only way to know is to look for children
-    let pvListAdvertisers = Advertiser.getChildren(vertiserId);
-    let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
-    let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
-    ids = ids.concat(vertiserId); // include the top-level brand
-    q = SearchQuery.setPropOr(null, "vertiser", ids);
-    let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
-    let v = await pvListImpDs.promise;
-    return v;
-}
+	let q;
+	console.log("VERTISER ID", vertiserId);
+	// What if it's a master brand, e.g. Nestle > Nespresso?
+	// The only way to know is to look for children
+	let pvListAdvertisers = Advertiser.getChildren(vertiserId);
+	let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
+	let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
+	ids = ids.concat(vertiserId); // include the top-level brand
+	q = SearchQuery.setPropOr(null, "vertiser", ids);
+	let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
+	let v = await pvListImpDs.promise;
+	return v;
+};

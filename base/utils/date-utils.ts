@@ -134,7 +134,7 @@ export const isoDateTZ = (d: Date | string): string => {
 	// HACK: for eastern countries ahead of UTC, e.g. "1st June 00:00" in Paris = "31st May 23:00" UTC
 	// so use a shifted time, then get the UTC date
 	date.setMinutes(date.getMinutes() + offset);
-	return isoDate(date);	
+	return isoDate(date);
 };
 
 /** 
@@ -250,7 +250,7 @@ const newDateUTC = (isoDate:string) => {
  * @param {!Date} date 
  * @returns {start, end, name}
  */
-export const getPeriodQuarter = (date : Date) => {	
+export const getPeriodQuarter = (date : Date) => {
 	const qIndex = Math.floor(date.getMonth() / 3);
 	const month = qIndex*3 + 1;
 	let year = date.getFullYear();

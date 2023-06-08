@@ -39,7 +39,7 @@ DataStore.update({
 
 
 if ( ! C.A) {
-	/** HACK define C.A = the normal <a> tag, for optional replacement with import { A } from glrouter  
+	/** HACK define C.A = the normal <a> tag, for optional replacement with import { A } from glrouter
 	 * @param {?Object} x
 	 * @param {string} x.href url
 	 * @param {string|JSX} x.children text/elements to render in the tag
@@ -240,12 +240,12 @@ class MainDivBase extends Component {
 		// Hack enabler: Apply some context-specific classes to the outermost container.
 		setMainDivClass(`page-${page}`, /page-\w+/);
 		setMainDivClass(`logged-${Login.isLoggedIn() ? 'in' : 'out'}`, /logged-\w+/);
-		
+
 		const onNavToggle = (open) => {
 			if (open) setMainDivClass('nav-open', /nav-\w+/);
 			else setMainDivClass('nav-closed', /nav-\w+/);
 		};
-		
+
 		return (<div>
 			{/* Make test content visible */ Roles.isTester() && <StyleBlock>{`.TODO {display:block; border:2px dashed yellow;`}</StyleBlock>}
 			{navbar && !undecorated && <>

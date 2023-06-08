@@ -10,8 +10,8 @@ const dummy = PropControlPerson;
 
 function PropControlMediaObject({path, prop, proppath, uploadType, storeValue, onChange, warnOnUnpublished}) {
 	return (<>
-        <PropControl type={uploadType} prop="contentUrl" path={proppath} />	
-        <PropControl type="text" prop="caption" path={proppath} label size="sm" />	
+		<PropControl type={uploadType} prop="contentUrl" path={proppath} />
+		<PropControl type="text" prop="caption" path={proppath} label size="sm" />
 	</>);
 }
 
@@ -19,13 +19,14 @@ function PropControlMediaObject({path, prop, proppath, uploadType, storeValue, o
  * See ImageObject.java
  */
 function PropControlImageObject(props) {
-  return <PropControlMediaObject uploadType="imgUpload" {...props} />;
+	return <PropControlMediaObject uploadType="imgUpload" {...props} />;
 }
+
 /**
  * See VideoObject.java
  */
- function PropControlVideoObject(props) {
-  return <PropControlMediaObject uploadType="videoUpload" {...props} />;
+function PropControlVideoObject(props) {
+	return <PropControlMediaObject uploadType="videoUpload" {...props} />;
 }
 
 registerControl({type: 'ImageObject', $Widget: PropControlImageObject});

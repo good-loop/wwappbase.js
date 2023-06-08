@@ -223,7 +223,7 @@ SearchQuery.op = (sq1, sq2, op) => {
 		let newsq = new SearchQuery(u);
 		return newsq;
 	}
-	
+
 	// one is falsy? then just return the other
 	if ( ! sq2) return sq1;
 	if ( ! sq1) return sq2;

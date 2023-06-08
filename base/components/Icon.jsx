@@ -53,7 +53,7 @@ const EMOJI = {
  const ICONS = {
 	download: "https://icons.getbootstrap.com/assets/icons/download.svg"
  };
- 
+
  /**
   * 
   * @param {Object} p

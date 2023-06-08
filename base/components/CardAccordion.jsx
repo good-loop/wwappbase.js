@@ -60,7 +60,7 @@ class Card extends React.Component {
 		const shouldCollapse = uncontrolled ? stateCollapsed : collapse;
 
 		const color = error ? 'danger' : warning ? 'warning' : null;
-		
+
 		// Is the title something we can use as a tooltip as well?
 		const titleText = _.isString(title) ? title : null;
 

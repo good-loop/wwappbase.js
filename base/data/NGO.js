@@ -155,32 +155,32 @@ NGO.CATEGORY = {
 
 // TODO add more stock images, all of these are just elk right now
 NGO.STOCK_IMAGES = {
-	"animals":[	
+	"animals": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"culture":[
+	"culture": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"community":[
+	"community": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"education":[
+	"education": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"environment":[
+	"environment": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"health":[
+	"health": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
@@ -190,27 +190,27 @@ NGO.STOCK_IMAGES = {
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"human services":[
+	"human services": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"international":[
+	"international": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"research":[
+	"research": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"religion":[
+	"religion": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
-	
-	"default":[
+
+	"default": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	]

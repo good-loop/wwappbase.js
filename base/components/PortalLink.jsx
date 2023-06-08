@@ -12,12 +12,12 @@ import Roles from '../Roles';
  * @param {?boolean} devOnly
  */
 const PortalLink = ({item,size,className,devOnly}) => {
-    if (devOnly && ! Roles.isDev()) return null;
-    let href = getPortalLink(item);
-    if ( ! href) {
-        return null;
-    }
-    return <C.A className={space(size,devOnly&&"dev-link",className)} href={href}>{item.name}</C.A>;
+	if (devOnly && ! Roles.isDev()) return null;
+	let href = getPortalLink(item);
+	if ( ! href) {
+		return null;
+	}
+	return <C.A className={space(size,devOnly&&"dev-link",className)} href={href}>{item.name}</C.A>;
 };
 
 /**
@@ -26,16 +26,16 @@ const PortalLink = ({item,size,className,devOnly}) => {
  * @returns {?String} link or null
  */
 export const getPortalLink = (item) => {
-    if ( ! item) return null;
-    const type = getType(item);
-    if ( ! type) {
-        console.warn("PortalLink - no type?!", item);
-        return null;
-    }
-    let url = ServerIO.getEndpointForType(type);
-    url = url.replace("good-loop.com/", "good-loop.com/#"); // hack: switch from servlet to editor page    
-    let href = url+"/"+encURI(getId(item));
-    return href;
+	if ( ! item) return null;
+	const type = getType(item);
+	if ( ! type) {
+		console.warn("PortalLink - no type?!", item);
+		return null;
+	}
+	let url = ServerIO.getEndpointForType(type);
+	url = url.replace("good-loop.com/", "good-loop.com/#"); // hack: switch from servlet to editor page
+	let href = url+"/"+encURI(getId(item));
+	return href;
 };
 
 

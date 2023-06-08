@@ -66,7 +66,7 @@ class DragState {
 	/** @type {Number} Where is the mouse/touch point on the page */
 	pageX;
 	pageY;
-	
+
 	/** @type {Number} Offset to the mouse/touch point within the dragged object */
 	offsetX;
 	offsetY;

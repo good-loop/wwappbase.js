@@ -271,7 +271,7 @@ function DiffWarning({path, prop, className}) {
 		let checkClipboardWarning = (pubValShort === draftValShort) ? (
 			' (Differences outside this excerpt - use clipboard button to inspect)'
 		) : '';
-		
+
 		pBody = <PopoverBody>
 			<div className="diff-line mb-1">
 				<strong>Pub</strong>
@@ -299,18 +299,17 @@ function DiffWarning({path, prop, className}) {
 
 
 /**
-   * Input bound to DataStore.
-   * 
-// NB: PropControl or Input + useState?
-// PropControl is best if the data is shared with other components, 
-or if the data should be maintained across page changes (which might destroy and recreate the widget), 
-or if extras like help and error text are wanted. 
-// useState is best for purely local state.
-   *
-* NB: This function provides a label / help / error wrapper -- then passes to PropControl2
- 
-   * @param {PropControlParams} p
-   */
+ * Input bound to DataStore.
+ * 
+ * NB: PropControl or Input + useState?
+ * PropControl is best if the data is shared with other components,
+ *   or if the data should be maintained across page changes (which might destroy and recreate the widget),
+ *   or if extras like help and error text are wanted.
+ * useState is best for purely local state.
+ * 
+ * NB: This function provides a label / help / error wrapper -- then passes to PropControl2
+ * @param {PropControlParams} p
+ */
 const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	let { type, optional, required, path, prop, set, label, help, tooltip, customIcon, error, warning, validator, inline, dflt, fast, size, int, ...stuff } = props;
 	if (label === true) {
@@ -377,8 +376,8 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		}
 		setTimeout(() => setFirstRender(false));
 	}
-	
-	
+
+
 
 	// Temporary hybrid form while transitioning to all-modular PropControl structure
 	// newValidator produces an object compatible with setInputStatus

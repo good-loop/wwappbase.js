@@ -49,7 +49,7 @@ const A = (x) => {
 	const doClick = e => {
 		// Base <a> behaviour (ie open in new tab/window) on middle-, Ctrl- or Command-click
 		if (e.shiftKey || e[clickModKey]) return;
-		
+
 		// No href means just an anchor tag, not a link - nowhere to navigate to when clicked
 		if (!href) return;
 
