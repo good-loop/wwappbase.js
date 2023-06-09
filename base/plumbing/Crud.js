@@ -363,26 +363,33 @@ ActionMan.unpublish = (type, id) => unpublish({type,id});
  * @param {?DataClass} p.item 
  * @returns PromiseValue(DataClass)
  */
-export const publish = ({type,id,item,previous,swallow}) => {
-	if ( ! type) type = getType(item);
-	if ( ! id) id = getId(item);
+export const publish = ({type, id, item, previous, swallow}) => {
+	if (!type) type = getType(item);
+	if (!id) id = getId(item);
 	assMatch(type, String);
-	assMatch(id, String, "Crud.js no id to publish to "+type);
-	// if no item - well its the draft we publish
-	if ( ! item) {
-		item = DataStore.getData({status:C.KStatus.DRAFT, type, id});
+	assMatch(id, String, `Crud.js publish(): no id ${type}`);
+
+	// Publish-by-diff: only when there's already a published version to diff against!
+	if (previous) {
+		// Edit pages use the published version to highlight modifications
+		// -- so if it's getting edited, it'll be in DataStore.
+		const pubItem = DataStore.getData({status: C.KStatus.PUBLISHED, type, id});
+		if (!pubItem) previous = null; // Not already published, so send complete object.
 	}
-	assert(item, "Crud.js no item to publish "+type+" "+id);
+
+	// No item provided? Draft should be available.
+	if (!item) item = DataStore.getData({status: C.KStatus.DRAFT, type, id});
+	assert(item, `Crud.js publish(): no item provided or in store ${type} ${id}`);
 
 	// optimistic list mod
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
 	return crud({type, id, action: 'publish', item, previous, swallow})
-		.promise.catch(err => {
-			// invalidate any cached list of this type
-			DataStore.invalidateList(type);
-			return err;
-		}); // ./then
+	.promise.catch(err => {
+		// invalidate any cached list of this type
+		DataStore.invalidateList(type);
+		return err;
+	}); // ./then
 };
 
 
