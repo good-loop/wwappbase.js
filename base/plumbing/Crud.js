@@ -77,7 +77,7 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 
 	// call the server
 	const p = SIO_crud(type, item, previous, action, {swallow})
-		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage, diffSave:!!previous}) )
+		.then(res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage, diffSave: !!previous}) )
 		.catch(err => {
 			// bleurgh
 			console.warn(err);

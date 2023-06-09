@@ -51,20 +51,20 @@ Campaign.masterFor = campaign => {
 * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
 */
 Campaign.pvSubCampaigns = ({campaign, query}) => {
-   Campaign.assIsa(campaign);
-   if ( ! campaign.master) {
-       return new PromiseValue(new List([campaign]));
-   }
-   // fetch leaf campaign
-   let {id, type} = Campaign.masterFor(campaign);
-   // campaigns for this advertiser / agency
-   let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
-   // exclude this? No: some (poorly configured) master campaigns are also leaves
-   // sq = SearchQuery.and(sq, "-id:"+campaign.id); 	
-   const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
-   const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query, access}); 
-   // NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
-   return pvCampaigns;
+	Campaign.assIsa(campaign);
+	if ( ! campaign.master) {
+		return new PromiseValue(new List([campaign]));
+	}
+	// fetch leaf campaign
+	let {id, type} = Campaign.masterFor(campaign);
+	// campaigns for this advertiser / agency
+	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
+	// exclude this? No: some (poorly configured) master campaigns are also leaves
+	// sq = SearchQuery.and(sq, "-id:"+campaign.id);
+	const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
+	const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query, access});
+	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
+	return pvCampaigns;
 };
 
 

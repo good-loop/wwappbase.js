@@ -75,7 +75,7 @@ const macroAdders = {
 		// https://developer.yahooinc.com/native/guide/v1-api/dynamic-parameters.html "Tracking Macros" session suggests these are only for clickthrough URLs
 		url.search += '&macro=yahoo&vert={creative}&env={device}';
 	},
-    [KMacroType.AMAZON]: (url) => {
+	[KMacroType.AMAZON]: (url) => {
 		// doc - maybe this?? https://advertising.amazon.com/en-gb/resources/ad-policy/mmp-measurement-urls
 		// Has this been tested??
 		// creative ID, size string
