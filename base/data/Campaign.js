@@ -31,7 +31,7 @@ import XId from './XId';
 class Campaign extends DataClass {
 	/** @type {?string} */
 	id
-	
+
 	/** @type {?String} */
 	agencyId;
 
@@ -219,9 +219,11 @@ Campaign.viewcount = ({campaign, status}) => {
 		return campaign.numPeople;
 	}
 	const pvAds = Advert.fetchForCampaign({campaignId:campaign.id, status});
-	if (!pvAds.resolved) return 0;
+	if (!pvAds.resolved) return null; // best we can do without big refactor: signify "answer not ready yet"
 
 	const ads = List.hits(pvAds.value) || [];
+	if (!ads?.length) return {}; // Empty campaign - stop before Advert.viewcountByCountry spams the console
+
 	const viewcount4campaign = Advert.viewcountByCampaign(ads);
 	return sum(Object.values(viewcount4campaign));
 };
@@ -242,9 +244,11 @@ Campaign.viewcountByCountry = ({campaign, status}) => {
 	}
 
 	const pvAds = Advert.fetchForCampaign({ campaignId: campaign.id, status });
-	if (!pvAds.resolved) return {};
+	if (!pvAds.resolved) return null; // best we can do without big refactor: signify "answer not ready yet"
 
-	let ads = List.hits(pvAds.value) || [];
+	const ads = List.hits(pvAds.value);
+	if (!ads?.length) return {}; // Empty campaign - stop before Advert.viewcountByCountry spams the console
+
 	return Advert.viewcountByCountry({ ads });
 };
 

@@ -16,7 +16,7 @@ import Money from './Money';
 import { assert } from '../utils/assert';
 import ActionMan from '../plumbing/ActionManBase';
 import { getId } from './DataClass';
-import { uniqBy } from 'lodash';
+import { isEmpty, maxBy, uniqBy } from 'lodash';
 import GreenTag from './GreenTag';
 
 /* ------- Data Functions --------- */
@@ -181,51 +181,68 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 	return {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads, greenTags, subCampaignsWithDebits, subBrandsWithDebits};
 }
 
+/** Passed to _.maxBy in getImpressionsByCampaignByCountry to find the non-unset country with the highest impression count*/
+const highestNotUnsetPredicate = ([country, viewCount]) => (country === 'unset') ? 0 : viewCount;
 
+
+/**
+ * Aggregate impressions-per-country for a campaign or group of subcampaigns
+ * TODO Start and end params are unused
+ * @param {object} p
+ * @param {object} p.baseObjects
+ * @param {Campaign} [p.baseObjects.campaign]
+ * @param {Campaign[]} [p.baseObjects.subCampaigns]
+ * 
+ * @returns {object<{String: Number}>} Of form { [countryCode]: impressionCount }
+ */
 export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField = 'country', ...rest }) => {
-	let { campaign, subCampaigns } = baseObjects
-	if (!campaign && (!subCampaigns || subCampaigns.length == 0)) return []
+	let { campaign: focusCampaign, subCampaigns } = baseObjects;
+	if (!focusCampaign && (!subCampaigns || subCampaigns.length == 0)) return {}; // No campaigns, no data
 
-	let searchData = campaign ? [campaign] : subCampaigns // if campaign is set, then the user has filtered to a single campaign (no subcampaigns)
+	// if focusCampaign is set, then the user has filtered to a single campaign (no subcampaigns)
+	const campaigns = focusCampaign ? [focusCampaign] : subCampaigns;
 
-	let campaignImpsByCountry = searchData.map(country => Campaign.viewcountByCountry({campaign: country, status: KStatus.PUBLISHED}))
+	// Lots of processing as well as the fetch, so save results
+	const dsPath = ['misc', 'getImpressionsByCampaignByCountry', campaigns.toString()];
+	const already = DataStore.getValue(dsPath);
+	if (already) return already;
 
+	// This has a PV behind it and won't immediately return values
+	const viewsByCountryPerCampaign = campaigns.map(campaign => Campaign.viewcountByCountry({campaign, status: KStatus.PUBLISHED}));
+	if (!viewsByCountryPerCampaign?.length) return {}; // Nothing returned yet
+	// Incomplete data? (viewcountByCountry returns null when ads-for-campaign not yet fetched, or DataLog results still pending)
+	if (viewsByCountryPerCampaign.includes(null)) return {};
 
-	if (!campaignImpsByCountry || campaignImpsByCountry.length === 0) return []
-
-	// for every campaign we can search through, find the viewcount for it's target country & unset countries
-	let campaignViews = campaignImpsByCountry.reduce((regionMap, regions) => {
+	// Find set of regions that were probably targeted by a campaign
 	// ASSUMPTION: 	afaik, a campaign will have a country it's aimed at that decision is not handled by us.
-	// 				as a result, we don't access to that info. Instead, guess by what country has the most views,
-	//				this is usually higher by several orders of magnitude so it's *usually* a safe bet.
+	// 	as a result, we don't access to that info. Instead, guess by what country has the most views,
+	// 	this is usually higher by several orders of magnitude so it's *usually* a safe bet.
+	const country2views_all = { unset: { impressions: 0, campaignsInRegion: 0 } };
+	viewsByCountryPerCampaign.forEach(country2views => {
+		if (isEmpty(country2views)) return;
 
-		if (!regions || regions.length == 0) return regionMap // handle campaign still loading and campaigns with no results 
+		// Find the region besides "unset" with the highest viewcount for this campaign
+		const [region, impressions] = maxBy(Object.entries(country2views), highestNotUnsetPredicate);
 
-		let campaignRegions = Object.keys(regions) // all regions this campaign was in
-		let currentRegion = campaignRegions.find((val) => val !== "unset") // set country with most impressions
-		let targetedRegions = Object.keys(regionMap) // all regions already seen (used if multiple campaigns are being read)
-
-		if (currentRegion) {
-			if (targetedRegions.includes(currentRegion)) {
-				regionMap[currentRegion].impressions += regions[currentRegion];
-				regionMap[currentRegion].campaignsInRegion += 1;
-			} else {
-				regionMap[currentRegion] = {impressions: regions[currentRegion], campaignsInRegion: 1}
-			}
+		// Any data for this country already in the table?
+		// If so, increment its data: if not, initialise it now.
+		let regionTotals = country2views_all[region];
+		if (regionTotals) {
+			regionTotals.impressions += impressions;
+			regionTotals.campaignsInRegion += 1;
+		} else {
+			country2views_all[region] = { impressions, campaignsInRegion: 1 };
 		}
-
-		// also track unset, needed to describe discrepency in campaigns used before we stored impression locations
-		if (campaignRegions.includes("unset")){
-			regionMap["unset"].impressions += regions["unset"];
-			regionMap["unset"].campaignsInRegion += 1;
+		// Record impressions with unset country as well
+		if (country2views.unset) {
+			country2views_all.unset.impressions += country2views.unset;
+			country2views_all.unset.campaignsInRegion += 1;
 		}
+	});
 
-		return regionMap
-	},
-		{unset: {impressions: 0, campaignsInRegion: 0}}
-	)
-
-	return campaignViews;
+	// Cache the result when complete
+	DataStore.setValue(dsPath, country2views_all);
+	return country2views_all;
 };
 
 

@@ -134,53 +134,52 @@ Advert.charityList = ad => {
 	return clist;
 };
 
+
+/**
+ * @param {Advert[]} ads List of adverts
+ * @returns {SearchQuery} DataLog query for "every minview event for any of the given ads"
+ */
+const viewCountQuery = ads => {
+	const adsQuery = SearchQuery.setPropOr(null, 'vert', ads.map(ad => ad.id));
+	return SearchQuery.and(adsQuery, 'evt:minview');
+}
+
+/**
+ * @param {object} p
+ * @param {Advert[]} p.ads
+ * @returns {object<{String: Number}>} Mapping from ISO country code to viewcount
+ */
+Advert.viewcountByCountry = ({ads, start, end}) => Advert.viewcountBy({ads, start, end, bby: 'country'});
+
+/**
+ * @param {Advert[]} ads
+ * @returns {object<{String: Number}>} Mapping from campaign ID to viewcount
+ */
+Advert.viewcountByCampaign = ads => Advert.viewcountBy({ads, bby: 'campaign'});
+
 /**
  * FIXME This hides a LOT of asynchronous work behind a PV and relies on the "redraw whole tree when anything at all happens" model to work
  * Refactor this - and dependent code - to expose the PromiseValue
- * @param {Item[]} ads 
+ * @param {object} p
+ * @param {Advert[]} p.ads List of adverts to query on
+ * @param {String} p.bby Breakdown on this parameter
+ * @param {String} p.start Start date/time for query
+ * @param {String} p.end End date/time for query
  * @returns {object} viewcount4campaign
  */
-Advert.viewcountByCampaign = ads => {
-	if (!ads || ads.length === 0) {
-		console.log('ads is empty')
-		return {}
-	}
-	// Get ad viewing data
-	let sq = new SearchQuery("evt:minview");
-	let qads = ads.map(({ id }) => `vert:${id}`).join(' OR ');
-	sq = SearchQuery.and(sq, qads);
-
-	let pvViewData = getDataLogData({q:sq.query, breakdowns:['campaign'], start:'2017-01-01', end:'now', name:"view-data",dataspace:'gl'});
-	let viewcount4campaign = {};
-	if (pvViewData.value) {
-		viewcount4campaign = pivotDataLogData(pvViewData.value, ["campaign"]);
-	}
-	return viewcount4campaign;
-};
-
-/**
- * FIXME This hides a LOT of asynchronous work behind a PV and relies on the "redraw whole tree when anything at all happens" model to work
- * Refactor this - and dependent code - to expose the PromiseValue
- * @param {Item[]} ads 
- * @returns {object} viewcount4campaign
- */
-Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
-	if (!ads || ads.length === 0) {
-		console.log('res: ads is empty');
+Advert.viewcountBy = ({ads, start = '2017-01-01', end = 'now', bby}) => {
+	if (!ads?.length) {
+		console.log(`Advert.viewcountBy[${bby}]: ads is empty`);
 		return {};
 	}
-	// Get ad viewing data
-	let sq = new SearchQuery("evt:minview");
-	let qads = ads.map(({ id }) => `vert:${id}`).join(' OR ');
-	sq = SearchQuery.and(sq, qads);
-	let pvViewData = getDataLogData({q:sq.query, breakdowns:['country'], start:start, end:end, name:"view-data",dataspace:'gl'});
-	let viewcount4campaign = {};
-	if (pvViewData.value) {
-		pvViewData.value
-		return viewcount4campaign = pivotDataLogData(pvViewData.value, ["country"]);
-	}
-	return viewcount4campaign;
+
+	// Get minview events for all ads in list
+	const q = viewCountQuery(ads).query;
+	const pvViewData = getDataLogData({name: `view-data-by-${bby}`, dataspace: 'gl', breakdowns: [bby], q, start, end});
+	if (!pvViewData.resolved) return null; // Data not ready yet
+	return pivotDataLogData(pvViewData.value, [bby]);
 };
+
 
 Advert.fetchForAdvertiser = ({vertiserId, status, q}) => Advert.fetchFor('vertiser', vertiserId, status, q);
 Advert.fetchForAdvertisers = ({vertiserIds, status, q}) => Advert.fetchFor('vertiser', vertiserIds, status, q);
