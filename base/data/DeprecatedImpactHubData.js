@@ -75,34 +75,12 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 * @returns {?Money}
 */
 Campaign.dntn = (campaign, isSub) => {
-   if ( ! campaign) return null;
-   Campaign.assIsa(campaign);
-   if (campaign.dntn) {
-       // HACK realtime=true forces a realtime fetch
-       if ( ! getUrlVars().realtime) {
-           return campaign.dntn;
-       }
-   }
-   if ( ! campaign.master || isSub) {
-       // Ask the backend
-       let sq = SearchQuery.setProp(null, "campaign", campaign.id);
-       let pvDntnData = DataStore.fetch(['misc','donations',campaign], 
-           () => ServerIO.getDonationsData({t:'dntnblock', q:sq.query, name:"campaign-donations"}), 
-           {cachePeriod:300*1000});
-       let total = pvDntnData.value && pvDntnData.value.total;
-       return total;
-   }
-   // recurse
-   // NB: Wouldn't it be faster to do a one-batch data request? Yeah, but that would lose the Campaign.dntn hard-coded info.
-   // TODO: make it so datalog reconciles with that, so we can do batched requests
-   let pvSubs = Campaign.pvSubCampaigns({campaign});
-   if ( ! pvSubs.value) {
-       return null;
-   }
-   let subs = List.hits(pvSubs.value);
-   let dntns = subs.map(sub => Campaign.dntn(sub, true));
-   let total = Money.total(dntns);
-   return total;
+	// Reduce code paths: just collapse the result of dntn4charity.
+	const d4c = Campaign.dntn4charity(campaign, isSub);
+	if (!d4c) return null;
+	return Object.values(d4c).reduce((acc, val) => {
+		return acc ? Money.add(acc, val) : val;
+	}, null);
 };
 
 
@@ -136,7 +114,7 @@ Campaign.dntn4charity = (campaign, isSub) => {
 	let subs = List.hits(pvSubs.value);
 	let dntn4charitys = subs.map(sub => Campaign.dntn4charity(sub, true));
 
-	// merge + sum subs
+	// aggregate d4c for subcampaigns
 	let subtotal4c = {};
 	for (let i = 0; i < dntn4charitys.length; i++) {
 		const subd4c = dntn4charitys[i];
