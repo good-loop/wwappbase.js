@@ -189,18 +189,20 @@ const highestNotUnsetPredicate = ([country, viewCount]) => (country === 'unset')
  * Aggregate impressions-per-country for a campaign or group of subcampaigns
  * TODO Start and end params are unused
  * @param {object} p
- * @param {object} p.baseObjects
+ * @param {object} p.baseObjects ??
  * @param {Campaign} [p.baseObjects.campaign]
  * @param {Campaign[]} [p.baseObjects.subCampaigns]
  * 
  * @returns {object<{String: Number}>} Of form { [countryCode]: impressionCount }
  */
 export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField = 'country', ...rest }) => {
+	assert(baseObjects);
 	let { campaign: focusCampaign, subCampaigns } = baseObjects;
 	if (!focusCampaign && (!subCampaigns || subCampaigns.length == 0)) return {}; // No campaigns, no data
 
 	// if focusCampaign is set, then the user has filtered to a single campaign (no subcampaigns)
 	const campaigns = focusCampaign ? [focusCampaign] : subCampaigns;
+	assert(campaigns);
 
 	// Lots of processing as well as the fetch, so save results
 	const dsPath = ['misc', 'getImpressionsByCampaignByCountry', campaigns.toString()];
