@@ -108,9 +108,8 @@ Advert.hideFromShowcase = ad => ad.hideFromShowcase;
 
 Advert.isHiddenFromImpact = (ad, impactSettings) => {
 	assert(ad);
-	assert(impactSettings);
 	if (ad.hideFromShowcase) return ad.id;
-	if (!impactSettings.showNonServedAds && !Advert.served(ad)) return "non-served";
+	if (impactSettings && !impactSettings.showNonServedAds && !Advert.served(ad)) return "non-served";
 }
 
 /**
