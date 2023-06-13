@@ -363,19 +363,11 @@ ActionMan.unpublish = (type, id) => unpublish({type,id});
  * @param {?DataClass} p.item 
  * @returns PromiseValue(DataClass)
  */
-export const publish = ({type, id, item, previous, swallow}) => {
+export const publish = ({type, id, item, swallow}) => {
 	if (!type) type = getType(item);
 	if (!id) id = getId(item);
 	assMatch(type, String);
 	assMatch(id, String, `Crud.js publish(): no id ${type}`);
-
-	// Publish-by-diff: only when there's already a published version to diff against!
-	if (previous) {
-		// Edit pages use the published version to highlight modifications
-		// -- so if it's getting edited, it'll be in DataStore.
-		const pubItem = DataStore.getData({status: C.KStatus.PUBLISHED, type, id});
-		if (!pubItem) previous = null; // Not already published, so send complete object.
-	}
 
 	// No item provided? Draft should be available.
 	if (!item) item = DataStore.getData({status: C.KStatus.DRAFT, type, id});
@@ -384,7 +376,7 @@ export const publish = ({type, id, item, previous, swallow}) => {
 	// optimistic list mod
 	preCrudListMod({type, id, item, action: 'publish'});
 	// call the server
-	return crud({type, id, action: 'publish', item, previous, swallow})
+	return crud({type, id, action: 'publish', item, swallow})
 	.promise.catch(err => {
 		// invalidate any cached list of this type
 		DataStore.invalidateList(type);
@@ -400,8 +392,8 @@ export const publish = ({type, id, item, previous, swallow}) => {
  * @param {!string} id 
  * @param {?Item} item 
  */
-const publishEdits = (type, id, item, previous) => {
-	return publish({type, id, item, previous});
+const publishEdits = (type, id, item) => {
+	return publish({type, id, item});
 };
 ActionMan.publishEdits = publishEdits;
 
