@@ -45,6 +45,7 @@ NGO.t4gTheme = (ngo) => ngo.t4gTheme;
 /**
  * displayName or name or ID
  * @param {NGO} ngo 
+ * @returns {?string}
  */
 NGO.displayName = ngo => ngo ? ngo.displayName || ngo.name || NGO.id(ngo) : null;
 

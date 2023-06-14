@@ -184,7 +184,7 @@ Campaign.makeFor = (advert) => {
  * Get the ImpactDebits for this campaign
 	* @param {Object} p
  * @param {Campaign} p.campaign
- * @param {String} p.campaignId
+ * @param {String} [p.campaignId]
  * @param {KStatus} [p.status]
  * @returns {PromiseValue} PV(List<ImpactDebit>)
  */
