@@ -453,6 +453,7 @@ ServerIO.getEndpointForType = (type) => {
  * jQuery parameters (partial notes only)
  * @param {object} [params.data] data to send - this should be a simple key -> primitive-value map.
  * @param {Function} [params.xhr] Used for special requests, e.g. file upload
+ * @param {string} [params.method] e.g. POST
  * @see {@link https://api.jquery.com/jQuery.ajax/|jQuery AJAX} for more
  *
  * @returns A {@link https://api.jquery.com/jQuery.ajax/#jqXHR|jqXHR object}.

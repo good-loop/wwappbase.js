@@ -60,22 +60,23 @@ Advertiser.getManyChildren = (vertiserIds, status=KStatus.PUBLISHED) => {
 	return getDataList({type: C.TYPES.Advertiser, status, q:sqSubBrands, save:true});
 };
 
-Advertiser.getImpactDebits = ({vertiser, vertiserId, status=KStatus.PUBLISHED}) => {
+Advertiser.getImpactDebits = ({vertiser, vertiserId, status=KStatus.PUBLISHED, start, end}) => {
 	if (!vertiserId) vertiserId = vertiser.id;
-	return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, for:vertiserId}), () => getImpactDebits2(vertiser?.id || vertiserId, status));
+	return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, start, end, for:vertiserId}), () => getImpactDebits2(vertiser?.id || vertiserId, status, start, end));
 };
 
-const getImpactDebits2 = async (vertiserId, status) => {
+const getImpactDebits2 = async (vertiserId, status, start, end) => {
 	let q;
-	console.log("VERTISER ID", vertiserId);
 	// What if it's a master brand, e.g. Nestle > Nespresso?
 	// The only way to know is to look for children
 	let pvListAdvertisers = Advertiser.getChildren(vertiserId);
 	let listAdvertisers = await pvListAdvertisers.promise; // ...wait for the results
 	let ids = List.hits(listAdvertisers).map(adv => adv.id); // may be [], which is fine
 	ids = ids.concat(vertiserId); // include the top-level brand
+	/*if (start) q = SearchQuery.setProp(q, "start", start);
+	if (end) q = SearchQuery.setProp(q, "end", end);*/
 	q = SearchQuery.setPropOr(null, "vertiser", ids);
-	let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
+	let pvListImpDs = getDataList({type:"ImpactDebit",status,start,period:"start",end,q,save:true});
 	let v = await pvListImpDs.promise;
 	return v;
 };
