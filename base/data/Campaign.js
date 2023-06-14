@@ -223,8 +223,7 @@ Campaign.viewcount = ({campaign, status}) => {
 
 	const ads = List.hits(pvAds.value) || [];
 	if (!ads?.length) return 0; // Empty campaign - stop before Advert.viewcountByCountry spams the console
-
-	const viewcount4campaign = Advert.viewcountByCampaign(ads);
+	const viewcount4campaign = Advert.viewcountByCampaign(ads) || 0;
 	return sum(Object.values(viewcount4campaign));
 };
 
