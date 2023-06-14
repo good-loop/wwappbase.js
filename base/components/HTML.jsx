@@ -4,10 +4,10 @@
 import React, {useState, useRef} from 'react';
 import HtmlSanitizer from '@jitbit/htmlsanitizer';
 
-const HTML = ({children}) => {	
+const HTML = ({children, unsafe}) => {	
     if ( ! children) return null;
-    safeHtml = HtmlSanitizer.SanitizeHtml(children);
-    return <div dangerouslySetInnerHTML={{__html: safeHtml}} />
+    let __html = unsafe? children : HtmlSanitizer.SanitizeHtml(children);
+    return <div dangerouslySetInnerHTML={{__html}} />
 };
 
 export default HTML;
