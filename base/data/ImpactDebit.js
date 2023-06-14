@@ -29,6 +29,20 @@ class ImpactDebit extends DataClass {
 	/** @type{?String} */
 	vertiser;
 
+	priority;
+
+	storiesContent;/* = {
+		impactCause,
+		impactDesc,
+		fact,
+		factSourceName,
+		factSourceURL,
+		testimonial,
+		testimonialQuote,
+		testimonialJob,
+		testimonialPerson
+	};	*/
+
 	constructor(base) {
 		super();
 		DataClass._init(this, base);
