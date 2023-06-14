@@ -224,9 +224,8 @@ Campaign.viewcount = ({campaign, status}) => {
 	if (!pvAds.resolved) return null; // best we can do without big refactor: signify "answer not ready yet"
 
 	const ads = List.hits(pvAds.value) || [];
-	if (!ads?.length) return {}; // Empty campaign - stop before Advert.viewcountByCountry spams the console
-
-	const viewcount4campaign = Advert.viewcountByCampaign(ads);
+	if (!ads?.length) return 0; // Empty campaign - stop before Advert.viewcountByCountry spams the console
+	const viewcount4campaign = Advert.viewcountByCampaign(ads) || 0;
 	return sum(Object.values(viewcount4campaign));
 };
 

@@ -849,7 +849,6 @@ const getDataPath = DataStore.getDataPath.bind(DataStore);
  */
 const getListPath = ({type,status,q,prefix,start,end,size,sort,domain, ...other}) => {
 	// NB: we want fixed length paths, to avoid stored results overlapping with paths fragments.
-	if (start || end) console.log("START:", start, "END:", end);
 	return [
 		'list', type, status, 
 		domain || 'nodomain', 

@@ -1,5 +1,6 @@
 
 import KStatus from './KStatus';
+import _ from 'lodash';
 import List from './List';
 import PromiseValue from '../promise-value';
 import { collectListPromises, getDataItem, getDataList, setWindowTitle } from '../plumbing/Crud';
@@ -50,7 +51,7 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 	let pvCharities, charities;
 	let greenTags = [];
 	let ads = [];
-	let subCampaignsWithDebits, subBrandsWithDebits;
+	let subCampaignsDisplayable, subBrandsDisplayable;
 
 	// Fetch campaign object if specified
 	if (itemType === "campaign" || itemType === C.TYPES.Campaign) {
@@ -160,24 +161,48 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		throw new Error("404: Not found");
 	}
 
-	// Filter sub brands and campaigns to only those with debits attached, for convenience
+	// Only campaigns/brands with debits and ads are displayable
+	// Filter for debits
 	let cidsWithDebits = [];
 	let bidsWithDebits = [];
 	impactDebits.forEach(debit => {
 		if (debit.campaign && !cidsWithDebits.includes(debit.campaign)) cidsWithDebits.push(debit.campaign);
 		if (debit.vertiser && !bidsWithDebits.includes(debit.vertiser)) bidsWithDebits.push(debit.vertiser);
 	});
-	subCampaignsWithDebits = subCampaigns.filter(c => cidsWithDebits.includes(getId(c)));
-	subBrandsWithDebits = subBrands.filter(b => bidsWithDebits.includes(getId(b)));
+	subCampaignsDisplayable = subCampaigns.filter(c => cidsWithDebits.includes(getId(c)));
+	subBrandsDisplayable = subBrands.filter(b => bidsWithDebits.includes(getId(b)));
+
+	// Filter for ads
+	let cidsWithAds = [];
+	let bidsWithAds = [];
+	ads.forEach(ad => {
+		if (ad.campaign && !cidsWithAds.includes(ad.campaign)) cidsWithAds.push(ad.campaign);
+		if (ad.vertiser && !bidsWithAds.includes(ad.vertiser)) bidsWithAds.push(ad.vertiser);
+	});
+	subCampaignsDisplayable = subCampaignsDisplayable.filter(c => cidsWithAds.includes(getId(c)));
+	subBrandsDisplayable = subBrandsDisplayable.filter(b => bidsWithAds.includes(getId(b)));
 
 	// Allow URL flag to override
 	const showAll = DataStore.getUrlValue("showAll");
 	if (showAll) {
-		subBrandsWithDebits = subBrands;
-		subCampaignsWithDebits = subCampaigns;
+		let cidsDisplay = subCampaignsDisplayable.map(c => getId(c));
+		let bidsDisplay = subBrandsDisplayable.map(b => getId(b));
+		// Go through and mark each item if it should be hidden normally
+		subCampaigns.forEach(c => {
+			if (!cidsDisplay.includes(getId(c))) {
+				c._shouldHide = true;
+				subCampaignsDisplayable.push(c);
+			}
+		});
+		subBrands.forEach(b => {
+			if (!bidsDisplay.includes(getId(b))) {
+				b._shouldHide = true;
+				subBrandsDisplayable.push(b);
+			}
+		});
 	}
 
-	return {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads, greenTags, subCampaignsWithDebits, subBrandsWithDebits};
+	return {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads, greenTags, subCampaignsDisplayable, subBrandsDisplayable};
 }
 
 /** Passed to _.maxBy in getImpressionsByCampaignByCountry to find the non-unset country with the highest impression count*/
