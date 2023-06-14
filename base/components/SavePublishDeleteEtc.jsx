@@ -235,7 +235,7 @@ function SavePublishDeleteEtc({
 	// if nothing has been edited, then we can't publish, save, or discard
 	// ??this no longer works as we force the item to be pulled from "DRAFT"
 	// will therefore never have status of "PUBLISHED" <- what about an unmodified published item??
-	let noEdits = false//item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && !targetPropsChanged;
+	let noEdits = item && C.KStatus.isPUBLISHED(item.status) && C.STATUS.isclean(localStatus) && !targetPropsChanged;
 
 	let disablePublish = isSaving || noEdits || cannotPublish || (oneButton && !pubExists);
 	let publishTooltip = cannotPublish ? publishTooltipText : (noEdits ? 'Nothing to publish' : 'Publish your edits!');
