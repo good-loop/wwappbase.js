@@ -27,21 +27,20 @@ import GreenTag from './GreenTag';
  * @param {String} p.itemId
  * @param {String} p.itemType
  * @param {KStatus} p.status 
- * @param {?Boolean} p.nocache
  * @returns {PromiseValue<Object>} {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads}
  */
-export const fetchImpactBaseObjects = ({itemId, itemType, status, nocache}) => {
+export const fetchImpactBaseObjects = ({itemId, itemType, status, start, end}) => {
 	assert(itemId);
 	assert(itemType);
 	assert(status);
 
-	return DataStore.fetch(['misc', 'impactBaseObjects', itemType, status, 'all', itemId], () => {
-		return fetchImpactBaseObjects2({itemId, itemType, status});
-	}, {cachePeriod: nocache ? 1 : null});
+	return DataStore.fetch(['misc', 'impactBaseObjects', itemType, status, space(start, end) || "whenever", itemId], () => {
+		return fetchImpactBaseObjects2({itemId, itemType, status, start, end});
+	});
 }
 
 
-const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
+const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) => {
 	let pvCampaign, campaign;
 	let pvBrand, brand, brandId;
 	let pvMasterBrand, masterBrand;
@@ -88,12 +87,12 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status}) => {
 		subCampaigns = subCampaigns.filter(c => !Campaign.isMaster(c));
 
 		// Look for vertiser wide debits
-		pvImpactDebits = Advertiser.getImpactDebits({vertiser:brand, status});
+		pvImpactDebits = Advertiser.getImpactDebits({vertiser:brand, status, start, end});
 		impactDebits = List.hits(await pvImpactDebits.promise);
 		console.log("Got debits from brand!", impactDebits);
 	} else {
 		// Get only campaign debits
-		pvImpactDebits = Campaign.getImpactDebits({campaign, status});
+		pvImpactDebits = Campaign.getImpactDebits({campaign, status, start, end});
 		impactDebits = List.hits(await pvImpactDebits.promise);
 		console.log("Got debits from campaign!", impactDebits);
 	}
