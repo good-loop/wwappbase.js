@@ -193,6 +193,9 @@ GreenTag.fetchForCampaigns = ({ids, status, q}) => GreenTag.fetchFor('campaign',
  */
 GreenTag.fetchFor = (typeKey, ids, status = KStatus.PUBLISHED, rawQ) => {
 	if (!Array.isArray(ids)) ids = [ids];
+	if ( ! ids || ! ids.length) {
+		return []; // empty list
+	}
 	const q = SearchQuery.setPropOr(rawQ, typeKey, ids);
 	return getDataList({ type: C.TYPES.GreenTag, status, q, save: true });
 };

@@ -192,9 +192,13 @@ Advert.fetchForCampaigns = ({campaignIds, status, q}) => Advert.fetchFor('campai
  * @param {string|string[]} ids ID or list of IDs that advert[typeKey] should match
  * @param {KStatus} [status] Status of adverts to fetch
  * @param {SearchQuery|string} [rawQ] A search query - if given, will be augmented with ID list
+ * @returns {DataClass[]} can be empty
  */
 Advert.fetchFor = (typeKey, ids, status = KStatus.PUBLISHED, rawQ) => {
 	if (!Array.isArray(ids)) ids = [ids];
+	if ( ! ids || ! ids.length) {
+		return []; // empty list
+	}
 	const q = SearchQuery.setPropOr(rawQ, typeKey, ids);
 	return getDataList({ type: C.TYPES.Advert, status, q, save: true });
 };
