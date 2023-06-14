@@ -1,6 +1,5 @@
 
 import KStatus from './KStatus';
-import _ from 'lodash';
 import List from './List';
 import PromiseValue from '../promise-value';
 import { collectListPromises, getDataItem, getDataList, setWindowTitle } from '../plumbing/Crud';
@@ -50,7 +49,7 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 	let pvImpactDebits, impactDebits;
 	let pvCharities, charities;
 	let greenTags = [];
-	let ads = [];
+	let ads = [], wtdAds = [], etdAds = [], tadgAds = [];
 	let subCampaignsDisplayable, subBrandsDisplayable;
 
 	// Fetch campaign object if specified
@@ -129,6 +128,17 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 	greenTags = uniqBy(greenTags, 'id');
 	greenTags.sort(alphabetSort);
 
+	// Divide ads into WTD, ETD and TADG
+	ads.forEach(ad => {
+		if (ad.advanced?.playerVariant === 'trees') {
+			tadgAds.push(ad);
+		} else if (ad.format === 'video') {
+			wtdAds.push(ad);
+		} else if (ad.format === 'social') {
+			etdAds.push(ad);
+		}
+	});
+
 
 	// Mark which campaigns and brands have any donations, and which don't
 	impactDebits.forEach(debit => {
@@ -202,8 +212,16 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		});
 	}
 
-	return {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads, greenTags, subCampaignsDisplayable, subBrandsDisplayable};
+	return {
+		campaign, subCampaigns, subCampaignsDisplayable,
+		brand, masterBrand, subBrands, subBrandsDisplayable,
+		impactDebits,
+		charities,
+		ads, wtdAds, etdAds, tadgAds,
+		greenTags
+	};
 }
+
 
 /** Passed to _.maxBy in getImpressionsByCampaignByCountry to find the non-unset country with the highest impression count*/
 const highestNotUnsetPredicate = ([country, viewCount]) => (country === 'unset') ? 0 : viewCount;
@@ -240,9 +258,8 @@ export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end
 	if (viewsByCountryPerCampaign.includes(null)) return {};
 
 	// Find set of regions that were probably targeted by a campaign
-	// ASSUMPTION: 	afaik, a campaign will have a country it's aimed at that decision is not handled by us.
-	// 	as a result, we don't access to that info. Instead, guess by what country has the most views,
-	// 	this is usually higher by several orders of magnitude so it's *usually* a safe bet.
+	// "Probably" = we assume each campaign is intended for only one country, and that
+	// will be the country (besides "unset") with the highest total impression count.
 	const country2views_all = { unset: { impressions: 0, campaignsInRegion: 0 } };
 	viewsByCountryPerCampaign.forEach(country2views => {
 		if (isEmpty(country2views)) return;
@@ -271,31 +288,5 @@ export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end
 	return country2views_all;
 };
 
-
-/**
- * Which products are in use under the given focus?
- * WTD = Watch To Donate, ETD = Engage To Donate, TADG = This Ad Does Good, GAT: Green Ad Tag
- * @param {Object} p
- * @param {Object[]} [p.ads] Adverts under the current impact page's focus
- * @param {Object[]} [p.greenTags] Green Ad Tags under the current impact page's focus
- * @return {Object} of form {wtd: boolean, tadg: boolean, etd: boolean, gat: boolean}
- */
-export const getActiveTypes = ({ ads, greenTags }) => {
-	const typesFound = { wtd: false, tadg: false, etd: false, gat: false };
-	if (greenTags?.length) typesFound.gat = true;
-
-	ads.forEach(ad => {
-		// TODO sniff ad type: trees variant for TADG, social for ETD, everything else is WTD
-		if (ad.advanced?.playerVariant === 'trees') {
-			typesFound.tadg = true;
-		} else if (ad.format === 'video') {
-			typesFound.wtd = true;
-		} else if (ad.format === 'social') {
-			typesFound.etd = true;
-		}
-	});
-
-	return typesFound;
-};
 
 /* ------- End of Data Functions --------- */
