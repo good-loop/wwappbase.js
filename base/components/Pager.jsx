@@ -70,7 +70,7 @@ const renderable = (key, toHide, pageCount) => {
  *
  * @param {Object} props All passed down to PageBtn
  */
-function Pager({pageCount, current, ...props}) {
+function Pager({pageCount, current, setPage, ...baseProps}) {
 	if (!pageCount || pageCount <= 1) return null; // No pages = no pager.
 
 	const [pagerEl, setPagerEl] = useState(); // The element containing all the buttons
@@ -81,7 +81,7 @@ function Pager({pageCount, current, ...props}) {
 
 	// Reset button props (removing widths) when pagecount or container width changes.
 	useEffect(() => {
-		setButtonProps(initButtonProps({pageCount, ...props}));
+		setButtonProps(initButtonProps({pageCount, ...baseProps}));
 		setMeasured(false); // Measurements invalidated, so redo them.
 	}, [pageCount, pagerWidth]);
 
@@ -138,7 +138,7 @@ function Pager({pageCount, current, ...props}) {
 	// Wrap the <Pagination> in something we can give a ref, so we can measure the contents
 	return <div className={space('pagination-controls', measured && 'measured')} ref={setPagerEl}>
 		<Pagination>
-			{filteredProps.map(bProps => <PageBtn current={current} {...bProps} />)}
+			{filteredProps.map(bProps => <PageBtn current={current} setPage={setPage} {...bProps} />)}
 		</Pagination>
 	</div>;
 }
