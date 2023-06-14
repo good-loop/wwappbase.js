@@ -33,7 +33,6 @@ NGO.imageList = (ngo) => ngo.imageList;
  * @returns {Object[]}
  */
 NGO.images = ngo => {
-	console.log(ngo)
 	if ( ! ngo) return [];
 	let stockPhotos = ngo.category ? (NGO.STOCK_IMAGES[ngo.category]) : []
 	let allImages = [ngo.photo, ngo.images, ngo.highResPhoto, ...stockPhotos].concat(ngo.imageList);
