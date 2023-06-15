@@ -57,6 +57,7 @@ class Store {
 			this.parseUrlVars( ! this.updating);
 			return true;
 		});
+		// Should this listen to history popState as well?? Would that replace some calls to parseUrlVars()??
 	}
 
 	/**
@@ -65,10 +66,12 @@ class Store {
 	 * 
 	 * Stored as location: { path: String[], params: {key: value} }
 	 * @param {?boolean} update Set false to avoid updates (e.g. in a loopy situation)
+	 * @param {?string} url (warning: rarely used) Provide the url to parse, instead of window.location.
+	 * Use-case: because pushState() is async, so this lets us skip that potential delay.
 	 */
-	parseUrlVars(update) {
+	parseUrlVars(update, url) {
 		// Is path pre or post hash?
-		let {path, params} = this.parseUrlVars2();
+		let {path, params} = this.parseUrlVars2(url);
 		// peel off eg publisher/myblog
 		let location = {};
 		location.path = path;
@@ -80,11 +83,11 @@ class Store {
 		this.setValue(['location'], location, update);
 	}
 
-	parseUrlVars2() {
+	parseUrlVars2(url) {
 		if (this.localUrl !== '/') {
 			return parseHash();
 		}
-		const params = getUrlVars();
+		const params = getUrlVars(url);
 		let pathname = window.location.pathname;
 		// HACK chop .html
 		if (pathname.endsWith(".html")) pathname = pathname.substring(0, pathname.length-5);
@@ -108,16 +111,18 @@ class Store {
 	 * Set a key=value in the url for navigation. This modifies the window.location and DataStore.appstore.location.params, and does an update.
 	 * @param {String} key
 	 * @param {?string|boolean|number|Date} value
+	 * @param {?Object} options passed to goto()
 	 * @returns {String} value
+	 * 
 	 */
-	setUrlValue(key, value, update) {
+	setUrlValue(key, value, update, options) {
 		assMatch(key, String);
 		if (value instanceof Date) {
 			value = value.toISOString();
 		}
 		if (value) assMatch(value, "String|Boolean|Number");
 		// the modifyPage hack is in setValue() so that PropControl can use it too
-		return this.setValue(['location', 'params', key], value, update);
+		return this.setValue(['location', 'params', key], value, update, options);
 	}
 
 
@@ -336,10 +341,11 @@ class Store {
 	 * @param {*} value The new value. Can be null to null-out a value.
 	 * @param {Boolean} [update] Set to false to switch off sending out an update. Set to true to force an update even if it looks like a no-op.
 	 * undefined is true-without-force
+	 * @param {?Object} options goto() options if setting a url parameter
 	 * @returns value
 	 */
 	// TODO handle setValue(pathbit, pathbit, pathbit, value) too
-	setValue(path, value, update) {
+	setValue(path, value, update, options) {
 		assert(_.isArray(path), "DataStore.setValue: "+path+" is not an array.");
 		assert(this.appstate[path[0]],
 			"DataStore.setValue: "+path[0]+" is not a node in appstate - As a safety check against errors, the root node must already exist to use setValue()");
@@ -366,7 +372,7 @@ class Store {
 			} else {
 				newParams = value;
 			}
-			modifyPage(null, newParams);
+			modifyPage(null, newParams, false, false, options);
 		}
 
 		// Do the set!
