@@ -17,7 +17,7 @@ const PortalLink = ({item,size,className,devOnly}) => {
 	if ( ! href) {
 		return null;
 	}
-	return <C.A className={space(size,devOnly&&"dev-link",className)} href={href}>{item.name}</C.A>;
+	return <C.A className={space(size,devOnly&&"dev-link",className)} href={href}>{item.name || item.id}</C.A>;
 };
 
 /**

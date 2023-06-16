@@ -106,6 +106,12 @@ Advert.served = ad => ad.hasServed || ad.serving;
 
 Advert.hideFromShowcase = ad => ad.hideFromShowcase;
 
+/**
+ * @param {*} ad 
+ * @param {*} impactSettings 
+ * @returns {?string} undefined for "show dont hide". truthy for hide.
+ * 	ad.id for hide. "non-served" for hide-because-not-served
+ */
 Advert.isHiddenFromImpact = (ad, impactSettings) => {
 	assert(ad);
 	if (ad.hideFromShowcase) return ad.id;
