@@ -177,6 +177,27 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		throw new Error("404: Not found");
 	}
 
+	const augCharityComparator = (a, b) => {
+		if (a.dntnTotal && b.dntnTotal) return Money.sub(b.dntnTotal, a.dntnTotal).value;
+		if (a.dntnTotal) return 1;
+		if (b.dntnTotal) return -1;
+		return 0;
+	};
+
+	// Attach donation total (sum of monetary ImpactDebits) to each charity & sort highest-first
+	charities = charities.map(charity => {
+		const cid = NGO.id(charity);
+		const dntnTotal = impactDebits
+			.filter(idObj => idObj?.impact?.charity === cid)
+			.reduce((acc, idObj) => {
+				const thisAmt = idObj?.impact?.amount;
+				if (!acc) return thisAmt;
+				if (!Money.isa(thisAmt)) return acc;
+				return Money.add(acc, thisAmt);
+			}, null);
+		return {...charity, dntnTotal};
+	}).sort(augCharityComparator);
+
 	// Only campaigns/brands with debits and ads are displayable
 	// Filter for debits
 	let cidsWithDebits = [];

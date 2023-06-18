@@ -874,13 +874,14 @@ const getValue = DataStore.getValue.bind(DataStore);
 const setValue = DataStore.setValue.bind(DataStore);
 
 const getUrlValue = DataStore.getUrlValue.bind(DataStore);
+const setUrlValue = DataStore.setUrlValue.bind(DataStore);
 
 export {
 	getPath,
 	getDataPath,
 	getListPath,
 	getValue, setValue,
-	getUrlValue,
+	getUrlValue, setUrlValue,
 	Ref, Item
 };
 // accessible to debug
