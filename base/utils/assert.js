@@ -58,7 +58,7 @@ const assMatch = function(value, matcher, msg) {
 		return value;	// All OK
 	}
 	let fullMsg = (msg? msg+" " : '') + "a-match: "+str(value) + " !~ " + str(matcher);
-	assert(false, fullMsg);	
+	assert(false, fullMsg);
 	return value; // if assert has been silenced by the user - carry on
 };
 

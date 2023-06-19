@@ -6,7 +6,7 @@ const path = ['misc', 'adBlockEnabled'];
 /** Will set DataStore flag if the user has adblock enabled 
  * @returns {Promise}
 */
-const doDetect = () => {	
+const doDetect = () => {
 	const $script = document.createElement('script');
 	// Based on https://www.detectadblock.com/
 	// Adblockers are expected to always block js files with "ads" in the name
@@ -47,7 +47,6 @@ const doDetect = () => {
 			// We cannot load anything - no internet
 			pv.reject("offline");
 		}
-
 	};
 
 	document.head.appendChild($script);

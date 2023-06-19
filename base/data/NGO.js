@@ -33,11 +33,46 @@ NGO.imageList = (ngo) => ngo.imageList;
  * @returns {Object[]}
  */
 NGO.images = ngo => {
-	console.log(ngo)
 	if ( ! ngo) return [];
 	let stockPhotos = ngo.category ? (NGO.STOCK_IMAGES[ngo.category]) : []
 	let allImages = [ngo.photo, ngo.images, ngo.highResPhoto, ...stockPhotos].concat(ngo.imageList);
 	return allImages.filter(x => x);
+};
+
+/**
+ * For e.g. OSCR and UK Charity Commission
+ */
+class Reg {
+	organisation;
+	id;
+	country;
+}
+/**
+ * Registered charity number, company number, etc.
+ * @param {*} ngo 
+ * @returns {Reg[]} 
+ */
+NGO.regs = ngo => {
+	if ( ! ngo) return [];
+	let regs = [];
+	// HACK
+	// TODO store as Regs
+	if (ngo.englandWalesCharityRegNum) {
+		regs.push({organisation:"England and Wales Charity Commission", id:ngo.englandWalesCharityRegNum, country:"GB"});
+	}
+	if (ngo.scotlandCharityRegNum) {
+		regs.push({organisation:"Scottish OSCR", id:ngo.scotlandCharityRegNum, country:"GB"});
+	}
+	if (ngo.niCharityRegNum) {
+		regs.push({organisation:"Northern Ireland", id:ngo.niCharityRegNum, country:"GB"});
+	}
+	if (ngo.ukCompanyRegNum) {
+		regs.push({organisation:"UK Companies House", id:ngo.ukCompanyRegNum, country:"GB"});
+	}
+	if (ngo.usCharityRegNum) {
+		regs.push({organisation:"US", id:ngo.usCharityRegNum, country:"US"});
+	}
+	return regs;
 };
 
 NGO.t4gTheme = (ngo) => ngo.t4gTheme;
@@ -45,6 +80,7 @@ NGO.t4gTheme = (ngo) => ngo.t4gTheme;
 /**
  * displayName or name or ID
  * @param {NGO} ngo 
+ * @returns {?string}
  */
 NGO.displayName = ngo => ngo ? ngo.displayName || ngo.name || NGO.id(ngo) : null;
 
@@ -155,32 +191,32 @@ NGO.CATEGORY = {
 
 // TODO add more stock images, all of these are just elk right now
 NGO.STOCK_IMAGES = {
-	"animals":[	
+	"animals": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"culture":[
+	"culture": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"community":[
+	"community": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"education":[
+	"education": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"environment":[
+	"environment": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"health":[
+	"health": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
@@ -190,27 +226,27 @@ NGO.STOCK_IMAGES = {
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"human services":[
+	"human services": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"international":[
+	"international": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"research":[
+	"research": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
 
-	"religion":[
+	"religion": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	],
-	
-	"default":[
+
+	"default": [
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg",
 		"https://www.kimballstock.com/images/animal-stock-photos/new-stock-photos.jpg"
 	]

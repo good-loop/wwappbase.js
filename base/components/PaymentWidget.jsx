@@ -140,7 +140,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 			</div>
 		);
 	}
-	
+
 	return (
 		<div className="section donation-amount">
 			<Elements stripe={stripePromise}>
@@ -168,7 +168,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 
 /**
  * Stripe widgets manage their own state.
- 
+
  * @Roscoe: Why can't we use DataStore for state? Thanks, Dan
  * @DW: Stripe widgets are wrapped in iframes specifically to promote Stripe's trust model of
  * "we provide the widgets and the host page can't touch your CC data".
@@ -188,7 +188,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 
 
 	const currency = amount.currency || "GBP";
-	
+
 	const isValidAmount = Money.value(amount) >= STRIPE_MINIMUM_AMOUNTS[currency]
 
 	const errors = {}; // TODO uhhh
@@ -294,7 +294,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 		});
 	} //./handleSubmit()
 
-	
+
 	// TODO an email editor if email is unset
 	return (
 		<Form onSubmit={(event) => handleSubmit(event)}>

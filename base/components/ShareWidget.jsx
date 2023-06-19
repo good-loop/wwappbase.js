@@ -87,8 +87,7 @@ const deleteShare = ({share}) => {
  * @param {?boolean} p.hasLink offer a share-by-link option
  * @param {?String}	p.email - optional, auto-populate the email field with this value
  *
- 
-*/
+ */
 function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, noEmails, children, className, style}) {
 	if (!shareId) {
 		if (item) {
@@ -122,7 +121,7 @@ function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, 
 		const {form} = DataStore.getValue(basePath) || {};
 		shareThing({shareId, withXId});
 	};
-	
+
 	return <>
 		{hasButton && <ShareLink className={className} style={style} shareId={shareId}>{children}</ShareLink>}
 		<Modal isOpen={show} className="share-modal" toggle={toggle}>
@@ -139,7 +138,6 @@ function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, 
 						{enableNotification ? (
 							<PropControl path={formPath} prop="optionalMessage" id="OptionalMessage" label="Attached message" type="textarea" />
 						) : null}
-						
 					</div>
 					<h5>Shared with</h5>
 					<ListShares list={shares} />
@@ -188,7 +186,7 @@ const doShareByLink = async({link, slink, setSlink, shareId}) => {
 	Login.claim(withXId);
 	// ?? share the pseudo-user with the shareId (modified to be an XId) (so TODO e.g. users of a dashbaord can access the pseudo-user)
 	// doShareThing({shareId:withXId, withXId:shareId+"@share"});
-	
+
 	// share the item with the pseudo-user 
 	let link2 = doShareByLink2({link, shareId, withXId, jwt});
 	// copy to clipboards

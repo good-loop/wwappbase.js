@@ -22,6 +22,8 @@ import List from '../data/List';
 import { A, modifyPage } from '../plumbing/glrouter';
 import Roles from '../Roles';
 
+import Pager from './Pager';
+
 const DEFAULT_PAGE_SIZE = 100;
 
 /**
@@ -33,44 +35,45 @@ const DEFAULT_PAGE_SIZE = 100;
  * 	const itemId = path[1];
  *
  * @param {Object} p
- * @param {!String} p.type from C.TYPES
- * @param {?String} p.q - Optional query e.g. advertiser-id=pepsi. See `filter` for prefix search
+ * @param {String} p.type from C.TYPES
+ * @param {String} [p.q] - Optional query e.g. advertiser-id=pepsi. See `filter` for prefix search
  * Note: that filter can add to this
- * @param {?String} p.sort -  Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
+ * @param {String} [p.sort] - Optional sort order, e.g. "start-desc". Defaults to `created-desc`. NB: AThing has created since May 2020.
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
- * @param {?String} p.filter - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
- * @param {?Function} p.filterFn - A local filter function. Can be combined with filter/canFilter
- * @param {?Function} p.transformFn - do some transformation on the list after all filtering/sorting. should return a new array
- * @param {?List} p.list No loading - just use this list of hits
- * @param {?Boolean} p.canFilter - If true, offer a text filter. This will be added to q as a prefix filter.
- * @param {?Boolean} p.canCreate - If set, show a Create button
- * @param {?Boolean} p.canDelete - If set, show delete buttons
- * @param {?Boolean} p.cannotClick - If set, do not use an a wrapper or have an onPick handler. Use-case: for lists which don't link through to pages.
- * @param {?boolean} p.filterLocally - If true, do not call the server for filtering
- * @param {?String} p.start - optional date filter
- * @param {?String} p.status - e.g. "Draft"
- * @param {?String} p.servlet - Deprecated - use navpage instead
- * @param {?String} p.navpage - e.g. "publisher" If unset, a default is taken from the url.
+ * @param {String} [p.filter] - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
+ * @param {Function} [p.filterFn] - A local filter function. Can be combined with filter/canFilter
+ * @param {Function} [p.transformFn] - do some transformation on the list after all filtering/sorting. should return a new array
+ * @param {List} [p.list] No loading - just use this list of hits
+ * @param {Boolean} [p.canFilter] - If true, offer a text filter. This will be added to q as a prefix filter.
+ * @param {Boolean} [p.canCreate] - If set, show a Create button
+ * @param {Boolean} [p.canDelete] - If set, show delete buttons
+ * @param {Boolean} [p.cannotClick] - If set, do not use an a wrapper or have an onPick handler. Use-case: for lists which don't link through to pages.
+ * @param {boolean} [p.filterLocally] - If true, do not call the server for filtering
+ * @param {String} [p.start] - optional date filter
+ * @param {String} [p.status] - e.g. "Draft"
+ * @param {String} [p.servlet] - Deprecated - use navpage instead
+ * @param {String} [p.navpage] - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
- * @param {?Function} p.ListItem JSX if set, replaces DefaultListItem.
+ * @param {Function} [p.ListItem] JSX if set, replaces DefaultListItem.
  * 	ListItem only has to describe/present the item.   
- * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.   
+ * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
  * 	Input props: {type, servlet, navpage, item, sort, items, nameFn, onClick}
- * @param {?Function} p.nameFn passed to ListItem, to have custom name extraction
- * @param {?boolean} p.notALink - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which don't nest).* 
- * @param {?String} p.itemClassName - If set, overrides the standard ListItem btn css classes
- * @param {?boolean} p.hideTotal - Don't show the "About X results in total" line
- * @param {?Object} p.createBase - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
- * @param {?KStatus} p.preferStatus See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
- * @param {?Boolean} p.hasFilter - deprecated - use canFilter
- * @param {?Boolean} p.unwrapped If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
- * @param {JSX|String} p.noResults  Message to show if there are no results
- * @param {?Function} p.onClickItem  Custom non-navigation action when list item clicked
- * @param {?Function} p.onClickWrapper  Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
- * @param {?Function} p.pageSelectID - 1-indexed. If using multiple pages for items this is required to target the specific ListLoad from a url parameter.
+ * @param {Function} [p.nameFn] passed to ListItem, to have custom name extraction
+ * @param {boolean} [p.notALink] - (Deprecated - see cannotClick) Normally list items are a-tag links. If true, use div+onClick instead of a, so that the item can hold a tags (which don't nest).* 
+ * @param {String} [p.itemClassName] - If set, overrides the standard ListItem btn css classes
+ * @param {boolean} [p.hideTotal] - If true, don't show the "Total about 17" line
+ * @param {Object} [p.createBase] - Use with `canCreate`. Optional base object for any new item. NB: This is passed into createBlank.
+ * @param {KStatus} [p.preferStatus] See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
+ * @param {Boolean} [p.hasFilter] - deprecated - use canFilter
+ * @param {Boolean} [p.unwrapped] If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
+ * @param {React.Element|String} [p.noResults]  Message to show if there are no results
+ * @param {Function} [p.onClickItem]  Custom non-navigation action when list item clicked
+ * @param {Function} [p.onClickWrapper] Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
+ * @param {Function} [p.pageSelectID] - 1-indexed. If using multiple pages for items this is required to target the specific ListLoad from a url parameter.
 Use-case??
- * @param {?Object} p.otherParams Optional extra params to pass to ActionMan.list() and on to the server.
+ * @param {Number} [p.pageSize] Number of items per page, default 100
+ * @param {Object} [p.otherParams] Optional extra params to pass to ActionMan.list() and on to the server.
  */
 function ListLoad({ type, status, servlet, navpage,
 	checkboxes,
@@ -163,14 +166,14 @@ function ListLoad({ type, status, servlet, navpage,
 	}
 	const hits = List.hits(list);
 	let total = list && List.total(list); // FIXME this ignores local filtering
-	
+
 	// ...filter / resolve
 	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter, transformFn });
 	if (items && hits && items.length < hits.length) {
 		// filtered out locally - reduce the total
 		total = items.length;
 	}
-	
+
 	// HACK: an exact id match comes first (this is important for PropControlDataItem, and arguably useful elsewhere)
 	if (rawFilter) {
 		const exactMatch = items.find(item => getId(item)===rawFilter);
@@ -206,12 +209,12 @@ function ListLoad({ type, status, servlet, navpage,
 
 	// Initialise page URL value if absent? -- No, don't cram stuff into URL prematurely
 	// if (items && pageSelectID && !pageFromUrl) setPage(1, false);
-	
+
 	const allItems = items; // Keep filtered but unpaginated list for e.g. CSV download
 	if (pageSize) items = paginate({ items, page, pageSize });
 
 	// Generate the pagination links, if applicable
-	const pageControls = <PageControls setPage={setPage} current={page} pageCount={pageCount} />;
+	const pageControls = <Pager setPage={setPage} current={page} pageCount={pageCount} />;
 
 	// Static props common to all ListItemWrappers & ListItems
 	const wrapperCommon = { type, servlet, navpage, unwrapped, checkboxes, canCopy, cannotClick, canDelete, notALink, itemClassName, onClickWrapper };
@@ -240,122 +243,6 @@ function ListLoad({ type, status, servlet, navpage,
 		<ErrAlert error={error} />
 	</div>);
 } // ./ListLoad
-
-
-/**
- * Generates a Reactstrap <Pagination> for the current ListLoad.
- *
- * @param {Object} props All passed down to PageBtn
- */
-function PageControls(props) {
-	const { pageCount, current, setPage } = props;
-	if (!pageCount || pageCount <= 1) return null;
-
-	const [pagerEl, setPagerEl] = useState();
-	const [items, setItems] = useState([]);
-	const [showButtonCount, setShowButtonCount] = useState(null); // How many buttons do we have room for?
-	const [measured, setMeasured] = useState(false); // Has the pager been rendered with a properly set button count?
-
-	// Fit item count to available space
-	useEffect(() => {
-		// Previously measured but container width changed - invalidate size calibration.
-		if (measured) {
-			setMeasured(false);
-			setShowButtonCount(null);
-			return;
-		}
-		if (!pagerEl) return;
-
-		// How wide - on average - are the pager buttons?
-		const itemEls = pagerEl.querySelectorAll('li.page-item');
-		let avgSize = 0;
-		itemEls.forEach(el => avgSize += el.clientWidth);
-		avgSize /= itemEls.length;
-
-		// How many non-number buttons are also taking up space?
-		let extraItems = 2; // prev and next
-		if (pageCount > 2) extraItems += 2; // first and last
-
-		// So - this is how many number buttons (including ... skipped-item indicators) there's room for.
-		setShowButtonCount(Math.floor((pagerEl.clientWidth / avgSize) - extraItems));
-	}, [pagerEl?.clientWidth]);
-
-	// Only create list when key props change
-	useEffect(() => {
-		if (!pageCount) return;
-		// Render once, invisible, with all page buttons to calibrate sizing
-		let firstButton = 1, lastButton = pageCount;
-		if (showButtonCount) {
-			firstButton = Math.max(1, Math.ceil(current - (showButtonCount / 2)));
-			lastButton = Math.min(pageCount, Math.floor(current + (showButtonCount / 2)));
-			if (firstButton === 1) lastButton = Math.min(pageCount, showButtonCount);
-			if (lastButton === pageCount) firstButton = Math.max(1, pageCount - showButtonCount);
-		}
-
-		const nextItems = [];
-		if (pageCount > 2) nextItems.push(<PageBtn key="first" first {...props} />);
-		nextItems.push(<PageBtn key="prev" previous {...props} />);
-		for (let i = firstButton; i <= lastButton; i++) {
-			// Dummy "..." buttons still take up space - so they come out of the button allowance.
-			if (i === firstButton && firstButton > 1) {
-				nextItems.push(<PageBtn key="skip-low" dummy />);
-			} else if (i === lastButton && lastButton < pageCount) {
-				nextItems.push(<PageBtn key="skip-high" dummy />);
-			} else {
-				nextItems.push(<PageBtn key={`page-${i}`} target={i} {...props} />);
-			}
-		}
-		nextItems.push(<PageBtn key="next" next {...props} />);
-		if (pageCount > 2) nextItems.push(<PageBtn key="last" last {...props} />);
-
-		setItems(nextItems);
-		// The rendered item list should be the right length to fit its container & can be made visible.
-		if (showButtonCount) setMeasured(true);
-	}, [pageCount, current, setPage, showButtonCount]);
-
-
-	// Override default <nav> to <div> to play nicely with our CSS.
-	return <div className={space('pager', measured && 'measured')} ref={setPagerEl}>
-		<Pagination>
-			{items}
-		</Pagination>
-	</div>;
-}
-
-
-/**
- * Handles a lot of boilerplate for generating <PaginationItem>s and <PaginationLink>s
- *
- * @param {Object} p
- * @param {!Function} p.setPage On-click for each button. Takes a target page number.
- * @param {!Number} p.target Page the link should go to
- * @param {!Number} p.current Current page number
- * @param {!Number} p.pageCount Total page count
- * @param {!Boolean} p.dummy Not a link, just a "page buttons omitted" ellipsis
- */
-function PageBtn({setPage, target, current, pageCount, dummy, ...linkProps}) {
-	if (dummy) return <PaginationItem disabled><PaginationLink>…</PaginationLink></PaginationItem>;
-
-	const {first, previous, next, last} = linkProps;
-	const itemProps = {};
-	let text = null;
-	if (first || previous) {
-		target = first ? 1 : (current - 1);
-		itemProps.disabled = (current === 1);
-	} else if (next || last) {
-		target = last ? pageCount : (current + 1);
-		itemProps.disabled = (current === pageCount);
-	} else {
-		text = target;
-		itemProps.active = (current === target);
-	}
-
-	return <PaginationItem {...itemProps}>
-		<PaginationLink {...linkProps} onClick={() => setPage(target)}>{text}</PaginationLink>
-	</PaginationItem>;
-}
-
-
 
 
 /**
@@ -580,7 +467,7 @@ function DefaultDelete({ type, id }) {
 
 
 /**
- 
+ * 
  * @param {?Function} p.onCopy newId -> any Respond to the new item e.g. by opening an editor
  * @returns 
  */

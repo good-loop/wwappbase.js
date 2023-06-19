@@ -8,13 +8,11 @@ import { is } from '../utils/miscutils';
 /** See ImpactCredit.java
 */
 class ImpactCredit extends DataClass {
-	/** @type {Impact}  */
+	/** @type {Impact} */
 	impact;
-		
+
 	/** @type{?String} */
 	agencyId;
-
-	
 
 	/** @type{?String} */
 	vertiser;

@@ -10,7 +10,7 @@ import DataClass from './data/DataClass';
 /**
  * @typedef {string} XId
  */
- 
+
 /**
  * See DBShare.java
  */
@@ -26,7 +26,6 @@ class Share extends DataClass {
 		super(base);
 		Object.assign(this, base);
 	}
-
 }
 DataClass.register(Share, "Share");
 

@@ -16,11 +16,11 @@ import { assert } from '../../utils/assert';
 
 // TODO refactor select -- but with care around onChange() and existing uses
 // /**
-//    * @param options {any[]} Will be de-duped.
-//    * @param labels {?String[]|Function|Object} Map options to nice strings
-//    * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
-//    * @param {?Boolean} canUnset If true, always offer an unset choice.
-//    */
+//  * @param options {any[]} Will be de-duped.
+//  * @param labels {?String[]|Function|Object} Map options to nice strings
+//  * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
+//  * @param {?Boolean} canUnset If true, always offer an unset choice.
+//  */
 // function PropControlSelect2({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, canUnset, inline, size, ...otherStuff }) {
 // 	// NB inline does nothing here?
 // 	// NB: pull off internal attributes so the select is happy with rest

@@ -303,7 +303,8 @@ function encodeReference(text, service) {
 const printer = new Printer();
 if (typeof module !== 'undefined') {
 	module.exports = printer;
-}	
+}
+
 // for debug
 if ( ! window.printer) window.printer = printer;
 if ( ! window.str) window.str = printer.str;

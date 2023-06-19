@@ -69,15 +69,15 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 
 	// mark the widget as saving (defer 'cos this triggers a react redraw, which cant be done inside a render, where we might be)
 	_.defer(() => DataStore.setLocalEditsStatus(type, id, C.STATUS.saving));
-	
+
 	// const status = serverStatusForAction(action);
-	
+
 	// to spot and so preserve edits during the ajax call
 	const itemBefore = deepCopy(item);
 
 	// call the server
 	const p = SIO_crud(type, item, previous, action, {swallow})
-		.then( res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage, diffSave:!!previous}) )
+		.then(res => crud2_processResponse({res, item, itemBefore, id, action, type, localStorage, diffSave: !!previous}) )
 		.catch(err => {
 			// bleurgh
 			console.warn(err);
@@ -85,7 +85,7 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 			// HACK remove the stacktrace which our servers put in for debug
 			msg = msg.replace(/<details>[\s\S]*<\/details>/, "").trim();
 			if ( ! swallow) {
-				notifyUser(new Error(action+" failed: "+msg));			
+				notifyUser(new Error(action+" failed: "+msg));
 				// If it is a 401 - check the login status
 				if (err.status && err.status===401) {
 					Login.verify().catch(() => {
@@ -104,7 +104,7 @@ const crud = ({type, id, domain, status, action, item, previous, swallow, localS
 		assert(item);
 		return Promise.resolve(item); 
 		// NB the server load is still going to run in the background
-	}	
+	}
 	return new PromiseValue(p);
 }; // ./crud
 ActionMan.crud = crud;
@@ -113,7 +113,7 @@ ActionMan.crud = crud;
 const localSave = (path, person) => {
 	if ( ! window.localStorage) return false;
 	try {
-		let json = JSON.stringify(person);	
+		let json = JSON.stringify(person);
 		const spath = JSON.stringify(path);
 		window.localStorage.setItem(spath, json);
 		console.log("localSave of "+path, person? person.id+" "+person.name : "falsy?!");
@@ -175,10 +175,10 @@ const applyPatch = (freshItem, recentLocalDiffs, item, itemBefore) => {
 	// dont dupe server results
 	newClaims = newClaims.filter(
 		c => ! freshItem.claims.find(oc => oc.k===c.k && (""+oc.f)===(""+c.f) && oc.v===c.v)
-	);		
+	);
 	// OK - keep those edits
 	freshItem.claims.push(...newClaims);
-	console.log("applyPatch preserve local new claims",JSON.stringify(newClaims), JSON.stringify(freshItem));	
+	console.log("applyPatch preserve local new claims",JSON.stringify(newClaims), JSON.stringify(freshItem));
 };
 
 
@@ -191,7 +191,7 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 	const pubpath = DataStore.getPathForItem(C.KStatus.PUBLISHED, item);
 	const draftpath = DataStore.getPathForItem(C.KStatus.DRAFT, item);
 	const navtype = (C.navParam4type? C.navParam4type[type] : null) || type;
-	
+
 	// Update DS with the returned item, but only if the crud action went OK
 	const freshItem = JSend.success(res) && JSend.data(res);
 
@@ -213,7 +213,7 @@ const crud2_processResponse = ({res, item, itemBefore, id, action, type, localSt
 			// if it's done by diff, the returned published obj will not contain other draft edits and it will get locally overriden
 			if (!diffSave) DataStore.setValue(draftpath, draftItem);
 		}
-		if (action==='save') {	
+		if (action==='save') {
 			// NB: the recent diff handling above should manage the latency issue around setting the draft item
 			console.log("post-save update", JSON.stringify(itemBefore), freshItem);
 			// HACK to prevent MoneyScript flickering text bug
@@ -294,7 +294,7 @@ ActionMan.saveEdits = saveEdits;
 	oldId = id = (oldId || id); // bridge to old code
 	if ( ! item) item = DataStore.getData({status:KStatus.DRAFT, type, id:oldId});
 	if ( ! item) item = DataStore.getData({status:KStatus.PUBLISHED, type, id:oldId});
-	assert(item, "Crud.js no item "+type+" "+oldId);	
+	assert(item, "Crud.js no item "+type+" "+oldId);
 	if ( ! oldId) oldId = getId(item);
 	// deep copy
 	let newItem = JSON.parse(JSON.stringify(item));
@@ -302,7 +302,7 @@ ActionMan.saveEdits = saveEdits;
 	// parentage
 	newItem.parent = oldId;
 	// modify
-	const newId = nonce();	
+	const newId = nonce();
 	newItem.id = newId;
 	if (newItem.name) {
 		// make a probably unique name - use randomness TODO nicer
@@ -339,9 +339,9 @@ ActionMan.saveAs = saveAs;
  * 
  * @returns PromiseValue(DataItem)
  */
-const unpublish = ({type, id}) => {	
+const unpublish = ({type, id}) => {
 	assMatch(type, String);
-	assMatch(id, String, "Crud.js no id to unpublish "+type);	
+	assMatch(id, String, "Crud.js no id to unpublish "+type);
 	// TODO optimistic list mod
 	// preCrudListMod({type, id, action:'unpublish'});
 	// call the server
@@ -350,7 +350,7 @@ const unpublish = ({type, id}) => {
 			// invalidate any cached list of this type
 			DataStore.invalidateList(type);
 			return err;
-		}); // ./then	
+		}); // ./then
 };
 ActionMan.unpublish = (type, id) => unpublish({type,id});
 
@@ -400,7 +400,7 @@ ActionMan.publishEdits = publishEdits;
 
 const preCrudListMod = ({type, id, item, action}) => {
 	assert(type && (item || id) && action);
-	
+
 	// TODO Update draft list??
 	// TODO invalidate any (other) cached list of this type (eg filtered lists may now be out of date)
 	// Optimistic: add to the published list (if there is one - but dont make one as that could confuse things)
@@ -459,7 +459,7 @@ const recursivePruneFromTreeOfLists = (item, treeOfLists) => {
 
 
 ActionMan.discardEdits = (type, id) => {
-	return crud({type, id, action:C.CRUDACTION.discardEdits});	
+	return crud({type, id, action:C.CRUDACTION.discardEdits});
 };
 
 
@@ -492,7 +492,7 @@ ActionMan.delete = (type, pubId) => {
  */
 // ?? should we put a confirm in here, and in delete()? But what if we are doing a batch operation?
 // -- let's not -- but be sure to put it in calling functions
-ActionMan.archive = ({type, item}) => {	
+ActionMan.archive = ({type, item}) => {
 	// optimistic list mod
 	preCrudListMod({type, item, action: 'archive'});
 	return crud({ type, item, action: C.CRUDACTION.archive });
@@ -557,7 +557,7 @@ const serverStatusForAction = (action) => {
  * @param {?Boolean} p.params.swallow
  * @returns {Promise} from ServerIO.load()
  */
-const SIO_crud = function(type, item, previous, action, params={}) {	
+const SIO_crud = function(type, item, previous, action, params={}) {
 	assert(C.TYPES.has(type), type);
 	assert(item && getId(item), item);
 	assert(C.CRUDACTION.has(action), type);
@@ -585,14 +585,14 @@ const SIO_crud = function(type, item, previous, action, params={}) {
 	}
 	params.method = 'POST';
 	params.data = data;
-	
+
 	if (action==='new') {
 		params.data.name = item.name; // pass on the name so server can pick a nice id if action=new
 	}
 	// HACK dont upset the server's anti-ddos defence
 	if (C.CRUDACTION.isget(action)) {
 		params.method = 'GET';
-		delete params.data.action;	
+		delete params.data.action;
 	}
 
 	// NB: load() includes handle messages

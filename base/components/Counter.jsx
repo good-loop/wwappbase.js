@@ -125,7 +125,7 @@ const Counter = ({value, amount, initial, animationLength = 3000, fps = 20, curr
 
 	// Get the total value in pretty penny form too, for preserving the size
 	let totalVal = formatNum(value);
-	
+
 	// Make sure the display value is no longer than the end size
 	disp = disp.substr(0, totalVal.length);
 

@@ -192,7 +192,7 @@ SearchQuery.setPropOr = (sq, propName, propValues) => {
  * @returns a NEW SearchQuery
  */
 SearchQuery.or = (sq1, sq2) => {
-	return SearchQuery.op(sq1,sq2,SearchQuery.OR);
+	return SearchQuery.op(sq1, sq2, SearchQuery.OR);
 }
 
 /**
@@ -223,7 +223,7 @@ SearchQuery.op = (sq1, sq2, op) => {
 		let newsq = new SearchQuery(u);
 		return newsq;
 	}
-	
+
 	// one is falsy? then just return the other
 	if ( ! sq2) return sq1;
 	if ( ! sq1) return sq2;
@@ -252,7 +252,7 @@ const bracket = s => s.includes(" ")? "("+s+")" : s;
  * @returns {SearchQuery} a NEW SearchQuery
  */
 SearchQuery.and = (sq1, sq2) => {
-	return SearchQuery.op(sq1,sq2,SearchQuery.AND);
+	return SearchQuery.op(sq1, sq2, SearchQuery.AND);
 }
 
 

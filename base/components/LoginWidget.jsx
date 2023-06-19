@@ -125,14 +125,14 @@ const emailLogin = ({verb, app, email, password, onRegister, onLogin, onError, .
  */
 function LoginLink({className, onClick, style, verb, children}) {
 	if (!verb && !children) verb = 'login';
-	
+
 	const onClick2 = e => {
 		stopEvent(e);
 		if (verb) setLoginVerb(verb);
 		setShowLogin(true);
 		onClick && onClick(e);
 	};
-	
+
 	return (
 		<a className={space("login-link", className)} href={window.location} onClick={onClick2} style={style}>
 			{children || toTitleCase(displayVerb[verb])}
@@ -172,14 +172,14 @@ function RegisteredThankYou() {
 */
 function LoginWidget({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts, services, onLogin, onRegister, canRegister}) {
 	const show = getShowLogin();
-	
+
 	// Login widget will vanish when an in-page navigation is made
 	const onHashChange = () => setShowLogin(false);
 
 	// Use hashchange event as normal navigations a. should refresh and close the LoginWidget anyway and b. are hard to track
 	useEffect(function() {
 		window.addEventListener("hashchange", onHashChange);
-		
+
 		return function cleanup() {
 		  window.removeEventListener("hashchange", onHashChange);
 		}
@@ -250,7 +250,7 @@ function SocialSignInButton({className = "btn signin", children, service, verb =
 	if ( ! children) children = <>
 		<Misc.Logo size="xsmall" service={service} color={false} square={false} /> {toTitleCase(displayVerb[verb])} with {toTitleCase(service)}
 	</>;
-	
+
 	// TODO this will prep FB on mouseover -- But what about mobile or fast clickers?
 	// TODO You Again should catch failure, and switch to a click through approach.
 	const onMouseOver = service === 'facebook' ? () => Login.prepFB(C.app.facebookAppId) : null;
@@ -393,7 +393,7 @@ function ResetLink({verb}) {
 function LoginWidgetEmbed({services, verb, onLogin, onRegister, canRegister}) {
 	// NB: prefer the user-set verb (so they can change it)
 	verb = DataStore.getValue(VERB_PATH) || verb || (canRegister? 'register' : 'login');
-	
+
 	if (Login.isLoggedIn()) {
 		const user = Login.getUser();
 		return (

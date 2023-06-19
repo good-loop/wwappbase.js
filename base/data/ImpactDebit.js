@@ -10,7 +10,7 @@ import { is } from '../utils/miscutils';
 class ImpactDebit extends DataClass {
 	/** @type {Impact}  */
 	impact;
-		
+
 	/** @type{?String} */
 	agencyId;
 
@@ -19,7 +19,7 @@ class ImpactDebit extends DataClass {
 
 	/** @type{?XId} Monday Deal */
 	crmDeal;
-	
+
 	/** @type{?string} */
 	start;
 
@@ -29,11 +29,26 @@ class ImpactDebit extends DataClass {
 	/** @type{?String} */
 	vertiser;
 
+	priority;
+
+	storiesContent;/* = {
+		impactCause,
+		impactDesc,
+		fact,
+		factSourceName,
+		factSourceURL,
+		testimonial,
+		testimonialQuote,
+		testimonialJob,
+		testimonialPerson
+	};	*/
+
 	constructor(base) {
 		super();
 		DataClass._init(this, base);
 	}
 }
+
 DataClass.register(ImpactDebit, "ImpactDebit");
 const This = ImpactDebit;
 export default ImpactDebit;

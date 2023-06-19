@@ -41,7 +41,7 @@ export const addImageCredit = image => {
 };
 /**
  * Add an image to the about-page credits. Repeat adds are harmless.
- * @param {?ImageObject} image  
+ * @param {?ImageObject} image 
  */
 export const addMusicCredit = image => {
 	// use author as the key
@@ -93,7 +93,7 @@ const AboutPage = () => {
 			<p>We are grateful to {FUNDER_CREDITS.length? FUNDER_CREDITS.join(", ") : "our funders"} for their support.</p>
 
 			<p>This app uses Creative Commons images from various sources</p>
-			
+
 			{IMAGE_CREDITS.map(image => <LinkOut href={image.url}>{image.name} by {image.author}</LinkOut>)}			
 
 			{MUSIC_CREDITS.length &&

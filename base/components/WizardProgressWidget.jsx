@@ -109,7 +109,7 @@ function WizardStage({stageKey, stageNum, stagePath, maxStage, next, previous,
 			return React.cloneElement(Kid, {setNavStatus});
 		});
 	}
-	
+
 	return (<div className="WizardStage">		
 		{(navPosition === "top" || navPosition === "both") && <WizardNavButtons stagePath={stagePath} title={title} navStatus={navStatus} maxStage={maxStage}
 			onNext={onNext} onPrev={onPrev}
@@ -166,7 +166,7 @@ function NextPrevTab({stagePath, diff, children, colour = 'secondary', maxStage,
 		window.scrollTo(0,0);
 		if (callback) callback();
 	};
-	
+
 	// use Bootstrap pull class to left/right float
 	const pull = (diff > 0) ? 'pull-right' : 'pull-left';
 

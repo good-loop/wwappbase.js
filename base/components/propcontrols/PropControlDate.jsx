@@ -52,7 +52,7 @@ function PropControlDate2({ path, prop, type, storeValue, rawValue, setRawValue,
 				mv = e.target.value; // No time wanted? value should be yyyy-mm-dd already, so no need to mess around with timezone
 			} else {
 				let date = newDateTZ(e.target.value);				
-				date = "end"===time? dayEndTZ(date) : dayStartTZ(date); // start/end of day			
+				date = "end"===time? dayEndTZ(date) : dayStartTZ(date); // start/end of day
 				mv = date.toISOString();
 			}
 		}

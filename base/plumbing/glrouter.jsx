@@ -11,9 +11,12 @@ import DataStore from './DataStore';
  * @param {?string} href 
  * @param {?Object} options
  * @param {?boolean} options.scroll defaults to (0,0). Set `false` (not falsy) for no scroll
+ * @param {?boolean} options.replaceState If true, this will not add to the history. It will use history.replaceState() rather than pushState().
+ * Use-case: To avoid the back button getting stuck.
  * @returns null
  */
-const goto = (href, options={}) => {
+const goto = (href, options) => {
+	console.log("goto() "+href+" from "+window.location, options);
 	if ( ! href) {
 		console.warn("goto: no href");
 		return;
@@ -21,12 +24,16 @@ const goto = (href, options={}) => {
 	// only pushState of it is a change (otheriwse the browser back button can get stuck on the current page)
 	const locn = ""+window.location;
 	if (href !== locn) {
-		window.history.pushState({}, "", href);
-		// update url vars
-		DataStore.parseUrlVars(true);
+		if (options?.replaceState) {
+			window.history.replaceState({}, "", href);
+		} else {
+			window.history.pushState({}, "", href);
+		}
+		// update url vars ()
+		DataStore.parseUrlVars(true, href);
 	}
 	// scroll to the page top
-	if (options && options.scroll==='false') {
+	if (options?.scroll==='false') {
 		// no scroll
 	} else {
 		window.scrollTo(0,0);
@@ -49,7 +56,7 @@ const A = (x) => {
 	const doClick = e => {
 		// Base <a> behaviour (ie open in new tab/window) on middle-, Ctrl- or Command-click
 		if (e.shiftKey || e[clickModKey]) return;
-		
+
 		// No href means just an anchor tag, not a link - nowhere to navigate to when clicked
 		if (!href) return;
 
@@ -75,12 +82,13 @@ const usePath = () => ""+window.location;
 /**
  * Backwards compatible replacement for modifyHash
  * 
- * @param {?String[]} newpath Can be null for no-change
- * @param {?Object} newparams Can be null for no-change
- * @param {?boolean} returnOnly If true, do not modify the hash -- just return what the new value would be (starting with #)
- * @param {?boolean} clearParams - If true, remove all existing url parameters
+ * @param {string[]} [newpath] Can be null for no-change
+ * @param {Object} [newparams] Can be null for no-change
+ * @param {boolean} [returnOnly] If true, do not modify the hash -- just return what the new value would be (starting with #)
+ * @param {boolean} [clearParams] If true, remove all existing url parameters
+ * @param {?Object} options See `goto(_,options)` To "fill in" a url parameter, use `replaceState:true` to avoid breaking the browser's back button.
  */
-const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
+const modifyPage = (newpath, newparams, returnOnly, clearParams, options) => {
 	if (DataStore.localUrl !== '/') {
 		return modifyHash(newpath, newparams, returnOnly);
 	}
@@ -98,7 +106,7 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams) => {
 	if (returnOnly) {
 		return u;
 	}
-	goto(u);
+	goto(u, options);
 };
 
 /**

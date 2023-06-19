@@ -71,7 +71,7 @@ export const setNavProps = (props) => {
 	if (DataClass.isa(props)) {
 		// This does NOT set the context, as used by ListItems
 		const item = props;
-		props = { // advertiser link and logo			
+		props = { // advertiser link and logo
 			brandId: getId(item),
 			brandType: getType(item),
 			brandLink: ""+window.location,

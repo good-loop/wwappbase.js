@@ -5,26 +5,19 @@ import PropControlPills from '../PropControlPills';
 // PropControlGender - is a PropControlPills
 
 export const PropControlGender = ({path, prop, ...props}) => {
-    
-    return <div className="d-flex flex-row">
-        <PropControlPills path={path} prop={prop} {...props}/>
-        <Button color="primary">+</Button>
-    </div>
+	return <div className="d-flex flex-row">
+		<PropControlPills path={path} prop={prop} {...props} />
+		<Button color="primary">+</Button>
+	</div>
 };
 
-export const PropControlPronoun = ({path, prop, ...props}) => {
-
-};
+export const PropControlPronoun = ({path, prop, ...props}) => {};
 
 /**
  * See Ego.js for more information
  * @param {*} param0 
  */
-const PropControlEgo = ({path, prop, saveFn, style, className, ...props}) => {
-    
-
-
-};
+const PropControlEgo = ({path, prop, saveFn, style, className, ...props}) => {};
 
 export default PropControlEgo;
 
@@ -142,7 +135,7 @@ export default PropControlEgo;
 // 		DSsetValue(proppath, tags2);
 // 		if (saveFn) saveFn({path, prop});
 //     }
-    
+
 //     return <div className="prop-control-gender position-relative">
 //         <TagInputMultiWord tags={storeValue}
 //             wordNum={3}

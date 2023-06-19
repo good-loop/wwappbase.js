@@ -8,16 +8,14 @@
 const hiloUrl = urlString => {
 	if ( ! urlString) return null;
 	// is it a media.gl.com url?
-	if (urlString.includes("media.good-loop.com")) {
-		
-	}
+	if (urlString.includes("media.good-loop.com")) {}
 
 	// for ref - adunit wrapUrl code
 	// // Put a protocol on protocol-relative URLs to enable parsing
 	// if (urlString.match(/^\/\//)) {
 	// 	urlString = 'https:' + urlString;
 	// }
-	
+
 	// const url = parseUrl(urlString);
 	// if (url.hostname.match(/good-loop.com$/)) return urlString; // Our domain? Use it uncached
 	// if (!url.protocol.match(/http/)) return urlString; // Not HTTP (eg data: url)? Use it uncached
@@ -28,7 +26,7 @@ const hiloUrl = urlString => {
 	// const urlEncoded = btoa(urlString).replace('+', '-').replace('/', '_');
 	// // preserve extension because MIME-type at the server side is going to be based on wild filename-based guesses
 	// const extension = urlString.substr(urlString.lastIndexOf('.')).replace(/[?#].*/, ''); // don't preserve query/hash though
-	
+
 	// return process.env.MBURL + '/uploads/mediacache/' + urlEncoded + extension + '?from=good-loop-ad-unit';
 
 	return urlString;

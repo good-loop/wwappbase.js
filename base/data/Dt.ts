@@ -1,9 +1,7 @@
 import Enum from 'easy-enums';
 
 class Dt {
-
 	n : number;
-	
 	unit : string;
 
 	constructor({n, unit}) {

@@ -14,7 +14,6 @@ import SearchQuery from '../searchquery';
 import ServerIO from '../plumbing/ServerIOBase';
 
 class Branding extends DataClass {
-		
 	/** @type{String} Player background colour (#hex or HTML name) */
 	backgroundColor;
 

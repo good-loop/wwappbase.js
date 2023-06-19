@@ -635,11 +635,10 @@ const fIdentity = (x) => x;
  * 
  * Why? When there are 2 built in functions:
  * 
- * 1. escape() robust but doesn't handle unicode. 
- * 2. encodeURIComponent() has better unicode handling -- however it doesn't escape 's which makes it dangerous, 
+ * 1. escape() robust but doesn't handle unicode.
+ * 2. encodeURIComponent() has better unicode handling -- however it doesn't escape 's which makes it dangerous,
  * and it does (often unhelpfully) encode /s and other legitimate url characters.
- 
- This is a super-solid best-of-both.
+ * This is a super-solid best-of-both.
 */
 export const encURI = function (urlPart) {
 	urlPart = encodeURIComponent(urlPart);
@@ -766,6 +765,7 @@ export const debounced = (fn, fixedParams, flexParams, wait, options) => {
  */
 const debounced_flexkey4key = {};
 
+
 /**
  * Convenience to de-dupe and remove falsy from an array
  * @param {Object[]} array
@@ -775,6 +775,7 @@ export const uniq = (array) => {
 	const set = new Set(array.filter((x) => x));
 	return Array.from(set); // NB: There's an odd error with [...set] in chrome, http://localmy.good-loop.com/#campaign?agency=late_aug_2021_agency, Sept 2021
 };
+
 
 /**
  * Convenience to de-dupe and remove falsy from an array
@@ -793,6 +794,7 @@ export const uniqById = (array, keyFn) => {
 	return Object.values(item4id);
 };
 
+
 /**
  * Convert a keyset {name:bool} type object to an array
  * @param {Object} keysetObj
@@ -800,6 +802,7 @@ export const uniqById = (array, keyFn) => {
 export const keysetObjToArray = (keysetObj) => {
 	return Object.keys(keysetObj).filter((item) => keysetObj[item]);
 };
+
 
 /**
  * Convert an array of objects with ids to a list of ids
@@ -809,6 +812,7 @@ export const idList = (idObjArray) => {
 	return idObjArray ? idObjArray.map((obj) => obj.id) : [];
 };
 
+
 /**
  * Gives the appropriate indefinite article for an English noun.
  * Wrote this because I was sick of seeing the advert list tell me "To create a Advert, first pick a Advertiser". -Roscoe
@@ -816,6 +820,7 @@ export const idList = (idObjArray) => {
  * @returns {String} "a" or "an", as appropriate for the supplied noun.
  */
 export const article = (noun) => ('aeiou'.indexOf(String(noun).toLowerCase()[0]) >= 0 ? 'an' : 'a');
+
 
 /**
  *
@@ -827,12 +832,14 @@ export const toCanonical = (text) => {
 	return text.trim().toLowerCase().replaceAll(/\W+/g, ' ');
 };
 
+
 export const hardNormalize = (text) => {
 	text = toCanonical(text);
 	// Remove all non-letter characters entirely
 	text = text.replaceAll(/\W+/g, '').replaceAll(/ +/g, '');
 	return text;
 };
+
 
 /**
  * Find a partial match of string "match" in string "text"
@@ -906,6 +913,7 @@ export const partialMatch = (text, match, splitWords, normalize) => {
 	}
 };
 
+
 /**
  * same as Array.map, but just takes a number. Useful for render functions
  * @param func function to loop with
@@ -914,6 +922,7 @@ export const mapNew = (num, func) => {
 	const numIterator = Array.from(Array(num));
 	return numIterator.map((v, i) => func(i));
 };
+
 
 /**
  * Convert a MouseEvent.buttons number to an array of booleans
@@ -933,6 +942,7 @@ export const decodeButtons = (buttons) => {
 		.map((digit) => !!Number.parseInt(digit));
 };
 
+
 /**
  * Add separating commas to a number
  * @param x number
@@ -942,6 +952,9 @@ export const decodeButtons = (buttons) => {
 	return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 };
 
+
+const suffixes = ['', 'K', 'M', 'B'];
+
 /**
  * Convert a number into being expressed as units of billions, millions or thousands
  * 1000 -> 1k, 10,000 -> 10k, 1,000,000 -> 1M
@@ -949,33 +962,13 @@ export const decodeButtons = (buttons) => {
  * @param {Number} num 
  * @returns {String} num expressed in units of billions, millions or 
  */
- export const addAmountSuffixToNumber = (num) => {
-	// [suffix, how many 0's in number]
-	// if adding to this, keep it in descending order 
-	const suffixsAndDigits = [ // 
-		["B",9],	// billions
-		["M",6],	// millions
-		["K", 3]	// thousands
-	]
-
-	// search through above sets in descending
-	for(const pair of suffixsAndDigits) {
-		const suffix = pair[0]
-		const power = Number(pair[1])
-		const comparisonNumber = Math.pow(10, power)
-
-		// if num can be expressed in terms of 10^power...
-		if (num >= comparisonNumber) {
-			console.log("suff", num, comparisonNumber, suffix, ((num / comparisonNumber).toString() + suffix))
-			// return it expressed in those terms + the suffix
-			return (num / comparisonNumber).toString() + suffix
-		}
-	}
-
-	// num was smaller than minimum value we were searching for, just return the num
-	return num.toString()
-	
+export const addAmountSuffixToNumber = (num) => {
+	const exponent = Math.max(Math.floor(Math.log10(num)), 0); // 0 for 1-9, 1 for 10-99, 2 for 100-999 etc, clamped to 0 for num < 1
+	const suffixPosn = Math.min(Math.floor(exponent / 3), suffixes.length - 1);
+	const suffixDivisor = Math.pow(10, suffixPosn * 3);
+	return `${num/suffixDivisor}${suffixes[suffixPosn]}`;
 }
+
 
 /**
  * Search an object for a value via an array path
@@ -996,6 +989,7 @@ export const getObjectValueByPath = (obj, path) => {
 	}
 	return tip;
 };
+
 
 /**
  * Set an object value via an array path
@@ -1027,8 +1021,8 @@ export const setObjectValueByPath = (obj, path, value) => {
 }
 
 /**
- * Sort a data item alphabetically
- * @param {*} item1 
- * @param {*} item2 
+ * Comparator for sorting data items alphabetically
+ * @param {*} a 
+ * @param {*} b 
  */
-export const alphabetSort = (item1, item2) => (item1.name || item1.id).localeCompare(item2.name || item2.id);
+export const alphabetSort = (a, b) => (a.name || a.id || '').localeCompare(b.name || b.id);

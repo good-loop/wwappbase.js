@@ -10,8 +10,8 @@ import PropControlSelection from './PropControlSelection';
  */
 const PropControlPerson = ({path, prop, proppath, storeValue, onChange, warnOnUnpublished}) => {
 	return (<InputGroup>
-        <PropControl type="text" prop='name' path={proppath} label />	
-        <PropControl type="imgUpload" prop='img' path={proppath} label="Portrait photo" />	
+		<PropControl type="text" prop='name' path={proppath} label />
+		<PropControl type="imgUpload" prop='img' path={proppath} label="Portrait photo" />
 	</InputGroup>);
 };
 

@@ -29,7 +29,7 @@ class JSend {
 	/**
 	 * @type {KAjaxStatus}
 	 */
-	status;	
+	status;
 	/** Usually set on error
 	 * @type {String} */
 	message;
@@ -49,7 +49,7 @@ const isa = jobj => {
 	if (jobj.cargo) return true;
 	let s = JSend.success(jobj);
 	if (s === null) return false;
-	return true;	
+	return true;
 };
 JSend.isa = isa;
 
@@ -103,7 +103,7 @@ JSend.message = jobj => {
 	if (jobj.responseText) {
 		return jobj.responseText;
 	}
-	
+
 	return null;
 };
 

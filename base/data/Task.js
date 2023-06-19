@@ -85,7 +85,7 @@ Task.STAGES = new Enum('assigned wip testing done closed')
 Task.close = task => {
 	task.closed = true;
 	task.stage = Task.STAGES.closed;
-	pokeDS(task);	
+	pokeDS(task);
 	return task;
 };
 

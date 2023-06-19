@@ -33,7 +33,7 @@ const PropControlDt2 = ({prop, storeValue, onChange, unitOptions = Object.keys(l
 		setNVal(storeValue.n);
 		if (storeValue.unit) setUnitVal(storeValue.unit); // the if () guard stops a loop bug, seen May 2023
 	}, [storeValue.n, storeValue.unit]);
-	
+
 	// When the inputs change, synthesise an input-change event to pass up to PropControl and DataStore
 	const _onChange = () => {
 		const newVal = { ...storeValue };
@@ -66,7 +66,7 @@ registerControl({type: 'dt', $Widget: PropControlDt2});
  * @param {PropControlParams} p 
  */
 function PropControlDt(p) {
-    return <PropControl type="dt" {...p} />;
+	return <PropControl type="dt" {...p} />;
 }
 
 export default PropControlDt;

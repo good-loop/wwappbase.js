@@ -28,7 +28,7 @@ const post = ServerIO.load;
  * Better to put the img tag directly in the page's html if you can.
  * However: for dynamic pages -- like our react ones -- then it often has to be done dynamically to get the full referer url.
  */
-const track = args => {	
+const track = args => {
 	const url = ""+window.location;
 	const eventParams = {url};
 	// if (prev && prev!==url) {
@@ -64,7 +64,7 @@ const lgBase = (dataspace, eventTag, eventParams, addTrackingInfo) => {
 	delete eventParams.count;
 	delete eventParams.gby;
 	delete eventParams.dataspace; // unusual, but in case eventParams was used to pass dataspace around
-	
+
 	if ( ! site) site = ""+window.location;
 
 	// user info if logged in

@@ -19,7 +19,6 @@ import PromiseValue from '../promise-value';
  * See Advert.java
  */
 class Advert extends DataClass {
-	
 	/** @type{String} */
 	vertiser;
 
@@ -107,11 +106,16 @@ Advert.served = ad => ad.hasServed || ad.serving;
 
 Advert.hideFromShowcase = ad => ad.hideFromShowcase;
 
+/**
+ * @param {*} ad 
+ * @param {*} impactSettings 
+ * @returns {?string} undefined for "show dont hide". truthy for hide.
+ * 	ad.id for hide. "non-served" for hide-because-not-served
+ */
 Advert.isHiddenFromImpact = (ad, impactSettings) => {
 	assert(ad);
-	assert(impactSettings);
 	if (ad.hideFromShowcase) return ad.id;
-	if (!impactSettings.showNonServedAds && !Advert.served(ad)) return "non-served";
+	if (impactSettings && !impactSettings.showNonServedAds && !Advert.served(ad)) return "non-served";
 }
 
 /**
@@ -119,10 +123,10 @@ Advert.isHiddenFromImpact = (ad, impactSettings) => {
  * @returns {!NGO[]}
  */
 Advert.charityList = ad => {
-	if ( ! ad.charities) ad.charities ={};
-	if ( ! ad.charities.list) ad.charities.list = [];
+	if (!ad.charities) ad.charities = {};
+	if (!ad.charities.list) ad.charities.list = [];
 	// WTF? we're getting objects like {0:'foo', 1:'bar'} here instead of arrays :( 
-	if ( ! ad.charities.list.map) {
+	if (!ad.charities.list.map) {
 		console.warn("Advert.js - patching charity list Object to []");
 		ad.charities.list = Object.values(ad.charities.list);
 	}
@@ -132,80 +136,77 @@ Advert.charityList = ad => {
 		console.warn("Advert.js - patching charity list null");
 		ad.charities.list = clist;
 	}
-	return clist; 
+	return clist;
 };
+
 
 /**
- * @param {Item[]} ads 
- * @returns {object} viewcount4campaign
+ * @param {Advert[]} ads List of adverts
+ * @returns {SearchQuery} DataLog query for "every minview event for any of the given ads"
  */
-Advert.viewcountByCampaign = ads => {
-	if (!ads || ads.length === 0) {
-		console.log('ads is empty')
-		return {}
-	}
-	// Get ad viewing data
-	let sq = new SearchQuery("evt:minview");
-	let qads = ads.map(({ id }) => `vert:${id}`).join(' OR ');
-	sq = SearchQuery.and(sq, qads);
-
-	let pvViewData = getDataLogData({q:sq.query, breakdowns:['campaign'], start:'2017-01-01', end:'now', name:"view-data",dataspace:'gl'});
-	let viewcount4campaign = {};
-	if (pvViewData.value) {
-		viewcount4campaign = pivotDataLogData(pvViewData.value, ["campaign"]);
-	}
-	return viewcount4campaign;
-};
+const viewCountQuery = ads => {
+	const adsQuery = SearchQuery.setPropOr(null, 'vert', ads.map(ad => ad.id));
+	return SearchQuery.and(adsQuery, 'evt:minview');
+}
 
 /**
- * @param {Item[]} ads 
+ * @param {object} p
+ * @param {Advert[]} p.ads
+ * @returns {object<{String: Number}>} Mapping from ISO country code to viewcount
+ */
+Advert.viewcountByCountry = ({ads, start, end}) => Advert.viewcountBy({ads, start, end, bby: 'country'});
+
+/**
+ * @param {Advert[]} ads
+ * @returns {object<{String: Number}>} Mapping from campaign ID to viewcount
+ */
+Advert.viewcountByCampaign = ads => Advert.viewcountBy({ads, bby: 'campaign'});
+
+/**
+ * FIXME This hides a LOT of asynchronous work behind a PV and relies on the "redraw whole tree when anything at all happens" model to work
+ * Refactor this - and dependent code - to expose the PromiseValue
+ * @param {object} p
+ * @param {Advert[]} p.ads List of adverts to query on
+ * @param {String} p.bby Breakdown on this parameter
+ * @param {String} p.start Start date/time for query
+ * @param {String} p.end End date/time for query
  * @returns {object} viewcount4campaign
  */
-Advert.viewcountByCountry = ({ads, start='2017-01-01', end='now'}) => {
-	if (!ads || ads.length === 0) {
-		console.log('res: ads is empty')
-		return {}
+Advert.viewcountBy = ({ads, start = '2017-01-01', end = 'now', bby}) => {
+	if (!ads?.length) {
+		console.log(`Advert.viewcountBy[${bby}]: ads is empty`);
+		return {};
 	}
-	// Get ad viewing data
-	let sq = new SearchQuery("evt:minview");
-	let qads = ads.map(({ id }) => `vert:${id}`).join(' OR ');
-	sq = SearchQuery.and(sq, qads);
-	let pvViewData = getDataLogData({q:sq.query, breakdowns:['country'], start:start, end:end, name:"view-data",dataspace:'gl'});
-	let viewcount4campaign = {};
-	console.log("breakdown inside viewcountByCountry", viewcount4campaign, sq)
-	if (pvViewData.value) {
-		pvViewData.value
-		return viewcount4campaign = pivotDataLogData(pvViewData.value, ["country"]);
-	}
-	return viewcount4campaign;
+
+	// Get minview events for all ads in list
+	const q = viewCountQuery(ads).query;
+	const pvViewData = getDataLogData({name: `view-data-by-${bby}`, dataspace: 'gl', breakdowns: [bby], q, start, end});
+	if (!pvViewData.resolved) return null; // Data not ready yet
+	return pivotDataLogData(pvViewData.value, [bby]);
 };
 
-Advert.fetchForAdvertiser = ({vertiserId, status, q}) => Advert.fetchForAdvertisers({vertiserIds:[vertiserId], status});
 
-Advert.fetchForAdvertisers = ({vertiserIds, status=KStatus.PUBLISHED, q}) => {
-	let pv = new PromiseValue(fetchForAdvertisers2(vertiserIds, status, q));
-	return pv;
-}
+Advert.fetchForAdvertiser = ({vertiserId, status, q}) => Advert.fetchFor('vertiser', vertiserId, status, q);
+Advert.fetchForAdvertisers = ({vertiserIds, status, q}) => Advert.fetchFor('vertiser', vertiserIds, status, q);
 
-const fetchForAdvertisers2 = async (vertiserIds, status, q) => {
-	let sq = new SearchQuery(q);
-	sq = SearchQuery.setPropOr(sq, "vertiser", vertiserIds);
-	let pv = getDataList({type: C.TYPES.Advert, status, q:sq.query, save:true});
-	return await pv.promise;
-}
+Advert.fetchForCampaign = ({campaignId, status, q}) => Advert.fetchFor('campaign', campaignId, status, q);
+Advert.fetchForCampaigns = ({campaignIds, status, q}) => Advert.fetchFor('campaign', campaignIds, status, q);
 
-Advert.fetchForCampaign = ({campaignId, status, q}) => Advert.fetchForCampaigns({campaignIds:[campaignId], status, q});
-
-Advert.fetchForCampaigns = ({campaignIds, status, q}) => {
-	let pv = DataStore.fetch(getListPath({type:C.TYPES.Advert, status, q, campaignIds}), () => fetchForCampaigns2(campaignIds, status, q));
-	return pv;
-}
-
-const fetchForCampaigns2 = async (campaignIds, status, q) => {
-	let sq = new SearchQuery(q);
-	sq = SearchQuery.setPropOr(sq, "campaign", campaignIds);
-	let pv = getDataList({type: C.TYPES.Advert, status, q:sq.query, save:true});
-	return await pv.promise;
+/**
+ * Common functionality across fetchForAdvertiser(s) / fetchForCampaign(s).
+ * @param {string} typeKey The member to construct a match-ID query on, eg "vertiser" for q=vertiser:xxxxx
+ * @param {string|string[]} ids ID or list of IDs that advert[typeKey] should match
+ * @param {KStatus} [status] Status of adverts to fetch
+ * @param {SearchQuery|string} [rawQ] A search query - if given, will be augmented with ID list
+ * @returns {DataClass[]} can be empty
+ */
+Advert.fetchFor = (typeKey, ids, status = KStatus.PUBLISHED, rawQ) => {
+	if (!Array.isArray(ids)) ids = [ids];
+	if ( ! ids || ! ids.length) {
+		return []; // empty list
+	}
+	const q = SearchQuery.setPropOr(rawQ, typeKey, ids);
+	return getDataList({ type: C.TYPES.Advert, status, q, save: true });
 };
 
 // NB: banner=display

@@ -52,7 +52,7 @@ const getAbsoluteUrl = urlString => {
 
 	// Check for a "Do not rescale!" marker in the hash
 	let noscale = url.hash.match(/\bnoscale\b/);
-		
+
 	// TODO Use window.devicePixelRatio to adjust size when on mobile
 
 	// does the invoking code ask for a particular size? (Don't request resized SVGs)
@@ -76,7 +76,7 @@ const getAbsoluteUrl = urlString => {
 		}
 		sizeDir = `scaled/w/${qWidth}/`;
 	}
-	
+
 	if (!sizeDir && url.hostname.match(/media.good-loop.com$/)) return urlString; // Our media domain? Use it uncached - unless resize was requested
 	if (!url.protocol.match(/http/)) return urlString; // Not HTTP (eg data: url)? Use it uncached
 

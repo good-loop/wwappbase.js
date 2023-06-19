@@ -69,7 +69,7 @@ const BG = ({image, color, src, children, size='cover', top=0, left=0, right=0, 
 	});
 	// Assign custom style overrides late
 	if (style) Object.assign(bgstyle, style);
-	
+
 	return (<>
 		<div className={space('BG-img',className)} style={bgstyle} />
 		{children}

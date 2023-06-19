@@ -29,67 +29,70 @@ const PropControlDataItemList2 = ({linkProp, linkValue, Viewer, canCreate, creat
 	type, itemType, status=KStatus.DRAFT, domain, list, sort, embed, pageSize=20, navpage, notALink, readOnly, showId=true,
 }) => {
 	if ( ! Viewer) {
-        Viewer = ({item}) => <DataItemBadge item={item} href />;
-    }
+		Viewer = ({item}) => <DataItemBadge item={item} href />;
+	}
 	let q = SearchQuery.setProp(null, linkProp, linkValue).query;
-	let pvDebits = getDataList({type:itemType, status, q});
-    let debits = List.hits(pvDebits.value) || []; 
+	let pvItems = getDataList({type:itemType, status, q});
+	let debits = List.hits(pvItems.value) || [];
 
 	const setItem = (id, remove, localItem) => {
-        assMatch(id, String);
-        // send a diff that sets the link
-        let dummy = {};
-        dummy[linkProp] = linkValue;
-        let previous={};
-        if (remove) { // flip to unset the link instead
-            previous = dummy;
-            dummy = {};
-        }
-        saveEdits({type:itemType, id, item:dummy, previous});  
-        // local edit
-        // NB: probably in memory, but there could be a draft v published corner case
-        let pvLocalItem = getDataItem({type:itemType, id, status:KStatus.DRAFT});
-        if (pvLocalItem.value) {
-            pvLocalItem.value[linkProp] = remove? null : linkValue;
-        }
-        // do we need to publish??
-        let pvDebit = getDataItem({type:itemType, id, status}); // load so we know if its published or not
-        pvDebit.promise.then(debit => {
-            if (debit.status===KStatus.PUBLISHED || debit.status===KStatus.MODIFIED) {
-                publish({item:debit}); // Not ideal ...but avoids a bug where old values (loaded via draft or pub) wont go away
-            }
-        });
-        // ditch local list ??could we modify instead??
-        DataStore.invalidateList(itemType);
-        DataStore.update(); // redraw
-    };
-    /**
-     * @param {String[]} newList 
-     */
-    const setList = (newList) => {
-        // what's been removed?
-        let removed = debits.filter(item => ! newList.includes(item.id));
-        // NB called each time so only ever 1 change
-        if (removed[0]) {
-            setItem(removed[0].id, true);
-        }
-        // NB added should not be possible with the current setup
-        let added = debits.filter(item => newList.includes(item.id));
-        if (added[0]) {
-            setItem(added[0].id);
-        }
-    };
+		assMatch(id, String);
+		// send a diff that sets the link
+		let dummy = {};
+		dummy[linkProp] = linkValue;
+		let previous={};
+		if (remove) { // flip to unset the link instead
+			previous = dummy;
+			dummy = {};
+		}
+		saveEdits({type:itemType, id, item:dummy, previous});
+		// local edit
+		// NB: probably in memory, but there could be a draft v published corner case
+		let pvLocalItem = getDataItem({type:itemType, id, status:KStatus.DRAFT});
+		if (pvLocalItem.value) {
+			pvLocalItem.value[linkProp] = remove? null : linkValue;
+		}
+		// do we need to publish??
+		let pvDebit = getDataItem({type:itemType, id, status}); // load so we know if its published or not
+		pvDebit.promise.then(debit => {
+			if (debit.status===KStatus.PUBLISHED || debit.status===KStatus.MODIFIED) {
+				publish({item:debit}); // Not ideal ...but avoids a bug where old values (loaded via draft or pub) wont go away
+			}
+		});
+		// ditch local list ??could we modify instead??
+		DataStore.invalidateList(itemType);
+		DataStore.update(); // redraw
+	};
+
+	/**
+	 * @param {String[]} newList 
+	 */
+	const setList = (newList) => {
+		// what's been removed?
+		let removed = debits.filter(item => ! newList.includes(item.id));
+		// NB called each time so only ever 1 change
+		if (removed[0]) {
+			setItem(removed[0].id, true);
+		}
+		// NB added should not be possible with the current setup
+		let added = debits.filter(item => newList.includes(item.id));
+		if (added[0]) {
+			setItem(added[0].id);
+		}
+	};
 
 	return <>
-    <PropControlList itemType={itemType} value={debits} prop="TODO" 
-        set={setList}
-        Viewer={Viewer} Editor={false} confirmDelete={false} canCreate={false} />
-    <PropControlDataItem itemType={itemType} q={linkProp+":unset"} set={setItem} canCreate={canCreate} />
-    </>;
+		<PropControlList itemType={itemType} value={debits} prop="TODO"
+			set={setList}
+			Viewer={Viewer} Editor={false} confirmDelete={false} canCreate={false}
+		/>
+		<PropControlDataItem itemType={itemType} q={linkProp+":unset"} set={setItem} canCreate={canCreate} />
+	</>;
 };
 
 
 registerControl({ type: 'DataItemList', $Widget: PropControlDataItemList2 });
+
 
 /**
  * A picker with auto-complete for e.g. Advertiser, Agency

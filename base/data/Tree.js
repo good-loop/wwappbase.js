@@ -47,7 +47,6 @@ Tree.str = (tree, depth=0, maxDepth=5) => {
 	// make each line one deeper
 	let skids2 = skids.map(skid => skid.split("\n").map(line => "\t"+line).join("\n"));
 	return sv+"\n"+skids2.join("\n");
-		
 }
 
 /**

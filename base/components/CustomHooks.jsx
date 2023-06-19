@@ -10,7 +10,7 @@ import ServerIO from '../plumbing/ServerIOBase';
 const doIfVisible = props => {
 	const {elementReference, fn} = props;
 	if (!elementReference) return; // race conditions (?) can make reference undefined
-	
+
 	const {top, left, bottom, right} = elementReference.getBoundingClientRect();
 
 	// ?? is window.innerWidth right? It can be bigger than the viewing area!

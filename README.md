@@ -2,6 +2,7 @@
 
 base: 
     symlink this folder into your project's js source to get this "Good-Loop standard" js.
+    Auto-generated JS docs can be found at: https://js-doc.good-loop.com/wwappbase.js/
 
 project:
     symlink these files into your project's root folder.

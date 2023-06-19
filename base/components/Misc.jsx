@@ -57,28 +57,26 @@ E.g. "Loading your settings...""
 See https://www.w3schools.com/howto/howto_css_loader.asp
 http://tobiasahlin.com/spinkit/
 
-@param {Object} obj
-@param {?PromiseValue} obj.pv If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
-@param {?string} obj.text
-@param {?boolean} obj.inline
+@param {Object} props
+@param {PromiseValue} [props.pv] If set, this will be checked for errors. This is for the common use-case, where Loading is used during an ajax call (which could fail).
+@param {String} [props.text] Static text message
+@param {Boolean} [props.inline] Lay out elements horizontally
 */
 Misc.Loading = ({text = 'Loading...', pv, inline}) => {
-	// handle ajax error?
-	if (pv) {		
-		if (pv.error) {
-			return <ErrAlert error={pv.error} />;
-		}
+	// Handle ajax error / completion
+	if (pv) {
+		if (pv.error) return <ErrAlert error={pv.error} />;
 		if (pv.value) return null;
 	}
 
 	return (
-		<div className={'loader-box' + (inline ? ' inline' : '')} style={{textAlign: 'center'}}>
+		<div className={space('loader-box', inline && 'inline')} style={{textAlign: 'center'}}>
 			<div className="spinner-box">
 				{Misc.spinnerSvg}
 			</div>
 			<div className="loader-text">{text}</div>
 		</div>
-	)
+	);
 };
 
 
@@ -213,7 +211,7 @@ Misc.Logo = ({service, url, size, color = true, square = true, className}) => {
 		const faSize = (size === 'xsmall') ? null : (size === 'small') ? '2x' : '4x'; // default to xlarge size, allow normal or large
 		return <Misc.Icon className={className} fa={fa} prefix={Misc.FontAwesome===5?'fab':"fa"} size={faSize} />
 	};
-	
+
 	// The rest we have to use images for (Instagram's mesh gradient can't be done in SVG)
 	let file = url || '/img/' + service + '-logo.svg';
 	if (service === 'instagram') file = '/img/instagram-logo.png';
@@ -241,7 +239,7 @@ Misc.Icon = ({glyph, fa, size, className, prefix = 'fa', ...rest}) => {
 		classes.push('fa-' + size);
 	}
 	if (className) classes.push(className);
-	
+
 	return <Tag className={classes.join(' ')} aria-hidden="true" {...rest} />;
 };
 
@@ -346,7 +344,6 @@ Misc.RoughDate = ({date}) => {
  */
 Misc.DateDuration = ({startDate, endDate, invisOnEmpty}) => {
 	if (!startDate && !endDate) {
-		console.warn("No dates provided to DateDuration!");
 		if (!invisOnEmpty) return null;
 		else return <span className="invisible">No date</span>
 	}
@@ -549,7 +546,7 @@ Misc.Tabs = ({children, path}) => {
 	// Option currently selected
 	// Could use state hook for this, but would be inconsistent with the rest of the code base
 	const selected = DataStore.getValue(path) || children[0].props.option;
-	
+
 	// Options to display
 	const headers = children.reduce((headers, child) => [...headers, child.props.option], []);
 

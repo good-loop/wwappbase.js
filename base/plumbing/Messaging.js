@@ -61,7 +61,7 @@ const notifyUser2 = (msgOrError) => {
 		console.log('Messaging.js - message filtered out', msg);
 		return;
 	}
-	
+
 	let msgs = DataStore.getValue('misc', 'messages-for-user') || {};
 	// already there?
 	let oldMsg = msgs[mid];
@@ -83,7 +83,7 @@ const notifyUser2 = (msgOrError) => {
 	if (oldMsg && JSON.stringify(msg) === JSON.stringify(oldMsg)) {
 		return;
 	}
-	
+
 	// set
 	msgs[mid] = msg; 
 	// NB update:false as a hack fix to an infinite loop w render seen june 2018

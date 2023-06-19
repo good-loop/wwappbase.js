@@ -51,20 +51,20 @@ Campaign.masterFor = campaign => {
 * @returns PV(List<Campaign>) Includes campaign! Beware when recursing
 */
 Campaign.pvSubCampaigns = ({campaign, query}) => {
-   Campaign.assIsa(campaign);
-   if ( ! campaign.master) {
-       return new PromiseValue(new List([campaign]));
-   }
-   // fetch leaf campaigns	
-   let {id, type} = Campaign.masterFor(campaign);
-   // campaigns for this advertiser / agency
-   let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
-   // exclude this? No: some (poorly configured) master campaigns are also leaves
-   // sq = SearchQuery.and(sq, "-id:"+campaign.id); 	
-   const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
-   const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query, access}); 
-   // NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
-   return pvCampaigns;
+	Campaign.assIsa(campaign);
+	if ( ! campaign.master) {
+		return new PromiseValue(new List([campaign]));
+	}
+	// fetch leaf campaign
+	let {id, type} = Campaign.masterFor(campaign);
+	// campaigns for this advertiser / agency
+	let sq = SearchQuery.setProp(query, C.TYPES.isAdvertiser(type)? "vertiser" : "agencyId", id);
+	// exclude this? No: some (poorly configured) master campaigns are also leaves
+	// sq = SearchQuery.and(sq, "-id:"+campaign.id);
+	const access = "public"; // HACK allow Impact Hub to fetch an unfiltered list
+	const pvCampaigns = getDataList({type: C.TYPES.Campaign, status:KStatus.PUBLISHED, q:sq.query, access});
+	// NB: why change sub-status? We return the state after this campaign is published (which would not publish sub-campaigns)
+	return pvCampaigns;
 };
 
 
@@ -143,7 +143,7 @@ Campaign.charities = (campaign, status=KStatus.DRAFT, isSub) => {
 	let charityIds = [];
 	if (campaign.strayCharities) charityIds.push(...campaign.strayCharities);
 	if (campaign.dntn4charity) charityIds.push(...Object.keys(campaign.dntn4charity));
-	if (campaign.localCharities) charityIds.push(...Object.keys(campaign.localCharities));	
+	if (campaign.localCharities) charityIds.push(...Object.keys(campaign.localCharities));
 
 	let pvAds = Campaign.pvAdsLegacy({campaign, status});
 	if ( ! pvAds.value) {
@@ -165,7 +165,7 @@ Campaign.charities = (campaign, status=KStatus.DRAFT, isSub) => {
  * @returns {NGO[]}
  */
 const charities2 = (campaign, charityIds, charities) => {
-	Campaign.assIsa(campaign);	
+	Campaign.assIsa(campaign);
 	// fetch NGOs
 	if (yessy(charityIds)) {
 		assMatch(charityIds, "String[]");
@@ -176,7 +176,7 @@ const charities2 = (campaign, charityIds, charities) => {
 			// Add them as they load (assume this function gets called repeatedly)
 			if (pvSoGiveCharity.value) {
 				charities.push(pvSoGiveCharity.value);
-			}	
+			}
 		});
 	}
 	// merge and de-dupe
@@ -201,7 +201,7 @@ const charities2 = (campaign, charityIds, charities) => {
 	cs.map(cMerged => {
 		let allCampaigns = (cMerged._campaigns || []).concat(cMerged._campaigns).concat(campaign.id);
 		cMerged._campaigns = uniq(allCampaigns);
-	});	
+	});
 	return cs;
 };
 
@@ -286,15 +286,15 @@ Campaign.hideCharities = campaign => {
  * @returns {!String[]} hideAdverts IDs
  */
 Campaign.hideAdverts = (topCampaign, campaigns) => {
-    Campaign.assIsa(topCampaign);
-    // Merge all hide advert lists together from all campaigns
-    let allHideAds = topCampaign.hideAdverts ? keysetObjToArray(topCampaign.hideAdverts) : [];
-    if (campaigns) {
+	Campaign.assIsa(topCampaign);
+	// Merge all hide advert lists together from all campaigns
+	let allHideAds = topCampaign.hideAdverts ? keysetObjToArray(topCampaign.hideAdverts) : [];
+	if (campaigns) {
 		campaigns.forEach(campaign => allHideAds.push(... campaign.hideAdverts ? keysetObjToArray(campaign.hideAdverts) : []));
 	}
-    // Copy array
-    const mergedHideAds = allHideAds.slice();
-    return mergedHideAds;
+	// Copy array
+	const mergedHideAds = allHideAds.slice();
+	return mergedHideAds;
 }
 
 /**
@@ -307,10 +307,10 @@ Campaign.hideAdverts = (topCampaign, campaigns) => {
 * @returns PromiseValue(List(Advert)) HACK Adverts get `_hidden` added if they're excluded.
 */
 Campaign.pvAdsLegacy = ({campaign,status=KStatus.DRAFT,query}) => {
-   let pv = DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
-       return pAds2({campaign,status,query});
-   });
-   return pv;
+	let pv = DataStore.fetch(['misc','pvAds',status,query||'all',campaign.id], () => {
+		return pAds2({campaign,status,query});
+	});
+	return pv;
 };
 
 /**
@@ -407,19 +407,19 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 
 	if (campaign.hideCharities) {
 		let hc = Campaign.hideCharities(campaign);
-        const charities2 = charities.filter(c => ! hc.includes(normaliseSogiveId(getId(c))));
+		const charities2 = charities.filter(c => ! hc.includes(normaliseSogiveId(getId(c))));
 		charities = charities2;
 	}
-	
-	let lowDntn = campaign.lowDntn;	
+
+	let lowDntn = campaign.lowDntn;
 	if ( ! lowDntn || ! Money.value(lowDntn)) {
 		if ( ! donationTotal) {
 			return charities;
 		}
-		// default to 0	
+		// default to 0
 		lowDntn = new Money({currency:donationTotal.currency, value:0});
 	}
-    
+
 	/**
 	 * @param {!NGO} c 
 	 * @returns {?Money}
@@ -430,10 +430,10 @@ Campaign.filterLowDonations = ({charities, campaign, donationTotal, donation4cha
 	};
 
 	charities = charities.filter(charity => {
-        const dntn = getDonation(charity);
-        let include = dntn && Money.lessThan(lowDntn, dntn);
+		const dntn = getDonation(charity);
+		let include = dntn && Money.lessThan(lowDntn, dntn);
 		return include;
-    });
+	});
 	return charities;
 } // ./filterLowDonations
 

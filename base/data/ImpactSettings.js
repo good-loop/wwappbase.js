@@ -18,21 +18,19 @@ import Branding from './Branding';
  * An extension of the branding class, contains impact page specific settings
  */
 class ImpactSettings extends Branding {
-	
-    /**
-     * @type {Boolean} show ads that haven't served on this page
-     */
+	/**
+	 * @type {Boolean} show ads that haven't served on this page
+	 */
 	showNonServedAds;
-
 }
 
 DataClass.register(ImpactSettings, "ImpactSettings"); 
 
 /**
- * 
+ * Combine item.impactSettings with item.branding
  * @param {DataClass} item 
- * @returns {?ImpactSettings} 
+ * @returns {?ImpactSettings} a fresh unattached object
  */
-ImpactSettings.get = item => item && item.impactSettings;
+ImpactSettings.get = item => item && Object.assign({}, item.branding, item.impactSettings);
 
 export default ImpactSettings;

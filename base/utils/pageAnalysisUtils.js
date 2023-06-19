@@ -221,7 +221,7 @@ export function typeBreakdown(manifest) {
 	const otherBytes = pageBytes - bytesAccountedFor;
 	const otherEntry = { title: 'Other Types', bytes: otherBytes, fraction: otherBytes / pageBytes, color: '#00ffff' };
 	breakdown.splice(breakdown.findIndex(a => a.title.match(/frame/)), 0, otherEntry);
-	
+
 	return breakdown.filter(a => !!a.bytes);
 }
 

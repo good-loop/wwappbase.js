@@ -36,7 +36,7 @@ const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,in
 	if (phack === -10) phack=88; // HACK (old code, Feb 23) special value for "pick a prob"
 	// NB: the server doesnt want an -s on breakdown
 	if ( ! btz) btz = getTimeZone();
-	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, interval, btz, name, dataspace, incs, ince, op, size};	
+	const glreq = {q, start, end, prob:phack, prb:prob, breakdown:breakdowns, interval, btz, name, dataspace, incs, ince, op, size};
 	let dspec = md5(JSON.stringify(glreq));
 	const dlpath = ['misc', 'DataLog', dataspace, dspec];
 

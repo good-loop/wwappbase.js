@@ -117,7 +117,7 @@ const TaskList = ({}) => {
 		// assigned.map(t => "assigned:"+t).join(" ")
 
 	const status = C.KStatus.ALL_BAR_TRASH;
-	
+
 	const pvItems = ActionMan.list({type, status, q});
 
 	// button mode?

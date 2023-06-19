@@ -16,7 +16,6 @@ import { modifyPage } from './glrouter';
  * E.g. in a top-of-the-app React container, you might do `DataStore.addListener((mystate) => this.setState(mystate));`
  */
 class Store {
-	
 	callbacks = [];
 
 	/** HACK: character to start a local path # or /  See glrouter */
@@ -58,6 +57,7 @@ class Store {
 			this.parseUrlVars( ! this.updating);
 			return true;
 		});
+		// Should this listen to history popState as well?? Would that replace some calls to parseUrlVars()??
 	}
 
 	/**
@@ -66,10 +66,12 @@ class Store {
 	 * 
 	 * Stored as location: { path: String[], params: {key: value} }
 	 * @param {?boolean} update Set false to avoid updates (e.g. in a loopy situation)
+	 * @param {?string} url (warning: rarely used) Provide the url to parse, instead of window.location.
+	 * Use-case: because pushState() is async, so this lets us skip that potential delay.
 	 */
-	parseUrlVars(update) {
+	parseUrlVars(update, url) {
 		// Is path pre or post hash?
-		let {path, params} = this.parseUrlVars2();
+		let {path, params} = this.parseUrlVars2(url);
 		// peel off eg publisher/myblog
 		let location = {};
 		location.path = path;
@@ -80,12 +82,12 @@ class Store {
 		location.params = params;
 		this.setValue(['location'], location, update);
 	}
-	
-	parseUrlVars2() {
+
+	parseUrlVars2(url) {
 		if (this.localUrl !== '/') {
 			return parseHash();
 		}
-		const params = getUrlVars();
+		const params = getUrlVars(url);
 		let pathname = window.location.pathname;
 		// HACK chop .html
 		if (pathname.endsWith(".html")) pathname = pathname.substring(0, pathname.length-5);
@@ -109,16 +111,18 @@ class Store {
 	 * Set a key=value in the url for navigation. This modifies the window.location and DataStore.appstore.location.params, and does an update.
 	 * @param {String} key
 	 * @param {?string|boolean|number|Date} value
+	 * @param {?Object} options passed to goto()
 	 * @returns {String} value
+	 * 
 	 */
-	setUrlValue(key, value, update) {
+	setUrlValue(key, value, update, options) {
 		assMatch(key, String);
 		if (value instanceof Date) {
 			value = value.toISOString();
 		}
 		if (value) assMatch(value, "String|Boolean|Number");
 		// the modifyPage hack is in setValue() so that PropControl can use it too
-		return this.setValue(['location', 'params', key], value, update);
+		return this.setValue(['location', 'params', key], value, update, options);
 	}
 
 
@@ -222,10 +226,10 @@ class Store {
 		let status = statusTypeItemUpdateObject.status || statusTypeItemUpdateObject;
 		if (!status || !KStatus.has(status)) status = getStatus(item);
 		// end hack
-		
+
 		assert(item && getType(item) && getId(item), item, "DataStore.js setData()");
 		assert(C.TYPES.has(getType(item)), item);
-		
+
 		const path = this.getPathForItem(status, item);
 		this.setValue(path, item, update);
 	}
@@ -335,12 +339,13 @@ class Store {
 	 * 
 	 * @param {String[]} path This path will be created if it doesn't exist (except if value===null)
 	 * @param {*} value The new value. Can be null to null-out a value.
-	 * @param {boolean} update Set to false to switch off sending out an update. Set to true to force an update even if it looks like a no-op.
+	 * @param {Boolean} [update] Set to false to switch off sending out an update. Set to true to force an update even if it looks like a no-op.
 	 * undefined is true-without-force
+	 * @param {?Object} options goto() options if setting a url parameter
 	 * @returns value
 	 */
 	// TODO handle setValue(pathbit, pathbit, pathbit, value) too
-	setValue(path, value, update) {
+	setValue(path, value, update, options) {
 		assert(_.isArray(path), "DataStore.setValue: "+path+" is not an array.");
 		assert(this.appstate[path[0]],
 			"DataStore.setValue: "+path[0]+" is not a node in appstate - As a safety check against errors, the root node must already exist to use setValue()");
@@ -367,7 +372,7 @@ class Store {
 			} else {
 				newParams = value;
 			}
-			modifyPage(null, newParams);
+			modifyPage(null, newParams, false, false, options);
 		}
 
 		// Do the set!
@@ -566,18 +571,18 @@ class Store {
 	 * NB: an advantage of this is that the server can return partial data (e.g. search results)
 	 * without over-writing the fuller data.
 	 * 
-	 * @param {Object} p
-	 * @param {!String[]} p.path
-	 * @param {!Function} p.fetchFn () -> Promise/value, which will be wrapped using promise-value.
+	 * @param {string[]} path
+	 * @param {Function} fetchFn () -> Promise/value, which will be wrapped using promise-value.
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
 	 * As a convenience hack, this method will use `JSend` to extract `data` or `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
 	 * If unset, the call will return an inprogress PV, but will not do a fresh fetch.
-	 * @param {?Object} p.options
-	 * @param {?Number} p.options.cachePeriod milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
+	 * @param {object} [options]
+	 * @param {number} [options.cachePeriod] milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
 	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience.
 	 * 	NB: Cache info is stored in `appstate.transient.fetchDate...`
-	 * @param {?Boolean} p.options.localStorage
+	 * @param {boolean} [options.localStorage]
+	 * @param {number} [cachePeriod] Convenience dupe of options.cachePeriod (???)
 	 * @returns {!PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, options, cachePeriod) { // TODO allow retry after 10 seconds
@@ -715,7 +720,7 @@ class Store {
 
 	/**
 	 * @deprecated
-	 */	
+	 */
 	getDataList(listOfRefs, preferStatus) {
 		console.warn("Switch to resolveDataList");
 		return this.resolveDataList(listOfRefs, preferStatus);
@@ -783,7 +788,7 @@ class Item extends DataClass {
 	name;
 
 	constructor() {
-		DataClass._init(this, base);		
+		DataClass._init(this, base);
 	}
 }
 
@@ -869,13 +874,14 @@ const getValue = DataStore.getValue.bind(DataStore);
 const setValue = DataStore.setValue.bind(DataStore);
 
 const getUrlValue = DataStore.getUrlValue.bind(DataStore);
+const setUrlValue = DataStore.setUrlValue.bind(DataStore);
 
 export {
 	getPath,
 	getDataPath,
 	getListPath,
 	getValue, setValue,
-	getUrlValue,
+	getUrlValue, setUrlValue,
 	Ref, Item
 };
 // accessible to debug
