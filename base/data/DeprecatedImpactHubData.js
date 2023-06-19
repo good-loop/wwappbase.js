@@ -74,9 +74,9 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 * Warning: This will change as data loads!!
 * @returns {?Money}
 */
-Campaign.dntn = (campaign, isSub) => {
+Campaign.dntn = (campaign, isSub=false) => {
 	// Reduce code paths: just collapse the result of dntn4charity.
-	const d4c = Campaign.dntn4charity(campaign, isSub);
+	const d4c = Campaign.dntn4charity(campaign, isSub || campaign.master);
 	if (!d4c) return null;
 	return Object.values(d4c).reduce((acc, val) => {
 		return acc ? Money.add(acc, val) : val;
