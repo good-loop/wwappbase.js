@@ -48,7 +48,7 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 	let pvSubCampaigns, subCampaigns;
 	let pvImpactDebits, impactDebits;
 	let pvCharities, charities;
-	let greenTags = [];
+	// let greenTags = [];
 	let ads = [], wtdAds = [], etdAds = [], tadgAds = [];
 	let subCampaignsDisplayable, subBrandsDisplayable;
 
@@ -115,18 +115,18 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 	// Get the ads & green tags
 	if (vertiserIds) {
 		ads.push(...List.hits(await Advert.fetchForAdvertisers({vertiserIds, status}).promise));
-		greenTags.push(...List.hits(await GreenTag.fetchForAdvertisers({ids: vertiserIds, status}).promise));
+		// greenTags.push(...List.hits(await GreenTag.fetchForAdvertisers({ids: vertiserIds, status}).promise));
 	}
 	if (campaignIds) {
 		ads.push(...List.hits(await Advert.fetchForCampaigns({campaignIds, status}).promise));
-		greenTags.push(...List.hits(await GreenTag.fetchForCampaigns({ids: campaignIds, status}).promise));
+		// greenTags.push(...List.hits(await GreenTag.fetchForCampaigns({ids: campaignIds, status}).promise));
 	}
 
 	// Collect, de-duplicate, and sort
 	ads = uniqBy(ads, 'id');
 	ads.sort(alphabetSort);
-	greenTags = uniqBy(greenTags, 'id');
-	greenTags.sort(alphabetSort);
+	// greenTags = uniqBy(greenTags, 'id');
+	// greenTags.sort(alphabetSort);
 
 	// Divide ads into WTD, ETD and TADG
 	ads.forEach(ad => {
@@ -223,7 +223,7 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		impactDebits,
 		charities,
 		ads, wtdAds, etdAds, tadgAds,
-		greenTags
+		// greenTags // only used for the tick to show the client uses Green Tags. Not reliable 'cos e.g. IAS
 	};
 }
 
