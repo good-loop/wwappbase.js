@@ -139,22 +139,6 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		}
 	});
 
-
-	// Mark which campaigns and brands have any donations, and which don't
-	impactDebits.forEach(debit => {
-		const value = Money.value(debit.impact.amount);
-		if (debit.campaign) {
-			subCampaigns.forEach(subCampaign => {
-				if (subCampaign.id === debit.campaign) subCampaign.hasDonation = value > 0;
-			});
-		}
-		if (debit.vertiser) {
-			subBrands.forEach(subBrand => {
-				if (subBrand.id === debit.vertiser) subBrand.hasDonation = value > 0;
-			});
-		}
-	});
-
 	// Fetch charity objects from debits
 	const charityIds = impactDebits.map(debit => debit.impact.charity).filter(x=>x);
 
