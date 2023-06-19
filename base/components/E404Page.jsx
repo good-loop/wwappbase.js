@@ -13,4 +13,17 @@ const E404Page = () => {
 	);
 };
 
+export const E401Page = () => {
+	return (
+		<div className="E404Page">
+			<h1>Error 401: Invalid authentication</h1>
+
+			<p>
+				Make sure you are logged in.
+			</p>
+
+		</div>
+	);
+};
+
 export default E404Page;
