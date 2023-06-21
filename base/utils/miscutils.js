@@ -648,6 +648,11 @@ export const encURI = function (urlPart) {
 	return urlPart;
 };
 
+/**
+ * Just `decodeURIComponent`
+ * @param {string} urlPart 
+ * @returns {string}
+ */
 export const decURI = function (urlPart) {
 	let decoded = decodeURIComponent(urlPart);
 	return decoded;
