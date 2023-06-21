@@ -4,6 +4,7 @@ import Money from './Money';
 import Enum from 'easy-enums';
 import { is } from '../utils/miscutils';
 import printer from '../utils/printer';
+import I18N from '../../base/i18n';
 
 /** Impact type. See Impact.java -- NB: copy-pasta from SoGive's Output.js.
  */

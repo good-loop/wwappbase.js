@@ -146,6 +146,12 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		let charitySq = SearchQuery.setPropOr(null, "id", charityIds);
 		pvCharities = ActionMan.list({type: C.TYPES.NGO, status, q:charitySq.query});
 		charities = List.hits(await pvCharities.promise);
+		console.warn("Placeholder fix for SoGive data id vs @id: https://good-loop.monday.com/boards/2603585504/pulses/4656061455/posts/2225457733?reply=reply-2225633150 ")
+		charities = charities.map((charity) => {
+			if(charity.id) return charity
+			if(charity['@id']) charity.id = charity['@id']
+			return charity
+		})
 	}
 
 	if (!charities) charities = [];
