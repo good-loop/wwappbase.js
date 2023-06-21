@@ -4,7 +4,7 @@ import { assMatch } from '../utils/assert';
 import Misc from './Misc';
 import remarkGfm from 'remark-gfm';
 import rehypeRaw from 'rehype-raw';
-import { is } from '../utils/miscutils';
+import { is, space } from '../utils/miscutils';
 import { Input, Label } from 'reactstrap';
 import C from '../CBase';
 import LinkOut from './LinkOut';
@@ -44,7 +44,7 @@ function MDCheckbox({ setSource, source, checked, ...args }) {
  * @param {Function} setSource newText => Function to make changes to the text source. If provided, then checkboxes can be clicked on/off.
  * @param {?boolean} linkOut Toggle for <a> links should use LinkOut
  */
-function MDText({ source, renderers = {}, components = {}, escapeHtml = false, setSource, linkOut }) {
+function MDText({ source, renderers = {}, components = {}, escapeHtml = false, setSource, className, style, linkOut }) {
 	if (!source) {
 		return null;
 	}
@@ -71,12 +71,13 @@ function MDText({ source, renderers = {}, components = {}, escapeHtml = false, s
 	if (!components.a) {
 		components.a = linkOut ? LinkOut : C.A;
 	}
-	return <div className="MDText">
+	return <div className={space("MDText", className)} style={style}>
 		<ReactMarkdown
 			remarkPlugins={[remarkGfm]}
 			rehypePlugins={escapeHtml ? null : [rehypeRaw]}
 			children={nsource}
-			components={components} />
+			components={components}
+			/>
 	</div>;
 }
 
