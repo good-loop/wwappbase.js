@@ -13,11 +13,18 @@ export default NGO;
 
 NGO.description = (ngo) => ngo.description;
 
-NGO.summaryDescription = (ngo) => ngo.summaryDescription;
+NGO.summaryDescription = (ngo) => {
+	if (ngo.summaryDescription) return ngo.summaryDescription;
+	let desc = NGO.anyDescription(ngo);
+	if ( ! desc) return null;
+	let paragraphs = desc.split("\n[ \t\r]*\n");
+	let p1 = paragraphs[0];
+	return p1;
+}
 
 NGO.extendedDescription = (ngo) => ngo.extendedDescription;
 
-NGO.anyDescription = (ngo) => NGO.description(ngo) || NGO.summaryDescription(ngo) || NGO.extendedDescription(ngo);
+NGO.anyDescription = (ngo) => NGO.description(ngo) || ngo.summaryDescription || NGO.extendedDescription(ngo);
 
 NGO.logo = ngo => ngo.logo; // placeholder by cause area?
 

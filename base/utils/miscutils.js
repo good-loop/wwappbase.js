@@ -961,6 +961,8 @@ export const decodeButtons = (buttons) => {
 const suffixes = ['', 'K', 'M', 'B'];
 
 /**
+ * ?? Do normal people grok e.g. "10M" "5B"?? Would we better saying "10 million" "5 billion"?
+ * 
  * Convert a number into being expressed as units of billions, millions or thousands
  * 1000 -> 1k, 10,000 -> 10k, 1,000,000 -> 1M
  * note this doesn't round, so if the goal is to make your number look pretty you'll need to pass this a rounded num

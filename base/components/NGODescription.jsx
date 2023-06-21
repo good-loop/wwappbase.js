@@ -20,7 +20,7 @@ const NGODescription = ({ngo, summarize, extended}) => {
 	}
 
 	let desc;
-	if (summarize) desc = ngo.summaryDescription || ngo.description || ngo.extendedDescription;
+	if (summarize) desc = NGO.summaryDescription(ngo);
 	else if (extended) desc = ngo.extendedDescription || ngo.description || ngo.summaryDescription;
 	else desc = ngo.description || ngo.summaryDescription || ngo.extendedDescription;
 
