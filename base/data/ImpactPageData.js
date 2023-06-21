@@ -249,7 +249,7 @@ const highestNotUnsetPredicate = ([country, viewCount]) => (country === 'unset')
  * 
  * @returns {object<{String: Number}>} Of form { [countryCode]: impressionCount }
  */
-export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField = 'country', cutoff=1.0, ...rest }) => {
+export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField = 'country', cutoff=0.0, ...rest }) => {
 	assert(baseObjects);
 	let { campaign: focusCampaign, subCampaigns } = baseObjects;
 	if (!focusCampaign && (!subCampaigns || subCampaigns.length == 0)) return {}; // No campaigns, no data
