@@ -3,6 +3,7 @@ import DataClass, { getType } from '../../base/data/DataClass';
 import Money from './Money';
 import Enum from 'easy-enums';
 import { is } from '../utils/miscutils';
+import printer from '../utils/printer';
 
 /** Impact type. See Impact.java -- NB: copy-pasta from SoGive's Output.js.
  */
@@ -75,6 +76,17 @@ Impact.isCarbonOffset = (impact) => impact?.name && impact.name.substring(0, 6) 
  * @param {Impact} impact
  */
 Impact.amount = (impact) => impact?.amount;
+
+/**
+ * 
+ * @param {?Impact} impact 
+ * @returns {?string} e.g. "5 trees"
+ */
+Impact.str = impact => {
+	if ( ! impact || ! impact.name) return null;
+	let sImpactCount = printer.prettyNumber(impact.n);
+	const s = I18N.tr(sImpactCount+" "+impact.name);
+};
 
 export const KImpactStage = new Enum(
 	'PLANNING CAMPAIGN_OPEN SUPPLIER CAMPAIGN_DONE BRAND_PAID CHARITY_INVOICE_REQUESTED CHARITY_INVOICE_RECEIVED CHARITY_PAID PROJECT_DONE'
