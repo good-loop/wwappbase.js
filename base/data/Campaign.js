@@ -78,7 +78,7 @@ Campaign.TOTAL_IMPACT = "TOTAL_IMPACT";
  * @returns {Budget|null}
  */
 Campaign.budget = item => {
-	let tli = item.topLineItem;
+	let tli = item?.topLineItem;
 	return tli? tli.budget : null;
 };
 /**

@@ -11,13 +11,13 @@ import Roles from '../Roles';
  * @param {Object} p
  * @param {?boolean} devOnly
  */
-const PortalLink = ({item,size,className,devOnly}) => {
+const PortalLink = ({item,size,className,devOnly,children}) => {
 	if (devOnly && ! Roles.isDev()) return null;
 	let href = getPortalLink(item);
 	if ( ! href) {
 		return null;
 	}
-	return <C.A className={space(size,devOnly&&"dev-link",className)} href={href}>{item.name || item.id}</C.A>;
+	return <C.A className={space(size,devOnly&&"dev-link",className)} href={href}>{children || item.name || item.id}</C.A>;
 };
 
 /**
