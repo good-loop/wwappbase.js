@@ -85,14 +85,14 @@ Campaign.budget = item => {
  * @returns {Date|null}
  */
 Campaign.start = item => {
-	let tli = item.topLineItem;
+	let tli = item?.topLineItem;
 	return tli? asDate(tli.start) : null;
 };
 /**
  * @returns {Date|null}
  */
  Campaign.end = item => {
-	let tli = item.topLineItem;
+	let tli = item?.topLineItem;
 	return tli? asDate(tli.end) : null;
 }
 

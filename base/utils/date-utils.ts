@@ -138,7 +138,7 @@ export const isoDateTZ = (d: Date | string): string => {
 };
 
 /** 
- * Locale and timezone aware
+ * Locale and timezone aware (but does not show the timezone)
  * @param {!Date} d
  * @returns {!string} e.g "13 Mar 2023"
  */
@@ -151,7 +151,7 @@ export const dateStr = (d: Date) => {
 	const timeZone = getTimeZone();
 	if (timeZone !== localTimeZone) {
 		options.timeZone = timeZone;
-		options.timeZoneName = "shortGeneric";
+		// options.timeZoneName = "shortGeneric"; for a date-only string, we probably don't show timezone
 	}
 	return d.toLocaleDateString(navigator.language, options);
 };
