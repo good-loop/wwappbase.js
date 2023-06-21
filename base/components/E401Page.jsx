@@ -1,4 +1,5 @@
 import React from 'react';
+import { LoginWidgetEmbed } from './LoginWidget';
 
 const E401Page = () => {
 	return (
