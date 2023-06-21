@@ -245,10 +245,11 @@ const highestNotUnsetPredicate = ([country, viewCount]) => (country === 'unset')
  * @param {object} p.baseObjects ??
  * @param {Campaign} [p.baseObjects.campaign]
  * @param {Campaign[]} [p.baseObjects.subCampaigns]
+ * @param {Float} cutoff if region has < cutoff * totalImpressions, data is added instead to 'unset' region. Expected range: 0 < cutoff <= 1.0
  * 
  * @returns {object<{String: Number}>} Of form { [countryCode]: impressionCount }
  */
-export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField = 'country', ...rest }) => {
+export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField = 'country', cutoff=1.0, ...rest }) => {
 	assert(baseObjects);
 	let { campaign: focusCampaign, subCampaigns } = baseObjects;
 	if (!focusCampaign && (!subCampaigns || subCampaigns.length == 0)) return {}; // No campaigns, no data
@@ -271,7 +272,7 @@ export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end
 	// Find set of regions that were probably targeted by a campaign
 	// "Probably" = we assume each campaign is intended for only one country, and that
 	// will be the country (besides "unset") with the highest total impression count.
-	const country2views_all = { unset: { impressions: 0, campaignsInRegion: 0 } };
+	let country2views_all = { unset: { impressions: 0, campaignsInRegion: 0 } };
 	viewsByCountryPerCampaign.forEach(country2views => {
 		if (isEmpty(country2views)) return;
 
@@ -293,6 +294,17 @@ export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end
 			country2views_all.unset.campaignsInRegion += 1;
 		}
 	});
+
+	const totalImpressions = Object.entries(country2views_all).reduce((total, [_, {impressions, __}]) => total + impressions, 0)
+	const impressionsCutoff = cutoff * totalImpressions;
+	Object.keys(country2views_all).forEach((region) => {
+		const {impressions, campaignsInRegion}  = country2views_all[region];
+		if(impressions > impressionsCutoff || region === "unset") return
+
+		country2views_all["unset"].impressions += impressions
+		country2views_all["unset"].campaignsInRegion += campaignsInRegion
+		delete country2views_all[region]
+	})
 
 	// Cache the result when complete
 	DataStore.setValue(dsPath, country2views_all);
