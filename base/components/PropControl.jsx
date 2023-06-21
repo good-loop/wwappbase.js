@@ -1164,7 +1164,12 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
 
 
 /**
+ * An input (with prepend/append)
  * 
+ * onChange
+ * 
+ * NB: half the "inputs" here are to remove them from otherProps
+ * TODO do it all via delete??
 */
 function FormControl({ value, type, required, size, className, prepend, append, proppath, placeholder,
 	 onChange, onEnter, onKeyDown, ...otherProps }) 
@@ -1179,11 +1184,13 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 		// type==='range' && "form-control-range"
 	);
 
-	// remove stuff intended for other types that will upset input
+	// remove stuff intended for other types that will upset input	
 	delete otherProps.options;
 	delete otherProps.labels;
 	delete otherProps.rawValue;
+	delete otherProps.set;
 	delete otherProps.setRawValue;
+	delete otherProps.path;
 	delete otherProps.modelValueFromInput;
 	delete otherProps.saveFn;
 	delete otherProps.item;
@@ -1215,6 +1222,7 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 			onKeyDown2 = onEnter2;
 		}
 	}
+	// console.log("FormControl", value, otherProps);
 
 	// TODO The prepend addon adds the InputGroupText wrapper automatically... should it match appendAddon?
 	if (prepend || append) {
