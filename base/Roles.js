@@ -104,10 +104,14 @@ const defineRole = (role, cans) => {
 };
 
 /**
- * Convenience for "is this a developer/admin?" You can also switch on debug via the url parameter debug=dev
+ * Convenience for "is this a developer/admin?" You can also switch on debug via the url parameter debug=dev.
+ * Or off via debug=false
  * @returns Boolean
  */
 const isDev = () => {
+	if ((""+window.location).includes("debug=false")) {
+		return false;
+	}
 	let cana = iCan('admin');
 	if (cana.value) return true;
 	let cand = iCan('dev');
