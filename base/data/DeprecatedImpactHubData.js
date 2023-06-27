@@ -480,6 +480,10 @@ Campaign.viewcountDeprecated = ({campaign, status}) => {
 	const pvAllAds = Campaign.pvAdsLegacy({campaign, status});
 	let allAds = List.hits(pvAllAds.value) || [];
 	const viewcount4campaign = Advert.viewcountByCampaign(allAds);
+	if ( ! viewcount4campaign) {
+		console.warn("No viewcount4campaign?! from ads ",allAds);
+		return 0; 
+	}
 	let totalViewCount = sum(Object.values(viewcount4campaign));
 	return totalViewCount;
 };
