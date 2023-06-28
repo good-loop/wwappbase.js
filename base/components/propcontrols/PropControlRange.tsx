@@ -34,10 +34,13 @@ function PropControlRange2({ min, max, step, storeValue, onChange: onChangeRaw, 
 		{ right: `${(1-fraction) * 100}%` }
 	);
 
+	// Type safety
+	let shownValue = Number.parseFloat(value);
+
 	return <InputGroup>
-		<Input type="range" min={min} max={max} step={step} value={value} onChange={onChange} />
+		<Input type="range" min={min} max={max} step={step} value={shownValue} onChange={onChange} />
 		<div className="value-bubble-container">
-			<span className="value-bubble" style={bubbleStyle}>{value?.toPrecision(4)} g</span>
+			<span className="value-bubble" style={bubbleStyle}>{shownValue?.toPrecision(4)} g</span>
 		</div>
 	</InputGroup>;
 };
