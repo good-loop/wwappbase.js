@@ -32,18 +32,20 @@ import DataClass, { nonce } from '../data/DataClass';
 import { countryListAlpha2 } from '../data/CountryRegion';
 import C from '../CBase';
 
+
 /**
-   * Set the value and the modified flag in DataStore.
-   * Convenience for DataStore.setModified() + DataStore.setValue()
-   * @param {!String[]} proppath
-   * @param value
-   * @returns value
-   */
+ * Set the value and the modified flag in DataStore.
+ * Convenience for DataStore.setModified() + DataStore.setValue()
+ * @param {!String[]} proppath
+ * @param value
+ * @returns value
+ */
 export const DSsetValue = (proppath, value, update) => {
 	DataStore.setModified(proppath);
 	return DataStore.setValue(proppath, value, update);
 	// console.log("set",proppath,value,DataStore.getValue(proppath));
 };
+
 
 /** Default validator for date values */
 const dateValidator = (val, rawValue) => {
@@ -62,10 +64,6 @@ const dateValidator = (val, rawValue) => {
 	}
 };
 
-/** Validator for making number inputs int only */
-const intValidator = (val, rawVal) => {
-	return Number.isInteger(val) ? null : "Number must be an integer!";
-};
 
 /** Use Bootstrap popover to display help text on click */
 export function Help({ children, icon = <Icon name="info" />, color = 'primary', className, ...props }) {
@@ -133,7 +131,7 @@ export class PropControlParams {
 	*/
 	required;
 
-	/** @type {?Function}  {?(value, rawValue) => String} Generate an error message if invalid */
+	/** @type {?Function} {?(value, rawValue) => String} Generate an error message if invalid */
 	validator;
 
 	/** @type {?String} Error message to show, regardless of validator output */
@@ -150,7 +148,7 @@ export class PropControlParams {
 	// 	E.g. if a fast text input has an associated button. */
 	fast;
 
-	/** @type {?boolean}  */
+	/** @type {?boolean} */
 	readOnly;
 
 	/** 
@@ -543,9 +541,9 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 
 
 /**
-   * The main part - the actual input.
-   * @param {?String} props.rawValue Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
-   */
+ * The main part - the actual input.
+ * @param {?String} props.rawValue Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
+ */
 function PropControl2(props) {
 	// track if the user edits, so we can preserve user-set-null/default vs initial-null/default
 	// const [userModFlag, setUserModFlag] = useState(false); <-- No: internal state wouldn't let callers distinguish user-set v default
@@ -772,13 +770,15 @@ function PropControl2(props) {
 
 const FOCUS_PATH = ['widget', 'PropControl', 'focus'];
 
+
 /**
-   * Status: doesn't work :(
-   * @param {?String[]} proppath 
-   */
+ * Status: doesn't work :(
+ * @param {?String[]} proppath
+ */
 const setFocus = (proppath) => {
 	DataStore.setValue(FOCUS_PATH, proppath ? proppath[proppath.length - 1] : null); // TODO .join('.')
 }
+
 
 // /**
 //  * TODO
@@ -790,12 +790,13 @@ const setFocus = (proppath) => {
 // 	e.preventDefault();
 // };
 
+
 /**
-   * @param options {any[]} Will be de-duped.
-   * @param labels {?String[]|Function|Object} Map options to nice strings
-   * @param multiple {?boolean} If true, this is a multi-select which handles arrays of values.
-   * @param {?Boolean} canUnset If true, always offer an unset choice.
-   */
+ * @param {any[]} options Will be de-duped.
+ * @param {String[]|Function|Object} [labels] Map options to nice strings
+ * @param {boolean} [multiple] If true, this is a multi-select which handles arrays of values.
+ * @param {boolean} [canUnset] If true, always offer an unset choice.
+ */
 function PropControlSelect({ options, labels, storeValue, value, rawValue, setRawValue, multiple, prop, onChange, saveFn, set, canUnset, inline, size, ...otherStuff }) {
 	// NB inline does nothing here?
 	// NB: pull off internal attributes so the select is happy with rest
@@ -834,10 +835,10 @@ function PropControlSelect({ options, labels, storeValue, value, rawValue, setRa
 }
 
 /**
-   * render multi select as multi checkbox 'cos React (Jan 2019) is awkward about multi-select
-   * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
-   * Deselect everything unless user holds Ctrl??? Really? -RM
-   */
+ * render multi select as multi checkbox 'cos React (Jan 2019) is awkward about multi-select
+ * Apr 2020: Multi-select works fine but keep rendering as row of checkboxes because it's a usability mess
+ * Deselect everything unless user holds Ctrl??? Really? -RM
+ */
 function PropControlMultiSelect({ storeValue, value, prop, labelFn, options, modelValueFromInput, className, type, path, saveFn }) {
 	assert(!value || value.length !== undefined, "value should be an array", value, prop);
 
@@ -878,16 +879,14 @@ function PropControlMultiSelect({ storeValue, value, prop, labelFn, options, mod
 	);
 }
 
+
 /**
-   *
-   * TODO buttons style
-   *
-   * Radio buttons
-   * 
-   * @param {Object} p
-   * @param {String} p.value
-   * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
-   */
+ * TODO buttons style
+ * Radio buttons
+ * @param {Object} p
+ * @param {String} p.value
+ * @param {String[] | Function | Object} p.labels Optional value-to-string convertor.
+ */
 function PropControlRadio({ type, prop, storeValue, value, path, saveFn, options, labels, inline, size, rawValue, setRawValue, ...otherStuff }) {
 	assert(options, `PropControl: no options for radio ${prop}`);
 	assert(options.map, `PropControl: radio options for ${prop} not an array: ${options}`);
@@ -926,10 +925,10 @@ function PropControlRadio({ type, prop, storeValue, value, path, saveFn, options
 
 
 /**
-   * Strip commas £/$/euro and parse float
-   * @param {*} v
-   * @returns Number. undefined/null are returned as-is. Bad inputs return NaN
-   */
+ * Strip commas £/$/euro and parse float
+ * @param {*} v
+ * @returns Number. undefined/null are returned as-is. Bad inputs return NaN
+ */
 const numFromAnything = v => {
 	if (v === undefined || v === null) return v;
 	// NB: _.isNumber fails for numeric-strings e.g. "1" -- but the later code will handle that
@@ -945,12 +944,12 @@ const numFromAnything = v => {
 
 
 /**
-   * @Deprecated for pills
-   * Display a value as 'a b c' but store as ['a', 'b', 'c']
-   * Used to edit variant.style. 
-   * 
-   * ??should this be pills??
-   */
+ * @Deprecated for pills
+ * Display a value as 'a b c' but store as ['a', 'b', 'c']
+ * Used to edit variant.style. 
+ * 
+ * ??should this be pills??
+ */
 function PropControlArrayText({ storeValue, value, rawValue, setRawValue, prop, proppath, saveFn, ...otherStuff }) {
 	const onChange = e => {
 		const oldValue = DataStore.getValue(proppath) || [];
@@ -976,12 +975,12 @@ function PropControlArrayText({ storeValue, value, rawValue, setRawValue, prop, 
 
 
 /**
-   * Special case of PropControlEntrySet where values are either true or not displayed.
-   * Used for eg Custom Parameters control on the advert editor
-   * -eg "I want to flag this ad as 'no_tq' and 'skip_splash'
-   * TODO Should this be a literal special case of the PropControlEntrySet code?
-   * @param {{String: Boolean}} value Can be null initially
-   */
+ * Special case of PropControlEntrySet where values are either true or not displayed.
+ * Used for eg Custom Parameters control on the advert editor
+ * -eg "I want to flag this ad as 'no_tq' and 'skip_splash'
+ * TODO Should this be a literal special case of the PropControlEntrySet code?
+ * @param {{String: Boolean}} value Can be null initially
+ */
 function PropControlKeySet({ value, prop, proppath, saveFn }) {
 	const addRemoveKey = (key, remove) => {
 		const newValue = { ...value };
@@ -1024,11 +1023,11 @@ function PropControlKeySet({ value, prop, proppath, saveFn }) {
 
 
 /**
-   * Convenience for editing a set of key-value pairs - eg the numerous string overrides stored on an Advert under customText
-   * @param {{String: String}} value Can be null initially
-   * @param {?String} keyName Explanatory placeholder text for entry key
-   * @param {?String} valueName Explanatory placeholder text for entry value
-   */
+ * Convenience for editing a set of key-value pairs - eg the numerous string overrides stored on an Advert under customText
+ * @param {{String: String}} value Can be null initially
+ * @param {?String} keyName Explanatory placeholder text for entry key
+ * @param {?String} valueName Explanatory placeholder text for entry value
+ */
 function PropControlEntrySet({ value, prop, proppath, saveFn, keyName = 'Key', valueName = 'Value' }) {
 	const updateKV = (key, val, remove) => {
 		if (!key) return;
@@ -1257,11 +1256,11 @@ PropControl.KControlType = new Enum(
 
 
 /**
-   * DEPRECATED replace/merge with PropControlEntrySet
-   * @param {*} param0
-   * @param {Function} removeFn Takes (map, key), returns new map - use if "removing" a key means something other than just deleting it
-   * @param {Function} filterFn Takes (key, value), returns boolean - use if some entries should't be shown
-   */
+ * DEPRECATED replace/merge with PropControlEntrySet
+ * @param {*} param0
+ * @param {Function} removeFn Takes (map, key), returns new map - use if "removing" a key means something other than just deleting it
+ * @param {Function} filterFn Takes (key, value), returns boolean - use if some entries should't be shown
+ */
 function MapEditor({ prop, proppath, value, $KeyProp, $ValProp, removeFn, filterFn = (() => true) }) {
 	assert($KeyProp && $ValProp, "PropControl MapEditor " + prop + ": missing $KeyProp or $ValProp jsx (probably PropControl) widgets");
 	const temppath = ['widget', 'MapEditor'].concat(proppath);
@@ -1336,17 +1335,17 @@ class InputStatus extends JSend {
 
 
 /**
-   * e.g. "url: warning: use https for security"
-   */
+ * e.g. "url: warning: use https for security"
+ */
 InputStatus.str = is => [(is.path ? is.path[is.path.length - 1] : null), is.status, is.message].join(': ');
 
 /** NB: the final path bit is to allow for status to be logged at different levels of the data-model tree */
 const statusPath = path => ['misc', 'inputStatus'].concat(path).concat('_status');
 
 /**
-   *
-   * @param {?String} status - if null, remove any message
-   */
+ *
+ * @param {?String} status - if null, remove any message
+ */
 const setInputStatus = ({ path, status, message }) => {
 	const spath = statusPath(path);
 	// no-op?
@@ -1362,18 +1361,21 @@ const setInputStatus = ({ path, status, message }) => {
 	setTimeout(() => DataStore.setValue(spath, newStatus), 1);
 };
 
+
 /**
-   * @param {!String[]} path
-   * @return {InputStatus} or null
-   */
+ * @param {!String[]} path
+ * @return {InputStatus} or null
+ */
 const getInputStatus = path => {
 	const spath = statusPath(path);
 	return DataStore.getValue(spath);
 }
+
+
 /**
-   * @param {!String[]} path
-   * @return {!InputStatus[]} The status for this node and all child nodes
-   */
+ * @param {!String[]} path
+ * @return {!InputStatus[]} The status for this node and all child nodes
+ */
 const getInputStatuses = path => {
 	// if (true) return []; // possibly causing a performance issue?? On Feb 2019
 	assMatch(path, 'String[]');
@@ -1384,6 +1386,7 @@ const getInputStatuses = path => {
 	return all;
 }
 
+
 const getInputStatuses2 = (node, all) => {
 	if (!_.isObject(node)) return;
 	if (node._status) all.push(node._status);
@@ -1391,23 +1394,25 @@ const getInputStatuses2 = (node, all) => {
 	Object.values(node).forEach(kid => getInputStatuses2(kid, all));
 };
 
+
 /**
-   * TODO piecemeal refactor to be an extensible system
-   */
+ * TODO piecemeal refactor to be an extensible system
+ */
 let $widgetForType = {};
 let validatorForType = {};
 let rawToStoreForType = {};
 
+
 /**
-   * Extend or change support for a type
-   * @param {Object} p
-   * @param {!String} p.type e.g. "textarea"
-   * @param {!JSX} p.$Widget the widget to render a propcontrol, replacing PropControl2.
-   * @param {?Function} p.validator The validator function for this type. Takes ({value, props}), returns JSend.
-   * @param {?Function} p.rawToStore AKA modelValueFromInput - converts a valid text input to e.g. numeric, date, etc
-   * The label, error, help have _already_ been rendered. This widget should do the control guts. 
-   * Inputs: (rawValue, ?type, ?event, ?oldStoreValue, ?props) 
-   */
+ * Extend or change support for a type
+ * @param {Object} p
+ * @param {!String} p.type e.g. "textarea"
+ * @param {!JSX} p.$Widget the widget to render a propcontrol, replacing PropControl2.
+ * @param {?Function} p.validator The validator function for this type. Takes ({value, props}), returns JSend.
+ * @param {?Function} p.rawToStore AKA modelValueFromInput - converts a valid text input to e.g. numeric, date, etc
+ * The label, error, help have _already_ been rendered. This widget should do the control guts.
+ * Inputs: (rawValue, ?type, ?event, ?oldStoreValue, ?props)
+ */
 const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	assMatch(type, String);
 	assert($Widget);
@@ -1419,6 +1424,7 @@ const registerControl = ({ type, $Widget, validator, rawToStore }) => {
 	if (rawToStore) rawToStoreForType[type] = rawToStore;
 };
 
+
 /** @deprecated use the FakeEvent instead
 // Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it
 // TODO Copy-paste from PropControlUpload.jsx - factor out?
@@ -1428,6 +1434,7 @@ export const fakeEvent = {
 	stopPropagation: () => null,
 	cooked: true, // Signal PropControl wrapper code NOT to call setRawValue
 };
+
 
 /**
  * Base for a dummy event with dummy functions so we don't get exceptions when trying to kill it.
@@ -1442,6 +1449,7 @@ class FakeEvent {
 		this.target = {value};
 	}
 }
+
 
 export {
 	registerControl,

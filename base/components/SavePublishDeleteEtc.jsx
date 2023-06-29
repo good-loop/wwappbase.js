@@ -380,7 +380,7 @@ function SavePublishDeleteEtc({
 
 
 function Spinner({ vis }) {
-  return <span className="fa fa-circle-notch spinning" style={vis} />
+	return <span className="fa fa-circle-notch spinning" style={vis} />
 }
 
 // backwards compatibility

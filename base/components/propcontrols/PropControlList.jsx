@@ -50,7 +50,7 @@ registerControl({type: 'list', $Widget: PropControlList2});
 
 
 function BasicViewer({item, i}) {
-  return <div>{i}: {str(item)}</div>;
+	return <div>{i}: {str(item)}</div>;
 }
 
 
@@ -134,7 +134,7 @@ function DeleteWithConfirmButton({arrayPath, i, listValue, set, confirmDelete}) 
  * @param {JSX} p.Editor {path, item} item is null for Add. Can be the same as Viewer
  */
 function PropControlList(p) {
-  return <PropControl type="list" {...p} />;
+	return <PropControl type="list" {...p} />;
 }
 
 export default PropControlList;

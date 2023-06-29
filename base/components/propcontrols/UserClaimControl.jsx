@@ -57,11 +57,11 @@ export const getPersonWidgetPath = ({xid, prop}) => {
 * @returns {String|Number} the claim value. Warning: This may be an interim blank which can then change on data load
 */
 export const getPersonSetting = ({key, xid}) => {
-   if (!xid) xid = Login.getId();
-   assert(xid, 'getPersonSetting requires an xid or to be logged in!');
-   let pvp = getProfile({xid});
-   let person = pvp.value || pvp.interim;
-   return getClaimValue({person, key});
+	if (!xid) xid = Login.getId();
+	assert(xid, 'getPersonSetting requires an xid or to be logged in!');
+	let pvp = getProfile({xid});
+	let person = pvp.value || pvp.interim;
+	return getClaimValue({person, key});
 }
 
 // FIXME buggy

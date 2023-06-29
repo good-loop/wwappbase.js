@@ -27,7 +27,7 @@ const macroRegexes = {
 	[KMacroType.XANDR]: /(\$\{\w+\})/g, // eg ${CREATIVE_ID}
 	[KMacroType.YAHOO]: /(\{\w+:?\w*\})/g, // eg {param:default}
 	[KMacroType.AMAZON]: /(\_\_\w+\_\_)/g, // eg __CS_AD_NAME__
-	//[KMacroType.QUANTCAST]: /(\[%\w+%\])/g // eg [%orderid%]   left out for now - cant find Quantcast specific ad macros??
+	//[KMacroType.QUANTCAST]: /(\[%\w+%\])/g // eg [%orderid%] left out for now - cant find Quantcast specific ad macros??
 };
 
 /** Split out macros and preserve delimiters before URL-component-encoding the rest */

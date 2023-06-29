@@ -9,9 +9,9 @@ import I18N from '../../base/i18n';
 /** Impact type. See Impact.java -- NB: copy-pasta from SoGive's Output.js.
  */
 class Impact extends DataClass {
-	/** @type {Money}  */
+	/** @type {Money} */
 	amount;
-	/** @type {Double}  */
+	/** @type {Double} */
 	amountGBP;
 	/** @type {String} */
 	charity;

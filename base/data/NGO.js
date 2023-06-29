@@ -129,7 +129,7 @@ NGO.UNSDGs = [
  * Loosely based on https://www.charitynavigator.org/index.cfm?bay=content.view&cpid=34
  */
 NGO.CATEGORY = {
-	"animals":[	// not environment - see below
+	"animals":[ // not environment - see below
 		"Animal Rights, Welfare, and Services", 
 		"Wildlife Conservation", 
 		"Zoos and Aquariums"

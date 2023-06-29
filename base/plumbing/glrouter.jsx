@@ -37,7 +37,7 @@ const goto = (href, options) => {
 		// no scroll
 	} else {
 		window.scrollTo(0,0);
-	}	
+	}
 };
 
 

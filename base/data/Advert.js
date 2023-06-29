@@ -170,7 +170,7 @@ Advert.viewcountByCampaign = ads => Advert.viewcountBy({ads, bby: 'campaign'});
  * @param {String} p.bby Breakdown on this parameter
  * @param {String} p.start Start date/time for query
  * @param {String} p.end End date/time for query
- * @returns {object} viewcount4campaign
+ * @returns {object|null} viewcount4campaign
  */
 Advert.viewcountBy = ({ads, start = '2017-01-01', end = 'now', bby}) => {
 	if (!ads?.length) {

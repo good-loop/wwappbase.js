@@ -163,7 +163,7 @@ class TableSettings {
 	rowsPerPage;
 
 
-	/** @type {?String}  Used to name the csv download */ 
+	/** @type {?String} Used to name the csv download */
 	tableName = 'Table';
 
 	/** @type {?String} Applied to the <table> for e.g. BS styles */ 
@@ -877,7 +877,7 @@ const addToSelection = ({selection, row, colNum, v}) => {
 	selection.data[r][c] = v;
 };
 
-/** (un)collapse all  */
+/** (un)collapse all */
 const doCollapseAll = (dataTreeUnfiltered, tableSettings, allCollapsed) => {	
 	// NB: unshift so we dont collapse the root node
 	Tree.flatten(dataTreeUnfiltered).slice(1).forEach(node => {

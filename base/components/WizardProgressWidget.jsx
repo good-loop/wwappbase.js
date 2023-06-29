@@ -141,7 +141,7 @@ function NextButton({complete, stagePath, maxStage, onNext, ...rest}) {
 }
 
 function PrevButton({stagePath, onPrev, ...rest}) {
-  return <NextPrevTab stagePath={stagePath} diff={-1} callback={onPrev} {...rest}>
+	return <NextPrevTab stagePath={stagePath} diff={-1} callback={onPrev} {...rest}>
 		<b>&lt;</b> Previous
 	</NextPrevTab>
 }

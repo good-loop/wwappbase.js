@@ -97,7 +97,7 @@ const PaymentWidget = ({amount, onToken, recipient, email, usePaymentRequest, er
 			return (
 				<div className="section donation-amount">
 					<p>You have <Misc.Money amount={credit} /> in credit which will pay for this.</p>
-					<button onClick={() =>  onToken({ ...CREDIT_TOKEN, email, })} className="btn btn-primary">
+					<button onClick={() => onToken({ ...CREDIT_TOKEN, email, })} className="btn btn-primary">
 						Send Payment
 					</button>
 				</div>
@@ -350,7 +350,7 @@ const PaymentAmount = ({amount, repeat = {}}) => {
 	if (!repeat.amount) {
 		return <h4><Misc.Money amount={amount} /></h4>;
 	}
-		// TODO  {repeatEnd}
+		// TODO {repeatEnd}
 	if (Money.value(repeat.amount) === Money.value(amount)) {
 		return (<>
 			<h4><Misc.Money amount={amount} /> {Donation.strRepeat(repeat.freq)} {repeat.end}</h4>

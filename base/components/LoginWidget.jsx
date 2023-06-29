@@ -28,7 +28,7 @@ const STATUS_PATH = [...WIDGET_PATH, 'status'];
 const PERSON_PATH = ['data', C.TYPES.User, 'loggingIn'];
 
 
-/** Pretty names for the available verbs  */
+/** Pretty names for the available verbs */
 const displayVerb = {
 	login: "Log in",
 	register: "Create Account", // Was "Register"
@@ -140,17 +140,19 @@ function LoginLink({className, onClick, style, verb, children}) {
 	);
 }
 
+
 function LogoutLink({className, children}) {
-  return <a href={'#'} className={space(className,"LogoutLink")} onClick={() => Login.logout()}>{children || "Log out"}</a>
+	return <a href={'#'} className={space(className,"LogoutLink")} onClick={() => Login.logout()}>{children || "Log out"}</a>
 }
 
+
 function RegisterLink({className, ...props}) {
-  return <LoginLink
-	className={className}
-	onClick={() => setLoginVerb('register')}
-	verb="Register"
-	{...props}
-/>
+	return <LoginLink
+		className={className}
+		onClick={() => setLoginVerb('register')}
+		verb="Register"
+		{...props}
+	/>;
 }
 
 
@@ -163,6 +165,7 @@ function RegisteredThankYou() {
 		Check out your new account <C.A href={DataStore.localUrl+"account"}>here</C.A>.
 	</>);
 }
+
 
 /**
 	Log In or Register (one widget)
@@ -181,7 +184,7 @@ function LoginWidget({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 		window.addEventListener("hashchange", onHashChange);
 
 		return function cleanup() {
-		  window.removeEventListener("hashchange", onHashChange);
+			window.removeEventListener("hashchange", onHashChange);
 		}
 	}, []);
 
@@ -446,7 +449,7 @@ function LoginWidgetGuts({services, verb, onLogin, onRegister, canRegister}) {
 
 
 function LoginPage({error}) {
-  return <div>
+	return <div>
 		<h3 className="mt-2">Welcome to {C.app.name} - Please Sign-up or Login below</h3>
 		<LoginWidgetEmbed />
 	</div>

@@ -56,7 +56,7 @@ const DEFAULT_PAGE_SIZE = 100;
  * @param {String} [p.navpage] - e.g. "publisher" If unset, a default is taken from the url.
  * Best practice is to set navpage to avoid relying on url behaviour.
  * @param {Function} [p.ListItem] JSX if set, replaces DefaultListItem.
- * 	ListItem only has to describe/present the item.   
+ * 	ListItem only has to describe/present the item.
  * 	NB: On-click handling, checkboxes and delete are provided by ListItemWrapper.
  * 	Input props: {type, servlet, navpage, item, sort, items, nameFn, onClick}
  * @param {Function} [p.nameFn] passed to ListItem, to have custom name extraction
@@ -67,8 +67,8 @@ const DEFAULT_PAGE_SIZE = 100;
  * @param {KStatus} [p.preferStatus] See DataStpre.resolveRef E.g. if you want to display the in-edit drafts
  * @param {Boolean} [p.hasFilter] - deprecated - use canFilter
  * @param {Boolean} [p.unwrapped] If set don't apply a ListItemWrapper (which has the standard on-click behaviour and checkbox etc controls)
- * @param {React.Element|String} [p.noResults]  Message to show if there are no results
- * @param {Function} [p.onClickItem]  Custom non-navigation action when list item clicked
+ * @param {React.Element|String} [p.noResults] Message to show if there are no results
+ * @param {Function} [p.onClickItem] Custom non-navigation action when list item clicked
  * @param {Function} [p.onClickWrapper] Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
  * @param {Function} [p.pageSelectID] - 1-indexed. If using multiple pages for items this is required to target the specific ListLoad from a url parameter.
 Use-case??

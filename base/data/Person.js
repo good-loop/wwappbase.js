@@ -84,6 +84,7 @@ Person.img = peep => {
 	return null;
 };
 
+
 /**
  * 
  * @param {Person} peep 
@@ -139,6 +140,7 @@ Person.hasApp = (person, app) => {
 	return !! cv;
 };
 
+
 /**
  * Set and save
  * @param {!Person} person 
@@ -157,6 +159,7 @@ Person.setHasApp = (person, app) => {
  */
 const PURPOSES = new Enum("any email_app email_mailing_list email_marketing preregister cookies cookies_personalization cookies_analytical cookies_marketing cookies_functional personalize_ads");
 
+
 /**
  * Sets dataspace and type
  * @returns {!String[]}
@@ -168,6 +171,7 @@ const getPersonDataPath = ({id,status=KStatus.PUBLISHED}) => {
 	const dpath = getDataPath(dsi);
 	return dpath;
 };
+
 
 /**
  * Get local or fetch
@@ -212,6 +216,7 @@ const getProfile = ({xid, fields, status=KStatus.PUBLISHED, swallow=true}={}) =>
 	return pvProfile;
 };
 
+
 /**
  * HACK
  * @param {Person} person 
@@ -234,6 +239,7 @@ Person.getEmail = person => {
 	return null;
 };
 
+
 /**
  * 
  * @param {Person|PersonLite} p
@@ -252,8 +258,10 @@ const getProfileFor = ({xid,service}) => {
 	return pvPeep2;
 };
 
+
 // one hour in msecs DS cache
 const cachePeriod = 1000*60*60;
+
 
 /**
  * Convenience method:
@@ -281,10 +289,10 @@ const getProfilesNow = xids => {
  * TODO refactor into Crud
  * A debounced save - allows 1 second for batching edits
  * Create UI call for saving claims to back-end
- *  @param {Person} persons
-	@param {Person[]} persons
-	@returns PromiseValue
-*/ 
+ * @param {Person} persons
+ * @param {Person[]} persons
+ * @returns PromiseValue
+ */
 const savePersons = debouncePV(({person, persons}) => {
 	if (person) {
 		assert( ! persons);
@@ -316,7 +324,6 @@ const savePersons = debouncePV(({person, persons}) => {
 }, 1000);
 
 
-
 /**
  * A debounced save - allows 1 second for batching edits
  * Create UI call for saving consents to back-end
@@ -344,6 +351,7 @@ const saveConsents = _.debounce(({persons}) => {
 	let pSaveAll = Promise.allSettled(pSaves);
 	return pSaveAll; // wrap in a PV??
 }, 1000);
+
 
 /**
  * This does NOT fetch any fresh data - it extracts data from the input Person object.
@@ -414,12 +422,14 @@ const hasConsent = ({person, persons, xids, purpose}) => {
 	return cs[purpose];
 };
 
+
 /** Puts consents in to form used by back-end 
  * @param consents {String: Boolean} 
  * NB: handles the "yes"/"no" case
  * @returns {String[]} consents and -consents
 */
 const convertConsents = (consents) => mapkv(consents, (k,v) => (v===true || v === "yes" || v===1) ? k : "-"+k);
+
 
 /**
  * @param consents {String: Boolean}
@@ -437,6 +447,7 @@ const setConsents = ({person, consents}) => {
 	return person;
 };
 
+
 /**
  * @deprecated confusion with Person.getEmail()
  * Convenience for "find a linked profile for email, or null"
@@ -449,6 +460,7 @@ const getEmail = ({xids}) => {
 	}
 	return null;
 };
+
 
 /**
  * Call AnalyzeDataServlet to fetch and analyse Twitter data.
@@ -492,6 +504,8 @@ const getAllXIds = () => {
 	// done
 	return aall;
 };
+
+
 /**
  * @param {Set<String>} all XIds -- modify this!
  * @param {String[]} agendaXIds XIds to investigate
@@ -513,6 +527,7 @@ const getAllXIds2 = (all, agendaXIds) => {
 		});
 	});
 };
+
 
 /**
  * Process a mailing-list sign-up form
@@ -539,6 +554,7 @@ const doRegisterEmail = (data) => {
 	return ServerIO.load(`${ServerIO.PROFILER_ENDPOINT}/form/${ServerIO.dataspace}`, {data})
 };
 
+
 /**
  * Does NOT call `savePersons()`
  * @param {!string} consent
@@ -552,6 +568,8 @@ const addConsent = ({persons, consent}) => {
 	});
 	console.error("addConsent",persons,consent);
 };
+
+
 /**
  * 
  * @param {!string} consent
@@ -564,6 +582,7 @@ const removeConsent = ({persons, consent}) => {
 	});
 	console.error("removeConsent",persons,consent);
 };
+
 
 /**
  * Locally set a claim value (does NOT save -- use `savePersons()` to save)
@@ -612,6 +631,7 @@ const addClaim = (peep, claim) => {
 	console.log("addClaim", peep.id+" interimId: "+peep.interimId, claim);
 };
 
+
 /**
  * @deprecated Convenience for getClaim()
  * @param {Object} p
@@ -625,6 +645,7 @@ const getClaimValue = ({person, persons, key, from}) => {
 	let c = getClaim({person,persons,key,from});
 	return c? c.v : null;
 };
+
 
 /**
  * @param {Object} p
@@ -654,6 +675,7 @@ const getClaim = ({person, persons, key, from}) => {
 	return claims[0];
 };
 
+
 /**
  * 
  * @param {Object} p
@@ -673,7 +695,8 @@ export const getPVClaim = ({xid, key}) => {
 		pvc.interim = getClaim({person:pvPeep.interim, key});
 	}
 	return pvc;
-}
+};
+
 
 /**
  * @param {Object} p
@@ -690,11 +713,13 @@ const getClaims = ({person, persons, key}) => {
 	return keyClaims;
 };
 
+
 /**
  * @param {!Person} person 
  * @returns {!Claim[]} the claims for this person (does not look at linked peeps). Do not edit the returned list.
  */
 Person.claims = person => person.claims || [];
+
 
 export {
 	doRegisterEmail,
@@ -708,7 +733,6 @@ export {
 	requestAnalyzeData,
 	PURPOSES,
 	getEmail,
-
-	// Lets offer some easy ways to edit profile-bundles
+	// Let's offer some easy ways to edit profile-bundles
 	getClaims, getClaimValue, setClaimValue, savePersons, deleteClaim
 };

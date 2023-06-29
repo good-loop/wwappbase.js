@@ -276,7 +276,7 @@ Money.convertCurrencyAPI = (money, currencyTo) => {
 		try {
 			rate = pvRate.value.rates[currencyTo];
 			console.warn(`${currencyTo}, currencyTo, ${rate}`, pvRate.value);
-		} catch(err) {	// paranoia (bugs, Nov 2021)
+		} catch(err) { // paranoia (bugs, Nov 2021)
 			console.error(err); // swallow it
 		}
 	}
@@ -316,7 +316,7 @@ Money.make = (base = {}) => {
  * Check currencies match. Case insensitive.
  */
 const assCurrencyEq = (a, b, msg) => {
-	const m = "Money.js assCurrencyEq "+(msg||'')+" a:"+JSON.stringify(a)+"  b:"+JSON.stringify(b);
+	const m = "Money.js assCurrencyEq "+(msg||'')+" a:"+JSON.stringify(a)+" b:"+JSON.stringify(b);
 	Money.assIsa(a, m);
 	Money.assIsa(b, m);
 	// allow no-currency to pad
@@ -392,7 +392,7 @@ Money.total = (amounts, preferredCurrency) => {
  * @param {!Money} amount1
  * @param {!Money} amount2
  * @returns {!Money} amount1 minues amount2
- *  */
+ */
 Money.sub = (amount1, amount2) => {
 	Money.assIsa(amount1);
 	Money.assIsa(amount2);

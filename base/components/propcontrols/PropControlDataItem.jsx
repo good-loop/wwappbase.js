@@ -185,7 +185,7 @@ registerControl({ type: 'DataItem', $Widget: PropControlDataItem2 });
  * @param {?Boolean} embed If true, set a copy of the data-item. By default, what gets set is the ID
  */
 function PropControlDataItem(p) {
-  return <PropControl type="DataItem" {...p} />;
+	return <PropControl type="DataItem" {...p} />;
 }
 
 export default PropControlDataItem;

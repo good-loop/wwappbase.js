@@ -46,7 +46,7 @@ class Campaign extends DataClass {
 
 	/**
 	 * @deprecated (kept for old data)
-	 *  @type{?boolean} */
+	 * @type {?boolean} */
 	master;
 
 	/** @type {?String} */

@@ -49,6 +49,7 @@ SearchQuery._init = sq => {
 	SearchQuery.parse(sq);
 }
 
+
 SearchQuery.parse = sq => {
 	// HACK just space separate and crude key:value for now!
 	let bits = sq.query.split(" ");
@@ -70,6 +71,7 @@ SearchQuery.parse = sq => {
 	sq.tree = [op, ...bits2];
 }
 
+
 /**
  * Convenience method.
  * IF propName occurs at the top-level, then return the value
@@ -87,6 +89,7 @@ SearchQuery.prop = (sq, propName) => {
 	}
 	return null;
 }
+
 
 /**
  * Set a top-level prop, e.g. vert:foo
@@ -120,7 +123,7 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	} else {
 		// quote the value?
 		let qpropValue = propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"';
-		newq  = (newq? newq+" AND " : "") + propName+":"+qpropValue;
+		newq = (newq? newq+" AND " : "") + propName+":"+qpropValue;
 	}
 	// HACK - trim ANDs
 	newq = newq.replace(/ AND +AND /g," AND ");
@@ -134,11 +137,12 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 	return new SearchQuery(newq.trim());
 }
 
+
 /**
  * 
- * @param {!SearchQuery} sq 
- * @param {!String} propName 
- * @returns  {!String}
+ * @param {SearchQuery} sq
+ * @param {String} propName
+ * @returns {String}
  */
 const snipProp = (sq, propName) => {
 	assMatch(sq, SearchQuery);
@@ -150,11 +154,12 @@ const snipProp = (sq, propName) => {
 	return newq;
 };
 
+
 /**
  * Set several options for a top-level prop, e.g. "vert:foo OR vert:bar"
- * @param {?SearchQuery} sq If set, this is combined via AND!
- * @param {!String} propName 
- * @param {!String[]} propValues Must not be empty
+ * @param {SearchQuery} [sq] If set, this is combined via AND!
+ * @param {String} propName
+ * @param {String[]} propValues Must not be empty
  * @returns a NEW SearchQuery
  */
 SearchQuery.setPropOr = (sq, propName, propValues) => {	
@@ -186,6 +191,7 @@ SearchQuery.setPropOr = (sq, propName, propValues) => {
 	return new SearchQuery(newq.trim());
 };
 
+
 /**
  * Merge two queries with OR
  * @param {?String|SearchQuery} sq 
@@ -194,6 +200,7 @@ SearchQuery.setPropOr = (sq, propName, propValues) => {
 SearchQuery.or = (sq1, sq2) => {
 	return SearchQuery.op(sq1, sq2, SearchQuery.OR);
 }
+
 
 /**
  * 
@@ -239,12 +246,15 @@ SearchQuery.op = (sq1, sq2, op) => {
 	// CRUDE but it should work -- at least for simple cases
 	let newq = bracket(sq1.query)+" "+op+" "+bracket(sq2.query);
 	return new SearchQuery(newq);
-}; 
+};
+
+
 /**
  * Add brackets if needed.
  * @param {!String} s 
  */
 const bracket = s => s.includes(" ")? "("+s+")" : s;
+
 
 /**
  * Merge two queries with AND
@@ -266,11 +276,13 @@ SearchQuery.remove = (sq1, sq2) => {
 	return SearchQuery.op(sq1,sq2,SearchQuery.REMOVE);
 }
 
+
 /**
  * @param {?SearchQuery} sq 
  * @returns {!string}
  */
 SearchQuery.str = sq => sq? sq.query : '';
+
 
 /**
  * Convert a parse tree back into a query string

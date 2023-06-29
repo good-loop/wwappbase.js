@@ -17,7 +17,7 @@ const Tab = ({tabId, title, disabled, onTabClick, children}) => {
  * 
  * @param {Tab[]} children
  * @param {?string} activeTabId Only needed if the app is controlling which tab. e.g. a url parameter DataStore.getUrlValue("tab")
- * @param {?Function} setActiveTabId Only needed if the app is controlling which tab. e.g.tabId =>  DataStore.setUrlValue("tab",tabId)
+ * @param {?Function} setActiveTabId Only needed if the app is controlling which tab. e.g.tabId => DataStore.setUrlValue("tab",tabId)
  */
 const Tabs = ({activeTabId, setActiveTabId, defaultTabId, children, ...props}) => {
 	// We can manage tab-ID locally with useState() or have it passed in.

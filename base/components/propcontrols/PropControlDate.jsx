@@ -114,7 +114,7 @@ registerControl({ type: 'datetime-local', $Widget: PropControlDateTime2 });
  * @param {PropControlParams} p 
  */
 function PropControlDate(p) {
-  return <PropControl type="date" {...p} />;
+	return <PropControl type="date" {...p} />;
 }
 
 export default PropControlDate;

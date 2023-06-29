@@ -8,7 +8,7 @@ import { is } from '../utils/miscutils';
 /** See ImpactDebit.java
 */
 class ImpactDebit extends DataClass {
-	/** @type {Impact}  */
+	/** @type {Impact} */
 	impact;
 
 	/** @type{?String} */

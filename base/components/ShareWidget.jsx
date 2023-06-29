@@ -155,8 +155,8 @@ function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, 
  * @returns 
  */
 const doShareByLink = async({link, slink, setSlink, shareId}) => {
-	// NB: pseudeo-user is tied to the user, to allow the user to get access again later
-	const withXId =  shareId+"_by_"+Login.getId()+"@pseudo";
+	// NB: pseudo-user is tied to the user, to allow the user to get access again later
+	const withXId = `${shareId}_by_${Login.getId()}@pseudo`;
 	if (slink) {
 		copyTextToClipboard(slink);
 		return;
@@ -219,7 +219,7 @@ const doShareByLink2 = ({link, shareId, withXId, jwt}) => {
 function ListShares({list}) {
 	if (!list) return <Misc.Loading text="Loading current shares" />;
 	// dont show pseudo users
-	if ( ! Roles.isDev()) {
+	if (!Roles.isDev()) {
 		list = list.filter(s => s._to && XId.service(s._to) !== 'pseudo');
 	}
 	return (

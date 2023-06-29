@@ -20,5 +20,5 @@ const urlValidator = ({value, props}) => {
 };
 
 export {
-  urlValidator,
+	urlValidator,
 };
