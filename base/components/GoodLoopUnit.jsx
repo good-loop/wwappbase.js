@@ -51,6 +51,7 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 	cssEls.forEach(node => node.parentElement.removeChild(node));
 }
 
+
 // TODO copy-pasted from demo/test site - move to shared location?
 /** Get the URL for an ad file (eg unit.js, unit.json, vast.xml) with appropriate server type and parameters */
 export const getAdUrl = ({file = 'unit.js', unitBranch, params}) => {
@@ -97,6 +98,7 @@ const normaliseParams = ({ endCard, ...params }) => {
 	return normParams;
 }
 
+
 /**
  * Puts together the unit.json request
  * TODO To seamlessly load legacy units without loading advert twice:
@@ -140,6 +142,7 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 	return () => doc ? doc.documentElement.innerHTML = '' : null;
 };
 
+
 /**
  * TODO doc
  * ??How does this interact with the server vs on-client datastore??
@@ -148,7 +151,6 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
  * @param {String} p.css Extra CSS to insert in the unit's iframe - used by portal to show custom styling changes without reload. Optional.
  * @param {String} p.size Defaults to "landscape".
  * @param {?KStatus} p.status Defaults to PUBLISHED if omitted.
- * @param {?Advert} p.advert Used for legacyUnitBranch
  * @param {String} p.play Condition for play to start. Defaults to "onvisible", "onclick" used in portal preview
  * @param {String} p.endCard Set truthy to display end-card without running through advert.
  * @param {?Boolean} p.noab Set true to block any A/B experiments
@@ -185,7 +187,7 @@ const GoodLoopUnit = ({vertId, className, style, css, size = 'landscape', status
 
 	// Use a screenshot instead for lower bandwidth & latency? TODO untested!
 	if (useScreenshot && unitJson && unitJson.mock4size) {
-		const screenshotSize =typeof(useScreenshot)==="string"? useScreenshot : "landscape";
+		const screenshotSize = typeof(useScreenshot) === 'string' ? useScreenshot : 'landscape';
 		if (unitJson.mock4size[screenshotSize]) {
 			return <div className="goodLoopContainer" id={vertId}>
 				<DynImg src={unitJson.mock4size[screenshotSize]} />
@@ -198,6 +200,18 @@ const GoodLoopUnit = ({vertId, className, style, css, size = 'landscape', status
 	const [container, setContainer] = useState();
 	const [dummy, redraw] = useState(); // Just use this to provoke a redraw
 	const [frameReady, setFrameReady] = useState(false);
+	const [maxAspect, setMaxAspect] = useState();
+
+	// Check the aspect ratio of the maximum available container size
+	useEffect(() => {
+		if (maxAspect) { // container changed, invalidate previous probe
+			setMaxAspect(null);
+			return;
+		}
+		if (!container) return;
+		const { width, height } = container.getBoundingClientRect();
+		setMaxAspect(width / height);
+	}, [container]);
 
 	const receiveFrame = useCallback(node => {
 		setFrame(node);
@@ -252,23 +266,26 @@ const GoodLoopUnit = ({vertId, className, style, css, size = 'landscape', status
 		};
 	}, []);
 
-	// Calculate dimensions every render because it's cheap and KISS
-	const dims = { position: 'relative' }; // allow Editor to position elements
-	if (container) {
-		const { width, height } = container.getBoundingClientRect();
-		// 16:9 --> 100% width, proportional height; 9:16 --> 100% height, proportional width
-		if (size === 'landscape') dims.height = `${width * 0.5625}px`; // 0.5625 = 9/16
-		else if (size === 'portrait') dims.width = `${height * 0.5625}px`;
+	const extraStyle = { position: 'relative' }; // allow Editor to position elements
+	if (maxAspect) {
+		const adAspect = { portrait: 9/16, landscape: 16/9 }[size];
+		const adAspectStr = { portrait: '9/16', landscape: '16/9' }[size];
+		extraStyle[(adAspect > maxAspect) ? 'height' : 'width'] = '100%';
+		extraStyle.aspectRatio = adAspectStr;
+	} else {
+		extraStyle.width = '100%';
+		extraStyle.height = '100%';
 	}
 
-	Object.assign(dims, style);
+	Object.assign(extraStyle, style);
 
 	return (
-		<div className={space("goodLoopContainer", className)} style={dims} ref={receiveContainer} id={vertId}>
+		<div className={space('goodLoopContainer', className)} style={extraStyle} ref={receiveContainer} id={vertId}>
 			<iframe key={unitKey} frameBorder={0} scrolling="auto" style={{width: '100%', height: '100%'}} ref={receiveFrame} aria-label="Good-Loop ad"/>
 			{Editor && <Editor />}
 		</div>
 	);
 };
+
 
 export default GoodLoopUnit;
