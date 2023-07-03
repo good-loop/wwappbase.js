@@ -26,11 +26,6 @@ const appendEl = (doc, {tag, ...attrs}, prepend) => {
 }
 
 
-const getAdAspect = size => {
-
-}
-
-
 /**
 	* Insert custom CSS into the adunit's iframe
 	* Why do this when the adunit already manages its own CSS?
@@ -55,6 +50,7 @@ const removeAdunitCss = ({frame, selector = '#vert-css'}) => {
 	const cssEls = frame.contentDocument.querySelectorAll(selector) || [];
 	cssEls.forEach(node => node.parentElement.removeChild(node));
 }
+
 
 // TODO copy-pasted from demo/test site - move to shared location?
 /** Get the URL for an ad file (eg unit.js, unit.json, vast.xml) with appropriate server type and parameters */
@@ -102,6 +98,7 @@ const normaliseParams = ({ endCard, ...params }) => {
 	return normParams;
 }
 
+
 /**
  * Puts together the unit.json request
  * TODO To seamlessly load legacy units without loading advert twice:
@@ -144,6 +141,7 @@ const insertUnit = ({frame, unitJson, unitBranch, glParams, xray}) => {
 	// On unmount: empty out iframe's document
 	return () => doc ? doc.documentElement.innerHTML = '' : null;
 };
+
 
 /**
  * TODO doc
@@ -288,5 +286,6 @@ const GoodLoopUnit = ({vertId, className, style, css, size = 'landscape', status
 		</div>
 	);
 };
+
 
 export default GoodLoopUnit;
