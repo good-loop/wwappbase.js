@@ -125,7 +125,9 @@ Campaign.fetchFor = (advert, status = KStatus.DRAFT) => {
  * @returns PromiseValue(Campaign)
  */
 Campaign.fetchForAdvertisers = (vertiserIds, status = KStatus.DRAFT) => {
-	return new PromiseValue(fetchVertisers2(vertiserIds, status));
+	return DataStore.fetch(getListPath({type:"Campaign", status, for:vertiserIds}), () => {
+		return fetchVertisers2(vertiserIds, status);
+	});
 }
 
 const fetchVertisers2 = async (vertiserIds, status) => {
