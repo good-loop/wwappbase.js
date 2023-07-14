@@ -6,7 +6,7 @@ import '../../style/prism-dark.less';
 import '../../style/PropControls/PropControlCode.less';
 
 
-const PropControlCode = ({ storeValue, prop, path, lang, onFocus, onChange, onKeyDown, rawValue, setRawValue, ...otherStuff }) => {
+const PropControlCode = ({ storeValue, prop, path, lang, onFocus, onChange, onKeyDown, rawValue, width, height, setRawValue, ...otherStuff }) => {
 	const textRef = useRef(); // The mostly-invisible <textarea>
 	const codeRef = useRef(); // The <code> containing the highlighted text
 	const preRef = useRef(); // The <pre> containing the highlighter <code>
@@ -57,8 +57,10 @@ const PropControlCode = ({ storeValue, prop, path, lang, onFocus, onChange, onKe
 	// fix discrepency between last lines & stop undefined errors
 	const codeText = storeValue ? `${storeValue}\n ` : ' ';
 
+	const sizeStyle = {width, height};
+
 	return (
-		<div className="code-container">
+		<div className="code-container" style={sizeStyle}>
 			<pre className="syntax-highlighting" ref={preRef}>
 				<code className={`language-${lang}`} ref={codeRef}>
 					{codeText}
@@ -66,7 +68,7 @@ const PropControlCode = ({ storeValue, prop, path, lang, onFocus, onChange, onKe
 			</pre>
 			<textarea
 				className="form-control code-input" wrap="off" spellCheck={false}
-				name={prop} value={storeValue} ref={textRef}
+				name={prop} value={storeValue} ref={textRef} style={sizeStyle}
 				{...inputEvents} {...otherStuff}
 			/>
 		</div>

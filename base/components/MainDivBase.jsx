@@ -269,17 +269,18 @@ class MainDivBase extends Component {
 				</NavBar>
 				{navbarSpace && <div className="py-4"/> /* why / why-not?? */}
 			</>}
-			<Container fluid={fluid}>
-				<Row>
+			
+			<Row>
+				<Container fluid={fluid}>
 					<MessageBar />
 					<div className="page" id={page}>
 						<Page />
 					</div>
-				</Row>
-				<Row>
-					{Footer && !undecorated && <Footer page={page} />}
-				</Row>
-			</Container>
+				</Container>
+			</Row>
+			<Row>
+				{Footer && !undecorated && <Footer page={page} />}
+			</Row>
 			<LoginWidget
 				title={noLoginTitle ? null : `Welcome to ${C.app.name}`}
 				subtitle={loginSubtitle}
