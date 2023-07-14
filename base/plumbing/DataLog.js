@@ -64,6 +64,10 @@ const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,in
  * @returns e.g. {myevent: {monday:1, tuesday:2, total:3}}
  */
 const pivotDataLogData = (data, breakdowns) => {
+	if ( ! data) {
+		console.error("pivotDataLogData - undefined data?!",breakdowns);
+		return null;
+	}
 	if (data.sampling) {
 		data = data.sampling; // unwrap sampling
 	}
