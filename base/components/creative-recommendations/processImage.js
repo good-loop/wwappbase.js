@@ -1,6 +1,6 @@
-import { RECS_OPTIONS_PATH } from '../../../components/pages/greendash/GreenRecsCreative';
 import DataStore from '../../plumbing/DataStore';
 import { callRecompressServlet, processLocal } from './processGeneric';
+import { RECS_OPTIONS_PATH } from './recommendation-utils';
 
 
 /**

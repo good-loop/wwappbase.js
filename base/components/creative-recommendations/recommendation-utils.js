@@ -9,13 +9,13 @@ export const RECS_OPTIONS_PATH = [...RECS_PATH, 'options'];
 
 
 /** DataStore path for PageManifest corresponding to a particular Green Ad Tag */
-export function savedManifestPath(tag): string[] {
+export function savedManifestPath(tag) {
 	return [...RECS_PATH, 'saved-tag-measurement', tag.id];
 }
 
 
 /** DataStore path for list of recommendations pertaining to a particular analysis of a GAT creative */
-export function processedRecsPath(tag, manifest): string[] {
+export function processedRecsPath(tag, manifest) {
 	const optionString = JSON.stringify(DataStore.getValue(RECS_OPTIONS_PATH));
 	return [...RECS_PATH, 'processed-recs', tag.id, manifest?.timestamp || 0, optionString];
 }
