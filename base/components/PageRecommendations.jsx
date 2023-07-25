@@ -1,148 +1,282 @@
 import React, { useState, useEffect } from 'react';
-import { Card, CardBody, CardHeader } from 'reactstrap';
+import { Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalHeader, Table } from 'reactstrap';
 
-import ServerIO from '../plumbing/ServerIOBase';
-import { makeRecommendations, proxy, RECOMPRESS_ENDPOINT } from '../utils/pageAnalysisUtils';
-import printer from '../utils/printer';
+import { proxy, typeBreakdown } from '../utils/pageAnalysisUtils';
 import StyleBlock from './StyleBlock';
-import PropControl from './PropControl';
-import Misc from './Misc';
 import { nonce } from '../data/DataClass';
+import C from '../CBase';
+import { Bytes, space } from '../utils/miscutils';
 
 
-const RECS_PATH = ['widget', 'page-recommendations'];
+function UnusedWarning({spec}) {
+	return spec.unused ? <div>
+		This resource is loaded, but does not appear to be used by the creative.
+	</div> : null;
+};
 
 
-function Improvement({origSpec, optSpec}) {
-	const { shortName, bytes: origBytes } = origSpec;
-	const { url: optUrl, bytes: optBytes } = optSpec;
+function ComparisonRow({spec, optimised}) {
+	let { filename, url, optUrl, bytes, optBytes, isSubstitute } = spec;
+	let desc = 'Original';
 
-	// How much smaller?
-	const improvement = (1 - (optBytes / origBytes));
+	if (optimised) {
+		url = optUrl;
+		bytes = optBytes;
+		desc = isSubstitute ? 'Replacement' : 'Optimised';
+	}
 
-	// Don't bother telling user about less than 1% improvement.
-	if (improvement < 0.01) return <div>
-		This resource is already optimally sized.
+	return <div className={space('comparison-row', optimised ? 'optimised' : 'original')}>
+		<C.A target="_blank" className="desc" href={url} download={filename}>{desc}</C.A>
+		<div className="size"><Bytes b={bytes} /></div>
+	</div>
+}
+
+
+function SizeComparison({spec}) {
+	const { bytes, optBytes } = spec;
+	// How much smaller? (Our "worth telling user" threshold is 1%)
+	const improvement = (1 - (optBytes / bytes)) * 100;
+
+	return <div className="size-comparison">
+		<ComparisonRow spec={spec} />
+		{improvement > 1 ? <>
+			<ComparisonRow spec={spec} optimised />
+			<div className="improvement"><span className="percent">{improvement.toFixed(1)}%</span> smaller</div>
+		</> : (
+			<div className="text-center">Optimally sized.</div>
+		)}
 	</div>;
+}
 
-	return <div>
-		<a href={optUrl} download={shortName}>Optimised version</a> is {printer.prettyInt(optBytes)} bytes ({(improvement * 100).toFixed(1)}% smaller)
+
+const baseCharacterSet =
+'abcdefghijklmnopqrstuvwxyz\n' +
+'ABCDEFGHIJKLMNOPQRSTUVWXYZ\n' +
+'1234567890!"#$%&\'()*+,-./:\n' +
+';<=>?@[\]^_`{|}~';
+
+function ShowCharacters({characters}) {
+	const [charEls, setCharEls] = useState(null);
+	useState(() => {
+		setCharEls(baseCharacterSet.split('').map(char => {
+			if (char === '\n') return <br />;
+			const unused = (characters.indexOf(char) < 0) && 'unused'
+			return <span className={space('char', unused)}>
+				{char}
+			</span>;
+		}));
+	}, [characters]);
+
+	return <div className="character-set">
+		{charEls}
 	</div>;
+};
+
+
+function FontPreview({spec}) {
+	const [fontFamily] = useState(nonce());
+
+	const { url, filename, name, font } = spec;
+	const fontWeight = font ? font.weights.find(w => !!w) : 500; // default 500/normal for unused
+
+	return <>
+		<StyleBlock>{`@font-face { font-family: "${fontFamily}"; src: url("${proxy(url)}"); }`}</StyleBlock>
+		<div className="preview font-preview" style={{ fontFamily, fontWeight }} title={name || filename}>
+			{name || filename}
+		</div>
+	</>
+}
+
+
+function FontRecDetails({ spec }) {
+	const [open, setOpen] = useState(false);
+	const toggle = () => setOpen(a => !a);
+
+	const { filename, font } = spec;
+
+	let desc = [];
+	if (!filename.match(/\.woff2/)) {
+		const origFormat = filename.match(/\.[^.]+$/)[0];
+		desc.push(<li key="conversion">
+			This font has been converted from <b>{origFormat}</b> to <b>.woff2</b>, which offers the most efficient compression currently available.
+		</li>);
+	}
+	if (font?.characters) {
+		desc.push(<li key="subset">
+			This font has been optimised by removing characters which are never used in the creative:
+			<ShowCharacters characters={font.characters} />
+		</li>);
+	}
+
+	return <>
+		<Button onClick={toggle}>Details</Button>
+		<Modal isOpen={open} className="recommendation-details-modal font-details" toggle={toggle}>
+			<ModalHeader toggle={toggle}>Font Optimisation</ModalHeader>
+			<ModalBody>
+				<div className="text-center my-4">
+					<FontPreview spec={spec} />
+				</div>
+				<ul>
+					{desc}
+				</ul>
+			</ModalBody>
+		</Modal>
+	</>
 }
 
 
 export function FontRecommendation({spec}) {
-	const { shortName, bytes, url, characters } = spec;
-	const [optSpec, setOptSpec] = useState();
-	const [previewNonce] = useState(nonce());
-
-	useEffect(() => {
-		setOptSpec(null);
-		ServerIO.load(RECOMPRESS_ENDPOINT, { data: { url, type: 'font', characters } }).then(res => {
-			setOptSpec({ ...res.data });
-		});
-	}, [url]);
-
 	return <Card className="opt-rec font-rec">
-		<CardHeader>Optimise Font</CardHeader>
-		<div className="preview font-preview p-1">
-			<StyleBlock>{`@font-face { font-family: "${previewNonce}"; src: url("${proxy(url)}"); }`}</StyleBlock>
-			<div className="font-preview p-2" style={{fontFamily: previewNonce}}>
-				{shortName}
-			</div>
-		</div>
+		<CardHeader>Font</CardHeader>
 		<CardBody className="p-2">
-			<div>Original font is {printer.prettyInt(bytes)} bytes.</div>
-			{characters ? <div>Restricted character usage found.</div> : null}
-			{optSpec ? <Improvement origSpec={spec} optSpec={optSpec} /> : <Misc.Loading text="Optimising font file..." />}
+			<div className="my-1">
+				<FontPreview spec={spec} />
+			</div>
+			<SizeComparison spec={spec} />
+			<UnusedWarning spec={spec} />
+			<FontRecDetails spec={spec} />
 		</CardBody>
 	</Card>;
 }
 
+/**
+ * Convenience for a button which toggles when pressed and released.
+ * Uses pointer capture so release fires when the mouse is released, even if the pointer has moved off.
+ */
+function HoldButton({onPress, onRelease, Tag = 'button', children, ...props}) {
+	const allProps = {
+		onPointerDown: e => {
+			e.target.setPointerCapture(e.pointerId);
+			onPress(e);
+		},
+		onPointerUp: e => {
+			onRelease(e);
+			e.target.releasePointerCapture(e.pointerId);
+		},
+		...props
+	};
+	return <Tag {...allProps}>{children}</Tag>;
+}
+
+
+const fileType = filename => {
+	const extMatch = filename.match(/\.[^.]+$/);
+	if (extMatch) return extMatch[0];
+	return '(none)';
+}
+
+
+function ImgRecDetails({spec}) {
+	const [open, setOpen] = useState(false);
+	const [showOriginal, setShowOriginal] = useState(false);
+	const toggle = () => setOpen(a => !a);
+
+	// TODO controls for retina, no-scale, etc
+
+	const { url, optUrl, imgEl } = spec;
+	let { width, height } = spec.elements[0];
+	const imgStyle = { maxWidth: width, maxHeight: height };
+
+	const desc = [];
+	const origType = fileType(url);
+	const optType = fileType(optUrl);
+	if (origType !== optType) {
+		desc.push(<li key="conversion">
+			This image has been converted from <b>{origType}</b> to <b>{optType}</b> to improve compression efficiency.
+		</li>);
+	}
+
+	if (width !== imgEl.naturalWidth || height !== imgEl.naturalHeight) {
+		desc.push(<li>
+			This image has been scaled from its original size of <b>{imgEl.naturalWidth}x{imgEl.naturalHeight}</b> to the size it appears on-screen, <b>{Math.floor(width)}x{Math.floor(height)}</b>.
+		</li>);
+	}
+
+	return <>
+		<Button onClick={toggle}>Details</Button>
+		<Modal isOpen={open} className="recommendation-details-modal image-details" toggle={toggle}>
+			<ModalHeader toggle={toggle}>Image Optimisation</ModalHeader>
+			<ModalBody>
+				<div className="img-comparison-container">
+					<div className="img-comparison">
+						<img className="original" style={imgStyle} src={url} />
+						<img className="optimised" style={{...imgStyle, opacity: showOriginal ? 0 : 1}} src={optUrl} />
+					</div>
+					<div className="version-indicator">{showOriginal ? 'Original' : 'Optimised'}</div>
+					<div className="preview-toggle">
+						<HoldButton
+							Tag={Button}
+							onPress={() => setShowOriginal(true)}
+							onRelease={() => setShowOriginal(false)}
+						>
+							Show Original
+						</HoldButton>
+					</div>
+				</div>
+				<ul>{desc}</ul>
+			</ModalBody>
+		</Modal>
+	</>
+};
+
 
 export function ImgRecommendation({spec}) {
-	const { bytes, url } = spec;
-	const [optSpec, setOptSpec] = useState();
-	const noWebp = DataStore.getValue([...RECS_PATH, 'noWebp']) || false;
-
-	useEffect(() => {
-		ServerIO.load(RECOMPRESS_ENDPOINT, { data: { url, type: 'image', noWebp } }).then(res => {
-			setOptSpec({ ...res.data });
-		});
-	}, [url, noWebp]);
-
+	const { url } = spec;
 
 	return <Card className="opt-rec img-rec">
-		<CardHeader>Optimise Image</CardHeader>
-		<img className="preview img-preview p-1" src={url} />
+		<CardHeader>Image</CardHeader>
+		<div className="img-preview-container p-1">
+			<img className="preview img-preview" src={url} />
+		</div>
 		<CardBody className="p-2">
-			<div>Original image is {printer.prettyInt(bytes)} bytes.</div>
-			<PropControl type="checkbox" path={RECS_PATH} prop="noWebp" label={`Can't use .webp`} />
-			{optSpec ? <Improvement origSpec={spec} optSpec={optSpec} /> : <Misc.Loading text="Optimising image file..." />}
+			<SizeComparison spec={spec} />
+			<UnusedWarning spec={spec} />
+			<ImgRecDetails spec={spec} />
 		</CardBody>
 	</Card>;
 }
 
 
 export function GifRecommendation({spec}) {
-	const { bytes, url } = spec;
-	const [optSpec, setOptSpec] = useState();
-
-	useEffect(() => {
-		ServerIO.load(RECOMPRESS_ENDPOINT, { data: { url, type: 'gif' } }).then(res => {
-			setOptSpec({ ...res.data });
-		});
-	}, [url]);
+	const { url } = spec;
 
 	return <Card className="opt-rec gif-rec">
-		<CardHeader>Optimise GIF</CardHeader>
+		<CardHeader>GIF</CardHeader>
 		<img className="preview gif-preview p-1" src={url} />
 		<CardBody className="p-2">
-			<div>Original GIF is {printer.prettyInt(bytes)} bytes.</div>
-			{optSpec ? <Improvement origSpec={spec} optSpec={optSpec} /> : <Misc.Loading text="Converting GIF animation..." />}
+			<SizeComparison spec={spec} />
+			<UnusedWarning spec={spec} />
 		</CardBody>
 	</Card>;
 }
 
 
 export function SvgRecommendation({spec}) {
-	const { bytes, url } = spec;
-	const [optSpec, setOptSpec] = useState();
-
-	useEffect(() => {
-		ServerIO.load(RECOMPRESS_ENDPOINT, { data: { url, type: 'svg' } }).then(res => {
-			setOptSpec({ ...res.data });
-		});
-	}, [url]);
+	const { url } = spec;
 
 	return <Card className="opt-rec svg-rec">
-	<CardHeader>Optimise SVG Image</CardHeader>
-	<img className="preview img-preview p-1" src={url} />
+	<CardHeader>SVG Image</CardHeader>
+	<div className="img-preview-container p-1">
+		<img className="preview img-preview" src={url} />
+	</div>
 	<CardBody className="p-2">
-		<div>Original SVG image is {printer.prettyInt(bytes)} bytes.</div>
-		{optSpec ? <Improvement origSpec={spec} optSpec={optSpec} /> : <Misc.Loading text="Optimising SVG image..." />}
+		<SizeComparison spec={spec} />
+		<UnusedWarning spec={spec} />
 	</CardBody>
 	</Card>;
 }
 
-export function ScriptRecommendation({spec}) {
-	const { shortName, bytes, url } = spec;
-	const [optSpec, setOptSpec] = useState();
 
-	useEffect(() => {
-		ServerIO.load(RECOMPRESS_ENDPOINT, { data: { url, type: 'script' } }).then(res => {
-			setOptSpec({ ...res.data });
-		});
-	}, [url]);
+export function ScriptRecommendation({spec}) {
+	const { filename } = spec;
 
 	return <Card className="opt-rec script-rec">
-	<CardHeader>Optimise JavaScript</CardHeader>
-	<p className="preview script-preview p-1">
-		<a href={url}>{shortName}</a>
-	</p>
+	<CardHeader>JavaScript</CardHeader>
 	<CardBody className="p-2">
-		<div>Original JavaScript file is {printer.prettyInt(bytes)} bytes.</div>
-		{optSpec ? <Improvement origSpec={spec} optSpec={optSpec} /> : <Misc.Loading text="Minifying JavaScript..." />}
+		<p className="preview script-preview my-1">{filename}</p>
+		<SizeComparison spec={spec} />
+		<UnusedWarning spec={spec} />
+		{spec?.message}
 	</CardBody>
 	</Card>;
 }
@@ -157,23 +291,49 @@ const recComponents = {
 };
 
 
+export function Recommendation({spec, ...props}) {
+	const RecComponent = recComponents[spec.type];
+	if (!RecComponent) debugger;
+	if (!RecComponent) return null;
+	return <RecComponent spec={spec} {...props} />;
+};
+
+
 /**
- * @param {object} p Props
- * @param {object} p.manifest A page manifest from MeasureServlet
- * 
- * @return {JSX.Element[]} An array of elements containing recommendations for improving bandwidth usage on the analysed page
+ * Breakdown of data types on a page
+ * @param {object} p
+ * @param {object} p.manifest PageManifest
+ * @param {boolean} [p.separateSubframes] True to roll all transfers inside sub-frames into one "sub-frame content" line
  */
-function PageRecommendations({manifest, ...props}) {
+export function TypeBreakdown({manifest, separateSubframes}) {
 	if (!manifest) return null;
-	const [recommendations, setRecommendations] = useState([]);
-	useEffect(() => setRecommendations(makeRecommendations(manifest)), [manifest]);
+	const [breakdown, setBreakdown] = useState();
+	useEffect(() => setBreakdown(typeBreakdown(manifest, separateSubframes)), [manifest]);
+	if (!breakdown) return null;
 
-	return recommendations.map(spec => {
-		const RecComponent = recComponents[spec.type];
-		if (!RecComponent) return null;
-		return <RecComponent spec={spec} {...props} />
-	});
+	return (
+		<div className="type-breakdown">
+			<div className="breakdown-bar">
+				{breakdown.map(({title, fraction, color}) => (
+					<div className="bar-segment"
+						title={title}
+						style={{flexBasis: `${fraction * 100}%`, backgroundColor: color}}
+					/>
+				))}
+			</div>
+			<Table className="breakdown-table" size="sm">
+				<thead>
+					<tr><th /><th>Type</th><th>Bytes</th><th>% Total</th></tr>
+				</thead>
+				<tbody>
+					{breakdown.map(({color, title, bytes, fraction = 0}) => <tr>
+						<td><div className="breakdown-key" style={{backgroundColor: color}} /></td>
+						<td>{title}</td>
+						<td>{bytes}</td>
+						<td>{(fraction * 100).toFixed(1)}%</td>
+					</tr>)}
+				</tbody>
+			</Table>
+		</div>
+	);
 }
-
-
-export default PageRecommendations;

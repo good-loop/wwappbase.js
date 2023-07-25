@@ -70,9 +70,10 @@ const DEFAULT_PAGE_SIZE = 100;
  * @param {React.Element|String} [p.noResults] Message to show if there are no results
  * @param {Function} [p.onClickItem] Custom non-navigation action when list item clicked
  * @param {Function} [p.onClickWrapper] Custom non-navigation action when list item wrapper is clicked. Like onClickItem but it applies one level up the dom.
- * @param {Function} [p.pageSelectID] - 1-indexed. If using multiple pages for items this is required to target the specific ListLoad from a url parameter.
-Use-case??
+ * @param {Function} [p.pageSelectID] If supplied, the current page number will be stored as a URL param under this key.
  * @param {Number} [p.pageSize] Number of items per page, default 100
+ * @param {Function|Object} [p.selected] Currently selected object.
+ * 		Used to set initial page number in e.g. multi-pane contexts where items can be selected without navigating away from the list.
  * @param {Object} [p.otherParams] Optional extra params to pass to ActionMan.list() and on to the server.
  */
 function ListLoad({ type, status, servlet, navpage,
@@ -102,6 +103,7 @@ function ListLoad({ type, status, servlet, navpage,
 	onClickItem,
 	onClickWrapper,
 	pageSelectID,
+	selected,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) {
@@ -184,8 +186,7 @@ function ListLoad({ type, status, servlet, navpage,
 	}
 
 	// NB: you can get truncated lists with pageSize but no pageSelectID (e.g. see PropControlDataItem)
-	// read the url for what page we're on - if none are selected then set it to page 1
-
+	// Read the url for a stored page number - if absent default to 1.
 	const pageCount = Math.ceil(total / (pageSize || total)); // no paging = total/total = 1 page
 	const clampPage = n => Math.max(Math.min(pageCount || Infinity, n), 1); // Clamp page number to [1 .. pageCount]
 	const pageFromUrl = pageSelectID ? DataStore.getUrlValue(pageSelectID) : 0;
@@ -204,7 +205,7 @@ function ListLoad({ type, status, servlet, navpage,
 	// Page number pulled from URL may be out-of-range when item list comes in - fix if so
 	useEffect(() => {
 		if (!items) return;
-		if (page !== clampPage(page)) setPage(clampPage(page), false);
+		if (page !== clampPage(page)) setPage(page, false);
 	}, [pageCount]);
 
 	// Initialise page URL value if absent? -- No, don't cram stuff into URL prematurely
@@ -212,6 +213,15 @@ function ListLoad({ type, status, servlet, navpage,
 
 	const allItems = items; // Keep filtered but unpaginated list for e.g. CSV download
 	if (pageSize) items = paginate({ items, page, pageSize });
+
+	// When list is retrieved (so run when items list changes size) check if we should switch page to show selected item
+	useEffect(() => {
+		if (pageFromUrl || !selected) return; // No selected = nothing to do; Don't override URL param
+		const selFn = (typeof selected === 'function') ? selected : (itm => itm === selected); // can be predicate function or item
+		if (items.find(selFn)) return; // Current page has it = nothing to do
+		const itmIndex = allItems.findIndex(selected) + 1; // shift 0- to 1-indexed
+		if (itmIndex > 0) setPage(Math.ceil(itmIndex / pageSize), false);
+	}, [allItems.length]);
 
 	// Generate the pagination links, if applicable
 	const pageControls = <Pager setPage={setPage} current={page} pageCount={pageCount} />;

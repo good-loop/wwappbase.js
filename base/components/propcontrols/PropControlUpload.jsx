@@ -9,7 +9,7 @@ import Misc from '../Misc';
 import { urlValidator } from './validators';
 import Icon from '../Icon';
 import LinkOut from '../LinkOut';
-import { space } from '../../utils/miscutils';
+import { Bytes, space } from '../../utils/miscutils';
 import { notifyUser } from '../../plumbing/Messaging';
 import ServerIO from '../../plumbing/ServerIOBase';
 
@@ -78,15 +78,6 @@ const hashWart = (rawUrl, wartMatcher, newWart) => {
 }
 
 
-/** Bytes to human-readable b/kb/mb/gb. TODO Put in utils? */
-const bytes = b => {
-	if (b < 1024) return `${b} bytes`;
-	if (b < 1024000) return `${(b/1024).toFixed(1)}KB`
-	if (b < 1024000000) return `${(b/1024000).toFixed(1)}MB`;
-	return `${(b/1024000000).toFixed(1)}GB`;
-}
-
-
 /**
  * Print size of file in progress, percent done, estimated time remaining.
  * @param {Number} start UTC timestamp of upload start (msec)
@@ -102,7 +93,7 @@ export const UploadProgress = ({ start, loaded = 0, total }) => {
 	const until = (elapsed / fraction) - elapsed;
 
 	return <div>
-		Size: {bytes(total)}<br/>
+		Size: <Bytes b={total} /><br/>
 		{Math.floor(fraction * 100)}% done<br/>
 		{Math.ceil(until / 1000)}s remaining
 	</div>;

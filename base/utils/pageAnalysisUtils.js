@@ -3,10 +3,11 @@ import ServerIO from "../plumbing/ServerIOBase";
 const MEASURE_ENDPOINT_BASE = ServerIO.MEASURE_ENDPOINT.replace(/\/measure$/, '');
 export const PROXY_ENDPOINT = `${MEASURE_ENDPOINT_BASE}/proxy`;
 export const RECOMPRESS_ENDPOINT = `${MEASURE_ENDPOINT_BASE}/recompress`;
+export const EMBED_ENDPOINT = `${MEASURE_ENDPOINT_BASE}/embed`;
 
 
-export function storedManifestForTag(tagId) {
-	return `${MEASURE_ENDPOINT_BASE}/persist/greentag_${tagId}/results.json`;
+export function storedManifestForTag(tag) {
+	return `${MEASURE_ENDPOINT_BASE}/persist/greentag_${tag.id}/results.json`;
 }
 
 
@@ -27,7 +28,7 @@ function arrayify(thing) {
  * 
  * @return {*[]} Every instance of the named property in the tree, ordered depth-first
  */
-function flattenProp(root, propKey, childKey) {
+export function flattenProp(root, propKey, childKey) {
 	const items = [];
 	if (root[propKey]) items.push(...arrayify(root[propKey]));
 
@@ -70,7 +71,7 @@ const typeSpecs = {
 	image: { mime: /^image/, filename: /\.(jpe?g|gif|png|tiff?|bmp)$/i },
 	audio: { mime: /^audio/, filename: /\.(wav|aiff|mp3|ogg|m4a|aac|flac|alac)$/i },
 	video: { mime: /^video/, filename: /\.(m4v|mp4|mpeg4|mpe?g|mov|webm|avi)$/i },
-	script: { mime: /javascript$/, filename: /\.js$/i }, // text/javascript and application/javascript both seen in the wild
+	script: { mime: /javascript$/, filename: /\.js$/i }, // text/javascript and application/(x-)javascript both seen in the wild
 	stylesheet: { mime: /css$/, filename: /\.css$/i },
 	html: { mime: /^text\/html$/, filename: /\.html?$/i },
 	svg: { mime: /^image\/svg$/, filename: /\.svg$/i },
@@ -79,45 +80,45 @@ const typeSpecs = {
 	gif: { mime: /^image\/gif$/, filename: /\.gif$/i }, // specifically suggest replacing GIF with video / multiframe WEBP
 	woff: { mime: /woff2?$/, filename: /\.woff2?$/i }, // Includes WOFF and WOFF2
 	woff2: { mime: /woff2$/, filename: /\.woff2$/i }, // WOFF2-only
-	audioLossless: { mime: /^audio/, filename: /\.(flac|alac)$/i }, // Warn about unnecessary use of lossless audio
+	audioLossless: { mime: /^audio/, filename: /\.(wav|flac|alac)$/i }, // Warn about unnecessary use of lossless audio
 };
 
 
 /** Quick check for whether a given transfer's MIME type or extension matches a file class */
-function isType(transfer, type) {
+export function isType(transfer, type) {
 	const spec = typeSpecs[type];
 	return transfer.mimeType?.match(spec.mime) || transfer.path?.match(spec.filename);
 }
 
 
-/** Find potential issues with an individual file. Expects fonts to have been augmented with usage data. */
+/** Find potential issues with an individual file. */
 function recommendationsForTransfer(transfer) {
 	const recs = [];
 	if (transfer.resBody === 0) return recs; // Duplicate transfer - 0 bytes because it's a cache hit.
 
-	let rec = { url: transfer.url, bytes: (transfer.resBody + transfer.resHeaders), shortName: shortenName(transfer) };
+	const rec = { url: transfer.url, bytes: transfer.resBody, name: shortenName(transfer), transfer };
 
 	if (isType(transfer, 'font')) {
-		// Try subsetting, try recompressing
-		recs.push({...rec, type: 'font', characters: transfer.characters, woff2: isType(transfer, 'woff2')});
+		// Try subsetting, try recompressing.
+		recs.push({...rec, type: 'font', woff2: isType(transfer, 'woff2')});
 	}
 
 	if (isType(transfer, 'image') && transfer.resBody > 5000) { // Ignore tiny images like tracking pixels and interface buttons
 		// TODO Server-side comparison of image rendered vs inherent size
 		if (isType(transfer, 'svg')) { // Magic number for "this is a large SVG"...
 			// TODO additional heuristic based on fraction of overall transfer size to flag smaller graphics on ads?
-			if (transfer.resBody > 200000) { // don't merge this with the is-svg condition
+			if (transfer.resBody > 100000) { // don't merge this with the is-svg condition - will break fallthrough
 				recs.push({...rec, type: 'svg'}); // Recommender can try SVGO and TODO rendering to raster
 			}
 		} else if (isType(transfer, 'gif')) {
-			recs.push({...rec, type: 'gif'}); // Recommender can try converting to video or non-gif image
+			recs.push({...rec, type: 'gif'}); // Try converting to animated .webp
 		} else if (!isType(transfer, 'webp')) {
-			recs.push({...rec, type: 'image' }); // Can convert to .webp or just try jpeg/png optimisation
+			recs.push({...rec, type: 'image' }); // Fallback for all images: convert to .webp or just try jpeg/png optimisation
 		}
 	}
 
 	if (isType(transfer, 'script')) {
-		if (transfer.resBody > 100000) {
+		if (transfer.resBody > 20000) {
 			recs.push({ ...rec, type: 'script', });
 		}
 	}
@@ -134,18 +135,21 @@ function recommendationsForTransfer(transfer) {
  */
 function augmentFont(transfer, fonts) {
 	// What font-families use this file, and what characters are rendered in that font?
+	// Pile up all font-family names in one array & concatenate all character lists
 	fonts.filter(f => f.urls?.includes(transfer.url)).forEach(font => {
-		if (!transfer.fontFamily) transfer.fontFamily = {};
-		transfer.fontFamily[font.family] = true; 
+		if (!transfer.fontFamily) transfer.fontFamily = [];
+		transfer.fontFamily.push(font.family);
 		if (!transfer.characters) transfer.characters = '';
 		transfer.characters += font.characters;
-	});
-	// {'font-name-1': true, 'font-name-2': true} --> ['font-name-1', 'font-name-2']
-	if (transfer.fontFamily) transfer.fontFamily = Object.keys(transfer.fontFamily);
-	// deduplicate merged character sets
+	});	// De-duplicate and sort font list
+	if (transfer.fontFamily) {
+		const fontSet = new Set(transfer.fontFamily);
+		transfer.fontFamily = Array.from(fontSet).sort();
+	}
+	// Remove duplicates and sort merged character set
 	if (transfer.characters) {
-		const charset = new Set(transfer.characters);
-		transfer.characters = Array.from(charset).sort().join('');
+		const charSet = new Set(transfer.characters);
+		transfer.characters = Array.from(charSet).sort().join('');
 	}
 }
 
@@ -153,37 +157,22 @@ function augmentFont(transfer, fonts) {
 /**
  * For a transfer of an image or video file:
  * - Find any elements in the page manifest with the same source URL
- * - Mark transfer with largest onscreen size it's displayed at
+ * - Attach those elements to the transfer
  */
 function augmentMedia(transfer, mediaElements) {
 	if (isType(transfer, 'image') || isType(transfer, 'video')) {
-		mediaElements.filter(e => (e.src === transfer.url)).forEach(el => {
-			const elementArea = el.clientWidth * el.clientHeight;
-			const transferArea = (transfer.width || 0) * (transfer.height || 0);
-			if (elementArea <= transferArea) return;
-			transfer.width = element.clientWidth;
-			transfer.height = element.clientHeight;
+		mediaElements.filter(e => (e.resourceURL === transfer.url)).forEach(el => {
+			if (!transfer.elements) transfer.elements = [];
+			transfer.elements.push(el);
 		});
 	}
 }
 
 
-/** Pair up font and media transfers with information on how they're used in the analysed page */
-function augmentTransfers(transfers, fonts, mediaElements) {
-	transfers.forEach(t => {
-		if (isType(t, 'image') || isType(t, 'video')) {
-			augmentMedia(t, mediaElements)
-		} else if (isType(t, 'font')) {
-			augmentFont(t, fonts);
-		}
-	});
-}
-
-
 /** Helper for classifying transfers when constructing the type breakdown */
 const testTransfer = (transfer, manifest, type, ownFrame) => {
-	// Does the transfer belong to a sub-frame when we only want directly owned transfers or vice versa?
-	if (ownFrame !== (manifest.transfers.indexOf(transfer) >= 0)) return false;
+	// Does the transfer belong to a sub-frame when we only want directly owned transfers?
+	if (ownFrame && manifest.transfers.indexOf(transfer) < 0) return false;
 	// Is the transfer the wrong type?
 	if (type && !isType(transfer, type)) return false;
 	return true;
@@ -191,38 +180,54 @@ const testTransfer = (transfer, manifest, type, ownFrame) => {
 
 
 /** Classes of data for the type breakdown */
-const breakdownTypes = [
-	{ title: 'HTML', typeSpec: 'html', ownFrame: true, color: '#003f5c' },
-	{ title: 'Images', typeSpec: 'image', ownFrame: true, color: '#374c80' },
-	{ title: 'Video', typeSpec: 'video', ownFrame: true, color: '#7a5195' },
-	{ title: 'Audio', typeSpec: 'audio', ownFrame: true, color: '#bc5090' },
-	{ title: 'Javascript', typeSpec: 'script', ownFrame: true, color: '#ef5675' },
-	{ title: 'Fonts', typeSpec: 'font', ownFrame: true, color: '#ff764a' },
-	{ title: 'Stylesheets', typeSpec: 'stylesheet', ownFrame: true, color: '#ffa600' },
+const lineSpecs = [
+	{ title: 'HTML', typeSpec: 'html', color: '#003f5c' },
+	{ title: 'Images', typeSpec: 'image', color: '#374c80' },
+	{ title: 'Video', typeSpec: 'video', color: '#7a5195' },
+	{ title: 'Audio', typeSpec: 'audio', color: '#bc5090' },
+	{ title: 'Javascript', typeSpec: 'script', color: '#ef5675' },
+	{ title: 'Fonts', typeSpec: 'font', color: '#ff764a' },
+	{ title: 'Stylesheets', typeSpec: 'stylesheet', color: '#ffa600' },
 	// { title: 'Other Types' }, // Inserted dynamically in typeBreakdown
-	{ title: 'Sub-frame content', typeSpec: null, ownFrame: false, color: '#ff00ff' }
 ];
 
+const subFrameLine = { title: 'Sub-frame content', typeSpec: null, color: '#ff00ff' };
 
-/** What types of transfers make up the page's data usage? */
-export function typeBreakdown(manifest) {
+
+/**
+ * What types of transfers make up the page's data usage?
+ * @param {object} manifest Page manifest to analyse
+ * @param {boolean} flatten Show transfers belonging to sub-frames in the breakdown
+ */
+export function typeBreakdown(manifest, separateSubframes) {
 	const pageBytes = manifest.resHeaders + manifest.resBody;
-	const fTransfers = flattenProp(manifest, 'transfers', 'frames');
+	const allTransfers = flattenProp(manifest, 'transfers', 'frames');
 	let bytesAccountedFor = 0;
 
-	const breakdown = breakdownTypes.map(({title, typeSpec, ownFrame, color}) => {
-		const typeTransfers = fTransfers.filter(t => testTransfer(t, manifest, typeSpec, ownFrame));
-		const bytes = typeTransfers.reduce((acc, t) => acc + t.resHeaders + t.resBody, 0);
+	const lines = lineSpecs.map(({title, typeSpec, color}) => {
+		const transfersForType = allTransfers.filter(t => testTransfer(t, manifest, typeSpec, separateSubframes));
+		const bytes = transfersForType.reduce((acc, t) => acc + t.resHeaders + t.resBody, 0);
 		bytesAccountedFor += bytes;
 		return { title, bytes, fraction: (bytes / pageBytes), color };
 	});
 
-	// Any data that didn't match any of the filters in breakdownTypes? Insert it before "Sub-frame content".
-	const otherBytes = pageBytes - bytesAccountedFor;
-	const otherEntry = { title: 'Other Types', bytes: otherBytes, fraction: otherBytes / pageBytes, color: '#00ffff' };
-	breakdown.splice(breakdown.findIndex(a => a.title.match(/frame/)), 0, otherEntry);
+	const extraLines = [];
+	// Generate "transfers in sub-frames" line
+	if (separateSubframes) {
+		const subFrameTransfers = allTransfers.filter(t => manifest.transfers.indexOf(t) < 0);
+		const subFrameBytes = subFrameTransfers.reduce((acc, t) => acc + t.resHeaders + t.resBody, 0);
+		bytesAccountedFor += subFrameBytes;
+		extraLines.push({ title: 'Sub-frame content', bytes: subFrameBytes, color: '#ff00ff' });
+	}
+	// Any data that didn't match any of the filters in breakdownTypes?
+	const otherBytes = Math.max(pageBytes - bytesAccountedFor, 0);
+	const otherEntry = { title: 'Other Types', bytes: otherBytes, color: '#00ffff' };
+	extraLines.unshift(otherEntry); // "other" goes before "sub-frames" if present
 
-	return breakdown.filter(a => !!a.bytes);
+	// Concatenate, remove zeroes, and add "fraction of whole page" number
+	return [...lines, ...extraLines]
+		.filter(a => !!a.bytes)
+		.map(line => ({ ...line, fraction: line.bytes / pageBytes }));
 }
 
 
@@ -232,14 +237,33 @@ export function makeRecommendations(manifest) {
 
 	// TODO Should recs for sub-pages be folded away?
 	const allTransfers = flattenProp(manifest, 'transfers', 'frames');
-
 	const allFonts = flattenProp(manifest, 'fonts', 'frames');
 	const allMediaElements = flattenProp(manifest, 'elements', 'frames');
-
-	augmentTransfers(allTransfers, allFonts, allMediaElements);
+	
+	/** Pair up font and media transfers with information on how they're used in the analysed page */
+	transfers.forEach(t => {
+		if (isType(t, 'image') || isType(t, 'video')) {
+			augmentMedia(t, allMediaElements)
+		} else if (isType(t, 'font')) {
+			augmentFont(t, allFonts);
+		}
+	});
 
 	allTransfers.forEach(transfer => {
 		recs.push(...recommendationsForTransfer(transfer));
+	});
+
+	// Sort images & fonts to the top & largest first
+	recs.sort((a, b) => {
+		if (a.type !== b.type) {
+			if (a.type === 'image') return -1;
+			if (b.type === 'image') return 1;
+			if (a.type === 'font') return -1;
+			if (b.type === 'font') return 1
+			if (a.type === 'script') return -1;
+			if (b.type === 'script') return 1;
+		}
+		return b.bytes - a.bytes;
 	});
 
 	return recs;
