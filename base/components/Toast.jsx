@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { space } from '../utils/miscutils';
-
+/**
+TODO How does this overlap with Messaging.js and MessageBar.jsx?? 
+Do we want to refactor these into one thing??
+*/
 const Toast = ({children, duration}) => {
 
     const [showing, setShowing] = useState(true);
