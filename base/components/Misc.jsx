@@ -604,11 +604,12 @@ Misc.LoginToSee = ({desc}) => <div>Please log in to see {desc||'this'}. <LoginLi
  * @returns {JSX.Element[]} E.g. VERY_LONG_STRING --> VERY<wbr/>_<wbr/>LONG<wbr/>_<wbr/>STRING
  */
 Misc.FixBreak = ({text, regex = /([^._]+|[._]+)/g}) => {
+	// why cache this with useState??
 	const [broken] = useState(() => {
 		let nodes = [];
 		text.match(regex).forEach((group, index) => {
-			if (index) nodes.push(<wbr/>);
-			nodes.push(group);
+			if (index) nodes.push(<wbr key={index} />);
+			nodes.push(<span key={index}>{group}</span>);
 		});
 		return nodes;
 	});
