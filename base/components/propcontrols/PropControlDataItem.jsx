@@ -108,7 +108,7 @@ setRawValue, storeValue, modelValueFromInput,
 
 	const doClear = () => {
 		setRawValue('');
-		set(null);
+		set('');
 		// DSsetValue(proppath, '');
 	};
 
