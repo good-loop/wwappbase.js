@@ -63,6 +63,10 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		// Otherwise use the URL
 		brandId = itemId;
 	}
+	if ( ! brandId) {
+		console.error("No advertiser ID",itemId,itemType);
+		return {};
+	}
 
 	// Find the specified brand
 	pvBrand = getDataItem({type: C.TYPES.Advertiser, status, id:brandId});
