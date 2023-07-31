@@ -1,5 +1,5 @@
 /** Data model functions for the NGO data-type. */
-
+import Enum from 'easy-enums';
 import DataClass from './DataClass';
 
 class NGO extends DataClass {
