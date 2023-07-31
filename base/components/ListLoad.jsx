@@ -302,7 +302,7 @@ function MassActionToolbar({ type, canDelete, items }) {
 }
 
 /**
- * 
+ * Filter and resolve
  * @param {?Ref[]} hits 
  * @returns {Item[]}
  */
@@ -339,11 +339,12 @@ const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, tran
 
 	// ...string filter, dedupe, and ad
 	if (!filter) fastFilter = false; // avoid pointless work in the loop
+	const fastFilterStringify = JSON.stringify; // TODO allow user to override this
 	hits.forEach(item => {
 		// fast filter via stringify
 		let sitem = null;
 		if (fastFilter) {
-			sitem = JSON.stringify(item).toLowerCase();
+			sitem = fastFilterStringify(item).toLowerCase();
 			if (filter && sitem.indexOf(filter) === -1) {
 				return; // filtered out
 			}
