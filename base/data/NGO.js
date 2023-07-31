@@ -47,38 +47,53 @@ NGO.images = ngo => {
 };
 
 
-NGO.KRegOrg = new Enum("OSCR Companies_House Blah Other");
+NGO.KRegOrg = new Enum("Scottish_OSCR England_Wales_Charity_Commission Northern_Ireland UK_Companies_House US Other");
+NGO.REG_ORG_LABELS = [
+	"Scottish OSCR", "England and Wales Charity Commission", "Northern Ireland", "UK Companies House", "US Charity", "Other"
+];
+/**
+ * Get the display label for a registration body
+ * @param {NGO.KRegOrg} regBody 
+ */
+NGO.regLabel = regBody => {
+	const values = NGO.KRegOrg.values;
+	const idx = values.indexOf(regBody);
+	if (idx > -1) return NGO.REG_ORG_LABELS[idx];
+	return null;
+}
 
-// /**
-//  * FIXME switch to vera's code
-//  * TODO use this
-//  * 
-//  * Registered charity number, company number, etc.
-//  * @param {*} ngo 
-//  * @returns TODO{Reg[]} 
-//  */
-// NGO.regs = ngo => {
-// 	if ( ! ngo) return [];
-// 	let regs = [];
-// 	// HACK
-// 	// TODO store as Regs
-// 	if (ngo.englandWalesCharityRegNum) {
-// 		regs.push({organisation:"England and Wales Charity Commission", id:ngo.englandWalesCharityRegNum, country:"GB"});
-// 	}
-// 	if (ngo.scotlandCharityRegNum) {
-// 		regs.push({organisation:"Scottish OSCR", id:ngo.scotlandCharityRegNum, country:"GB"});
-// 	}
-// 	if (ngo.niCharityRegNum) {
-// 		regs.push({organisation:"Northern Ireland", id:ngo.niCharityRegNum, country:"GB"});
-// 	}
-// 	if (ngo.ukCompanyRegNum) {
-// 		regs.push({organisation:"UK Companies House", id:ngo.ukCompanyRegNum, country:"GB"});
-// 	}
-// 	if (ngo.usCharityRegNum) {
-// 		regs.push({organisation:"US", id:ngo.usCharityRegNum, country:"US"});
-// 	}
-// 	return regs;
-// };
+NGO.regNums = ngo => {
+	if ( ! ngo) return [];
+ 	ngo.regNums = ngo.regNums || {};
+ 	// HACK
+	// TODO: Patch data in database
+ 	if (ngo.englandWalesCharityRegNum && !ngo.regNums[NGO.KRegOrg.England_Wales_Charity_Commission]) {
+		ngo.regNums[NGO.KRegOrg.England_Wales_Charity_Commission] = ngo.englandWalesCharityRegNum;
+ 	}
+ 	if (ngo.scotlandCharityRegNum && !ngo.regNums[NGO.KRegOrg.Scottish_OSCR]) {
+		ngo.regNums[NGO.KRegOrg.Scottish_OSCR] = ngo.scotlandCharityRegNum;
+ 	}
+ 	if (ngo.niCharityRegNum && !ngo.regNums[NGO.KRegOrg.Northern_Ireland]) {
+		ngo.regNums[NGO.KRegOrg.Northern_Ireland] = ngo.niCharityRegNum;
+ 	}
+ 	if (ngo.ukCompanyRegNum && !ngo.regNums[NGO.KRegOrg.UK_Companies_House]) {
+		ngo.regNums[NGO.KRegOrg.UK_Companies_House] = ngo.ukCompanyRegNum;
+ 	}
+ 	if (ngo.usCharityRegNum && !ngo.regNums[NGO.KRegOrg.US]) {
+		ngo.regNums[NGO.KRegOrg.US] = ngo.usCharityRegNum;
+ 	}
+
+	// Patch any key not recognized in the enum as "other"
+	Object.keys(ngo.regNums).forEach(regBody => {
+		if (!NGO.KRegOrg.has(regBody)) {
+			console.warn("Unrecognized charity registration body:",regBody,", Patching under Other! This might result in lost data!");
+			ngo.regNums[NGO.KRegOrg.Other] = regNums[regBody];
+			delete ngo.regNums[regBody];
+		}
+	});
+
+ 	return ngo.regNums;
+}
 
 NGO.t4gTheme = (ngo) => ngo.t4gTheme;
 
