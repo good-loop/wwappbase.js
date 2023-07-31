@@ -46,41 +46,39 @@ NGO.images = ngo => {
 	return allImages.filter(x => x);
 };
 
-/**
- * For e.g. OSCR and UK Charity Commission
- */
-class Reg {
-	organisation;
-	id;
-	country;
-}
-/**
- * Registered charity number, company number, etc.
- * @param {*} ngo 
- * @returns {Reg[]} 
- */
-NGO.regs = ngo => {
-	if ( ! ngo) return [];
-	let regs = [];
-	// HACK
-	// TODO store as Regs
-	if (ngo.englandWalesCharityRegNum) {
-		regs.push({organisation:"England and Wales Charity Commission", id:ngo.englandWalesCharityRegNum, country:"GB"});
-	}
-	if (ngo.scotlandCharityRegNum) {
-		regs.push({organisation:"Scottish OSCR", id:ngo.scotlandCharityRegNum, country:"GB"});
-	}
-	if (ngo.niCharityRegNum) {
-		regs.push({organisation:"Northern Ireland", id:ngo.niCharityRegNum, country:"GB"});
-	}
-	if (ngo.ukCompanyRegNum) {
-		regs.push({organisation:"UK Companies House", id:ngo.ukCompanyRegNum, country:"GB"});
-	}
-	if (ngo.usCharityRegNum) {
-		regs.push({organisation:"US", id:ngo.usCharityRegNum, country:"US"});
-	}
-	return regs;
-};
+
+NGO.KRegOrg = new Enum("OSCR Companies_House Blah Other");
+
+// /**
+//  * FIXME switch to vera's code
+//  * TODO use this
+//  * 
+//  * Registered charity number, company number, etc.
+//  * @param {*} ngo 
+//  * @returns TODO{Reg[]} 
+//  */
+// NGO.regs = ngo => {
+// 	if ( ! ngo) return [];
+// 	let regs = [];
+// 	// HACK
+// 	// TODO store as Regs
+// 	if (ngo.englandWalesCharityRegNum) {
+// 		regs.push({organisation:"England and Wales Charity Commission", id:ngo.englandWalesCharityRegNum, country:"GB"});
+// 	}
+// 	if (ngo.scotlandCharityRegNum) {
+// 		regs.push({organisation:"Scottish OSCR", id:ngo.scotlandCharityRegNum, country:"GB"});
+// 	}
+// 	if (ngo.niCharityRegNum) {
+// 		regs.push({organisation:"Northern Ireland", id:ngo.niCharityRegNum, country:"GB"});
+// 	}
+// 	if (ngo.ukCompanyRegNum) {
+// 		regs.push({organisation:"UK Companies House", id:ngo.ukCompanyRegNum, country:"GB"});
+// 	}
+// 	if (ngo.usCharityRegNum) {
+// 		regs.push({organisation:"US", id:ngo.usCharityRegNum, country:"US"});
+// 	}
+// 	return regs;
+// };
 
 NGO.t4gTheme = (ngo) => ngo.t4gTheme;
 
