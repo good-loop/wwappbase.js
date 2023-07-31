@@ -8,16 +8,76 @@ export const RECS_PATH = ['widget', 'creative-recommendations'];
 export const RECS_OPTIONS_PATH = [...RECS_PATH, 'options'];
 
 
-/** DataStore path for PageManifest corresponding to a particular Green Ad Tag */
-export function savedManifestPath(tag) {
-	return [...RECS_PATH, 'saved-tag-measurement', tag.id];
+function manifestPathBit({tag, url, html}) {
+	const subPath = (tag && 'tag') || (url && 'url') || (html && 'html') || 'null';
+	const endPath = tag?.id || url || html || 'null';
+	return [subPath, endPath];
 }
 
 
-/** DataStore path for list of recommendations pertaining to a particular analysis of a GAT creative */
-export function processedRecsPath(tag, manifest) {
+/**
+ * DataStore path for PageManifest corresponding to a particular Green Ad Tag.
+ * @param p Should have only one of p.tag, p.url, p.html
+ * @param {GreenTag} [p.tag] The Green Ad Tag the manifest is attached to
+ * @param {String} [p.url] The analysed URL, if the manifest is not attached to a GAT
+ * @param {String} [p.html] The analysed HTML fragment (script tag etc), if the manifest is not attached to a GAT
+ */
+export function savedManifestPath({tag, url, html}) {
+	return [...RECS_PATH, 'saved-tag-measurement', ...manifestPathBit({tag, url, html})];
+}
+
+
+/**
+ * DataStore path for list of recommendations pertaining to a particular page/creative/etc analysis.
+ * De-duplicates on manifest timestamp (so a re-analysis is stored under a new path) and recommendation options
+ * - so recs for the same manifest with e.g. retina and standard resolution selected are stored under different paths.
+ * @param p Should have only one of p.tag, p.url, p.html
+ * @param {GreenTag} [p.tag] The Green Ad Tag the manifest is attached to
+ * @param {String} [p.url] The analysed URL, if the manifest is not attached to a GAT
+ * @param {String} [p.html] The analysed HTML fragment (script tag etc), if the manifest is not attached to a GAT
+ * @param {Object} [manifest] The PageManifest returned by MeasureServlet (or loaded from /persist/)
+ */
+export function processedRecsPath({tag, url, html}, manifest) {
 	const optionString = JSON.stringify(DataStore.getValue(RECS_OPTIONS_PATH));
-	return [...RECS_PATH, 'processed-recs', tag.id, manifest?.timestamp || 0, optionString];
+	return [...RECS_PATH, 'processed-recs', ...manifestPathBit({tag, url, html}), manifest?.timestamp || 0, optionString];
+}
+
+
+
+/**
+ * Request a new analysis from MeasureServlet.
+ * @param p Should have only one of p.tag, p.url, p.html
+ * @param {GreenTag} [p.tag] A Green Ad Tag to analyse
+ * @param {String} [p.url] A URL to analyse
+ * @param {String} [p.html] A HTML fragment to analyse
+ */
+export function startAnalysis({tag, url, html}) {
+	if (!tag?.id && !url && !html) return;
+	const path = savedManifestPath({tag, url, html});
+
+	// Remove any previously-stored analysis
+	DataStore.setValue(path, null);
+	const data = {};
+	if (tag) data.tagId = tag.id;
+	if (tag?.creativeURL) data.url = tag.creativeURL;
+	if (tag?.creativeHtml) data.html = tag.creativeHtml;
+	if (url) data.url = url;
+	if (html) data.html = html;
+
+	return ServerIO.load(`${ServerIO.MEASURE_ENDPOINT}`, { data }).then(res => {
+		if (res.error) throw new Error(res.error);
+		// Store results in the standard location
+		DataStore.setValue(path, res.data);
+		return res;
+	});
+};
+
+
+/**
+ * Receive an analysis of a ZIP file uploaded to MeasureServlet
+ */
+export function uploadAnalysis(res) {
+	DataStore.setValue(savedManifestPath({upload: 'upload'}, res.data));
 }
 
 
@@ -40,7 +100,7 @@ export function shortenName(url) {
 
 
 /** Find potential optimisations for an individual file. */
-export function processTransfer(transfer, path) {
+export function processTransfer(transfer) {
 	// TODO Mark processed transfers with options used so we can just regenerate the ones the new options affect?
 	if (transfer.bytes === 0) {
 		// Duplicate transfer - 0 bytes because it's a cache hit.
