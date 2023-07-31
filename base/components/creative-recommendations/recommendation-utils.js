@@ -101,6 +101,12 @@ export function shortenName(url) {
 
 /** Find potential optimisations for an individual file. */
 export function processTransfer(transfer) {
+	// Can only process files we can fetch over HTTP for now
+	// TODO Inline SVGs, some day
+	if (!transfer.url.match(/^http/)) return new Promise((resolve, reject) => {
+		reject('Can\'t generate recommendations for non-HTTP transfer', transfer);
+	});
+
 	// TODO Mark processed transfers with options used so we can just regenerate the ones the new options affect?
 	if (transfer.bytes === 0) {
 		// Duplicate transfer - 0 bytes because it's a cache hit.
