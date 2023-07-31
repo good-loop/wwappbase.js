@@ -1,4 +1,4 @@
-import React, { useState, Fragment } from 'react';
+import React, { useState, Fragment, useEffect } from 'react';
 
 import { Alert, Card, CardBody, Nav, Button, NavItem, NavLink } from 'reactstrap';
 import PromiseValue from '../promise-value';
@@ -264,7 +264,9 @@ const YEAR = 365 * DAY;
 
 
 Misc.RelativeDate = ({date, ...rest}) => {
-	if ( ! date) return null;
+	const [update, setUpdate] = useState();
+
+	if (!date) return null;
 	const dateObj = new Date(date);
 	const now = new Date();
 
@@ -304,6 +306,11 @@ Misc.RelativeDate = ({date, ...rest}) => {
 	if (count > 1) {
 		counter += 's';
 	}
+
+	useEffect(() => {
+		const timeout = setTimeout(() => setUpdate(!update), diff);
+		return () => clearTimeout(timeout);
+	}, [update]);
 
 	return <span title={absoluteDate} {...rest}>{count} {counter} {relation}</span>;
 };
@@ -588,5 +595,26 @@ Misc.CheckAccess = ({can = 'edit'}) => {
 
 
 Misc.LoginToSee = ({desc}) => <div>Please log in to see {desc||'this'}. <LoginLink className="btn btn-secondary" /></div>;
+
+
+/**
+ * Interleave <wbr> elements in a string that uses . or _ instead of spaces to enable line breaking.
+ * @param {string} text Raw text to break up
+ * @param {regex} regex Alternative regex to break the string on
+ * @returns {JSX.Element[]} E.g. VERY_LONG_STRING --> VERY<wbr/>_<wbr/>LONG<wbr/>_<wbr/>STRING
+ */
+Misc.FixBreak = ({text, regex = /([^._]+|[._]+)/g}) => {
+	const [broken] = useState(() => {
+		let nodes = [];
+		text.match(regex).forEach((group, index) => {
+			if (index) nodes.push(<wbr/>);
+			nodes.push(group);
+		});
+		return nodes;
+	});
+
+	return broken;
+}
+
 
 export default Misc;
