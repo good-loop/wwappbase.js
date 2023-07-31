@@ -72,14 +72,18 @@ function recompress(transfer, {width, height}) {
 		return processLocal(transfer, 'image', { unused: true });
 	}
 
-	// Get options
+	// Get global options
 	const { noWebp = false, retinaMultiplier = 1} = DataStore.getValue(RECS_OPTIONS_PATH);
 
-	// Apply 1x / 1.5x / 2x multiplier before coercing size to integer
-	width = Math.floor(retinaMultiplier * width);
-	height = Math.floor(retinaMultiplier * height);
+	const params = {
+		// Apply 1x / 1.5x / 2x multiplier before coercing size to integer
+		width: Math.floor(retinaMultiplier * width),
+		height: Math.floor(retinaMultiplier * height),
+		format: noWebp ? '' : 'webp'
+	};
 
-	return callRecompressServlet(transfer, 'image', { width, height, noWebp });
+
+	return callRecompressServlet(transfer, 'image', params);
 }
 
 
