@@ -187,7 +187,7 @@ function ImgRecDetails({spec}) {
 	}
 
 	if (width !== imgEl.naturalWidth || height !== imgEl.naturalHeight) {
-		desc.push(<li>
+		desc.push(<li key="scaled">
 			This image has been scaled from its original size of <b>{imgEl.naturalWidth}x{imgEl.naturalHeight}</b> to the size it appears on-screen, <b>{Math.floor(width)}x{Math.floor(height)}</b>.
 		</li>);
 	}
