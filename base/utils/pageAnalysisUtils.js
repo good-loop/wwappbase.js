@@ -11,8 +11,11 @@ export function storedManifestForTag(tag) {
 }
 
 
-/* Make something that may not be an array (or even exist) into an array, without nesting things that already are. */
-function arrayify(thing) {
+/**
+ * Make something that may not be an array (or even exist) into an array, without nesting things that already are.
+ * Doesn't recurse in - consider Lodash flattenDeep for that.
+ */
+export function arrayify(thing) {
 	if (thing === null || thing === undefined) return [];
 	if (Array.isArray(thing)) return [...thing];
 	return [thing];
@@ -91,84 +94,6 @@ export function isType(transfer, type) {
 }
 
 
-/** Find potential issues with an individual file. */
-function recommendationsForTransfer(transfer) {
-	const recs = [];
-	if (transfer.resBody === 0) return recs; // Duplicate transfer - 0 bytes because it's a cache hit.
-
-	const rec = { url: transfer.url, bytes: transfer.resBody, name: shortenName(transfer), transfer };
-
-	if (isType(transfer, 'font')) {
-		// Try subsetting, try recompressing.
-		recs.push({...rec, type: 'font', woff2: isType(transfer, 'woff2')});
-	}
-
-	if (isType(transfer, 'image') && transfer.resBody > 5000) { // Ignore tiny images like tracking pixels and interface buttons
-		// TODO Server-side comparison of image rendered vs inherent size
-		if (isType(transfer, 'svg')) { // Magic number for "this is a large SVG"...
-			// TODO additional heuristic based on fraction of overall transfer size to flag smaller graphics on ads?
-			if (transfer.resBody > 100000) { // don't merge this with the is-svg condition - will break fallthrough
-				recs.push({...rec, type: 'svg'}); // Recommender can try SVGO and TODO rendering to raster
-			}
-		} else if (isType(transfer, 'gif')) {
-			recs.push({...rec, type: 'gif'}); // Try converting to animated .webp
-		} else if (!isType(transfer, 'webp')) {
-			recs.push({...rec, type: 'image' }); // Fallback for all images: convert to .webp or just try jpeg/png optimisation
-		}
-	}
-
-	if (isType(transfer, 'script')) {
-		if (transfer.resBody > 20000) {
-			recs.push({ ...rec, type: 'script', });
-		}
-	}
-
-	return recs;
-}
-
-
-/**
- * For a transfer of a font file:
- * - Find any font specs recorded in the page manifest which use the same URL
- * - Mark transfer with t.fontFamily = ['font-name-1', 'font-name-2', ...]
- * - Mark transfer with t.characters = '!,123ABCabc'
- */
-function augmentFont(transfer, fonts) {
-	// What font-families use this file, and what characters are rendered in that font?
-	// Pile up all font-family names in one array & concatenate all character lists
-	fonts.filter(f => f.urls?.includes(transfer.url)).forEach(font => {
-		if (!transfer.fontFamily) transfer.fontFamily = [];
-		transfer.fontFamily.push(font.family);
-		if (!transfer.characters) transfer.characters = '';
-		transfer.characters += font.characters;
-	});	// De-duplicate and sort font list
-	if (transfer.fontFamily) {
-		const fontSet = new Set(transfer.fontFamily);
-		transfer.fontFamily = Array.from(fontSet).sort();
-	}
-	// Remove duplicates and sort merged character set
-	if (transfer.characters) {
-		const charSet = new Set(transfer.characters);
-		transfer.characters = Array.from(charSet).sort().join('');
-	}
-}
-
-
-/**
- * For a transfer of an image or video file:
- * - Find any elements in the page manifest with the same source URL
- * - Attach those elements to the transfer
- */
-function augmentMedia(transfer, mediaElements) {
-	if (isType(transfer, 'image') || isType(transfer, 'video')) {
-		mediaElements.filter(e => (e.resourceURL === transfer.url)).forEach(el => {
-			if (!transfer.elements) transfer.elements = [];
-			transfer.elements.push(el);
-		});
-	}
-}
-
-
 /** Helper for classifying transfers when constructing the type breakdown */
 const testTransfer = (transfer, manifest, type, ownFrame) => {
 	// Does the transfer belong to a sub-frame when we only want directly owned transfers?
@@ -190,8 +115,6 @@ const lineSpecs = [
 	{ title: 'Stylesheets', typeSpec: 'stylesheet', color: '#ffa600' },
 	// { title: 'Other Types' }, // Inserted dynamically in typeBreakdown
 ];
-
-const subFrameLine = { title: 'Sub-frame content', typeSpec: null, color: '#ff00ff' };
 
 
 /**
@@ -231,40 +154,5 @@ export function typeBreakdown(manifest, separateSubframes) {
 }
 
 
-/** Make some simple recommendations about the analysed page */
-export function makeRecommendations(manifest) {
-	const recs = [];
-
-	// TODO Should recs for sub-pages be folded away?
-	const allTransfers = flattenProp(manifest, 'transfers', 'frames');
-	const allFonts = flattenProp(manifest, 'fonts', 'frames');
-	const allMediaElements = flattenProp(manifest, 'elements', 'frames');
-	
-	/** Pair up font and media transfers with information on how they're used in the analysed page */
-	transfers.forEach(t => {
-		if (isType(t, 'image') || isType(t, 'video')) {
-			augmentMedia(t, allMediaElements)
-		} else if (isType(t, 'font')) {
-			augmentFont(t, allFonts);
-		}
-	});
-
-	allTransfers.forEach(transfer => {
-		recs.push(...recommendationsForTransfer(transfer));
-	});
-
-	// Sort images & fonts to the top & largest first
-	recs.sort((a, b) => {
-		if (a.type !== b.type) {
-			if (a.type === 'image') return -1;
-			if (b.type === 'image') return 1;
-			if (a.type === 'font') return -1;
-			if (b.type === 'font') return 1
-			if (a.type === 'script') return -1;
-			if (b.type === 'script') return 1;
-		}
-		return b.bytes - a.bytes;
-	});
-
-	return recs;
-}
+/** Total bytes transferred under a PageManifest or Transfer. */
+export const transferTotal = t => (t.reqHeaders + t.reqBody + t.resHeaders + t.resBody);
