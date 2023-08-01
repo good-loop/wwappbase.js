@@ -99,7 +99,10 @@ export function shortenName(url) {
 };
 
 
-/** Find potential optimisations for an individual file. */
+/** Find potential optimisations for an individual file. 
+ * 
+ * @returns TODO doc what type is returned - a promise of what??
+*/
 export function processTransfer(transfer) {
 	// Can only process files we can fetch over HTTP for now
 	// TODO Inline SVGs, some day
