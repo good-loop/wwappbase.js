@@ -42,7 +42,8 @@ const DEFAULT_PAGE_SIZE = 100;
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
  * @param {String} [p.filter] - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
- * @param {Function} [p.filterFn] - A local filter function. Can be combined with filter/canFilter
+ * @param {Function} [p.filterFn] - A local filter function. Can be combined with filter/canFilter.
+ * 	(item, index, array) => boolean
  * @param {Function} [p.transformFn] - do some transformation on the list after all filtering/sorting. should return a new array
  * @param {List} [p.list] No loading - just use this list of hits
  * @param {Boolean} [p.canFilter] - If true, offer a text filter. This will be added to q as a prefix filter.
