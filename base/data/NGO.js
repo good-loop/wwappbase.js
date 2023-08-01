@@ -62,6 +62,20 @@ NGO.regLabel = regBody => {
 	return null;
 }
 
+NGO.setOldRegNum = (ngo, regOrg, regNum) => {
+	if (regOrg === NGO.KRegOrg.England_Wales_Charity_Commission) {
+		ngo.englandWalesCharityRegNum = regNum;
+	} else if (regOrg === NGO.KRegOrg.Scottish_OSCR) {
+		ngo.scotlandCharityRegNum = regNum;
+	} else if (regOrg === NGO.KRegOrg.Northern_Ireland) {
+		ngo.niCharityRegNum = regNum;
+	} else if (regOrg === NGO.KRegOrg.UK_Companies_House) {
+		ngo.ukCompanyRegNum = regNum;
+	} else if (regOrg === NGO.KRegOrg.US) {
+		ngo.usCharityRegNum = regNum;
+	}
+}
+
 NGO.regNums = ngo => {
 	if ( ! ngo) return [];
  	ngo.regNums = ngo.regNums || {};
