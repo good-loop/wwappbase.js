@@ -608,8 +608,8 @@ Misc.FixBreak = ({text, regex = /([^._]+|[._]+)/g}) => {
 	const [broken] = useState(() => {
 		let nodes = [];
 		text.match(regex).forEach((group, index) => {
-			if (index) nodes.push(<wbr key={index} />);
-			nodes.push(<span key={index}>{group}</span>);
+			if (index) nodes.push(<wbr key={"wbr"+index} />);
+			nodes.push(<span key={"s"+index}>{group}</span>);
 		});
 		return nodes;
 	});
