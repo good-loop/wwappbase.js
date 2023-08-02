@@ -1,13 +1,35 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Card, CardBody, CardHeader, Modal, ModalBody, ModalHeader, Table } from 'reactstrap';
+import { Badge, Button, Card, CardBody, CardHeader, CardImg, Modal, ModalBody, ModalHeader, Table, Tooltip } from 'reactstrap';
 
 import { proxy, typeBreakdown } from '../utils/pageAnalysisUtils';
 import StyleBlock from './StyleBlock';
 import { nonce } from '../data/DataClass';
 import C from '../CBase';
 import { Bytes, space } from '../utils/miscutils';
+import Misc from './Misc';
+import { A } from '../plumbing/glrouter';
+import { shortenName } from './creative-recommendations/recommendation-utils';
+
+/**
+ * A short, readable form for URLs which can be unmanageably long.
+ * Displays "[page_filename.html] on www.domain.com" - filename part links to full URL,
+ * and entire element has full URL as hover popover.
+ * @param {object} p
+ * @param {string} p.url The URL to display
+ * @returns {JSX.Element|null}
+ */
+export function FriendlyURL({url}) {
+	const [{shortName, hostname}, setUrlObj] = useState({});
+	useEffect(() => {
+		const {hostname} = new URL(url);
+		setUrlObj({shortName: shortenName(url), hostname});
+	}, [url]);
+
+	return shortName ? <><A href={url} title={url}>{shortName}</A> on {hostname}</> : null;
+}
 
 
+/** Note that a resource is loaded but not used */
 function UnusedWarning({spec}) {
 	return spec.unused ? <div>
 		This resource is loaded, but does not appear to be used by the creative.
@@ -15,6 +37,7 @@ function UnusedWarning({spec}) {
 };
 
 
+/** One row for a SizeComparison */
 function ComparisonRow({spec, optimised}) {
 	let { filename, url, optUrl, bytes, optBytes, isSubstitute } = spec;
 	let desc = 'Original';
@@ -32,6 +55,7 @@ function ComparisonRow({spec, optimised}) {
 }
 
 
+/** Compare the size of a resource to its optimised equivalent. */
 function SizeComparison({spec}) {
 	const { bytes, optBytes } = spec;
 	// How much smaller? (Our "worth telling user" threshold is 1%)
@@ -55,6 +79,10 @@ const baseCharacterSet =
 '1234567890!"#$%&\'()*+,-./:\n' +
 ';<=>?@[\]^_`{|}~';
 
+/**
+ * Show a table of basic Latin-1 characters & punctuation and mark which are unused
+ * @param {string} characters The set of characters to display on the table
+ */
 function ShowCharacters({characters}) {
 	const [charEls, setCharEls] = useState(null);
 	useState(() => {
@@ -73,6 +101,7 @@ function ShowCharacters({characters}) {
 };
 
 
+/** Preview the font (assuming there is one) contained in one augmented Transfer */
 function FontPreview({spec}) {
 	const [fontFamily] = useState(nonce());
 
@@ -82,12 +111,13 @@ function FontPreview({spec}) {
 	return <>
 		<StyleBlock>{`@font-face { font-family: "${fontFamily}"; src: url("${proxy(url)}"); }`}</StyleBlock>
 		<div className="preview font-preview" style={{ fontFamily, fontWeight }} title={name || filename}>
-			{name || filename}
+			<Misc.FixBreak text={name || filename} />
 		</div>
 	</>
 }
 
 
+/** Additional details on usage and optimisations performed on a font */
 function FontRecDetails({ spec }) {
 	const [open, setOpen] = useState(false);
 	const toggle = () => setOpen(a => !a);
@@ -125,6 +155,7 @@ function FontRecDetails({ spec }) {
 }
 
 
+/** Show the optimisations performed on one font file */
 export function FontRecommendation({spec}) {
 	return <Card className="opt-rec font-rec">
 		<CardHeader>Font</CardHeader>
@@ -142,6 +173,7 @@ export function FontRecommendation({spec}) {
 /**
  * Convenience for a button which toggles when pressed and released.
  * Uses pointer capture so release fires when the mouse is released, even if the pointer has moved off.
+ * TODO Move to Misc?
  */
 function HoldButton({onPress, onRelease, Tag = 'button', children, ...props}) {
 	const allProps = {
@@ -159,6 +191,7 @@ function HoldButton({onPress, onRelease, Tag = 'button', children, ...props}) {
 }
 
 
+/** Extract the extension from a filename. TODO Move to a utils file rather than this components file */
 const fileType = filename => {
 	const extMatch = filename.match(/\.[^.]+$/);
 	if (extMatch) return extMatch[0];
@@ -166,12 +199,14 @@ const fileType = filename => {
 }
 
 
+/** Additional details on usage and optimisations performed on an image. */
 function ImgRecDetails({spec}) {
 	const [open, setOpen] = useState(false);
 	const [showOriginal, setShowOriginal] = useState(false);
 	const toggle = () => setOpen(a => !a);
 
 	// TODO controls for retina, no-scale, etc
+	// - can we support changing compression params without losing all data & returning to main screen?
 
 	const { url, optUrl, imgEl } = spec;
 	let { width, height } = spec.elements[0];
@@ -220,6 +255,7 @@ function ImgRecDetails({spec}) {
 };
 
 
+/** Show the optimisations performed on one image file */
 export function ImgRecommendation({spec}) {
 	const { url } = spec;
 
@@ -237,6 +273,7 @@ export function ImgRecommendation({spec}) {
 }
 
 
+/** Show the optimisations performed on one GIF file */
 export function GifRecommendation({spec}) {
 	const { url } = spec;
 
@@ -246,11 +283,13 @@ export function GifRecommendation({spec}) {
 		<CardBody className="p-2">
 			<SizeComparison spec={spec} />
 			<UnusedWarning spec={spec} />
+			<ImgRecDetails spec={spec} />
 		</CardBody>
 	</Card>;
 }
 
 
+/** Show the optimisations performed on one SVG file */
 export function SvgRecommendation({spec}) {
 	const { url } = spec;
 
@@ -266,7 +305,7 @@ export function SvgRecommendation({spec}) {
 	</Card>;
 }
 
-
+/** Show the optimisations performed on one JavaScript file */
 export function ScriptRecommendation({spec}) {
 	const { filename } = spec;
 
@@ -291,16 +330,16 @@ const recComponents = {
 };
 
 
+/** Use the correct recommendation card type for an augmented Transfer object.*/
 export function Recommendation({spec, ...props}) {
 	const RecComponent = recComponents[spec.type];
-	if (!RecComponent) debugger;
 	if (!RecComponent) return null;
 	return <RecComponent spec={spec} {...props} />;
 };
 
 
 /**
- * Breakdown of data types on a page
+ * Breakdown of data types on a page.
  * @param {object} p
  * @param {object} p.manifest PageManifest
  * @param {boolean} [p.separateSubframes] True to roll all transfers inside sub-frames into one "sub-frame content" line
@@ -337,3 +376,39 @@ export function TypeBreakdown({manifest, separateSubframes}) {
 		</div>
 	);
 }
+
+
+/** Preview of one document / sub-frame PageManifest */
+export function SubFrameInfo({frame, onClick, className, ...props}) {
+	const { screenshot, url, width, height } = frame;
+	const childCount = frame.frames?.length || 0;
+
+	return <Card className={space('sub-frame', className)} {...props}>
+		<CardHeader><FriendlyURL url={url} /></CardHeader>
+		{screenshot ? <CardImg src={screenshot} /> : null}
+		<CardBody className="p-2">
+			<div>Frame size: {width} × {height}</div>
+			<div><strong>{transferTotal(frame)}</strong> bytes </div>
+			<div>
+				{childCount ? <Badge size="sm" color="secondary" title={`Contains ${childCount} sub-frame${childCount > 1 ? 's' : ''}`}>F</Badge> : null}
+				<Button size="sm" color="secondary" className="pull-right" onClick={() => onClick(frame)}>Enter Frame</Button>
+			</div>
+		</CardBody>
+	</Card>;
+}
+
+const frameSortFn = (a, b) => {
+	let aArea = a.extra ? a.extra.height * a.extra.width : 0;
+	let bArea = b.extra ? b.extra.height * b.extra.width : 0;
+	return bArea - aArea;
+}
+
+/** Returns an array of clickable frame previews to navigate into the sub-document tree of a PageManifest */
+export function FrameNavigator({manifest, setFrame, FrameComponent = SubFrameInfo, childProps}) {
+	if (!manifest || !manifest.frames.length) return null;
+
+	// Sort frames by on-screen size - should put most relevant first.
+	useEffect(() => { manifest.frames.sort(frameSortFn); }, [manifest]);
+
+	return manifest.frames.map(f => <FrameComponent key={f.url} frame={f} onClick={setFrame} {...childProps} />);
+};

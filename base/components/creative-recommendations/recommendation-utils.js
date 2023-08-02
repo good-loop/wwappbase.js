@@ -1,6 +1,6 @@
 import processImage from './processImage';
 import { processEmpty, processSvg, processGif, processFont, processScript } from './processGeneric';
-import { flattenProp, isType } from '../../utils/pageAnalysisUtils';
+import { flattenProp, isType, storedManifestForTag } from '../../utils/pageAnalysisUtils';
 
 
 export const RECS_PATH = ['widget', 'creative-recommendations'];
@@ -8,9 +8,9 @@ export const RECS_PATH = ['widget', 'creative-recommendations'];
 export const RECS_OPTIONS_PATH = [...RECS_PATH, 'options'];
 
 
-function manifestPathBit({tag, url, html}) {
-	const subPath = (tag && 'tag') || (url && 'url') || (html && 'html') || 'null';
-	const endPath = tag?.id || url || html || 'null';
+function manifestPathBit({tag, url, html, upload}) {
+	const subPath = (tag && 'tag') || (url && 'url') || (html && 'html') || (upload && 'upload') || 'null';
+	const endPath = tag?.id || url || html || upload || 'null';
 	return [subPath, endPath];
 }
 
@@ -22,8 +22,8 @@ function manifestPathBit({tag, url, html}) {
  * @param {String} [p.url] The analysed URL, if the manifest is not attached to a GAT
  * @param {String} [p.html] The analysed HTML fragment (script tag etc), if the manifest is not attached to a GAT
  */
-export function savedManifestPath({tag, url, html}) {
-	return [...RECS_PATH, 'saved-tag-measurement', ...manifestPathBit({tag, url, html})];
+export function savedManifestPath({tag, url, html, upload}) {
+	return [...RECS_PATH, 'saved-tag-measurement', ...manifestPathBit({tag, url, html, upload})];
 }
 
 
@@ -43,13 +43,29 @@ export function processedRecsPath({tag, url, html}, manifest) {
 }
 
 
+/**
+ * Augment a PageManifest in-place by adding a member "parentFrame" to every sub-frame.
+ * This can't be done server-side, since it would break serialization.
+ * @param {PageManifest} manifest From MeasureServlet
+ */
+function doubleLinkFrames(manifest) {
+	const allFrames = flattenProp(manifest, 'frames', 'frames');
+	allFrames.unshift(manifest);
+	allFrames.forEach(frame => {
+		// Is there a frame whose "child frames" array contains the current frame?
+		const parent = allFrames.find(candidate => candidate.frames.find(f => (f === frame)));
+		if (parent) frame.parentFrame = parent;
+	});
+}
+
 
 /**
- * Request a new analysis from MeasureServlet.
+ * Request a new analysis from MeasureServlet and store the response at the standard path.
  * @param p Should have only one of p.tag, p.url, p.html
  * @param {GreenTag} [p.tag] A Green Ad Tag to analyse
  * @param {String} [p.url] A URL to analyse
  * @param {String} [p.html] A HTML fragment to analyse
+ * @returns {Promise} Resolves to the MeasureServlet response.
  */
 export function startAnalysis({tag, url, html}) {
 	if (!tag?.id && !url && !html) return;
@@ -66,6 +82,7 @@ export function startAnalysis({tag, url, html}) {
 
 	return ServerIO.load(`${ServerIO.MEASURE_ENDPOINT}`, { data }).then(res => {
 		if (res.error) throw new Error(res.error);
+		res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
 		// Store results in the standard location
 		DataStore.setValue(path, res.data);
 		return res;
@@ -74,10 +91,30 @@ export function startAnalysis({tag, url, html}) {
 
 
 /**
- * Receive an analysis of a ZIP file uploaded to MeasureServlet
+ * Receive & store an analysis of a ZIP file uploaded to MeasureServlet.
+ * @param res Response from MeasureServlet.
  */
-export function uploadAnalysis(res) {
+export function receiveUploadAnalysis(res) {
+	res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
+	// Store results in the standard location
 	DataStore.setValue(savedManifestPath({upload: 'upload'}, res.data));
+}
+
+
+/**
+ * Attempt to find a saved manifest on the measurement server associated with a Green Ad Tag.
+ * @param {GreenTag} tag
+ * @returns {PromiseValue} A DataStore.fetch PV.
+ */
+export function fetchSavedManifest(tag) {
+	return DataStore.fetch(savedManifestPath({tag}), () => {
+		// fetchFn returning null is OK - no tag means stored-manifest-for-tag should resolve null
+		if (!tag) return null;
+		return ServerIO.load(storedManifestForTag(tag)).then(res => {
+			res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
+			return res;
+		});
+	});
 }
 
 
@@ -95,13 +132,15 @@ export function shortenName(url) {
 		matches = new URL(url).pathname.match(/\/([^/]*\/?)$/);
 	} catch (e) { /* Malformed URL - oh well. */ }
 	if (matches) return matches[1] || matches[0]; // if path is "/", match will succeed but group 1 will be empty
-	return '[Strange URL]';
+	debugger; return '[Strange URL]';
 };
 
 
-/** Find potential optimisations for an individual file. 
- * 
- * @returns TODO doc what type is returned - a promise of what??
+/**
+ * Find potential optimisations for an individual file.
+ * @param {Transfer} transfer A Transfer object (see Transfer.java)
+ * @returns {Promise} Resolves to a copy of the original transfer, augmented with extra recommenendation info
+ * - or rejects with a reason no recommendation could be given.
 */
 export function processTransfer(transfer) {
 	// Can only process files we can fetch over HTTP for now
@@ -145,7 +184,6 @@ function recsSortFn(a, b) {
 function augmentFont(transfer, fonts) {
 	const fontSpecForTransfer = fonts[transfer.url];
 	if (!fontSpecForTransfer) return;
-
 	transfer.font = fontSpecForTransfer;
 }
 
@@ -166,11 +204,12 @@ function augmentMedia(transfer, mediaElements) {
 
 
 /** Generate and store list of recommendations */
-export function generateRecommendations(manifest, path) {
+export function generateRecommendations(manifest, path, separateSubFrames) {
 	// Pull out all transfers, font specs, and media-bearing elements
-	const allTransfers = flattenProp(manifest, 'transfers', 'frames');
-	const allFonts = flattenProp(manifest, 'fonts', 'frames').reduce((acc, fontsObj) => Object.assign(acc, fontsObj), {});
-	const allMediaElements = flattenProp(manifest, 'elements', 'frames');
+	// Don't make user think about frame hierarchies in e.g. creative analysis tool context - just look at all transfers.
+	const allTransfers = separateSubFrames ? manifest.transfers : flattenProp(manifest, 'transfers', 'frames');
+	const allFonts = separateSubFrames ? manifest.fonts : flattenProp(manifest, 'fonts', 'frames');
+	const allMediaElements = separateSubFrames ? manifest.elements : flattenProp(manifest, 'elements', 'frames');
 
 	const newList = [];
 
@@ -190,7 +229,7 @@ export function generateRecommendations(manifest, path) {
 			// in-place array ops, should be concurrency safe (insofar as JS engine makes them atomic)
 			newList.push(augTransfer);
 			newList.sort(recsSortFn);
-			DataStore.setValue(path, newList); // no-op wrt what's actually stored, but triggers a refresh
+			DataStore.setValue(path, newList); // no-op wrt what's actually stored (as we're modifying in-place), but triggers a refresh
 		})
 	});
 }
