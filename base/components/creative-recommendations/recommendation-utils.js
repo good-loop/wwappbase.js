@@ -235,7 +235,8 @@ export function generateRecommendations(manifest, path, separateSubFrames) {
 	// Pull out all transfers, font specs, and media-bearing elements
 	// Don't make user think about frame hierarchies in e.g. creative analysis tool context - just look at all transfers.
 	const allTransfers = separateSubFrames ? manifest.transfers : flattenProp(manifest, 'transfers', 'frames');
-	const allFonts = separateSubFrames ? manifest.fonts : flattenProp(manifest, 'fonts', 'frames');
+	// Fonts audit is an object (mapping filename to font spec), not a list, so needs to be merged down from a list of objects
+	let allFonts = separateSubFrames ? manifest.fonts : flattenProp(manifest, 'fonts', 'frames').reduce((acc, fontsObj) => Object.assign(acc, fontsObj), {});
 	const allMediaElements = separateSubFrames ? manifest.elements : flattenProp(manifest, 'elements', 'frames');
 
 	// Start the recommendation-generation process & hold the promise for each transfer
