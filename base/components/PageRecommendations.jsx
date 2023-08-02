@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Badge, Button, Card, CardBody, CardHeader, CardImg, Modal, ModalBody, ModalHeader, Table, Tooltip } from 'reactstrap';
 
-import { proxy, typeBreakdown } from '../utils/pageAnalysisUtils';
+import { proxy, transferTotal, typeBreakdown } from '../utils/pageAnalysisUtils';
 import StyleBlock from './StyleBlock';
 import { nonce } from '../data/DataClass';
 import C from '../CBase';
