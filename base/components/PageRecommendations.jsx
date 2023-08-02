@@ -171,6 +171,9 @@ function ImgRecDetails({spec}) {
 	const [showOriginal, setShowOriginal] = useState(false);
 	const toggle = () => setOpen(a => !a);
 
+	// No details to show for images that analysis suggests are unused.
+	if (spec.unused) return null;
+
 	// TODO controls for retina, no-scale, etc
 
 	const { url, optUrl, imgEl } = spec;
