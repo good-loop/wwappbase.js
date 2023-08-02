@@ -1035,8 +1035,11 @@ export const setObjectValueByPath = (obj, path, value) => {
 export const alphabetSort = (a, b) => (a.name || a.id || '').localeCompare(b.name || b.id);
 
 
-/** Bytes to human-readable b/kb/mb/gb. */
+/** Bytes to human-readable b/kb/mb/gb. 
+ * @param {?Number} b 
+*/
 export const Bytes = ({b}) => {
+	if ( ! b && b !== 0) return null; // unset
 	if (b < 1024) return `${b} bytes`;
 	if (b < 1024000) return `${(b/1024).toFixed(1)} KB`
 	if (b < 1024000000) return `${(b/1024000).toFixed(1)} MB`;
