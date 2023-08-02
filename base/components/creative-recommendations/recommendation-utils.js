@@ -172,10 +172,13 @@ export function processTransfer(transfer) {
 
 /** Sort recommendations, largest impact first */
 function recsSortFn(a, b) {
+	const srA = a.significantReduction;
+	const srB = b.significantReduction;
 	// Always sort "significant reduction" above "not", even if the absolute improvement of "not" is larger
-	if (a.significantReduction !== b.significantReduction) {
-		return a.significantReduction ? -1 : 1;
-	}
+	if (srA !== srB) return srA ? -1 : 1;
+	// Sort pairs of "no reduction" items by size
+	if (!srA) return b.bytes - a.bytes;
+	// Both have reductions - sort highest first
 	const rednA = a.bytes - a.optBytes;
 	const rednB = b.bytes - b.optBytes;
 	return rednB - rednA;
@@ -263,4 +266,27 @@ export function generateRecommendations(manifest, path, separateSubFrames) {
 		augTransfers.sort(recsSortFn);
 		DataStore.setValue(path, augTransfers);
 	});
+}
+
+
+/** Specs for matching sites the analysis engine chokes on */
+const badSiteSpecs = [
+	{ hostname: 'drive.google.com', name: 'Google Drive' },
+	{ hostname: /(we.tl|wetransfer.com)/, name: 'WeTransfer' },
+	{ hostname: /celtra\.com$/, pathname: /shareablePreview/, name: 'Celtra Shareable Preview' },
+	{ hostname: 'sneakpeek.yahooinc.com', name: 'Yahoo Sneak Peek' },
+];
+
+/**
+ * Is the URL in question on a site our analysis engine can't properly process?
+ * @param {string} url URL to check
+ * @returns {boolean|string} False for OK, site name for "bad site"
+ */
+export function badSite(url) {
+	url = new URL(url);
+	const badSiteSpec = badSiteSpecs.find(({hostname, pathname}) => {
+		if (hostname && url.hostname.match(hostname)) return true;
+		if (pathname && url.pathname.match(pathname)) return true;
+	});
+	return !!badSiteSpec && badSiteSpec.name;
 }

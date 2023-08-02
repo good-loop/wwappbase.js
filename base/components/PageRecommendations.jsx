@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Badge, Button, Card, CardBody, CardHeader, CardImg, Modal, ModalBody, ModalHeader, Table, Tooltip } from 'reactstrap';
+import { Badge, Button, Card, CardBody, CardHeader, CardImg, Modal, ModalBody, ModalHeader, Table } from 'reactstrap';
 
 import { proxy, transferTotal, typeBreakdown } from '../utils/pageAnalysisUtils';
 import StyleBlock from './StyleBlock';
@@ -51,7 +51,7 @@ function ComparisonRow({spec, optimised}) {
 	}
 
 	return <div className={space('comparison-row', optimised ? 'optimised' : 'original')}>
-		<C.A target="_blank" className="desc" href={url} title={url} download={filename}>{desc}</C.A>
+		<div className="desc"><C.A target="_blank" href={url} title={url} download={filename}>{desc}</C.A></div>
 		<div className="size"><Bytes b={bytes} /></div>
 	</div>
 }
@@ -103,7 +103,7 @@ function ShowCharacters({characters}) {
 
 /** Preview the font (assuming there is one) contained in one augmented Transfer */
 function FontPreview({spec}) {
-	const [fontFamily] = useState(nonce());
+	const [fontFamily] = useState(`font-${nonce()}`); // nonce() can start with numerals, which isn't a legal font-family, so prefix
 
 	const { url, filename, name, font } = spec;
 	const fontWeight = font ? font.weights.find(w => !!w) : 500; // default 500/normal for unused
