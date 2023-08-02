@@ -46,10 +46,12 @@ function ComparisonRow({spec, optimised}) {
 		url = optUrl;
 		bytes = optBytes;
 		desc = isSubstitute ? 'Replacement' : 'Optimised';
+	} else if (!spec.significantReduction) {
+		desc = filename;
 	}
 
 	return <div className={space('comparison-row', optimised ? 'optimised' : 'original')}>
-		<C.A target="_blank" className="desc" href={url} download={filename}>{desc}</C.A>
+		<C.A target="_blank" className="desc" href={url} title={url} download={filename}>{desc}</C.A>
 		<div className="size"><Bytes b={bytes} /></div>
 	</div>
 }
@@ -58,17 +60,15 @@ function ComparisonRow({spec, optimised}) {
 /** Compare the size of a resource to its optimised equivalent. */
 function SizeComparison({spec}) {
 	const { bytes, optBytes } = spec;
-	// How much smaller? (Our "worth telling user" threshold is 1%)
+	// How much smaller?
 	const improvement = (1 - (optBytes / bytes)) * 100;
 
 	return <div className="size-comparison">
 		<ComparisonRow spec={spec} />
-		{improvement > 1 ? <>
+		{spec.significantReduction ? <>
 			<ComparisonRow spec={spec} optimised />
-			<div className="improvement"><span className="percent">{improvement.toFixed(1)}%</span> smaller</div>
-		</> : (
-			<div className="text-center">Optimally sized.</div>
-		)}
+			<div className="improvement"><span className="percent">{improvement.toFixed(1)}%</span> smaller ({<Bytes b={bytes - optBytes} />})</div>
+		</> : null}
 	</div>;
 }
 
@@ -297,14 +297,14 @@ export function SvgRecommendation({spec}) {
 	const { url } = spec;
 
 	return <Card className="opt-rec svg-rec">
-	<CardHeader>SVG Image</CardHeader>
-	<div className="img-preview-container p-1">
-		<img className="preview img-preview" src={url} />
-	</div>
-	<CardBody className="p-2">
-		<SizeComparison spec={spec} />
-		<UnusedWarning spec={spec} />
-	</CardBody>
+		<CardHeader>SVG Image</CardHeader>
+		<div className="img-preview-container p-1">
+			<img className="preview img-preview" src={url} />
+		</div>
+		<CardBody className="p-2">
+			<SizeComparison spec={spec} />
+			<UnusedWarning spec={spec} />
+		</CardBody>
 	</Card>;
 }
 
@@ -313,15 +313,28 @@ export function ScriptRecommendation({spec}) {
 	const { filename } = spec;
 
 	return <Card className="opt-rec script-rec">
-	<CardHeader>JavaScript</CardHeader>
-	<CardBody className="p-2">
-		<p className="preview script-preview my-1">{filename}</p>
-		<SizeComparison spec={spec} />
-		<UnusedWarning spec={spec} />
-		{spec?.message}
-	</CardBody>
+		<CardHeader>JavaScript</CardHeader>
+		<CardBody className="p-2">
+			<p className="preview script-preview my-1">{filename}</p>
+			<SizeComparison spec={spec} />
+			<UnusedWarning spec={spec} />
+			{spec?.message}
+		</CardBody>
 	</Card>;
 }
+
+
+/** Special case for "There's nothing for us to do here" */
+export function NoRecommendation({spec}) {
+	const { filename } = spec;
+
+	return <Card className="opt-rec no-rec">
+		<CardHeader>No Reduction</CardHeader>
+		<CardBody className="p-2">
+			<SizeComparison spec={spec} />
+		</CardBody>
+	</Card>;
+};
 
 
 const recComponents = {
@@ -335,7 +348,7 @@ const recComponents = {
 
 /** Use the correct recommendation card type for an augmented Transfer object.*/
 export function Recommendation({spec, ...props}) {
-	const RecComponent = recComponents[spec.type];
+	let RecComponent = spec.significantReduction ? recComponents[spec.type] : NoRecommendation;
 	if (!RecComponent) return null;
 	return <RecComponent spec={spec} {...props} />;
 };

@@ -172,6 +172,10 @@ export function processTransfer(transfer) {
 
 /** Sort recommendations, largest impact first */
 function recsSortFn(a, b) {
+	// Always sort "significant reduction" above "not", even if the absolute improvement of "not" is larger
+	if (a.significantReduction !== b.significantReduction) {
+		return a.significantReduction ? -1 : 1;
+	}
 	const rednA = a.bytes - a.optBytes;
 	const rednB = b.bytes - b.optBytes;
 	return rednB - rednA;
@@ -203,17 +207,39 @@ function augmentMedia(transfer, mediaElements) {
 }
 
 
+/**
+ * Do we bother saying we can optimise this file? Thresholds based on original size:
+ * Under 1K: don't bother
+ * Under 10K: must be at least 1K
+ * Under 100K: must be at least 10%
+ * Over 100K: Must be at least 5%
+ * @param {Transfer} t
+ * @returns {boolean}
+ */
+function worthIt({bytes, optBytes}) {
+	const reduction = bytes - optBytes;
+	if (bytes < 1024 || reduction < 0) return false;
+	if (bytes < 10240) return (reduction > 1024);
+	const proportion = reduction / bytes;
+	if (bytes < 102400) return (proportion > 0.1);
+	return proportion > 0.05;
+}
+
+
 /** Generate and store list of recommendations */
 export function generateRecommendations(manifest, path, separateSubFrames) {
+	// Don't fire off multiple recommendation processes for the same spec!
+	if (DataStore.getValue(path)?.processing) return;
+	DataStore.setValue(path, {processing: true});
+
 	// Pull out all transfers, font specs, and media-bearing elements
 	// Don't make user think about frame hierarchies in e.g. creative analysis tool context - just look at all transfers.
 	const allTransfers = separateSubFrames ? manifest.transfers : flattenProp(manifest, 'transfers', 'frames');
 	const allFonts = separateSubFrames ? manifest.fonts : flattenProp(manifest, 'fonts', 'frames');
 	const allMediaElements = separateSubFrames ? manifest.elements : flattenProp(manifest, 'elements', 'frames');
 
-	const newList = [];
-
-	allTransfers.forEach(t => {
+	// Start the recommendation-generation process & hold the promise for each transfer
+	const optPromises = allTransfers.map(t => {
 		// Pair up each font and media transfer with information on how it's used in the analysed page
 		if (isType(t, 'image') || isType(t, 'video')) {
 			augmentMedia(t, allMediaElements)
@@ -223,13 +249,17 @@ export function generateRecommendations(manifest, path, separateSubFrames) {
 		// Convenient info
 		t.filename = shortenName(t.url);
 		t.bytes = t.resBody;
+		return processTransfer(t);
+	});
 
-		// Start the recommendation-generation process for this transfer & store each result when complete
-		processTransfer(t).then(augTransfer => {
-			// in-place array ops, should be concurrency safe (insofar as JS engine makes them atomic)
-			newList.push(augTransfer);
-			newList.sort(recsSortFn);
-			DataStore.setValue(path, newList); // no-op wrt what's actually stored (as we're modifying in-place), but triggers a refresh
-		})
+	// Wait for all promises to resolve, then put in DataStore.
+	// Would be nice to insert and sort as they come in, but that raises
+	// horrible concurrency issues & JS atomics builtins are still very new.
+	Promise.allSettled(optPromises).then(results => {
+		const augTransfers = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+		// Flag transfers that have enough improvement to talk about
+		augTransfers.forEach(t => { if (worthIt(t)) t.significantReduction = true; });
+		augTransfers.sort(recsSortFn);
+		DataStore.setValue(path, augTransfers);
 	});
 }
