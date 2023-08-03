@@ -1037,8 +1037,9 @@ export const alphabetSort = (a, b) => (a.name || a.id || '').localeCompare(b.nam
 
 /** Bytes to human-readable b/kb/mb/gb. 
  * @param {?Number} b 
+ * @returns {?String}
 */
-export const Bytes = ({b}) => {
+export const bytes = (b) => {
 	if ( ! b && b !== 0) return null; // unset
 	if (b < 1024) return `${b} bytes`;
 	if (b < 1024000) return `${(b/1024).toFixed(1)} KB`

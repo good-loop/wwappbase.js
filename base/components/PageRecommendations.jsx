@@ -5,7 +5,7 @@ import { proxy, transferTotal, typeBreakdown } from '../utils/pageAnalysisUtils'
 import StyleBlock from './StyleBlock';
 import { nonce } from '../data/DataClass';
 import C from '../CBase';
-import { Bytes, space } from '../utils/miscutils';
+import { bytes, space } from '../utils/miscutils';
 import Misc from './Misc';
 import { A } from '../plumbing/glrouter';
 import { shortenName } from './creative-recommendations/recommendation-utils';
@@ -39,12 +39,13 @@ function UnusedWarning({spec}) {
 
 /** One row for a SizeComparison */
 function ComparisonRow({spec, optimised}) {
-	let { filename, url, optUrl, bytes, optBytes, isSubstitute } = spec;
+	let { filename, url, optUrl, optBytes, isSubstitute } = spec;
+	let b = spec.bytes; // avoid name clash with bytes()
 	let desc = 'Original';
 
 	if (optimised) {
 		url = optUrl;
-		bytes = optBytes;
+		b = optBytes;
 		desc = isSubstitute ? 'Replacement' : 'Optimised';
 	} else if (!spec.significantReduction) {
 		desc = filename;
@@ -52,22 +53,23 @@ function ComparisonRow({spec, optimised}) {
 
 	return <div className={space('comparison-row', optimised ? 'optimised' : 'original')}>
 		<div className="desc"><C.A target="_blank" href={url} title={url} download={filename}>{desc}</C.A></div>
-		<div className="size"><Bytes b={bytes} /></div>
+		<div className="size">{bytes(b)}</div>
 	</div>
 }
 
 
 /** Compare the size of a resource to its optimised equivalent. */
 function SizeComparison({spec}) {
-	const { bytes, optBytes } = spec;
 	// How much smaller?
-	const improvement = (1 - (optBytes / bytes)) * 100;
+	const improvement = (1 - (spec.optBytes / spec.bytes)) * 100;
 
 	return <div className="size-comparison">
 		<ComparisonRow spec={spec} />
 		{spec.significantReduction ? <>
 			<ComparisonRow spec={spec} optimised />
-			<div className="improvement"><span className="percent">{improvement.toFixed(1)}%</span> smaller ({<Bytes b={bytes - optBytes} />})</div>
+			<div className="improvement"><span className="percent">{improvement.toFixed(1)}%</span> smaller 
+			({' '+bytes(spec.bytes - spec.optBytes)})
+			</div>
 		</> : null}
 	</div>;
 }

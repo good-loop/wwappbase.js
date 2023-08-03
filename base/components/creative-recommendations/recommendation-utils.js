@@ -220,6 +220,9 @@ function augmentMedia(transfer, mediaElements) {
  * @returns {boolean}
  */
 function worthIt({bytes, optBytes}) {
+	if ( ! optBytes) {
+		return false;
+	}
 	const reduction = bytes - optBytes;
 	if (bytes < 1024 || reduction < 0) return false;
 	if (bytes < 10240) return (reduction > 1024);
