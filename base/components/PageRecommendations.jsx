@@ -199,7 +199,9 @@ const fileType = filename => {
 }
 
 
-/** Additional details on usage and optimisations performed on an image. */
+/** Additional details on usage and optimisations performed on an image. 
+ * @param {TODO doc data type} spec 
+*/
 function ImgRecDetails({spec}) {
 	const [open, setOpen] = useState(false);
 	const [showOriginal, setShowOriginal] = useState(false);
@@ -224,7 +226,7 @@ function ImgRecDetails({spec}) {
 		</li>);
 	}
 
-	if (width !== imgEl.naturalWidth || height !== imgEl.naturalHeight) {
+	if (imgEl && (width !== imgEl.naturalWidth || height !== imgEl.naturalHeight)) {
 		desc.push(<li key="scaled">
 			This image has been scaled from its original size of <b>{imgEl.naturalWidth}x{imgEl.naturalHeight}</b> to the size it appears on-screen, <b>{Math.floor(width)}x{Math.floor(height)}</b>.
 		</li>);
@@ -346,7 +348,13 @@ const recComponents = {
 };
 
 
-/** Use the correct recommendation card type for an augmented Transfer object.*/
+/** Use the correct recommendation card type for an augmented Transfer object.
+ * 
+ * TODO doc spec, props please
+ * spec is returned from DataStore.getValue(processedRecsPath({tag}, manifest));
+ * which is set by generateRecommendations()
+ * 
+*/
 export function Recommendation({spec, ...props}) {
 	let RecComponent = spec.significantReduction ? recComponents[spec.type] : NoRecommendation;
 	if (!RecComponent) return null;
