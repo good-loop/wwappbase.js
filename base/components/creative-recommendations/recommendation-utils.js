@@ -275,6 +275,7 @@ const badSiteSpecs = [
 	{ hostname: /(we.tl|wetransfer.com)/, name: 'WeTransfer' },
 	{ hostname: /celtra\.com$/, pathname: /shareablePreview/, name: 'Celtra Shareable Preview' },
 	{ hostname: 'sneakpeek.yahooinc.com', name: 'Yahoo Sneak Peek' },
+	{ hostname: 'preview.nexd.com', name: 'NEXD' }
 ];
 
 /**
