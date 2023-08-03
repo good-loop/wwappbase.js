@@ -229,7 +229,10 @@ function worthIt({bytes, optBytes}) {
 }
 
 
-/** Generate and store list of recommendations */
+/** Generate and store list of recommendations 
+ * 
+ * TODO doc notes on the data format
+*/
 export function generateRecommendations(manifest, path, separateSubFrames) {
 	// Don't fire off multiple recommendation processes for the same spec!
 	if (DataStore.getValue(path)?.processing) return;
