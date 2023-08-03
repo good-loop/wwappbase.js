@@ -283,6 +283,9 @@ const badSiteSpecs = [
  * @returns {boolean|string} False for OK, site name for "bad site"
  */
 export function badSite(url) {
+	if ( ! url) {
+		return "no url"; // i.e. falsy is bad
+	}
 	url = new URL(url);
 	const badSiteSpec = badSiteSpecs.find(({hostname, pathname}) => {
 		if (hostname && url.hostname.match(hostname)) return true;
