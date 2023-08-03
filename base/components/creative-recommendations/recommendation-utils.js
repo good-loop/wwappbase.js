@@ -291,7 +291,11 @@ export function badSite(url) {
 	if ( ! url) {
 		return "no url"; // i.e. falsy is bad
 	}
-	url = new URL(url);
+	try {
+		url = new URL(url);
+	} catch(TypeError) {
+		return "an invalid url";
+	}
 	const badSiteSpec = badSiteSpecs.find(({hostname, pathname}) => {
 		if (hostname && url.hostname.match(hostname)) return true;
 		if (pathname && url.pathname.match(pathname)) return true;
