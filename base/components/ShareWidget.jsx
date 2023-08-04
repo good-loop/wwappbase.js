@@ -173,7 +173,8 @@ const doShareByLink = async({link, slink, setSlink, shareId}) => {
 			setSlink(link2);
 			return;
 		} catch(err) {
-			console.warn("cant use existing pseudoShare",pseudoShare," for "+withXId, err);
+			console.warn("cant use existing pseudoShare",pseudoShare," for "+withXId);
+			console.warn(err);
 		}
 	}	
 	// request a pseudo user jwt
