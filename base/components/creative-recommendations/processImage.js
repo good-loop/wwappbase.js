@@ -34,8 +34,10 @@ function optImgSize(img, elInfo) {
 /**
  * Create a HTMLImageElement & return a promise which resolves when the image is loaded.
  * @param {string} url URL of the image to load
+ * @returns {Promise} image-element
  */
 function loadImage(url) {
+	console.log("loadImage", url);
 	return new Promise((resolve, reject) => {
 		const img = new Image();
 		img.addEventListener('load', () => resolve(img));
@@ -66,6 +68,7 @@ function findMaxSize(img, elements) {
  * @param {object} size Target width and height for resize
  */
 function recompress(transfer, {width, height}) {
+	console.log("recompress");
 	if (!width || !height) {
 		// Either no elements were found which contained the image, or it was rendered at height/width 0.
 		// Mark as "possibly unused"
@@ -95,12 +98,12 @@ function processImage(transfer) {
 		const { url: optUrl, bytes: optBytes } = transfer;
 		return processLocal(transfer, 'image', { optUrl, optBytes, message: `Ignoring tiny image (${transfer.bytes} bytes)`, noop: true });
 	};
-
-	return loadImage(url).then(imgEl => {
+	return loadImage(url).then(imgEl => {		
 		// nested promises so we can retain the HTMLImageElement and attach it to the augmented transfer
 		let size = findMaxSize(imgEl, elements);
+		console.log("processImage2", transfer, size);
 		return recompress(transfer, size)
-		.then(augTransfer => ({...augTransfer, imgEl}));
+			.then(augTransfer => ({...augTransfer, imgEl}));
 	})
 }
 

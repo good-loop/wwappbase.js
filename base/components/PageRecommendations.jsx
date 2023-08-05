@@ -333,7 +333,7 @@ export function NoRecommendation({spec}) {
 	const { filename } = spec;
 
 	return <Card className="opt-rec no-rec">
-		<CardHeader>No Reduction</CardHeader>
+		<CardHeader title={spec.message}>No Reduction</CardHeader>
 		<CardBody className="p-2">
 			<SizeComparison spec={spec} />
 		</CardBody>
@@ -391,7 +391,7 @@ export function TypeBreakdown({manifest, separateSubframes}) {
 					<tr><th /><th>Type</th><th>Bytes</th><th>% Total</th></tr>
 				</thead>
 				<tbody>
-					{breakdown.map(({color, title, bytes, fraction = 0}) => <tr>
+					{breakdown.map(({color, title, bytes, fraction = 0}) => <tr key={title}>
 						<td><div className="breakdown-key" style={{backgroundColor: color}} /></td>
 						<td>{title}</td>
 						<td>{bytes}</td>
