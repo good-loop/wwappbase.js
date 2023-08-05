@@ -132,7 +132,7 @@ export function shortenName(url) {
 		matches = new URL(url).pathname.match(/\/([^/]*\/?)$/);
 	} catch (e) { /* Malformed URL - oh well. */ }
 	if (matches) return matches[1] || matches[0]; // if path is "/", match will succeed but group 1 will be empty
-	debugger; return '[Strange URL]';
+	return '[Strange URL]';
 };
 
 
@@ -143,11 +143,20 @@ export function shortenName(url) {
  * - or rejects with a reason no recommendation could be given.
 */
 export function processTransfer(transfer) {
+	console.log("processTransfer", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
 	// Can only process files we can fetch over HTTP for now
 	// TODO Inline SVGs, some day
-	if (!transfer.url.match(/^http/)) return new Promise((resolve, reject) => {
-		reject('Can\'t generate recommendations for non-HTTP transfer', transfer);
-	});
+	if (!transfer.url.match(/^http/)) {
+		console.log("reject non-http", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
+		if (isType(transfer, 'image')) {
+			// NB: copy-pasta from processLocal()
+			let message = "Can't process non-HTTP transfer";
+			return new Promise(resolve => resolve({ ...transfer, type:'image', optUrl: null, optBytes: 0, optimised: true, message, noop:true}));
+		}
+		return new Promise((resolve, reject) => {
+			reject('Can\'t generate recommendations for non-HTTP transfer', transfer);
+		});
+	}
 
 	// TODO Mark processed transfers with options used so we can just regenerate the ones the new options affect?
 	if (transfer.bytes === 0) {
@@ -166,6 +175,7 @@ export function processTransfer(transfer) {
 		return processScript(transfer);
 	}
 
+	console.log("reject nope", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
 	return new Promise((resolve, reject) => reject('No recommendation function for transfer', transfer));
 }
 
@@ -201,12 +211,14 @@ function augmentFont(transfer, fonts) {
  * - Attach those elements to the transfer
  */
 function augmentMedia(transfer, mediaElements) {
-	if (isType(transfer, 'image') || isType(transfer, 'video')) {
-		mediaElements.filter(e => (e.resourceURL === transfer.url)).forEach(el => {
-			if (!transfer.elements) transfer.elements = [];
-			transfer.elements.push(el);
-		});
+	if ( ! isType(transfer, 'image') && ! isType(transfer, 'video')) {
+		return;
 	}
+	let matchedElements = mediaElements.filter(e => (e.resourceURL === transfer.url));
+	matchedElements.forEach(el => {
+		if (!transfer.elements) transfer.elements = [];
+		transfer.elements.push(el);
+	});
 }
 
 
@@ -248,6 +260,10 @@ export function generateRecommendations(manifest, path, separateSubFrames) {
 	let allFonts = separateSubFrames ? manifest.fonts : flattenProp(manifest, 'fonts', 'frames').reduce((acc, fontsObj) => Object.assign(acc, fontsObj), {});
 	const allMediaElements = separateSubFrames ? manifest.elements : flattenProp(manifest, 'elements', 'frames');
 
+	// debug what do we have??
+	console.log(allTransfers.map(t => {
+		return [t.mimeType, t.totalDataTransfer, t.url];
+	}));
 	// Start the recommendation-generation process & hold the promise for each transfer
 	const optPromises = allTransfers.map(t => {
 		// Pair up each font and media transfer with information on how it's used in the analysed page
