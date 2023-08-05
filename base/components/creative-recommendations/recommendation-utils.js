@@ -148,7 +148,7 @@ export function processTransfer(transfer) {
 	// TODO Inline SVGs, some day
 	if (!transfer.url.match(/^http/)) {
 		console.log("reject non-http", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
-		if (isType(transfer, 'image')) {
+		if (isType(transfer, 'image')) { // HACK: fail gracefully for e.g. SeenThis streaming images which are data blobs
 			// NB: copy-pasta from processLocal()
 			let message = "Can't process non-HTTP transfer";
 			return new Promise(resolve => resolve({ ...transfer, type:'image', optUrl: null, optBytes: 0, optimised: true, message, noop:true}));
@@ -260,10 +260,6 @@ export function generateRecommendations(manifest, path, separateSubFrames) {
 	let allFonts = separateSubFrames ? manifest.fonts : flattenProp(manifest, 'fonts', 'frames').reduce((acc, fontsObj) => Object.assign(acc, fontsObj), {});
 	const allMediaElements = separateSubFrames ? manifest.elements : flattenProp(manifest, 'elements', 'frames');
 
-	// debug what do we have??
-	console.log(allTransfers.map(t => {
-		return [t.mimeType, t.totalDataTransfer, t.url];
-	}));
 	// Start the recommendation-generation process & hold the promise for each transfer
 	const optPromises = allTransfers.map(t => {
 		// Pair up each font and media transfer with information on how it's used in the analysed page
