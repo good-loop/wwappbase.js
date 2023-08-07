@@ -1,4 +1,5 @@
 import DataStore from '../../plumbing/DataStore';
+import { proxy } from '../../utils/pageAnalysisUtils';
 import { callRecompressServlet, processLocal } from './processGeneric';
 import { RECS_OPTIONS_PATH } from './recommendation-utils';
 
@@ -42,7 +43,7 @@ function loadImage(url) {
 		const img = new Image();
 		img.addEventListener('load', () => resolve(img));
 		img.addEventListener('error', err => reject(err));
-		img.src = url;
+		img.src = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
 	});
 }
 

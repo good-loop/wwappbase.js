@@ -221,7 +221,9 @@ function ImgRecDetails({spec}) {
 	// TODO controls for retina, no-scale, etc
 	// - can we support changing compression params without losing all data & returning to main screen?
 
-	const { url, optUrl, imgEl } = spec;
+	let { url, optUrl, imgEl } = spec;
+	url = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
+
 	let { width, height } = spec.elements[0];
 	const imgStyle = { maxWidth: width, maxHeight: height };
 
@@ -270,7 +272,8 @@ function ImgRecDetails({spec}) {
 
 /** Show the optimisations performed on one image file */
 export function ImgRecommendation({spec}) {
-	const { url } = spec;
+	let { url } = spec;
+	url = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
 
 	return <Card className="opt-rec img-rec">
 		<CardHeader>Image</CardHeader>
@@ -288,7 +291,8 @@ export function ImgRecommendation({spec}) {
 
 /** Show the optimisations performed on one GIF file */
 export function GifRecommendation({spec}) {
-	const { url } = spec;
+	let { url } = spec;
+	url = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
 
 	return <Card className="opt-rec gif-rec">
 		<CardHeader>GIF</CardHeader>
@@ -304,7 +308,8 @@ export function GifRecommendation({spec}) {
 
 /** Show the optimisations performed on one SVG file */
 export function SvgRecommendation({spec}) {
-	const { url } = spec;
+	let { url } = spec;
+	url = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
 
 	return <Card className="opt-rec svg-rec">
 		<CardHeader>SVG Image</CardHeader>
@@ -336,8 +341,6 @@ export function ScriptRecommendation({spec}) {
 
 /** Special case for "There's nothing for us to do here" */
 export function NoRecommendation({spec}) {
-	const { filename } = spec;
-
 	return <Card className="opt-rec no-rec">
 		<CardHeader title={spec.message}>No Reduction</CardHeader>
 		<CardBody className="p-2">
