@@ -196,7 +196,13 @@ function HoldButton({onPress, onRelease, Tag = 'button', children, ...props}) {
 /** Extract the extension from a filename. TODO Move to a utils file rather than this components file */
 const fileType = filename => {
 	const extMatch = filename.match(/\.[^.]+$/);
-	if (extMatch) return extMatch[0];
+	if (extMatch) {		
+		let ft = extMatch[0];
+		if (ft.indexOf("?") !== -1) { // ??Let's move this into the regex above. But just before release, I want dead-safe code.
+			ft = ft.substring(0, ft.indexOf("?"));
+		}
+		return ft;
+	}
 	return '(none)';
 }
 
