@@ -42,16 +42,23 @@ export function processSvg(transfer) {
 
 
 const scriptReplacements = [
-	{ pattern: /tweenmax.+\.(min\.)?js/i, url: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js', message: 'GSAP 3 is a drop-in replacement for TweenMax', bytes: 23942 },
+	{
+		pattern: /tweenmax.+(\.min)?\.js/i,
+		url: 'https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js',
+		// TODO bring React into this JS file or enable links etc by some other means?
+		// message: <><A href="https://greensock.com/3/">GSAP 3</A> is a drop-in replacement for TweenMax.</>,
+		message: 'GSAP 3 is a drop-in replacement for TweenMax.',
+		bytes: 23942
+	},
 ];
 
 
 export function processScript(transfer) {
 	// Is there a simple replacement? (eg TweenMax --> GSAP 3)
-	const scriptReplacement = scriptReplacements.find(({pattern}) => name.match(pattern));
+	const scriptReplacement = scriptReplacements.find(({pattern}) => transfer.url.match(pattern));
 	if (scriptReplacement) {
 		const { url: optUrl, bytes: optBytes, message } = scriptReplacement;
-		return processLocal(transfer, { optUrl, optBytes, message, isSubstitute: true });
+		return processLocal(transfer, 'script', { optUrl, optBytes, message, isSubstitute: true });
 	}
 
 	// No - see if UglifyJS on the server can do anything.
