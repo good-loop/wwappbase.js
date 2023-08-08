@@ -232,7 +232,8 @@ function augmentMedia(transfer, mediaElements) {
  * @returns {boolean}
  */
 function worthIt({bytes, optBytes}) {
-	if ( ! optBytes) {
+	// NB 0 bytes for "remove unused resource" is a legitimate value.
+	if (!optBytes && optBytes !== 0) {
 		return false;
 	}
 	const reduction = bytes - optBytes;
