@@ -347,7 +347,7 @@ function SavePublishDeleteEtc({
 
 			{unpublish &&
 				<Button name="unpublish" color="outline-warning" size={size} className="ml-2"
-					disabled={isSaving || noEdits || ! pubExists}
+					disabled={isSaving || !pubExists}
 					title="Move from published to draft"
 					onClick={() => ActionMan.unpublish(type, id)} >
 					Un-Publish <Spinner vis={vis} />
