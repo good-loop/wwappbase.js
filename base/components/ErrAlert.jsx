@@ -10,8 +10,9 @@ import CloseButton from './CloseButton';
  * @param {Object} p
  * @param {string} p.color=danger (red) by default. Options: danger|warning|info
  * @param {Error|Response|string} p.error If error is falsy, show nothing.
+ * @param {?JSX} p.children Optional - extra widgets, e.g. a CTA for this error
  */
-const ErrAlert =({error,color,canClose}) => {
+const ErrAlert =({error,color,canClose,children}) => {
 	if ( ! error) return null;
 	const [closed,setClosed] = useState();
 	if (closed) return null; // fade out??
@@ -26,6 +27,7 @@ const ErrAlert =({error,color,canClose}) => {
 	emsg = emsg.replace(/<details>[\s\S]*<\/details>/, "").trim();
 	return <Alert color={color||'danger'}>
 		{emsg}
+		{children}
 		{isDev() && edetails && <p><small>Dev details: {edetails}</small></p>}
 		{canClose && <CloseButton onClick={e => setClosed(true)} />}
 	</Alert>;
