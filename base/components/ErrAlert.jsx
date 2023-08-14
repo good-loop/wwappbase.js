@@ -7,8 +7,9 @@ import CloseButton from './CloseButton';
 
 /**
  * Show an error as a BS alert.
- * @param {string} color=danger (red) by default. Options: danger|warning|info
- * @param {Error|Response|string} error If error is falsy, show nothing.
+ * @param {Object} p
+ * @param {string} p.color=danger (red) by default. Options: danger|warning|info
+ * @param {Error|Response|string} p.error If error is falsy, show nothing.
  */
 const ErrAlert =({error,color,canClose}) => {
 	if ( ! error) return null;
