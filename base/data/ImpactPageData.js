@@ -128,6 +128,9 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 
 	// Collect, de-duplicate, and sort
 	ads = uniqBy(ads, 'id');
+	// we only care for ads that are actually part of campaigns & have ran before
+	ads = ads.filter(ad => Advert.served(ad) && !ad.hideFromShowcase && campaignIds.includes(ad.campaign))
+
 	ads.sort(alphabetSort);
 	// greenTags = uniqBy(greenTags, 'id');
 	// greenTags.sort(alphabetSort);
