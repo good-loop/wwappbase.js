@@ -86,15 +86,17 @@ const AboutPage = () => {
 
 			<p>Please see our website for more information on {C.app.name}: <a href={website}>{website}</a></p>
 
+			{C.app.facebookPage? <a href={C.app.facebookPage}><Misc.Logo service="facebook" /> facebook</a> : null}
 			{C.app.facebookAppId? <a href={'https://www.facebook.com/games/?app_id='+C.app.facebookAppId}><Misc.Logo service="facebook" /> facebook</a> : null}
 
 			<p>Software version: <i>{JSON.stringify(C.app.version || 'alpha')}</i></p>
-
-			<p>We are grateful to {FUNDER_CREDITS.length? FUNDER_CREDITS.join(", ") : "our funders"} for their support.</p>
-
-			<p>This app uses Creative Commons images from various sources</p>
-
-			{IMAGE_CREDITS.map(image => <LinkOut href={image.url}>{image.name} by {image.author}</LinkOut>)}			
+			
+			{FUNDER_CREDITS.length && <p>We are grateful to {FUNDER_CREDITS.length? FUNDER_CREDITS.join(", ") : "our funders"} for their support.</p>}
+			
+			{IMAGE_CREDITS.length && 
+				<div><p>This app uses Creative Commons images from various sources.</p>
+				{IMAGE_CREDITS.map(image => <LinkOut href={image.url}>{image.name} by {image.author}</LinkOut>)}
+				</div>}
 
 			{MUSIC_CREDITS.length &&
 				<div>
@@ -103,10 +105,12 @@ const AboutPage = () => {
 				</div>
 			}
 
-			<p>This app uses data from various sources:</p>
-			<ul>
-				{DATA_CREDITS.map(dataset => <LinkOut href={dataset.url}>{dataset.name} by {dataset.author}</LinkOut>)}				
-			</ul>
+			{DATA_CREDITS.length && <div>
+				<p>This app uses data from various sources:</p>
+				<ul>
+					{DATA_CREDITS.map(dataset => <LinkOut href={dataset.url}>{dataset.name} by {dataset.author}</LinkOut>)}				
+				</ul>
+			</div>}
 
 		</div>
 	);
