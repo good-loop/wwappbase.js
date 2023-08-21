@@ -167,6 +167,7 @@ class MainDivBase extends Component {
 			noSocials, // TODO document props
 			loginChildren, // TODO document props
 			LoginGuts,
+			Persistent, // any other components that should persist across pages
 			isBeta // HACK to place a beta label over the logo for SoGive Mar 2022
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
@@ -280,6 +281,7 @@ class MainDivBase extends Component {
 					{Footer && !undecorated && <Footer page={page} />}
 				</Row>
 			</Container>
+			<Persistent page={page}/>
 			<LoginWidget
 				title={noLoginTitle ? null : `Welcome to ${C.app.name}`}
 				subtitle={loginSubtitle}
