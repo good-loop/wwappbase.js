@@ -265,7 +265,7 @@ function SavePublishDeleteEtc({
 	 * Inform user delete action was succesful, and redirect to home preserving search params.
 	 */
 	const doDeleteAndRedirect = () => {
-		let ok = check(preDelete({ item, action: C.CRUDACTION.delete }));
+		let ok = check(preDelete({ item, action: C.CRUDACTION.delete })) && confirmUserAction({item, action:C.CRUDACTION.delete});
 		if (!ok) return;
 		const pDel = ActionMan.delete(type, id);
 		pDel.promise.then(() => {
