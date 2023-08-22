@@ -418,9 +418,21 @@ export const getUrlVars = (url, lenient) => {
 	// Future thought: Could this be replaced with location.search??
 	// Note: location.search doesn't look past a #hash
 	url = url || window.location.href;
-	// url = url.replace(/#.*/, ''); Why was this here?! DW
-	var s = url.indexOf('?');
 
+	// url = url.replace(/#.*/, ''); Why was this here?! DW
+	// Bug seen 2023-08: we want to get params before and after the hash, but not read the # as part of the preceding param
+	// ie not https://my.good-loop.com/impact/view/brand/VAcnHLcz?gl.status=DRAFT# --> { 'gl.status': 'DRAFT#' }
+	const hashIndex = url.indexOf('#');
+	if (hashIndex >= 0) {
+		const before = url.substring(0, hashIndex);
+		const after = url.substring(hashIndex + 1);
+		const splitVars = getUrlVars(before);
+		// Don't remove this conditional, it stops infinite recursion when the hash is trailing
+		if (after) Object.assign(splitVars, getUrlVars(after));
+		return splitVars;
+	}
+
+	var s = url.indexOf('?');
 	if (s == -1 || s == url.length - 1) return {};
 
 	var varstr = url.substring(s + 1);
@@ -455,6 +467,7 @@ export const getUrlVars = (url, lenient) => {
 
 	return urlVars;
 };
+
 
 export const setUrlParameter = (url, key, value) => {
 	assMatch(url, String, 'setUrlParameter null url key:' + key);
