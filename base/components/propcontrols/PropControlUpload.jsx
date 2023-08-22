@@ -9,7 +9,7 @@ import Misc from '../Misc';
 import { urlValidator } from './validators';
 import Icon from '../Icon';
 import LinkOut from '../LinkOut';
-import { Bytes, space } from '../../utils/miscutils';
+import { bytes, space } from '../../utils/miscutils';
 import { notifyUser } from '../../plumbing/Messaging';
 import ServerIO from '../../plumbing/ServerIOBase';
 
@@ -93,7 +93,7 @@ export const UploadProgress = ({ start, loaded = 0, total }) => {
 	const until = (elapsed / fraction) - elapsed;
 
 	return <div>
-		Size: <Bytes b={total} /><br/>
+		Size: {bytes(total)}<br/>
 		{Math.floor(fraction * 100)}% done<br/>
 		{Math.ceil(until / 1000)}s remaining
 	</div>;

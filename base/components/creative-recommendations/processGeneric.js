@@ -4,12 +4,14 @@ import { RECOMPRESS_ENDPOINT } from '../../utils/pageAnalysisUtils';
 
 /** Helper for optimisations that don't involve the server. */
 export function processLocal(transfer, type, extraData) {
+	console.log("processLocal ie skip", type, transfer);
 	return new Promise(resolve => resolve({ ...transfer, type, optUrl: null, optBytes: 0, optimised: true, ...extraData }));
 }
 
 
 /** Call /recompress - boilerplate for standard params and response */
 export function callRecompressServlet(transfer, type, extraData) {
+	console.log("callRecompressServlet", type, transfer);
 	const data = { url: transfer.url, type, ...extraData };
 
 	return ServerIO.load(RECOMPRESS_ENDPOINT, { data }).then(res => {

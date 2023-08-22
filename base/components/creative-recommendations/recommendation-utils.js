@@ -1,6 +1,6 @@
 import processImage from './processImage';
 import { processEmpty, processSvg, processGif, processFont, processScript } from './processGeneric';
-import { flattenProp, isType } from '../../utils/pageAnalysisUtils';
+import { flattenProp, isType, storedManifestForTag } from '../../utils/pageAnalysisUtils';
 
 
 export const RECS_PATH = ['widget', 'creative-recommendations'];
@@ -8,16 +8,113 @@ export const RECS_PATH = ['widget', 'creative-recommendations'];
 export const RECS_OPTIONS_PATH = [...RECS_PATH, 'options'];
 
 
-/** DataStore path for PageManifest corresponding to a particular Green Ad Tag */
-export function savedManifestPath(tag) {
-	return [...RECS_PATH, 'saved-tag-measurement', tag.id];
+function manifestPathBit({tag, url, html, upload}) {
+	const subPath = (tag && 'tag') || (url && 'url') || (html && 'html') || (upload && 'upload') || 'null';
+	const endPath = tag?.id || url || html || upload || 'null';
+	return [subPath, endPath];
 }
 
 
-/** DataStore path for list of recommendations pertaining to a particular analysis of a GAT creative */
-export function processedRecsPath(tag, manifest) {
+/**
+ * DataStore path for PageManifest corresponding to a particular Green Ad Tag.
+ * @param p Should have only one of p.tag, p.url, p.html
+ * @param {GreenTag} [p.tag] The Green Ad Tag the manifest is attached to
+ * @param {String} [p.url] The analysed URL, if the manifest is not attached to a GAT
+ * @param {String} [p.html] The analysed HTML fragment (script tag etc), if the manifest is not attached to a GAT
+ */
+export function savedManifestPath({tag, url, html, upload}) {
+	return [...RECS_PATH, 'saved-tag-measurement', ...manifestPathBit({tag, url, html, upload})];
+}
+
+
+/**
+ * DataStore path for list of recommendations pertaining to a particular page/creative/etc analysis.
+ * De-duplicates on manifest timestamp (so a re-analysis is stored under a new path) and recommendation options
+ * - so recs for the same manifest with e.g. retina and standard resolution selected are stored under different paths.
+ * @param p Should have only one of p.tag, p.url, p.html
+ * @param {GreenTag} [p.tag] The Green Ad Tag the manifest is attached to
+ * @param {String} [p.url] The analysed URL, if the manifest is not attached to a GAT
+ * @param {String} [p.html] The analysed HTML fragment (script tag etc), if the manifest is not attached to a GAT
+ * @param {Object} [manifest] The PageManifest returned by MeasureServlet (or loaded from /persist/)
+ */
+export function processedRecsPath({tag, url, html}, manifest) {
 	const optionString = JSON.stringify(DataStore.getValue(RECS_OPTIONS_PATH));
-	return [...RECS_PATH, 'processed-recs', tag.id, manifest?.timestamp || 0, optionString];
+	return [...RECS_PATH, 'processed-recs', ...manifestPathBit({tag, url, html}), manifest?.timestamp || 0, optionString];
+}
+
+
+/**
+ * Augment a PageManifest in-place by adding a member "parentFrame" to every sub-frame.
+ * This can't be done server-side, since it would break serialization.
+ * @param {PageManifest} manifest From MeasureServlet
+ */
+function doubleLinkFrames(manifest) {
+	const allFrames = flattenProp(manifest, 'frames', 'frames');
+	allFrames.unshift(manifest);
+	allFrames.forEach(frame => {
+		// Is there a frame whose "child frames" array contains the current frame?
+		const parent = allFrames.find(candidate => candidate.frames.find(f => (f === frame)));
+		if (parent) frame.parentFrame = parent;
+	});
+}
+
+
+/**
+ * Request a new analysis from MeasureServlet and store the response at the standard path.
+ * @param p Should have only one of p.tag, p.url, p.html
+ * @param {GreenTag} [p.tag] A Green Ad Tag to analyse
+ * @param {String} [p.url] A URL to analyse
+ * @param {String} [p.html] A HTML fragment to analyse
+ * @returns {Promise} Resolves to the MeasureServlet response.
+ */
+export function startAnalysis({tag, url, html}) {
+	if (!tag?.id && !url && !html) return;
+	const path = savedManifestPath({tag, url, html});
+
+	// Remove any previously-stored analysis
+	DataStore.setValue(path, null);
+	const data = {};
+	if (tag) data.tagId = tag.id;
+	if (tag?.creativeURL) data.url = tag.creativeURL;
+	if (tag?.creativeHtml) data.html = tag.creativeHtml;
+	if (url) data.url = url;
+	if (html) data.html = html;
+
+	return ServerIO.load(`${ServerIO.MEASURE_ENDPOINT}`, { data }).then(res => {
+		if (res.error) throw new Error(res.error);
+		res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
+		// Store results in the standard location
+		DataStore.setValue(path, res.data);
+		return res;
+	});
+};
+
+
+/**
+ * Receive & store an analysis of a ZIP file uploaded to MeasureServlet.
+ * @param res Response from MeasureServlet.
+ */
+export function receiveUploadAnalysis(res) {
+	res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
+	// Store results in the standard location
+	DataStore.setValue(savedManifestPath({upload: 'upload'}, res.data));
+}
+
+
+/**
+ * Attempt to find a saved manifest on the measurement server associated with a Green Ad Tag.
+ * @param {GreenTag} tag
+ * @returns {PromiseValue} A DataStore.fetch PV.
+ */
+export function fetchSavedManifest(tag) {
+	return DataStore.fetch(savedManifestPath({tag}), () => {
+		// fetchFn returning null is OK - no tag means stored-manifest-for-tag should resolve null
+		if (!tag) return null;
+		return ServerIO.load(storedManifestForTag(tag)).then(res => {
+			res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
+			return res;
+		});
+	});
 }
 
 
@@ -39,8 +136,28 @@ export function shortenName(url) {
 };
 
 
-/** Find potential optimisations for an individual file. */
-export function processTransfer(transfer, path) {
+/**
+ * Find potential optimisations for an individual file.
+ * @param {Transfer} transfer A Transfer object (see Transfer.java)
+ * @returns {Promise} Resolves to a copy of the original transfer, augmented with extra recommenendation info
+ * - or rejects with a reason no recommendation could be given.
+*/
+export function processTransfer(transfer) {
+	console.log("processTransfer", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
+	// Can only process files we can fetch over HTTP for now
+	// TODO Inline SVGs, some day
+	if (!transfer.url.match(/^http/)) {
+		console.log("reject non-http", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
+		if (isType(transfer, 'image')) { // HACK: fail gracefully for e.g. SeenThis streaming images which are data blobs
+			// NB: copy-pasta from processLocal()
+			let message = "Can't process non-HTTP transfer";
+			return new Promise(resolve => resolve({ ...transfer, type:'image', optUrl: null, optBytes: 0, optimised: true, message, noop:true}));
+		}
+		return new Promise((resolve, reject) => {
+			reject('Can\'t generate recommendations for non-HTTP transfer', transfer);
+		});
+	}
+
 	// TODO Mark processed transfers with options used so we can just regenerate the ones the new options affect?
 	if (transfer.bytes === 0) {
 		// Duplicate transfer - 0 bytes because it's a cache hit.
@@ -58,12 +175,20 @@ export function processTransfer(transfer, path) {
 		return processScript(transfer);
 	}
 
+	console.log("reject nope", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
 	return new Promise((resolve, reject) => reject('No recommendation function for transfer', transfer));
 }
 
 
 /** Sort recommendations, largest impact first */
 function recsSortFn(a, b) {
+	const srA = a.significantReduction;
+	const srB = b.significantReduction;
+	// Always sort "significant reduction" above "not", even if the absolute improvement of "not" is larger
+	if (srA !== srB) return srA ? -1 : 1;
+	// Sort pairs of "no reduction" items by size
+	if (!srA) return b.bytes - a.bytes;
+	// Both have reductions - sort highest first
 	const rednA = a.bytes - a.optBytes;
 	const rednB = b.bytes - b.optBytes;
 	return rednB - rednA;
@@ -76,7 +201,6 @@ function recsSortFn(a, b) {
 function augmentFont(transfer, fonts) {
 	const fontSpecForTransfer = fonts[transfer.url];
 	if (!fontSpecForTransfer) return;
-
 	transfer.font = fontSpecForTransfer;
 }
 
@@ -87,25 +211,57 @@ function augmentFont(transfer, fonts) {
  * - Attach those elements to the transfer
  */
 function augmentMedia(transfer, mediaElements) {
-	if (isType(transfer, 'image') || isType(transfer, 'video')) {
-		mediaElements.filter(e => (e.resourceURL === transfer.url)).forEach(el => {
-			if (!transfer.elements) transfer.elements = [];
-			transfer.elements.push(el);
-		});
+	if ( ! isType(transfer, 'image') && ! isType(transfer, 'video')) {
+		return;
 	}
+	let matchedElements = mediaElements.filter(e => (e.resourceURL === transfer.url));
+	matchedElements.forEach(el => {
+		if (!transfer.elements) transfer.elements = [];
+		transfer.elements.push(el);
+	});
 }
 
 
-/** Generate and store list of recommendations */
-export function generateRecommendations(manifest, path) {
+/**
+ * Do we bother saying we can optimise this file? Thresholds based on original size:
+ * Under 1K: don't bother
+ * Under 10K: must be at least 1K
+ * Under 100K: must be at least 10%
+ * Over 100K: Must be at least 5%
+ * @param {Transfer} t
+ * @returns {boolean}
+ */
+function worthIt({bytes, optBytes}) {
+	if ( ! optBytes) {
+		return false;
+	}
+	const reduction = bytes - optBytes;
+	if (bytes < 1024 || reduction < 0) return false;
+	if (bytes < 10240) return (reduction > 1024);
+	const proportion = reduction / bytes;
+	if (bytes < 102400) return (proportion > 0.1);
+	return proportion > 0.05;
+}
+
+
+/** Generate and store list of recommendations 
+ * 
+ * TODO doc notes on the data format
+*/
+export function generateRecommendations(manifest, path, separateSubFrames) {
+	// Don't fire off multiple recommendation processes for the same spec!
+	if (DataStore.getValue(path)?.processing) return;
+	DataStore.setValue(path, {processing: true});
+
 	// Pull out all transfers, font specs, and media-bearing elements
-	const allTransfers = flattenProp(manifest, 'transfers', 'frames');
-	const allFonts = flattenProp(manifest, 'fonts', 'frames').reduce((acc, fontsObj) => Object.assign(acc, fontsObj), {});
-	const allMediaElements = flattenProp(manifest, 'elements', 'frames');
+	// Don't make user think about frame hierarchies in e.g. creative analysis tool context - just look at all transfers.
+	const allTransfers = separateSubFrames ? manifest.transfers : flattenProp(manifest, 'transfers', 'frames');
+	// Fonts audit is an object (mapping filename to font spec), not a list, so needs to be merged down from a list of objects
+	let allFonts = separateSubFrames ? manifest.fonts : flattenProp(manifest, 'fonts', 'frames').reduce((acc, fontsObj) => Object.assign(acc, fontsObj), {});
+	const allMediaElements = separateSubFrames ? manifest.elements : flattenProp(manifest, 'elements', 'frames');
 
-	const newList = [];
-
-	allTransfers.forEach(t => {
+	// Start the recommendation-generation process & hold the promise for each transfer
+	const optPromises = allTransfers.map(t => {
 		// Pair up each font and media transfer with information on how it's used in the analysed page
 		if (isType(t, 'image') || isType(t, 'video')) {
 			augmentMedia(t, allMediaElements)
@@ -115,13 +271,49 @@ export function generateRecommendations(manifest, path) {
 		// Convenient info
 		t.filename = shortenName(t.url);
 		t.bytes = t.resBody;
-
-		// Start the recommendation-generation process for this transfer & store each result when complete
-		processTransfer(t).then(augTransfer => {
-			// in-place array ops, should be concurrency safe (insofar as JS engine makes them atomic)
-			newList.push(augTransfer);
-			newList.sort(recsSortFn);
-			DataStore.setValue(path, newList); // no-op wrt what's actually stored, but triggers a refresh
-		})
+		return processTransfer(t);
 	});
+
+	// Wait for all promises to resolve, then put in DataStore.
+	// Would be nice to insert and sort as they come in, but that raises
+	// horrible concurrency issues & JS atomics builtins are still very new.
+	Promise.allSettled(optPromises).then(results => {
+		const augTransfers = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+		// Flag transfers that have enough improvement to talk about
+		augTransfers.forEach(t => { if (worthIt(t)) t.significantReduction = true; });
+		augTransfers.sort(recsSortFn);
+		DataStore.setValue(path, augTransfers);
+	});
+}
+
+
+/** Specs for matching sites the analysis engine chokes on */
+const badSiteSpecs = [
+	{ hostname: 'drive.google.com', name: 'Google Drive' },
+	{ hostname: /(we.tl|wetransfer.com)/, name: 'WeTransfer' },
+	{ hostname: /celtra\.com$/, pathname: /shareablePreview/, name: 'Celtra Shareable Preview' },
+	{ hostname: 'sneakpeek.yahooinc.com', name: 'Yahoo Sneak Peek' },
+	{ hostname: 'preview.nexd.com', name: 'NEXD' },
+	{ hostname: 'admanagerplus.yahoo.com', name: 'Yahoo! Ad Manager Plus' },
+];
+
+/**
+ * Is the URL in question on a site our analysis engine can't properly process?
+ * @param {string} url URL to check
+ * @returns {boolean|string} False for OK, site name for "bad site"
+ */
+export function badSite(url) {
+	if ( ! url) {
+		return "no url"; // i.e. falsy is bad
+	}
+	try {
+		url = new URL(url);
+	} catch(TypeError) {
+		return "an invalid url";
+	}
+	const badSiteSpec = badSiteSpecs.find(({hostname, pathname}) => {
+		if (hostname && url.hostname.match(hostname)) return true;
+		if (pathname && url.pathname.match(pathname)) return true;
+	});
+	return !!badSiteSpec && badSiteSpec.name;
 }

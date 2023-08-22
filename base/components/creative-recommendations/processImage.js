@@ -1,4 +1,5 @@
 import DataStore from '../../plumbing/DataStore';
+import { proxy } from '../../utils/pageAnalysisUtils';
 import { callRecompressServlet, processLocal } from './processGeneric';
 import { RECS_OPTIONS_PATH } from './recommendation-utils';
 
@@ -34,13 +35,15 @@ function optImgSize(img, elInfo) {
 /**
  * Create a HTMLImageElement & return a promise which resolves when the image is loaded.
  * @param {string} url URL of the image to load
+ * @returns {Promise} image-element
  */
 function loadImage(url) {
+	console.log("loadImage", url);
 	return new Promise((resolve, reject) => {
 		const img = new Image();
 		img.addEventListener('load', () => resolve(img));
 		img.addEventListener('error', err => reject(err));
-		img.src = url;
+		img.src = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
 	});
 }
 
@@ -66,20 +69,25 @@ function findMaxSize(img, elements) {
  * @param {object} size Target width and height for resize
  */
 function recompress(transfer, {width, height}) {
+	console.log("recompress");
 	if (!width || !height) {
 		// Either no elements were found which contained the image, or it was rendered at height/width 0.
 		// Mark as "possibly unused"
 		return processLocal(transfer, 'image', { unused: true });
 	}
 
-	// Get options
+	// Get global options
 	const { noWebp = false, retinaMultiplier = 1} = DataStore.getValue(RECS_OPTIONS_PATH);
 
-	// Apply 1x / 1.5x / 2x multiplier before coercing size to integer
-	width = Math.floor(retinaMultiplier * width);
-	height = Math.floor(retinaMultiplier * height);
+	const params = {
+		// Apply 1x / 1.5x / 2x multiplier before coercing size to integer
+		width: Math.floor(retinaMultiplier * width),
+		height: Math.floor(retinaMultiplier * height),
+		format: noWebp ? '' : 'webp'
+	};
 
-	return callRecompressServlet(transfer, 'image', { width, height, noWebp });
+
+	return callRecompressServlet(transfer, 'image', params);
 }
 
 
@@ -91,12 +99,12 @@ function processImage(transfer) {
 		const { url: optUrl, bytes: optBytes } = transfer;
 		return processLocal(transfer, 'image', { optUrl, optBytes, message: `Ignoring tiny image (${transfer.bytes} bytes)`, noop: true });
 	};
-
-	return loadImage(url).then(imgEl => {
+	return loadImage(url).then(imgEl => {		
 		// nested promises so we can retain the HTMLImageElement and attach it to the augmented transfer
 		let size = findMaxSize(imgEl, elements);
+		console.log("processImage2", transfer, size);
 		return recompress(transfer, size)
-		.then(augTransfer => ({...augTransfer, imgEl}));
+			.then(augTransfer => ({...augTransfer, imgEl}));
 	})
 }
 

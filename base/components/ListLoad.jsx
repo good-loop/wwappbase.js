@@ -42,7 +42,8 @@ const DEFAULT_PAGE_SIZE = 100;
  * If the item does not have a created field -- pass in a different sort order, or "" for unsorted.
  * TODO test "" works
  * @param {String} [p.filter] - Set a filter. Do NOT use this and canFilter. This will query the backend via `prefix`
- * @param {Function} [p.filterFn] - A local filter function. Can be combined with filter/canFilter
+ * @param {Function} [p.filterFn] - A local filter function. Can be combined with filter/canFilter.
+ * 	(item, index, array) => boolean
  * @param {Function} [p.transformFn] - do some transformation on the list after all filtering/sorting. should return a new array
  * @param {List} [p.list] No loading - just use this list of hits
  * @param {Boolean} [p.canFilter] - If true, offer a text filter. This will be added to q as a prefix filter.
@@ -302,7 +303,7 @@ function MassActionToolbar({ type, canDelete, items }) {
 }
 
 /**
- * 
+ * Filter and resolve
  * @param {?Ref[]} hits 
  * @returns {Item[]}
  */
@@ -339,11 +340,12 @@ const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, tran
 
 	// ...string filter, dedupe, and ad
 	if (!filter) fastFilter = false; // avoid pointless work in the loop
+	const fastFilterStringify = JSON.stringify; // TODO allow user to override this
 	hits.forEach(item => {
 		// fast filter via stringify
 		let sitem = null;
 		if (fastFilter) {
-			sitem = JSON.stringify(item).toLowerCase();
+			sitem = fastFilterStringify(item).toLowerCase();
 			if (filter && sitem.indexOf(filter) === -1) {
 				return; // filtered out
 			}

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import Login from '../youagain';
 import { Row, Col, Modal, ModalHeader, ModalBody, Button } from 'reactstrap';
-import { stopEvent, toTitleCase, space, yessy } from '../utils/miscutils';
+import { stopEvent, toTitleCase, space, yessy, encURI } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
@@ -351,6 +351,13 @@ function EmailSignin({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 		emailLogin({verb, onLogin, onRegister, onError, ...person});
 	};
 
+	// HACK
+	let $errorCTA;
+	if (Login.error?.text?.toLowerCase().includes("unverified")) {
+		let email = DataStore.getValue(path.concat("email"));
+		$errorCTA = <a href={Login.ENDPOINT+"?action=send-verify&email="+encURI(email)}>Resend email verification</a>;
+	}
+
 	// login/register
 	let status = DataStore.getValue(STATUS_PATH);
 	let noAgreement = agreeToTerms && (! person || ! person.agreeToTerms); // true if the user must tick a checkbox
@@ -371,7 +378,7 @@ function EmailSignin({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 				</div>
 				<ResetLink verb={verb} />
 			</div>
-			<ErrAlert error={Login.error} />
+			<ErrAlert error={Login.error}>{$errorCTA}</ErrAlert>
 		</form>
 	);
 } // ./EmailSignin

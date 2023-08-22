@@ -28,7 +28,7 @@ const getRoles = () => {
 					console.error(res);
 					return []; // this will get stored, otherwise an error causes the system to thrash by trying repeatedly
 				}
-				let shares = res.cargo;				
+				let shares = res.cargo;
 				let roles = shares.filter(s => s.item && s.item.substr(0,5)==='role:').map(s => s.item.substr(5));
 				roles = Array.from(new Set(roles)); // de dupe
 				return roles;
@@ -66,7 +66,7 @@ const addRole = (uxid, role) => {
  * 	let {promise,value} = Roles.iCan('eat:sweets');
  * 	if (value) { eat sweets }
  * 	else if (value === false) { no sweets }
- * 	else { waiting on ajax }	
+ * 	else { waiting on ajax }
  * ```
  * 
  * @param {!String} capability
@@ -132,6 +132,8 @@ const isDev = () => {
 	if (cand.value) return true;
 	// HACK Good-Loop?
 	const uxid = Login.getId();
+	// Absolutely do not show dev content to pseudousers, even if their access was given by a GL staffer
+	if (uxid && uxid.match(/@pseudo/)) return false;
 	if (uxid && uxid.includes("@good-loop.com")) {
 		return true; // security note: this is not a security issue (its client side and only used to hide ugly bits)
 	}
