@@ -103,6 +103,8 @@ class _Login {
 	user;
 	/** @type {id, text} Error message, or null */
 	error;
+	/** @type {type, id, text} Info message, or null */
+	info;
 	/** with auth() by Twitter -- where to redirect to on success. Defaults to this page. */
 	redirectOnLogin;
 	/** The server url. Change this if you use a different login server. */
@@ -348,11 +350,22 @@ const setLoginError = err => {
 	Login.error = err;
 };
 
+const setLoginInfo = info => {
+	if (!info) return;
+	console.error("#login.setInfo", info);
+	Login.info = info;
+};
+
 const setStateFromServerResponse = function (res) {
 	console.log('setStateFromServerResponse', res);
 	if (res.errors && res.errors.length) {
 		// stash the error for showing to the user
 		setLoginError(res.errors[0]);
+		return res;
+	}
+	if (res.messages && res.messages.length) {
+		// stash the info for showing to the user
+		setLoginInfo(res.messages.filter(message => message.type === 'info')[0])
 		return res;
 	}
 	let newuser = res.cargo && res.cargo.user;
@@ -377,8 +390,9 @@ const setStateFromServerResponse = function (res) {
 		}
 	}
 	setUser(newuser, newaliases);
-	// clear the error
+	// clear the error and info
 	Login.error = null;
+	Login.info = null;
 	return res;
 };
 
@@ -700,6 +714,7 @@ const logout2 = function () {
 	Login.user = null;
 	Login.aliases = null;
 	Login.error = null;
+	Login.info = null;
 	// notify any listeners
 	Login.change();
 };
