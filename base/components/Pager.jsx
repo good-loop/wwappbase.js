@@ -1,7 +1,9 @@
-import { keyBy, range } from 'lodash';
-import React, {useState, useEffect } from 'react';
-import { space } from '../utils/miscutils';
+import React, { useState, useEffect } from 'react';
+
+import { range } from 'lodash';
 import { Pagination, PaginationItem, PaginationLink } from 'reactstrap';
+
+import { space } from '../utils/miscutils';
 
 import '../style/Pager.less';
 
@@ -14,6 +16,12 @@ import '../style/Pager.less';
  * @returns {boolean}
  */
 const isOptional = (page, current, pageCount) => {
+	// The "first, last, current, one either side, and only when it reduces the item count" rule
+	// means no buttons will ever be skipped when there are 4 pages or fewer.
+	// Also at 4 pages the "only hide 2 if 3 is optional" and "only hide N-1 if N-2 is optional"
+	// checks overlap and can recurse infinitely alternately checking 2 and 3...
+	if (pageCount < 5) return false;
+	// Special buttons always displayed
 	if (typeof page !== 'number') return false;
 	// First, last, current, and 1 button either side of current are always shown no matter what.
 	if ([1, current - 1, current, current + 1, pageCount].includes(page)) return false;
