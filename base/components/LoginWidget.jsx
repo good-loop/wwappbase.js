@@ -92,17 +92,15 @@ const emailLogin = ({verb, app, email, password, onRegister, onLogin, onError, .
 			// close the dialog on success
 			// Security: wipe the password from DataStore
 			DataStore.setValue(['data', C.TYPES.User, 'loggingIn', 'password'], null);
-
-			if(verb === 'register' && onRegister) {
-				onRegister({...res, email});
-			} else {
-				if (onLogin) onLogin({...res, email});
-				setShowLogin(false);
-			}
+			
+			if (onLogin) onLogin({...res, email});
+			setShowLogin(false);
+		} else if ((verb === 'register' && onRegister)) {
+			DataStore.update({});
+			onRegister({...res, email});
 		} else {
 			// poke React via DataStore (e.g. for Login.error)
 			DataStore.update({});
-			onError && onError(Login.error);
 		}
 	}, err => {
 		onError && onError(err);
@@ -379,6 +377,7 @@ function EmailSignin({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 				<ResetLink verb={verb} />
 			</div>
 			<ErrAlert error={Login.error}>{$errorCTA}</ErrAlert>
+			<ErrAlert color='info' error={Login.info}>{$errorCTA}</ErrAlert>
 		</form>
 	);
 } // ./EmailSignin
