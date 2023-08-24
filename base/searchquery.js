@@ -125,14 +125,13 @@ SearchQuery.setProp = (sq, propName, propValue) => {
 		let qpropValue = propValue.indexOf(" ") === -1? propValue : '"'+propValue+'"';
 		newq = (newq? newq+" AND " : "") + propName+":"+qpropValue;
 	}
-	// HACK - trim ANDs
-	newq = newq.replace(/ AND +AND /g," AND ");
-	if (newq.substr(0, 5) === " AND ") {
-		newq = newq.substr(5);
-	}
-	if (newq.substr(newq.length-5, newq.length) === " AND ") {
-		newq = newq.substr(0, newq.length - 5);
-	}
+	// Collapse duplicate ANDs
+	newq = newq.replace(/\s+AND(\s+AND)+\s+/g, " AND ");
+	// Trim leading, trailing, empty ANDs
+	newq = newq.replace(/^\s*(AND\s+)+/g, "");
+	newq = newq.replace(/(\s+AND)+\s*$/g, "");
+	newq = newq.replace(/^\s*AND\s*$/, "");
+
 	// done
 	return new SearchQuery(newq.trim());
 }
