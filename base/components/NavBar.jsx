@@ -115,7 +115,7 @@ function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', hom
 				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>
 					{brandLogo? <img className={space(logoClass, "brand-logo")} alt={brandName} src={brandLogo} /> : brandName}
 				</C.A>
-				{brandLink !== ""+window.location && brandType && brandId 
+				{brandType && brandId 
 					&& <CloseButton style={{position:"absolute", bottom:0, right:"0.8em"}} 
 						onClick={e => stopEvent(e) && setNavContext(brandType, null, true)} size="sm" 
 						tooltip={`include content beyond ${brandName}'s micro-site`} />}
