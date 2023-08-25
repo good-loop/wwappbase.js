@@ -436,7 +436,7 @@ function DefaultListItem({ type, item, checkboxes, canDelete, nameFn, extraDetai
 	const status = item.status || "";
 	return <>
 		<Misc.Thumbnail item={item} />
-		<div className="info">
+		<div className="info text-left">
 			<div className="name">{name}</div>
 			<div className="detail small">
 				id: <span className="id">{id}</span> <span className="status">{status.toLowerCase()}</span> {extraDetail} Created: <Misc.RoughDate date={item.created} /> {AThing.lastModified(item) && <>Modified: <Misc.RoughDate date={AThing.lastModified(item)} /></>}
@@ -457,7 +457,7 @@ function DefaultListItem({ type, item, checkboxes, canDelete, nameFn, extraDetai
 	const status = item.status || "";
 	return <>
 		<Misc.Thumbnail item={item} />
-		<div className="info">
+		<div className="info text-left">
 			<div className="name">{name}</div>
 			{item.desc && <small>{ellipsize(item.desc, 140)}</small>}
 			{Roles.isDev() && <div className="detail small">
