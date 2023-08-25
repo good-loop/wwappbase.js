@@ -22,6 +22,7 @@ import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
 import DataClass, { getId, getType } from '../data/DataClass';
 import CloseButton from './CloseButton';
+import { modifyPage } from '../plumbing/glrouter';
 
 
 class NavProps {
@@ -117,7 +118,7 @@ function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', hom
 				</C.A>
 				{brandType && brandId 
 					&& <CloseButton style={{position:"absolute", bottom:0, right:"0.8em"}} 
-						onClick={e => stopEvent(e) && setNavContext(brandType, null, true)} size="sm" 
+						onClick={e => stopEvent(e) && setNavContext(brandType, null, true, brandLink)} size="sm" 
 						tooltip={`include content beyond ${brandName}'s micro-site`} />}
 			</div>
 		}
@@ -264,11 +265,19 @@ const CONTEXT = {};
 const setNavPropsBlank = () => setNavProps({brandId:null,brandType:null,brandLink:null,brandLogo:null,brandName:null}); 
 
 // TODO unify with setNavProps() to avoid (re)setting one and not the other.
-export const setNavContext = (type, id, processLogo) => {
+export const setNavContext = (type, id, processLogo, brandLink) => {
 	CONTEXT[type] = id;
 	if ( ! processLogo) return;
 	if ( ! id) {
+		// set no id
 		setNavPropsBlank();
+		// go back to a list page?
+		if (brandLink === ""+window.location) {
+			const path = DataStore.getValue('location','path');
+			if (path.length > 1) {
+				modifyPage(path.slice(0, path.length-1));
+			}
+		}
 		return;
 	}
 	// process for 2nd logo
