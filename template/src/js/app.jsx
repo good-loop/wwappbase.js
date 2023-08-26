@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import $ from 'jquery';
-import PropControls from './base/components/PropControls';
+import PropControls from './base/components/propcontrols/PropControls';
 
 import MainDiv from './components/MainDiv';
 import ServerIO from './plumbing/ServerIO'; // import to set api endpoints
