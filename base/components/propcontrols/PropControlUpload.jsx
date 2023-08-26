@@ -1,10 +1,16 @@
 
+/*
+ * This sends files to uploads.good-loop.com
+ *	Which returns a MediaObject-like json -- including the url, which is then put into the property
+
+ It can also connect to UploadServlet endpoints, if you set one up.
+ */
 
 import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button, FormGroup, Label } from 'reactstrap';
 
-import { fakeEvent, FormControl, registerControl } from '../PropControl';
+import PropControl, { fakeEvent, FormControl, registerControl } from '../PropControl';
 import Misc from '../Misc';
 import { urlValidator } from './validators';
 import Icon from '../Icon';
@@ -130,7 +136,7 @@ const FontThumbnail = ({url}) => {
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
-const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
+const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
@@ -276,7 +282,7 @@ const PropControlUpload = ({ path, prop, onUpload, type, bg, storeValue, value, 
 
 
 const baseSpec = {
-	$Widget: PropControlUpload,
+	$Widget: PropControlUpload2,
 	validator: urlValidator
 };
 
@@ -291,4 +297,19 @@ registerControl({ type: 'spreadsheetUpload', ...baseSpec });
 // Upload anything!?
 registerControl({ type: 'upload', ...baseSpec });
 
-export default {};
+/**
+ * image or video upload. Uses Dropzone
+ * @param {Object} p
+ * @param {string} p.type upload|imgUpload|spreadsheetUpload
+ * @param {?string} p.endpoint Specify an endpoint. Defaults to ServerIO settings, usually https://uploads.good-loop.com/
+ * @param {Boolean} p.collapse ??
+ * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
+ * @param {?string} version mobile|raw|standard -- defaults to raw
+ * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
+ * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
+ */
+function PropControlUpload({type="upload", ...p}) {
+	return <PropControl type={type} {...p} />
+}
+
+export default PropControlUpload;
