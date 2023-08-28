@@ -139,6 +139,11 @@ Advert.charityList = ad => {
 	return clist;
 };
 
+Advert.displaySizes = advert => {
+	assert(advert);
+	return advert.displayBase?.sizes || [];
+}
+
 
 /**
  * @param {Advert[]} ads List of adverts
