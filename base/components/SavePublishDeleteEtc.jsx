@@ -154,7 +154,7 @@ function SavePublishDeleteEtc({
 	autoSave = true,
 	navpage,	
 	saveAs, unpublish,
-	prePublish = T, preDelete = T, preArchive = T, preSaveAs = T,
+	prePublish = T, preDelete = ({item, action}) => confirmUserAction({item, action}), preArchive = T, preSaveAs = T,
 	sendDiff,
 	oneButton, targetPaths
 }) {
