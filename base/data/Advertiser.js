@@ -25,20 +25,6 @@ class Advertiser extends DataClass {
 DataClass.register(Advertiser, "Advertiser");
 export default Advertiser;
 
-// /**
-//  * Not stored on the parent - find out by looking for children
-//  */
-// Advertiser.isMaster = (adv) => {
-// 	return true;
-// };
-
-/**
- * Get the master campaign for a vertiser
- */
-Advertiser.masterCampaign = (vertiser) => {
-	return vertiser.campaign;
-};
-
 /**
  * 
  * @param {!String} vertiserId 
