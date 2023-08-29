@@ -91,7 +91,7 @@ function Pager({pageCount, current, setPage, ...baseProps}) {
 	useEffect(() => {
 		setButtonProps(initButtonProps({pageCount, ...baseProps}));
 		setMeasured(false); // Measurements invalidated, so redo them.
-	}, [pageCount, pagerWidth]);
+	}, [pageCount]);
 
 	// Measure button elements and store width of each on corresponding props object
 	useEffect(() => {
