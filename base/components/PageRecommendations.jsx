@@ -196,7 +196,7 @@ function HoldButton({onPress, onRelease, Tag = 'button', children, ...props}) {
 /** Extract the extension from a filename. TODO Move to a utils file rather than this components file */
 const fileType = filename => {
 	const extMatch = filename.match(/\.[^.]+$/);
-	if (extMatch) {		
+	if (extMatch) {
 		let ft = extMatch[0];
 		if (ft.indexOf("?") !== -1) { // ??Let's move this into the regex above. But just before release, I want dead-safe code.
 			ft = ft.substring(0, ft.indexOf("?"));
@@ -221,8 +221,7 @@ function ImgRecDetails({spec}) {
 	// TODO controls for retina, no-scale, etc
 	// - can we support changing compression params without losing all data & returning to main screen?
 
-	let { url, optUrl, imgEl } = spec;
-	url = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
+	let { url, optUrl, imgEl } = spec; // NB Original URL will be proxied when previewing to avoid adblock and Firefox Enhanced Tracking Protection
 
 	let { width, height } = spec.elements[0];
 	const imgStyle = { maxWidth: width, maxHeight: height };
@@ -249,7 +248,7 @@ function ImgRecDetails({spec}) {
 			<ModalBody>
 				<div className="img-comparison-container">
 					<div className="img-comparison">
-						<img className="original" style={imgStyle} src={url} />
+						<img className="original" style={imgStyle} src={proxy(url)} />
 						<img className="optimised" style={{...imgStyle, opacity: showOriginal ? 0 : 1}} src={optUrl} />
 					</div>
 					<div className="version-indicator">{showOriginal ? 'Original' : 'Optimised'}</div>
