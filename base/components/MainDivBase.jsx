@@ -187,13 +187,9 @@ class MainDivBase extends Component {
 			// defaultPage may be dynamic
 			if (isFunction(defaultPage)) defaultPage = defaultPage();
 			if (defaultPage) {
-				// TODO what is this code solving for? Is it needed??
-				// HACK allow my-loop render for now
-				window.location.hostname.endsWith('my.good-loop.com') || window.location.hostname.endsWith('mydata.good-loop.com') ? (
-					setTimeout(() => modifyPage([defaultPage]), 1)
-				) : (
-					setTimeout(() => modifyPage([defaultPage]), 1)
-				);
+				page = defaultPage;
+				// There's logic that looks at the url -- so change it to match the page
+				setTimeout(() => modifyPage([defaultPage], null, false, false, {replaceState:true}), 1);
 				// let the next render get it
 			}
 			return <Alert color="warning">No page specified - and the app does not set a default</Alert>;
