@@ -741,26 +741,27 @@ const MAX_COLLECTED_LIST = 5000;
 	return DataStore.fetch(getListPath(params), () => {
 		// Get by ID list? Special case handling.
 		if (ids?.length) return listByIds(params);
-
-		// Check that the server has returned all available results - if not, make additional requests.
+		
 		const listPromise = ServerIO.list(params);
-		return listPromise.then(res => {
-			// No pagination to resolve? Just return the result.
-			if (!res || (res.cargo.hits.length >= res.cargo.total)) {
-				return res;
-			}
+		// Let's just return one batch
+		return listPromise;
+		// // Check that the server has returned all available results - if not, make additional requests.
+		// return listPromise.then(res => {
+		// 	// No pagination to resolve? Just return the result.
+		// 	if (!res || (res.cargo.hits.length >= res.cargo.total)) {
+		// 		return res;
+		// 	}
+		// 	// Hits stops short, so load more pages - up to total count or the safety max.
+		// 	let from = res.cargo.hits.length; // index to start next page
+		// 	const pagePromises = [listPromise];
+		// 	while (from < Math.min(res.cargo.total, MAX_COLLECTED_LIST)) {
+		// 		pagePromises.push(ServerIO.list({...params, from}));
+		// 		from += PAGINATION_LENGTH;
+		// 	}
 
-			// Hits stops short, so load more pages - up to total count or the safety max.
-			let from = res.cargo.hits.length; // index to start next page
-			const pagePromises = [listPromise];
-			while (from < Math.min(res.cargo.total, MAX_COLLECTED_LIST)) {
-				pagePromises.push(ServerIO.list({...params, from}));
-				from += PAGINATION_LENGTH;
-			}
-
-			// Resolve once all requests are complete.
-			return collectListPromises(pagePromises);
-		});
+		// 	// Resolve once all requests are complete.
+		// 	return collectListPromises(pagePromises);
+		// });
 	});
 };
 ActionMan.list = getDataList;
@@ -795,7 +796,7 @@ const listByIds = ({ids, q, ...params}) => {
  * @returns {Promise<{hits: object[]}>} Yields and object with the same signature as getDataList()
  */
 const collectListPromises = promises => Promise.all(promises).then(results => {
-	return results.reduce((acc, res) => {
+	const collected = results.reduce((acc, res) => {
 		if (acc === null) return res; // build on top of first result to return
 		acc.cargo.hits.push(...res.cargo.hits);
 		acc.errors.push(...res.errors);
@@ -803,6 +804,7 @@ const collectListPromises = promises => Promise.all(promises).then(results => {
 		acc.success = acc.success && res.success;
 		return acc;
 	}, null);
+	return collected;
 });
 
 

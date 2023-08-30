@@ -2,7 +2,7 @@
 import KStatus from './KStatus';
 import List from './List';
 import PromiseValue from '../promise-value';
-import { collectListPromises, getDataItem, getDataList, setWindowTitle } from '../plumbing/Crud';
+import { getDataItem, getDataList, setWindowTitle } from '../plumbing/Crud';
 import C from '../../C';
 import DataStore from '../plumbing/DataStore';
 import SearchQuery from '../searchquery';
