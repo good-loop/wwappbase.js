@@ -39,6 +39,7 @@ ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 ServerIO.DATALOG_ENDPOINT = '';
 ServerIO.MEDIA_ENDPOINT = '';
 ServerIO.MEASURE_ENDPOINT = '';
+ServerIO.API_ENDPOINT = '';
 
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
@@ -53,6 +54,7 @@ const endpoints = [
 	{name: 'Media', key: 'MEDIA_ENDPOINT', base: 'uploads.good-loop.com'},
 	{name: 'Measure', key: 'MEASURE_ENDPOINT', base: 'measure.good-loop.com/measure'},
 	{name: 'Portal', key: 'PORTAL_ENDPOINT', base: 'portal.good-loop.com'},
+	{name: 'API', key: 'API_ENDPOINT', base: 'api.good-loop.com/v0'},
 ];
 // set defaults
 endpoints.forEach(e => {
