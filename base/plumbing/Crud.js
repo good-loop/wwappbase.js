@@ -745,6 +745,11 @@ const MAX_COLLECTED_LIST = 5000;
 		const listPromise = ServerIO.list(params);
 		// Let's just return one batch
 		return listPromise;
+		
+		// This code tries to esnure for large queries -- e.g. Green Ad Tag -- that it has everything.
+		// CrudServlet can send confusing results, like "size=100" => 80 results, cos CrudServlet can post-filter in Java. 
+		// Or `total` can be too high (as it is a total from pre-java-filtered ES)
+
 		// // Check that the server has returned all available results - if not, make additional requests.
 		// return listPromise.then(res => {
 		// 	// No pagination to resolve? Just return the result.
