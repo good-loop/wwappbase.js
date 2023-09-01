@@ -36,13 +36,14 @@ function MDCheckbox({ setSource, source, checked, ...args }) {
 
 /**
  * Remove non-standard characters and render Markdown.
- * @param {?string} source text to render. NB: using a parameter instead of children allows for use of `` strings which can contain {}s
- * @param {?Object} renderers DEPRECATED same function as components, left in for legacy
- * @param {?Object} components node-type: React-component. This is merged with the default renderers.
+ * @param {Object} p
+ * @param {string} p.source text to render. NB: using a parameter instead of children allows for use of `` strings which can contain {}s
+ * @param {Object} [p.renderers] DEPRECATED same function as components, left in for legacy
+ * @param {Object} [p.components] node-type: React-component. This is merged with the default renderers.
  * The props passed to the component varies based on the type of node.
- * @param {?boolean} escapeHtml By default we render html (with just an anti-script-injection check). Set true to block html.
- * @param {Function} setSource newText => Function to make changes to the text source. If provided, then checkboxes can be clicked on/off.
- * @param {?boolean} linkOut Toggle for <a> links should use LinkOut
+ * @param {boolean} [p.escapeHtml] By default we render html (with just an anti-script-injection check). Set true to block html.
+ * @param {Function} [p.setSource] newText => Function to make changes to the text source. If provided, then checkboxes can be clicked on/off.
+ * @param {boolean} [p.linkOut] Toggle for <a> links should use LinkOut
  */
 function MDText({ source, renderers = {}, components = {}, escapeHtml = false, setSource, className, style, linkOut }) {
 	if (!source) {
