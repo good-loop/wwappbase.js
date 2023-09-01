@@ -1,20 +1,21 @@
 export type CSVRow = { [key: string]: string | number | Date };
 
+const MAX_FILE_SIZE_MB = 10;
+
 /**
  * Convert csv File to JavaScript Object
  * @param file
  * @param columnsFilter filter, get only the columns we need
- * @param formatOverride force writing the formart for the whole dataset
+ * @param columnOverride force writing the formart for the whole dataset e.g. {column: "format", value: "video"}
  * @param delimiter csv delimter, default to be `,`
  * @returns
  */
 export const csvToObject = async (
 	file: File,
 	columnsFilter: string[] = [],
-	formatOverride: string = "",
+	columnOverride?: {column: string, value: string},
 	delimiter: string = ","
 ): Promise<CSVRow[]> => {
-	const MAX_FILE_SIZE_MB = 10;
 
 	const parseCSV = (rows: string[], headers: string[]) => {
 		return rows.map((row) => {
@@ -40,8 +41,8 @@ export const csvToObject = async (
 				if (columnsFilter.length === 0 || columnsFilter.includes(header)) {
 					object[header] = values[index];
 				}
-				if (formatOverride !== "") {
-					object["format"] = formatOverride;
+				if (columnOverride) {
+					object[columnOverride.column] = columnOverride.value;
 				}
 				return object;
 			}, {});
