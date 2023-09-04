@@ -1,3 +1,5 @@
+
+/** A json object with no nesting TODO Let's change the name - CSVRow suggests an array instead */
 export type CSVRow = { [key: string]: string | number | Date };
 
 const MAX_FILE_SIZE_MB = 10;
@@ -11,7 +13,7 @@ const MAX_FILE_SIZE_MB = 10;
  * @returns
  */
 export const csvToObject = async (
-	file: File,
+	file: File, // ??ideally, separate parsing from file loading
 	columnsFilter: string[] = [],
 	columnOverride?: {column: string, value: string},
 	delimiter: string = ","
@@ -78,6 +80,7 @@ export const csvToObject = async (
 
 /**
  * Download CSV File from a JavaScript Object 
+ ??How does this compare to csv download code in SimpleTable.jsx?? Maybe SimpleTable should be refactored to use this?
  * @param data 
  */
 export const downloadAsCSV = (data: CSVRow[]) => {
