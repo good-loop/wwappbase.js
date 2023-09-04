@@ -24,6 +24,7 @@ import ServerIO from '../../plumbing/ServerIOBase';
 const imgTypes = '.jpg, .jpeg, image/jpeg, .png, image/png, .svg, image/svg+xml, .webp, image/webp';
 const videoTypes = '.mp4, .m4v, video/mp4, .ogv, video/ogg, .avi, video/x-msvideo, .wmv, video/x-ms-wmv, .mov, video/quicktime, .asf, video/ms-asf';
 const fontTypes = '.ttf, font/ttf, .otf, font/otf, .woff, font/woff, .woff2, font/woff2';
+const archiveTypes = '.zip, .7z, .7zip, .rar, .tar, .tar.gz';
 const spreadsheetTypes = '.csv'; // TODO Excel and -- maybe using libreoffice as the backend convertor to csv? Or the Apache Something library?
 
 
@@ -39,6 +40,7 @@ const acceptTypes = {
 	videoUpload: videoTypes,
 	bothUpload: `${imgTypes}, ${videoTypes}`,
 	fontUpload: fontTypes,
+	archiveUpload: archiveTypes,
 	spreadsheetUpload: spreadsheetTypes,
 };
 
@@ -49,6 +51,7 @@ const acceptDescs = {
 	videoUpload: 'video',
 	bothUpload: 'video or image',
 	fontUpload: 'font',
+	archiveUpload: 'zip file',
 	upload: 'file',
 	spreadsheetUpload: '.csv',
 	// emailUpload: '.eml' ??
@@ -133,10 +136,11 @@ const FontThumbnail = ({url}) => {
  * @param {Boolean} p.collapse ??
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
+ * @param {?string} mainFile for archives, what's the target file - if any?
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
-const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
+const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", mainFile, cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
@@ -151,7 +155,8 @@ const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value,
 		videoUpload: Misc.VideoThumbnail,
 		bothUpload: storeValue.match(/(png|jpe?g|svg)$/) ? Misc.ImgThumbnail : Misc.VideoThumbnail,
 		fontUpload: FontThumbnail,
-		upload: LinkThumbnail
+		upload: LinkThumbnail,
+		archiveUpload: LinkThumbnail,
 	}[type];
 
 	// When file picked/dropped, upload to the media cluster
@@ -164,7 +169,8 @@ const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value,
 
 		accepted.forEach(file => {
 			const uploadOptions = {};
-			if (uploadParams) uploadOptions.params = uploadParams;
+			uploadOptions.params = uploadParams || {};
+			if (mainFile) uploadOptions.params.mainFile = mainFile;
 			if (endpoint) uploadOptions.endpoint = endpoint;
 
 			ServerIO.upload(file, progress, load, uploadOptions)
@@ -294,6 +300,8 @@ registerControl({ type: 'bothUpload', ...baseSpec });
 registerControl({ type: 'fontUpload', ...baseSpec });
 // data
 registerControl({ type: 'spreadsheetUpload', ...baseSpec });
+// archive
+registerControl({ type: 'archiveUpload', ...baseSpec });
 // Upload anything!?
 registerControl({ type: 'upload', ...baseSpec });
 
