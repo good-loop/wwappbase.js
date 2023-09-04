@@ -77,12 +77,15 @@ ServerIO.checkBase = () => {
 	// e.g. process.env.SERVERIO_OVERRIDES finds a usable value.
 	// So instead of trying to determine if it exists, just swallow errors when it doesn't.
 	try {
-		const ServerIOOverrides = process.env.SERVERIO_OVERRIDES; // NB: see webpack.config.js for how this is set
-		if (ServerIOOverrides) {
-			Object.entries(ServerIOOverrides).forEach(([key, val]) => {
-				ServerIO[key] = val;
-				console.log("SERVERIOOVERRIDE", key, val);
-			});
+		if (process.env.CONFIG_FILE) {
+			const { ServerIOOverrides } = require(process.env.CONFIG_FILE);
+			// const ServerIOOverrides = process.env.SERVERIO_OVERRIDES; // NB: see webpack.config.js for how this is set
+			if (ServerIOOverrides) {
+				Object.entries(ServerIOOverrides).forEach(([key, val]) => {
+					ServerIO[key] = val;
+					console.log('SERVERIOOVERRIDE', key, val);
+				});
+			}
 		}
 	} catch (e) {} // Ignore "process is undefined" etc errors
 
