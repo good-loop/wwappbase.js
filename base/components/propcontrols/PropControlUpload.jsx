@@ -137,10 +137,11 @@ const FontThumbnail = ({url}) => {
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?string} mainFile for archives, what's the target file - if any?
+ * @param {?string} updateRefs automatically scan text files and update URL references?
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
-const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", mainFile, cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
+const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", mainFile, updateRefs, cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
@@ -170,7 +171,8 @@ const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value,
 		accepted.forEach(file => {
 			const uploadOptions = {};
 			uploadOptions.params = uploadParams || {};
-			if (mainFile) uploadOptions.params.mainFile = mainFile;
+			if (mainFile) uploadOptions.params["main_file"] = mainFile;
+			if (updateRefs) uploadOptions.params["update_refs"] = updateRefs;
 			if (endpoint) uploadOptions.endpoint = endpoint;
 
 			ServerIO.upload(file, progress, load, uploadOptions)
