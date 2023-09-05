@@ -113,6 +113,9 @@ class TableSettings {
 	*/
 	dataObject;
 
+	/** @type {?Object[][]} Like `data` but each row is an array. Alternative to data. */	
+	dataArray
+
 	/**
 	* @type {?Tree<Item>} Tree of data items. Alternative to data, which adds tree structure. The Tree values are the items. */	
 	dataTree;
@@ -192,7 +195,7 @@ class TableSettings {
  */
 function SimpleTable(props) {
 	let {
-		data, dataObject, dataTree,
+		data, dataObject, dataTree, dataArray,
 		columns,
 		headerRender,
 		topRow,
@@ -214,7 +217,7 @@ function SimpleTable(props) {
 
 	// Standardise the possible data inputs as a dataTree (which is the most general format)
 	const originalData = data; // for debug
-	dataTree = standardiseData({ data, dataObject, dataTree });
+	dataTree = standardiseData({ data, dataObject, dataTree, dataArray, columns });
 	assert(dataTree);	
 	if ( ! columns) {
 		assert(dataObject);
@@ -395,13 +398,24 @@ const createCSVData3_cell = ({ item, column }) => {
  * @param {?Object[]} p.data rows
  * @returns {!Tree}
  */
-const standardiseData = ({ data, dataObject, dataTree }) => {
-	assert([data, dataObject, dataTree].reduce((c, x) => x ? c + 1 : c, 0) === 1, "Need one and only one data input", [data, dataObject, dataTree]);
+const standardiseData = ({ data, dataObject, dataTree, dataArray, columns }) => {
+	assert([data, dataObject, dataTree, dataArray].reduce((c, x) => x ? c + 1 : c, 0) === 1, "Need one and only one data input", [data, dataObject, dataTree, dataArray]);
 	if (dataTree) return dataTree;
 	if (dataObject) {
 		// flatten an object into rows
 		assert(!data, "SimpleTable.jsx - data or dataObject - not both");
 		data = Object.keys(dataObject).map(k => { return { key: k, value: dataObject[k] }; });
+	}
+	if (dataArray) {
+		// from array to object
+		const columnNames = columns.map(col => col.accessor || col.Header || str(col));
+		data = dataArray.map(row => {
+			const item = {};
+			columnNames.forEach((cname, i) => {				
+				item[cname] = row[i];
+			});
+			return item;
+		});
 	}
 	assert(!data || _.isArray(data), "SimpleTable.jsx - data must be an array of objects", data);
 	// make a flat root -> all-rows tree

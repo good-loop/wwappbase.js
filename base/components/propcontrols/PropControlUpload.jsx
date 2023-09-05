@@ -131,12 +131,15 @@ const FontThumbnail = ({url}) => {
  * image or video upload. Uses Dropzone
  * @param {Object} p
  * @param {Boolean} p.collapse ??
+ * @param {?String} p.endpoint
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
-const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
+const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, 
+	version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => 
+{
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);
