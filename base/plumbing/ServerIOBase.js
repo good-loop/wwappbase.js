@@ -456,7 +456,9 @@ ServerIO.getEndpointForType = (type) => {
  * @param {object} [params] Optional map of settings to modify the request.
  * @param {boolean} [params.swallow] Don't display messages returned by the server
  * jQuery parameters (partial notes only)
+ * @param {string} [params.credentials] If set to "omit", don't send jwt. Use-case: for when data is a string, so we can't add properties to it like Login.sign() tries to do.
  * @param {object} [params.data] data to send - this should be a simple key -> primitive-value map.
+ * @param {object} [params.headers] Extra headers to set
  * @param {Function} [params.xhr] Used for special requests, e.g. file upload
  * @param {string} [params.method] e.g. POST
  * @see {@link https://api.jquery.com/jQuery.ajax/|jQuery AJAX} for more
@@ -480,7 +482,9 @@ ServerIO.load = function(url, params) {
 	assert( ! params.data.status || C.KStatus.has(params.data.status), params.data.status);
 	params.url = url;
 	// send cookies & add auth
-	Login.sign(params);
+	if (params.credentials !== "omit") { // NB: aping the fetch() API here, but there's no direct connection
+		Login.sign(params); // could we make Login.sign() smarter around data.property vs cookies or headers??
+	}
 	// debug: add stack
 	if (window.DEBUG) {
 		try {
