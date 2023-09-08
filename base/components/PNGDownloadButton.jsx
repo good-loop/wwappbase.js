@@ -46,7 +46,7 @@ const screenshotIcon = (
  * in the opts property.
  * 
  * @param {string} querySelector - A query selector for the DOM element we want to export
- * @param {string} [fileName="image"] - The filename to use for the exported image
+ * @param {string} [fileName="image"] - The filename to use for the exported image. ".png" is added to this.
  * @param {function} [onCloneFn] - If an onclone function is specified, a clone of the DOM will be made before
  *                               saving the image. This cloned DOM can be manipulated without affecting the
  *                               original DOM. 
