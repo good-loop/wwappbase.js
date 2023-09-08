@@ -75,6 +75,7 @@ const DEFAULT_PAGE_SIZE = 100;
  * @param {Number} [p.pageSize] Number of items per page, default 100
  * @param {Function|Object} [p.selected] Currently selected object.
  * 		Used to set initial page number in e.g. multi-pane contexts where items can be selected without navigating away from the list.
+ * @param {Function} [p.listCallback] Called when the list changes (due to filtering etc) with the new array of items.
  * @param {Object} [p.otherParams] Optional extra params to pass to ActionMan.list() and on to the server.
  */
 function ListLoad({ type, status, servlet, navpage,
@@ -91,7 +92,7 @@ function ListLoad({ type, status, servlet, navpage,
 	hasFilter, 
 	itemClassName,
 	transformFn,
-	list,
+	list: staticList,
 	ListItem = DefaultListItem,
 	nameFn,
 	hasCsv, csvColumns, hideCsvColumns,
@@ -107,10 +108,10 @@ function ListLoad({ type, status, servlet, navpage,
 	selected,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
-}) {
+}) {	
 	assert(C.TYPES.has(type), "ListLoad - odd type " + type);
 	if (!status) {
-		if (!list) console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
+		if (!staticList) console.error("ListLoad no status :( defaulting to ALL_BAR_TRASH", type);
 		status = KStatus.ALL_BAR_TRASH;
 	}
 	assert(KStatus.has(status), "ListLoad - odd status " + status);
@@ -131,58 +132,89 @@ function ListLoad({ type, status, servlet, navpage,
 	assMatch(servlet, String);
 	assMatch(navpage, String);
 	assert(navpage && navpage[0] !== '#', "ListLoad.jsx - navpage should be a 'word' [" + navpage + "]");
-	// store the lists in a separate bit of appstate
-	// from data.
-	// Downside: new events dont get auto-added to lists
+	// store the lists in a separate bit of appstate from data.
+	// Downside: new events don't get auto-added to lists
 	// Upside: clearer
 	// NB: case-insentive filtering
 	if (canFilter) {
 		assert(!filter, "ListLoad.jsx - Do NOT use filter and canFilter props");
 		filter = DataStore.getValue(widgetPath.concat('filter'));
 	}
+
 	const rawFilter = filter; // TODO case is needed for id matching -- Where/how best to handle that?
 	if (filter) filter = filter.toLowerCase(); // normalise
 
+	// Try to stabilise identity of the items array, for various reasons
+	const [allItems, setAllItems] = useState([]);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState(null)
+
+	useEffect(() => {
+		let nextList, fastFilter, isLoading, error;
+
+		if (staticList) {
+			nextList = staticList;
+			if (loading) setLoading(false);
+		} else {
+			// Load via ActionMan -- both filtered and un-filtered
+			// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
+			// while fetching from the backedn using the filter)
+			let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: rawFilter, sort, ...otherParams }) : { resolved: true };
+			let pvItemsAll = ActionMan.list({ type, status, q, start, end, sort, ...otherParams });
+			let pvItems = pvItemsFiltered.value ? pvItemsFiltered : pvItemsAll;
+			// filter out duplicate-id (paranoia: this should already have been done server side)
+			// NB: this prefers the 1st occurrence and preserves the list order.
+			nextList = pvItems.value;
+			fastFilter = ! pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
+			isLoading = ! (pvItemsFiltered.resolved && pvItemsAll.resolved);
+			error = pvItems.error;
+		}
+
+
+	}, [staticList, rawFilter, filterFn, filterLocally, type, status, q, start, end, sort, JSON.stringify(otherParams)]);
+
 	let fastFilter, isLoading, error;
-	if (!list) { // Load!
+	if (staticList) { // Load!
+		fastFilter = true;
+		isLoading = false;
+		if (filterFn && !is(hideTotal)) hideTotal = true;
+	} else {
 		// Load via ActionMan -- both filtered and un-filtered
 		// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 		// while fetching from the backedn using the filter)
-		let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: rawFilter, sort, ...otherParams }) : { resolved: true };
+		let pvItemsFiltered = (filter && !filterLocally) ? (
+			ActionMan.list({ type, status, q, start, end, prefix: rawFilter, sort, ...otherParams })
+		) : { resolved: true };
 		let pvItemsAll = ActionMan.list({ type, status, q, start, end, sort, ...otherParams });
 		let pvItems = pvItemsFiltered.value ? pvItemsFiltered : pvItemsAll;
 		// filter out duplicate-id (paranoia: this should already have been done server side)
 		// NB: this prefers the 1st occurrence and preserves the list order.
-		list = pvItems.value;
-		fastFilter = ! pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
-		isLoading = ! (pvItemsFiltered.resolved && pvItemsAll.resolved);
+		staticList = pvItems.value;
+		fastFilter = !pvItemsFiltered.value; // NB: pvItemsFiltered.resolved is artificially set true for filterLocally, so dont test that
+		isLoading = !(pvItemsFiltered.resolved && pvItemsAll.resolved);
 		error = pvItems.error;
-		if (filterFn || ! pvItemsFiltered.resolved) {
-			if ( ! is(hideTotal)) hideTotal = true; // NB: better to show nothing than incorrect info. Unless the caller explicitly asked for hideTotal=false
-		}
-	} else {
-		fastFilter = true;
-		isLoading = false;
-		if (filterFn && ! is(hideTotal)) {
-			hideTotal = true;
+		// NB: better to show nothing than incorrect info. Unless the caller explicitly asked for hideTotal=false
+		if (filterFn || !pvItemsFiltered.resolved) {
+			if (!is(hideTotal)) hideTotal = true;
 		}
 	}
+
 	const hits = List.hits(list);
 	let total = list && List.total(list); // FIXME this ignores local filtering
 
 	// ...filter / resolve
 	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter, transformFn });
-	if (items && hits && items.length < hits.length) {
+	if (allItems && hits && allItems.length < hits.length) {
 		// filtered out locally - reduce the total
-		total = items.length;
+		total = allItems.length;
 	}
 
 	// HACK: an exact id match comes first (this is important for PropControlDataItem, and arguably useful elsewhere)
 	if (rawFilter) {
-		const exactMatch = items.find(item => getId(item)===rawFilter);
-		if (exactMatch) {
-			items = items.filter(item => item !== exactMatch);
-			items.unshift(exactMatch);
+		const idMatchIndex = allItems.findIndex(item => getId(item) === rawFilter);
+		if (idMatchIndex >= 0) {
+			const idMatch = allItems.splice(idMatchIndex, 1); // in-place modify
+			allItems.unshift(idMatch);
 		}
 	}
 
@@ -205,21 +237,21 @@ function ListLoad({ type, status, servlet, navpage,
 
 	// Page number pulled from URL may be out-of-range when item list comes in - fix if so
 	useEffect(() => {
-		if (!items) return;
+		if (!allItems) return;
 		if (page !== clampPage(page)) setPage(page, false);
 	}, [pageCount]);
 
 	// Initialise page URL value if absent? -- No, don't cram stuff into URL prematurely
 	// if (items && pageSelectID && !pageFromUrl) setPage(1, false);
 
-	const allItems = items; // Keep filtered but unpaginated list for e.g. CSV download
-	if (pageSize) items = paginate({ items, page, pageSize });
+	const allItems = allItems; // Keep filtered but unpaginated list for e.g. CSV download
+	if (pageSize) allItems = paginate({ items: allItems, page, pageSize });
 
 	// When list is retrieved (so run when items list changes size) check if we should switch page to show selected item
 	useEffect(() => {
 		if (pageFromUrl || !selected) return; // No selected = nothing to do; Don't override URL param
 		const selFn = (typeof selected === 'function') ? selected : (itm => itm === selected); // can be predicate function or item
-		if (items.find(selFn)) return; // Current page has it = nothing to do
+		if (allItems.find(selFn)) return; // Current page has it = nothing to do
 		const itmIndex = allItems.findIndex(selected) + 1; // shift 0- to 1-indexed
 		if (itmIndex > 0) setPage(Math.ceil(itmIndex / pageSize), false);
 	}, [allItems.length]);
@@ -231,20 +263,20 @@ function ListLoad({ type, status, servlet, navpage,
 	const wrapperCommon = { type, servlet, navpage, unwrapped, checkboxes, canCopy, cannotClick, canDelete, notALink, itemClassName, onClickWrapper };
 	const itemCommon = { type, servlet, navpage, nameFn, items: allItems, sort: DataStore.getValue(['misc', 'sort'])};
 
-	return (<div className={space('ListLoad', className, ListItem === DefaultListItem ? 'DefaultListLoad' : null)} >
+	return (<div className={space('ListLoad', className, (ListItem === DefaultListItem) && 'DefaultListLoad')}>
 		{canCreate && <CreateButton type={type} base={createBase} navpage={navpage} />}
 
 		{canFilter && <PropControl inline label="Filter" size="sm" type="search" path={widgetPath} prop="filter" />}
 
-		{!items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
+		{!allItems.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 
 		{(total && !hideTotal) ? <div>
 			{pageControls && `Showing ${1 + ((page - 1) * pageSize)} to ${page * pageSize} of `}
 			{total} results{!pageControls && ' in total'}.</div> : null}
-		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
+		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={allItems} />}
 		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} hideCsvColumns={hideCsvColumns} />}
 		{pageControls}
-		{items.map((item, i) => (
+		{allItems.map((item, i) => (
 			<ListItemWrapper key={getId(item) || i} item={item} {...wrapperCommon} >
 				<ListItem key={'li' + (getId(item) || i)} item={item} onClick={() => onClickItem(item)} {...itemCommon} />
 			</ListItemWrapper>
@@ -362,6 +394,7 @@ const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, tran
 
 	return items;
 };
+
 
 /**
  * 
