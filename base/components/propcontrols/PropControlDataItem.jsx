@@ -43,7 +43,7 @@ set,
 setRawValue, storeValue, modelValueFromInput, 
 	type, itemType, status=KStatus.PUB_OR_DRAFT, domain, list, q, sort, embed, pageSize=20, navpage, notALink, readOnly, showId=true,
 }) {
-	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
+	const [showLL, setShowLL] = useState(); // Show/hide ListLoad
 	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad
 	const [inputClean, setInputClean] = useState(true); // Has the user input anything since last pick?
 
@@ -58,7 +58,6 @@ setRawValue, storeValue, modelValueFromInput,
 	// which bubbles and does NOT fire on internal-focus-shift.)
 	// So when a blur event fires, wait a moment before closing the dropdown list
 	// in case another focus event arrives.
-
 	const onFocus = () => {
 		setCloseTimeout(prevTimeout => {
 			window.clearTimeout(prevTimeout);
@@ -125,22 +124,19 @@ setRawValue, storeValue, modelValueFromInput,
 	const showItem = pvDataItem.value && inputClean;
 
 	return (
-		<Row className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
-			{showItem ? (
-				<Col xs={12}>
-					<ButtonGroup>
-						<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
-							href={!notALink ? `/#${(navpage||itemType.toLowerCase())}/${encURI(getId(pvDataItem.value))}` : undefined}
-							title={!notALink ? `Switch to editing this ${itemType}` : undefined}
-						>
-							<SlimListItem type={itemType} item={pvDataItem.value} noClick />
-						</Button>
-						{!readOnly && <Button color="secondary" className="clear" onClick={doClear}>🗙</Button>}
-					</ButtonGroup>
-					{showId && <div><small>ID: <code>{rawValue || storeValue}</code></small></div>}
-				</Col>
-			) : (<>
-				<Col xs={canCreate ? 8 : 12}>
+		<div className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
+			{showItem ? <>
+				<ButtonGroup>
+					<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
+						href={!notALink ? `/#${(navpage||itemType.toLowerCase())}/${encURI(getId(pvDataItem.value))}` : undefined}
+						title={!notALink ? `Switch to editing this ${itemType}` : undefined}
+					>
+						<SlimListItem type={itemType} item={pvDataItem.value} noClick />
+					</Button>
+					{!readOnly && <Button color="secondary" className="clear" onClick={doClear}>🗙</Button>}
+				</ButtonGroup>
+				{showId && <div><small>ID: <code>{rawValue || storeValue}</code></small></div>}
+			</> : <>
 				<div className="dropdown-sizer">
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
 					{rawValue && showLL && <div className="items-dropdown card card-body">
@@ -160,14 +156,12 @@ setRawValue, storeValue, modelValueFromInput,
 						/>
 					</div>}
 				</div>
-			</Col>
-			<Col xs={4}>
 				{canCreate && rawValue && ! pvDataItem.value && (
 					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={({item}) => doSet(item)} />
 				)}
-			</Col>
-		</>)}
-		</Row>);
+			</>}
+		</div>
+	);
 }
 
 registerControl({ type: 'DataItem', $Widget: PropControlDataItem2 });
