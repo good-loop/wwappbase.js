@@ -80,3 +80,5 @@ export const PNGDownloadButton = ({querySelector, onCloneFn, title = 'Click to s
 		</a>
 	);
 }
+
+export default PNGDownloadButton;
