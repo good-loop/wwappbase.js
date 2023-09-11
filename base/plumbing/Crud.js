@@ -878,6 +878,16 @@ const setWindowTitle = item => {
 	window.document.title = title;
 };
 
+/**
+ * HACK to map type to the ID field in our classes.
+ * Is this the right place for this to be? maybe miscutils?? - vera
+ * @param {!string} t 
+ * @returns {!string}
+ */
+const keyForType = (t) => {
+	return {Advertiser:"vertiser", Agency:"agencyId"}[t] || t;
+};
+
 
 const CRUD = {};
 
@@ -894,6 +904,7 @@ export {
 	restId,
 	restIdDataspace,
 	setWindowTitle,
+	keyForType,
 
 	localSave, // can be used externally
 	localLoad // for debug only
