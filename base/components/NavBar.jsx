@@ -117,7 +117,7 @@ function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', hom
 					{brandLogo? <img className={space(logoClass, "brand-logo")} alt={brandName} src={brandLogo} /> : brandName}
 				</C.A>
 				{brandType && brandId 
-					&& <CloseButton style={{position:"absolute", bottom:0, right:"0.8em"}} 
+					&& <CloseButton style={{position:"absolute", bottom:0, right:"-0em"}} className="text-white"
 						onClick={e => stopEvent(e) && setNavContext(brandType, null, true, brandLink)} size="sm" 
 						tooltip={`include content beyond ${brandName}'s micro-site`} />}
 			</div>
@@ -284,7 +284,7 @@ export const setNavContext = (type, id, processLogo, brandLink) => {
 	// NB: bug Oct 2022: KStatus.PUB_OR_DRAFT was over-writing draft data
 	let pvAdvertiser = getDataItem({type, id, status:KStatus.PUBLISHED, swallow:true});
 	pvAdvertiser.promise.then(advertiser => {
-		if ( ! advertiser) {		
+		if ( ! advertiser) {
 			setNavPropsBlank();
 			return;
 		}
