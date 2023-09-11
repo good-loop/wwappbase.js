@@ -21,7 +21,7 @@ import ServerIO from '../../plumbing/ServerIOBase';
 
 
 /** MIME type sets */
-const imgTypes = '.jpg, .jpeg, image/jpeg, .png, image/png, .svg, image/svg+xml, .webp, image/webp';
+const imgTypes = '.jpg, .jpeg, image/jpeg, .png, image/png, .svg, image/svg+xml';
 const videoTypes = '.mp4, .m4v, video/mp4, .ogv, video/ogg, .avi, video/x-msvideo, .wmv, video/x-ms-wmv, .mov, video/quicktime, .asf, video/ms-asf';
 const fontTypes = '.ttf, font/ttf, .otf, font/otf, .woff, font/woff, .woff2, font/woff2';
 const spreadsheetTypes = '.csv'; // TODO Excel and -- maybe using libreoffice as the backend convertor to csv? Or the Apache Something library?
