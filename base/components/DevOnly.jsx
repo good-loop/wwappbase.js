@@ -13,8 +13,11 @@ import { space } from '../utils/miscutils';
  * @param {String} [p.className] Concatenated with default class ".dev-only" on wrapper element
  */
 function DevOnly({bare, test, Tag = 'div', className, children, ...props}) {
+	// Allow more readable syntax like <DevOnly>{conditional && <ChildElement />}</DevOnly> without creating an empty div
+	if (!children) return null;
 	if (!Roles.isDev() && !(test && Roles.isTester())) return null;
 	if (bare) return children;
+
 	return <Tag className={space('dev-only', className)} {...props}>{children}</Tag>;
 }
 
