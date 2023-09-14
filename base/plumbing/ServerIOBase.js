@@ -405,6 +405,7 @@ const normaliseSogiveId = id => {
 	return sid || canonId;
 };
 
+
 /**
  * type -> servlet url
  * This can call different micro-services, e.g. SoGive for charity data.
@@ -414,33 +415,29 @@ const normaliseSogiveId = id => {
 ServerIO.getEndpointForType = (type) => {
 	// Future: refactor to be pluggable (but this is simpler and clearer for now)
 	// HACK route NGO=Charity, and go to sogive
-	if (type==='NGO') {
+	if (type === 'NGO') {
 		if (C.app.id === 'sogive') {
 			return '/charity';
 		} else {
 			return ServerIO.ENDPOINT_NGO;
 		}
 	}
+	// HACK route Person to Profiler
+	if (type === 'Person' && ServerIO.USE_PROFILER) {
+		return `${ServerIO.PROFILER_ENDPOINT}/person`;
+	}
 	// HACK route Task to calstat
-	if (type==='Task' && C.app.id !== 'calstat') {
+	if (type === 'Task' && C.app.id !== 'calstat') {
 		return ServerIO.ENDPOINT_TASK;
 	}
-	// HACK Change "advert" to "vert" to dodge some adblocking & route to Portal
-	if (type==='Advert') {
-		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vert';
+
+	// Route these types to Portal (Advert and Advertiser get mangled to reduce adblock breakages)
+	const normType = { Advert: 'vert', Advertiser: 'vertiser' }[type] || type.toLowerCase();
+	if (['vert', 'vertiser', 'agency', 'campaign', 'greentag', 'impactdebit', 'impactcredit'].includes(normType)) {
+		const base = (C.app.id === 'portal.good-loop.com') ? ServerIO.APIBASE : ServerIO.PORTAL_ENDPOINT;
+		return `${base}/${normType}`;
 	}
-	// HACK Change "advertiser" to "vertiser" to dodge some adblocking & route to Portal
-	if (type==='Advertiser') {
-		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vertiser';
-	}
-	// HACK route Agency, Campaign, GreenTag to Portal
-	if (['Agency','Campaign','GreenTag','ImpactDebit','ImpactCredit'].includes(type)) {
-		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/' +type.toLowerCase();
-	}
-	// HACK route Person to Profiler?
-	if (type==="Person" && ServerIO.USE_PROFILER) {
-		return ServerIO.PROFILER_ENDPOINT+"/person";
-	}
+
 	// normal = this domain's backend
 	return '/'+type.toLowerCase();
 };
