@@ -950,8 +950,7 @@ export const mapNew = (num, func) => {
  * @param {Number} buttons
  * @return {Array[boolean]} Buttons reported as "down" by this MouseEvent, in order L, R, Middle, [Back], [Forward]
  */
-export const decodeButtons = (buttons) => {
-	if (!buttons) return decodeButtons(0);
+export const decodeButtons = (buttons = 0) => {
 	return buttons
 		.toString(2)
 		.padStart(5, '0')
