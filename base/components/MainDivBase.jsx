@@ -288,7 +288,7 @@ class MainDivBase extends Component {
 			>
 			{_.isFunction(loginChildren)? loginChildren() : loginChildren}
 			</LoginWidget>
-			<Persistent page={page}/>
+			{Persistent && <Persistent page={page}/>}
 		</div>);
 	} // ./render()
 } // ./MainDiv
