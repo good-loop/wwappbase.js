@@ -1,23 +1,18 @@
 
 import React, { useEffect, useState } from 'react';
-import _ from 'lodash';
-import { Input, Row, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Button, ButtonGroup } from 'reactstrap';
+import { Input, Button, ButtonGroup, Form } from 'reactstrap';
 
 import ListLoad, {CreateButton} from '../ListLoad';
 
-import C from '../../CBase';
-import PropControl, { DSsetValue, PropControlParams, registerControl } from '../PropControl';
-import ActionMan from '../../plumbing/ActionManBase';
+import PropControl, {  PropControlParams, registerControl } from '../PropControl';
 import { getDataItem } from '../../plumbing/Crud';
-import { getId, getName } from '../../data/DataClass';
-import { assert } from '../../utils/assert';
-import { encURI, getLogo, space } from '../../utils/miscutils';
+import { getId } from '../../data/DataClass';
+import { encURI } from '../../utils/miscutils';
 import {saveDraftFnFactory} from '../SavePublishDeleteEtc';
-import { doShareThing } from '../../Shares';
 import { A } from '../../plumbing/glrouter';
 import DataItemBadge from '../DataItemBadge';
 import KStatus from '../../data/KStatus';
-import SearchQuery from '../../searchquery';
+
 
 /**
  * DataItemBadge
@@ -122,9 +117,11 @@ setRawValue, storeValue, modelValueFromInput,
 	// If the user has entered something in the search box, and it happens to be a valid ID -
 	// don't replace the search box with the item badge until they select it in the dropdown!
 	const showItem = pvDataItem.value && inputClean;
+	// Offer to create an item with name = current input value
+	const showCreate = !pvDataItem.value && canCreate && rawValue;
 
 	return (
-		<div className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
+		<Form inline className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
 			{showItem ? <>
 				<ButtonGroup>
 					<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
@@ -156,11 +153,12 @@ setRawValue, storeValue, modelValueFromInput,
 						/>
 					</div>}
 				</div>
-				{canCreate && rawValue && ! pvDataItem.value && (
-					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={({item}) => doSet(item)} />
-				)}
+				{showCreate && <CreateButton
+					type={itemType} base={base} id={baseId} className="ml-1"
+					saveFn={saveDraftFnFactory({type, key: prop})} then={({item}) => doSet(item)}
+				/>}
 			</>}
-		</div>
+		</Form>
 	);
 }
 
