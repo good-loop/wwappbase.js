@@ -28,18 +28,16 @@ ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for
  */
 ServerIO.NO_API_AT_THIS_HOST = false;
 
-// HACK our special micro-services
-// also HACK: SoGive subdomains don't match the standard pattern & we don't want devs on local to need their own sogive server too
-const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test', stage: 'stage'}[C.SERVER_TYPE];
-const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http', stage: 'https'}[SOGIVE_SUBDOMAIN];
-ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}.sogive.org/charity`;
-ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
-
 // Init ENDPOINTS for typescript ??
 ServerIO.DATALOG_ENDPOINT = '';
 ServerIO.MEDIA_ENDPOINT = '';
 ServerIO.MEASURE_ENDPOINT = '';
 ServerIO.API_ENDPOINT = '';
+
+// const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test', stage: 'stage'}[C.SERVER_TYPE];
+// const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http', stage: 'https'}[SOGIVE_SUBDOMAIN];
+// ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}portal.good-loop.com/ngo`;
+ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
@@ -147,7 +145,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
 		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com/measure';
-		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
+		// ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
 		// hack for SoGive
 		if (ServerIO.APIBASE.includes("sogive")) {
 			ServerIO.APIBASE = 'https://test.sogive.org';
@@ -338,12 +336,12 @@ ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], sta
  * @param {?string} domain - e.g. "https://foo.com/" Leave unset (the norm) for "this server".
  */
 ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
-	// HACK route charity requests to SoGive
-	if (type==='NGO' && C.app.id !== 'sogive') {
-		id = normaliseSogiveId(id);
-		const endpoint = ServerIO.ENDPOINT_NGO;
-		return endpoint+"/"+encURI(id)+'.json'+(status? '?status='+status : '');
-	}
+	// // HACK route charity requests to SoGive
+	// if (type==='NGO' && C.app.id !== 'sogive') {
+	// 	id = normaliseSogiveId(id);
+	// 	const endpoint = ServerIO.ENDPOINT_NGO;
+	// 	return endpoint+"/"+encURI(id)+'.json'+(status? '?status='+status : '');
+	// }
 	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);
 	let url = domain + servlet+'/' 
@@ -413,14 +411,14 @@ const normaliseSogiveId = id => {
  */
 ServerIO.getEndpointForType = (type) => {
 	// Future: refactor to be pluggable (but this is simpler and clearer for now)
-	// HACK route NGO=Charity, and go to sogive
-	if (type==='NGO') {
-		if (C.app.id === 'sogive') {
-			return '/charity';
-		} else {
-			return ServerIO.ENDPOINT_NGO;
-		}
-	}
+	// // HACK route NGO=Charity, and go to sogive
+	// if (type==='NGO') {
+	// 	if (C.app.id === 'sogive') {
+	// 		return '/charity';
+	// 	} else {
+	// 		return ServerIO.ENDPOINT_NGO;
+	// 	}
+	// }
 	// HACK route Task to calstat
 	if (type==='Task' && C.app.id !== 'calstat') {
 		return ServerIO.ENDPOINT_TASK;
@@ -433,8 +431,8 @@ ServerIO.getEndpointForType = (type) => {
 	if (type==='Advertiser') {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vertiser';
 	}
-	// HACK route Agency, Campaign, GreenTag to Portal
-	if (['Agency','Campaign','GreenTag','ImpactDebit','ImpactCredit'].includes(type)) {
+	// HACK route Agency, Campaign, GreenTag, NGO to Portal
+	if (['Agency','Campaign','GreenTag','ImpactDebit','ImpactCredit','NGO'].includes(type)) {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/' +type.toLowerCase();
 	}
 	// HACK route Person to Profiler?
