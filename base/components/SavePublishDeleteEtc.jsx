@@ -142,6 +142,7 @@ const check = ok => {
  * @param {?Boolean} p.sendDiff Send a JSON Patch instead of a complete object, making field deletions etc compatible with ElasticSearch partial doc overwrites.
  * @param {?Boolean} p.oneButton render as a single button instead of a large footer bar (useful for embedding in smaller controls)
  * @param {?Array[]} p.targetPaths a list of paths to props in the item to target for saving - ignores any other changes. used with oneButton
+ * @param {?Boolean} p.noPublish If not need publish button
  * A snapshot is taken the first time this renders.
  */
 function SavePublishDeleteEtc({
@@ -156,7 +157,8 @@ function SavePublishDeleteEtc({
 	saveAs, unpublish,
 	prePublish = T, preDelete = ({item, action}) => confirmUserAction({item, action}), preArchive = T, preSaveAs = T,
 	sendDiff,
-	oneButton, targetPaths
+	oneButton, targetPaths,
+	noPublish
 }) {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
@@ -343,7 +345,7 @@ function SavePublishDeleteEtc({
 				</ButtonDropdown>
 			}
 
-			<PublishButton/>
+			{!noPublish && <PublishButton/>}
 
 			{unpublish &&
 				<Button name="unpublish" color="outline-warning" size={size} className="ml-2"
