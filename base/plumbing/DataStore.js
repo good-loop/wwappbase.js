@@ -601,19 +601,19 @@ class Store {
 	 */
 	fetchIsFresh(path, cachePeriod) {
 		const fetchDate = this.getFetchDate(path);
-		if (!fetchDate) return true; // No timestamp? Either stored without cache-period (always fresh) or never stored (
+		if (!fetchDate) return true; // No timestamp? Either stored without cache-period (always fresh) or never stored (calling code handles this case)
 		return fetchDate.getTime() < (new Date().getTime() - cachePeriod);
 	}
 
 
 	/**
-	 * Standard path where the PV for of a fetch() should be stored for caching purposes
+	 * Standard path where the PV for a fetch() should be stored for caching purposes
 	 * @param {String[]} path
 	 * @param {boolean} [refresh] True: alternate path for PVs which will replace a stale cached value when they resolve
 	 * @returns {String[]}
 	 */
 	fetchPVPath(path, refresh) {
-		return ['transient', refresh ? 'PromiseValue' : 'PromiseValue-refresh', ...path];
+		return ['transient', `PromiseValue${refresh ? '-refresh' : ''}`, ...path];
 	}
 
 
@@ -658,26 +658,30 @@ class Store {
 	 * If unset, the call will return an in-progress PV, but will not do a fresh fetch.
 	 * @param {object} [options]
 	 * @param {number} [options.cachePeriod] milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
-	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience.
-	 * 	NB: Cache info is stored in `appstate.transient.fetchDate...`
+	 *  During a re-fetch, the old answer will still be instantly returned for a smooth experience.
+	 *  NB: Cache info is stored in `appstate.transient.fetchDate...`
+	 *  NB: Cache period clamped to at least 5 seconds, as our code does a lot of redraw churning.
 	 * @param {boolean} [options.localStorage]
 	 * @param {number} [cachePeriod] Convenience dupe of options.cachePeriod (???)
 	 * @returns {PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, options, cachePeriod) { // TODO allow retry after 10 seconds
+		assert(path, 'DataStore.js - missing path:', path);
+
 		if (!options) options = {};
-		// backwards compatability Feb 2021
+		// backwards compatibility Feb 2021
 		if (typeof(options) === 'number') {
 			cachePeriod = options;
 			options = {};
 		}
 		if (typeof(options) === 'boolean') options = {};
-
-		if (!cachePeriod) cachePeriod = options.cachePeriod;
-		cachePeriod = Math.max(cachePeriod, 1000); // Quietly avoid too-short caches
-
+		if (!typeof(cachePeriod) === 'number') cachePeriod = options.cachePeriod;
 		// end backwards compatability
-		assert(path, "DataStore.js - missing input", path);
+
+		// HACK Our code churns redraws quite a lot, so a very short cache period will cause hammering.
+		if (typeof(cachePeriod) === 'number') {
+			cachePeriod = Math.max(cachePeriod, 5000);
+		}
 
 		/*
 		// HUH - the edits to fetch2() that make it retain PVs (to maintain identity i.e. same
@@ -721,7 +725,7 @@ class Store {
 	}
 
 
-	/** Convenience for "is null/undefined" */
+	/** Convenience for "is null/undefined" (ie allowing 0, false, '' etc) */
 	noValue(item) {
 		return (item === null || item === undefined);
 	}
@@ -742,25 +746,26 @@ class Store {
 		// Has a previous fetch resolved & found nothing?
 		const resolvedToNothing = (prevPV?.resolved && this.noValue(prevPV.value));
 
-		// If there's no PV or a failed one, BUT there's an item at the requested path
-		// (eg put there by setValue() instead of fetch()), then make necessary adjustments
-		// so this fetch returns a PV which resolves to the item.
+		// If there's no PV or a failed one...
 		let fetchOverridden = false;
 		if (resolvedToNothing) {
-			// No or failed PV, but item may have reached the store by another means...
 			const item = this.getValue(path);
+			// ...BUT there's an item at the requested path (eg put there by setValue() instead of fetch())
 			if (!this.noValue(item)) {
-				// The item IS in the store. Replace fetch function with one which resolves to the item.
+				// Replace fetch function with one which resolves to the item, so calling code gets the item.
 				// This will be called below & the result wrapped in a PV, which will be cached appropriately
 				fetchFn = () => item;
 				fetchOverridden = true;
 			}
 		}
 
+		// OK, we have an existing PV for this fetch path. Is it OK to return it?
 		if (prevPV && !fetchOverridden) {
 			if (isFresh) return prevPV; // It's still in cache period - return it.
 			if (this.getFetchPV(path, true)) return prevPV; // Refresh already in progress - return old PV in meantime.
 			// Stored PV is stale, and refresh NOT already in progress: continue and start a refresh.
+			// Poke a marker onto the old PV so calling code can tell it's out-of-date, if it cares.
+			prevPV.stale = true;
 		}
 
 		// Nothing in store, nothing in-progress, no way to fetch? Return a reject PV.
@@ -798,11 +803,12 @@ class Store {
 
 			// Was this a cache-refresh call?
 			if (!isFresh) {
-				// Replace the old PV with the now-resolved new one
-				this.setFetchPV(path, pv, false);
-				// ...and remove the new one from the "in-progress refresh" path, to clear
-				// the way for when the cache expires again & another refresh is needed.
+				// Remove the new PV from the "in-progress refresh" path, to clear the
+				// way for when the cache expires again & another refresh is needed.
 				this.setFetchPV(path, null, false, true);
+				// ...and place the new PV at the base path, replacing the old one.
+				this.setFetchPV(path, pv, false);
+				// No update on either of these calls - setValue() below triggers that.
 			}
 
 			// Store result to requested path & trigger view update.
@@ -816,7 +822,8 @@ class Store {
 			throw res;
 		});
 
-		return pv;
+		// If this is a refresh fetch, return the old PV (with stale marker) until the new one resolves.
+		return prevPV || pv;
 	} // ./fetch2()
 
 
