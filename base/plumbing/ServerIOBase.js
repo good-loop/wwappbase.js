@@ -137,7 +137,7 @@ const checkBase2_toggleTestEndpoints = () => {
 	const server = DataStore.getUrlValue("server");
 	if (!server) return;
 	// Used by a few APIBASE instances
-	const unprefixedHostname = window.location.hostname.replace(/^(local|test)?/, '');
+	const unprefixedHostname = window.location.hostname.replace(/^(local|test|stage)?/, '');
 	if (server === 'test') {
 		ServerIO.AS_ENDPOINT = 'https://testas.good-loop.com';
 		ServerIO.PORTAL_ENDPOINT = 'https://testportal.good-loop.com';
