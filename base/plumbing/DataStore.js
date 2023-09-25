@@ -18,7 +18,7 @@ import { modifyPage } from './glrouter';
 class Store {
 	callbacks = [];
 
-	/** HACK: character to start a local path # or /  See glrouter */
+	/** HACK: character to start a local path, "#" or "/" - See glrouter */
 	localUrl = '#';
 
 	constructor() {
@@ -32,7 +32,7 @@ class Store {
 			/**
 			 * What are you looking at?
 			 * This is for transient focus. It is NOT for navigation parameters
-			 *  -- location and getUrlValue() are better for navigational focus.
+			 * -- location and getUrlValue() are better for navigational focus.
 			*/
 			focus:{},
 			/** e.g. form settings */
@@ -60,6 +60,7 @@ class Store {
 		// Should this listen to history popState as well?? Would that replace some calls to parseUrlVars()??
 	}
 
+
 	/**
 	 * Keep navigation state in the url, after the hash, so we have shareable urls.
 	 * To set a nav variable, use setUrlValue(key, value);
@@ -83,6 +84,7 @@ class Store {
 		this.setValue(['location'], location, update);
 	}
 
+
 	parseUrlVars2(url) {
 		if (this.localUrl !== '/') {
 			return parseHash();
@@ -91,7 +93,7 @@ class Store {
 		let pathname = window.location.pathname;
 		// HACK chop .html
 		if (pathname.endsWith(".html")) pathname = pathname.substring(0, pathname.length-5);
-		let path = pathname.length ? pathname.split('/').map(decURI) : [];				
+		let path = pathname.length ? pathname.split('/').map(decURI) : [];
 		// HACK fish out key=value bits
 		path = path.filter(bit => {
 			if ( ! bit) return false;
@@ -110,10 +112,9 @@ class Store {
 	/**
 	 * Set a key=value in the url for navigation. This modifies the window.location and DataStore.appstore.location.params, and does an update.
 	 * @param {String} key
-	 * @param {?string|boolean|number|Date} value
-	 * @param {?Object} options passed to goto()
+	 * @param {String|boolean|number|Date} value
+	 * @param {Object} [options] passed to goto()
 	 * @returns {String} value
-	 * 
 	 */
 	setUrlValue(key, value, update, options) {
 		assMatch(key, String);
@@ -131,7 +132,7 @@ class Store {
 	 * See also getValue('location','path') for the path.
 	 * Use `getValue('location','params')` for all the url parameters
 	 * @param {String} key
-	 * @returns {?string}
+	 * @returns {String|null|undefined}
 	 */
 	getUrlValue(key) {
 		assMatch(key, String);
@@ -175,6 +176,7 @@ class Store {
 		}
 		return true; // can be chained with &&
 	} // ./update
+
 
 	/**
 	 * Convenience for getting from the data sub-node (as opposed to e.g. focus or misc) of the state tree.
@@ -341,7 +343,7 @@ class Store {
 	 * @param {*} value The new value. Can be null to null-out a value.
 	 * @param {Boolean} [update] Set to false to switch off sending out an update. Set to true to force an update even if it looks like a no-op.
 	 * undefined is true-without-force
-	 * @param {?Object} options goto() options if setting a url parameter
+	 * @param {Object} [options] goto() options if setting a url parameter
 	 * @returns value
 	 */
 	// TODO handle setValue(pathbit, pathbit, pathbit, value) too
@@ -402,9 +404,9 @@ class Store {
 
 	/**
 	 * Convenience for getValue() || setValue(). It's like java's Map.putIfAbsent()
-	 * @param {!string[]} path 
+	 * @param {string[]} path 
 	 * @param {Object} value Set this IF there is no value already
-	 * @param {?boolean} update 
+	 * @param {boolean} [update] Trigger update if the value was set
 	 * @returns the value
 	 */
 	setValueIfAbsent(path, value, update) {
@@ -417,7 +419,7 @@ class Store {
 	 * Has a data item been modified since loading?
 	 * @param {string} type
 	 * @param {string} id
-	 * @returns {?string} "dirty", "clean", etc. -- see C.STATUS
+	 * @returns {string|null|undefined} "dirty", "clean", etc. -- see C.STATUS
 	 */
 	getLocalEditsStatus(type, id) {
 		assert(C.TYPES.has(type), "DataStore.getLocalEditsStatus "+type);
@@ -429,9 +431,9 @@ class Store {
 	/**
 	 * Has a data item been modified since loading?
 	 * @param {C.TYPES} type
-	 * @param {!String} id
+	 * @param {String} id
 	 * @param {C.STATUS} status loading clean dirty saving
-	 * @param {?boolean} update Request a react rerender
+	 * @param {boolean} [update] Request a react rerender
 	 * @return "dirty", "clean", etc. -- see C.STATUS
 	 */
 	setLocalEditsStatus(type, id, status, update) {
@@ -444,7 +446,7 @@ class Store {
 
 
 	/**
-	 * @param {!String[]} path - the full path to the value being edited
+	 * @param {String[]} path - the full path to the value being edited
 	 * @returns {boolean} true if this path has been modified by a user-edit to a PropControl
 	 */
 	isModified(path) {
@@ -472,7 +474,7 @@ class Store {
 			// TypeError: Cannot create property 'country' on boolean 'true'
 			// ignore
 			console.log("(swallow) PropControl.setModified fail: "+err);
-		}		
+		}
 	}
 
 
@@ -562,6 +564,83 @@ class Store {
 
 
 	/**
+	 * Standard path where the timestamp of a fetch() should be stored for caching purposes
+	 * @param {String[]} path
+	 * @returns {String[]}
+	 */
+	fetchDatePath(path) {
+		return ['transient', 'fetchDate', ...path];
+	}
+
+
+	/**
+	 * Time when a fresh fetch() was last performed at this path
+	 * @param {String[]} path
+	 * @returns {Date}
+	 */
+	getFetchDate(path) {
+		this.getValue(this.fetchDatePath(path));
+	}
+
+
+	/**
+	 * Set the time when a fresh fetch() was last performed at this path
+	 * @param {String[]} path
+	 * @param {Date} [date] Default to now
+	 */
+	setFetchDate(path, date = new Date()) {
+		return this.setValue(path, date, false);
+	}
+
+
+	/**
+	 * Check if a fetch() result is still within its specified cache period
+	 * @param {String[]} path
+	 * @param {Number} cachePeriod
+	 * @return {boolean}
+	 */
+	fetchIsFresh(path, cachePeriod) {
+		const fetchDate = this.getFetchDate(path);
+		if (!fetchDate) return true; // No timestamp? Either stored without cache-period (always fresh) or never stored (calling code handles this case)
+		return fetchDate.getTime() < (new Date().getTime() - cachePeriod);
+	}
+
+
+	/**
+	 * Standard path where the PV for a fetch() should be stored for caching purposes
+	 * @param {String[]} path
+	 * @param {boolean} [refresh] True: alternate path for PVs which will replace a stale cached value when they resolve
+	 * @returns {String[]}
+	 */
+	fetchPVPath(path, refresh) {
+		return ['transient', `PromiseValue${refresh ? '-refresh' : ''}`, ...path];
+	}
+
+
+	/**
+	 * The stored PromiseValue for a fetch() call
+	 * @param {String[]} path
+	 * @param {boolean} [refresh] True: get the in-progress PV for a "refresh stale cache" fetch
+	 * @returns {PromiseValue}
+	 */
+	getFetchPV(path, refresh) {
+		return this.getValue(this.fetchPVPath(path, refresh));
+	}
+
+
+	/**
+	 * Store the PromiseValue associated with a fetch() call
+	 * @param {String[]} path
+	 * @param {PromiseValue} pv
+	 * @param {boolean} [update] True if DataStore should trigger an update after storing
+	#* @param {boolean} [refresh] True: store the in-progress PV for a "refresh stale cache" fetch
+	 */
+	setFetchPV(path, pv, update, refresh) {
+		return this.setValue(this.fetchPVPath(path, refresh), pv, update);
+	}
+
+
+	/**
 	 * get local, or fetch by calling fetchFn (but only once).
 	 * Does not call update here and now, so it can be used inside a React render().
 	 * 
@@ -572,127 +651,179 @@ class Store {
 	 * without over-writing the fuller data.
 	 * 
 	 * @param {string[]} path
-	 * @param {Function} fetchFn () -> Promise/value, which will be wrapped using promise-value.
+	 * @param {Function} [fetchFn] () -> Promise/value, which will be wrapped using promise-value.
 	 * fetchFn MUST return the value for path, or a promise for it. It should NOT set DataStore itself.
 	 * As a convenience hack, this method will use `JSend` to extract `data` or `cargo` from fetchFn's return, so it can be used
 	 * that bit more easily with Winterwell's "standard" json api back-end.
-	 * If unset, the call will return an inprogress PV, but will not do a fresh fetch.
+	 * If unset, the call will return an in-progress PV, but will not do a fresh fetch.
 	 * @param {object} [options]
 	 * @param {number} [options.cachePeriod] milliseconds. Normally unset. If set, cache the data for this long - then re-fetch.
-	 * 	During a re-fetch, the old answer will still be instantly returned for a smooth experience.
-	 * 	NB: Cache info is stored in `appstate.transient.fetchDate...`
+	 *  During a re-fetch, the old answer will still be instantly returned for a smooth experience.
+	 *  NB: Cache info is stored in `appstate.transient.fetchDate...`
+	 *  NB: Cache period clamped to at least 5 seconds, as our code does a lot of redraw churning.
 	 * @param {boolean} [options.localStorage]
 	 * @param {number} [cachePeriod] Convenience dupe of options.cachePeriod (???)
-	 * @returns {!PromiseValue} (see promise-value.js)
+	 * @returns {PromiseValue} (see promise-value.js)
 	 */
 	fetch(path, fetchFn, options, cachePeriod) { // TODO allow retry after 10 seconds
-		if ( ! options) options = {};
-		// backwards compatability Feb 2021
-		if (typeof(options)==="number") {
+		assert(path, 'DataStore.js - missing path:', path);
+
+		if (!options) options = {};
+		// backwards compatibility Feb 2021
+		if (typeof(options) === 'number') {
 			cachePeriod = options;
 			options = {};
 		}
-		if (typeof(options)==="boolean") {
-			options = {};
-		}
-		if (cachePeriod) {
-			options.cachePeriod = cachePeriod; 
-		}
+		if (typeof(options) === 'boolean') options = {};
+		if (!typeof(cachePeriod) === 'number') cachePeriod = options.cachePeriod;
 		// end backwards compatability
-		assert(path, "DataStore.js - missing input",path);
-		// in the store?
-		let item = this.getValue(path);
-		if (item!==null && item!==undefined) {
-			// out of date?
-			if (options.cachePeriod) {
-				if (options.cachePeriod < 1000) { // quietly avoid too short caches
-					options.cachePeriod = 1000;
-				}
-				const now = new Date();
-				const epath = ['transient', 'fetchDate'].concat(path);
-				let fetchDate = this.getValue(epath);
-				if ( ! fetchDate || fetchDate.getTime() < now.getTime() - options.cachePeriod) {
-					// fetch a fresh copy
-					// NB this bit can get called repeatedly whilst the response loads - which is fine 'cos fetch2() handles that. 
-					const pv = this.fetch2(path, fetchFn, options.cachePeriod);
-					// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
-					if (pv.resolved) {
-						return pv;
-					}
-				}
-			}
-			// Note: falsy or an empty list/object is counted as valid. It will not trigger a fresh load
-			return new PromiseValue(item);
+
+		// HACK Our code churns redraws quite a lot, so a very short cache period will cause hammering.
+		if (typeof(cachePeriod) === 'number') {
+			cachePeriod = Math.max(cachePeriod, 5000);
 		}
-		// Fetch it
-		return this.fetch2(path, fetchFn, options.cachePeriod);
+
+		/*
+		// HUH - the edits to fetch2() that make it retain PVs (to maintain identity i.e. same
+		// item always has same PV) actually seem to make all the checks below redundant, since:
+		// - if the item is absent & no fetch in progress, fetch2() will start a fetch & return PV
+		// - if the item is absent but fetch in progress, fetch2() will return in-progress PV
+		// - if the item is present & fresh (within cache period) fetch2() will return the resolved PV
+		// - if the item is present & stale, fetch2() will start a refresh fetch, but return the old PV
+
+		// In the store already?
+		const item = this.getValue(path);
+		// Note: falsy or an empty list/object is counted as valid, only null/undefined will trigger a fresh load.
+		const notHere = (item === null || item === undefined);
+		const fresh = this.fetchIsFresh(path, cachePeriod);
+		// We don't have it, or the cached copy is stale - fetch now.
+		// NB if the fetch or refresh-fetch is in progress, fetch2() will return the existing PV.
+		if (notHere || !fresh) return this.fetch2(path, fetchFn, cachePeriod);
+
+		// out of date?
+		if (this.fetchIsFresh(path, cachePeriod)) {
+				// Fetch a fresh copy (OK if this is called repeatedly, fetch2() will store & return PV from first call)
+				const pv = this.fetch2(path, fetchFn, cachePeriod);
+				// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
+				if (pv.resolved) return pv;
+		}
+
+		return this.getFetchPV(item);
+		*/
+		return this.fetch2(path, fetchFn, cachePeriod);
 	} // ./fetch()
 
 
 	/**
-	 * Does the remote fetching work for fetch(). 
+	 * Turn whatever object or promise into a PromiseValue. No-op if it's already a PV.
+	 * @param {*} thing
+	 * @returns {PromiseValue}
+	 */
+	wrapPV(thing) {
+		if (thing instanceof PromiseValue) return thing;
+		return new PromiseValue(thing);
+	}
+
+
+	/** Convenience for "is null/undefined" (ie allowing 0, false, '' etc) */
+	noValue(item) {
+		return (item === null || item === undefined);
+	}
+
+
+	/**
+	 * Does the remote fetching work for fetch().
 	 * Can be called repeatedly, and it will cache and return the same PromiseValue.
 	 * @param {String[]} path
 	 * @param {Function} fetchFn () => promiseOrValue or a PromiseValue. If `fetchFn` is unset (which is unusual), return in-progress or a failed PV.
-	 * @param {?Number} cachePeriod
+	 * @param {Number} [cachePeriod] Milliseconds to consider the fetch result "fresh"
 	 * @returns {!PromiseValue}
 	 */
 	fetch2(path, fetchFn, cachePeriod) {
-		// only ask once
-		const fpath = ['transient', 'PromiseValue'].concat(path);
-		const prevpv = this.getValue(fpath);
-		if (prevpv) {
-			return prevpv;
+		// Only fetch once: has this been fetched before? Is the saved copy fresh?
+		const prevPV = this.getFetchPV(path);
+		const isFresh = this.fetchIsFresh(path, cachePeriod);
+		// Has a previous fetch resolved & found nothing?
+		const resolvedToNothing = (prevPV?.resolved && this.noValue(prevPV.value));
+
+		// If there's no PV or a failed one...
+		let fetchOverridden = false;
+		if (resolvedToNothing) {
+			const item = this.getValue(path);
+			// ...BUT there's an item at the requested path (eg put there by setValue() instead of fetch())
+			if (!this.noValue(item)) {
+				// Replace fetch function with one which resolves to the item, so calling code gets the item.
+				// This will be called below & the result wrapped in a PV, which will be cached appropriately
+				fetchFn = () => item;
+				fetchOverridden = true;
+			}
 		}
-		if ( ! fetchFn) {
-			return new PromiseValue(null); // nothing in-progress, so return a reject PV
+
+		// OK, we have an existing PV for this fetch path. Is it OK to return it?
+		if (prevPV && !fetchOverridden) {
+			if (isFresh) return prevPV; // It's still in cache period - return it.
+			if (this.getFetchPV(path, true)) return prevPV; // Refresh already in progress - return old PV in meantime.
+			// Stored PV is stale, and refresh NOT already in progress: continue and start a refresh.
+			// Poke a marker onto the old PV so calling code can tell it's out-of-date, if it cares.
+			prevPV.stale = true;
 		}
-		let promiseOrValue = fetchFn();
-		assert(promiseOrValue!==undefined, "fetchFn passed to DataStore.fetch() should return a promise or a value. Got: undefined. Missing return statement?");
-		// Use PV to standardise the output from fetchFn()
-		let pvPromiseOrValue = promiseOrValue instanceof PromiseValue? promiseOrValue : new PromiseValue(promiseOrValue);
-		// pvPromiseOrValue.name = "pvPromiseOrValue_"+JSON.stringify(path); // DEBUG HACK
-		// process the result async
-		let promiseWithCargoUnwrap = pvPromiseOrValue.promise.then(res => {
-			if ( ! res) return res;
+
+		// Nothing in store, nothing in-progress, no way to fetch? Return a reject PV.
+		if (!fetchFn) return new PromiseValue(null);
+
+		const promiseOrValue = fetchFn();
+		assert(promiseOrValue !== undefined, 'fetchFn passed to DataStore.fetch() should return a promise or a value. Got: undefined. Missing return statement?');
+		// Ensure fetch result is in a Promise, even if it returned a simple value.
+		const fetchPV = this.wrapPV(promiseOrValue);
+
+		// Process the result asynchronously
+		const promiseWithCargoUnwrap = fetchPV.promise.then(res => {
+			if (!res) return res;
 			// HACK handle WW standard json wrapper: unwrap cargo
 			// NB: success/fail is checked at the ajax level in ServerIOBase
 			// TODO let's make unwrap a configurable setting
-			if (JSend.isa(res)) {
-				// console.log("unwrapping cargo to store at "+path, res);
-				res = JSend.data(res) || res; // HACK: stops login widget forcing rerender on each key stroke
-			}
+			if (JSend.isa(res)) res = JSend.data(res) || res; // HACK: stops login widget forcing rerender on each key stroke
 			return res;
 		}).catch(response => {
 			// what if anything to do here??
-			console.warn("DataStore fetch fail", path, response);
+			console.warn('DataStore fetch fail', path, response);
 			// BV: Typically ServerIO will call notifyUser
 			throw response;
 		});
-		// wrap this promise as a PV
+
+		// Wrap this promise as a PV & store right away, so subsequent fetch calls get it back.
 		const pv = new PromiseValue(promiseWithCargoUnwrap);
-		// pv.name = "pv_"+JSON.stringify(path); // DEBUG HACK
+		this.setFetchPV(path, pv, !isFresh); // Will store to either base or refresh-in-progress path as appropriate
+
+		// When the promise resolves/rejects:
 		pv.promise.then(res => {
-			// set the DataStore
-			// cache-period? then store the fetch time
-			if (cachePeriod) {
-				const epath = ['transient', 'fetchDate'].concat(path);
-				this.setValue(epath, new Date(), false);
+			// Save result to DataStore at original path
+			// Limited cache time? Timestamp the response.
+			if (cachePeriod) this.setFetchDate(path);
+
+			// Was this a cache-refresh call?
+			if (!isFresh) {
+				// Remove the new PV from the "in-progress refresh" path, to clear the
+				// way for when the cache expires again & another refresh is needed.
+				this.setFetchPV(path, null, false, true);
+				// ...and place the new PV at the base path, replacing the old one.
+				this.setFetchPV(path, pv, false);
+				// No update on either of these calls - setValue() below triggers that.
 			}
-			// This is done after the cargo-unwrap PV has resolved. So any calls to fetch() during render will get a resolved PV
-			// even if res is null.
-			this.setValue(path, res); // this should trigger an update (typically a React render update)
-			// finally, clear the promise from DataStore
-			this.setValue(fpath, null, false);
+
+			// Store result to requested path & trigger view update.
+			// This is done after the cargo-unwrap PV has resolved.
+			// So any calls to fetch() during render will get a resolved PV even if res is null.
+			this.setValue(path, res, true);
 			return res;
 		}).catch(res => {
-			// keep the fpath promise to avoid repeated ajax calls??
-			// update e.g. React
-			this.update();
+			// Error: leave the failed PV in place to avoid hammering bad API calls...
+			this.update(); // ...but update React, so components redraw and receive the resolved-but-failed PV.
 			throw res;
 		});
-		this.setValue(fpath, pv, false);
-		return pv;
+
+		// If this is a refresh fetch, return the old PV (with stale marker) until the new one resolves.
+		return prevPV || pv;
 	} // ./fetch2()
 
 
@@ -718,6 +849,7 @@ class Store {
 		this.setValue(ppath, null, false);
 	}
 
+
 	/**
 	 * @deprecated
 	 */
@@ -725,6 +857,7 @@ class Store {
 		console.warn("Switch to resolveDataList");
 		return this.resolveDataList(listOfRefs, preferStatus);
 	}
+
 
 	/**
 	 * Resolve a list against the data/draft node to get the data items.
@@ -739,6 +872,7 @@ class Store {
 		items = items.filter(i => !!i); // paranoia: no nulls
 		return items;
 	}
+
 
 	/**
 	 * 
@@ -772,11 +906,14 @@ class Store {
 	}
 } // ./Store
 
+
 class Ref {
 	status;
 	type;
 	id;
 }
+
+
 /**
  * Item could be anything - Advert, NGO, Person.
  * This class is to help in defining the DataStore API -- not for actual use.
@@ -791,6 +928,7 @@ class Item extends DataClass {
 		DataClass._init(this, base);
 	}
 }
+
 
 const DataStore = new Store();
 // create some of the common data nodes
@@ -817,9 +955,14 @@ DataStore.update({
 	 */
 	list: {}
 });
+
+
 /** When a data or draft item is edited => set a modified flag. Set to falsy if you want to disable this. */
 DataStore.DATA_MODIFIED_PROPERTY = 'localStatus';
+
+
 export default DataStore;
+
 
 // provide getPath as a convenient export
 // TODO move towards offering functions cos VS auto-complete seems to work better
@@ -830,6 +973,7 @@ export default DataStore;
  * @param id
  */
 const getPath = DataStore.getPath.bind(DataStore);
+
 
 /**
  * the DataStore path for this item, or null if item is null. 
@@ -847,7 +991,7 @@ const getDataPath = DataStore.getDataPath.bind(DataStore);
 
 /**
  * DataStore path for list
- *  * 	// TODO have a filter-function fot lists, which can dynamically add/remove items
+ * TODO have a filter-function fot lists, which can dynamically add/remove items
  * @param {Object} p
  * @param {?String} p.q search query
  * @param {?String} sort Optional sort e.g. "created-desc"
