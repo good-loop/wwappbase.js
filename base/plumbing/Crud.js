@@ -778,10 +778,11 @@ const MAX_COLLECTED_LIST = 5000;
 export const getMoreDataList = (list, p) => {
 	p.after = list.next;
 	const listPromise = ServerIO.list(p);
-	listPromise.then(
-		?? exten
-
-	);
+	listPromise.then(response => {
+		let list2 = JSend.data(response);
+		console.warn("TODO extend rl",response,list2);
+		return List.extend(list, list2);
+	}); // TODO error handling??
 	return new PromiseValue(listPromise);
 };
 
