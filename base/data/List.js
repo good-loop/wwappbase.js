@@ -35,6 +35,18 @@ class List extends DataClass {
 	/** @type {Number} */
 	total;
 
+	/** @type {Number} If total is uncertain */
+	estimate;
+
+	/** @type {?string} token to fetch the next batch */
+	next;
+
+	/** @type {?string} If a `next` token was used for this batch */
+	after;
+
+	/** @type {?string[]} Any `next` tokens that have been consumed */
+	_batches;
+
 	/**
 	 * 
 	 * @param {?Object|Hit[]|Item[]} base If an array, then set hits=base. Otherwise use as a base for {hits, total}
@@ -82,7 +94,7 @@ List.first = list => list? List.hits(list)[0] : null;
  */
 List.total = list => {
 	if ( ! list) return null;
-	return list.total || list.hits.length;
+	return list.total || list.estimate || list.hits.length;
 }
 
 /**
@@ -120,6 +132,8 @@ List.remove = (item, list) => {
 
 
 /**
+ * Is this used??
+ * 
  * @param {List[]} lists Can contain nulls
  * @returns {!List}
  */
@@ -135,6 +149,26 @@ List.union = (...lists) => {
 		}
 	});
 	return ulist;
+};
+
+/**
+ * @param {List} list This will be modified!
+ * @param {List} more
+ * @returns {!List} the modified input list
+ */
+List.extend = (list, more) => {
+	if ( ! list._batches) list._batches = [];
+	if (more.after && list._batches.includes(more.after)) {
+		console.warn("extended already", list, more);
+		return list;
+	}
+	list.hits.push(...more.hits);
+	if (list.total && list.total < list.hits.length) list.total = list.hits.length;
+	if (list.estimate && list.estimate < list.hits.length) list.estimate = list.hits.length;
+	list.next = more.next;
+	if ( ! more.next) console.log("end of list (no next)", list, more);
+	list._batches.push(more.after);
+	return list;
 };
 
 

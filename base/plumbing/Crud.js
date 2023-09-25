@@ -711,23 +711,23 @@ const MAX_COLLECTED_LIST = 5000;
 /**
  * Get a list of CRUD objects from the server
  * 
- * @param {Object} p 
- * @param {String} [p.type] C.TYPES
- * @param {String} [p.status] KStatus
- * @param {String|SearchQuery} [p.q] search query string
- * @param {String[]} [p.ids] Convenience for a common use-case: batch fetching a set of IDs
- * @param {String} [p.sort] e.g. "start-desc"
- * @param {string|Date} [p.start] Add a time-filter. Usually unset.
- * @param {string|Date} [p.end] Add a time-filter. Usually unset.
+ * @param {Object} params
+ * @param {String} [params.type] C.TYPES
+ * @param {String} [params.status] KStatus
+ * @param {String|SearchQuery} [params.q] search query string
+ * @param {String[]} [params.ids] Convenience for a common use-case: batch fetching a set of IDs
+ * @param {String} [params.sort] e.g. "start-desc"
+ * @param {string|Date} [params.start] Add a time-filter. Usually unset.
+ * @param {string|Date} [params.end] Add a time-filter. Usually unset.
  * 
- * @returns {PromiseValue<{hits: Object[]}>}
+ * @returns {PromiseValue<List>}
  * 
  * WARNING: This should usually be run through DataStore.resolveDataList() before using
  * Namespace anything fetched from a non-default domain
  * 
  * @see DataStore.invalidateList()
  */
- const getDataList = (params) => {
+ export const getDataList = (params) => {
 	const { type, domain, q, ids } = params;
 	assert(C.TYPES.has(type), `getDataList with bad type: ${type}`);
 	// HACK What's the domain param and where is it used? Document it when found
@@ -741,28 +741,63 @@ const MAX_COLLECTED_LIST = 5000;
 	return DataStore.fetch(getListPath(params), () => {
 		// Get by ID list? Special case handling.
 		if (ids?.length) return listByIds(params);
-
-		// Check that the server has returned all available results - if not, make additional requests.
+		
 		const listPromise = ServerIO.list(params);
-		return listPromise.then(res => {
-			// No pagination to resolve? Just return the result.
-			if (!res || (res.cargo.hits.length >= res.cargo.total)) {
-				return res;
-			}
+		// Let's just return one batch
+		return listPromise;
+		
+		// This code tries to esnure for large queries -- e.g. Green Ad Tag -- that it has everything.
+		// CrudServlet can send confusing results, like "size=100" => 80 results, cos CrudServlet can post-filter in Java. 
+		// Or `total` can be too high (as it is a total from pre-java-filtered ES)
 
-			// Hits stops short, so load more pages - up to total count or the safety max.
-			let from = res.cargo.hits.length; // index to start next page
-			const pagePromises = [listPromise];
-			while (from < Math.min(res.cargo.total, MAX_COLLECTED_LIST)) {
-				pagePromises.push(ServerIO.list({...params, from}));
-				from += PAGINATION_LENGTH;
-			}
+		// // Check that the server has returned all available results - if not, make additional requests.
+		// return listPromise.then(res => {
+		// 	// No pagination to resolve? Just return the result.
+		// 	if (!res || (res.cargo.hits.length >= res.cargo.total)) {
+		// 		return res;
+		// 	}
+		// 	// Hits stops short, so load more pages - up to total count or the safety max.
+		// 	let from = res.cargo.hits.length; // index to start next page
+		// 	const pagePromises = [listPromise];
+		// 	while (from < Math.min(res.cargo.total, MAX_COLLECTED_LIST)) {
+		// 		pagePromises.push(ServerIO.list({...params, from}));
+		// 		from += PAGINATION_LENGTH;
+		// 	}
 
-			// Resolve once all requests are complete.
-			return collectListPromises(pagePromises);
-		});
+		// 	// Resolve once all requests are complete.
+		// 	return collectListPromises(pagePromises);
+		// });
 	});
 };
+
+/**
+ * Fetch more for this list (and modify the list)
+ * @param {!List} list 
+ * @param {!Object} p The fetch details see getDataList()
+ * @param {PromiseValue} pvList 
+ */
+export const getMoreDataList = (list, p) => {
+	const after = list.next;
+	if ( ! after) {
+		console.log("getMoreDataList no next",list)
+		return new PromiseValue(list);
+	}
+	return DataStore.fetch(["transient", "list", after], () => {
+		p = Object.assign({}, p); // paranoia: defensive copy
+		p.after =  list.next;
+		const listPromise = ServerIO.list(p);
+		let lp2 = listPromise.then(response => {
+			let list2 = JSend.data(response);
+			DataStore.update(); // HACK: trigger a redraw
+			return List.extend(list, list2);
+		}); // TODO error handling??
+		return lp2;
+	});
+};
+
+/**
+ * @deprecated Use `getDataList()`
+ */
 ActionMan.list = getDataList;
 
 
@@ -795,7 +830,7 @@ const listByIds = ({ids, q, ...params}) => {
  * @returns {Promise<{hits: object[]}>} Yields and object with the same signature as getDataList()
  */
 const collectListPromises = promises => Promise.all(promises).then(results => {
-	return results.reduce((acc, res) => {
+	const collected = results.reduce((acc, res) => {
 		if (acc === null) return res; // build on top of first result to return
 		acc.cargo.hits.push(...res.cargo.hits);
 		acc.errors.push(...res.errors);
@@ -803,6 +838,7 @@ const collectListPromises = promises => Promise.all(promises).then(results => {
 		acc.success = acc.success && res.success;
 		return acc;
 	}, null);
+	return collected;
 });
 
 
@@ -900,7 +936,6 @@ export {
 	publishEdits,
 	errorPath,
 	getDataItem,
-	getDataList,
 	restId,
 	restIdDataspace,
 	setWindowTitle,

@@ -10,7 +10,7 @@ import Misc from './Misc';
 import PropControl from './PropControl';
 import DataStore, { Item, Ref } from '../plumbing/DataStore';
 import ActionMan from '../plumbing/ActionManBase';
-import { getDataItem, saveAs, keyForType } from '../plumbing/Crud';
+import { getDataItem, saveAs, keyForType, getDataList, getMoreDataList } from '../plumbing/Crud';
 import { getType, getId, nonce, getClass, getStatus } from '../data/DataClass';
 
 import ErrAlert from './ErrAlert';
@@ -75,7 +75,7 @@ const DEFAULT_PAGE_SIZE = 100;
  * @param {Number} [p.pageSize] Number of items per page, default 100
  * @param {Function|Object} [p.selected] Currently selected object.
  * 		Used to set initial page number in e.g. multi-pane contexts where items can be selected without navigating away from the list.
- * @param {Object} [p.otherParams] Optional extra params to pass to ActionMan.list() and on to the server.
+ * @param {Object} [p.otherParams] Optional extra params to pass to getDataList() and on to the server.
  */
 function ListLoad({ type, status, servlet, navpage,
 	checkboxes,
@@ -144,12 +144,13 @@ function ListLoad({ type, status, servlet, navpage,
 	if (filter) filter = filter.toLowerCase(); // normalise
 
 	let fastFilter, isLoading, error;
+	let getListParams = { type, status, q, start, end, sort, ...otherParams };
 	if (!list) { // Load!
 		// Load via ActionMan -- both filtered and un-filtered
 		// (why? for speedy updates: As you type in a filter keyword, the front-end can show a filtering of the data it has, 
 		// while fetching from the backedn using the filter)
-		let pvItemsFiltered = filter && !filterLocally ? ActionMan.list({ type, status, q, start, end, prefix: rawFilter, sort, ...otherParams }) : { resolved: true };
-		let pvItemsAll = ActionMan.list({ type, status, q, start, end, sort, ...otherParams });
+		let pvItemsFiltered = filter && !filterLocally ? getDataList({ type, status, q, start, end, prefix: rawFilter, sort, ...otherParams }) : { resolved: true };
+		let pvItemsAll = getDataList(getListParams);
 		let pvItems = pvItemsFiltered.value ? pvItemsFiltered : pvItemsAll;
 		// filter out duplicate-id (paranoia: this should already have been done server side)
 		// NB: this prefers the 1st occurrence and preserves the list order.
@@ -172,7 +173,7 @@ function ListLoad({ type, status, servlet, navpage,
 
 	// ...filter / resolve
 	let items = resolveItems({ hits, type, status, preferStatus, filter, filterFn, fastFilter, transformFn });
-	if (items && hits && items.length < hits.length) {
+	if (items && hits && hits.length === total && items.length < hits.length) {
 		// filtered out locally - reduce the total
 		total = items.length;
 	}
@@ -215,6 +216,12 @@ function ListLoad({ type, status, servlet, navpage,
 	const allItems = items; // Keep filtered but unpaginated list for e.g. CSV download
 	if (pageSize) items = paginate({ items, page, pageSize });
 
+	// more?
+	if (items && pageSize > items.length && list?.next) {
+		let pvMore = getMoreDataList(list, getListParams, );
+		isLoading = ! pvMore.resolved; // loading...
+	}
+
 	// When list is retrieved (so run when items list changes size) check if we should switch page to show selected item
 	useEffect(() => {
 		if (pageFromUrl || !selected) return; // No selected = nothing to do; Don't override URL param
@@ -239,7 +246,7 @@ function ListLoad({ type, status, servlet, navpage,
 		{!items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 
 		{(total && !hideTotal) ? <div>
-			{pageControls && `Showing ${1 + ((page - 1) * pageSize)} to ${page * pageSize} of `}
+			{pageControls && `Showing ${1 + ((page - 1) * pageSize)} to ${Math.min(total, page * pageSize)} of `}
 			{total} results{!pageControls && ' in total'}.</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
 		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} hideCsvColumns={hideCsvColumns} />}
