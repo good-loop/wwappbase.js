@@ -419,6 +419,12 @@ function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, c
 }
 
 
+/** Default item-to-logo component for DefaultListItem */
+function DefaultLogoComponent({item}) {
+	return <Misc.Thumbnail item={item} />;
+};
+
+
 /**
  * These can be clicked or control-clicked
  *
@@ -428,25 +434,15 @@ function ListItemWrapper({ item, type, checkboxes, canCopy, cannotClick, list, c
  * 	TODO If it's of a data type which has getName(), default to that
  * @param extraDetail {Element} e.g. used on AdvertPage to add a marker to active ads
  */
-function DefaultListItem({ type, item, logoType, checkboxes, canDelete, nameFn, extraDetail, button }) {
+function DefaultListItem({ type, item, LogoComponent = DefaultLogoComponent, checkboxes, canDelete, nameFn, extraDetail, button }) {
 	const id = getId(item);
 	// let checkedPath = ['widget', 'ListLoad', type, 'checked'];
 	let name = nameFn ? nameFn(item, id) : item.name || item.text || id || '';
 	if (name.length > 280) name = name.slice(0, 280);
 	const status = item.status || "";
 
-	let logoItem = item;
-	if (logoType) {
-		const key = keyForType(logoType);
-		const logoItemId = item[key];
-		if (logoItemId) {
-			const pvLogoItem = getDataItem({type:logoType, id:logoItemId, status: KStatus.PUBLISHED, swallow:true});
-			logoItem = pvLogoItem.value || item;
-		}
-	}
-
 	return <>
-		<Misc.Thumbnail item={logoItem} />
+		<LogoComponent item={item} />
 		<div className="info text-left">
 			<div className="name">{name}</div>
 			<div className="detail small">
