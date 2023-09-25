@@ -174,7 +174,6 @@ function SavePublishDeleteEtc({
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
 	let item = DataStore.getData({ status, type, id });	
-	console.log("ITEM STATUS", item?.status, item?.name);
 	// Keep a copy of the draft in case we mess with it later (e.g. targetPaths)
 	let draftItem = _.cloneDeep(item);
 
