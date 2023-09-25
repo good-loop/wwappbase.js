@@ -711,23 +711,23 @@ const MAX_COLLECTED_LIST = 5000;
 /**
  * Get a list of CRUD objects from the server
  * 
- * @param {Object} p 
- * @param {String} [p.type] C.TYPES
- * @param {String} [p.status] KStatus
- * @param {String|SearchQuery} [p.q] search query string
- * @param {String[]} [p.ids] Convenience for a common use-case: batch fetching a set of IDs
- * @param {String} [p.sort] e.g. "start-desc"
- * @param {string|Date} [p.start] Add a time-filter. Usually unset.
- * @param {string|Date} [p.end] Add a time-filter. Usually unset.
+ * @param {Object} params
+ * @param {String} [params.type] C.TYPES
+ * @param {String} [params.status] KStatus
+ * @param {String|SearchQuery} [params.q] search query string
+ * @param {String[]} [params.ids] Convenience for a common use-case: batch fetching a set of IDs
+ * @param {String} [params.sort] e.g. "start-desc"
+ * @param {string|Date} [params.start] Add a time-filter. Usually unset.
+ * @param {string|Date} [params.end] Add a time-filter. Usually unset.
  * 
- * @returns {PromiseValue<{hits: Object[]}>}
+ * @returns {PromiseValue<List>}
  * 
  * WARNING: This should usually be run through DataStore.resolveDataList() before using
  * Namespace anything fetched from a non-default domain
  * 
  * @see DataStore.invalidateList()
  */
- const getDataList = (params) => {
+ export const getDataList = (params) => {
 	const { type, domain, q, ids } = params;
 	assert(C.TYPES.has(type), `getDataList with bad type: ${type}`);
 	// HACK What's the domain param and where is it used? Document it when found
@@ -769,6 +769,25 @@ const MAX_COLLECTED_LIST = 5000;
 		// });
 	});
 };
+
+/**
+ * 
+ * @param {List} list 
+ * @param {*} p 
+ */
+export const getMoreDataList = (list, p) => {
+	p.after = list.next;
+	const listPromise = ServerIO.list(p);
+	listPromise.then(
+		?? exten
+
+	);
+	return new PromiseValue(listPromise);
+};
+
+/**
+ * @deprecated Use `getDataList()`
+ */
 ActionMan.list = getDataList;
 
 
@@ -907,7 +926,6 @@ export {
 	publishEdits,
 	errorPath,
 	getDataItem,
-	getDataList,
 	restId,
 	restIdDataspace,
 	setWindowTitle,
