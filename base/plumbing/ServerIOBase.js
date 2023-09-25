@@ -28,17 +28,16 @@ ServerIO.APIBASE = ''; // Normally use this! -- but ServerIO.js may override for
  */
 ServerIO.NO_API_AT_THIS_HOST = false;
 
-// HACK our special micro-services
-// also HACK: SoGive subdomains don't match the standard pattern & we don't want devs on local to need their own sogive server too
-const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test', stage: 'stage'}[C.SERVER_TYPE];
-const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http', stage: 'https'}[SOGIVE_SUBDOMAIN];
-ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}.sogive.org/charity`;
-ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
-
 // Init ENDPOINTS for typescript ??
 ServerIO.DATALOG_ENDPOINT = '';
 ServerIO.MEDIA_ENDPOINT = '';
 ServerIO.MEASURE_ENDPOINT = '';
+ServerIO.API_ENDPOINT = '';
+
+// const SOGIVE_SUBDOMAIN = { '': 'app', test: 'test', local: 'test', stage: 'stage'}[C.SERVER_TYPE];
+// const SOGIVE_PROTOCOL = { app: 'https', test: 'https', local: 'http', stage: 'https'}[SOGIVE_SUBDOMAIN];
+// ServerIO.ENDPOINT_NGO = `${SOGIVE_PROTOCOL}://${SOGIVE_SUBDOMAIN}portal.good-loop.com/ngo`;
+ServerIO.ENDPOINT_TASK = 'https://calstat.good-loop.com/task';
 
 /** Endpoints for checkBase to inspect - expand as necessary. This is NOT used by ajax calls.
 // "name" is just a human-readable designation for logging. "key" is the field in ServerIO to check.
@@ -53,6 +52,7 @@ const endpoints = [
 	{name: 'Media', key: 'MEDIA_ENDPOINT', base: 'uploads.good-loop.com'},
 	{name: 'Measure', key: 'MEASURE_ENDPOINT', base: 'measure.good-loop.com/measure'},
 	{name: 'Portal', key: 'PORTAL_ENDPOINT', base: 'portal.good-loop.com'},
+	{name: 'API', key: 'API_ENDPOINT', base: 'api.good-loop.com/v0'},
 ];
 // set defaults
 endpoints.forEach(e => {
@@ -75,12 +75,15 @@ ServerIO.checkBase = () => {
 	// e.g. process.env.SERVERIO_OVERRIDES finds a usable value.
 	// So instead of trying to determine if it exists, just swallow errors when it doesn't.
 	try {
-		const ServerIOOverrides = process.env.SERVERIO_OVERRIDES; // NB: see webpack.config.js for how this is set
-		if (ServerIOOverrides) {
-			Object.entries(ServerIOOverrides).forEach(([key, val]) => {
-				ServerIO[key] = val;
-				console.log("SERVERIOOVERRIDE", key, val);
-			});
+		if (process.env.CONFIG_FILE) {
+			const { ServerIOOverrides } = require(process.env.CONFIG_FILE);
+			// const ServerIOOverrides = process.env.SERVERIO_OVERRIDES; // NB: see webpack.config.js for how this is set
+			if (ServerIOOverrides) {
+				Object.entries(ServerIOOverrides).forEach(([key, val]) => {
+					ServerIO[key] = val;
+					console.log('SERVERIOOVERRIDE', key, val);
+				});
+			}
 		}
 	} catch (e) {} // Ignore "process is undefined" etc errors
 
@@ -134,7 +137,7 @@ const checkBase2_toggleTestEndpoints = () => {
 	const server = DataStore.getUrlValue("server");
 	if (!server) return;
 	// Used by a few APIBASE instances
-	const unprefixedHostname = window.location.hostname.replace(/^(local|test)?/, '');
+	const unprefixedHostname = window.location.hostname.replace(/^(local|test|stage)?/, '');
 	if (server === 'test') {
 		ServerIO.AS_ENDPOINT = 'https://testas.good-loop.com';
 		ServerIO.PORTAL_ENDPOINT = 'https://testportal.good-loop.com';
@@ -142,7 +145,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.PROFILER_ENDPOINT = 'https://testprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://testuploads.good-loop.com';
 		ServerIO.MEASURE_ENDPOINT = 'https://testmeasure.good-loop.com/measure';
-		ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
+		// ServerIO.ENDPOINT_NGO = 'https://test.sogive.org/charity';
 		// hack for SoGive
 		if (ServerIO.APIBASE.includes("sogive")) {
 			ServerIO.APIBASE = 'https://test.sogive.org';
@@ -333,12 +336,12 @@ ServerIO.getDataLogData = ({q, dataspace, filters={}, breakdowns = ['time'], sta
  * @param {?string} domain - e.g. "https://foo.com/" Leave unset (the norm) for "this server".
  */
 ServerIO.getUrlForItem = ({type, id, domain = '', status}) => {
-	// HACK route charity requests to SoGive
-	if (type==='NGO' && C.app.id !== 'sogive') {
-		id = normaliseSogiveId(id);
-		const endpoint = ServerIO.ENDPOINT_NGO;
-		return endpoint+"/"+encURI(id)+'.json'+(status? '?status='+status : '');
-	}
+	// // HACK route charity requests to SoGive
+	// if (type==='NGO' && C.app.id !== 'sogive') {
+	// 	id = normaliseSogiveId(id);
+	// 	const endpoint = ServerIO.ENDPOINT_NGO;
+	// 	return endpoint+"/"+encURI(id)+'.json'+(status? '?status='+status : '');
+	// }
 	// TODO: check whether servlet is whole url because it would break the next line, but for now it's not expected if domain is used
 	let servlet = ServerIO.getEndpointForType(type);
 	let url = domain + servlet+'/' 
@@ -408,14 +411,14 @@ const normaliseSogiveId = id => {
  */
 ServerIO.getEndpointForType = (type) => {
 	// Future: refactor to be pluggable (but this is simpler and clearer for now)
-	// HACK route NGO=Charity, and go to sogive
-	if (type==='NGO') {
-		if (C.app.id === 'sogive') {
-			return '/charity';
-		} else {
-			return ServerIO.ENDPOINT_NGO;
-		}
-	}
+	// // HACK route NGO=Charity, and go to sogive
+	// if (type==='NGO') {
+	// 	if (C.app.id === 'sogive') {
+	// 		return '/charity';
+	// 	} else {
+	// 		return ServerIO.ENDPOINT_NGO;
+	// 	}
+	// }
 	// HACK route Task to calstat
 	if (type==='Task' && C.app.id !== 'calstat') {
 		return ServerIO.ENDPOINT_TASK;
@@ -428,8 +431,8 @@ ServerIO.getEndpointForType = (type) => {
 	if (type==='Advertiser') {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/vertiser';
 	}
-	// HACK route Agency, Campaign, GreenTag to Portal
-	if (['Agency','Campaign','GreenTag','ImpactDebit','ImpactCredit'].includes(type)) {
+	// HACK route Agency, Campaign, GreenTag, NGO to Portal
+	if (['Agency','Campaign','GreenTag','ImpactDebit','ImpactCredit','NGO'].includes(type)) {
 		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/' +type.toLowerCase();
 	}
 	// HACK route Person to Profiler?
@@ -451,7 +454,9 @@ ServerIO.getEndpointForType = (type) => {
  * @param {object} [params] Optional map of settings to modify the request.
  * @param {boolean} [params.swallow] Don't display messages returned by the server
  * jQuery parameters (partial notes only)
+ * @param {string} [params.credentials] If set to "omit", don't send jwt. Use-case: for when data is a string, so we can't add properties to it like Login.sign() tries to do.
  * @param {object} [params.data] data to send - this should be a simple key -> primitive-value map.
+ * @param {object} [params.headers] Extra headers to set
  * @param {Function} [params.xhr] Used for special requests, e.g. file upload
  * @param {string} [params.method] e.g. POST
  * @see {@link https://api.jquery.com/jQuery.ajax/|jQuery AJAX} for more
@@ -475,7 +480,9 @@ ServerIO.load = function(url, params) {
 	assert( ! params.data.status || C.KStatus.has(params.data.status), params.data.status);
 	params.url = url;
 	// send cookies & add auth
-	Login.sign(params);
+	if (params.credentials !== "omit") { // NB: aping the fetch() API here, but there's no direct connection
+		Login.sign(params); // could we make Login.sign() smarter around data.property vs cookies or headers??
+	}
 	// debug: add stack
 	if (window.DEBUG) {
 		try {

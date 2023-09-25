@@ -21,7 +21,7 @@ import ServerIO from '../../plumbing/ServerIOBase';
 
 
 /** MIME type sets */
-const imgTypes = '.jpg, .jpeg, image/jpeg, .png, image/png, .svg, image/svg+xml, .webp, image/webp';
+const imgTypes = '.jpg, .jpeg, image/jpeg, .png, image/png, .svg, image/svg+xml';
 const videoTypes = '.mp4, .m4v, video/mp4, .ogv, video/ogg, .avi, video/x-msvideo, .wmv, video/x-ms-wmv, .mov, video/quicktime, .asf, video/ms-asf';
 const fontTypes = '.ttf, font/ttf, .otf, font/otf, .woff, font/woff, .woff2, font/woff2';
 const spreadsheetTypes = '.csv'; // TODO Excel and -- maybe using libreoffice as the backend convertor to csv? Or the Apache Something library?
@@ -131,12 +131,15 @@ const FontThumbnail = ({url}) => {
  * image or video upload. Uses Dropzone
  * @param {Object} p
  * @param {Boolean} p.collapse ??
+ * @param {?String} p.endpoint
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
-const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => {
+const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, 
+	version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => 
+{
 	delete otherStuff.https;
 
 	const [collapsed, setCollapsed] = useState(true);

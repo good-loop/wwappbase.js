@@ -62,9 +62,10 @@ const ICONS = {
 /**
  * Unified interface for rendering various emoji, SVG icons, etc by name
  * @param {Object} p
- * @param {?EMOJI} p.name camera|trashcan|memo etc
- * @param {?String} p.color black|white|grey
- * @param {?String} p.size xs|sm|lg|xl
+ * @param {string} [p.className] className passthrough
+ * @param {string} p.name camera|trashcan|memo etc
+ * @param {string} [p.color] black|white|grey
+ * @param {string} [p.size] xs|sm|lg|xl
  */
 function Icon({name,size="sm",className,color,...props}) {
 	if (name==="spinner") name = randomPick("yinyang hourglass stopwatch genie circlearrow".split(" "));

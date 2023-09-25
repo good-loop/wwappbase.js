@@ -1,23 +1,18 @@
 
 import React, { useEffect, useState } from 'react';
-import _ from 'lodash';
-import { Input, Row, Col, Dropdown, DropdownItem, DropdownMenu, DropdownToggle, Button, ButtonGroup } from 'reactstrap';
+import { Input, Button, ButtonGroup, Form } from 'reactstrap';
 
 import ListLoad, {CreateButton} from '../ListLoad';
 
-import C from '../../CBase';
-import PropControl, { DSsetValue, PropControlParams, registerControl } from '../PropControl';
-import ActionMan from '../../plumbing/ActionManBase';
+import PropControl, {  PropControlParams, registerControl } from '../PropControl';
 import { getDataItem } from '../../plumbing/Crud';
-import { getId, getName } from '../../data/DataClass';
-import { assert } from '../../utils/assert';
-import { encURI, getLogo, space } from '../../utils/miscutils';
+import { getId } from '../../data/DataClass';
+import { encURI } from '../../utils/miscutils';
 import {saveDraftFnFactory} from '../SavePublishDeleteEtc';
-import { doShareThing } from '../../Shares';
 import { A } from '../../plumbing/glrouter';
 import DataItemBadge from '../DataItemBadge';
 import KStatus from '../../data/KStatus';
-import SearchQuery from '../../searchquery';
+
 
 /**
  * DataItemBadge
@@ -43,7 +38,7 @@ set,
 setRawValue, storeValue, modelValueFromInput, 
 	type, itemType, status=KStatus.PUB_OR_DRAFT, domain, list, q, sort, embed, pageSize=20, navpage, notALink, readOnly, showId=true,
 }) {
-	let [showLL, setShowLL] = useState(); // Show/hide ListLoad
+	const [showLL, setShowLL] = useState(); // Show/hide ListLoad
 	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad
 	const [inputClean, setInputClean] = useState(true); // Has the user input anything since last pick?
 
@@ -58,7 +53,6 @@ setRawValue, storeValue, modelValueFromInput,
 	// which bubbles and does NOT fire on internal-focus-shift.)
 	// So when a blur event fires, wait a moment before closing the dropdown list
 	// in case another focus event arrives.
-
 	const onFocus = () => {
 		setCloseTimeout(prevTimeout => {
 			window.clearTimeout(prevTimeout);
@@ -123,24 +117,23 @@ setRawValue, storeValue, modelValueFromInput,
 	// If the user has entered something in the search box, and it happens to be a valid ID -
 	// don't replace the search box with the item badge until they select it in the dropdown!
 	const showItem = pvDataItem.value && inputClean;
+	// Offer to create an item with name = current input value
+	const showCreate = !pvDataItem.value && canCreate && rawValue;
 
 	return (
-		<Row className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
-			{showItem ? (
-				<Col xs={12}>
-					<ButtonGroup>
-						<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
-							href={!notALink ? `/#${(navpage||itemType.toLowerCase())}/${encURI(getId(pvDataItem.value))}` : undefined}
-							title={!notALink ? `Switch to editing this ${itemType}` : undefined}
-						>
-							<SlimListItem type={itemType} item={pvDataItem.value} noClick />
-						</Button>
-						{!readOnly && <Button color="secondary" className="clear" onClick={doClear}>🗙</Button>}
-					</ButtonGroup>
-					{showId && <div><small>ID: <code>{rawValue || storeValue}</code></small></div>}
-				</Col>
-			) : (<>
-				<Col xs={canCreate ? 8 : 12}>
+		<Form inline className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
+			{showItem ? <>
+				<ButtonGroup>
+					<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
+						href={!notALink ? `/#${(navpage||itemType.toLowerCase())}/${encURI(getId(pvDataItem.value))}` : undefined}
+						title={!notALink ? `Switch to editing this ${itemType}` : undefined}
+					>
+						<SlimListItem type={itemType} item={pvDataItem.value} noClick />
+					</Button>
+					{!readOnly && <Button color="secondary" className="clear" onClick={doClear}>🗙</Button>}
+				</ButtonGroup>
+				{showId && <div><small>ID: <code>{rawValue || storeValue}</code></small></div>}
+			</> : <>
 				<div className="dropdown-sizer">
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
 					{rawValue && showLL && <div className="items-dropdown card card-body">
@@ -160,14 +153,13 @@ setRawValue, storeValue, modelValueFromInput,
 						/>
 					</div>}
 				</div>
-			</Col>
-			<Col xs={4}>
-				{canCreate && rawValue && ! pvDataItem.value && (
-					<CreateButton type={itemType} base={base} id={baseId} saveFn={saveDraftFnFactory({type,key:prop})} then={({item}) => doSet(item)} />
-				)}
-			</Col>
-		</>)}
-		</Row>);
+				{showCreate && <CreateButton
+					type={itemType} base={base} id={baseId} className="ml-1"
+					saveFn={saveDraftFnFactory({type, key: prop})} then={({item}) => doSet(item)}
+				/>}
+			</>}
+		</Form>
+	);
 }
 
 registerControl({ type: 'DataItem', $Widget: PropControlDataItem2 });

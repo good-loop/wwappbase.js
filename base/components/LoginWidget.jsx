@@ -353,7 +353,7 @@ function EmailSignin({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 	let $errorCTA;
 	if (Login.error?.text?.toLowerCase().includes("unverified")) {
 		let email = DataStore.getValue(path.concat("email"));
-		$errorCTA = <a href={Login.ENDPOINT+"?action=send-verify&email="+encURI(email)}>Resend email verification</a>;
+		$errorCTA = <a href={Login.ENDPOINT+"?action=send-verify&email="+encURI(email)+"&app="+encURI(C.app.id)+"&d="+encURI(C.app.dataspace)}>Resend email verification</a>;
 	}
 
 	// login/register

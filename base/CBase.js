@@ -46,8 +46,8 @@ C.SERVER_TYPE = ''; // production
 if (window.location.host.startsWith('test')) C.SERVER_TYPE = 'test';
 else if (window.location.host.startsWith('local')) C.SERVER_TYPE = 'local';
 else if (window.location.host.startsWith('stage')) C.SERVER_TYPE = 'stage';
-/** HACK: http(s) local servers dont have https */
-C.HTTPS = (C.SERVER_TYPE === 'local') ? 'http' : 'https';
+/** @deprecated OLD HACK: http(s) for when local servers dont have https */
+C.HTTPS = (C.SERVER_TYPE === 'local') ? 'https' : 'https'; // migrating towards "just use https" Sep 2023
 const prod = C.SERVER_TYPE !== 'local' && C.SERVER_TYPE !== 'test' && C.SERVER_TYPE !== 'stage';
 C.isProduction = () => prod;
 

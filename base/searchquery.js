@@ -156,7 +156,7 @@ const snipProp = (sq, propName) => {
 
 /**
  * Set several options for a top-level prop, e.g. "vert:foo OR vert:bar"
- * @param {SearchQuery} [sq] If set, this is combined via AND!
+ * @param {SearchQuery?} [sq] If set, this is combined via AND!
  * @param {String} propName
  * @param {String[]} propValues Must not be empty
  * @returns a NEW SearchQuery

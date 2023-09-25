@@ -31,18 +31,17 @@ export const KScale = new Enum("linear logarithmic");
  * @param {String} p.type line|pie|bar|scatter
  * @returns
  */
-function NewChartWidget({ type = 'line', data, datalabels, className, style, width, height, miny, maxy, legend, ...props }) {
-	props.options = props.options || {};
-	props.options.maintainAspectRatio = props.options.maintainAspectRatio || false; // why??
+function NewChartWidget({ type = 'line', data, datalabels, className, style, width, height, miny, maxy, legend, options={}, ...props }) {	
+	options.maintainAspectRatio = options.maintainAspectRatio || false; // why??
 	if (datalabels) {
 		addPluginToProps(props, ChartDataLabels);
 	}
 	// set y scale?
 	if (is(miny) || is(maxy)) {
-		if (!props.options.scales) props.options.scales = {};
-		if (!props.options.scales.y) props.options.scales.y = {};
-		if (is(maxy)) props.options.scales.y.max = maxy;
-		if (is(miny)) props.options.scales.y.min = miny;
+		if (!options.scales) options.scales = {};
+		if (!options.scales.y) options.scales.y = {};
+		if (is(maxy)) options.scales.y.max = maxy;
+		if (is(miny)) options.scales.y.min = miny;
 	}
 	// legend?
 	addPluginToProps(props, Legend, { display: !!legend });
@@ -50,7 +49,7 @@ function NewChartWidget({ type = 'line', data, datalabels, className, style, wid
 
 	return (
 		<div className={space('NewChartWidget position-relative', className)} style={style}>
-			<Chart data={data} width={width} height={height} {...props} />
+			<Chart data={data} width={width} height={height} options={options} {...props} />
 		</div>
 	);
 }
@@ -70,9 +69,9 @@ function addPluginToProps(props, plugin, options) {
 		props.plugins = [plugin];
 	}
 	if (options) {
-		if (!props.options.plugins) props.options.plugins = {};
-		let po = props.options.plugins[plugin.id] || {};
-		props.options.plugins[plugin.id] = Object.assign(po, options);
+		if (!options.plugins) options.plugins = {};
+		let po = options.plugins[plugin.id] || {};
+		options.plugins[plugin.id] = Object.assign(po, options);
 	}
 }
 
@@ -137,7 +136,7 @@ export const timeSeriesChartFromKeyValue = (kvData, options={label:"By Time",col
 				},
 			},
 			plugins: {
-				legend: { display: false },
+				legend: { display: false }, // ??do we want this as a default??
 				autocolors: false,
 			},
 		}

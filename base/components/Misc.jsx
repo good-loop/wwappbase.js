@@ -263,22 +263,23 @@ const WEEK = 7 * DAY;
 const YEAR = 365 * DAY;
 
 
-Misc.RelativeDate = ({date, ...rest}) => {
+Misc.RelativeDate = ({date, noUpdate, Tag = 'span', ...rest}) => {
 	const [update, setUpdate] = useState();
 
 	if (!date) return null;
-	const dateObj = new Date(date);
+	const dateObj = (date instanceof Date) ? date : new Date(date);
 	const now = new Date();
 
 	let diff = now.getTime() - dateObj.getTime();
-	let relation = diff > 0 ? 'ago' : 'in the future';
-	diff = Math.abs(diff);
+
 	const absoluteDate = dateObj.toLocaleString('en-GB');
-	let count = 'less than one';
-	let counter = 'second';
+	let count = '';
+	let counter = '';
+	let relation = (diff >= 0) ? 'ago' : 'in the future';
 
-	const calcCount = (divisor) => Math.round(diff / divisor);
+	const calcCount = (timeUnit) => Math.round(diff / timeUnit);
 
+	diff = Math.abs(diff);
 	if (diff > YEAR) {
 		count = calcCount(YEAR);
 		counter = 'year';
@@ -298,9 +299,11 @@ Misc.RelativeDate = ({date, ...rest}) => {
 	} else if (diff > MINUTE) {
 		count = calcCount(MINUTE);
 		counter = 'minute';
-	} else if (diff > SECOND) {
+	} else if (diff > SECOND * 10) {
 		count = calcCount(SECOND);
 		counter = 'second';
+	} else {
+		relation = 'just now'; // no count, no counter
 	}
 
 	if (count > 1) {
@@ -308,11 +311,12 @@ Misc.RelativeDate = ({date, ...rest}) => {
 	}
 
 	useEffect(() => {
+		if (noUpdate) return;
 		const timeout = setTimeout(() => setUpdate(!update), diff);
 		return () => clearTimeout(timeout);
 	}, [update]);
 
-	return <span title={absoluteDate} {...rest}>{count} {counter} {relation}</span>;
+	return <Tag title={absoluteDate} {...rest}>{count} {counter} {relation}</Tag>;
 };
 
 

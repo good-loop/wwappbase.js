@@ -178,7 +178,7 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: ["*.ts", "*.tsx"],
+			files: ["*.ts", "*.tsx", "*.js", "*.jsx"],
 			extends: [
 				"eslint:recommended",
 				"plugin:@typescript-eslint/eslint-recommended",
@@ -193,10 +193,6 @@ module.exports = {
 			},
 			plugins: ["@typescript-eslint"],
 			rules: {
-				7006: "off",
-				"7006": "off",
-				2531:"warn",
-				"2531":"warn",
 				"prefer-const": "off",
 				"no-restricted-syntax":"warn",
 				"@typescript-eslint/ban-types":"warn",

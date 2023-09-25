@@ -167,7 +167,8 @@ class MainDivBase extends Component {
 			noSocials, // TODO document props
 			loginChildren, // TODO document props
 			LoginGuts,
-			isBeta // HACK to place a beta label over the logo for SoGive Mar 2022
+			isBeta, // HACK to place a beta label over the logo for SoGive Mar 2022
+			Persistent
 		} = this.props;
 		// navbarPages might be a getter function (needed for a dynamic list) - so the invoking MainDiv can
 		// have a dynamic nav page list without being connected to the store itself.
@@ -287,6 +288,7 @@ class MainDivBase extends Component {
 			>
 			{_.isFunction(loginChildren)? loginChildren() : loginChildren}
 			</LoginWidget>
+			{Persistent && <Persistent page={page}/>}
 		</div>);
 	} // ./render()
 } // ./MainDiv

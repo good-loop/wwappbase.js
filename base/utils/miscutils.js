@@ -950,8 +950,7 @@ export const mapNew = (num, func) => {
  * @param {Number} buttons
  * @return {Array[boolean]} Buttons reported as "down" by this MouseEvent, in order L, R, Middle, [Back], [Forward]
  */
-export const decodeButtons = (buttons) => {
-	if (!buttons) return decodeButtons(0);
+export const decodeButtons = (buttons = 0) => {
 	return buttons
 		.toString(2)
 		.padStart(5, '0')
@@ -1059,3 +1058,43 @@ export const bytes = (b) => {
 	if (b < 1024000000) return `${(b/1024000).toFixed(1)} MB`;
 	return `${(b/1024000000).toFixed(1)} GB`;
 };
+
+
+/**
+ * Is the given string (probably) a HTML page or fragment?
+ * Ask the browser to try and make a DOM out of it, and see if it has any children.
+ * Will give a "false" negative - because a text node is still a "HTML fragment" - if there are no tags.
+ * Reasonable for the current use case of "do we treat this string as an ad tag?" but beware if reusing.
+ * Doesn't care if the string causes a parsing error - if it's HTML-like enough to do so, we call it HTML.
+ * NB probably somewhat expensive, avoid putting in a render function.
+ * @param {string} str String which may be HTML
+ * @returns {boolean} True if the document resulting from parse has any nodes in the head or body
+ */
+export function isHTML(str) {
+	let val = false;
+	try {
+		const parser = new DOMParser();
+		const tree = parser.parseFromString(str, 'text/html');
+		// Tags like <script> and <style> get stuffed in document.head, displayable ones in document.body
+		val = !!(tree.body.children.length + tree.head.children.length);
+	} catch {}
+	return val;
+}
+
+
+/**
+ * Is the given string parseable as a URL with "new URL(str)"?
+ * Utility function which exists to contain ESLint warnings in one place.
+ * @param {string} str String which may be a URL
+ * @returns {boolean} True if the URL constructor doesn't throw.
+ */
+export function isURL(str) {
+	try {
+		/* eslint-disable no-new */
+		new URL(str);
+		/* eslint-enable no-new */
+		return true;
+	} catch (e) {
+		return false;
+	}
+}
