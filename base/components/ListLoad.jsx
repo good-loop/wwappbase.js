@@ -213,16 +213,14 @@ function ListLoad({ type, status, servlet, navpage,
 	// Initialise page URL value if absent? -- No, don't cram stuff into URL prematurely
 	// if (items && pageSelectID && !pageFromUrl) setPage(1, false);
 
-	// more??
-	if (items && list && pageSize > items.length) {
-		let pvMore = list && list.next && getMoreDataList(list, getListParams);
-		console.log("lazy lists WIP", pvMore);
-		// List.extend(list, pvMore.value);
-	}
-	
-
 	const allItems = items; // Keep filtered but unpaginated list for e.g. CSV download
 	if (pageSize) items = paginate({ items, page, pageSize });
+
+	// more?
+	if (items && pageSize > items.length && list?.next) {
+		let pvMore = getMoreDataList(list, getListParams, );
+		isLoading = ! pvMore.resolved; // loading...
+	}
 
 	// When list is retrieved (so run when items list changes size) check if we should switch page to show selected item
 	useEffect(() => {
@@ -248,7 +246,7 @@ function ListLoad({ type, status, servlet, navpage,
 		{!items.length && (noResults || <>No results found for <code>{space(q, filter) || type}</code></>)}
 
 		{(total && !hideTotal) ? <div>
-			{pageControls && `Showing ${1 + ((page - 1) * pageSize)} to ${page * pageSize} of `}
+			{pageControls && `Showing ${1 + ((page - 1) * pageSize)} to ${Math.min(total, page * pageSize)} of `}
 			{total} results{!pageControls && ' in total'}.</div> : null}
 		{checkboxes && <MassActionToolbar type={type} canDelete={canDelete} items={items} />}
 		{hasCsv && <ListLoadCSVDownload items={allItems} csvColumns={csvColumns} hideCsvColumns={hideCsvColumns} />}

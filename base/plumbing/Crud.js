@@ -771,19 +771,28 @@ const MAX_COLLECTED_LIST = 5000;
 };
 
 /**
- * 
- * @param {List} list 
- * @param {*} p 
+ * Fetch more for this list (and modify the list)
+ * @param {!List} list 
+ * @param {!Object} p The fetch details see getDataList()
+ * @param {PromiseValue} pvList 
  */
 export const getMoreDataList = (list, p) => {
-	p.after = list.next;
-	const listPromise = ServerIO.list(p);
-	listPromise.then(response => {
-		let list2 = JSend.data(response);
-		console.warn("TODO extend rl",response,list2);
-		return List.extend(list, list2);
-	}); // TODO error handling??
-	return new PromiseValue(listPromise);
+	const after = list.next;
+	if ( ! after) {
+		console.log("getMoreDataList no next",list)
+		return new PromiseValue(list);
+	}
+	return DataStore.fetch(["transient", "list", after], () => {
+		p = Object.assign({}, p); // paranoia: defensive copy
+		p.after =  list.next;
+		const listPromise = ServerIO.list(p);
+		let lp2 = listPromise.then(response => {
+			let list2 = JSend.data(response);
+			DataStore.update(); // HACK: trigger a redraw
+			return List.extend(list, list2);
+		}); // TODO error handling??
+		return lp2;
+	});
 };
 
 /**

@@ -166,6 +166,7 @@ List.extend = (list, more) => {
 	if (list.total && list.total < list.hits.length) list.total = list.hits.length;
 	if (list.estimate && list.estimate < list.hits.length) list.estimate = list.hits.length;
 	list.next = more.next;
+	if ( ! more.next) console.log("end of list (no next)", list, more);
 	list._batches.push(more.after);
 	return list;
 };
