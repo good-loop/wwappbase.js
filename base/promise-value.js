@@ -36,6 +36,9 @@ class PromiseValue {
 	/** @type {?Function} Only set by `PromiseValue.pending` Call this with an error to reject the PV. */
 	reject;
 
+	/** @type {boolean} Is this value out of date? Set by DataStore if using a cache-period. `true` indicates that a refresh should be in progress. */
+	stale;
+
 	/**
 	 * @param {?Object|Promise} valueOrPromise If null, the PV will have a rejected promise and an error.
 	 * @returns {value: ?Object, promise: !Promise, error: ?Object, resolved: boolean} 
@@ -44,6 +47,7 @@ class PromiseValue {
 	 * 	 - If it's a value -> resolved Promise
 	 *   - If it's a Promise (or thenable) -> the input Promise
 	 * 	 - null/undefined -> rejected Promise
+	 * 	 - PromiseValue -> copy out the promise/value (probably a mistake but handle it gracefully)
 	 * 
 	 * The `value` and `error` properties will be set instantly if known, and otherwise set when the promise resolves.
 	 * The `resolved` flag records the promise status, and changes to true once the promise is resolved.
