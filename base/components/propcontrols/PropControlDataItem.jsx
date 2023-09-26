@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState } from 'react';
-import { Input, Button, ButtonGroup, Form } from 'reactstrap';
+import { Input, Button, ButtonGroup, FormGroup } from 'reactstrap';
 
-import ListLoad, {CreateButton} from '../ListLoad';
+import ListLoad, { CreateButton } from '../ListLoad';
 
-import PropControl, {  PropControlParams, registerControl } from '../PropControl';
+import PropControl, { PropControlParams, registerControl } from '../PropControl';
 import { getDataItem } from '../../plumbing/Crud';
 import { getId } from '../../data/DataClass';
 import { encURI } from '../../utils/miscutils';
@@ -121,7 +121,7 @@ setRawValue, storeValue, modelValueFromInput,
 	const showCreate = !pvDataItem.value && canCreate && rawValue;
 
 	return (
-		<Form inline className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
+		<div className="data-item-control" onFocus={onFocus} onBlur={onBlur}>
 			{showItem ? <>
 				<ButtonGroup>
 					<Button color="secondary" className="preview" tag={notALink ? 'span' : A}
@@ -134,13 +134,13 @@ setRawValue, storeValue, modelValueFromInput,
 				</ButtonGroup>
 				{showId && <div><small>ID: <code>{rawValue || storeValue}</code></small></div>}
 			</> : <>
-				<div className="dropdown-sizer">
+				<FormGroup className="dropdown-sizer">
 					<Input type="text" value={rawValue || storeValue || ''} onChange={onChange} />
 					{rawValue && showLL && <div className="items-dropdown card card-body">
 						<ListLoad hideTotal type={itemType} status={status}
-							domain={domain} 
-							filter={rawValue} 
-							filterFn={item => ! item.redirect /* avoid deprecated redirect objects */}
+							domain={domain}
+							filter={rawValue}
+							filterFn={item => !item.redirect /* avoid deprecated redirect objects */}
 							unwrapped sort={sort}
 							ListItem={SlimListItem}
 							// TODO allow ListLoad to show if there are only a few options
@@ -152,13 +152,13 @@ setRawValue, storeValue, modelValueFromInput,
 							list={list}
 						/>
 					</div>}
-				</div>
-				{showCreate && <CreateButton
-					type={itemType} base={base} id={baseId} className="ml-1"
-					saveFn={saveDraftFnFactory({type, key: prop})} then={({item}) => doSet(item)}
-				/>}
+					{showCreate && <CreateButton
+						type={itemType} base={base} id={baseId} className="ml-1"
+						saveFn={saveDraftFnFactory({type, key: prop})} then={({item}) => doSet(item)}
+					/>}
+				</FormGroup>
 			</>}
-		</Form>
+		</div>
 	);
 }
 
