@@ -254,6 +254,7 @@ span.preview .DataItemBadge {
 .data-item-control {
 	.dropdown-sizer {
 		position: relative; // This is a size/position reference for the floating dropdown list
+		display: flex; // input box and "Create" button (if present) side-by-side
 	}
 
 	// Ellipsize text label if it would overflow
@@ -261,8 +262,8 @@ span.preview .DataItemBadge {
 		overflow: hidden;
 		max-width: 100%;
 	}
-	.btn.clear {
-		flex-shrink: 0; // squash text label but never X button
+	.btn.clear, .btn-create {
+		flex-shrink: 0; // let item badge or text input shrink, but never x/create button
 	}
 	.DataItemBadge {
 		max-width: 100%;
@@ -279,6 +280,7 @@ span.preview .DataItemBadge {
 		min-width: 100%;
 		max-width: 20rem;
 		top: 100%;
+		margin-top: 0.25em; // Small gap between input and dropdown
 		left: 0;
 		z-index: 999; // Place in front of random single-digit z-index Bootstrap elements below
 
