@@ -306,7 +306,7 @@ ActionMan.saveEdits = saveEdits;
 	newItem.id = newId;
 	if (newItem.name) {
 		// make a probably unique name - use randomness TODO nicer
-		newItem.name += ' v_'+nonce(3);
+		newItem.name += ' v_copy('+nonce(3)+')';
 	}
 	// set created time to now
 	if (newItem.created) {
