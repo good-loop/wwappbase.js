@@ -8,7 +8,7 @@ import C from '../CBase';
 import { bytes, space } from '../utils/miscutils';
 import Misc from './Misc';
 import { A } from '../plumbing/glrouter';
-import { shortenName } from './creative-recommendations/recommendation-utils';
+import { getBestRecompression, shortenName } from './creative-recommendations/recommendation-utils';
 
 /**
  * A short, readable form for URLs which can be unmanageably long.
@@ -38,20 +38,20 @@ function UnusedWarning({spec}) {
 
 
 /** One row for a SizeComparison */
-function ComparisonRow({spec, optimised}) {
-	let { filename, url, optUrl, optBytes, isSubstitute } = spec;
+function ComparisonRow({spec, best}) {
+	let { filename, url, isSubstitute } = spec;
 	let b = spec.bytes; // avoid name clash with bytes()
 	let desc = 'Original';
 
-	if (optimised) {
-		url = optUrl;
-		b = optBytes;
+	if (best) {
+		url = best.url;
+		b = best.bytes;
 		desc = isSubstitute ? 'Replacement' : 'Optimised';
 	} else if (!spec.significantReduction) {
 		desc = filename;
 	}
 
-	return <div className={space('comparison-row', optimised ? 'optimised' : 'original')}>
+	return <div className={space('comparison-row', best ? 'optimised' : 'original')}>
 		<div className="desc"><C.A target="_blank" href={url} title={url} download={filename}>{desc}</C.A></div>
 		<div className="size">{bytes(b)}</div>
 	</div>
@@ -59,16 +59,17 @@ function ComparisonRow({spec, optimised}) {
 
 
 /** Compare the size of a resource to its optimised equivalent. */
-function SizeComparison({spec}) {
+function SizeComparison({spec, best}) {
+	const optBytes = best?.bytes || spec.bytes; // No "best recompression" = 0% smaller
 	// How much smaller?
-	const improvement = (1 - (spec.optBytes / spec.bytes)) * 100;
+	const improvement = (1 - (optBytes / spec.bytes)) * 100;
 
 	return <div className="size-comparison">
 		<ComparisonRow spec={spec} />
 		{spec.significantReduction ? <>
-			<ComparisonRow spec={spec} optimised />
+			<ComparisonRow spec={spec} best={best} />
 			<div className="improvement"><span className="percent">{improvement.toFixed(1)}%</span> smaller 
-			({' '+bytes(spec.bytes - spec.optBytes)})
+			({' '+bytes(spec.bytes - best.bytes)})
 			</div>
 		</> : null}
 	</div>;
@@ -119,8 +120,11 @@ function FontPreview({spec}) {
 }
 
 
-/** Additional details on usage and optimisations performed on a font */
-function FontRecDetails({ spec }) {
+/**
+ * Additional details on usage and optimisations performed on a font
+ * TODO Also show alternate formats and unsubsetted versions from the recompression set
+ */
+function FontRecDetails({spec, best}) {
 	const [open, setOpen] = useState(false);
 	const toggle = () => setOpen(a => !a);
 
@@ -158,16 +162,16 @@ function FontRecDetails({ spec }) {
 
 
 /** Show the optimisations performed on one font file */
-export function FontRecommendation({spec}) {
+export function FontRecommendation({spec, best}) {
 	return <Card className="opt-rec font-rec">
 		<CardHeader>Font</CardHeader>
 		<CardBody className="p-2">
 			<div className="my-1">
 				<FontPreview spec={spec} />
 			</div>
-			<SizeComparison spec={spec} />
+			<SizeComparison spec={spec} best={best} />
 			<UnusedWarning spec={spec} />
-			<FontRecDetails spec={spec} />
+			<FontRecDetails spec={spec} best={best} />
 		</CardBody>
 	</Card>;
 }
@@ -210,7 +214,7 @@ const fileType = filename => {
 /** Additional details on usage and optimisations performed on an image. 
  * @param {TODO doc data type} spec 
 */
-function ImgRecDetails({spec}) {
+function ImgRecDetails({spec, best}) {
 	const [open, setOpen] = useState(false);
 	const [showOriginal, setShowOriginal] = useState(false);
 	const toggle = () => setOpen(a => !a);
@@ -221,8 +225,8 @@ function ImgRecDetails({spec}) {
 	// TODO controls for retina, no-scale, etc
 	// - can we support changing compression params without losing all data & returning to main screen?
 
-	let { url, optUrl, imgEl } = spec; // NB Original URL will be proxied when previewing to avoid adblock and Firefox Enhanced Tracking Protection
-
+	let { url, imgEl } = spec; // NB Original URL will be proxied when previewing to avoid adblock and Firefox Enhanced Tracking Protection
+	let { url: optUrl } = best;
 	let { width, height } = spec.elements[0];
 	const imgStyle = { maxWidth: width, maxHeight: height };
 
@@ -269,8 +273,9 @@ function ImgRecDetails({spec}) {
 };
 
 
+
 /** Show the optimisations performed on one image file */
-export function ImgRecommendation({spec}) {
+export function ImgRecommendation({spec, best}) {
 	let { url } = spec;
 	url = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
 
@@ -280,16 +285,16 @@ export function ImgRecommendation({spec}) {
 			<img className="preview img-preview" src={url} />
 		</div>
 		<CardBody className="p-2">
-			<SizeComparison spec={spec} />
+			<SizeComparison spec={spec} best={best} />
 			<UnusedWarning spec={spec} />
-			<ImgRecDetails spec={spec} />
+			<ImgRecDetails spec={spec} best={best} />
 		</CardBody>
 	</Card>;
 }
 
 
 /** Show the optimisations performed on one GIF file */
-export function GifRecommendation({spec}) {
+export function GifRecommendation({spec, best}) {
 	let { url } = spec;
 	url = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
 
@@ -297,16 +302,16 @@ export function GifRecommendation({spec}) {
 		<CardHeader>GIF</CardHeader>
 		<img className="preview gif-preview p-1" src={url} />
 		<CardBody className="p-2">
-			<SizeComparison spec={spec} />
+			<SizeComparison spec={spec} best={best} />
 			<UnusedWarning spec={spec} />
-			<ImgRecDetails spec={spec} />
+			<ImgRecDetails spec={spec} best={best} />
 		</CardBody>
 	</Card>;
 }
 
 
 /** Show the optimisations performed on one SVG file */
-export function SvgRecommendation({spec}) {
+export function SvgRecommendation({spec, best}) {
 	let { url } = spec;
 	url = proxy(url); // Circumvent adblock and Firefox Enhanced Tracking Protection
 
@@ -316,21 +321,21 @@ export function SvgRecommendation({spec}) {
 			<img className="preview img-preview" src={url} />
 		</div>
 		<CardBody className="p-2">
-			<SizeComparison spec={spec} />
+			<SizeComparison spec={spec} best={best} />
 			<UnusedWarning spec={spec} />
 		</CardBody>
 	</Card>;
 }
 
 /** Show the optimisations performed on one JavaScript file */
-export function ScriptRecommendation({spec}) {
+export function ScriptRecommendation({spec, best}) {
 	const { filename } = spec;
 
 	return <Card className="opt-rec script-rec">
 		<CardHeader>JavaScript</CardHeader>
 		<CardBody className="p-2">
 			<p className="preview script-preview my-1">{filename}</p>
-			<SizeComparison spec={spec} />
+			<SizeComparison spec={spec} best={best} />
 			<UnusedWarning spec={spec} />
 			{spec?.message}
 		</CardBody>
@@ -366,9 +371,10 @@ const recComponents = {
  * 
 */
 export function Recommendation({spec, ...props}) {
-	let RecComponent = spec.significantReduction ? recComponents[spec.type] : NoRecommendation;
+	const RecComponent = spec.significantReduction ? recComponents[spec.type] : NoRecommendation;
 	if (!RecComponent) return null;
-	return <RecComponent spec={spec} {...props} />;
+	const best = getBestRecompression(spec);
+	return <RecComponent spec={spec} best={best} {...props} />;
 };
 
 

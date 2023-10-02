@@ -2,10 +2,10 @@ import ServerIO from '../../plumbing/ServerIOBase';
 import { RECOMPRESS_ENDPOINT } from '../../utils/pageAnalysisUtils';
 
 
-/** Helper for optimisations that don't involve the server. */
+/** Helper for optimisations - e.g. unused resource or script replacement - that don't involve the server. */
 export function processLocal(transfer, type, extraData) {
-	console.log("processLocal ie skip", type, transfer);
-	return new Promise(resolve => resolve({ ...transfer, type, optUrl: null, optBytes: 0, optimised: true, ...extraData }));
+	console.log('processLocal (eg skip, unused, JS replacement)', type, transfer);
+	return new Promise(resolve => resolve({ ...transfer, type, outputs: [], optimised: true, ...extraData }));
 }
 
 
@@ -15,8 +15,7 @@ export function callRecompressServlet(transfer, type, extraData) {
 	const data = { url: transfer.url, type, ...extraData };
 
 	return ServerIO.load(RECOMPRESS_ENDPOINT, { data }).then(res => {
-		const { url: optUrl, bytes: optBytes, ...rest } = res.data;
-		return { ...transfer, type, optUrl, optBytes, ...rest, optimised: true };
+		return { ...transfer, type, outputs: res.data.outputs, optimised: true };
 	});
 }
 
@@ -29,8 +28,8 @@ export function processEmpty(transfer) {
 export function processGif(transfer) {
 	// Ignore tiny images like tracking pixels and interface buttons
 	if (transfer.bytes < 3000) {
-		const { url: optUrl, bytes: optBytes } = transfer;
-		return processLocal(transfer, 'image', { optUrl, optBytes, message: `Ignoring tiny file (${transfer.bytes} bytes)`, noop: true });
+		const { url, bytes } = transfer;
+		return processLocal(transfer, 'image', { outputs: [{ url, bytes, messages: [`Ignoring tiny file (${transfer.bytes} bytes)`], noop: true }] });
 	};
 	return callRecompressServlet(transfer, 'gif');
 }
@@ -57,8 +56,8 @@ export function processScript(transfer) {
 	// Is there a simple replacement? (eg TweenMax --> GSAP 3)
 	const scriptReplacement = scriptReplacements.find(({pattern}) => transfer.url.match(pattern));
 	if (scriptReplacement) {
-		const { url: optUrl, bytes: optBytes, message } = scriptReplacement;
-		return processLocal(transfer, 'script', { optUrl, optBytes, message, isSubstitute: true });
+		const { url, bytes, message } = scriptReplacement;
+		return processLocal(transfer, 'script', { outputs: [{url, bytes, messages: [message], isSubstitute: true }] });
 	}
 
 	// No - see if UglifyJS on the server can do anything.
