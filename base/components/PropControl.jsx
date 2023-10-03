@@ -162,6 +162,9 @@ export class PropControlParams {
 	 */
 	set;
 
+	/** @type {?Function} (storeValue,rawValue) => ?string error message */
+	validator;
+
 	/** Optional pass in of the current value */
 	value;
 
@@ -343,11 +346,17 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// It is the value as typed by the user. This allows the user to move between invalid values, by keeping a copy of their raw input.
 	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
 	// Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
-	const [rawValue, setRawValue] = useState(_.isString(storeValue) ? storeValue : null);
+	const [rawValue, _setRawValue] = useState(_.isString(storeValue) ? storeValue : null);
+	const [dirty, setDirty] = useState();	
+	const setRawValue = x => {	// debug!		
+		setDirty(true);
+		console.log("setRawValue", x, dirty); 
+		_setRawValue(x);
+	};
 	assMatch(rawValue, "?String", `PropControl: rawValue must be a string, path: "${path}", prop: "${prop}" type: "${type}""`);
 	// Reset raw value if code outside the PropControl changes the value
 	const [oldStoreValue, setOldStoreValue] = useState(storeValue);
-	if (oldStoreValue !== storeValue) {
+	if (oldStoreValue !== storeValue && ! dirty) {
 		// HACK: Have to be careful e.g. PropControlMoney changes the object as you type. TODO an updating state flag to handle this properly
 		// (Date in PropControlPeriod will return undefined in DataClass.str(), but we still want to let it through)
 		if (DataClass.str(oldStoreValue) !== DataClass.str(storeValue) || (DataClass.str(oldStoreValue) === undefined && DataClass.str(storeValue) == undefined)) {
@@ -384,20 +393,14 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// TODO Allow validator to output multiple errors / warnings?
 	const newValidator = validator ? null : validatorForType[type];
 
-	// HACK: catch bad dates and make an error message
-	// TODO generalise this with a validation function
-	if (PropControl.KControlType.isdate(type) && !validator) validator = dateValidator;
-	//if (PropControl.KControlType.isnumber(type) && !validator && int) validator = intValidator;
-
 	/** @type {JSend} */
 	let validatorStatus;
 
 	// validate!
 	if (newValidator) { // safe to override with this if it exists as it won't override explicit validator in props
-		validatorStatus = newValidator({ value: storeValue, props });
-		if (validatorStatus && !validatorStatus.status) { // catch bad code
-			console.warn(`PropControl: Odd validator output (please use {status,message}) "${validatorStatus}" for type: "${type}", path: "${path}", prop: "${prop}"`);
-			validatorStatus = { status: 'warning', message: `${validatorStatus}` };
+		validatorStatus = newValidator({ value: storeValue, rawValue, props });
+		if (typeof(validatorStatus) === 'string') { // convert string to JSend?
+			validatorStatus = { status: 'warning', message:validatorStatus };
 		}
 	} else if (validator) {
 		const tempError = validator(storeValue, rawValue);
@@ -1343,7 +1346,7 @@ InputStatus.str = is => [(is.path ? is.path[is.path.length - 1] : null), is.stat
 const statusPath = path => ['misc', 'inputStatus'].concat(path).concat('_status');
 
 /**
- *
+ * e.g. an error with the input
  * @param {?String} status - if null, remove any message
  */
 const setInputStatus = ({ path, status, message }) => {
@@ -1408,7 +1411,7 @@ let rawToStoreForType = {};
  * @param {Object} p
  * @param {!String} p.type e.g. "textarea"
  * @param {!JSX} p.$Widget the widget to render a propcontrol, replacing PropControl2.
- * @param {?Function} p.validator The validator function for this type. Takes ({value, props}), returns JSend.
+ * @param {?Function} p.validator The validator function for this type. Takes ({value, rawValue, props}), returns JSend|String|null.
  * @param {?Function} p.rawToStore AKA modelValueFromInput - converts a valid text input to e.g. numeric, date, etc
  * The label, error, help have _already_ been rendered. This widget should do the control guts.
  * Inputs: (rawValue, ?type, ?event, ?oldStoreValue, ?props)
