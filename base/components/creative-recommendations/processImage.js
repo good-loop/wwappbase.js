@@ -96,8 +96,8 @@ function processImage(transfer) {
 	
 	// Ignore tiny images like tracking pixels and interface buttons
 	if (transfer.bytes < 3000) {
-		const { url: optUrl, bytes: optBytes } = transfer;
-		return processLocal(transfer, 'image', { optUrl, optBytes, message: `Ignoring tiny image (${transfer.bytes} bytes)`, noop: true });
+		const { url, bytes } = transfer;
+		return processLocal(transfer, 'image', { outputs: [{ url, bytes, messages: [`Ignoring tiny image (${transfer.bytes} bytes)`], noop: true }] });
 	};
 	return loadImage(url).then(imgEl => {		
 		// nested promises so we can retain the HTMLImageElement and attach it to the augmented transfer

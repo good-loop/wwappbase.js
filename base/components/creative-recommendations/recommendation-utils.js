@@ -1,6 +1,7 @@
 import processImage from './processImage';
 import { processEmpty, processSvg, processGif, processFont, processScript } from './processGeneric';
 import { flattenProp, isType, storedManifestForTag } from '../../utils/pageAnalysisUtils';
+import { isURL } from '../../utils/miscutils';
 
 
 export const RECS_PATH = ['widget', 'creative-recommendations'];
@@ -38,7 +39,9 @@ export function savedManifestPath({tag, url, html, upload}) {
  * @param {Object} [manifest] The PageManifest returned by MeasureServlet (or loaded from /persist/)
  */
 export function processedRecsPath({tag, url, html}, manifest) {
-	const optionString = JSON.stringify(DataStore.getValue(RECS_OPTIONS_PATH));
+	// noWebp no longer changes how recompression is done, so leave it out of the deduplication string
+	const options = DataStore.getValue(RECS_OPTIONS_PATH);
+	const optionString = JSON.stringify(options);
 	return [...RECS_PATH, 'processed-recs', ...manifestPathBit({tag, url, html}), manifest?.timestamp || 0, optionString];
 }
 
@@ -80,7 +83,8 @@ export function startAnalysis({tag, url, html}) {
 	if (url) data.url = url;
 	if (html) data.html = html;
 
-	return ServerIO.load(`${ServerIO.MEASURE_ENDPOINT}`, { data }).then(res => {
+	// Call MeasureServlet!
+	return ServerIO.load(ServerIO.MEASURE_ENDPOINT, { data }).then(res => {
 		if (res.error) throw new Error(res.error);
 		res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
 		// Store results in the standard location
@@ -143,15 +147,15 @@ export function shortenName(url) {
  * - or rejects with a reason no recommendation could be given.
 */
 export function processTransfer(transfer) {
-	console.log("processTransfer", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
+	console.log('processTransfer', transfer.mimeType, transfer.totalDataTransfer, transfer.url);
 	// Can only process files we can fetch over HTTP for now
 	// TODO Inline SVGs, some day
 	if (!transfer.url.match(/^http/)) {
-		console.log("reject non-http", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
+		console.log('reject non-http', transfer.mimeType, transfer.totalDataTransfer, transfer.url);
 		if (isType(transfer, 'image')) { // HACK: fail gracefully for e.g. SeenThis streaming images which are data blobs
 			// NB: copy-pasta from processLocal()
-			let message = "Can't process non-HTTP transfer";
-			return new Promise(resolve => resolve({ ...transfer, type:'image', optUrl: null, optBytes: 0, optimised: true, message, noop:true}));
+			let message = 'Can\'t process non-HTTP transfer';
+			return new Promise(resolve => resolve({ ...transfer, type: 'image', optUrl: null, optBytes: 0, optimised: true, message, noop: true}));
 		}
 		return new Promise((resolve, reject) => {
 			reject('Can\'t generate recommendations for non-HTTP transfer', transfer);
@@ -175,7 +179,7 @@ export function processTransfer(transfer) {
 		return processScript(transfer);
 	}
 
-	console.log("reject nope", transfer.mimeType, transfer.totalDataTransfer, transfer.url);
+	console.log('reject nope', transfer.mimeType, transfer.totalDataTransfer, transfer.url);
 	return new Promise((resolve, reject) => reject('No recommendation function for transfer', transfer));
 }
 
@@ -211,10 +215,7 @@ function augmentFont(transfer, fonts) {
  * - Attach those elements to the transfer
  */
 function augmentMedia(transfer, mediaElements) {
-	if ( ! isType(transfer, 'image') && ! isType(transfer, 'video')) {
-		return;
-	}
-	let matchedElements = mediaElements.filter(e => (e.resourceURL === transfer.url));
+	const matchedElements = mediaElements.filter(e => (e.resourceURL === transfer.url));
 	matchedElements.forEach(el => {
 		if (!transfer.elements) transfer.elements = [];
 		transfer.elements.push(el);
@@ -222,16 +223,7 @@ function augmentMedia(transfer, mediaElements) {
 }
 
 
-/**
- * Do we bother saying we can optimise this file? Thresholds based on original size:
- * Under 1K: don't bother
- * Under 10K: must be at least 1K
- * Under 100K: must be at least 10%
- * Over 100K: Must be at least 5%
- * @param {Transfer} t
- * @returns {boolean}
- */
-function worthIt({bytes, optBytes}) {
+function worthItFn(bytes, optBytes) {
 	// NB 0 bytes for "remove unused resource" is a legitimate value.
 	if (!optBytes && optBytes !== 0) {
 		return false;
@@ -242,6 +234,44 @@ function worthIt({bytes, optBytes}) {
 	const proportion = reduction / bytes;
 	if (bytes < 102400) return (proportion > 0.1);
 	return proportion > 0.05;
+}
+
+/**
+ * Do we bother saying we can optimise this file? Thresholds based on original size:
+ * Under 1K: don't bother
+ * Under 10K: must be at least 1K
+ * Under 100K: must be at least 10%
+ * Over 100K: Must be at least 5%
+ * @param {Transfer} t
+ * @returns {boolean}
+ */
+function evaluateReductions(transfer) {
+	const { bytes } = transfer;
+	transfer.outputs?.forEach(output => {
+		const worthIt = worthItFn(bytes, output.bytes);
+		if (!worthIt) return;
+		// Mark the overall item as optimisable
+		transfer.significantReduction = true;
+		// Mark this individual recompression as good
+		output.significantReduction = true;
+	});
+}
+
+
+/** What's the best usable recompression candidate from this augmented Transfer object? */
+export function getBestRecompression(transfer) {
+	const { noWebp } = DataStore.getValue(RECS_OPTIONS_PATH);
+
+	let bestOutput, bestSize;
+	transfer.outputs?.forEach(output => {
+		// Don't use .webp recompresses in no-webp mode
+		if (noWebp && output.format === 'webp') return;
+		if (!bestSize || (output.bytes < bestSize)) {
+			bestOutput = output;
+			bestSize = output.bytes;
+		}
+	});
+	return bestOutput;
 }
 
 
@@ -281,7 +311,7 @@ export function generateRecommendations(manifest, path, separateSubFrames) {
 	Promise.allSettled(optPromises).then(results => {
 		const augTransfers = results.filter(r => r.status === 'fulfilled').map(r => r.value);
 		// Flag transfers that have enough improvement to talk about
-		augTransfers.forEach(t => { if (worthIt(t)) t.significantReduction = true; });
+		augTransfers.forEach(evaluateReductions);
 		augTransfers.sort(recsSortFn);
 		DataStore.setValue(path, augTransfers);
 	});
@@ -304,13 +334,13 @@ const badSiteSpecs = [
  * @returns {boolean|string} False for OK, site name for "bad site"
  */
 export function badSite(url) {
-	if ( ! url) {
-		return "no url"; // i.e. falsy is bad
+	if (!url) {
+		return 'no url'; // i.e. falsy is bad
 	}
 	try {
 		url = new URL(url);
-	} catch(TypeError) {
-		return "an invalid url";
+	} catch (e) {
+		return 'an invalid url'; // JS parser is quite lenient so this is definitely bad
 	}
 	const badSiteSpec = badSiteSpecs.find(({hostname, pathname}) => {
 		if (hostname && url.hostname.match(hostname)) return true;
