@@ -37,8 +37,14 @@ function UnusedWarning({spec}) {
 };
 
 
-/** One row for a SizeComparison */
-function ComparisonRow({spec, best}) {
+/**
+ * One row for a SizeComparison
+ * @param {Object} p
+ * @param {Transfer} spec Transfer object augmented with recommendation info
+ * @param {Object} best The best candidate recompression/replacement for this file
+ * @param {boolean} only True if this isn't part of a comparison
+ */
+function ComparisonRow({spec, best, only}) {
 	let { filename, url, isSubstitute } = spec;
 	let b = spec.bytes; // avoid name clash with bytes()
 	let desc = 'Original';
@@ -47,7 +53,7 @@ function ComparisonRow({spec, best}) {
 		url = best.url;
 		b = best.bytes;
 		desc = isSubstitute ? 'Replacement' : 'Optimised';
-	} else if (!spec.significantReduction) {
+	} else if (only) {
 		desc = filename;
 	}
 
@@ -65,11 +71,12 @@ function SizeComparison({spec, best}) {
 	const improvement = (1 - (optBytes / spec.bytes)) * 100;
 
 	return <div className="size-comparison">
-		<ComparisonRow spec={spec} />
-		{spec.significantReduction ? <>
+		<ComparisonRow spec={spec} only={!best} />
+		{best ? <>
 			<ComparisonRow spec={spec} best={best} />
-			<div className="improvement"><span className="percent">{improvement.toFixed(1)}%</span> smaller 
-			({' '+bytes(spec.bytes - best.bytes)})
+			<div className="improvement">
+				<span className="percent">{improvement.toFixed(1)}%</span>
+				{` smaller (${bytes(spec.bytes - optBytes)})`}
 			</div>
 		</> : null}
 	</div>;
