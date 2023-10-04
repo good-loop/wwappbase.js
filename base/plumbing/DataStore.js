@@ -596,10 +596,11 @@ class Store {
 	/**
 	 * Check if a fetch() result is still within its specified cache period
 	 * @param {String[]} path
-	 * @param {Number} cachePeriod
+	 * @param {?Number} cachePeriod
 	 * @return {boolean}
 	 */
 	fetchIsFresh(path, cachePeriod) {
+		if  (!cachePeriod) return true;
 		const fetchDate = this.getFetchDate(path);
 		if (!fetchDate) return true; // No timestamp? Either stored without cache-period (always fresh) or never stored (calling code handles this case)
 		return fetchDate.getTime() < (new Date().getTime() - cachePeriod);
@@ -621,10 +622,30 @@ class Store {
 	 * The stored PromiseValue for a fetch() call
 	 * @param {String[]} path
 	 * @param {boolean} [refresh] True: get the in-progress PV for a "refresh stale cache" fetch
-	 * @returns {PromiseValue}
+	 * @returns {?PromiseValue}
 	 */
 	getFetchPV(path, refresh) {
-		return this.getValue(this.fetchPVPath(path, refresh));
+		let pv = this.getValue(this.fetchPVPath(path, refresh));
+		if (pv || refresh) {
+			return pv;
+		}
+		// No PV ...but already in the store?
+		// Note: since we retain PVs (to maintain identity i.e. same item always has same PV) 
+		// this check is for a corner case (which does happen - e.g. saveAs()), 
+		// where the datastore has an object that wasn't entered via fetch(). 
+		// For items managed purely by fetch(), we have:
+		// - if the item is absent & no fetch in progress, fetch2() will start a fetch & return PV
+		// - if the item is absent but fetch in progress, fetch2() will return in-progress PV
+		// - if the item is present & fresh (within cache period) fetch2() will return the resolved PV
+		// - if the item is present & stale, fetch2() will start a refresh fetch, but return the old PV
+		const item = this.getValue(path);
+		// Note: falsy or an empty list/object is counted as valid, only null/undefined will trigger a fresh load.
+		const notHere = (item === null || item === undefined);
+		if (notHere) return null;
+		// make and store a PV
+		pv = new PromiseValue(item);
+		this.setFetchPV(path, pv);
+		return pv;
 	}
 
 
@@ -683,33 +704,6 @@ class Store {
 			cachePeriod = Math.max(cachePeriod, 5000);
 		}
 
-		/*
-		// HUH - the edits to fetch2() that make it retain PVs (to maintain identity i.e. same
-		// item always has same PV) actually seem to make all the checks below redundant, since:
-		// - if the item is absent & no fetch in progress, fetch2() will start a fetch & return PV
-		// - if the item is absent but fetch in progress, fetch2() will return in-progress PV
-		// - if the item is present & fresh (within cache period) fetch2() will return the resolved PV
-		// - if the item is present & stale, fetch2() will start a refresh fetch, but return the old PV
-
-		// In the store already?
-		const item = this.getValue(path);
-		// Note: falsy or an empty list/object is counted as valid, only null/undefined will trigger a fresh load.
-		const notHere = (item === null || item === undefined);
-		const fresh = this.fetchIsFresh(path, cachePeriod);
-		// We don't have it, or the cached copy is stale - fetch now.
-		// NB if the fetch or refresh-fetch is in progress, fetch2() will return the existing PV.
-		if (notHere || !fresh) return this.fetch2(path, fetchFn, cachePeriod);
-
-		// out of date?
-		if (this.fetchIsFresh(path, cachePeriod)) {
-				// Fetch a fresh copy (OK if this is called repeatedly, fetch2() will store & return PV from first call)
-				const pv = this.fetch2(path, fetchFn, cachePeriod);
-				// ...but (unless fetchFn returned instantly - which is unusual) carry on to return the cached value instantly
-				if (pv.resolved) return pv;
-		}
-
-		return this.getFetchPV(item);
-		*/
 		return this.fetch2(path, fetchFn, cachePeriod);
 	} // ./fetch()
 
@@ -736,7 +730,7 @@ class Store {
 	 * Can be called repeatedly, and it will cache and return the same PromiseValue.
 	 * @param {String[]} path
 	 * @param {Function} fetchFn () => promiseOrValue or a PromiseValue. If `fetchFn` is unset (which is unusual), return in-progress or a failed PV.
-	 * @param {Number} [cachePeriod] Milliseconds to consider the fetch result "fresh"
+	 * @param {?Number} [cachePeriod] Milliseconds to consider the fetch result "fresh"
 	 * @returns {!PromiseValue}
 	 */
 	fetch2(path, fetchFn, cachePeriod) {
