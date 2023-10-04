@@ -1,8 +1,8 @@
-import React, { Component } from 'react';
+import React, { Component, useEffect, useState } from 'react';
 import Login from '../youagain';
 
 import { getUrlVars, toTitleCase, yessy } from '../utils/miscutils';
-import { Alert, Container, Row } from 'reactstrap';
+import { Alert, Col, Container, Row } from 'reactstrap';
 import { isFunction } from 'lodash';
 // setup Misc.SavePublishDeleteEtc for older code
 import SavePublishDeleteEtc from './SavePublishDeleteEtc';
@@ -125,14 +125,14 @@ class MainDivBase extends Component {
 		const updateReact = (mystate) => this.setState({});
 		DataStore.addListener(updateReact);
 		// Scroll to top after hashchage (From my-loop MainDiv)
-		window.addEventListener("hashchange", () => window.scrollTo(0,0));
+		window.addEventListener('hashchange', () => window.scrollTo(0,0));
 	}
 
 	componentDidCatch(error, info) {
 		// Display fallback UI
 		this.setState({error, info, errorPath: DataStore.getValue('location', 'path')});
 		console.error(error, info);
-		if (window.onerror) window.onerror("Caught error", null, null, null, error);
+		if (window.onerror) window.onerror('Caught error', null, null, null, error);
 	}
 
 	render() {
@@ -141,7 +141,8 @@ class MainDivBase extends Component {
 			children,
 			homeLink,
 			pageForPath,
-			securityCheck, SecurityFailPage=DefaultErrorPage,
+			securityCheck, SecurityFailPage = DefaultErrorPage,
+			ErrorPage = DefaultErrorPage,
 			loginRequired,
 			defaultPage,
 			navbar=true, // false for no navbar!
@@ -208,9 +209,14 @@ class MainDivBase extends Component {
 			}
 		}
 
+		// Rather than defining component functions during render that mix in extra props,
+		// add the props here & pass this object to <Page> using spread.
+		const extraPageProps = {}
+
 		// error handler
-		if (this.state && this.state.error && this.state.errorPath === path) {
-			Page = DefaultErrorPage;
+		if (this.state?.error && this.state?.errorPath === path) {
+			Page = ErrorPage;
+			extraPageProps.error = this.state.error;
 		}
 
 		// must login?
@@ -223,8 +229,9 @@ class MainDivBase extends Component {
 		} else if (securityCheck) {
 			try {
 				securityCheck({page});
-			} catch(err) {
-				Page = () => <SecurityFailPage error={err} />;
+			} catch (err) {
+				Page = SecurityFailPage;
+				extraPageProps.error = err;
 			}
 		}
 
@@ -270,7 +277,7 @@ class MainDivBase extends Component {
 				<Row>
 					<MessageBar />
 					<div className="page" id={page}>
-						<Page />
+						<Page {...extraPageProps} />
 					</div>
 				</Row>
 				<Row>
@@ -294,16 +301,68 @@ class MainDivBase extends Component {
 } // ./MainDiv
 
 
-const DefaultErrorPage = ({error}) => (
-	<div>
-		<h3 className="mt-2">There was an Error :&#39;</h3>
-		<p>Try navigating to a different tab, or reloading the page.
-			If this problem persists, please contact support.</p>
+function DefaultErrorPage({error}) {
+	return <Col xs="12">
+		<h3 className="mt-2">
+			There was an error
+			<span className="ml-3" style={{display: 'inline-block', transform: 'rotate(90deg)'}}>
+				:-/
+			</span>
+		</h3>
 		<p>
-			{error && error.message}
-			<br /><br />
-			<small>{error && error.stack}</small>
+			Try navigating to a different tab, or reloading the page.
+			If this problem persists, please contact support.
 		</p>
-	</div>);
+		<ErrorDetails error={error} />
+	</Col>;
+};
+
+
+/**
+ * Print an error with formatted stack trace.
+ * It's a real pain to get "normal" leading spaces to render in HTML, even in a <pre>, so this
+ * replaces four-space tabs in the stack trace with em-space entities & splits lines with <br>s.
+ * @param {Object} p
+ * @param {Object} p.error Expected to have fields "message" and maybe "stack"
+ */
+function ErrorDetails({error}) {
+	// Process the stack trace, if present.
+	// If I'm missing a glaringly obvious way to do this without doing
+	// regex replacement in longhand, please fix -- RM 2023-09
+	const [formattedStack, setFormattedStack] = useState();
+	useEffect(() => {
+		if (!error?.stack) {
+			setFormattedStack(null);
+			return;
+		}
+		const formatted = [];
+		const lines = error.stack.split(/\n/);
+		lines.forEach(line => {
+			const indent = line.match(/^\s+/);
+			if (indent) {
+				indent[0].match(/\s\s\s\s/g)?.forEach(() => {
+					formatted.push(<>&emsp;</>);
+				})
+			}
+			formatted.push(line.trim());
+			formatted.push(<br/>);
+		});
+		setFormattedStack(formatted);
+	}, [error?.stack]);
+
+	return <p>
+		<h4>Details for support</h4>
+		{error?.message && <>
+			Message:<br/>
+			{error.message}
+		</>}
+		{error?.stack && <>
+			<br /><br />
+			Stack trace:<br />
+			<small>{formattedStack || error.stack}</small>
+		</>}
+	</p>;
+}
+
 
 export default MainDivBase;
