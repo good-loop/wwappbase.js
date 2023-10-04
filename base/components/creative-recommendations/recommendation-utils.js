@@ -262,10 +262,11 @@ function evaluateReductions(transfer) {
 export function getBestRecompression(transfer) {
 	const { noWebp } = DataStore.getValue(RECS_OPTIONS_PATH);
 
-	let bestOutput, bestSize;
+	let bestOutput, bestSize = transfer.bytes; // Don't return outputs bigger than original as "best"
 	transfer.outputs?.forEach(output => {
 		// Don't use .webp recompresses in no-webp mode
 		if (noWebp && output.format === 'webp') return;
+		// TODO RecompressServlet to do speculative standard/retina/compromise resizes & allow switching here
 		if (!bestSize || (output.bytes < bestSize)) {
 			bestOutput = output;
 			bestSize = output.bytes;
