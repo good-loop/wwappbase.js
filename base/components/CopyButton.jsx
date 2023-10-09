@@ -1,16 +1,18 @@
-import React, {useState} from 'react';
-import {copyTextToClipboard, space} from '../utils/miscutils';
-import {Button} from 'reactstrap';
+import React, { useState } from 'react';
+import { copyTextToClipboard } from '../utils/miscutils';
+import { Button } from 'reactstrap';
 import Icon from './Icon';
 
-const CopyButton = ({text, className, children, small}) => {
-	const [copiedID, setCopiedID] = useState(false);
-	const copyID = () => {
+const CopyButton = ({ text, className, children, ...props }) => {
+	const [hasCopied, setHasCopied] = useState(false);
+	const doCopy = () => {
 		copyTextToClipboard(text);
-		setCopiedID(true);
+		setHasCopied(true);
 	};
 
-	return <Button className={space(className, small && "btn-small")} color={copiedID ? "primary" : "secondary"} onClick={copyID}>{children}{children && " "}<Icon name="clipboard"/></Button>;
+	return <Button {...props} className={className} color={hasCopied ? 'primary' : 'secondary'} onClick={doCopy}>
+		{children}{children && ' '}<Icon name="clipboard"/>
+	</Button>;
 };
 
 export default CopyButton;
