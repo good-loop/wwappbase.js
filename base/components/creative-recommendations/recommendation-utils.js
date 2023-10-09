@@ -40,7 +40,7 @@ export function savedManifestPath({tag, url, html, upload}) {
  */
 export function processedRecsPath({tag, url, html}, manifest) {
 	// noWebp no longer changes how recompression is done, so leave it out of the deduplication string
-	const options = DataStore.getValue(RECS_OPTIONS_PATH);
+	const {noWebp, ... options} = DataStore.getValue(RECS_OPTIONS_PATH);
 	const optionString = JSON.stringify(options);
 	return [...RECS_PATH, 'processed-recs', ...manifestPathBit({tag, url, html}), manifest?.timestamp || 0, optionString];
 }
