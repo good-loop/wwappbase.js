@@ -385,7 +385,7 @@ export function Recommendation({spec, ...props}) {
 	// The spec may be marked as having a significant reduction, but have a recompression candidate
 	// that can't be used under current settings (eg webp image with "can't use webp" set)
 	const best = getBestRecompression(spec);
-	const RecComponent = (best && spec.significantReduction) ? recComponents[spec.type] : NoRecommendation;
+	const RecComponent = (best && best.significantReduction) ? recComponents[spec.type] : NoRecommendation;
 	if (!RecComponent) return null;
 	return <RecComponent spec={spec} best={best} {...props} />;
 };
