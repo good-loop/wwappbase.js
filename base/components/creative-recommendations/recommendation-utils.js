@@ -41,10 +41,7 @@ export function savedManifestPath({tag, url, html, upload}) {
 export function processedRecsPath({tag, url, html}, manifest) {
 	const allOptions = DataStore.getValue(RECS_OPTIONS_PATH);
 	// Don't start a recompress if the options are unset.
-	if (!allOptions) {
-		debugger;
-		return null;
-	}
+	if (!allOptions) return null;
 	// noWebp no longer changes how recompression is done, so leave it out of the deduplication string
 	// TODO Do speculative retina/standard/compromise sizes too
 	const {noWebp, ...options} = allOptions;
