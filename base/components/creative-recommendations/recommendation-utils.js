@@ -39,8 +39,15 @@ export function savedManifestPath({tag, url, html, upload}) {
  * @param {Object} [manifest] The PageManifest returned by MeasureServlet (or loaded from /persist/)
  */
 export function processedRecsPath({tag, url, html}, manifest) {
+	const allOptions = DataStore.getValue(RECS_OPTIONS_PATH);
+	// Don't start a recompress if the options are unset.
+	if (!allOptions) {
+		debugger;
+		return null;
+	}
 	// noWebp no longer changes how recompression is done, so leave it out of the deduplication string
-	const {noWebp, ... options} = DataStore.getValue(RECS_OPTIONS_PATH);
+	// TODO Do speculative retina/standard/compromise sizes too
+	const {noWebp, ...options} = allOptions;
 	const optionString = JSON.stringify(options);
 	return [...RECS_PATH, 'processed-recs', ...manifestPathBit({tag, url, html}), manifest?.timestamp || 0, optionString];
 }
