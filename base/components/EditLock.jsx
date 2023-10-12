@@ -7,7 +7,9 @@ import DataStore from '../plumbing/DataStore';
 
 import '../style/EditLock.less';
 
-
+/**
+ * Usage as originally written: in your project's MainDiv.jsx, pass this function to MainDivBase as param "Persistent".
+ */
 const EditLock = ({page}) => {
 	const [details, setDetails] = useState([]);
 	const [users, setUsers] = useState({users:[], pendingUsers:[]});
