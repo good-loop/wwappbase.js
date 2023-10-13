@@ -18,7 +18,10 @@ function DevOnly({bare, test, Tag = 'div', className, children, ...props}) {
 	if (!Roles.isDev() && !(test && Roles.isTester())) return null;
 	if (bare) return children;
 
-	return <Tag className={space('dev-only', className)} {...props}>{children}</Tag>;
+	return <Tag className={space('dev-only', className)} {...props}>
+		{children}
+		<div className="dev-only-marker">Admin</div>
+	</Tag>;
 }
 
 export default DevOnly;
