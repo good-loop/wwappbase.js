@@ -16,7 +16,6 @@ const EMOJI = {
 	caretup:"△", // ‸⋀⋁△▽▵▾▿
 	caretdown:"▽",
 	circlearrow: "⟳",
-	copy: "⎘",
 	clipboard: "📋",
 	genie: "🧞",
 	globe: "🌍",
@@ -46,7 +45,11 @@ const EMOJI = {
 
 const SVG = {
 	// (cc) https://icons8.com/icons/set/share
-	share: <svg fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30 30" width="1em" height="1em"><path d="M 23 3 A 4 4 0 0 0 19 7 A 4 4 0 0 0 19.09375 7.8359375 L 10.011719 12.376953 A 4 4 0 0 0 7 11 A 4 4 0 0 0 3 15 A 4 4 0 0 0 7 19 A 4 4 0 0 0 10.013672 17.625 L 19.089844 22.164062 A 4 4 0 0 0 19 23 A 4 4 0 0 0 23 27 A 4 4 0 0 0 27 23 A 4 4 0 0 0 23 19 A 4 4 0 0 0 19.986328 20.375 L 10.910156 15.835938 A 4 4 0 0 0 11 15 A 4 4 0 0 0 10.90625 14.166016 L 19.988281 9.625 A 4 4 0 0 0 23 11 A 4 4 0 0 0 27 7 A 4 4 0 0 0 23 3 z"/></svg>,
+	share: <svg fill="currentColor" viewBox="0 0 30 30" width="1em" height="1em"><path d="M19.988 9.625A4 4 0 1019.094 7.836L10.012 12.377a4 4 0 10.002 5.248L19.09 22.165A4 4 0 1019.986 20.375L10.91 15.835A4 4 0 0010.906 14.166Z"/></svg>,
+	// Rights with Good-Loop (5-minute inkscape sketches by RM who hereby releases etc)
+	copy: <svg fill="currentColor" viewBox="0 0 100 100" width="1em" height="1em"><path d="M40 0v25H0v75h60V75h40V20L80 0H40zm5 5h32.93v17.07H95V70H45V5zM5 30H40V75h15v20H5V30z" /></svg>,
+	download: <svg fill="currentColor" viewBox="0 0 100 100" width="1em" height="1em"><path d="m5 60v25h90v-25h-10v15h-70v-15z"/><path d="m42.5 15v35h-10l17.5 17.5 17.5-17.5h-10v-35z"/></svg>,
+	edit: <svg fill="currentColor" viewBox="0 0 19 19" width="1em" height="1em"><path d="M15 10v7h-13v-15h9l2-2h-13v19h17v-11l-2 2zM9 7l-1 4 4-1 5-5-3-3zM17 .5c-.5-.5-1-.5-1.5 0l-1 1 3 3 1-1c.5-.5.5-1 0-1.5z" /></svg>
 };
 
 
@@ -55,7 +58,7 @@ const SVG = {
  * We should prob standardise on an icon font - see https://getbootstrap.com/docs/5.0/extend/icons/#bootstrap-icons
  */
 const ICONS = {
-	download: "https://icons.getbootstrap.com/assets/icons/download.svg"
+	// download: "https://icons.getbootstrap.com/assets/icons/download.svg"
 };
 
 
