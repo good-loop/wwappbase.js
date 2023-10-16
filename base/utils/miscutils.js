@@ -190,6 +190,24 @@ export const space = (...strings) => {
 	return js.trim();
 };
 
+
+/**
+ * Give an arbitrary list of presumed nouns natural-language spacing, commas, and conjunctions.
+ * @param {string[]} list Array of words (although other types will be coerced to strings)
+ * @param {boolean} oxford True or omitted for "a, b, and c"; false for "a, b and c"
+ * @returns {string}
+ */
+export const commaList = (list, oxford = true) => {
+	const lastCommaAt = (list.length <= 2) ? (-1) : (list.length - (oxford ? 2 : 3));
+	const andAt = (list.length < 2) ? (-1) : (list.length - 2);
+	return list.map((item = '', i) => {
+		const toPrint = (item + '').trim(); // coerce to string and strip extra spaces
+		if (!toPrint.length) return '';
+		return `${toPrint}${i <= lastCommaAt ? ',' : ''}${i === andAt ? ' and' : ''}${i < list.length - 1 ? ' ' : ''}`;
+	}).join('');
+};
+
+
 /**
  * @param unescapedHash e.g. "foo=bar"
  * This must be the whole post-hash state.
