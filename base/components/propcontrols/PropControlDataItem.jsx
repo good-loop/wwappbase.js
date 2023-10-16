@@ -150,6 +150,7 @@ setRawValue, storeValue, modelValueFromInput,
 							onClickItem={item => doSet(item)}
 							q={q}
 							list={list}
+							scrollOnPage={false}
 						/>
 					</div>}
 					{showCreate && <CreateButton
