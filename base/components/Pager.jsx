@@ -161,7 +161,7 @@ function Pager({pageCount, current, setPage, ...baseProps}) {
  * @param {Number} p.current Current page number
  * @param {Number} p.pageCount Total page count
  */
-function PageBtn({setPage, target, current, pageCount, dummy, ...linkProps}) {
+function PageBtn({setPage, target, current, pageCount, dummy, width, ...linkProps}) {
 	const itemProps = {};
 
 	// Shift all data-attrs from linkProps to itemProps

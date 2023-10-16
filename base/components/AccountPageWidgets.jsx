@@ -73,12 +73,7 @@ const RoleLine = ({ role }) => {
 	return (
 		<div className='badge badge-pill badge-info'>
 			{role}
-			{(Roles.isDev() || Roles.iCan('admin')) && (
-				<>
-					<ShareLink shareId={'role:' + role} />
-					<ShareWidget key={role} shareId={'role:' + role} />
-				</>
-			)}
+			{(Roles.isDev() || Roles.iCan('admin')) && <ShareWidget shareId={'role:' + role} hasButton />}
 		</div>
 	);
 };

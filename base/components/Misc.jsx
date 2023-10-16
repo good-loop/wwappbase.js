@@ -526,7 +526,7 @@ Misc.SubmitButton = ({formData, path, url, responsePath, once, color='primary', 
 	const vis = {visibility: isSaving? 'visible' : 'hidden'};
 	let isDisabled = disabled || isSaving || (once && submitStatus);
 	if (isDisabled && ! disabled) {
-		title = isSaving? "Saving..." : "Submitted :) To avoid errors, you cannot re-submit this form";		
+		title = isSaving? "Saving..." : "Submitted :) To avoid errors, you cannot re-submit this form";
 	}
 
 	return (
