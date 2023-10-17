@@ -181,6 +181,18 @@ export class PropControlParams {
 }; // ./PropControlParams
 
 
+// Positive, negative, BigInt 0, and boolean false
+const falsyToRetain = { 0: true, [-0]: true, [0n]: true, false: true };
+
+/** Collapse emptyish values like null, undefined, [], {}, "" to null - but keep "meaningful" ones */
+const collapseEmpty = val => {
+	if (val?.length === 0) return null;
+	if (falsyToRetain[val]) return val;
+	if (typeof val === 'object' && JSON.stringify(val) === '{}') return null;
+	return val || null;
+}
+
+
 /**
  * Check part of a DataItem for difference between DRAFT and PUBLISHED versions.
  * @param {String[]} path Path to DataItem OR object inside it
@@ -206,9 +218,11 @@ const diffProp = (path, prop) => {
 	if (!pvPub.value) return { status: KStatus.DRAFT };
 
 	// OK, so what's the actual difference for this prop?
-	const draftVal = DataStore.getValue([...path, prop]);
-	const pubVal = DataStore.getValue(['data', ...path.slice(1), prop]); // "data", not "published"
-
+	let draftVal = DataStore.getValue([...path, prop]);
+	let pubVal = DataStore.getValue(['data', ...path.slice(1), prop]); // "data", not "published"
+	// NB We don't care about the difference between nully/empty/falsy things - besides 0 and false
+	draftVal = collapseEmpty(draftVal);
+	pubVal = collapseEmpty(pubVal);
 	// No difference? (Cheap identity / implicit string-comparison check)
 	if (draftVal === pubVal) return null;
 	// No difference? (More expensive deep-compare)
