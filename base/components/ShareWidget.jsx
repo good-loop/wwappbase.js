@@ -189,6 +189,7 @@ const doShareByLink = async ({link, slink, setSlink, shareId, name}) => {
 	const shares = await getShareListPV(shareId).promise;
 	const pseudoShare = shares.find(s => s._to === withXId);
 	if (pseudoShare) {
+		console.log(`ShareByLink: Pseudo-user ${withXId} appears to exist, fetching JWT...`);
 		if (getJWTForPseudo(pseudoShare)) return;
 		// If this fails, push ahead and try creating the pseudouser
 	}
