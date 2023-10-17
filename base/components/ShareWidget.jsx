@@ -154,62 +154,78 @@ function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, 
  * @param {Object} p See ShareWidget which calls this
  * @returns 
  */
-const doShareByLink = async({link, slink, setSlink, shareId}) => {
-	// NB: pseudo-user is tied to the user, to allow the user to get access again later
-	const withXId = `${shareId}_by_${Login.getId()}@pseudo`;
+const doShareByLink = async ({link, slink, setSlink, shareId, name}) => {
+	// Share link already generated? Just use it.
 	if (slink) {
 		copyTextToClipboard(slink);
 		return;
 	}
-	let shares = await getShareListPV(shareId).promise;
-	console.log("ShareByLink shares", shares);
-	let pseudoShare = shares.find(s => s._to === withXId);
-	if (pseudoShare) {
+
+	// Construct a username for the pseudo-user - specific to shared resource & creating user.
+	// TODO allow one pseudo-user for the item across users, via:shareId+"@share"});
+	const withXId = `${shareId}_by_${Login.getId()}@pseudo`;
+
+	// If-when we know a pseudo-user exists:
+	// - get their JWT, construct a share link, save it to slink for re-use, and copy to clipboard.
+	const getJWTForPseudo = async (pseudoShare) => {
 		try {
-			// get the jwt for the already made pseudo user
-			let jwtres = await Login.getJWT({txid:withXId}); // TODO allow one pseudo-user for the item across users, via:shareId+"@share"});
-			let jwt = JSend.data(jwtres);
-			let link2 = doShareByLink2({link, shareId, withXId, jwt});
+			console.log(`ShareByLink: Fetching JWT for pseudo-user "${withXId}"`);
+			// Get the jwt for the existing pseudo-user
+			const jwtres = await Login.getJWT({txid:withXId});
+			const jwt = JSend.data(jwtres);
+			await doShareThing({shareId, withXId});
+			const link2 = setUrlParameter(link, 'jwt', jwt);
+			copyTextToClipboard(link2);
 			setSlink(link2);
-			return;
+			return true;
 		} catch(err) {
-			console.warn("cant use existing pseudoShare",pseudoShare," for "+withXId);
+			if (pseudoShare) console.warn(`ShareByLink: Can't use existing pseudoShare ${pseudoShare} for ${withXId}`);
 			console.warn(err);
 		}
-	}	
-	// request a pseudo user jwt
-	console.log("ShareByLink make a new pseudo user...");
-	let res = await Login.registerStranger({name:"Pseudo user for "+name, person:withXId});
-	console.warn("pPseudoUser then", res, res?.cargo?.user);
-	let user = JSend.data(res).user;
-	let jwt = user.jwt;
-	// claim the pseudo-user
-	Login.claim(withXId);
+		return false;
+	}
+
+	// Is there already a pseudo-user owned by the logged-in user which has the resource shared to it?
+	const shares = await getShareListPV(shareId).promise;
+	const pseudoShare = shares.find(s => s._to === withXId);
+	if (pseudoShare) {
+		console.log(`ShareByLink: Pseudo-user ${withXId} appears to exist, fetching JWT...`);
+		if (getJWTForPseudo(pseudoShare)) return;
+		// If this fails, push ahead and try creating the pseudouser
+	}
+
+	// No pseudo-user for this resource, so register a new one.
+	console.log('ShareByLink: Registering new pseudo-user...');
+	try {
+		// Block until pseudo-user exists...
+		await Login.registerStranger({name: `Pseudo-user for "${name}"`, person: withXId});
+		// NB DO NOT use response.cargo.user from the registerStranger call: this is the logged-in user object, not the new pseudo-user!
+	} catch (err) {
+		// Error recovery: it's OK if this user already exists.
+		if (!err.responseText.match(/already registered/i)) throw err;
+	}
+
+	// Claim ownership of the new pseudo-user - blocking so we don't try to generate JWT until we have it.
+	await Login.claim(withXId);
+
+	// Pseudo-user is all set up - now fetch their JWT and generate share link.
+	getJWTForPseudo();
+
 	// ?? share the pseudo-user with the shareId (modified to be an XId) (so TODO e.g. users of a dashbaord can access the pseudo-user)
 	// doShareThing({shareId:withXId, withXId:shareId+"@share"});
-
-	// share the item with the pseudo-user 
-	let link2 = doShareByLink2({link, shareId, withXId, jwt});
-	// copy to clipboards
-	setSlink(link2);	
 }; // ./ doShareByLink
 
 
-function ShareByLink({link, name, shareId}) {
-	if ( ! link) link = window.location+"";
+function ShareByLink({ link = window.location.href, name, shareId }) {
 	let [slink, setSlink] = useState();
+
 	return <><h5>General Access</h5>
-		<Button onClick={e => doShareByLink({link, slink, setSlink, shareId})} id='copy-share-widget-link' ><Icon name="clipboard" /> Copy access link</Button>
+		<Button onClick={e => doShareByLink({link, slink, setSlink, shareId, name})} id="copy-share-widget-link">
+			<Icon name="copy" /> Copy access link
+		</Button>
 	</>;
 }
 
-const doShareByLink2 = ({link, shareId, withXId, jwt}) => {
-	console.log("ShareByLink2...");
-	let pShare = doShareThing({shareId, withXId});
-	let link2 = setUrlParameter(link, "jwt", jwt);
-	copyTextToClipboard(link2);
-	return link2;
-};
 
 /**
  * 
