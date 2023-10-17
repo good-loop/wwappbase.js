@@ -18,7 +18,7 @@ import { getPortalLink } from './PortalLink';
  * @param {?string} p.type 
  * @param {?KStatus} p.status Only used if `item` isn't set.
  */
-const DataItemBadge = ({item, id, type, status=KStatus.PUBLISHED, onClick, href, className, style, ...rest}) => {
+const DataItemBadge = ({item, id, type, status=KStatus.PUBLISHED, onClick, href, className, style, title, ...rest}) => {
 	if (!item) item = getDataItem({type, id, status}).value || {id, type};
 
 	const Tag = href ? 'a' : 'div';
@@ -27,9 +27,10 @@ const DataItemBadge = ({item, id, type, status=KStatus.PUBLISHED, onClick, href,
 	}
 	if (!href) href = null; // avoid a react error message
 
-	return <Tag className={space("DataItemBadge", className)} style={style}
+	return <Tag className={space('DataItemBadge', className)} style={style}
 		onClick={onClick} href={href} 
-		title={getName(item) || `ID: ${getId(item)}`}
+		title={title || getName(item) || `ID: ${getId(item)}`}
+		{...rest}
 	>
 		{getLogo(item) ? <img src={getLogo(item)} className="logo logo-sm" /> : <span className="d-inline-block logo logo-sm" />}{' '}
 		{getName(item) || getId(item)}

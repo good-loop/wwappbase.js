@@ -39,22 +39,22 @@ const EMOJI = {
 	warning: "⚠",
 	mobile: "📱",
 	desktop: "💻", // or 🖳	
+	x: '✕',
 	yinyang: "☯️",
 };
 
 
 const SVG = {
-	// (cc) https://icons8.com/icons/set/share
-	share: <svg fill="currentColor" viewBox="0 0 30 30" width="1em" height="1em"><path d="M19.988 9.625A4 4 0 1019.094 7.836L10.012 12.377a4 4 0 10.002 5.248L19.09 22.165A4 4 0 1019.986 20.375L10.91 15.835A4 4 0 0010.906 14.166Z"/></svg>,
 	// Rights with Good-Loop (5-minute inkscape sketches by RM who hereby releases etc)
-	copy: <svg fill="currentColor" viewBox="0 0 100 100" width="1em" height="1em"><path d="M40 0v25H0v75h60V75h40V20L80 0H40zm5 5h32.93v17.07H95V70H45V5zM5 30H40V75h15v20H5V30z" /></svg>,
+	share: <svg fill="currentColor" viewBox="0 0 100 100" width="1em" height="1em"><path d="M31.125 39a17.5 17.5 0 100 22l34.5 17.2a17.5 17.5 0 103.35-6.7l-34.5-17.2a17.5 17.5 0 000-8.5l34.5-17.2a17.5 17.5 0 10-3.35-6.7Z"/></svg>,
+	copy: <svg fill="currentColor" viewBox="0 0 100 100" width="1em" height="1em"><path d="M40 0V25H0V100H60V75H100V20L80 0H40ZM45 5H78V22H95V70H45V5ZM5 30H40V75H55V95H5V30Z" /></svg>,
 	download: <svg fill="currentColor" viewBox="0 0 100 100" width="1em" height="1em"><path d="m5 60v25h90v-25h-10v15h-70v-15z"/><path d="m42.5 15v35h-10l17.5 17.5 17.5-17.5h-10v-35z"/></svg>,
-	edit: <svg fill="currentColor" viewBox="0 0 19 19" width="1em" height="1em"><path d="M15 10v7h-13v-15h9l2-2h-13v19h17v-11l-2 2zM9 7l-1 4 4-1 5-5-3-3zM17 .5c-.5-.5-1-.5-1.5 0l-1 1 3 3 1-1c.5-.5.5-1 0-1.5z" /></svg>
+	edit: <svg fill="currentColor" viewBox="0 0 100 100" width="1em" height="1em"><path d="m80 51v39h-70v-80h48l10-10h-68v100h90v-59zm-33-14-5 21 21-5 27-27-16-16zm45-13 5-5c2-2 2-6 0-8l-8-8c-2-2-6-2-8 0l-5 5z" /></svg>
 };
 
 
 /**
- * Hack: list a few icons here.
+ * Hack: list external SVG icons here.
  * We should prob standardise on an icon font - see https://getbootstrap.com/docs/5.0/extend/icons/#bootstrap-icons
  */
 const ICONS = {

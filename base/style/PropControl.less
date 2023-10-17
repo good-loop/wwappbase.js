@@ -238,18 +238,8 @@ You can apply it to, well, anything.
 
 /* ./color-control */
 
-/* Special styling for PropControlDataItem */
-.DataItemBadge {
-	.logo {
-		border: 1px solid #ddd;
-		vertical-align: middle; // default for <img> but we also have dummy span.logo elements
-	}
-}
 
-// Non-link preview shouldn't look clickable
-span.preview .DataItemBadge {
-	cursor: default;
-}
+
 
 .data-item-control {
 	.dropdown-sizer {
@@ -270,6 +260,15 @@ span.preview .DataItemBadge {
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		overflow: hidden;
+		.logo {
+			border: 1px solid #ddd;
+			vertical-align: middle; // default for <img> but we also have dummy span.logo elements
+		}
+	}
+
+	// Non-link preview shouldn't look clickable
+	span.preview .DataItemBadge {
+		cursor: default;
 	}
 
 	// The autocomplete dropdown list
@@ -289,7 +288,7 @@ span.preview .DataItemBadge {
 			display: block;
 			margin: 0;
 			padding: 0.25em 0;
-
+			cursor: pointer;
 			&:not(:first-child) {
 				border-top: 1px solid #ddd;
 			}
@@ -310,6 +309,9 @@ span.preview .DataItemBadge {
 			height: 100%;
 			border: none;
 			margin-right: 0.25rem;
+			// Non-wide logos don't need to expand to occupy the full 2rem
+			width: unset;
+			max-width: 2rem;
 		}
 	}
 }

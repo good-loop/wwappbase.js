@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { assert, assMatch } from '../utils/assert';
 import Login from '../youagain';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
-import {copyTextToClipboard, setUrlParameter, isEmail, stopEvent, uid } from '../utils/miscutils';
+import {copyTextToClipboard, setUrlParameter, isEmail, stopEvent, uid, space } from '../utils/miscutils';
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
@@ -18,36 +18,26 @@ import JSend from '../data/JSend';
 /**
  * a Share This button
  */
-function ShareLink({className, style, item, type, id, shareId, children, button, size, color="secondary"}) {
+function ShareLink({className, style, item, type, id, shareId, children, color = 'secondary', ...props}) {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
 			id = getId(item);
 		}
 		if (!type || !id) return null;
-
 		shareId = shareThingId(type, id);
 	}
 
-	const basePath = ['widget', 'ShareWidget', shareId];
-
 	const doShow = e => {
 		stopEvent(e);
-		DataStore.setValue(basePath.concat('show'), true);
+		DataStore.setValue(['widget', 'ShareWidget', shareId], 'show', true);
 	};
 
-	if (children) {
-		return <Button id='share-widget-btn' className={className} style={style} color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /> {children}</Button>;
-	}
-	if (button) {
-		return <Button id='share-widget-btn' className={className} style={style} color={color} onClick={doShow} size={size} title="Share"><Icon name="share" /></Button>;
-	}
 
-	return (
-		<a id='share-widget-btn' className={className} style={style} onClick={doShow} title="Share">
-			<Icon name="share" />
-		</a>
-	);
+	return <Button className={space('share-widget-btn', className)} color={color} onClick={doShow} title="Share" {...props}>
+		<Icon name="share" />
+		{children && ' '}{children}
+	</Button>;
 }
 
 
@@ -88,7 +78,7 @@ const deleteShare = ({share}) => {
  * @param {?String}	p.email - optional, auto-populate the email field with this value
  *
  */
-function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, noEmails, children, className, style}) {
+function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, noEmails, ...props}) {
 	if (!shareId) {
 		if (item) {
 			type = getType(item);
@@ -123,7 +113,7 @@ function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, 
 	};
 
 	return <>
-		{hasButton && <ShareLink className={className} style={style} shareId={shareId}>{children}</ShareLink>}
+		{hasButton && <ShareLink shareId={shareId} {...props} />}
 		<Modal isOpen={show} className="share-modal" toggle={toggle}>
 			<ModalHeader toggle={toggle}>
 				<Icon name="share" /> {title}
