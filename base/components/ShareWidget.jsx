@@ -30,9 +30,8 @@ function ShareLink({className, style, item, type, id, shareId, children, color =
 
 	const doShow = e => {
 		stopEvent(e);
-		DataStore.setValue(['widget', 'ShareWidget', shareId], 'show', true);
+		DataStore.setValue(['widget', 'ShareWidget', shareId, 'show'], true);
 	};
-
 
 	return <Button className={space('share-widget-btn', className)} color={color} onClick={doShow} title="Share" {...props}>
 		<Icon name="share" />
@@ -91,7 +90,7 @@ function ShareWidget({shareId, item, type, id, name, email, hasButton, hasLink, 
 	}
 
 	const basePath = ['widget', 'ShareWidget', shareId];
-	let data = DataStore.getValue(basePath) || DataStore.setValue(basePath, {form: {}}, false);
+	const data = DataStore.getValue(basePath) || DataStore.setValue(basePath, {form: {}}, false);
 	const {warning, show, form} = data;
 	const formPath = basePath.concat('form');
 	if (!name) name = shareId;
