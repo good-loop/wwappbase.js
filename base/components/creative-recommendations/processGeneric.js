@@ -12,7 +12,7 @@ export function processLocal(transfer, type, extraData) {
 /** Call /recompress - boilerplate for standard params and response */
 export function callRecompressServlet(transfer, type, extraData) {
 	console.log("callRecompressServlet", type, transfer);
-	const data = { url: transfer.url, type, ...extraData };
+	const data = { url: transfer.url, type, referrer: transfer.frame.url, ...extraData };
 
 	return ServerIO.load(RECOMPRESS_ENDPOINT, { data }).then(res => {
 		return { ...transfer, type, outputs: res.data.outputs, optimised: true };

@@ -234,8 +234,12 @@ function ImgRecDetails({spec, best}) {
 
 	let { url, imgEl } = spec; // NB Original URL will be proxied when previewing to avoid adblock and Firefox Enhanced Tracking Protection
 	let { url: optUrl } = best;
-	let { width, height } = spec.elements[0];
-	const imgStyle = { maxWidth: width, maxHeight: height };
+	// 3 sets of dimensions!
+	// Size of originally analysed HTML element - the image will be previewed at this size.
+	let { width: displayWidth, height: displayHeight } = spec.elements[0];
+	let { naturalWidth: width, naturalHeight: height } = imgEl; // Size of original image
+	let { width: newWidth, height: newHeight } = best; // Size of resized image
+	const imgStyle = { maxWidth: displayWidth, maxHeight: displayHeight };
 
 	const desc = [];
 	const origType = fileType(url);
@@ -246,9 +250,9 @@ function ImgRecDetails({spec, best}) {
 		</li>);
 	}
 
-	if (imgEl && (width !== imgEl.naturalWidth || height !== imgEl.naturalHeight)) {
+	if (imgEl && (newWidth < width || newHeight < height)) {
 		desc.push(<li key="scaled">
-			This image has been scaled from its original size of <b>{imgEl.naturalWidth}x{imgEl.naturalHeight}</b> to the size it appears on-screen, <b>{Math.floor(width)}x{Math.floor(height)}</b>.
+			This image has been scaled from its original size of <b>{width}x{height}</b> to the size it appears on-screen, <b>{newWidth}x{newHeight}</b>.
 		</li>);
 	}
 
@@ -381,7 +385,7 @@ export function Recommendation({spec, ...props}) {
 	// The spec may be marked as having a significant reduction, but have a recompression candidate
 	// that can't be used under current settings (eg webp image with "can't use webp" set)
 	const best = getBestRecompression(spec);
-	const RecComponent = (best && spec.significantReduction) ? recComponents[spec.type] : NoRecommendation;
+	const RecComponent = (best && best.significantReduction) ? recComponents[spec.type] : NoRecommendation;
 	if (!RecComponent) return null;
 	return <RecComponent spec={spec} best={best} {...props} />;
 };
