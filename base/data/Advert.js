@@ -139,9 +139,9 @@ Advert.charityList = ad => {
 	return clist;
 };
 
-Advert.displaySizes = advert => {
+Advert.displaySize = advert => {
 	assert(advert);
-	return advert.displayBase?.sizes || [];
+	return advert.displayBase?.size || null;
 }
 
 

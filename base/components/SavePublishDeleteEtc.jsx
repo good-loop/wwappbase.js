@@ -158,7 +158,8 @@ function SavePublishDeleteEtc({
 	prePublish = T, preDelete = ({item, action}) => confirmUserAction({item, action}), preArchive = T, preSaveAs = T,
 	sendDiff,
 	oneButton, targetPaths,
-	noPublish
+	noPublish,
+	noSave
 }) {
 	// No anon edits
 	if ( ! Login.isLoggedIn()) {
@@ -327,7 +328,7 @@ function SavePublishDeleteEtc({
 	return (
 		<div className={className} style={{ position }} title={item && item.status}>
 
-			{ ! saveAs && <SaveEditsButton />}
+			{ ! saveAs  && ! noSave && <SaveEditsButton />}
 
 			{saveAs &&
 				<ButtonDropdown size={size} isOpen={isSaveButtonDropdownOpen} toggle={() => setSaveButtonDropdownOpen( ! isSaveButtonDropdownOpen)}>

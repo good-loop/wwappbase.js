@@ -375,7 +375,9 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		setTimeout(() => setFirstRender(false));
 	}
 
-
+	if(required && (storeValue === undefined || storeValue === null || storeValue === "" || (storeValue.length && storeValue.length == 0))){
+		className += " missing-required"
+	}
 
 	// Temporary hybrid form while transitioning to all-modular PropControl structure
 	// newValidator produces an object compatible with setInputStatus
