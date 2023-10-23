@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { Button, Card, CardBody, Form, Pagination, PaginationItem, PaginationLink } from 'reactstrap';
 
@@ -75,6 +75,7 @@ const DEFAULT_PAGE_SIZE = 100;
  * @param {Number} [p.pageSize] Number of items per page, default 100
  * @param {Function|Object} [p.selected] Currently selected object.
  * 		Used to set initial page number in e.g. multi-pane contexts where items can be selected without navigating away from the list.
+ * @param {Boolean} [p.scrollOnPage=true] Scroll to top when switching pages in the list (default true)
  * @param {Object} [p.otherParams] Optional extra params to pass to getDataList() and on to the server.
  */
 function ListLoad({ type, status, servlet, navpage,
@@ -105,6 +106,7 @@ function ListLoad({ type, status, servlet, navpage,
 	onClickWrapper,
 	pageSelectID,
 	selected,
+	scrollOnPage = true,
 	// TODO sometime hasCsv, csvFormatItem,
 	otherParams = {}
 }) {
@@ -196,12 +198,15 @@ function ListLoad({ type, status, servlet, navpage,
 	// Internal value for page - URL value or 1
 	const [page, setPageRaw] = useState(pageFromUrl);
 	// Go to page number, update URL param if used, and scroll to top
+	const thisList = useRef();
 	const setPage = (n, scroll = true) => {
 		n = clampPage(n);
 		if (pageSelectID && n !== pageFromUrl) DataStore.setUrlValue(pageSelectID, n);
 		if (n === page) return;
 		setPageRaw(n);
-		if (scroll) window.scrollTo(0, 0);
+
+		// Scroll to top of list when switching pages - unless disabled with scrollOnPage=false
+		if (scroll && scrollOnPage && thisList.current) thisList.current.scrollIntoView(true);
 	};
 
 	// Page number pulled from URL may be out-of-range when item list comes in - fix if so
@@ -219,7 +224,7 @@ function ListLoad({ type, status, servlet, navpage,
 	// more?
 	if (items && pageSize > items.length && list?.next) {
 		let pvMore = getMoreDataList(list, getListParams, );
-		isLoading = ! pvMore.resolved; // loading...
+		isLoading = !pvMore.resolved; // loading...
 	}
 
 	// When list is retrieved (so run when items list changes size) check if we should switch page to show selected item
@@ -369,6 +374,7 @@ const resolveItems = ({ hits, type, status, preferStatus, filter, filterFn, tran
 
 	return items;
 };
+
 
 /**
  * 
@@ -603,6 +609,7 @@ const createBlank = ({ type, navpage, base, id, toCanonical=id2canonical, make, 
 	// invalidate lists
 	DataStore.invalidateList(type);
 };
+
 
 /**
  * A create-new button. This does NOT save the newly created object (unless a save function is passed in as `then`).

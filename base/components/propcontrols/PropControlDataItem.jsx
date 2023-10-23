@@ -18,7 +18,7 @@ import KStatus from '../../data/KStatus';
  * DataItemBadge
  */
 function SlimListItem({item, onClick, ...props}) {
-	return <DataItemBadge style={{cursor:"pointer"}} item={item} onClick={onClick} href={false} {...props} />;
+	return <DataItemBadge item={item} onClick={onClick} href={false} {...props} />;
 }
 
 /**
@@ -150,6 +150,7 @@ setRawValue, storeValue, modelValueFromInput,
 							onClickItem={item => doSet(item)}
 							q={q}
 							list={list}
+							scrollOnPage={false}
 						/>
 					</div>}
 					{showCreate && <CreateButton

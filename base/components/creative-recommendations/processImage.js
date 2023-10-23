@@ -69,7 +69,6 @@ function findMaxSize(img, elements) {
  * @param {object} size Target width and height for resize
  */
 function recompress(transfer, {width, height}) {
-	console.log("recompress");
 	if (!width || !height) {
 		// Either no elements were found which contained the image, or it was rendered at height/width 0.
 		// Mark as "possibly unused"
@@ -86,7 +85,6 @@ function recompress(transfer, {width, height}) {
 		format: noWebp ? '' : 'webp'
 	};
 
-
 	return callRecompressServlet(transfer, 'image', params);
 }
 
@@ -99,7 +97,7 @@ function processImage(transfer) {
 		const { url, bytes } = transfer;
 		return processLocal(transfer, 'image', { outputs: [{ url, bytes, messages: [`Ignoring tiny image (${transfer.bytes} bytes)`], noop: true }] });
 	};
-	return loadImage(url).then(imgEl => {		
+	return loadImage(url).then(imgEl => {
 		// nested promises so we can retain the HTMLImageElement and attach it to the augmented transfer
 		let size = findMaxSize(imgEl, elements);
 		console.log("processImage2", transfer, size);

@@ -152,27 +152,26 @@ img {
 
 /** marker for dev-only debug/admin elements that users do not see. See DevOnly.jsx */
 .dev-only {
-	border: 1px dotted yellow;
-	background-color: rgba(200,255,200,0.3);
-	opacity: 75%;
+	position: relative; // Reference for marker
+	background-color: #f0fff0;
+	padding: 0.15rem;
+	margin: -0.15rem;
+	border: 1px dashed #ddd;
+	> * {
+		opacity: 75%;
+	}
+	.dev-only-marker {
+		font-size: 0.66rem;
+		font-family: sans-serif;
+		position: absolute;
+		bottom: 0;
+		right: 0.2rem;
+		// Don't block interaction & improve visibility if element overlaps some content
+		pointer-events: none;
+		opacity: 0.5;
+	}
 }
-// an on-hover popup -- actually it was annoying
-// .dev-only::after {
-// 	content: "developer only content";
-// 	padding: 2px;
-// 	display: none;
-// 	position: relative;
-// 	top: -20px;
-// 	right: -30px;
-// 	width: 150px;
-// 	text-align: center;
-// 	background-color: #fef4c5;
-// 	border: 1px solid #d4b943;
-// 	border-radius: 2px;
-// }
-// .dev-only:hover::after {
-// 	display: block;
-// }
+/** End marker for dev-only */
 
 
 // MainDivBase puts every page in a Row (proper practice within a Container) - default to filling horizontally

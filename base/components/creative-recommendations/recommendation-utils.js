@@ -39,23 +39,29 @@ export function savedManifestPath({tag, url, html, upload}) {
  * @param {Object} [manifest] The PageManifest returned by MeasureServlet (or loaded from /persist/)
  */
 export function processedRecsPath({tag, url, html}, manifest) {
+	const allOptions = DataStore.getValue(RECS_OPTIONS_PATH);
+	// Don't start a recompress if the options are unset.
+	if (!allOptions) return null;
 	// noWebp no longer changes how recompression is done, so leave it out of the deduplication string
-	const options = DataStore.getValue(RECS_OPTIONS_PATH);
+	// TODO Do speculative retina/standard/compromise sizes too
+	const {noWebp, ...options} = allOptions;
 	const optionString = JSON.stringify(options);
 	return [...RECS_PATH, 'processed-recs', ...manifestPathBit({tag, url, html}), manifest?.timestamp || 0, optionString];
 }
 
 
 /**
- * Augment a PageManifest in-place by adding a member "parentFrame" to every sub-frame.
+ * Augment a PageManifest in-place by adding a member "parentFrame" to every sub-frame & "frame" to every transfer.
  * This can't be done server-side, since it would break serialization.
  * @param {PageManifest} manifest From MeasureServlet
  */
-function doubleLinkFrames(manifest) {
+function doubleLinkManifest(manifest) {
 	const allFrames = flattenProp(manifest, 'frames', 'frames');
 	allFrames.unshift(manifest);
 	allFrames.forEach(frame => {
-		// Is there a frame whose "child frames" array contains the current frame?
+		// Link every transfer back to this frame - for e.g. getting referrer URL later
+		frame.transfers.forEach(transfer => { transfer.frame = frame; });
+		// Is there a frame whose "child frames" array contains the current frame? That's the parent.
 		const parent = allFrames.find(candidate => candidate.frames.find(f => (f === frame)));
 		if (parent) frame.parentFrame = parent;
 	});
@@ -86,7 +92,7 @@ export function startAnalysis({tag, url, html}) {
 	// Call MeasureServlet!
 	return ServerIO.load(ServerIO.MEASURE_ENDPOINT, { data }).then(res => {
 		if (res.error) throw new Error(res.error);
-		res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
+		res.data.forEach(doubleLinkManifest); // Add parent info for easy frame navigation
 		// Store results in the standard location
 		DataStore.setValue(path, res.data);
 		return res;
@@ -99,7 +105,7 @@ export function startAnalysis({tag, url, html}) {
  * @param res Response from MeasureServlet.
  */
 export function receiveUploadAnalysis(res) {
-	res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
+	res.data.forEach(doubleLinkManifest); // Add parent info for easy frame navigation
 	// Store results in the standard location
 	DataStore.setValue(savedManifestPath({upload: 'upload'}, res.data));
 }
@@ -115,7 +121,7 @@ export function fetchSavedManifest(tag) {
 		// fetchFn returning null is OK - no tag means stored-manifest-for-tag should resolve null
 		if (!tag) return null;
 		return ServerIO.load(storedManifestForTag(tag)).then(res => {
-			res.data.forEach(doubleLinkFrames); // Add parent info for easy frame navigation
+			res.data.forEach(doubleLinkManifest); // Add parent info for easy frame navigation
 			return res;
 		});
 	});
