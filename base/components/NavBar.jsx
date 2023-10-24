@@ -63,7 +63,7 @@ class NavProps {
 };
 
 /**
- * 
+ * Used via setNavContext()
  * @param {NavProps|DataClass} props e.g. brandLink brandName brandLogo, or an Advertiser or NGO
  */
 export const setNavProps = (props) => {
@@ -266,6 +266,7 @@ const setNavPropsBlank = () => setNavProps({brandId:null,brandType:null,brandLin
 
 // TODO unify with setNavProps() to avoid (re)setting one and not the other.
 export const setNavContext = (type, id, processLogo, brandLink) => {
+	console.log("setNavContext: "+type+" "+id);
 	CONTEXT[type] = id;
 	if ( ! processLogo) return;
 	if ( ! id) {
@@ -285,6 +286,7 @@ export const setNavContext = (type, id, processLogo, brandLink) => {
 	let pvAdvertiser = getDataItem({type, id, status:KStatus.PUBLISHED, swallow:true});
 	pvAdvertiser.promise.then(advertiser => {
 		if ( ! advertiser) {
+			console.warn("blank-nav: No advertiser for "+type+" "+id+" PUBLISHED");
 			setNavPropsBlank();
 			return;
 		}
