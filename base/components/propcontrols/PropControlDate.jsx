@@ -20,7 +20,7 @@ function PropControlDate2({ path, prop, type, storeValue, rawValue, setRawValue,
 	// Roll back to native editor on 27/04/2022
 	// The bug that caused us to use the custom text editor was from 2017 https://github.com/winterstein/sogive-app/issues/71 & 72
 	// I don't think it will happen again, but it's worth keeping in mind.
-	console.log("rawValue", rawValue);
+	// console.log("rawValue", rawValue);
 	if ( ! is(rawValue) && storeValue) {
 		rawValue = isoDateTZ(storeValue);
 	}
