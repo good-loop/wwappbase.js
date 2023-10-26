@@ -1,6 +1,6 @@
 import React, { Component, useEffect, useState } from 'react';
 import Login from '../youagain';
-
+import _ from 'lodash';
 import { getUrlVars, toTitleCase, yessy } from '../utils/miscutils';
 import { Alert, Col, Container, Row } from 'reactstrap';
 import { isFunction } from 'lodash';
@@ -123,7 +123,8 @@ class MainDivBase extends Component {
 	componentDidMount() {
 		// redraw on change
 		const updateReact = (mystate) => this.setState({});
-		DataStore.addListener(updateReact);
+		const updateReactDebounced = _.debounce(updateReact, 25); // a very small debounce to avoid thrashing render
+		DataStore.addListener(updateReactDebounced);
 		// Scroll to top after hashchage (From my-loop MainDiv)
 		window.addEventListener('hashchange', () => window.scrollTo(0,0));
 	}

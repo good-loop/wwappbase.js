@@ -169,7 +169,8 @@ class Store {
 				_.defer(() => this.update()); // do the callbacks (again) once we exit the loop
 				return;
 			}
-			// callbacks (e.g. React render)
+			// callbacks (e.g. React render) 
+			// NB: you may wish to debounce the callback
 			this.callbacks.forEach(fn => fn(this.appstate));
 		} finally {
 			this.updating = false;
@@ -811,7 +812,8 @@ class Store {
 			this.setValue(path, res, true);
 			return res;
 		}).catch(res => {
-			// Error: leave the failed PV in place to avoid hammering bad API calls...
+			// Error: leave the failed PV in place to avoid hammering bad API calls...			
+			console.log("update re error: "+pv.error+" path: "+path);
 			this.update(); // ...but update React, so components redraw and receive the resolved-but-failed PV.
 			throw res;
 		});
