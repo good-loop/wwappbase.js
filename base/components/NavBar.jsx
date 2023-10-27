@@ -103,7 +103,7 @@ export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || Data
  */
 function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle, 
 							brandId, brandType, brandLink, brandLogo, brandName, 
-							onLinkClick, isBeta, accountMenuItems, accountLinkText}) 
+							onLinkClick, isBeta, accountMenuItems, accountLinkText, noLogins}) 
 {
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
@@ -128,10 +128,11 @@ function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', hom
 				<Nav navbar className="page-links justify-content-start" style={{flexGrow:1}}>
 					{pageLinks}
 				</Nav>
+				{!noLogins && 
 				<div className="d-flex align-items-center">
 					{children}
 					<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText} onLinkClick={onLinkClick} className=""/>
-				</div>
+				</div>}
 			</div>
 		</Collapse>
 	</>);
