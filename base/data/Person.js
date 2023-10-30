@@ -687,7 +687,6 @@ export const getPVClaim = ({xid, key}) => {
 	if ( ! xid) return null;
 	let pvPeep = getProfile({xid});
 	const pvc = PromiseValue.then(pvPeep, person => {
-		??
 		const claim = getClaim({person, key});
 		return claim;
 	});
