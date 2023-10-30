@@ -108,7 +108,8 @@ Claim.consent = claim => {
 
 
 /**
- * ??dubious use cases
+ * ??dubious use cases.
+ * See also Person.js getClaim()
  */
 Claim.getClaims = person => {
 	if (!person) return {};

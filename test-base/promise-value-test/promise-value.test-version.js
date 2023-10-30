@@ -1,8 +1,6 @@
 
 // See test code: test.promise.value.js
 
-import { assert } from "./utils/assert";
-
 /**
  * {value: ?Object, promise: !Promise, error: ?Object, resolved: boolean} 
 * The promise part is always set.
@@ -217,4 +215,4 @@ PromiseValue.isa = valueOrPromise => valueOrPromise instanceof PromiseValue;
 
 // Uncomment for release
 // Hack: comment out to run test.promise-value.html
-export default PromiseValue;
+// export default PromiseValue;
