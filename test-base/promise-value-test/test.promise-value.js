@@ -99,7 +99,7 @@ SJTest.run({'PromiseValue: conveniently chain on resolved':
 });
 
 
-SJTest.run({'PromiseValue.then: already resolved':
+SJTest.run({'PromiseValue.then: chained':
 	function() {
 		let v = "Hello";
 		let a = new pv(v);
@@ -122,11 +122,25 @@ SJTest.run({'PromiseValue.then: already resolved':
 		}, r => {
 			return "AGAIN :/";
 		});
-		assert(b === b2);
+
+		let b3 = PromiseValue.then(a, r => {			
+			return "AND AGAIN :)";
+		}, r => {
+			return "AND AGAIN :/";
+		});
+
+		assert(b !== b2);
 		assert(b.value === ":)");
-		return b.value;
+		assert(b2.value === "AGAIN :)");
+
+		assert(b3 !== b2);
+		assert(b3 !== b);
+		assert(b3.value === "AND AGAIN :)");
+
+		return b.value +" then "+b2.value+" then "+b3.value;
 	}
 });
+
 
 SJTest.run({'PromiseValue.then: already an error':
 	function() {
