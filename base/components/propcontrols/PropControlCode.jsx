@@ -13,16 +13,19 @@ const PropControlCode = ({ storeValue, prop, path, lang, onFocus, onChange, onKe
 
 	// Update highlighting in <code> element
 	const doHighlight = () => codeRef.current && Prism.highlightElement(codeRef.current);
-	// Match scrolling between <textarea> and <code>
-	const syncScroll = () => {
+	// Match scrolling between <textarea> and <pre>, in either direction.
+	// (User scrolling hits the <textarea> as it's in front, but find-in-page hits the <pre>, as it's earlier in the document)
+	const syncScroll = (e) => {
 		if (!preRef.current || !textRef.current) return;
-		preRef.current.scrollLeft = textRef.current.scrollLeft;
-		preRef.current.scrollTop = textRef.current.scrollTop;
+		const source = e.target;
+		const target = (source === preRef.current) ? textRef.current : preRef.current;
+		target.scrollLeft = source.scrollLeft;
+		target.scrollTop = source.scrollTop;
 	};
 
 	// Highlight the <code> element as soon as it mounts
 	useEffect((e) => {
-			setTimeout(doHighlight);
+		setTimeout(doHighlight);
 	}, [codeRef])
 
 	// Event handlers for <textarea>
@@ -59,7 +62,7 @@ const PropControlCode = ({ storeValue, prop, path, lang, onFocus, onChange, onKe
 
 	return (
 		<div className="code-container">
-			<pre className="syntax-highlighting" ref={preRef}>
+			<pre className="syntax-highlighting" ref={preRef} onScroll={syncScroll}>
 				<code className={`language-${lang}`} ref={codeRef}>
 					{codeText}
 				</code>
