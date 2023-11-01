@@ -120,7 +120,7 @@ export function fetchSavedManifest(tag) {
 	return DataStore.fetch(savedManifestPath({tag}), () => {
 		// fetchFn returning null is OK - no tag means stored-manifest-for-tag should resolve null
 		if (!tag) return null;
-		return ServerIO.load(storedManifestForTag(tag)).then(res => {
+		return ServerIO.load(storedManifestForTag(tag), {swallow: true}).then(res => {
 			res.data.forEach(doubleLinkManifest); // Add parent info for easy frame navigation
 			return res;
 		});
