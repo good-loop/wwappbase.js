@@ -467,63 +467,13 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		optreq = <small className={storeValue === undefined ? 'text-danger' : null}>*</small>
 	}
 
-	/* Useful for things like textareas which benefit from more working space: pop the control out in a large modal on focus */
-	if (props.modal) {
-		const { modal, ...rest } = props;
-		rest.className = className;
-
-		const [modalOpen, setModalOpen] = useState(false);
-		const [caretPos, setCaretPos] = useState(false);
-		const [, setInputEl] = useState(); // we only access inputEl as its previous value in the setter function
-
-		const onFocusInput = e => {
-			const evtTarget = e.target; // grab target before entering deferred context
-			// defer & let focus event finish before reading selectionStart
-			setTimeout(() => {
-				// Get caret position from the input if it has one
-				if (evtTarget.setSelectionRange) setCaretPos(evtTarget.selectionStart);
-				setModalOpen(true);
-			});
-		};
-
-		const focusInner = (el) => {
-			if (caretPos === false) return;
-			// Grab the first textish input - failing that, the first input of any kind.
-			let _inputEl = el?.querySelectorAll('input, textarea, select');
-			if (_inputEl) _inputEl = Array.from(_inputEl).find(el => el.setSelectionRange) || _inputEl[0];
-			// focus & set modal input's caret to be same as outer - but only on creation
-			setTimeout(() => {
-				setInputEl(prev => {
-					if (_inputEl && !prev) {
-						_inputEl?.setSelectionRange(caretPos, caretPos);
-						setTimeout(() => setCaretPos(false));
-						_inputEl.focus();
-					}
-					return _inputEl;
-				});
-			});
-		};
-
-		// onFocus doesn't understand type code, if it is that type then let onFocus think it's a textarea
-		// code modals should have 'height: 90vh' - needs to be done here when Modal is instantiated
-		let newRest = rest
-		let codeClassName = ""
-		if (type === "code") {
-			let { type, ...allButType } = rest
-			codeClassName = " modal-propControl-code"
-			newRest = { type: "textarea", ...allButType }
-		}
-
-
-
-		return <>
-			<PropControl onFocus={onFocusInput} {...newRest} />
-			<Modal className={"modal-propControl" + codeClassName} isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={focusInner}>
-				<ModalBody>
-					<PropControl {...rest} />
-				</ModalBody>
-			</Modal>
-		</>;
+	// Pop the control out in a <Modal> on focus
+	if (props.modal) return <PropControl_Modal InputComponent={PropControl} {...props, className} />
+	// Pop the control out in a new window (linked to the in-flow PropControl) when a button is clicked
+	if (props.popup) {
+		const setValue = value => DataStore.setValue(proppath, value);
+		const getValue = () => DataStore.getValue(proppath);
+		return <PropControl_PopUp {...props, setValue, getValue, className} />;
 	}
 
 	const diffWarning = warnOnUnpublished && <DiffWarning path={path} prop={prop} className="ml-1" />;
