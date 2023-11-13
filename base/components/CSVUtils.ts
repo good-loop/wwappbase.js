@@ -83,7 +83,7 @@ export const csvToObject = async (
  ??How does this compare to csv download code in SimpleTable.jsx?? Maybe SimpleTable should be refactored to use this?
  * @param data 
  */
-export const downloadAsCSV = (data: CSVRow[]) => {
+export const downloadCSVRow = (data: CSVRow[]) => {
 	const convertToCSV = (rows: CSVRow[]) => {
 		const header = Object.keys(rows[0]).join(",") + "\r\n";
 		const body = rows.reduce((csv, row) => {
@@ -111,3 +111,14 @@ export const downloadAsCSV = (data: CSVRow[]) => {
 	link.click();
 	document.body.removeChild(link);
 };
+
+export const downloadCSVString = (data: string, fileName: string = "data.csv") => {
+	const blob = new Blob([data], { type: "text/csv" });
+	const url = window.URL.createObjectURL(blob);
+	const link = document.createElement("a");
+	link.setAttribute("href", url);
+	link.setAttribute("download", fileName);
+	document.body.appendChild(link);
+	link.click();
+	document.body.removeChild(link);
+}
