@@ -719,6 +719,7 @@ const MAX_COLLECTED_LIST = 5000;
  * @param {String} [params.sort] e.g. "start-desc"
  * @param {string|Date} [params.start] Add a time-filter. Usually unset.
  * @param {string|Date} [params.end] Add a time-filter. Usually unset.
+ * @param {string|number} [params.size]
  * 
  * @returns {PromiseValue<List>}
  * 
