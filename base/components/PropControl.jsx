@@ -18,7 +18,7 @@ import '../style/prism-dark.less';
 
 import { assert, assMatch } from '../utils/assert';
 import JSend from '../data/JSend';
-import { stopEvent, toTitleCase, space, labeller, is, ellipsize } from '../utils/miscutils';
+import { stopEvent, toTitleCase, space, labeller, is, ellipsize, noVal } from '../utils/miscutils';
 
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
@@ -949,7 +949,7 @@ function PropControlRadio({ type, prop, storeValue, value, path, saveFn, options
  * @returns Number. undefined/null are returned as-is. Bad inputs return NaN
  */
 const numFromAnything = v => {
-	if (v === undefined || v === null) return v;
+	if (noVal(v)) return v;
 	// NB: _.isNumber fails for numeric-strings e.g. "1" -- but the later code will handle that
 	if (_.isNumber(v)) return v;
 	// strip any commas, e.g. 1,000

@@ -64,7 +64,7 @@ class PromiseValue {
 			// Hm -- keep on trucking?? Or would it better to throw an error?
 			valueOrPromise = valueOrPromise.value || valueOrPromise.promise;
 		}
-		if (valueOrPromise === null || valueOrPromise === undefined) {
+		if (noVal(valueOrPromise)) {
 			// NB: new Error() is Misleadingly noisy in the console - So use an ersatz error instead (which is still noisy, but as bit less)
 			const e = {message:"null value for PromiseValue", name:"Error"};
 			this.error = e;

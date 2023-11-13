@@ -20,7 +20,7 @@ import _ from 'lodash';
 import printer from '../utils/printer';
 
 import Enum from 'easy-enums';
-import { asNum, space, stopEvent, encURI, isNumeric } from '../utils/miscutils';
+import { asNum, space, stopEvent, encURI, isNumeric, noVal } from '../utils/miscutils';
 import { dateStr, asDate } from '../utils/date-utils';
 import DataStore from '../plumbing/DataStore';
 import DataClass, { getClass, getType } from '../data/DataClass';
@@ -666,8 +666,8 @@ const defaultSortMethodForGetter = (a, b, getter, type) => {
 	let av = getter(a);
 	let bv = getter(b);
 	// // avoid undefined 'cos it messes up ordering
-	if (av === undefined || av === null) av = "";
-	if (bv === undefined || bv === null) bv = "";
+	if (noVal(av)) av = "";
+	if (noVal(bv)) bv = "";
 	// blank = last
 	if (av === "" && bv) return 1;
 	if (bv === "" && av) return -1;
