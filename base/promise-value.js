@@ -2,6 +2,7 @@
 // See test code: test.promise.value.js
 
 import { assert } from "./utils/assert";
+import { noVal } from "./utils/miscutils";
 
 /**
  * {value: ?Object, promise: !Promise, error: ?Object, resolved: boolean} 
@@ -64,7 +65,7 @@ class PromiseValue {
 			// Hm -- keep on trucking?? Or would it better to throw an error?
 			valueOrPromise = valueOrPromise.value || valueOrPromise.promise;
 		}
-		if (valueOrPromise === null || valueOrPromise === undefined) {
+		if (noVal(valueOrPromise)) {
 			// NB: new Error() is Misleadingly noisy in the console - So use an ersatz error instead (which is still noisy, but as bit less)
 			const e = {message:"null value for PromiseValue", name:"Error"};
 			this.error = e;
@@ -110,8 +111,9 @@ class PromiseValue {
 		this.resolved = true;
 		this.promise = Promise.resolve(valueOrPromise);
 	}
-
 };
+
+
 
 /**
  * Convenience to call `then` on the promise and rewrap the result.
@@ -168,7 +170,7 @@ PromiseValue.then = (pv, onResolve, onReject) => {
  * @param {Error|JSend|String|Object} err 
  */
 const setError = (pv, err) => {
-	if (err === undefined || err === null) err = "";
+	if (noVal(err)) err = "";
 	// Is it an Error? instanceof will mostly work, but not across windows -- so also do duck-typing
 	// See https://stackoverflow.com/a/30469297/346629
 	if (err instanceof Error || err.stack) {

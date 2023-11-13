@@ -3,7 +3,7 @@ import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import { assert, assMatch } from '../utils/assert';
 import { Button } from 'reactstrap';
-import { space } from '../utils/miscutils';
+import { noVal, space } from '../utils/miscutils';
 
 /**
  * 
@@ -83,7 +83,7 @@ class StageNavStatus {
 function WizardStage({stageKey, stageNum, stagePath, maxStage, next, previous,
 	sufficient=true, complete=false,
 	title, onNext, onPrev, children, canJumpAhead, navPosition="bottom"}) {
-	assert(stageNum !==null && stageNum !== undefined);
+	assert(!noVal(stageNum));
 	assMatch(maxStage, Number);
 	if (stageKey != stageNum) { // allow "1" == 1
 		return null; //<p>k:{stageKey} n:{stageNum}</p>;
