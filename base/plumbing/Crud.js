@@ -833,7 +833,8 @@ const listByIds = ({ids, q, ...params}) => {
 const collectListPromises = promises => Promise.all(promises).then(results => {
 	const collected = results.reduce((acc, res) => {
 		if (acc === null) return res; // build on top of first result to return
-		acc.cargo.hits.push(...res.cargo.hits);
+		const hits = res.cargo?.hits || res.data?.hits;
+		acc.cargo.hits.push(...hits);
 		acc.errors.push(...res.errors);
 		acc.messages.push(...res.messages);
 		acc.success = acc.success && res.success;
