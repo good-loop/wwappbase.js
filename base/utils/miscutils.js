@@ -551,6 +551,13 @@ export const yessy = function (val) {
 };
 
 /**
+ * Actually `x == null` would do the same, but this is clearer 'cos it doesn't rely on language details.
+ * @returns {boolean}
+ * ?? Are there duplicates of this? If so, let's standardise
+ */
+export const noVal = x => x === null || x === undefined;
+
+/**
  * convenience for not-null not-undefined (but can be false, 0, or "")
  */
 export const is = (x) => x !== undefined && x !== null;
