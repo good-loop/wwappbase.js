@@ -23,6 +23,7 @@ Assumes:
 import $ from 'jquery';
 import { assert } from './utils/assert';
 import Cookies from 'js-cookie';
+import { noVal } from './utils/miscutils';
 
 // Code for if used outside of npm
 // // MUST have js-cookie and SHOULD have assert
@@ -59,7 +60,7 @@ const COOKIE_DOMAINS = [null,'.good-loop.com']; // HACK this site + You-Again an
  */
 const setCookie = (key, val) => {
 	console.log("Login", "setCookie", key, val);
-	if (val === null || val === undefined) {
+	if (noVal(val)) {
 		console.log("Cookie set = remove", key);
 		removeCookie(key);
 		return;

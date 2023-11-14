@@ -3,7 +3,7 @@
  */
 
 import React, { Component } from 'react';
-import { encURI, mapkv, modifyHash, stopEvent, yessy } from '../utils/miscutils';
+import { encURI, mapkv, modifyHash, noVal, stopEvent, yessy } from '../utils/miscutils';
 import DataStore from './DataStore';
 
 /**
@@ -82,11 +82,11 @@ const usePath = () => ""+window.location;
 /**
  * Backwards compatible replacement for modifyHash
  * 
- * @param {string[]} [newpath] Can be null for no-change
- * @param {Object} [newparams] Can be null for no-change
- * @param {boolean} [returnOnly] If true, do not modify the hash -- just return what the new value would be (starting with #)
- * @param {boolean} [clearParams] If true, remove all existing url parameters
- * @param {?Object} options See `goto(_,options)` To "fill in" a url parameter, use `replaceState:true` to avoid breaking the browser's back button.
+ * @param {?string[]} [newpath] Can be null for no-change
+ * @param {?Object} [newparams] Can be null for no-change
+ * @param {?boolean} [returnOnly] If true, do not modify the hash -- just return what the new value would be (starting with #)
+ * @param {?boolean} [clearParams] If true, remove all existing url parameters
+ * @param {?Object} [options] See `goto(_,options)` To "fill in" a url parameter, use `replaceState:true` to avoid breaking the browser's back button.
  */
 const modifyPage = (newpath, newparams, returnOnly, clearParams, options) => {
 	if (DataStore.localUrl !== '/') {
@@ -99,7 +99,7 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams, options) => {
 	let hash = encURI(newpath.join('/'));
 	if (yessy(allparams)) {
 		// ?? what if a Date is passed in??
-		let kvs = mapkv(allparams, (k, v) => encURI(k) + "=" + (v === null || v === undefined ? '' : encURI(v)));
+		let kvs = mapkv(allparams, (k, v) => encURI(k) + "=" + (noVal(v) ? '' : encURI(v)));
 		hash += "?" + kvs.join('&');
 	}
 	let u = '/' + hash;

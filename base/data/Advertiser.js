@@ -54,6 +54,11 @@ function getChildrenCommon(q, status) {
 	return getDataList(params);
 }
 
+/**
+ * Includes from sub-brands
+ * @param {*} param0 
+ * @returns 
+ */
 Advertiser.getImpactDebits = ({vertiser, vertiserId, status=KStatus.PUBLISHED, start, end}) => {
 	if (!vertiserId) vertiserId = vertiser.id;
 	return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, start, end, for:vertiserId}), () => getImpactDebits2(vertiser?.id || vertiserId, status, start, end));

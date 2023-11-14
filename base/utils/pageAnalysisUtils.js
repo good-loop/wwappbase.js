@@ -1,4 +1,5 @@
 import ServerIO from "../plumbing/ServerIOBase";
+import { noVal } from "./miscutils";
 
 const MEASURE_ENDPOINT_BASE = ServerIO.MEASURE_ENDPOINT.replace(/\/measure$/, '');
 export const PROXY_ENDPOINT = `${MEASURE_ENDPOINT_BASE}/proxy`;
@@ -16,7 +17,7 @@ export function storedManifestForTag(tag) {
  * Doesn't recurse in - consider Lodash flattenDeep for that.
  */
 export function arrayify(thing) {
-	if (thing === null || thing === undefined) return [];
+	if (noVal(thing)) return [];
 	if (Array.isArray(thing)) return [...thing];
 	return [thing];
 };
