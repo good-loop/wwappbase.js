@@ -88,7 +88,7 @@ class Card extends React.Component {
 
 		const fullHeaderClick = (e) => {
 			if (uncontrolled) setStateCollapsed(!stateCollapsed);
-			if (onHeaderClick) onHeaderClick();
+			if (onHeaderClick) onHeaderClick(e);
 		}
 
 		return (

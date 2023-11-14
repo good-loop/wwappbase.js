@@ -176,7 +176,7 @@ const checkBase2_toggleTestEndpoints = () => {
 		ServerIO.PROFILER_ENDPOINT = 'https://stageprofiler.good-loop.com';
 		ServerIO.MEDIA_ENDPOINT = 'https://stageuploads.good-loop.com';
 		ServerIO.MEASURE_ENDPOINT = 'https://stagemeasure.good-loop.com/measure';
-		// ServerIO.APIBASE = ''; // ?? fix in a refactor
+		ServerIO.APIBASE = `https://stage${unprefixedHostname}`; // ?? fix in a refactor
 		return;
 	}
 	if (server === 'production') {

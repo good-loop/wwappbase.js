@@ -693,7 +693,7 @@ const defaultSortMethodForGetter = (a, b, getter, type) => {
  * @param {any} v
  */
 const defaultCellRender = (v, column) => {
-	if (v === undefined || Number.isNaN(v)) return null;
+	if (noVal(v) || Number.isNaN(v)) return null;
 	// by type?
 	if (column.type === 'date' && v) {
 		let d = asDate(v);
@@ -728,7 +728,7 @@ const defaultCellRender = (v, column) => {
 	}
 	// number or numeric string
 	let nv = asNum(v);
-	if (nv !== undefined && nv !== null && !Number.isNaN(nv)) {
+	if (!noVal(nv) && !Number.isNaN(nv)) {
 		nv = nv.toFixed(precision);
 		// commas
 		const sv = printer.prettyNumber(nv, significantDigits);
@@ -1008,7 +1008,7 @@ function Editor({ row, column, value, item }) {
 		if (!prop) prop = 'value';
 		dummyItem = {};
 		let editedValue = DataStore.getValue(path.concat(prop));
-		if (editedValue === undefined || editedValue === null) editedValue = value;
+		if (noVal(editedValue)) editedValue = value;
 		dummyItem[prop] = editedValue;
 	}
 	let type = column.type;

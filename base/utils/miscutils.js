@@ -251,7 +251,7 @@ export const modifyHash = function (newpath, newparams, returnOnly) {
 	if (!newpath) newpath = path || [];
 	let hash = encURI(newpath.join('/'));
 	if (yessy(allparams)) {
-		let kvs = mapkv(allparams, (k, v) => encURI(k) + '=' + (v === null || v === undefined ? '' : encURI(v)));
+		let kvs = mapkv(allparams, (k, v) => encURI(k) + '=' + (noVal(v) ? '' : encURI(v)));
 		hash += '?' + kvs.join('&');
 	}
 	if (returnOnly) {
@@ -302,7 +302,7 @@ export const mapkv = function (obj, fn) {
  *  -- you can't test `if (x)` cos 0 is falsy, but you can test `if (x!==undefined)`)
  */
 export const asNum = (v) => {
-	if (v === undefined || v === null || v === '' || v === false || v === true || Number.isNaN(v)) {
+	if (noVal(v) || v === '' || v === false || v === true || Number.isNaN(v)) {
 		return undefined;
 	}
 	if (_.isNumber(v)) return v;
@@ -550,17 +550,21 @@ export const yessy = function (val) {
 	return true;
 };
 
+
 /**
  * Actually `x == null` would do the same, but this is clearer 'cos it doesn't rely on language details.
  * @returns {boolean}
- * ?? Are there duplicates of this? If so, let's standardise
  */
-export const noVal = x => x === null || x === undefined;
+export const noVal = x => (x === null || x === undefined);
+
 
 /**
- * convenience for not-null not-undefined (but can be false, 0, or "")
+ * Convenience for not-null not-undefined (but can be false, 0, or "")
+ * TODO Standardise on this vs noVal?
+ * @returns {boolean}
  */
-export const is = (x) => x !== undefined && x !== null;
+export const is = x => (x !== undefined && x !== null);
+
 
 const getStackTrace = function () {
 	try {
@@ -1122,4 +1126,15 @@ export function isURL(str) {
 	} catch (e) {
 		return false;
 	}
+}
+
+
+/**
+ * Update a React-controlled input element's value as if from user input, triggering onChange etc
+ * @param {HtmlElement} el The input
+ * @param {*} value The new value
+ */
+export function setInputValue(el, value) {
+	Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set.call(el, value);
+	el.dispatchEvent(new Event('input', { bubbles: true }));
 }
