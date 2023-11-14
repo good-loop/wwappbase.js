@@ -32,7 +32,8 @@ export default Agency;
  */
 Agency.getChildren = (agencyId, status = KStatus.PUBLISHED) => {
 	const q = SearchQuery.setProp(null, 'parentId', agencyId);
-	const params = {type, status, q, save: true}
+	const params = {type, status, q, save: true};
+	// NB: see https://good-loop.monday.com/boards/2603585504/pulses/4684874791
 	if (status === KStatus.PUBLISHED) params.access = 'public';
 	return getDataList({type, status, q, save:true});
 };
