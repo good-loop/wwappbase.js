@@ -17,12 +17,14 @@ import Campaign from './Campaign';
 import List from './List';
 import PromiseValue from '../promise-value';
 
+const type = 'Advertiser';
+
 /**
  * See Advertiser.java
  */
 class Advertiser extends DataClass {
 }
-DataClass.register(Advertiser, "Advertiser");
+DataClass.register(Advertiser, type);
 export default Advertiser;
 
 /**
@@ -31,9 +33,9 @@ export default Advertiser;
  * @param {?KStatus} status 
  * @returns {PromiseValue} List<Advertiser>
  */
-Advertiser.getChildren = (vertiserId, status=KStatus.PUBLISHED) => {
-	let q = SearchQuery.setProp(null, "parentId", vertiserId).query;
-	return getDataList({type:"Advertiser",status,q, save:true});
+Advertiser.getChildren = (vertiserId, status = KStatus.PUBLISHED) => {
+	const q = SearchQuery.setProp(null, 'parentId', vertiserId).query;
+	return getChildrenCommon(q, status);
 };
 
 /**
@@ -41,10 +43,16 @@ Advertiser.getChildren = (vertiserId, status=KStatus.PUBLISHED) => {
  * @param {*} vertiserIds 
  * @param {*} status 
  */
-Advertiser.getManyChildren = (vertiserIds, status=KStatus.PUBLISHED) => {
-	let sqSubBrands = SearchQuery.setPropOr(new SearchQuery(), "parentId", vertiserIds).query;
-	return getDataList({type: C.TYPES.Advertiser, status, q:sqSubBrands, save:true});
+Advertiser.getManyChildren = (vertiserIds, status = KStatus.PUBLISHED) => {
+	const q = SearchQuery.setPropOr(new SearchQuery(), 'parentId', vertiserIds).query;
+	return getChildrenCommon(q, status);
 };
+
+function getChildrenCommon(q, status) {
+	const params = {type, status, q, save: true}
+	if (status === KStatus.PUBLISHED) params.access = 'public';
+	return getDataList(params);
+}
 
 /**
  * Includes from sub-brands
