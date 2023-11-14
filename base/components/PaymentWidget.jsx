@@ -247,7 +247,7 @@ const StripeThingsFunctional = ({ onToken, amount, credit, recipient, dfltEmail,
 	// If the invoking component says to use Payments API if possible...
 	if (usePaymentRequest) {
 		// We don't know if it's supported yet - show a spinner.
-		if (paymentRequest === null) return <Misc.Loading />;
+		if (noVal(paymentRequest)) return <Misc.Loading />;
 		// It's supported and a PaymentRequest has been created - show the button.
 		if (paymentRequest) return <PaymentRequestButtonElement paymentRequest={paymentRequest} />;
 	}

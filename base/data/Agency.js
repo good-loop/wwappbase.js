@@ -15,12 +15,13 @@ import ServerIO from '../plumbing/ServerIOBase';
 import Branding from './Branding';
 import PromiseValue from '../promise-value';
 
+const type = 'Agency';
 /**
  * See Agency.java
  */
 class Agency extends DataClass {
 }
-DataClass.register(Agency, "Agency");
+DataClass.register(Agency, type);
 export default Agency;
 
 /**
@@ -29,9 +30,12 @@ export default Agency;
  * @param {?KStatus} status 
  * @returns {PromiseValue} List<Agency>
  */
-Agency.getChildren = (agencyId, status=KStatus.PUBLISHED) => {
-	let q = SearchQuery.setProp(null, "parentId", agencyId);
-	return getDataList({type:"Agency",status,q,save:true});
+Agency.getChildren = (agencyId, status = KStatus.PUBLISHED) => {
+	const q = SearchQuery.setProp(null, 'parentId', agencyId);
+	const params = {type, status, q, save: true};
+	// NB: see https://good-loop.monday.com/boards/2603585504/pulses/4684874791
+	if (status === KStatus.PUBLISHED) params.access = 'public';
+	return getDataList({type, status, q, save:true});
 };
 
 Agency.getImpactDebits = ({agency, agencyId, status=KStatus.PUBLISHED}) => {
