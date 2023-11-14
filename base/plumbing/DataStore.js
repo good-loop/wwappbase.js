@@ -6,7 +6,7 @@ import PromiseValue from '../promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
-import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectValueByPath, setObjectValueByPath} from '../utils/miscutils';
+import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectValueByPath, setObjectValueByPath, noVal} from '../utils/miscutils';
 import KStatus from '../data/KStatus';
 import { modifyPage } from './glrouter';
 
@@ -713,7 +713,7 @@ class Store {
 		if (resolvedToNothing) {
 			const item = this.getValue(path);
 			// ...BUT there's an item at the requested path (eg put there by setValue() instead of fetch())
-			if (item != null) {
+			if ( ! noVal(item)) {
 				// Replace fetch function with one which resolves to the item, so calling code gets the item.
 				// This will be called below & the result wrapped in a PV, which will be cached appropriately
 				fetchFn = () => item;

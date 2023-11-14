@@ -1,6 +1,5 @@
 module.exports = {
 	env: {
-		jest: true,
 		node: true,
 		es6: false,
 		browser: true
@@ -11,7 +10,6 @@ module.exports = {
 		page: true,
 		browser: true,
 		context: true,
-		jestPuppeteer: true
 	},
 	parser: "@babel/eslint-parser",
 	parserOptions: {

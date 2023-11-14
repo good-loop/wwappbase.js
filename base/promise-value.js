@@ -74,8 +74,7 @@ class PromiseValue {
 			return;
 		}
 		// NB: Promise.resolve() can be used with Promises without nesting	
-		if (typeof (valueOrPromise.then) === 'function') {
-			// Having then() is the only real requirement for a Promise
+		if (isPromise(valueOrPromise)) {
 			const vp = this;
 			this.resolved = false;
 			// set the value when we have it
@@ -216,6 +215,13 @@ PromiseValue.pending = () => {
  * @returns {boolean} true if this is a ProimiseValue;
  */
 PromiseValue.isa = valueOrPromise => valueOrPromise instanceof PromiseValue;
+
+/**
+ * @param {*} p 
+ * @returns {boolean} true if p is a Promise
+ */
+// Having then() is the only real requirement for a Promise
+const isPromise = p => p && (p instanceof Promise || typeof(p.then) === 'function');
 
 // Uncomment for release
 // Hack: comment out to run test.promise-value.html
