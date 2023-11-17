@@ -1047,11 +1047,13 @@ export const getObjectValueByPath = (obj, path) => {
 export const setObjectValueByPath = (obj, path, value) => {
 	assert(_.isObject(obj), "setObjectValueByPath obj not object?? "+obj);
 	assert(_.isArray(path), "setObjectValueByPath path not array?? "+path);
+	let changed = false;
 	let tip = obj;
 	for(let pi = 0; pi < path.length; pi++) {
 		let pkey = path[pi];
 		if (pi === path.length-1) {
 			// Set it!
+			if (tip[pkey] !== value) changed = true;
 			tip[pkey] = value;
 			break;
 		}
@@ -1066,6 +1068,7 @@ export const setObjectValueByPath = (obj, path, value) => {
 		}
 		tip = newTip;
 	}
+	return changed;
 }
 
 /**

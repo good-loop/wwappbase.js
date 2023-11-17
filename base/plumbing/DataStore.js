@@ -10,6 +10,24 @@ import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectV
 import KStatus from '../data/KStatus';
 import { modifyPage } from './glrouter';
 
+/*
+Symbol keys for the metadata nodes.
+Q: Why?
+A: Symbols aren't strings and no string will ever collide with a Symbol when used as an object key.
+So - you can have a tree object that you can traverse directly e.g. appstateMeta.data.Advert.abcde,
+where each node can have an arbitrary collection of metadata attached - BUT with no need for e.g.
+namespacing or banned path elements.
+*/
+/** Symbol key for the callback-list metadata */
+const CALLBACKS = Symbol('callbacks');
+/* TODO Use these as well (but also: retire use of PVs?)
+const FETCH_PV = Symbol('fetchPV');
+const REFRESH_PV = Symbol('refreshPV');
+const FETCH_DATE = Symbol('fetchDate');
+const EDIT_STATUS = Symbol('editStatus');
+const MODIFIED = Symbol('modified');
+*/
+
 
 /**
  * Hold data in a simple json tree, and provide some utility methods to update it - and to attach a listener.
@@ -47,6 +65,9 @@ class Store {
 			/** YouAgain share info */
 			shares:{}
 		};
+		// Parallel object storing data about nodes
+		this.appstateMeta = _.cloneDeep(this.appstate);
+
 		// init url vars
 		this.parseUrlVars();
 		// and listen to changes
@@ -149,6 +170,102 @@ class Store {
 
 
 	/**
+	 * Add a change listener to a specific path in the state tree.
+	 * @param {Function} callback
+	 * @param {String[]} path
+	 * @param {boolean} [subtree] True if your listener should also be notified on writes to children of its path
+	 * @returns {boolean} True if successfully added, false if the listener was already present.
+	 */
+	addPathListener(callback, path, subtree) {
+		let cursor = this.appstateMeta;
+		const pathKey = JSON.stringify(path);
+		subtree = !!subtree;
+
+		const last = path.length - 1;
+		for (let i = 0; i <= last; i++) {
+			// Traverse in...
+			const bit = path[i];
+			let nextCursor = cursor[bit];
+			if (!nextCursor) cursor[bit] = nextCursor = {};
+			cursor = nextCursor;
+			// Get/create the list of callbacks for this node
+			let callbackList = cursor[CALLBACKS];
+			if (!callbackList) cursor[CALLBACKS] = callbackList = [];
+			// Don't let the same function subscribe multiple times!
+			if (callbackList.find(entry => entry.callback === callback)) return false;
+			// Register the callback, the data-path it's listening to, and whether it should trigger
+			// on changes to its subtree (ie if found during traversal as well as on a direct hit)
+			callbackList.push({callback, pathKey, subtree: (subtree && i === last)});
+		}
+		return true;
+	}
+
+
+	/**
+	 * Remove a listener from the state tree.
+	 * @param {Function} callback
+	 * @param {String[]} path
+	 * @returns {boolean} True if found and removed, false if not present
+	 */
+	removePathListener(callback, path) {
+		// Match entries which contain the function to remove
+		const predicate = entry => entry.callback === callback;
+
+		let cursor = this.appstateMeta;
+		for (const bit of path) {
+			let nextCursor = cursor[bit];
+			if (!nextCursor) return; // Reached leaf
+			cursor = nextCursor;
+			// Is the function-to-remove in this list?
+			const idx = cursor[CALLBACKS]?.indexOf(predicate);
+			// Because addPathListener adds breadcrumb copies, if it's not present it won't be anywhere deeper.
+			if (idx < 0) return false;
+			cursor[CALLBACKS].splice(idx, 1); // Remove and continue
+		}
+		return true;
+	}
+
+
+	/**
+	 * When there's a changing write to a path:
+	 * (a) Notify all direct listeners on that path with the new value at that path
+	 * (b) Notify all subtree listeners on containing paths with the new value of their target
+	 * @param {String[]} path
+	 */
+	notifyListeners(path) {
+		let cursor = this.appstateMeta;
+		const toNotify = {};
+
+		// Traverse into the tree of listeners
+		const last = path.length - 1;
+		for (let i = 0; i <= last; i++) {
+			// Traverse further in...
+			const nextCursor = cursor[path[i]];
+			if (!nextCursor) break; // Callback tree ends? Nothing further to do.
+			cursor = nextCursor;
+
+			// Is anything listening on this node?
+			const callbackSpecs = cursor[CALLBACKS] || [];
+			callbackSpecs.forEach(({callback, pathKey, subtree}) => {
+				// Subtree listeners always trigger, others only if the path is an exact match
+				if (!(subtree || i === last)) return;
+				// Collect triggered callbacks according to their listen-path
+				let callbacks4pathKey = toNotify[pathKey];
+				if (!callbacks4pathKey) toNotify[pathKey] = callbacks4pathKey = [];
+				callbacks4pathKey.push(callback);
+			});
+		}
+
+		// Give all triggered callbacks the value at their listen-path
+		Object.entries(toNotify).forEach(([pathKey, callbacks]) => {
+			const notifyPath = JSON.parse(pathKey);
+			const val = this.getValue(notifyPath);
+			callbacks.forEach(fn => fn(val));
+		});
+	}
+
+
+	/**
 	 * Update and trigger the on-update callbacks.
 	 * @param newState {?Object} This will do an overwrite merge with the existing state.
 	 * Note: This means you cannot delete/clear an object using this - use direct modification instead.
@@ -165,7 +282,7 @@ class Store {
 				_.merge(this.appstate, newState);
 			}
 			if (loopy) {
-				console.log("DataStore.js update - nested call - deferred", new Error());
+				console.log("DataStore.js update(): Nested call detected, deferring.", new Error());
 				_.defer(() => this.update()); // do the callbacks (again) once we exit the loop
 				return;
 			}
@@ -379,7 +496,8 @@ class Store {
 		}
 
 		// Do the set!
-		setObjectValueByPath(this.appstate, path, value);
+		const changed = setObjectValueByPath(this.appstate, path, value);
+		if ((update !== false) && changed) this.notifyListeners(path);
 
 		// HACK: update a data value => mark it as modified
 		// ...but not for setting the whole-object (path.length=3)
