@@ -590,7 +590,7 @@ class Store {
 	 * @param {Date} [date] Default to now
 	 */
 	setFetchDate(path, date = new Date()) {
-		return this.setValue(path, date, false);
+		return this.setValue(this.fetchDatePath(path), date, false);
 	}
 
 
