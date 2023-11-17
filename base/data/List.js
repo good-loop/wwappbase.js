@@ -57,7 +57,7 @@ class List extends DataClass {
 		if (Array.isArray(base)) {
 			this.hits = base;
 			this.total = base.length;
-			base = null;			
+			base = null;
 		}
 		DataClass._init(this, base);
 	}

@@ -5,10 +5,6 @@ import { space } from '../utils/miscutils';
 import { UploadProgress } from './propcontrols/PropControlUpload';
 
 /**
- * Does this work??
- * I tried <BlindUpload label="CSV to process" endpoint="https://localmeasurepublisher.good-loop.com/csv" />
- * and nothing happens. Aug 2023
-
  * An upload widget that doesn't act as a URL input, it just sends the file to the endpoint and executes any provided callback.
  */
 function BlindUpload({endpoint, uploadParams, onUpload, label, className, onDrop: _onDrop, ...props}) {

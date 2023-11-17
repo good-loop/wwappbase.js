@@ -236,6 +236,7 @@ export const parseHash = function (hash = window.location.hash) {
 	return { path, params };
 };
 
+
 /**
  * @deprecated Use modifyPage() instead, which can handle /page or #page
  * NB: this function provides the #page code for modifyPage()
@@ -268,6 +269,7 @@ export const modifyHash = function (newpath, newparams, returnOnly) {
 	}
 };
 
+
 let fireHashChangeEvent = function ({ oldURL }) {
 	// NB IE9+ on mobile
 	// https://developer.mozilla.org/en-US/docs/Web/API/HashChangeEvent
@@ -278,10 +280,12 @@ let fireHashChangeEvent = function ({ oldURL }) {
 	window.dispatchEvent(e);
 };
 
+
 export const scrollTo = (id) => {
 	let $el = document.getElementById(id);
 	$el.scrollIntoView({ behavior: 'smooth' });
 };
+
 
 /**
  * Map fn across the (key, value) properties of obj.
@@ -553,6 +557,7 @@ export const yessy = function (val) {
 
 /**
  * Actually `x == null` would do the same, but this is clearer 'cos it doesn't rely on language details.
+ * TODO Standardise on this vs noVal?
  * @returns {boolean}
  */
 export const noVal = x => (x === null || x === undefined);

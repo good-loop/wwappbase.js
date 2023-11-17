@@ -20,8 +20,8 @@ import '../../style/PropControls/PropControlList.less';
 export function PropControlList2({ storeValue, set, confirmDelete=true, Viewer=BasicViewer, Editor, itemType, subType, rowStyle, proppath }) {
 	const listValue = asArray(storeValue);
 	if (!Editor) {
-		if ( ! subType) subType = "text"; // fallback
-		Editor = ({path, i}) => <PropControl path={path.slice(0, path.length-1)} prop={i} type={subType} />;
+		subType ||= 'text'; // fallback
+		Editor = ({path, i}) => <PropControl path={path.slice(0, -1)} prop={i} type={subType} />;
 	}
 	if (!Viewer) Viewer = Editor;
 
@@ -36,12 +36,15 @@ export function PropControlList2({ storeValue, set, confirmDelete=true, Viewer=B
 						<AddOrEditButton set={set} arrayPath={proppath} i={i} listValue={listValue} Editor={Editor} item={item} 
 							itemType={itemType} subType={subType} />
 					)}
-					{item && item.error && <Badge pill color="danger" title={getItemErrorMessage(item)}> 🐛 </Badge>}
-					<DeleteWithConfirmButton confirmDelete={confirmDelete} set={set} arrayPath={proppath} i={i} listValue={listValue} />
+					{item && item.error && <Badge pill color="danger" title={getItemErrorMessage(item)}><Icon name="warning" /></Badge>}
+					<DeleteWithConfirmButton confirmDelete={confirmDelete} set={set} i={i} listValue={listValue} />
 				</li>
 			))}
-			{Editor && <li><AddOrEditButton set={set} size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue} 
-				itemType={itemType} subType={subType} /></li>}
+			{Editor && <li>
+				<AddOrEditButton set={set} size="sm" arrayPath={proppath} Editor={Editor} listValue={listValue}
+					itemType={itemType} subType={subType}
+				/>
+			</li>}
 		</ul>
 	);
 }
@@ -56,7 +59,7 @@ function BasicViewer({item, i}) {
 
 const getItemErrorMessage = item => {
 	if (!item) return null;
-	if (typeof(item.error)==="string" && item.error) return item.error;	
+	if (typeof item.error === 'string' && item.error) return item.error;
 	return item.error.detailMessage || item.error.message || JSON.stringify(item.error);
 };
 
@@ -101,16 +104,11 @@ function AddOrEditButton({arrayPath, i = -1, listValue, Editor, item, itemType, 
 }
 
 
-function DeleteWithConfirmButton({arrayPath, i, listValue, set, confirmDelete}) {
+function DeleteWithConfirmButton({i, listValue, set, confirmDelete}) {
 	const doDelete = () => {
-		if (confirmDelete) {
-			if ( ! confirm(`Delete item ${i}?`)) return;
-		}
-		// Copy array before mutating, to break identity in simple equality checks
-		const newList = listValue.slice();
-		newList.splice(i, 1);
-		set(newList);
-		// DataStore.setValue(arrayPath, newList);
+		if (confirmDelete && !confirm(`Delete item ${i}?`)) return;
+		// toSpliced (copy, not mutate) to break identity in simple equality checks
+		set(listValue.toSpliced(i, 1));
 	};
 
 	return (

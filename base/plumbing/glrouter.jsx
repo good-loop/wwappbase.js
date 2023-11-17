@@ -16,24 +16,24 @@ import DataStore from './DataStore';
  * @returns null
  */
 const goto = (href, options) => {
-	console.log("goto() "+href+" from "+window.location, options);
-	if ( ! href) {
-		console.warn("goto: no href");
+	console.log(`goto() ${href} from ${window.location}`, options);
+	if (!href) {
+		console.warn('goto: no href');
 		return;
 	}
-	// only pushState of it is a change (otheriwse the browser back button can get stuck on the current page)
-	const locn = ""+window.location;
+	// Only pushState if URL changes (otheriwse the browser back button can get stuck on the current page)
+	const locn = String(window.location);
 	if (href !== locn) {
 		if (options?.replaceState) {
-			window.history.replaceState({}, "", href);
+			window.history.replaceState({}, '', href);
 		} else {
-			window.history.pushState({}, "", href);
+			window.history.pushState({}, '', href);
 		}
 		// update url vars ()
 		DataStore.parseUrlVars(true, href);
 	}
 	// scroll to the page top
-	if (options?.scroll==='false') {
+	if (options?.scroll === 'false') {
 		// no scroll
 	} else {
 		window.scrollTo(0,0);
@@ -109,6 +109,7 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams, options) => {
 	goto(u, options);
 };
 
+
 /**
  * Call this to change the routing behaviour from #page to /page
  */
@@ -119,7 +120,7 @@ const initRouter = () => {
 	DataStore.localUrl = '/';
 	DataStore.parseUrlVars(false); // update the parsing since we've changed the method
 	// NB: Catch beforeunload? No - Modern Chrome insists on a user popup for this
-	window.addEventListener('popstate', e => {		
+	window.addEventListener('popstate', e => {
 		DataStore.parseUrlVars(true);
 	});
 };

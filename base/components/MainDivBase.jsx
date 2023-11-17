@@ -353,7 +353,7 @@ function ErrorDetails({error}) {
 		setFormattedStack(formatted);
 	}, [error?.stack]);
 
-	return <p>
+	return <div>
 		<h4>Details for support</h4>
 		{error?.message && <>
 			Message:<br/>
@@ -364,7 +364,7 @@ function ErrorDetails({error}) {
 			Stack trace:<br />
 			<small>{formattedStack || error.stack}</small>
 		</>}
-	</p>;
+	</div>;
 }
 
 

@@ -46,21 +46,26 @@ NGO.images = ngo => {
 	return allImages.filter(x => x);
 };
 
+const orgsLabels = {
+	Scottish_OSCR: 'Scottish OSCR',
+	England_Wales_Charity_Commission: 'England and Wales Charity Commission',
+	Northern_Ireland: 'Northern Ireland',
+	UK_Companies_House: 'UK Companies House',
+	US: 'US Charity',
+	Other: 'Other'
+}
 
-NGO.KRegOrg = new Enum("Scottish_OSCR England_Wales_Charity_Commission Northern_Ireland UK_Companies_House US Other");
+NGO.KRegOrg = new Enum(Object.keys(orgsLabels).join(' '));
 NGO.REG_ORG_LABELS = [
 	"Scottish OSCR", "England and Wales Charity Commission", "Northern Ireland", "UK Companies House", "US Charity", "Other"
 ];
+
 /**
  * Get the display label for a registration body
  * @param {NGO.KRegOrg} regBody 
  */
-NGO.regLabel = regBody => {
-	const values = NGO.KRegOrg.values;
-	const idx = values.indexOf(regBody);
-	if (idx > -1) return NGO.REG_ORG_LABELS[idx];
-	return null;
-}
+NGO.regLabel = regBody => orgsLabels[regBody] || null;
+
 
 NGO.setOldRegNum = (ngo, regOrg, regNum) => {
 	if (regOrg === NGO.KRegOrg.England_Wales_Charity_Commission) {
