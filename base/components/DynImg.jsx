@@ -158,8 +158,7 @@ const DynImg = ({src, msrc, image, title, ...props}) => {
 	// wrap url
 	if (width) {
 		// Get scaled + cached image URL and set it on the <img>
-		// Bump resolution a little to reduce chances of fuzziness
-		_src = wrapUrl(src, width * 1.25);
+		_src = wrapUrl(src, width);
 	}
 
 	return <img ref={ref} src={_src} title={title} {...props} />;
@@ -206,9 +205,9 @@ const getCcrop = (url) => {
  const cyrb = function(str) {
 	let h1 = 0xad54900d, h2 = 0x41c6ce57; // just magic numbers
 	for (let i = 0, ch; i < str.length; i++) {
-			ch = str.charCodeAt(i);
-			h1 = Math.imul(h1 ^ ch, 2654435761);
-			h2 = Math.imul(h2 ^ ch, 1597334677);
+		ch = str.charCodeAt(i);
+		h1 = Math.imul(h1 ^ ch, 2654435761);
+		h2 = Math.imul(h2 ^ ch, 1597334677);
 	}
 	h1 = Math.imul(h1 ^ (h1>>>16), 2246822507) ^ Math.imul(h2 ^ (h2>>>13), 3266489909);
 	h2 = Math.imul(h2 ^ (h2>>>16), 2246822507) ^ Math.imul(h1 ^ (h1>>>13), 3266489909);

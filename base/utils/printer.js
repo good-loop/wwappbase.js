@@ -73,7 +73,7 @@ const oneDecimalFormat = new Intl.NumberFormat('en-GB', {maximumFractionDigits: 
  * @param {?Boolean} allowOneDigitDecimal If true, one-digit numbers will allow (but not enforce) one more digit after the decimal point.
  */
 Printer.prototype.prettyInt = function(x, allowOneDecimal) {
-	if (x === undefined || x === null) return '';
+	if (x == null) return ''; // == instead of === also catches undefined
 	if (x == 0) return '0';
 	try {
 		const format = (x > -10 && x < 10 && allowOneDecimal) ? oneDecimalFormat : roundFormat;

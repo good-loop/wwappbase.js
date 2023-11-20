@@ -719,6 +719,7 @@ const MAX_COLLECTED_LIST = 5000;
  * @param {String} [params.sort] e.g. "start-desc"
  * @param {string|Date} [params.start] Add a time-filter. Usually unset.
  * @param {string|Date} [params.end] Add a time-filter. Usually unset.
+ * @param {string|number} [params.size]
  * 
  * @returns {PromiseValue<List>}
  * 
@@ -832,9 +833,10 @@ const listByIds = ({ids, q, ...params}) => {
 const collectListPromises = promises => Promise.all(promises).then(results => {
 	const collected = results.reduce((acc, res) => {
 		if (acc === null) return res; // build on top of first result to return
-		acc.cargo.hits.push(...res.cargo.hits);
-		acc.errors.push(...res.errors);
-		acc.messages.push(...res.messages);
+		acc.cargo?.hits.push(...res.cargo?.hits);
+		acc.data?.hits.push(...res.data?.hits);
+		acc.errors?.push(...res.errors);
+		acc.messages?.push(...res.messages);
 		acc.success = acc.success && res.success;
 		return acc;
 	}, null);

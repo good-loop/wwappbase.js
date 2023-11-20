@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useCallback } from 'react';
 import ServerIO from '../plumbing/ServerIOBase';
-import { space } from '../utils/miscutils';
+import { noVal, space } from '../utils/miscutils';
 import DynImg from './DynImg';
 import Misc from './Misc';
 
@@ -90,7 +90,7 @@ const normaliseParams = ({ endCard, ...params }) => {
 	if (endCard) params['gl.variant'] = 'tq';
 
 	Object.entries(params).forEach(([key, val]) => {
-		if (val === undefined) return;
+		if (noVal(val)) return;
 		const normKey = key.match(/^gl\.\w+/) ? key : `gl.${key}`;
 		normParams[normKey] = val;
 	});
@@ -162,7 +162,7 @@ const GoodLoopUnit = ({vertId, className, style, css, size = 'landscape', status
 	// Should we use unit.js or unit-debug.js?
 	// Priority given to: gl.debug URL param, then explicit debug prop on this component, then server type.
 	let debug = shouldDebug;
-	if (shouldDebug === undefined) shouldDebug = !C.isProduction();
+	if (noVal(shouldDebug)) shouldDebug = !C.isProduction();
 	// Allow overriding by URL param
 	const debugParam = DataStore.getUrlValue('gl.debug');
 	if (debugParam === false || debugParam === true) debug = debugParam;

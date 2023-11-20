@@ -5,6 +5,7 @@ import { assert, assMatch } from '../utils/assert';
 import DataClass, {getId} from './DataClass';
 import { Children } from 'react';
 import { str } from '../utils/printer';
+import { noVal } from '../utils/miscutils';
 
 /** 
  * 
@@ -182,7 +183,7 @@ Tree.map = (tree, fn, options={}, parent=null, depth=0) => {
  */
 Tree.mapByValue = (tree, fn) => {
 	let t2 = new Tree();
-	if (tree.value !== undefined && tree.value !== null) {
+	if (!noVal(tree.value)) {
 		let fx = fn(tree.value);
 		t2.value = fx;
 	}
@@ -200,7 +201,7 @@ Tree.mapByValue = (tree, fn) => {
  */
 Tree.filterByValue = (tree, predicate) => {
 	return Tree.filter(tree, n => {
-		if (n.value === undefined || n.value === null) {
+		if (noVal(n.value)) {
 			return null; // keep iff a child survives
 		}
 		let px = predicate(n.value);
