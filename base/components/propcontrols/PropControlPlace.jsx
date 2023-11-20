@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { Input, InputGroup } from 'reactstrap';
 import { countryListAlpha2 } from '../../data/CountryRegion';
 
@@ -27,7 +27,8 @@ const PropControlPlace = ({path, prop, proppath, storeValue, onChange, warnOnUnp
 	</InputGroup>);
 };
 
-const PropControlCountry = ({path, prop, storeValue, onChange}) => {
+
+const PropControlCountry = ({path, prop}) => {
 	const options = Object.keys(countryListAlpha2);
 	const labels = Object.values(countryListAlpha2);
 	return <PropControl type="select" path={path} prop={prop} options={options} labels={labels} />;

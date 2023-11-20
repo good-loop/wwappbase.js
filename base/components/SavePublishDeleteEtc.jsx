@@ -174,7 +174,7 @@ function SavePublishDeleteEtc({
 	const isdirty = C.STATUS.isdirty(localStatus) || C.STATUS.issaveerror(localStatus);
 	let isSaving = C.STATUS.issaving(localStatus);
 	const status = C.KStatus.DRAFT; // editors always work on drafts
-	let item = DataStore.getData({ status, type, id });	
+	let item = DataStore.getData({ status, type, id });
 	// Keep a copy of the draft in case we mess with it later (e.g. targetPaths)
 	let draftItem = _.cloneDeep(item);
 
@@ -232,7 +232,7 @@ function SavePublishDeleteEtc({
 	}
 
 	// Sometimes we just want to autosave drafts!
-	if (hidden) return <span />;
+	if (hidden) return <span style={{position: 'absolute'}} />;
 
 	// if nothing has been edited, then we can't publish, save, or discard
 	// ??this no longer works as we force the item to be pulled from "DRAFT"

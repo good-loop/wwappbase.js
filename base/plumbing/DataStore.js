@@ -6,7 +6,7 @@ import PromiseValue from '../promise-value';
 
 import DataClass, {getId, getType, getStatus} from '../data/DataClass';
 import { assert, assMatch } from '../utils/assert';
-import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectValueByPath, setObjectValueByPath} from '../utils/miscutils';
+import {parseHash, toTitleCase, is, space, yessy, getUrlVars, decURI, getObjectValueByPath, setObjectValueByPath, noVal} from '../utils/miscutils';
 import KStatus from '../data/KStatus';
 import { modifyPage } from './glrouter';
 
@@ -590,7 +590,7 @@ class Store {
 	 * @param {Date} [date] Default to now
 	 */
 	setFetchDate(path, date = new Date()) {
-		return this.setValue(path, date, false);
+		return this.setValue(this.fetchDatePath(path), date, false);
 	}
 
 
@@ -632,8 +632,8 @@ class Store {
 		}
 		// No PV ...but already in the store?
 		// Note: since we retain PVs (to maintain identity i.e. same item always has same PV) 
-		// this check is for a corner case (which does happen - e.g. saveAs()), 
-		// where the datastore has an object that wasn't entered via fetch(). 
+		// this check is for a corner case (which does happen - e.g. saveAs()),
+		// where the datastore has an object that wasn't entered via fetch().
 		// For items managed purely by fetch(), we have:
 		// - if the item is absent & no fetch in progress, fetch2() will start a fetch & return PV
 		// - if the item is absent but fetch in progress, fetch2() will return in-progress PV
@@ -641,12 +641,9 @@ class Store {
 		// - if the item is present & stale, fetch2() will start a refresh fetch, but return the old PV
 		const item = this.getValue(path);
 		// Note: falsy or an empty list/object is counted as valid, only null/undefined will trigger a fresh load.
-		const notHere = (item === null || item === undefined);
-		if (notHere) return null;
-		// make and store a PV
-		pv = new PromiseValue(item);
-		this.setFetchPV(path, pv);
-		return pv;
+		if (item == null) return null;
+		// Make and store a PV that resolves to the item-in-store.
+		return this.fetch2(path, () => item);
 	}
 
 
@@ -705,7 +702,41 @@ class Store {
 			cachePeriod = Math.max(cachePeriod, 5000);
 		}
 
-		return this.fetch2(path, fetchFn, cachePeriod);
+		// Only fetch once: has this been fetched before? Is the saved copy fresh?
+		const prevPV = this.getFetchPV(path);
+		const isFresh = this.fetchIsFresh(path, cachePeriod);
+		// Has a previous fetch resolved & found nothing?
+		const resolvedToNothing = (prevPV?.resolved && prevPV.value == null);
+
+		// If there's no PV or a failed one...
+		let fetchOverridden = false;
+		if (resolvedToNothing) {
+			const item = this.getValue(path);
+			// ...BUT there's an item at the requested path (eg put there by setValue() instead of fetch())
+			if ( ! noVal(item)) {
+				// Replace fetch function with one which resolves to the item, so calling code gets the item.
+				// This will be called below & the result wrapped in a PV, which will be cached appropriately
+				fetchFn = () => item;
+				fetchOverridden = true;
+			}
+		}
+
+		// We have an existing PV for this fetch path. Is it OK to return it?
+		if (prevPV && !fetchOverridden) {
+			if (isFresh) return prevPV; // It's still in cache period - return it.
+			if (this.getFetchPV(path, true)) return prevPV; // Refresh already in progress - return old PV in meantime.
+			// Stored PV is stale, and refresh NOT already in progress: continue and start a refresh.
+			// Poke a marker onto the old PV so calling code can tell it's out-of-date, if it cares.
+			prevPV.stale = true;
+		}
+
+		// Nothing in store, nothing in-progress, no way to fetch? Return a reject PV.
+		if (!fetchFn) return new PromiseValue(null);
+		// Cache fail or stale PV - start a fresh fetch.
+		const newPV = this.fetch2(path, fetchFn, !isFresh);
+		// If this is a refresh fetch, return the old PV (with stale marker).
+		// The new one will replace it when it's resolved.
+		return prevPV || newPV;
 	} // ./fetch()
 
 
@@ -720,52 +751,15 @@ class Store {
 	}
 
 
-	/** Convenience for "is null/undefined" (ie allowing 0, false, '' etc) */
-	noValue(item) {
-		return (item === null || item === undefined);
-	}
-
-
 	/**
-	 * Does the remote fetching work for fetch().
-	 * Can be called repeatedly, and it will cache and return the same PromiseValue.
+	 * Does the local/remote fetching work for fetch().
+	 * Stores PV to cache, but doesn't check for previous PVs!
 	 * @param {String[]} path
 	 * @param {Function} fetchFn () => promiseOrValue or a PromiseValue. If `fetchFn` is unset (which is unusual), return in-progress or a failed PV.
-	 * @param {?Number} [cachePeriod] Milliseconds to consider the fetch result "fresh"
+	 * @param {?boolean} refresh True if this fetch is replacing a stale copy
 	 * @returns {!PromiseValue}
 	 */
-	fetch2(path, fetchFn, cachePeriod) {
-		// Only fetch once: has this been fetched before? Is the saved copy fresh?
-		const prevPV = this.getFetchPV(path);
-		const isFresh = this.fetchIsFresh(path, cachePeriod);
-		// Has a previous fetch resolved & found nothing?
-		const resolvedToNothing = (prevPV?.resolved && this.noValue(prevPV.value));
-
-		// If there's no PV or a failed one...
-		let fetchOverridden = false;
-		if (resolvedToNothing) {
-			const item = this.getValue(path);
-			// ...BUT there's an item at the requested path (eg put there by setValue() instead of fetch())
-			if (!this.noValue(item)) {
-				// Replace fetch function with one which resolves to the item, so calling code gets the item.
-				// This will be called below & the result wrapped in a PV, which will be cached appropriately
-				fetchFn = () => item;
-				fetchOverridden = true;
-			}
-		}
-
-		// OK, we have an existing PV for this fetch path. Is it OK to return it?
-		if (prevPV && !fetchOverridden) {
-			if (isFresh) return prevPV; // It's still in cache period - return it.
-			if (this.getFetchPV(path, true)) return prevPV; // Refresh already in progress - return old PV in meantime.
-			// Stored PV is stale, and refresh NOT already in progress: continue and start a refresh.
-			// Poke a marker onto the old PV so calling code can tell it's out-of-date, if it cares.
-			prevPV.stale = true;
-		}
-
-		// Nothing in store, nothing in-progress, no way to fetch? Return a reject PV.
-		if (!fetchFn) return new PromiseValue(null);
-
+	fetch2(path, fetchFn, refresh) {
 		const promiseOrValue = fetchFn();
 		assert(promiseOrValue !== undefined, 'fetchFn passed to DataStore.fetch() should return a promise or a value. Got: undefined. Missing return statement?');
 		// Ensure fetch result is in a Promise, even if it returned a simple value.
@@ -788,16 +782,16 @@ class Store {
 
 		// Wrap this promise as a PV & store right away, so subsequent fetch calls get it back.
 		const pv = new PromiseValue(promiseWithCargoUnwrap);
-		this.setFetchPV(path, pv, !isFresh); // Will store to either base or refresh-in-progress path as appropriate
+		this.setFetchPV(path, pv, refresh); // Will store to either base or refresh-in-progress path as appropriate
 
 		// When the promise resolves/rejects:
 		pv.promise.then(res => {
 			// Save result to DataStore at original path
-			// Limited cache time? Timestamp the response.
-			if (cachePeriod) this.setFetchDate(path);
+			// Timestamp the response for later freshness checks
+			this.setFetchDate(path);
 
 			// Was this a cache-refresh call?
-			if (!isFresh) {
+			if (refresh) {
 				// Remove the new PV from the "in-progress refresh" path, to clear the
 				// way for when the cache expires again & another refresh is needed.
 				this.setFetchPV(path, null, false, true);
@@ -810,16 +804,25 @@ class Store {
 			// This is done after the cargo-unwrap PV has resolved.
 			// So any calls to fetch() during render will get a resolved PV even if res is null.
 			this.setValue(path, res, true);
+			// Bind the PV's value property to the DataStore path (deferred so it finishes resolving itself first)
+			// - so later identity-breaking assignments don't cause it to return an inconsistent object.
+			const thisDS = this;
+			setTimeout(() => {
+				delete pv.value;
+				Object.defineProperty(pv, 'value', {
+					get() { return thisDS.getValue(path); },
+					set(v) { throw new Error('Value of a DataStore fetch() PromiseValue is read-only! Fetch path:', path); },
+				});
+			});
 			return res;
 		}).catch(res => {
-			// Error: leave the failed PV in place to avoid hammering bad API calls...			
-			console.log("update re error: "+pv.error+" path: "+path);
+			// Error: leave the failed PV in place to avoid hammering bad API calls...
+			console.log(`update re error: ${pv.error} path: ${path}`);
 			this.update(); // ...but update React, so components redraw and receive the resolved-but-failed PV.
 			throw res;
 		});
 
-		// If this is a refresh fetch, return the old PV (with stale marker) until the new one resolves.
-		return prevPV || pv;
+		return pv;
 	} // ./fetch2()
 
 

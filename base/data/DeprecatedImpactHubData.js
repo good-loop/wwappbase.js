@@ -36,10 +36,10 @@ import Campaign from './Campaign';
 * NB: {} is to support `let {type, id} = Campaign.masterFor()` without an NPE
 */
 Campaign.masterFor = campaign => {
-   Campaign.assIsa(campaign);
-   if (campaign.vertiser) return {type:C.TYPES.Advertiser, id:campaign.vertiser};
-   if (campaign.agencyId) return {type:C.TYPES.Agency, id:campaign.agencyId};
-   return {};
+	Campaign.assIsa(campaign);
+	if (campaign.vertiser) return {type:C.TYPES.Advertiser, id:campaign.vertiser};
+	if (campaign.agencyId) return {type:C.TYPES.Agency, id:campaign.agencyId};
+	return {};
 };
 
 /**
@@ -68,7 +68,7 @@ Campaign.pvSubCampaigns = ({campaign, query}) => {
 };
 
 
-/** 
+/**
 * @deprecated
 * This is the total unlocked across all adverts in this campaign. See also maxDntn.
 * Warning: This will change as data loads!!
@@ -478,14 +478,10 @@ Campaign.viewcountDeprecated = ({campaign, status}) => {
 		return campaign.numPeople;
 	}
 	const pvAllAds = Campaign.pvAdsLegacy({campaign, status});
-	let allAds = List.hits(pvAllAds.value) || [];
+	const allAds = List.hits(pvAllAds.value) || [];
 	const viewcount4campaign = Advert.viewcountByCampaign(allAds);
-	if ( ! viewcount4campaign) {
-		console.warn("No viewcount4campaign?! from ads ",allAds);
-		return 0; 
-	}
-	let totalViewCount = sum(Object.values(viewcount4campaign));
-	return totalViewCount;
+	if (!viewcount4campaign) return 0;
+	return sum(Object.values(viewcount4campaign));;
 };
 
 export default Campaign;

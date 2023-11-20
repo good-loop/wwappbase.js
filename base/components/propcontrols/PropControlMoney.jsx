@@ -2,7 +2,7 @@ import React from 'react';
 
 import PropControl, { registerControl, FormControl } from '../PropControl';
 import { DropdownItem, DropdownMenu, DropdownToggle, InputGroup, InputGroupAddon, UncontrolledButtonDropdown } from 'reactstrap';
-import { is } from '../../utils/miscutils';
+import { is, noVal } from '../../utils/miscutils';
 import Money from '../../data/Money';
 import { assert } from '../../utils/assert';
 
@@ -23,7 +23,7 @@ function PropControlMoney2({ prop, storeValue, rawValue, setRawValue, set, path,
 	// Prefer raw value (including "" or 0), so numeric substrings which aren't numbers or are "simplifiable", eg "-" or "1.", are preserved while user is in mid-input
 	let v = is(rawValue)? rawValue : (storeValue? storeValue.value : null);
 
-	if (v === undefined || v === null || _.isNaN(v)) { // allow 0, which is falsy
+	if (noVal(v) || _.isNaN(v)) { // allow 0, which is falsy
 		v = '';
 	}
 	let currencyValue = otherStuff.currency || (storeValue && storeValue.currency) || "GBP";

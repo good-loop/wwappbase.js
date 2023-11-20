@@ -3,7 +3,7 @@
  */
 
 import React, { Component } from 'react';
-import { encURI, mapkv, modifyHash, stopEvent, yessy } from '../utils/miscutils';
+import { encURI, mapkv, modifyHash, noVal, stopEvent, yessy } from '../utils/miscutils';
 import DataStore from './DataStore';
 
 /**
@@ -16,24 +16,24 @@ import DataStore from './DataStore';
  * @returns null
  */
 const goto = (href, options) => {
-	console.log("goto() "+href+" from "+window.location, options);
-	if ( ! href) {
-		console.warn("goto: no href");
+	console.log(`goto() ${href} from ${window.location}`, options);
+	if (!href) {
+		console.warn('goto: no href');
 		return;
 	}
-	// only pushState of it is a change (otheriwse the browser back button can get stuck on the current page)
-	const locn = ""+window.location;
+	// Only pushState if URL changes (otheriwse the browser back button can get stuck on the current page)
+	const locn = String(window.location);
 	if (href !== locn) {
 		if (options?.replaceState) {
-			window.history.replaceState({}, "", href);
+			window.history.replaceState({}, '', href);
 		} else {
-			window.history.pushState({}, "", href);
+			window.history.pushState({}, '', href);
 		}
 		// update url vars ()
 		DataStore.parseUrlVars(true, href);
 	}
 	// scroll to the page top
-	if (options?.scroll==='false') {
+	if (options?.scroll === 'false') {
 		// no scroll
 	} else {
 		window.scrollTo(0,0);
@@ -82,11 +82,11 @@ const usePath = () => ""+window.location;
 /**
  * Backwards compatible replacement for modifyHash
  * 
- * @param {string[]} [newpath] Can be null for no-change
- * @param {Object} [newparams] Can be null for no-change
- * @param {boolean} [returnOnly] If true, do not modify the hash -- just return what the new value would be (starting with #)
- * @param {boolean} [clearParams] If true, remove all existing url parameters
- * @param {?Object} options See `goto(_,options)` To "fill in" a url parameter, use `replaceState:true` to avoid breaking the browser's back button.
+ * @param {?string[]} [newpath] Can be null for no-change
+ * @param {?Object} [newparams] Can be null for no-change
+ * @param {?boolean} [returnOnly] If true, do not modify the hash -- just return what the new value would be (starting with #)
+ * @param {?boolean} [clearParams] If true, remove all existing url parameters
+ * @param {?Object} [options] See `goto(_,options)` To "fill in" a url parameter, use `replaceState:true` to avoid breaking the browser's back button.
  */
 const modifyPage = (newpath, newparams, returnOnly, clearParams, options) => {
 	if (DataStore.localUrl !== '/') {
@@ -99,7 +99,7 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams, options) => {
 	let hash = encURI(newpath.join('/'));
 	if (yessy(allparams)) {
 		// ?? what if a Date is passed in??
-		let kvs = mapkv(allparams, (k, v) => encURI(k) + "=" + (v === null || v === undefined ? '' : encURI(v)));
+		let kvs = mapkv(allparams, (k, v) => encURI(k) + "=" + (noVal(v) ? '' : encURI(v)));
 		hash += "?" + kvs.join('&');
 	}
 	let u = '/' + hash;
@@ -108,6 +108,7 @@ const modifyPage = (newpath, newparams, returnOnly, clearParams, options) => {
 	}
 	goto(u, options);
 };
+
 
 /**
  * Call this to change the routing behaviour from #page to /page
@@ -119,7 +120,7 @@ const initRouter = () => {
 	DataStore.localUrl = '/';
 	DataStore.parseUrlVars(false); // update the parsing since we've changed the method
 	// NB: Catch beforeunload? No - Modern Chrome insists on a user popup for this
-	window.addEventListener('popstate', e => {		
+	window.addEventListener('popstate', e => {
 		DataStore.parseUrlVars(true);
 	});
 };

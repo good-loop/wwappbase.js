@@ -17,7 +17,7 @@ import Enum from 'easy-enums';
 
 import { assert, assMatch } from '../utils/assert';
 import JSend from '../data/JSend';
-import { stopEvent, toTitleCase, space, labeller, is, ellipsize } from '../utils/miscutils';
+import { stopEvent, toTitleCase, space, labeller, is, ellipsize, noVal } from '../utils/miscutils';
 
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
@@ -360,10 +360,9 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// NB: Most PropControl types ignore rawValue. Those that use it should display rawValue.
 	// Warning: rawValue === undefined/null means "use storeValue". BUT rawValue === "" means "show a blank"
 	const [rawValue, _setRawValue] = useState(_.isString(storeValue) ? storeValue : null);
-	const [dirty, setDirty] = useState();	
-	const setRawValue = x => {	// debug!		
+	const [dirty, setDirty] = useState();
+	const setRawValue = x => { // debug!
 		setDirty(true);
-		console.log("setRawValue", x, dirty); 
 		_setRawValue(x);
 	};
 	assMatch(rawValue, "?String", `PropControl: rawValue must be a string, path: "${path}", prop: "${prop}" type: "${type}""`);
@@ -389,7 +388,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 	// Don't refactor this to useEffect - we want storeValue and value changed in-flow as well
 	const [firstRender, setFirstRender] = useState(true);
 	if (firstRender && dflt !== undefined) {
-		if (storeValue === undefined || storeValue === null || storeValue === '') {
+		if (noVal(storeValue) || storeValue === '') {
 			storeValue = dflt;
 			value = dflt;
 			setTimeout(() => DataStore.setValue(proppath, dflt)); // Defer in timeout to avoid "update during render" warnings
@@ -397,7 +396,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		setTimeout(() => setFirstRender(false));
 	}
 
-	if(required && (storeValue === undefined || storeValue === null || storeValue === "" || (storeValue.length && storeValue.length == 0))){
+	if (required && (noVal(storeValue) || storeValue === '' || (storeValue.length && storeValue.length == 0))){
 		className += " missing-required"
 	}
 
@@ -573,7 +572,7 @@ function PropControl2(props) {
 	// update is undefined by default, false if fast. See DataStore.update()
 	let update;
 	if (fast) update = false;
-	if ( ! set) { // set can be a useState setter. If not, use DataStore
+	if (!set) { // set can be a useState setter. If not, use DataStore
 		set = newVal => DSsetValue(proppath, newVal, update);
 	}
 
@@ -631,7 +630,7 @@ function PropControl2(props) {
 	}
 
 	// React complains about nully value given to input - normalise to ''
-	if (storeValue === undefined || storeValue === null) storeValue = '';
+	if (noVal(storeValue)) storeValue = '';
 
 	// Is there a plugin for this type?
 	if ($widgetForType[type]) {
@@ -948,7 +947,7 @@ function PropControlRadio({ type, prop, storeValue, value, path, saveFn, options
  * @returns Number. undefined/null are returned as-is. Bad inputs return NaN
  */
 const numFromAnything = v => {
-	if (v === undefined || v === null) return v;
+	if (noVal(v)) return v;
 	// NB: _.isNumber fails for numeric-strings e.g. "1" -- but the later code will handle that
 	if (_.isNumber(v)) return v;
 	// strip any commas, e.g. 1,000
@@ -1191,7 +1190,7 @@ const standardModelValueFromInput = (inputValue, type, event, oldStoreValue, pro
 function FormControl({ value, type, required, size, className, prepend, append, proppath, placeholder,
 	 onChange, onEnter, onKeyDown, ...otherProps }) 
 {
-	if (value === null || value === undefined) value = '';
+	if (noVal(value)) value = '';
 
 	// add css classes for required fields
 	let klass = space(
@@ -1227,12 +1226,12 @@ function FormControl({ value, type, required, size, className, prepend, append, 
 
 	// submit if the user types return?
 	let onKeyDown2 = onKeyDown;
-	if (onEnter) {		
+	if (onEnter) {
 		let onEnter2 = e => {
 			if (e.key === "Enter") {
 				onEnter(new FakeEvent(value));
 			}
-		};		
+		};
 		if (onKeyDown) {
 			onKeyDown2 = e => { onKeyDown(e); onEnter2(e); };
 		} else {
