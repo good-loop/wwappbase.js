@@ -14,6 +14,9 @@ import SearchQuery from '../searchquery';
 import ServerIO from '../plumbing/ServerIOBase';
 import Branding from './Branding';
 import PromiseValue from '../promise-value';
+import { isEmpty } from 'lodash';
+
+const type = C.TYPES.Advert;
 
 /**
  * See Advert.java
@@ -42,7 +45,7 @@ class Advert extends DataClass {
 		}
 		// copy branding from the advertiser
 		// NB: draft is more likely to be loaded into mem than published
-		let pvAdvertiser = getDataItem({type:C.TYPES.Advertiser, id:base.vertiser, status:KStatus.DRAFT, swallow:true});
+		let pvAdvertiser = getDataItem({type: C.TYPES.Advertiser, id: base.vertiser, status: KStatus.DRAFT, swallow: true});
 		if (pvAdvertiser.value && pvAdvertiser.value.branding) {
 			this.branding = deepCopy(pvAdvertiser.value.branding);
 		}
@@ -55,7 +58,7 @@ class Advert extends DataClass {
 		DataClass._init(this, base);
 	}
 }
-DataClass.register(Advert, "Advert"); 
+DataClass.register(Advert, 'Advert');
 
 C.DEFAULT_AD_ID = 'default-advert';
 
@@ -65,12 +68,12 @@ C.DEFAULT_AD_ID = 'default-advert';
  */
 Advert.defaultAdvert = () => {
 	let swallow = (C.SERVER_TYPE !== 'test' && C.SERVER_TYPE !== 'stage'); // NB: local will often fail; production shouldn't, but should fail quietly if it does
-	const pvAd = getDataItem({type:C.TYPES.Advert, id:C.DEFAULT_AD_ID, status: KStatus.PUBLISHED, swallow});
+	const pvAd = getDataItem({type, id: C.DEFAULT_AD_ID, status: KStatus.PUBLISHED, swallow});
 	return pvAd.value;
 };
 
 // HACK: trigger a data fetch if on Portal
-if (window.location.hostname.includes("portal.good-loop.com")) {
+if (window.location.hostname.includes('portal.good-loop.com')) {
 	Advert.defaultAdvert();
 }
 
@@ -127,13 +130,13 @@ Advert.charityList = ad => {
 	if (!ad.charities.list) ad.charities.list = [];
 	// WTF? we're getting objects like {0:'foo', 1:'bar'} here instead of arrays :( 
 	if (!ad.charities.list.map) {
-		console.warn("Advert.js - patching charity list Object to []");
+		console.warn('Advert.js - patching charity list Object to []');
 		ad.charities.list = Object.values(ad.charities.list);
 	}
 	// null in list bug seen June 2020
-	const clist = ad.charities.list.filter(c => c); 
+	const clist = ad.charities.list.filter(c => c);
 	if (clist.length < ad.charities.list.length) {
-		console.warn("Advert.js - patching charity list null");
+		console.warn('Advert.js - patching charity list null');
 		ad.charities.list = clist;
 	}
 	return clist;
@@ -155,6 +158,7 @@ const viewCountQuery = ads => {
 }
 
 /**
+ * Impressions 
  * @param {object} p
  * @param {Advert[]} p.ads
  * @returns {object<{String: Number}>} Mapping from ISO country code to viewcount
@@ -167,28 +171,52 @@ Advert.viewcountByCountry = ({ads, start, end}) => Advert.viewcountBy({ads, star
  */
 Advert.viewcountByCampaign = ads => Advert.viewcountBy({ads, bby: 'campaign'});
 
+
 /**
- * FIXME This hides a LOT of asynchronous work behind a PV and relies on the "redraw whole tree when anything at all happens" model to work
- * Refactor this - and dependent code - to expose the PromiseValue
+ * Minviews-per-[bby] (eg country, campaign, etc) for all ads in a list
  * @param {object} p
  * @param {Advert[]} p.ads List of adverts to query on
  * @param {String} p.bby Breakdown on this parameter
  * @param {String} p.start Start date/time for query
  * @param {String} p.end End date/time for query
- * @returns {object|null} viewcount4campaign
+ * @returns {PromiseValue<object|null>} pv.value maps { key: viewcount4key }
  */
-Advert.viewcountBy = ({ads, start = '2017-01-01', end = 'now', bby}) => {
-	if (!ads?.length) {
-		console.log(`Advert.viewcountBy[${bby}]: ads is empty`);
-		return {};
-	}
+Advert.viewcountBy = params => {
+	const processResult = res => pivotDataLogData(res, [params.bby]);
+	return Advert.viewcountCommon({ ...params, processResult });
+};
+
+
+/**
+ * Total minviews for all ads in a list
+ * @param {object} p
+ * @param {Advert[]} p.ads List of adverts to query on
+ * @param {String} p.start Start date/time for query
+ * @param {String} p.end End date/time for query
+ * @returns {PromiseValue<Number|null>} pv.value = viewcount
+ */
+Advert.viewcount = params => {
+	const processResult = res => res.allCount;
+	return Advert.viewcountCommon({ ...params, processResult });
+};
+
+
+Advert.viewcountCommon = ({ads, start = '2017-01-01', end = 'now', bby, processResult}) => {
+	if (!ads?.length) return new PromiseValue(null);
+
+	// Namespace this fetch properly in DataStore
+	const dataName = bby ? `view-data-by-${bby}` : 'view-data';
 
 	// Get minview events for all ads in list
 	const q = viewCountQuery(ads).query;
-	const pvViewData = getDataLogData({name: `view-data-by-${bby}`, dataspace: 'gl', breakdowns: [bby], q, start, end});
-	if (!pvViewData.resolved) return null; // Data not ready yet
-	return pivotDataLogData(pvViewData.value, [bby]);
-};
+	return DataStore.fetch(['misc', 'DataLog', 'processed', 'Advert', dataName, q, JSON.stringify({start, end})], () => {
+		const dataLogSpec = { name: dataName, dataspace: 'gl', breakdowns: [], q, start, end };
+		// Add breakdown to query if present
+		if (bby) Object.assign(dataLogSpec, { breakdowns: [bby] });
+		// Fetch raw data and transform, if caller provided a function
+		return getDataLogData(dataLogSpec).promise.then(res => (processResult ? processResult(res) : res));
+	});
+}
 
 
 Advert.fetchForAdvertiser = ({vertiserId, status, q}) => Advert.fetchFor('vertiser', vertiserId, status, q);
@@ -207,11 +235,12 @@ Advert.fetchForCampaigns = ({campaignIds, status, q}) => Advert.fetchFor('campai
  */
 Advert.fetchFor = (typeKey, ids, status = KStatus.PUBLISHED, rawQ) => {
 	if (!Array.isArray(ids)) ids = [ids];
-	if ( ! ids || ! ids.length) {
-		return []; // empty list
-	}
+	if (isEmpty(ids)) return new PromiseValue([]); // No IDs, no adverts
+
 	const q = SearchQuery.setPropOr(rawQ, typeKey, ids);
-	return getDataList({ type: C.TYPES.Advert, status, q, save: true });
+	const listParams = { type, status, q, save: true};
+	if (status === KStatus.PUBLISHED) listParams.access = 'public';
+	return getDataList(listParams);
 };
 
 // NB: banner=display

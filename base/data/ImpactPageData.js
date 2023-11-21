@@ -2,13 +2,11 @@
 import KStatus from './KStatus';
 import List from './List';
 import PromiseValue from '../promise-value';
-import { getDataItem, getDataList, setWindowTitle } from '../plumbing/Crud';
+import { getDataItem } from '../plumbing/Crud';
 import C from '../../C';
 import DataStore from '../plumbing/DataStore';
 import SearchQuery from '../searchquery';
-import { space, alphabetSort } from '../utils/miscutils';
-import ServerIO from '../../plumbing/ServerIO';
-import md5 from 'md5';
+import { space, alphabetSort, noVal } from '../utils/miscutils';
 import Campaign from './Campaign';
 import Advertiser from './Advertiser';
 import Advert from './Advert';
@@ -17,30 +15,28 @@ import { assert } from '../utils/assert';
 import ActionMan from '../plumbing/ActionManBase';
 import { getId } from './DataClass';
 import { isEmpty, maxBy, uniqBy } from 'lodash';
-import GreenTag from './GreenTag';
 
-/* ------- Data Functions --------- */
 
 /**
- * Fetches the contextual data necessary to generate an impact page for the given item
+ * Fetches the contextual data necessary to generate an impact page for a focus item
  * @param {Object} p
- * @param {String} p.itemId
- * @param {String} p.itemType
- * @param {KStatus} p.status 
+ * @param {String} p.id ID of the focus item
+ * @param {String} p.type Type of the focus item
+ * @param {KStatus} p.status
  * @returns {PromiseValue<Object>} {campaign, brand, masterBrand, subBrands, subCampaigns, impactDebits, charities, ads}
  */
-export const fetchImpactBaseObjects = ({itemId, itemType, status, start, end}) => {
-	assert(itemId);
-	assert(itemType);
+export const fetchImpactBaseObjects = ({id, type, status, start, end}) => {
+	assert(id);
+	assert(type);
 	assert(status);
 
-	return DataStore.fetch(['misc', 'impactBaseObjects', itemType, status, space(start, end) || "whenever", itemId], () => {
-		return fetchImpactBaseObjects2({itemId, itemType, status, start, end});
+	return DataStore.fetch(['misc', 'impactBaseObjects', type, status, space(start, end) || 'whenever', id], () => {
+		return fetchImpactBaseObjects2({id, type, status, start, end});
 	});
 }
 
 
-const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) => {
+const fetchImpactBaseObjects2 = async ({id, type, status, start, end}) => {
 	let pvCampaign, campaign;
 	let pvBrand, brand, brandId;
 	let pvMasterBrand, masterBrand;
@@ -53,18 +49,18 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 	let subCampaignsDisplayable, subBrandsDisplayable;
 
 	// Fetch campaign object if specified
-	if (itemType === "campaign" || itemType === C.TYPES.Campaign) {
-		pvCampaign = getDataItem({type: C.TYPES.Campaign, status, id:itemId});
+	if (type === 'campaign' || type === C.TYPES.Campaign) {
+		pvCampaign = getDataItem({type: C.TYPES.Campaign, status, id});
 		campaign = await pvCampaign.promise;
 		//if (pvCampaign.error) throw pvCampaign.error;
 		// If we have a campaign, use it to find the brand
 		brandId = campaign?.vertiser;
-	} else if (itemType === "brand" || itemType === C.TYPES.Advertiser) {
+	} else if (type === 'brand' || type === C.TYPES.Advertiser) {
 		// Otherwise use the URL
-		brandId = itemId;
+		brandId = id;
 	}
-	if ( ! brandId) {
-		console.error("No advertiser ID",itemId,itemType);
+	if (!brandId) {
+		console.error('No advertiser ID', id, type);
 		return {};
 	}
 
@@ -78,27 +74,24 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		masterBrand = await pvMasterBrand.promise;
 		//if (pvMasterBrand.error) throw pvMasterBrand.error;
 	}
-	// Find any subBrands of this brand (technically brands should only have a parent OR children - but might be handy to make longer brand trees in future)
+	// Find any subBrands of this brand (technically brands should only have a parent
+	// OR children - but might be handy to make longer brand trees in future)
 	pvSubBrands = Advertiser.getChildren(brand.id, status);
 	subBrands = List.hits(await pvSubBrands.promise);
-	//if (pvSubBrands.error) throw pvSubBrands.error;
-	// Don't look for subCampaigns if this is a campaign
+
+	// Look for sub-campaigns - if focus item isn't a campaign itself
 	if (!campaign) {
 		// Find all related campaigns to this brand
 		pvSubCampaigns = Campaign.fetchForAdvertiser(brandId, status);
-		subCampaigns = List.hits(await pvSubCampaigns.promise);
-
-		subCampaigns = subCampaigns.filter(c => !Campaign.isMaster(c));
+		subCampaigns = List.hits(await pvSubCampaigns.promise).filter(c => !Campaign.isMaster(c));
 
 		// Look for vertiser wide debits
-		pvImpactDebits = Advertiser.getImpactDebits({vertiser:brand, status, start, end});
+		pvImpactDebits = Advertiser.getImpactDebits({vertiser: brand, status, start, end});
 		impactDebits = List.hits(await pvImpactDebits.promise);
-		console.log("Got debits from brand!", impactDebits);
 	} else {
 		// Get only campaign debits
 		pvImpactDebits = Campaign.getImpactDebits({campaign, status, start, end});
 		impactDebits = List.hits(await pvImpactDebits.promise);
-		console.log("Got debits from campaign!", impactDebits);
 	}
 
 	// Simplifies having to add null checks everywhere
@@ -168,6 +161,7 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 		throw new Error("404: Not found");
 	}
 
+	// Sorts charities augmented with a dntnTotal Money field
 	const augCharityComparator = (a, b) => {
 		if (a.dntnTotal && b.dntnTotal) return Money.sub(b.dntnTotal, a.dntnTotal).value;
 		if (a.dntnTotal) return 1;
@@ -241,20 +235,15 @@ const fetchImpactBaseObjects2 = async ({itemId, itemType, status, start, end}) =
 }
 
 
-/** Passed to _.maxBy in getImpressionsByCampaignByCountry to find the non-unset country with the highest impression count*/
-const highestNotUnsetPredicate = ([country, viewCount]) => (country === 'unset') ? 0 : viewCount;
-
-
 /**
  * Aggregate impressions-per-country for a campaign or group of subcampaigns
  * TODO Start and end params are unused
  * @param {object} p
- * @param {object} p.baseObjects ??
- * @param {Campaign} [p.baseObjects.campaign]
- * @param {Campaign[]} [p.baseObjects.subCampaigns]
- * @param {Float} cutoff if region has < cutoff * totalImpressions, data is added instead to 'unset' region. Expected range: 0 < cutoff <= 1.0
- * 
- * @returns {object<{String: Number}>} Of form { [countryCode]: impressionCount }
+ * @param {object} p.baseObjects See fetchImpactBaseObjects for structure
+ * @param {Campaign} [p.baseObjects.campaign] The current focus campaign, if present
+ * @param {Campaign[]} [p.baseObjects.subCampaigns] Campaigns belonging to the current focus object, if it's not a campaign itself
+ * @param {Float} cutoff Interval (0, 1]. If region-impressions < (cutoff * totalImpressions), data is assigned to 'unset' region.
+ * @returns {PromiseValue<object.<String, Number>>} Of form { [countryCode]: impressionCount }
  */
 export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end = 'now', locationField = 'country', cutoff=0.0, ...rest }) => {
 	assert(baseObjects);
@@ -265,58 +254,69 @@ export const getImpressionsByCampaignByCountry = ({ baseObjects, start = '', end
 	const campaigns = focusCampaign ? [focusCampaign] : subCampaigns;
 	assert(campaigns);
 
-	// Lots of processing as well as the fetch, so save results
-	const dsPath = ['misc', 'getImpressionsByCampaignByCountry', campaigns.toString()];
-	const already = DataStore.getValue(dsPath);
-	if (already) return already;
+	return DataStore.fetch(['misc', 'getImpressionsByCampaignByCountry', JSON.stringify(campaigns.map(c => getId(c)))], () => {
+		// For each campaign, get a views-by-country breakdown
+		const viewcountPredicate = (campaign) => (Campaign.viewcountByCountry({campaign, status: KStatus.PUBLISHED}).promise);
+		// Collect all per-campaign promises & aggregate the views-by-country data
+		return Promise.all(campaigns.map(viewcountPredicate))
+		.then(viewsByCountryPerCampaign => {
+			const region2totalViews = { unset: 0 };
+			const region2campaignSet = { unset: {} };
 
-	// This has a PV behind it and won't immediately return values
-	const viewsByCountryPerCampaign = campaigns.map(campaign => Campaign.viewcountByCountry({campaign, status: KStatus.PUBLISHED}));
-	if (!viewsByCountryPerCampaign?.length) return {}; // Nothing returned yet
-	// Incomplete data? (viewcountByCountry returns null when ads-for-campaign not yet fetched, or DataLog results still pending)
-	if (viewsByCountryPerCampaign.includes(null)) return {};
+			viewsByCountryPerCampaign.forEach((country2views, i) => {
+				if (isEmpty(country2views)) return;
+				const campaignId = getId(campaigns[i]);
 
-	// Find set of regions that were probably targeted by a campaign
-	// "Probably" = we assume each campaign is intended for only one country, and that
-	// will be the country (besides "unset") with the highest total impression count.
-	let country2views_all = { unset: { impressions: 0, campaignsInRegion: 0 } };
-	viewsByCountryPerCampaign.forEach(country2views => {
-		if (isEmpty(country2views)) return;
+				// Find the region (besides "unset") with the highest viewcount for this campaign
+				// - Since we don't have explicit metadata for this, we'll say the campaign probably targeted that region
+				const highestNotUnsetPredicate = ([country, viewCount]) => (country === 'unset') ? 0 : viewCount;
+				let [tgtRegion, impressions] = maxBy(Object.entries(country2views), highestNotUnsetPredicate);
 
-		// Find the region besides "unset" with the highest viewcount for this campaign
-		const [region, impressions] = maxBy(Object.entries(country2views), highestNotUnsetPredicate);
+				// Special case - very tiny numbers of impressions are probably us doing testing & will incorrectly assign things to GB.
+				// Let those campaigns be attributed to "unset".
+				const campaignTotalViews = Object.values(country2views).reduce((acc, val) => acc + val, 0);
+				if (tgtRegion === 'GB' && impressions < 200 && impressions < campaignTotalViews * 0.01) {
+					[tgtRegion, impressions] = maxBy(Object.entries(country2views), ([country, viewCount]) => viewCount);
+				}
 
-		// Any data for this country already in the table?
-		// If so, increment its data: if not, initialise it now.
-		let regionTotals = country2views_all[region];
-		if (regionTotals) {
-			regionTotals.impressions += impressions;
-			regionTotals.campaignsInRegion += 1;
-		} else {
-			country2views_all[region] = { impressions, campaignsInRegion: 1 };
-		}
-		// Record impressions with unset country as well
-		if (country2views.unset) {
-			country2views_all.unset.impressions += country2views.unset;
-			country2views_all.unset.campaignsInRegion += 1;
-		}
+				// Init viewcount tally and campaign-set, if needed
+				if (noVal(region2totalViews[tgtRegion])) region2totalViews[tgtRegion] = 0;
+				if (noVal(region2campaignSet[tgtRegion])) region2campaignSet[tgtRegion] = {};
+
+				// Increment data for the campaign's target country
+				region2totalViews[tgtRegion] += impressions;
+				// ...and add this campaign to the set which targeted this country
+				region2campaignSet[tgtRegion][campaignId] = true;
+
+				// Assign rest of viewcount to "unset" (ie don't discard overspray - because it looks weird if numbers
+				// don't add up to the stated total - but don't count it among intended views in a region)
+				Object.entries(country2views).forEach(([otherRegion, otherImpressions]) => {
+					if (otherRegion !== tgtRegion) region2totalViews.unset += otherImpressions;
+				});
+			});
+
+			// Impressions cutoff to be considered significant - fraction of overall total
+			const totalImpressions = Object.values(region2totalViews).reduce((total, impressions) => total + impressions, 0);
+			const impressionsCutoff = cutoff * totalImpressions;
+
+			// Reassign regions accounting for below-cutoff fractions of the total to "unset" (ie the "other regions" row)
+			Object.entries(region2totalViews).forEach(([region, impressions]) => {
+				if (impressions >= impressionsCutoff || region === 'unset') return;
+				// Reassign impressions
+				region2totalViews.unset += impressions
+				delete region2totalViews[region]
+				// Reassign campaigns
+				Object.assign(region2campaignSet.unset, region2campaignSet[region]);
+				delete region2campaignSet[region];
+			});
+
+			// Zip impressions-per-region and campaigns-per-region together
+			const region2ViewsCampaigns = {};
+			Object.entries(region2totalViews).forEach(([region, impressions]) => {
+				const campaignsInRegion = Object.keys(region2campaignSet[region] || {}).length;
+				region2ViewsCampaigns[region] = { impressions, campaignsInRegion };
+			});
+			return region2ViewsCampaigns;
+		});
 	});
-
-	const totalImpressions = Object.entries(country2views_all).reduce((total, [_, {impressions, __}]) => total + impressions, 0)
-	const impressionsCutoff = cutoff * totalImpressions;
-	Object.keys(country2views_all).forEach((region) => {
-		const {impressions, campaignsInRegion}  = country2views_all[region];
-		if(impressions > impressionsCutoff || region === "unset") return
-
-		country2views_all["unset"].impressions += impressions
-		country2views_all["unset"].campaignsInRegion += campaignsInRegion
-		delete country2views_all[region]
-	})
-
-	// Cache the result when complete
-	DataStore.setValue(dsPath, country2views_all);
-	return country2views_all;
 };
-
-
-/* ------- End of Data Functions --------- */
