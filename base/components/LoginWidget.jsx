@@ -6,7 +6,6 @@ import { stopEvent, toTitleCase, space, yessy, encURI } from '../utils/miscutils
 import DataStore from '../plumbing/DataStore';
 import Misc from './Misc';
 import C from '../CBase';
-import ServerIO from '../plumbing/ServerIOBase';
 import ErrAlert from './ErrAlert';
 import PropControl from './PropControl';
 import { assMatch } from '../utils/assert';
@@ -191,8 +190,8 @@ function LoginWidget({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 	// The widget shouldn't get stuck showing the thankyou, so reset it once it closes
 	if (!show && showThankyou) setThankyou(false);
 
-	if ( ! services) {
-		services = [C.app.twitterAppId&&'twitter', C.app.facebookAppId&&'facebook'].filter(x => x);
+	if (!services) {
+		services = [C.app.twitterAppId && 'twitter', C.app.facebookAppId && 'facebook'].filter(x => x);
 	}
 	let verb = DataStore.getValue(VERB_PATH) || 'login';
 
@@ -214,7 +213,7 @@ function LoginWidget({showDialog, logo, title, subtitle, Guts = LoginWidgetGuts,
 			<ModalHeader toggle={() => setShowLogin(!show)}>
 				<Misc.Logo service={C.app.id} url={logo} transparent={false} className="pull-left mr-1" />
 				{' '}{title}
-				{subtitle && <p className='my-4 login-subtitle'>{subtitle}</p>}
+				{subtitle && <p className="my-4 login-subtitle">{subtitle}</p>}
 			</ModalHeader>
 			<ModalBody>
 				{showThankyou ?
@@ -299,7 +298,7 @@ function EmailReset({}) {
 	return (
 		<form id="loginByEmail" onSubmit={doItFn}>
 			<p>Forgotten your password? No problem - we will email you a link to reset it.</p>
-			<PropControl label='Email' type="email" path={path} prop="email" placeholder="Email" />			
+			<PropControl label="Email" type="email" path={path} prop="email" placeholder="Email" />
 			{requested ? <div className="alert alert-info">A password reset email has been sent out.</div> : ''}
 			<div className="form-group">
 				<Button type="submit" size="lg" color="primary" disabled={isLoading}>
@@ -361,23 +360,23 @@ function EmailSignin({verb, onLogin, onRegister, onSubmit, onError, canRegister,
 	let noAgreement = agreeToTerms && (! person || ! person.agreeToTerms); // true if the user must tick a checkbox
 	return (
 		<form id="loginByEmail" onSubmit={doItFn} className={className}>
-			<PropControl id='loginByEmail-email' label='Email' type="email" path={path} item={person} prop="email" placeholder="Email" />			
-			<PropControl id='loginByEmail-password' label='Password' type="password" path={path} item={person} prop="password" placeholder="Password" />
-			<div className='action-btns'>
+			<PropControl id="loginByEmail-email" label="Email" type="email" path={path} item={person} prop="email" placeholder="Email" />
+			<PropControl id="loginByEmail-password" label="Password" type="password" path={path} item={person} prop="password" placeholder="Password" />
+			<div className="action-btns">
 				<div className="form-group">
 					{agreeToTerms && <PropControl type="checkbox" label={agreeToTerms} path={path} prop="agreeToTerms" />}
 					{children}
-					<Button id='loginByEmail-submit' type="submit" size="lg" color="primary"
+					<Button id="loginByEmail-submit" type="submit" size="lg" color="primary"
 						disabled={C.STATUS.isloading(status) || noAgreement}
-						title={noAgreement? "You must agree to the terms if you want to use this service." : ""} >
+						title={noAgreement ? 'You must agree to the terms if you want to use this service.' : ''} >
 						{buttonText || verbButtonLabels[verb]}
-					</Button>			
+					</Button>
 					{canRegister && !disableLoginVerb && <SwitchVerb verb={verb} />}
 				</div>
 				<ResetLink verb={verb} />
 			</div>
 			<ErrAlert error={Login.error}>{$errorCTA}</ErrAlert>
-			<ErrAlert color='info' error={Login.info}>{$errorCTA}</ErrAlert>
+			<ErrAlert color="info" error={Login.info}>{$errorCTA}</ErrAlert>
 		</form>
 	);
 } // ./EmailSignin

@@ -26,7 +26,7 @@ function MDCheckbox({ setSource, source, checked, ...args }) {
 		setSource(newSource);
 	};
 	return (<li>
-		<Input type='checkbox'
+		<Input type="checkbox"
 			className="form-check-input"
 			checked={checked}
 			onChange={onChange} />

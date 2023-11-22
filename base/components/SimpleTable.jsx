@@ -276,8 +276,8 @@ function SimpleTable(props) {
 				onChange={filterChange}
 			/></div> : null}
 			{/* NB outside scroller */ tableSettings.hasCsv==="top" && <div className="pull-left"><CSVDownload tableSettings={tableSettings} {...{visibleColumns, topRow, dataTree, bottomRow }} /></div>}
-			<div className='scroll-div' onScroll={onScroll} >
-				<table className={space("table", "position-relative", tableSettings.tableClass)} >
+			<div className="scroll-div" onScroll={onScroll} >
+				<table className={space('table', 'position-relative', tableSettings.tableClass)} >
 					<THead {...{ visibleColumns, tableSettings, headerRender, topRow, dataTree, dataTreeUnfiltered}} />
 					<tbody>
 						<Rows

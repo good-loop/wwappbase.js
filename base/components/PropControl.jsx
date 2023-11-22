@@ -286,6 +286,8 @@ function DiffWarning({path, prop, className}) {
 			' (Differences outside this excerpt - use clipboard button to inspect)'
 		) : '';
 
+		const doRevert = () => DataStore.setValue(path.concat(prop), diff.pubVal);
+
 		pBody = <PopoverBody>
 			<div className="diff-line mb-1">
 				<strong>Pub</strong>
@@ -297,6 +299,7 @@ function DiffWarning({path, prop, className}) {
 				<code className="diff-val mx-1" title={draftValShort + checkClipboardWarning}>{draftValShort}</code>
 				<CopyToClipboardButton size="sm" text={draftValStr} />
 			</div>
+			<Button size="sm" color="warning" className="mt-1 w-100" onClick={doRevert}>Revert to published version</Button>
 		</PopoverBody>;
 	}
 
@@ -455,7 +458,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
-	let helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
+	let helpIcon = tooltip ? <Icon name="info" title={tooltip} /> : '';
 
 	// Mark as required or explicitly-optional?
 	let optreq = null;

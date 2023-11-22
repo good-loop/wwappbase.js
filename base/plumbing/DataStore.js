@@ -996,15 +996,15 @@ const getDataPath = DataStore.getDataPath.bind(DataStore);
  * @param {?String} sort Optional sort e.g. "created-desc"
  * @returns [list, type, status, domain, query+prefix, period, sort]
  */
-const getListPath = ({type,status,q,prefix,start,end,size,sort,domain, ...other}) => {
+const getListPath = ({type, status, q, prefix, start, end, size, sort, domain, ...other}) => {
 	// NB: we want fixed length paths, to avoid stored results overlapping with paths fragments.
 	return [
-		'list', type, status, 
-		domain || 'nodomain', 
-		space(q, prefix) || 'all', 
-		space(start, end) || 'whenever', 
+		'list', type, status,
+		domain || 'nodomain',
+		space(q, prefix) || 'all',
+		space(start, end) || 'whenever',
 		size || '1k',
-		yessy(other)? JSON.stringify(other) : 'normal',
+		yessy(other) ? JSON.stringify(other) : 'normal',
 		sort || 'unsorted'
 	];
 };

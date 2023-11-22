@@ -1,12 +1,10 @@
 import React, { useEffect, useState } from 'react';
-
 import { Button, ButtonDropdown, DropdownMenu, DropdownToggle, DropdownItem } from 'reactstrap';
+import { debounce, isFunction } from 'lodash';
 
 import { assert, assMatch } from '../utils/assert';
-
 import Misc from './Misc';
-import DataStore, { getPath } from '../plumbing/DataStore';
-import ServerIO from '../plumbing/ServerIOBase';
+import DataStore from '../plumbing/DataStore';
 import ActionMan from '../plumbing/ActionManBase';
 import C from '../CBase';
 // // import I18n from 'easyi18n';
@@ -19,6 +17,8 @@ import Login from '../youagain';
 import { Help } from './PropControl';
 import { getObjectValueByPath, setObjectValueByPath } from '../utils/miscutils';
 
+
+
 /**
  * 
  * @param {*} item 
@@ -27,18 +27,20 @@ import { getObjectValueByPath, setObjectValueByPath } from '../utils/miscutils';
  */
 const confirmUserAction = ({ item, action }) => {
 	let name = DataClass.getName(item) || getId(item);
-	let ok = confirm("Are you sure you want to " + action + " " + name + "?");
+	let ok = confirm(`Are you sure you want to ${action} ${name}?`);
 	if (!ok) {
-		throw new Error("User cancelled " + action);
+		throw new Error(`User cancelled ${action}`);
 	}
 	return true;
 };
+
 
 /**
  * Save if no edits for 2 seconds
  * ?? It'd be nice if this was modifiable, but that is a faff with the debounced functions
  */
 const DEBOUNCE_MSECS = 2000;
+
 
 /**
 Problem: we can't keep making fresh copies 'cos that breaks debounce. But we can't share a fn either!
@@ -47,6 +49,7 @@ Solution TODO cache versions of it.
  */
 const _saveDraftFn4typeid = {};
 
+
 /** 
  * Hack: a debounced auto-save function for the save/publish widget.
  * @param {Object} p
@@ -54,20 +57,19 @@ const _saveDraftFn4typeid = {};
  * @param {!String} p.key
  * @returns {Function}
 */
-const saveDraftFnFactory = ({type,key}) => {
-	assMatch(type,String);
-	assMatch(key,String);
+const saveDraftFnFactory = ({type, key}) => {
+	assMatch(type, String);
+	assMatch(key, String);
 	const k = type+key;
 	let sdfn = _saveDraftFn4typeid[k];
-	if ( ! sdfn) {
-		sdfn = _.debounce(
-			({ type, id, item, previous }) => {
-				// console.log("...saveDraftFn :)");
-				let pv = saveEdits({ type, id, item, previous, swallow:true });
-				// TODO how can we capture errors and show them on the save button??
-				return true;
-			}, DEBOUNCE_MSECS
-		);
+	if (!sdfn) {
+		const rawFn = ({type, id, item, previous}) => {
+			// console.log("...saveDraftFn :)");
+			let pv = saveEdits({ type, id, item, previous, swallow: true });
+			// TODO how can we capture errors and show them on the save button??
+			return true;
+		};
+		sdfn = debounce(rawFn, DEBOUNCE_MSECS);
 		_saveDraftFn4typeid[k] = sdfn;
 	}
 	return sdfn;
@@ -80,28 +82,26 @@ const saveDraftFnFactory = ({type,key}) => {
  * path is only used to fill in for missing item info
  * * @param {type, id, item, path}
  */
-const autoPublishFn = _.debounce(
-	({ type, id, path, item }) => {
-		if (!type || !id) {
-			item = item || DataStore.getValue(path);
-			id = id || getId(item);
-			type = type || getType(item);
-		}
-		assert(C.TYPES.has(type), "Misc.jsx publishDraftFn bad/missing type: " + type + " id: " + id);
-		assMatch(id, String, "Misc.jsx publishDraftFn id?! " + type + " id: " + id);
-		// still wanted?
-		const localEditStatus = DataStore.getLocalEditsStatus(type, id);
-		const status = getStatus(item);
-		const isdirty = C.STATUS.isdirty(localEditStatus) || C.STATUS.issaveerror(localEditStatus);
-		const isSaving = C.STATUS.issaving(localEditStatus);
-		if (status === C.KStatus.PUBLISHED && !isdirty) {
-			return;
-		}
-		// Do it
-		publish({type, id, item});
-		return true;
-	}, DEBOUNCE_MSECS
-);
+const autoPublishFn = _.debounce(({type, id, path, item}) => {
+	if (!type || !id) {
+		item = item || DataStore.getValue(path);
+		id = id || getId(item);
+		type = type || getType(item);
+	}
+	assert(C.TYPES.has(type), `Misc.jsx publishDraftFn bad/missing type: ${type} id: ${id}`);
+	assMatch(id, String, `Misc.jsx publishDraftFn id?! ${type} id: ${id}`);
+	// still wanted?
+	const localEditStatus = DataStore.getLocalEditsStatus(type, id);
+	const status = getStatus(item);
+	const isdirty = C.STATUS.isdirty(localEditStatus) || C.STATUS.issaveerror(localEditStatus);
+	const isSaving = C.STATUS.issaving(localEditStatus);
+	if (status === C.KStatus.PUBLISHED && !isdirty) {
+		return;
+	}
+	// Do it
+	publish({type, id, item});
+	return true;
+}, DEBOUNCE_MSECS);
 
 
 /**
@@ -109,6 +109,7 @@ const autoPublishFn = _.debounce(
  * @returns {boolean} true
  */
 const T = () => true;
+
 
 /**
  * Just console log if ! ok.
@@ -120,10 +121,22 @@ const check = ok => {
 	if (ok === false) return false;
 	// bad output
 	if (!ok) {
-		console.error("pre-X should return true|false -- NOT falsy. Treating as OK and proceeding.");
+		console.error('pre-X should return true|false -- NOT falsy. Treating as OK and proceeding.');
 	}
 	return true;
 };
+
+
+/** Currently unused - describes state of item versions in DataStore */
+/*
+const getDSI = (pubv, draftv) => {
+	if (!pubv) return draftv ? 'draft only' : 'nothing loaded';
+	if (draftv === pubv) return 'published = draft';
+	if (draftv) return 'published & draft';
+	return 'published only';
+};
+*/
+
 
 /**
  * save buttons
@@ -147,7 +160,7 @@ const check = ok => {
  */
 function SavePublishDeleteEtc({
 	type, id,
-	hidden, position, className = "SavePublishDeleteEtc", 
+	hidden, position, className = "SavePublishDeleteEtc",
 	size,
 	cannotPublish, cannotDelete, canArchive, canDiscard,
 	publishTooltipText = 'Your account cannot publish this.',
@@ -183,18 +196,19 @@ function SavePublishDeleteEtc({
 
 	// If target paths is set, diffs must be used
 	if (targetPaths) {
-		assert(_.isArray(targetPaths), "targetPaths not array??");
+		assert(_.isArray(targetPaths), 'targetPaths not array??');
 		sendDiff = true;
 	}
 
 	// debug info on DataStore state
 	let pubv = DataStore.getData({ status: C.KStatus.PUBLISHED, type, id });
+	/* // Description (& therefore draftv also) currently unused
 	let draftv = DataStore.getData({ status: C.KStatus.DRAFT, type, id });
-	let dsi = pubv ? (draftv ? (pubv === draftv ? "published = draft" : "published & draft") : "published only")
-		: (draftv ? "draft only" : "nothing loaded");
+	const dsi = getDSI(pubv, draftv);
+	*/
 	// Does a published version exist? (for if we show unpublish)
 	// NB: item.status = MODIFIED should be reliable but lets not entirely count on it.
-	let pubExists = pubv || (item && item.status !== C.KStatus.DRAFT);
+	const pubExists = pubv || (item && item.status !== C.KStatus.DRAFT);
 
 	// If targetPaths is true, use the published item as a clean comparison object
 	let previous = targetPaths ? pubv : null;
@@ -225,9 +239,9 @@ function SavePublishDeleteEtc({
 			// Use last published item as previous for comparison
 			autoPublishFn({ type, id, item, previous });
 		} else if (autoSave) {
-			const saveDraftFn = saveDraftFnFactory({type, key:id});
+			const saveDraftFn = saveDraftFnFactory({ type, key: id });
 			// Make sure we save the full draft - not just the restricted item targetPaths creates
-			saveDraftFn({ type, id, item, previous, swallow:true }); // auto-save hides errors TODO show a warning icon on the widget
+			saveDraftFn({ type, id, item, previous, swallow: true }); // auto-save hides errors TODO show a warning icon on the widget
 		}
 	}
 
@@ -246,16 +260,17 @@ function SavePublishDeleteEtc({
 
 	const vis = { visibility: (isSaving ? 'visible' : 'hidden') };
 
-	let pubLabel = !isSaving ? ("Publish" + (pubExists ? " Edits" : "")) : "Saving...";
+	let pubLabel = !isSaving ? `Publish ${pubExists ? ' Edits' : ''}` : 'Saving...';
 	if (oneButton) {
-		if (!pubExists) pubLabel = "Not Published!";
-		else if (noEdits) pubLabel = "No changes!";
+		if (!pubExists) pubLabel = 'Not Published!';
+		else if (noEdits) pubLabel = 'No changes!';
 	}
 
 	const PublishButton = () => <Button name="publish" color="primary" size={size} className="ml-2"
 		disabled={disablePublish} title={publishTooltip}
-		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item, previous})}>
-		{pubLabel} {oneButton && !pubExists && <Help color='white'>For safety, you can only publish a new item from it's own editor page</Help>} <Spinner vis={vis} />
+		onClick={() => check(prePublish({ item, action: C.CRUDACTION.publish })) && publish({type, id, item, previous})}
+	>
+		{pubLabel} {oneButton && !pubExists && <Help color="white">For safety, you can only publish a new item from it's own editor page</Help>} <Spinner vis={vis} />
 	</Button>;
 
 	if (oneButton) return <PublishButton/>;
@@ -270,55 +285,54 @@ function SavePublishDeleteEtc({
 		let ok = check(preDelete({ item, action: C.CRUDACTION.delete }));
 		if (!ok) return;
 		const pDel = ActionMan.delete(type, id);
-		pDel.promise.then(() => {
-			Messaging.notifyUser(type + " " + id + " deleted");
-		});
+		pDel.promise.then(() => Messaging.notifyUser(`${type} ${id} deleted`));
 		// redirect back up a level, preserving any params eg filtering already present
 		if (navpage) {
-			modifyPage(navpage.split("/"));
+			modifyPage(navpage.split('/'));
 			return;
 		}
 		const currentUrl = new URL(window.location);
 		// HACK: remove id from hash
 		let href;
-		if (DataStore.localUrl==='#') {
-			let i = currentUrl.hash.lastIndexOf('/');			
-			href = currentUrl.hash.substring(1, i);	
+		if (DataStore.localUrl === '#') {
+			let i = currentUrl.hash.lastIndexOf('/');
+			href = currentUrl.hash.substring(1, i);
 		} else {
 			let i = currentUrl.search.lastIndexOf('/');
 			href = currentUrl.search.substring(0, i);
-		}			
-		modifyPage(href.split("/"));
+		}
+		modifyPage(href.split('/'));
 	};
 
-	const SaveEditsButton = () =>
-	(<Button name="save" size={size}
-		color={C.STATUS.issaveerror(localStatus) ? 'danger' : 'secondary'}
-		title={C.STATUS.issaveerror(localStatus) ? 'There was an error when saving' : null}
-		disabled={isSaving || C.STATUS.isclean(localStatus)}
-		onClick={() => saveEdits({ type, id, item, previous })}
-	>
-		Save Edits <Spinner vis={vis} />
-	</Button>); // ./SaveEditsButton
+	const SaveEditsButton = () => (
+		<Button name="save" size={size}
+			color={C.STATUS.issaveerror(localStatus) ? 'danger' : 'secondary'}
+			title={C.STATUS.issaveerror(localStatus) ? 'There was an error when saving' : null}
+			disabled={isSaving || C.STATUS.isclean(localStatus)}
+			onClick={() => saveEdits({ type, id, item, previous })}
+		>
+			Save Edits <Spinner vis={vis} />
+		</Button>
+	);
 
 	// toggle state for accessing Save As
 	const [isSaveButtonDropdownOpen, setSaveButtonDropdownOpen] = useState();
 
 	const doSaveAs = e => {
 		let ok = check(preSaveAs({ item, action: C.CRUDACTION.copy }));
-		if ( ! ok) return;
+		if (!ok) return;
 		let onChange;
-		if (_.isFunction(saveAs)) {
+		if (isFunction(saveAs)) {
 			onChange = saveAs;
 		} else {
 			// switch location to the new ID
 			onChange = (newItem) => {
-				if ( ! getId(item) || ! getId(newItem)) return; // paranoia
-				const locn = ""+window.location;
+				if (!getId(item) || !getId(newItem)) return; // paranoia
+				const locn = String(window.location);
 				let newLocn = locn.replace(getId(item), getId(newItem));
 				if (newLocn == locn) return;
 				goto(newLocn);
-				notifyUser("Switched editor to new version: "+(getName(newItem) || getId(newItem)));				
+				notifyUser(`Switched editor to new version: ${getName(newItem) || getId(newItem)}`);
 			};
 		}
 		ActionMan.saveAs({ type, id, onChange});
@@ -328,7 +342,7 @@ function SavePublishDeleteEtc({
 	return (
 		<div className={className} style={{ position }} title={item && item.status}>
 
-			{ ! saveAs  && ! noSave && <SaveEditsButton />}
+			{!saveAs && !noSave && <SaveEditsButton />}
 
 			{saveAs &&
 				<ButtonDropdown size={size} isOpen={isSaveButtonDropdownOpen} toggle={() => setSaveButtonDropdownOpen( ! isSaveButtonDropdownOpen)}>
@@ -386,9 +400,11 @@ function Spinner({ vis }) {
 	return <span className="fa fa-circle-notch spinning" style={vis} />
 }
 
+
 // backwards compatibility
 Misc.SavePublishDiscard = SavePublishDeleteEtc;
 Misc.publishDraftFn = autoPublishFn;
+
 
 export default SavePublishDeleteEtc;
 export {
