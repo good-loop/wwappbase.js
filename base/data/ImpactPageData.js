@@ -18,6 +18,19 @@ import { isEmpty, maxBy, uniqBy } from 'lodash';
 
 
 /**
+ * HACK what is the main item this page is about?
+ * @param {} baseObjects {campaign, brand, masterBrand}
+ * @returns {?DataClass}
+ */
+export function getMainItem(baseObjects) {
+	// TODO look at the url!
+	if (!baseObjects) return null;
+	let { campaign, brand, masterBrand } = baseObjects;
+	return campaign || brand || masterBrand;
+}
+
+
+/**
  * Fetches the contextual data necessary to generate an impact page for a focus item
  * @param {Object} p
  * @param {String} p.id ID of the focus item
