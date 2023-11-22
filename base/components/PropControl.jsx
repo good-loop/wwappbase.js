@@ -459,7 +459,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 
 	// Minor TODO help block id and aria-described-by property in the input
 	const labelText = label || '';
-	let helpIcon = tooltip ? <Icon name='info' title={tooltip} /> : '';
+	let helpIcon = tooltip ? <Icon name="info" title={tooltip} /> : '';
 
 	// Mark as required or explicitly-optional?
 	let optreq = null;

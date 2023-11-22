@@ -40,7 +40,7 @@ const getDataLogData = ({q,breakdowns,start="1 month ago",end="now",prob,name,in
 	let dspec = md5(JSON.stringify(glreq));
 	const dlpath = ['misc', 'DataLog', dataspace, dspec];
 
-	return DataStore.fetch(dlpath, () => {		
+	return DataStore.fetch(dlpath, () => {
 		let endpoint = ServerIO.DATALOG_ENDPOINT;
 		// This stats data is _usually_ non essential, so swallow errors.
 		const params = {data: glreq, swallow:true, method:"POST"};
