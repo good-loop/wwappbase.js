@@ -1,27 +1,26 @@
 /** Data model functions for the Campaign data-type. */
-import { assert, assMatch } from '../utils/assert';
-import Enum from 'easy-enums';
+import { assMatch } from '../utils/assert';
 import DataClass from './DataClass';
 import C from '../CBase';
-import ActionMan from '../plumbing/ActionManBase';
 import SearchQuery from '../../base/searchquery';
 import List from './List';
-import DataStore, { getDataPath, getListPath } from '../plumbing/DataStore';
-import deepCopy from '../utils/deepCopy';
+import DataStore, { getListPath } from '../plumbing/DataStore';
 import { getDataItem, getDataList, saveEdits } from '../plumbing/Crud';
 import PromiseValue from '../promise-value';
 import KStatus from './KStatus';
 import Advert from './Advert';
 import Advertiser from './Advertiser';
-import Agency from './Agency';
-import ServerIO, {normaliseSogiveId} from '../plumbing/ServerIOBase';
-import { is, keysetObjToArray, uniq, uniqById, yessy, mapkv, idList, sum, getUrlVars } from '../utils/miscutils';
+
+import { uniq } from '../utils/miscutils';
 import { asDate } from '../utils/date-utils';
-import { getId } from './DataClass';
-import NGO from './NGO';
 import Money from './Money';
 import Branding from './Branding';
 import XId from './XId';
+import { isEmpty } from 'lodash';
+
+
+const type = C.TYPES.Campaign;
+
 
 /**
  * NB: in shared base, cos Portal and ImpactHub use this
@@ -66,12 +65,14 @@ class Campaign extends DataClass {
 		DataClass._init(this, base);
 	}
 }
-DataClass.register(Campaign, "Campaign"); 
+DataClass.register(Campaign, type);
+
 
 /**
  * Special id for "everything!"
  */
-Campaign.TOTAL_IMPACT = "TOTAL_IMPACT";
+Campaign.TOTAL_IMPACT = 'TOTAL_IMPACT';
+
 
 /**
  * This is the DRAFT budget
@@ -79,89 +80,104 @@ Campaign.TOTAL_IMPACT = "TOTAL_IMPACT";
  */
 Campaign.budget = item => {
 	let tli = item?.topLineItem;
-	return tli? tli.budget : null;
+	return tli ? tli.budget : null;
 };
+
+
 /**
  * @returns {Date|null}
  */
 Campaign.start = item => {
-	let tli = item?.topLineItem;
-	return tli? asDate(tli.start) : null;
+	const tli = item?.topLineItem;
+	return tli ? asDate(tli.start) : null;
 };
+
+
 /**
  * @returns {Date|null}
  */
- Campaign.end = item => {
-	let tli = item?.topLineItem;
-	return tli? asDate(tli.end) : null;
+Campaign.end = item => {
+	const tli = item?.topLineItem;
+	return tli ? asDate(tli.end) : null;
 }
 
- /** 
- * @param {Advert} advert
- * @param {KStatus} [status]
- * @returns PromiseValue(Campaign)
- */
-Campaign.fetchFor = (advert, status = KStatus.DRAFT) => {
-	let cid = Advert.campaign(advert);
-	if (!cid) return new PromiseValue(Promise.resolve(null));
-	let pvc = getDataItem({type:"Campaign",status,id:cid});
-	return pvc;
-};
 
 /**
- * Get all campaigns matching an advertiser
+ * @param {Advert} advert
+ * @param {KStatus} [status]
+ * @returns {PromiseValue<Campaign|null>}
+ */
+Campaign.fetchFor = (advert, status = KStatus.DRAFT) => {
+	let id = Advert.campaign(advert);
+	// NB null must be wrapped because PromiseValue complains when given a nullish val directly
+	if (!id) return new PromiseValue(Promise.resolve(null));
+	return getDataItem({type, status ,id});
+};
+
+
+/**
+ * Get all campaigns belonging to an advertiser
  * @param {string} vertiserId
  * @param {KStatus} [status]
- * @returns PromiseValue(Campaign[])
+ * @returns {PromiseValue<List<Campaign>>} May be empty
  */
- Campaign.fetchForAdvertiser = (vertiserId, status = KStatus.DRAFT) => {
+Campaign.fetchForAdvertiser = (vertiserId, status = KStatus.DRAFT) => {
 	return Campaign.fetchForAdvertisers([vertiserId], status);
 }
 
+
 /**
- * Get all campaigns matching a set of advertisers
+ * Get all campaigns belonging to any of a set of advertisers
  * @param {String[]} vertiserIds
  * @param {KStatus} [status]
- * @returns PromiseValue(Campaign)
+ * @returns {PromiseValue<List<Campaign>>} May be empty
  */
 Campaign.fetchForAdvertisers = (vertiserIds, status = KStatus.DRAFT) => {
-	return DataStore.fetch(getListPath({type:"Campaign", status, for:vertiserIds}), () => {
-		return fetchVertisers2(vertiserIds, status);
-	});
-}
+	if (isEmpty(vertiserIds)) return new PromiseValue(new List());
+	const listPath = getListPath({ type, status, for: `vertiser[]:${vertiserIds}` });
 
-const fetchVertisers2 = async (vertiserIds, status) => {
-	const pvSubBrands = Advertiser.getManyChildren(vertiserIds);
-	const subBrands = List.hits(await pvSubBrands.promise);
-	let allVertiserIds = [...vertiserIds, ...uniq(subBrands.map(brand => brand.id).filter(x=>x))]
-	let q = SearchQuery.setPropOr(new SearchQuery(), "vertiser", allVertiserIds).query;
-	let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
-	return await pvCampaigns.promise;
-}
+	return DataStore.fetch(listPath, () => {
+		return Advertiser.getManyChildren(vertiserIds).promise
+		.then(res => {
+			const subBrandIds = List.hits(res).map(brand => brand.id);
+			const allVertiserIds = uniq([ ...vertiserIds, ...subBrandIds ]);
+			const q = SearchQuery.setPropOr(null, 'vertiser', allVertiserIds).query;
+			const listParams = {type, status, q};
+			if (status === KStatus.PUBLISHED) listParams.access = 'public';
+			return getDataList(listParams).promise;
+		});
+	});
+};
+
 
 /**
- * Get all campaigns matching an agency.
- * Initially returns [], and fills in array as requests load
+ * Get all campaigns belonging to an agency.
  * @param {String} agencyId
  * @param {KStatus} [status]
- * @returns {PromiseValue} PromiseValue(Campaign[])
+ * @returns {PromiseValue<List<Campaign>>} May be empty
  */
-Campaign.fetchForAgency = (agencyId, status=KStatus.DRAFT) => {
-	if (!agencyId) return [];
-	// Campaigns with set agencies
-	let agencySQ = new SearchQuery();
-	agencySQ = SearchQuery.setProp(agencySQ, "agencyId", agencyId);
-	//let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q});
-	// Campaigns with advertisers belonging to agency
-	let pvVertisers = ActionMan.list({type: C.TYPES.Advertiser, status, q:agencySQ.query});
-	let sq = new SearchQuery();
-	if (pvVertisers.value && pvVertisers.value.hits && pvVertisers.value.hits.length) sq = SearchQuery.setPropOr(sq, "vertiser", List.hits(pvVertisers.value).map(vertiser => vertiser.id));
-	sq = SearchQuery.or(agencySQ, sq);
+Campaign.fetchForAgency = (agencyId, status = KStatus.DRAFT) => {
+	if (!agencyId) return new PromiseValue(new List());
+	const listPath = getListPath({ type, status, for: `agency:${campaignId}` });
 
-	let pvCampaigns = ActionMan.list({type: C.TYPES.Campaign, status, q:sq.query});
+	return DataStore.fetch(listPath, () => {
+		// Two-stage fetch to catch campaigns which don't have their agency assigned
+		// Find advertisers for the agency...
+		const agencySQ = SearchQuery.setProp(null, 'agencyId', agencyId);
+		const brandListParams = {type: C.TYPES.Advertiser, status, q: agencySQ.query};
+		if (status === KStatus.PUBLISHED) brandListParams.access = 'public';
+		return getDataList(brandListParams).promise
+		.then(res => {
+			// ...then find campaigns belonging to those advertisers, OR to the agency
+			const vertiserIds = List.hits(res).map(v => v.id);
+			const vertiserSQ = SearchQuery.setPropOr(agencySQ, 'vertiser', vertiserIds);
+			const campaignListParams = {type, status, q: vertiserSQ.query};
+			if (status === KStatus.PUBLISHED) campaignListParams.access = 'public';
+			return getDataList(campaignListParams).promise;
+		});
+	});
+};
 
-	return pvCampaigns;
-}
 
 /**
  * Create a new campaign for an advert
@@ -169,90 +185,85 @@ Campaign.fetchForAgency = (agencyId, status=KStatus.DRAFT) => {
  * @returns {PromiseValue<Campaign>}
  */
 Campaign.makeFor = (advert) => {
-	let cid = Advert.campaign(advert);
-	assMatch(cid, String, "Campaign.makeFor bad input",advert);
+	const id = Advert.campaign(advert);
+	assMatch(id, String, 'Campaign.makeFor bad input', advert);
 	// NB: we can't fetch against the actual data path, as that could hit a cached previous failed fetchFor() PV
 	// Which is OK -- crud's processing will set the actual data path
-	return DataStore.fetch(['transient','Campaign',cid], () => {
+	return DataStore.fetch(['transient', 'Campaign', id], () => {
 		// pass in the advertiser ID
-		let vertiser = advert.vertiser;
-		let vertiserName = advert.vertiserName;
-		let baseCampaign = {id:cid, vertiser, vertiserName};
-		return saveEdits({type:"Campaign", id:cid, item:baseCampaign});
-	});	
+		const { vertiser, vertiserName } = item;
+		const item = { id, vertiser, vertiserName };
+		return saveEdits({type, id, item});
+	});
 };
+
 
 /**
  * Get the ImpactDebits for this campaign
-	* @param {Object} p
+ * @param {Object} p
  * @param {Campaign} p.campaign
  * @param {String} [p.campaignId]
  * @param {KStatus} [p.status]
- * @returns {PromiseValue} PV(List<ImpactDebit>)
+ * @returns {PromiseValue<List<ImpactDebit>>}
  */
 Campaign.getImpactDebits = ({campaign, campaignId, status = KStatus.PUBLISHED, start, end}) => {
-	// We have a couple of chained async calls. So we use an async method inside DataStore.fetch().	
-	// NB: tried using plain async/await -- this is awkward with React render methods as the fresh Promise objects are always un-resolved at the moment of return.
-	// NB: tried using a PromiseValue.pending() without fetch() -- again having fresh objects returned means they're un-resolved at that moment.
 	if (!campaignId) campaignId = campaign.id;
-	return DataStore.fetch(getListPath({type: C.TYPES.ImpactDebit, status, start, end, for: campaignId}), () => getImpactDebits2(campaignId, status, start, end));
-};
+	const listPath = getListPath({ type: C.TYPES.ImpactDebit, status, start, end, for: `campaign:${campaignId}` });
 
-const getImpactDebits2 = async (campaignId, status, start, end) => {
-	let q = SearchQuery.setProp(null, "campaign", campaignId);
-	if (start) q = SearchQuery.setProp(q, "start", start);
-	if (end) q = SearchQuery.setProp(q, "end", end);
-	let pvListImpDs = getDataList({type:"ImpactDebit",status,q,save:true});
-	let v = await pvListImpDs.promise;
-	return v;
-}
+	return DataStore.fetch(listPath, () => {
+		let q = SearchQuery.setProp(null, 'campaign', campaignId);
+		if (start) q = SearchQuery.setProp(q, 'start', start);
+		if (end) q = SearchQuery.setProp(q, 'end', end);
+		const listParams = {type: C.TYPES.ImpactDebit, status, q, save: true};
+		if (status === KStatus.PUBLISHED) listParams.access = 'public';
+		return getDataList(listParams).promise;
+	});
+};
 
 
 /**
- * Get the viewcount for a campaign, summing the ads (or using the override numPeople)
- * FIXME This hides a LOT of asynchronous work behind a PV and relies on the "redraw whole tree when anything at all happens" model to work
- * Refactor this - and dependent code - to expose the PromiseValue
+ * Get the viewcount for a campaign - either hardcoded as campaign.numPeople, or sum of viewcount for all campaign ads.
  * @param {Object} p
  * @param {Campaign} p.campaign
  * @param {KStatus} p.status
- * @returns {Number}
+ * @returns {PromiseValue<Number>}
  */
 Campaign.viewcount = ({campaign, status}) => {
-	// manually set?
-	if (campaign.numPeople) {
-		return campaign.numPeople;
-	}
-	const pvAds = Advert.fetchForCampaign({campaignId:campaign.id, status});
-	if (!pvAds.resolved) return null; // best we can do without big refactor: signify "answer not ready yet"
-
-	const ads = List.hits(pvAds.value) || [];
-	if (!ads?.length) return 0; // Empty campaign - stop before Advert.viewcountByCountry spams the console
-	const viewcount4campaign = Advert.viewcountByCampaign(ads) || 0;
-	return sum(Object.values(viewcount4campaign));
+	return DataStore.fetch(['misc', 'DataLog', 'processed', status, 'Campaign', 'viewcount', status, campaign.id], () => {
+		// Hardcoded on the campaign?
+		if (campaign.numPeople) return campaign.numPeople;
+		// Fetch from DataLog: get all ads on this campaign...
+		return Advert.viewcount({campaignId: campaign.id, status}).promise
+		.then(res => {
+			const ads = List.hits(res) || [];
+			// Empty campaign - stop before Advert.viewcountByCampaign spams the console
+			if (!ads?.length) return 0;
+			return Advert.viewcount({ads}).promise || 0;
+		});
+	});
 };
 
 
 /**
- * FIXME This hides a LOT of asynchronous work behind a PV and relies on the "redraw whole tree when anything at all happens" model to work
- * Refactor this - and dependent code - to expose the PromiseValue
+ * Get the breakdown of views by country for a campaign.
  * @param {Object} p
  * @param {Campaign} p.campaign
  * @param {KStatus} p.status
- * @returns {object<{String: Number}>}
+ * @returns {PromiseValue<Object.<String, Number>>} May be empty
  */
 Campaign.viewcountByCountry = ({campaign, status}) => {
-	if (!campaign) {
-		console.log('Campaign.viewcountByCountry: no campaign!');
-		return {};
-	}
+	// No campaign = empty breakdown
+	if (!campaign) return new PromiseValue({});
 
-	const pvAds = Advert.fetchForCampaign({ campaignId: campaign.id, status });
-	if (!pvAds.resolved) return null; // best we can do without big refactor: signify "answer not ready yet"
-
-	const ads = List.hits(pvAds.value);
-	if (!ads?.length) return {}; // Empty campaign - stop before Advert.viewcountByCountry spams the console
-
-	return Advert.viewcountByCountry({ ads });
+	return DataStore.fetch(['misc', 'DataLog', 'processed', status, 'Campaign', 'viewcountByCountry', status, campaign.id], () => {
+		return Advert.fetchForCampaign({ campaignId: campaign.id, status }).promise
+		.then(adsRes => {
+			const ads = List.hits(adsRes);
+			if (!ads?.length) return {}; // Empty campaign - stop before Advert.viewcountByCountry spams the console
+			return Advert.viewcountByCountry({ ads }).promise;
+			// Ad ID H4UMOFcV is sole ad for campaign 'One Baby One Tree'
+		});
+	});
 };
 
 export default Campaign;

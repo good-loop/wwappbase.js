@@ -433,7 +433,11 @@ ServerIO.getEndpointForType = (type) => {
 	}
 	// HACK route Agency, Campaign, GreenTag, NGO to Portal
 	if (['Agency','Campaign','GreenTag','ImpactDebit','ImpactCredit','NGO'].includes(type)) {
-		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/' +type.toLowerCase();
+		if (C.app.id === 'sogive') {
+			// HACK: not from portal /ngo for SoGive
+			return '/charity';
+		} 
+		return (C.app.id === 'portal'? "" : ServerIO.PORTAL_ENDPOINT)+ '/' +type.toLowerCase();		
 	}
 	// HACK route Person to Profiler?
 	if (type==="Person" && ServerIO.USE_PROFILER) {

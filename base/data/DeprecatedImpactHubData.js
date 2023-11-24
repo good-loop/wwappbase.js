@@ -479,7 +479,7 @@ Campaign.viewcountDeprecated = ({campaign, status}) => {
 	}
 	const pvAllAds = Campaign.pvAdsLegacy({campaign, status});
 	const allAds = List.hits(pvAllAds.value) || [];
-	const viewcount4campaign = Advert.viewcountByCampaign(allAds);
+	const viewcount4campaign = Advert.viewcountByCampaign(allAds).value;
 	if (!viewcount4campaign) return 0;
 	return sum(Object.values(viewcount4campaign));;
 };
