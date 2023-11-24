@@ -59,7 +59,7 @@ const _saveDraftFn4typeid = {};
 */
 const saveDraftFnFactory = ({type, key}) => {
 	assMatch(type, String);
-	assMatch(key, String);
+	assMatch(key, 'String|Number');
 	const k = type+key;
 	let sdfn = _saveDraftFn4typeid[k];
 	if (!sdfn) {
