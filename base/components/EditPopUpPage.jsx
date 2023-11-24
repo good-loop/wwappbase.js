@@ -15,7 +15,7 @@ const dsPath = staticProps.path.concat(staticProps.prop);
 
 
 /**
- * Minimal page for a pop-up window containing a PropControl linked back to the main window - see PropControl_PopUp
+ * Minimal page for a pop-up window containing a PropControl linked back to the main window - see PropControl_PopUp.jsx
  */
 function EditPopUpPage() {
 	const [ready, setReady] = useState(false); // Don't enable the control until it's been initialised by the creating window

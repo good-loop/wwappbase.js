@@ -45,7 +45,13 @@ const removeListeners = (listeners, target = window) => {
 };
 
 
-export default function PropControl_PopUpButton({path, prop, storeValue, setValue, ...props}) {
+/**
+ * An accessory button for a PropControl which opens a pop-up window with a linked copy of the PropControl inside.
+ * Pop-up window rendering is handled by EditPopUpPage.jsx.
+ * To enable, make sure your MainDiv maps #editpopup to EditPopUpPage, and set boolean prop "popup" on any PropControl.
+ * @param {Object} p As PropControl - passes most primitive props to the popup as URL params.
+ */
+export default function PropControl_PopUpButton({path, prop, storeValue, setValue, ...·}) {
 	// Keep a handle on the created popup window
 	const [popup, setPopup] = useState();
 
