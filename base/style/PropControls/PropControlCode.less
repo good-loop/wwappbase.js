@@ -1,52 +1,42 @@
-/* Syntax Highlighting */
-
-/* Syntax highlighting works by using a trasnparent text area that overlays a styling container which 
- * contains the tokenised & styled code. To work, the layers need to be pixel-exact. These rules ensure they are.
- * Bootstraps styling kept messing this up and would override rules, resulting !importants are used here to make
- * sure the rules are followed
+/**
+ * PropControlCode generates a set of whitespace-filled <span>s using Prism.js and some extra processing.
+ * These additional rules:
+ * - Line up the spans with the textarea and draw them in front of it (with interaction disabled)
+ * - Set their background colour to the text colour
+ * - Apply mix-blend-mode: multiply, so they tint the white text behind them.
  */
 .form-group.code {
-	.code-container {
+	code {
 		display: block;
-		position: relative;
-
-		// Textarea input
-		.code-input {
-			z-index: 1; // Put in front to receive pointer events & show caret/scrollbar
-			position: relative; // Enables z-index
-			min-height: 6em; // Reasonable smallest size for a multiline input
-			// Invisible except for scrollbars and caret
-			background-color: transparent !important;
-			color: transparent !important;
-			caret-color: white;
-			text-shadow: none !important;
-		}
-
-		// Highlighting overlay
-		.syntax-highlighting {
-			z-index: 0; // position absolute but must be behind so textarea can take pointer events
-			// Fill box defined by textarea
-			position: absolute;
-			height: 100%;
-			width: 100%;
-			top: 0;
-			left: 0;
-		}
-	}
-
-	// All box and font metrics should be identical between textarea and highlighting
-	.code-input, .syntax-highlighting {
-		font-size: inherit !important;
-		font-family: monospace !important;
-		line-height: inherit !important;
-		margin: 0;
-		padding: 0.5em !important;
-		word-wrap: none;
-		border-width: 1px; // Override Prism, match ours
-	}
-
-	// Tab size doesn't inherit to the <code> element from .syntax-highlighting
-	.code-input, .syntax-highlighting code {
+		// Tab size doesn't inherit to the <code> element from .syntax-highlighting
 		tab-size: 2 !important;
+	}
+	textarea {
+		display: block; // Default is inline-block, which causes phantom 0.5em bottom margin (due to line-height: 1.5)
+		background-color: black;
+		color: white;
+		width: 100%;
+		border: none;
+		padding: 0.5em;
+	}
+	pre {
+		position: relative; // Positioning ref for textarea and highlighting div
+		padding: 0;
+		margin: 0;
+	}
+	.highlighter {
+		padding: 0.5em;
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		mix-blend-mode: multiply;
+		pointer-events: none;
+		background-color: transparent;
+		overflow: hidden;
+		.token {
+			background-color: currentColor;
+		}
 	}
 }

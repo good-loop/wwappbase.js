@@ -14,7 +14,6 @@ import React, { useRef, useState } from 'react';
 import { Row, Col, Form, Button, Input, Label, FormGroup, InputGroup, InputGroupAddon, InputGroupText, Popover, PopoverBody, Modal, ModalBody, PopoverHeader, Table, Badge } from 'reactstrap';
 import _ from 'lodash';
 import Enum from 'easy-enums';
-import '../style/prism-dark.less';
 
 import { assert, assMatch } from '../utils/assert';
 import JSend from '../data/JSend';
