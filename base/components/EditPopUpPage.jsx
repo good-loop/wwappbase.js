@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Alert } from 'reactstrap';
 
-import PropControl from '../base/components/PropControl';
-import DataStore from '../base/plumbing/DataStore';
-import { setWindowTitle } from '../base/plumbing/Crud';
+import PropControl from './PropControl';
+import DataStore from '../plumbing/DataStore'
+import { setWindowTitle } from '../plumbing/Crud';
 
 /** Props for the PropControl which don't depend on the invoking component */
 const staticProps = {
@@ -14,38 +14,43 @@ const staticProps = {
 const dsPath = staticProps.path.concat(staticProps.prop);
 
 
-/** Shorthand for postMessage back to the invoking window */
-const send = window.opener?.postMessage;
-
-
 /**
  * Minimal page for a pop-up window containing a PropControl linked back to the main window - see PropControl_PopUp
  */
 function EditPopUpPage() {
 	const [ready, setReady] = useState(false); // Don't enable the control until it's been initialised by the creating window
-	const [extraProps] = useState(() => getExtraProps()); // type, lang, etc
-	const [lang] = useState(() => DataStore.getUrlValue('lang'));
-	const [source] = useState(() => DataStore.getUrlValue('source'));
+	// Read props for the PropControl from URL params & pull out stuff we don't want rendering
+	const { source, label, modal, popup, help, ...extraProps } = DataStore.getValue(['location', 'params']);
 
 	if (!window.opener) return <Alert color="danger">Something went wrong. Try re-opening this window.</Alert>;
 
 	useEffect(() => {
-		const listener = msg => {
+		setWindowTitle(`${label}: Popout Editor`);
+
+		const receiveMessage = msg => {
 			if (msg.origin !== window.location.origin) return; // Only accept messages from the same site as the component
 			if (msg.data.source !== source) return; // Only accept messages from the matching editor
 			DataStore.setValue(dsPath, msg.data.value);
 			if (!ready) setReady(true);
 		};
+		window.addEventListener('message', receiveMessage);
 
-		setWindowTitle(`${DataStore.getUrlValue('label')}: Popout Editor`);
-		window.addEventListener('message', listener);
-		setTimeout(() => send({source, ready: true}), 500); // give some loading time leeway TODO is this necessary?
-		window.addEventListener('beforeunload', () => send({ source, close: true }));
+		// Inform the creating window this page is ready
+		// ...after a delay to make sure the creating component has time to complete an update cycle & set up listeners
+		window.setTimeout(() => window.opener.postMessage({ source, ready: true }), 100);
 
-		return () => window.removeEventListener('message', listener);
+		// Inform the creating window when this tab closes
+		const sendClosed = () => window.opener.postMessage({ source, closed: true });
+		window.addEventListener('beforeunload', sendClosed);
+
+		// Cleanup (probably unnecessary since this shouldn't unmount as long as the page is loaded, but.)
+		return () => {
+			window.removeEventListener('message', receiveMessage);
+			window.removeEventListener('beforeunload', sendClosed);
+		};
 	}, []);
 
-	const sendVal = ({value}) => send({source, value});
+	const sendVal = ({value}) => window.opener.postMessage({source, value});
 
 	return <PropControl {...staticProps} saveFn={sendVal} disabled={!ready} {...extraProps} />;
 }

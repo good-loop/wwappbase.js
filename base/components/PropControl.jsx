@@ -1,6 +1,6 @@
 /** PropControl provides inputs linked to DataStore.
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef, useState } from 'react';
 
 // TODO refactor so saveFn is only called at the end of an edit, e.g. on-blur or return or submit
 
@@ -31,6 +31,9 @@ import DataClass, { nonce } from '../data/DataClass';
 
 import { countryListAlpha2 } from '../data/CountryRegion';
 import C from '../CBase';
+
+import PropControl_PopUpButton from './propcontrols/PropControl_PopUpButton';
+import PropControl_Modal from './propcontrols/PropControl_Modal';
 
 
 /**
@@ -469,13 +472,14 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		optreq = <small className={storeValue === undefined ? 'text-danger' : null}>*</small>
 	}
 
-	// Pop the control out in a <Modal> on focus
-	if (props.modal) return <PropControl_Modal InputComponent={PropControl} {...props, className} />
-	// Pop the control out in a new window (linked to the in-flow PropControl) when a button is clicked
+	// Add option to pop the control out in a <Modal> on focus
+	if (props.modal) return <PropControl_Modal WrappedComponent={PropControl} className={className} {...props} />
+
+	// Add button to create a popup window containing a floating copy of the PropControl
+	let popupButton;
 	if (props.popup) {
-		const setValue = value => DataStore.setValue(proppath, value);
-		const getValue = () => DataStore.getValue(proppath);
-		return <PropControl_PopUp {...props, setValue, getValue, className} />;
+		const buttonProps = {...props, className, storeValue, setValue: value => DataStore.setValue(proppath, value)};
+		popupButton = <PropControl_PopUpButton {...buttonProps} />;
 	}
 
 	const diffWarning = warnOnUnpublished && <DiffWarning path={path} prop={prop} className="ml-1" />;
@@ -500,6 +504,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 			{help && !inline && !isCheck && <Help>{help}</Help>}
 			{customIcon}
 			{!isCheck && diffWarning}
+			{popupButton}
 			<PropControl2 storeValue={storeValue} value={value} rawValue={rawValue} setRawValue={setRawValue} proppath={proppath} {...props} pvalue={pvalue} />
 			{inline && ' '}
 			{isCheck && diffWarning}

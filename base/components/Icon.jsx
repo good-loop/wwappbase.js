@@ -41,6 +41,7 @@ const EMOJI = {
 	desktop: "💻", // or 🖳	
 	x: '✕',
 	yinyang: "☯️",
+	popout: '⇱',
 };
 
 

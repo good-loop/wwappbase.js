@@ -2,13 +2,13 @@ import React from 'react';
 
 
 /**
- * A wrapped PropControl which opens a Bootstrap <Modal> when focused.
+ * Wraps a focusable component & opens a Bootstrap <Modal> containing a copy of the component when focused.
  * Useful for things like textareas which may want more space than the in-flow layout allows.
  * @param {Object} p
- * @param {React.Component} InputComponent e.g. a PropControl. Must accept an onFocus handler.
+ * @param {React.Component} WrappedComponent e.g. a PropControl. Must accept an onFocus handler.
  * @param {*} modal Pulled out to avoid circular calls in e.g. PropControl
  */
-export default function PropControl_Modal({InputComponent, modal, ...props}) {
+export default function PropControl_Modal({WrappedComponent, modal, ...props}) {
 	const [modalOpen, setModalOpen] = useState(false);
 	const [caretPos, setCaretPos] = useState(false);
 	const [, setInputEl] = useState(); // we only access inputEl as its previous value in the setter function
@@ -42,10 +42,10 @@ export default function PropControl_Modal({InputComponent, modal, ...props}) {
 	};
 
 	return <>
-		<InputComponent onFocus={onFocusInput} {...props} />
+		<WrappedComponent onFocus={onFocusInput} {...props} />
 		<Modal className="modal-propControl"isOpen={modalOpen} toggle={() => setModalOpen(!modalOpen)} fade={false} size="lg" returnFocusAfterClose={false} innerRef={innerRef}>
 			<ModalBody>
-				<InputComponent {...props} />
+				<WrappedComponent {...props} />
 			</ModalBody>
 		</Modal>
 	</>;
