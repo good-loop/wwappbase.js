@@ -22,6 +22,7 @@ function SlimListItem({item, onClick, ...props}) {
 	return <DataItemBadge item={item} onClick={onClick} href={false} {...props} />;
 }
 
+
 /**
  * A picker with auto-complete for e.g. Advertiser, Agency
  * @param {Object} p
@@ -42,9 +43,15 @@ function PropControlDataItem2({canCreate, createProp = 'id', base, path, prop, p
 	const [, setCloseTimeout] = useState(); // Debounce hiding the ListLoad
 	const [inputClean, setInputClean] = useState(true); // Has the user input anything since last pick?
 
-	// If storevalue is nulled out from elsewhere, don't retain rawValue
+	// What's the ID stored at the bound DataStore path? Extract from embedded object if necessary.
+	const storeId = embed ? getId(storeValue) : storeValue;
+
+	// If storeValue is edited from elsewhere, propagate change to rawValue.
 	useEffect(() => {
-		if (!storeValue) setRawValue('');
+		if (storeId === rawValue) return;
+		setRawValue(storeId || '');
+		// If external edit is an existing DataItem ID, it can be considered selected. (If it's not, this has no effect.)
+		setInputClean(true);
 	}, [storeValue]);
 
 	// In React pre-v17, onFocus/onBlur events bubble - BUT:
@@ -77,6 +84,7 @@ function PropControlDataItem2({canCreate, createProp = 'id', base, path, prop, p
 		setInputClean(false);
 	};
 
+	// Select a DataItem from the dropdown list & make it the accepted value of this PropControl
 	const doSet = item => {
 		const id = getId(item); // NB: this will be trimmed as it came from an item
 		setRawValue(id);
@@ -88,13 +96,14 @@ function PropControlDataItem2({canCreate, createProp = 'id', base, path, prop, p
 		setInputClean(true); // signal OK to replace search box with item badge
 	};
 
+	// Action for a click on the X button next to a selected item
 	const doClear = () => {
 		setRawValue('');
 		set(null);
 	};
 
 	// Do we have a candidate data-item?
-	const itemId = rawValue || (embed ? getId(storeValue) : storeValue);
+	const itemId = rawValue || storeId;
 	let dataItem = null;
 	if (embed && storeValue) {
 		// data-item is stored whole at path+prop
