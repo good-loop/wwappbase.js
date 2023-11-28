@@ -120,7 +120,9 @@ export function fetchSavedManifest(tag) {
 	return DataStore.fetch(savedManifestPath({tag}), () => {
 		// fetchFn returning null is OK - no tag means stored-manifest-for-tag should resolve null
 		if (!tag) return null;
-		return ServerIO.load(storedManifestForTag(tag), {swallow: true}).then(res => {
+		// Static file fetch, rather than backend resource - we need to specify no caching,
+		// as successive analyses overwrite this JSON file & delete images pertaining to previous versions.
+		return ServerIO.load(storedManifestForTag(tag), {swallow: true, cache: false}).then(res => {
 			res.data.forEach(doubleLinkManifest); // Add parent info for easy frame navigation
 			return res;
 		});
