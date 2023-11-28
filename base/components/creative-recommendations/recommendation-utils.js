@@ -83,9 +83,16 @@ export function startAnalysis({tag, url, html}) {
 	// Remove any previously-stored analysis
 	DataStore.setValue(path, null);
 	const data = {};
+
+	// Check for misplaced URL/HTML and swap
+	if (tag?.creativeHtml && !html) html = tag.creativeHtml;
+	if (tag?.creativeURL && !url) url = tag.creativeURL;
+	if (html && isURL(html)) {
+		(url = html) && (html = null);
+	} else if (url && isHTML(url)) {
+		(html = url) && (url = null);
+	}
 	if (tag) data.tagId = tag.id;
-	if (tag?.creativeURL) data.url = tag.creativeURL;
-	if (tag?.creativeHtml) data.html = tag.creativeHtml;
 	if (url) data.url = url;
 	if (html) data.html = html;
 
