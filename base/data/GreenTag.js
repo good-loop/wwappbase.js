@@ -204,4 +204,4 @@ DataClass.register(GreenTag, "GreenTag");
 const This = GreenTag;
 export default GreenTag;
 
-export { KGreenTagType, KMacroType };
+export { KGreenTagType, KMacroType, macroAdders };
