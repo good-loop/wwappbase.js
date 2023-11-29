@@ -648,5 +648,5 @@ function CreateButton({type, props, navpage, base, id, make, saveFn, then, child
 	</Form></CardBody></Card>);
 }
 
-export { CreateButton, DefaultListItem, createBlank };
+export { CreateButton, DefaultListItem, createBlank, DefaultDelete, DefaultCopy };
 export default ListLoad;
