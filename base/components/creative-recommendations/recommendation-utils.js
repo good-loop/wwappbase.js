@@ -83,9 +83,16 @@ export function startAnalysis({tag, url, html}) {
 	// Remove any previously-stored analysis
 	DataStore.setValue(path, null);
 	const data = {};
+
+	// Check for misplaced URL/HTML and swap
+	if (tag?.creativeHtml && !html) html = tag.creativeHtml;
+	if (tag?.creativeURL && !url) url = tag.creativeURL;
+	if (html && isURL(html)) {
+		(url = html) && (html = null);
+	} else if (url && isHTML(url)) {
+		(html = url) && (url = null);
+	}
 	if (tag) data.tagId = tag.id;
-	if (tag?.creativeURL) data.url = tag.creativeURL;
-	if (tag?.creativeHtml) data.html = tag.creativeHtml;
 	if (url) data.url = url;
 	if (html) data.html = html;
 
@@ -120,7 +127,9 @@ export function fetchSavedManifest(tag) {
 	return DataStore.fetch(savedManifestPath({tag}), () => {
 		// fetchFn returning null is OK - no tag means stored-manifest-for-tag should resolve null
 		if (!tag) return null;
-		return ServerIO.load(storedManifestForTag(tag), {swallow: true}).then(res => {
+		// Static file fetch, rather than backend resource - we need to specify no caching,
+		// as successive analyses overwrite this JSON file & delete images pertaining to previous versions.
+		return ServerIO.load(storedManifestForTag(tag), {swallow: true, cache: false}).then(res => {
 			res.data.forEach(doubleLinkManifest); // Add parent info for easy frame navigation
 			return res;
 		});

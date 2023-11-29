@@ -158,7 +158,7 @@ Campaign.fetchForAdvertisers = (vertiserIds, status = KStatus.DRAFT) => {
  */
 Campaign.fetchForAgency = (agencyId, status = KStatus.DRAFT) => {
 	if (!agencyId) return new PromiseValue(new List());
-	const listPath = getListPath({ type, status, for: `agency:${campaignId}` });
+	const listPath = getListPath({ type, status, for: `agency:${agencyId}` });
 
 	return DataStore.fetch(listPath, () => {
 		// Two-stage fetch to catch campaigns which don't have their agency assigned
