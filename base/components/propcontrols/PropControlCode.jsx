@@ -57,14 +57,15 @@ const regroupLines = (notLines) => (
 /**
  * Process a Prism.js token (or array thereof) and:
  * - Split the token stream on every newline
- * - Replace all non-whitespace characters with spaces
+ * - Replace all non-whitespace characters with non-breaking spaces
+ * (so layout engine wraps lines the same way it would the original text)
  * So e.g. { type: "x", content: { type: "y", content: "Line 1\n\tLine 2" } }
  * ...becomes [
  *   { type: "x", content: { type: "y", content: "      " } },
  *   { type: "x", content: { type: "y", content: "\t      " } }
  * ]
  * Q: Why do this and not just put the tokens in a preformatted block?
- * A: Well, no reason right now - but this parsing can enable things like line numbering with a little more poking.
+ * A: Well, no reason right now - but this parsing can enable things like <ol> line numbering with a little more poking.
  * @param {Prism.Token|Prism.Token[]} tokens As output from Prism.tokenize
  * @returns {Prism.Token[]} Split and regrouped into an array of lines
  */
@@ -74,7 +75,7 @@ const splitTokenLines = (tokens) => {
 	// Base case: split string on newline character (LF or CRLF - can use /\r\n|\r|\n/ if we somehow need to support MacOS 9)
 	// 'Hello\nWorld\n' --> ['Hello', 'world', ''] --> ['     ', '     ', '']
 	// Don't trim off empty strings! They signify leading and trailing newlines.
-	if (typeof tokens === 'string') return tokens.split(/\r?\n/).map(s => s.replace(/\S/g, ' '));
+	if (typeof tokens === 'string') return tokens.split(/\r?\n/).map(s => s.replace(/\S/g, '\u00A0'));
 
 	// Array case: Split all tokens into sets of lines, then regroup to merge non-linebreak token boundaries.
 	if (tokens.map) return regroupLines(tokens.map(splitTokenLines));
@@ -192,7 +193,7 @@ const PropControlCode = ({ lang, onChange, onKeyDown, rawValue }) => {
 				<textarea value={rawValue} ref={inputRef} {...inputEvents} rows={10} />
 				<div className="highlighter" ref={highlightRef}>
 					{tokenLines.map((line, i) => (
-						// The <wbr> is a zero-width space that ensures empty lines still occupy height
+						// The leading <wbr> is a zero-width space that ensures empty lines still occupy height
 						<div key={i}><wbr /><RenderToken token={line} /></div>
 					))}
 				</div>
