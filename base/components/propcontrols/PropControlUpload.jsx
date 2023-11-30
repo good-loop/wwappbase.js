@@ -138,7 +138,7 @@ const FontThumbnail = ({url}) => {
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
 const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, 
-	version="raw", cacheControls, circleCrop, endpoint, uploadParams, ...otherStuff }) => 
+	version="raw", cacheControls, circleCrop, endpoint, uploadParams, noUrl, ...otherStuff }) => 
 {
 	delete otherStuff.https;
 
@@ -270,7 +270,7 @@ const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value,
 		<div>
 			{collapse && <Button className="pull-left" title="upload media" onClick={e => setCollapsed( ! collapsed)} color="secondary" size={size}><Icon color="white" name="outtray" /></Button>}
 			{isOpen && <>
-				<FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />
+				{!noUrl && <FormControl type="url" name={prop} value={storeValue} onChange={onChange} {...otherStuff} />}
 				<div className={space('DropZone pull-left my-1 p-1', otherStuff.disabled && 'disabled')} {...getRootProps()}>
 					<input {...getInputProps()} />
 					<small>Drop a {acceptDescs[type]} here</small>
@@ -306,6 +306,7 @@ registerControl({ type: 'upload', ...baseSpec });
  * @param {string} p.type upload|imgUpload|spreadsheetUpload
  * @param {?string} p.endpoint Specify an endpoint. Defaults to ServerIO settings, usually https://uploads.good-loop.com/
  * @param {Boolean} p.collapse ??
+ * @param {boolean} p.noUrl
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
