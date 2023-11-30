@@ -397,6 +397,7 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		if (noVal(storeValue) || storeValue === '') {
 			storeValue = dflt;
 			value = dflt;
+			// TODO Are we setting a url value? If so don't break the back button
 			setTimeout(() => DataStore.setValue(proppath, dflt)); // Defer in timeout to avoid "update during render" warnings
 		}
 		setTimeout(() => setFirstRender(false));
