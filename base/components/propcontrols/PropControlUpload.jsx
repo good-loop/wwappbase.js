@@ -132,13 +132,14 @@ const FontThumbnail = ({url}) => {
  * @param {Object} p
  * @param {Boolean} p.collapse ??
  * @param {?String} p.endpoint
+ * @param {(file: File) => Promise<boolean>} p.onFileSelect Called before uploading, should return a boolean.
  * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
  */
 const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value, set, onChange, collapse, size, 
-	version="raw", cacheControls, circleCrop, endpoint, uploadParams, noUrl, ...otherStuff }) => 
+	version="raw", cacheControls, circleCrop, endpoint, uploadParams, onFileSelect, noUrl, ...otherStuff }) => 
 {
 	delete otherStuff.https;
 
@@ -159,13 +160,22 @@ const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value,
 
 	// When file picked/dropped, upload to the media cluster
 	const onDrop = (accepted, rejected) => {
+
 		// Update progress readout - use updater function to merge start time into new object
 		const progress = ({ loaded, total }) => setUploading(({start}) => ({ start, loaded, total }));
 		// Upload complete = delete progress readout
 		// Hack: Wait half a second so file should be available in nginx when we try to display preview
 		const load = () => setTimeout(() => setUploading(false), 500);
 
-		accepted.forEach(file => {
+		accepted.forEach(async file => {
+			if (onFileSelect) {
+				const passValidation = await onFileSelect(file);
+				if (!passValidation) {
+					console.error("File validation failed.")
+					return;
+				}
+			}
+
 			const uploadOptions = {};
 			if (uploadParams) uploadOptions.params = uploadParams;
 			if (endpoint) uploadOptions.endpoint = endpoint;
@@ -300,6 +310,7 @@ registerControl({ type: 'spreadsheetUpload', ...baseSpec });
 // Upload anything!?
 registerControl({ type: 'upload', ...baseSpec });
 
+
 /**
  * image or video upload. Uses Dropzone
  * @param {Object} p
@@ -307,7 +318,8 @@ registerControl({ type: 'upload', ...baseSpec });
  * @param {?string} p.endpoint Specify an endpoint. Defaults to ServerIO settings, usually https://uploads.good-loop.com/
  * @param {Boolean} p.collapse ??
  * @param {boolean} p.noUrl
- * @param {Function} onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
+ * @param {(file: File) => Promise<boolean>} p.onFileSelect Called before uploading, should return a boolean.
+ * @param {Function} p.onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox
  * @param {?Boolean} circleCrop Show "crop to X% when displayed in a circle" hash-wart control
