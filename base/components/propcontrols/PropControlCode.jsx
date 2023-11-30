@@ -194,7 +194,7 @@ const PropControlCode = ({ lang, onChange, onKeyDown, rawValue }) => {
 				<div className="highlighter" ref={highlightRef}>
 					{tokenLines.map((line, i) => (
 						// The leading <wbr> is a zero-width space that ensures empty lines still occupy height
-						<div key={i}><wbr /><RenderToken token={line} /></div>
+						<div className="line" key={i}><wbr /><RenderToken token={line} /></div>
 					))}
 				</div>
 			</code>
