@@ -1,23 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import {
-	Navbar,
-	NavbarBrand,
-	NavbarToggler,
-	NavItem, 
-	NavLink,
-	Collapse,
-	Nav,
-	Container,
-	UncontrolledDropdown,
-	Dropdown,
-	DropdownToggle,
-	DropdownMenu,
-	DropdownItem } from 'reactstrap';
+import { Navbar, NavbarToggler, NavItem, Collapse, Nav, Dropdown, DropdownToggle, DropdownMenu, DropdownItem } from 'reactstrap';
+
 import { assMatch } from '../utils/assert';
 import AccountMenu from './AccountMenu';
 import C from '../CBase';
 import DataStore from '../plumbing/DataStore';
-import { encURI, equals, labeller, space, stopEvent } from '../utils/miscutils';
+import { equals, labeller, space, stopEvent } from '../utils/miscutils';
 import { getDataItem } from '../plumbing/Crud';
 import KStatus from '../data/KStatus';
 import DataClass, { getId, getType } from '../data/DataClass';
@@ -27,8 +15,8 @@ import { modifyPage } from '../plumbing/glrouter';
 
 class NavProps {
 	/** can contain nulls */
-	pageLinks;	
-	currentPage; 
+	pageLinks;
+	currentPage;
 	children;
 	/**
 	 * @type {?Boolean}
@@ -38,20 +26,20 @@ class NavProps {
 	 * @type {?String} a BS colour
 	 */
 	backgroundColour;
-	homelink; 
-	isOpen; 
-	toggle; 
+	homelink;
+	isOpen;
+	toggle;
 
 	brandId;
 	brandType;
 	/**
 	 * @type {?String} url for 2nd brand home page
 	 */
-	brandLink; 
+	brandLink;
 	/**
 	 * @type {?String} logo for 2nd brand
 	 */
-	brandLogo; 
+	brandLogo;
 	/**
 	 * @type {?String} name for 2nd brand
 	 */
@@ -61,6 +49,7 @@ class NavProps {
 	 */
 	extraContent;
 };
+
 
 /**
  * Used via setNavContext()
@@ -75,20 +64,20 @@ export const setNavProps = (props) => {
 		props = { // advertiser link and logo
 			brandId: getId(item),
 			brandType: getType(item),
-			brandLink: ""+window.location,
+			brandLink: String(window.location),
 			// NB: prefer white silhouette for safe colours vs backdrop. HACK expects branding object
-			brandLogo: item.branding? (item.branding.logo_white || item.branding.logo) : item.logo,
+			brandLogo: item.branding ? (item.branding.logo_white || item.branding.logo) : item.logo,
 			brandName: item.name || getId(item)
-		};	
+		};
 	}
 
-	// NB: update if not equals, which avoids the infinite loop bug of default update behaviour
-	if (equals(getNavProps(), props)) {
-		return; // no-op
-	}
-	DataStore.setValue(['widget','NavBar'], props);
-	// }, [JSON.stringify(props)]);
+	// Loop protection - no update if new props are identical
+	if (equals(getNavProps(), props)) return;
+
+	DataStore.setValue(['widget', 'NavBar'], props);
+	// }, [JSON.stringify(props)]); // No useEffect
 };
+
 
 /**
  * 
@@ -96,14 +85,15 @@ export const setNavProps = (props) => {
  */
 export const getNavProps = () => DataStore.getValue(['widget','NavBar']) || DataStore.setValue(['widget','NavBar'], {}, false);
 
+
 /**
  * rendered within BS.Nav
  * @param {NavProps} p
  * isBeta HACK to place a beta label over the logo for SoGive Mar 2022
  */
-function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle, 
-							brandId, brandType, brandLink, brandLogo, brandName, 
-							onLinkClick, isBeta, accountMenuItems, accountLinkText, noLogins}) 
+function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', homelink, isOpen, toggle,
+	brandId, brandType, brandLink, brandLogo, brandName,
+	onLinkClick, isBeta, accountMenuItems, accountLinkText, noLogins})
 {
 	return (<>
 		<C.A href={homelink || '/'} className="navbar-brand" title={space(C.app.name, "- Home")} onClick={onLinkClick}>
@@ -116,9 +106,9 @@ function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', hom
 				<C.A href={brandLink} className="navbar-brand" onClick={onLinkClick}>
 					{brandLogo? <img className={space(logoClass, "brand-logo")} alt={brandName} src={brandLogo} /> : brandName}
 				</C.A>
-				{brandType && brandId 
+				{brandType && brandId
 					&& <CloseButton style={{position:"absolute", bottom:0, right:"-0em"}} className="text-white"
-						onClick={e => stopEvent(e) && setNavContext(brandType, null, true, brandLink)} size="sm" 
+						onClick={e => stopEvent(e) && setNavContext(brandType, null, true, brandLink)} size="sm"
 						tooltip={`include content beyond ${brandName}'s micro-site`} />}
 			</div>
 		}
@@ -128,7 +118,7 @@ function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', hom
 				<Nav navbar className="page-links justify-content-start" style={{flexGrow:1}}>
 					{pageLinks}
 				</Nav>
-				{!noLogins && 
+				{!noLogins &&
 				<div className="d-flex align-items-center">
 					{children}
 					<AccountMenu active={currentPage === 'account'} accountMenuItems={accountMenuItems} accountLinkText={accountLinkText} onLinkClick={onLinkClick} className=""/>
@@ -149,12 +139,11 @@ function DefaultNavGuts({pageLinks, currentPage, children, logoClass='logo', hom
  * @param {?boolean} darkTheme Whether to style navbar links for a dark theme (use with a dark backgroundColour)
  * @param {?String} backgroundColour Background colour for the nav bar.
  */
-function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize="md", ...props}) {
+function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, children, expandSize = "md", ...props}) {
 	// allow other bits of code (i.e. pages below MainDiv) to poke at the navbar
 	const navProps = getNavProps();
-	if (navProps) {
-		props = Object.assign({}, props, navProps);
-	}
+	if (navProps) Object.assign(props, navProps);
+
 	let {currentPage, pages, labels, externalLinks, darkTheme, shadow, backgroundColour} = props; // ??This de-ref, and the pass-down of props to NavGuts feels clumsy/opaque
 
 	// Handle nav toggling
@@ -163,10 +152,8 @@ function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 	const toggle = () => setIsOpen(!isOpen);
 
 	const [scrolled, setScrolled] = useState(false);
-	const checkScroll = () => {
-		setScrolled(window.scrollY > 50);
-	};
 	useEffect(() => {
+		const checkScroll = () => setScrolled(window.scrollY > 50);
 		checkScroll();
 		window.addEventListener('scroll', checkScroll);
 		return () => window.removeEventListener('scroll', checkScroll);
@@ -182,9 +169,8 @@ function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 	const simplePagesSetup = Array.isArray(pages);
 	const labelFn = labeller(pages, labels);
 
-	const onLinkClick = () => {
-		close();
-	};
+	// Close navbar on item selection
+	const onLinkClick = () => close();
 
 	/**
 	 * @param {Object} p
@@ -192,7 +178,7 @@ function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 	 * @param {!String|JSX} p.children
 	 */
 	const PageNavLink = ({page, className, children}) => {
-		let pageLink = DataStore.localUrl + page.replace(" ", "-");
+		let pageLink = DataStore.localUrl + page.replace(/\s/, '-');
 		if (externalLinks && page in externalLinks) pageLink = externalLinks[page];
 		return (
 			<C.A className={space("nav-link", className)} href={pageLink} onClick={onLinkClick} >
@@ -262,54 +248,57 @@ function NavBar({NavGuts = DefaultNavGuts, accountMenuItems, accountLinkText, ch
 
 const CONTEXT = {};
 
-/** reset blank */
-const setNavPropsBlank = () => setNavProps({brandId:null,brandType:null,brandLink:null,brandLogo:null,brandName:null}); 
+
+/** Clear extra nav branding */
+const setNavPropsBlank = () => setNavProps({
+	brandId: null,
+	brandType: null,
+	brandLink: null,
+	brandLogo: null,
+	brandName: null
+});
+
 
 // TODO unify with setNavProps() to avoid (re)setting one and not the other.
-export const setNavContext = (type, id, processLogo, brandLink) => {
-	console.log("setNavContext: "+type+" "+id);
+export const setNavContext = (type, id, processLogo, itemLink) => {
 	CONTEXT[type] = id;
-	if ( ! processLogo) return;
-	if ( ! id) {
-		// set no id
-		setNavPropsBlank();
-		// go back to a list page?
-		if (brandLink === ""+window.location) {
-			const path = DataStore.getValue('location','path');
-			if (path.length > 1) {
-				modifyPage(path.slice(0, path.length-1));
-			}
+	if (!processLogo) return;
+	// Remove context item?
+	if (!id) {
+		// If viewing the page for the context item, return to the list for that item type
+		if (itemLink === String(window.location)) {
+			const path = DataStore.getValue(['location', 'path']);
+			if (path.length > 1) modifyPage(path.slice(0, -1));
 		}
-		return;
+		// If there are other items in nav-context, fall back to showing one of them
+		// (rather than silently & opaquely filtering lists)
+		Object.entries(CONTEXT).find(([k, v]) => {
+			if (!v) return false;
+			type = k;
+			id = v;
+			return true;
+		});
+		if (!id) return setNavPropsBlank(); // Nothing else in context, just clear branding.
 	}
-	// process for 2nd logo
+	// Fetch full context-item & apply branding to nav bar
 	// NB: bug Oct 2022: KStatus.PUB_OR_DRAFT was over-writing draft data
-	let pvAdvertiser = getDataItem({type, id, status:KStatus.PUBLISHED, swallow:true});
-	pvAdvertiser.promise.then(advertiser => {
-		if ( ! advertiser) {
-			console.warn("blank-nav: No advertiser for "+type+" "+id+" PUBLISHED");
-			setNavPropsBlank();
-			return;
-		}
-		// let nprops = { // advertiser link and logo
-		// 	brandId:id,
-		// 	brandLink:'/#'+type.toLowerCase()+'/'+encURI(id), // HACK assumes our #type url layout
-		// 	// prefer white silhouette for safe colours vs backdrop
-		// 	brandLogo: (advertiser.branding && (advertiser.branding.logo_white || advertiser.branding.logo)) || advertiser.logo, // HACK assumes branding object
-		// 	brandName: advertiser.name || id
-		// };
-		setNavProps(advertiser);
+	getDataItem({type, id, status: KStatus.PUBLISHED, swallow: true}).promise
+	.then(item => {
+		if (item) return setNavProps(item);
+		console.warn(`setNavContext: No item for ${type}:${id} PUBLISHED`);
+		setNavPropsBlank();
 	});
 };
 
+
 /**
- * 
- * @param {C.TYPES} type 
+ * @param {C.TYPES} type
  * @returns {?String} id E.g. an advertiser id
  */
 export const getNavContext = (type) => {
 	return CONTEXT[type];
 };
+
 
 export default NavBar;
 export {
