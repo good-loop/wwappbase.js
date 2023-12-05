@@ -1,7 +1,7 @@
 import processImage from './processImage';
 import { processEmpty, processSvg, processGif, processFont, processScript } from './processGeneric';
 import { flattenProp, isType, storedManifestForTag } from '../../utils/pageAnalysisUtils';
-import { isURL } from '../../utils/miscutils';
+import { isURL, isHTML } from '../../utils/miscutils';
 
 
 export const RECS_PATH = ['widget', 'creative-recommendations'];
