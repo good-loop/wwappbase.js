@@ -375,6 +375,9 @@ class Store {
 			} else {
 				newParams = value;
 			}
+			// Do not modify browser history -- so this setValue() won't affect (maybe break) browser back button behaviour
+			// This might not be what you want all the time - you can override this by setting options.replaceState explitcly
+			if (options.replaceState === undefined) options.replaceState = true;
 			modifyPage(null, newParams, false, false, options);
 		}
 
