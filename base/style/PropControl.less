@@ -26,7 +26,7 @@
 	}
 	.form-control:not(.btn-lg, .btn-sm),
 	.btn:not(.btn-lg, .btn-sm) {
-		padding: 0.55rem 0.35rem 0.15rem 0.35rem;
+		padding: 0.15rem 0.35rem 0.15rem 0.35rem;
 		line-height: 1;
 		.form-compact-height();
 	}
@@ -39,10 +39,6 @@
 	.input-group-append,
 	.input-group-prepend {
 		.form-compact-height();
-	}
-
-	input.form-check-input {
-		margin-top: 0;
 	}
 
 	// HACK: Card headers that use .btn styling don't get fixed height so they can expand with tall content e.g. video preview
@@ -260,9 +256,11 @@ You can apply it to, well, anything.
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		overflow: hidden;
+		> * {
+			vertical-align: middle; // Line up text, dummy logo .span, 🗙 button
+		}
 		.logo {
 			border: 1px solid #ddd;
-			vertical-align: middle; // default for <img> but we also have dummy span.logo elements
 		}
 	}
 
