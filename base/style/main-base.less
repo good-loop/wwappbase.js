@@ -49,6 +49,7 @@ a {
 	img { 
 		min-height: 50%;
 		max-height: 48px; // don't allow a giant image
+		width: unset; // don't make wide logos tiny
 	}
 }
 /** an extra small button (btn-sm is too big for a 1-line-height setting*/
@@ -97,12 +98,6 @@ a {
 }
 .pull-right {
 	float: right;
-}
-
-// TODO is this still needed in BS4??
-// Either a Bootstrap styling glitch or a bad interaction with our stylesheets puts a 4px top margin on checkboxes
-.checkbox input {
-	margin-top: 0;
 }
 
 .no-margin {

@@ -42,20 +42,67 @@ e.g.
 // Instead of spending more time fooling around - let's just pull directly from Google Fonts.
 @import (css) url('https://fonts.googleapis.com/css?family=Montserrat:600,800|Tajawal&display=swap');
 
+@font-face {
+	font-family: "ABC Social";
+	src: url('/base-fonts/ABCSocial-Regular.woff2') format('woff2'),
+	url('/base-fonts/ABCSocial-Regular.woff') format('woff');
+	font-style: normal;
+	font-weight: 400;
+}
+
+@font-face {
+	font-family: "ABC Social";
+	src: url('/base-fonts/ABCSocial-RegularItalic.woff2') format('woff2'),
+	url('/base-fonts/ABCSocial-RegularItalic.woff') format('woff');
+	font-style: italic;
+	font-weight: 400;
+}
+
+@font-face {
+	font-family: "ABC Social";
+	src: url('/base-fonts/ABCSocial-Medium.woff2') format('woff2'),
+	url('/base-fonts/ABCSocial-Medium.woff') format('woff');
+	font-style: normal;
+	font-weight: 500;
+}
+
+@font-face {
+	font-family: "ABC Social";
+	src: url('/base-fonts/ABCSocial-MediumItalic.woff2') format('woff2'),
+	url('/base-fonts/ABCSocial-MediumItalic.woff') format('woff');
+	font-style: italic;
+	font-weight: 500;
+}
+
+@font-face {
+	font-family: "ABC Social";
+	src: url('/base-fonts/ABCSocial-Bold.woff2') format('woff2'),
+	url('/base-fonts/ABCSocial-Bold.woff') format('woff');
+	font-style: normal;
+	font-weight: 700;
+}
+@font-face {
+	font-family: "ABC Social";
+	src: url('/base-fonts/ABCSocial-BoldItalic.woff2') format('woff2'),
+	url('/base-fonts/ABCSocial-BoldItalic.woff') format('woff');
+	font-style: italic;
+	font-weight: 700;
+}
+
+
 /** This is UPPERCASE so only use it for _short_ headers. 
 Otherwise its hard to read, and shouty.
 */
 .header-font {
-	font-family: "Montserrat", sans-serif;
-	font-weight: 800;
-	text-transform: uppercase;
-} 
+	font-family: "ABC Social", sans-serif;
+	font-weight: 700;
+}
 .sub-header-font {
-	font-family: "Montserrat", sans-serif;
-	font-weight: 600;
+	font-family: "ABC Social", sans-serif;
+	font-weight: 500;
 }
 .body-font {
-	font-family: "Tajawal", sans-serif;
+	font-family: "ABC Social", sans-serif;
 	font-weight: 400;
 }
 
