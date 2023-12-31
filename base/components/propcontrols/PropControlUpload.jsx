@@ -10,7 +10,7 @@ import React, { useState } from 'react';
 import { useDropzone } from 'react-dropzone';
 import { Button, FormGroup, Label } from 'reactstrap';
 
-import PropControl, { fakeEvent, FormControl, registerControl } from '../PropControl';
+import PropControl, { fakeEvent, FormControl, registerControl, setInputStatus } from '../PropControl';
 import Misc from '../Misc';
 import { urlValidator } from './validators';
 import Icon from '../Icon';
@@ -171,7 +171,8 @@ const PropControlUpload2 = ({ path, prop, onUpload, type, bg, storeValue, value,
 			if (onFileSelect) {
 				const passValidation = await onFileSelect(file);
 				if (!passValidation) {
-					console.error("File validation failed.")
+					console.error("File validation failed.");
+					setInputStatus({path:path.concat(prop), status:"error", message:"File validation failed for "+file.name});
 					return;
 				}
 			}
@@ -319,6 +320,7 @@ registerControl({ type: 'upload', ...baseSpec });
  * @param {Boolean} p.collapse ??
  * @param {boolean} p.noUrl
  * @param {(file: File) => Promise<boolean>} p.onFileSelect Called before uploading, should return a boolean.
+ * TODO if validation fails we should provide a helpful message to the user
  * @param {Function} p.onUpload {path, prop, url, response: the full server response} Called after the server has accepted the upload.
  * @param {?string} version mobile|raw|standard -- defaults to raw
  * @param {?Boolean} cacheControls Show "don't use mediacache to resize, always load full-size" hash-wart checkbox

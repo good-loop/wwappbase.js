@@ -404,11 +404,11 @@ const PropControl = ({ className, warnOnUnpublished = true, ...props }) => {
 		setTimeout(() => setFirstRender(false));
 	}
 
-	if (required && (noVal(storeValue) || storeValue === '' || (storeValue.length && storeValue.length == 0))){
-		className += " missing-required"
+	if (required && (noVal(storeValue) || storeValue === '' || (storeValue.length && storeValue.length == 0))) {
+		className += " missing-required";
 	}
 
-	// Temporary hybrid form while transitioning to all-modular PropControl structure
+	// Temporary hybrid form while transitioning to all-modular PropControl structure where registerControl() sets validatorForType
 	// newValidator produces an object compatible with setInputStatus
 	// ...but isn't used if a validator is explicitly supplied by caller.
 	// TODO Allow validator to output error and warning simultaneously?
