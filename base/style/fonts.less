@@ -11,37 +11,6 @@ e.g.
 (assuming src/js/base is already a symlink to wwappbase.js/base)
 */
 
-// @font-face {
-// 	font-family: "Bebas Neue";
-// 	// subset = upper-case ascii only??
-// 	src: url('/base-fonts/bebasneue-subset.woff') format('woff');
-// 	font-weight: normal;
-// 	font-style: normal;
-// /*
-// 	Font subsetting info:
-// 	I've been using FontSquirrel's tool.
-// 	https://www.fontsquirrel.com/tools/webfont-generator
-// 	Custom Subsetting -->
-// 	Character types: Lowercase, Uppercase, Numbers (No lower-case for Bebas Neue)
-// 	Single Characters: £$©®™!?"'()*+/-=_,.…:;#%&@
-// 	And that's all!
-// */
-// }
-
-// @font-face {
-// 	font-family: "Montserrat Regular";
-// 	// what subset??
-// 	src: url('/base-fonts/montserrat-regular-subset.woff') format('woff');
-// 	font-weight: normal;
-// 	font-style: normal;
-// }
-
-// See https://drive.google.com/drive/folders/0Bz6LfeTw60y3UXlIbVVPRmlpNnc
-// new fonts (updated G-L design from Emilia)
-
-// Something messed up the hinting in our use of Tajawal above and made it look extremely weird on Windows.
-// Instead of spending more time fooling around - let's just pull directly from Google Fonts.
-@import (css) url('https://fonts.googleapis.com/css?family=Montserrat:600,800|Tajawal&display=swap');
 
 @font-face {
 	font-family: "ABC Social";
@@ -91,9 +60,6 @@ e.g.
 }
 
 
-/** This is UPPERCASE so only use it for _short_ headers. 
-Otherwise its hard to read, and shouty.
-*/
 .header-font {
 	font-family: "ABC Social", sans-serif;
 	font-weight: 700;
@@ -111,43 +77,13 @@ body {
 	.body-font();
 }
 
-// shrink the big headers a little from BS settings
-h1 {	font-size: 2.2rem; /* from 2.5 */	}
-h1.large {	font-size: 2.5rem	}
-h2 {	font-size: 1.8rem; /* from 2 */	}
-h2.large {	font-size: 2rem	}
-h3 {
-	font-size: 1.5rem; /* from 1.75 */
-	&.sm {
-		font-size: 1rem;
-	}
-}
-h4 {
-	font-size: 1.25rem; /* from 1.5 */
-	&.sm {
-		font-size: 1rem;
-	}
-}
-h5 {
-	font-size: 1rem; /* from 1.25 */
-	font-family: "Montserrat", sans-serif;
-	// not bold
-}
-h1, h2 {
-	.header-font();
-}
-h3, h4, h5 {
-	.sub-header-font();
-}
-/* NB ,h3,h4,h5 look too cramped in the Bebas font */
-
 // BS makes `code` red like its an error - make it more normal
 body code {
-	color:inherit;
+	color: inherit;
 }
 // ??
 
-/** Opposite of .small 
+/** Opposite of .small
 NB: BS defines .small for textm and -sm -lg for some widgets, but not .large for text */
 .large {
 	font-size: 1.25em;
