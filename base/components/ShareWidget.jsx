@@ -150,9 +150,9 @@ const doShareByLink = async ({link, slink, setSlink, shareId, name}) => {
 		return;
 	}
 
-	// Construct a username for the pseudo-user - specific to shared resource & creating user.
-	// TODO allow one pseudo-user for the item across users, via:shareId+"@share"});
-	const withXId = `${shareId}_by_${Login.getId()}@pseudo`;
+	// Construct a username for the pseudo-user.
+	// Namespaced for shared resource, creating user, and timestamp (epoch seconds).s
+	const withXId = `${shareId}_by_${Login.getId()}_at_${new Date().getTime()}@pseudo`;
 
 	// If-when we know a pseudo-user exists:
 	// - get their JWT, construct a share link, save it to slink for re-use, and copy to clipboard.
@@ -174,14 +174,23 @@ const doShareByLink = async ({link, slink, setSlink, shareId, name}) => {
 		return false;
 	}
 
-	// Is there already a pseudo-user owned by the logged-in user which has the resource shared to it?
-	const shares = await getShareListPV(shareId).promise;
-	const pseudoShare = shares.find(s => s._to === withXId);
-	if (pseudoShare) {
-		console.log(`ShareByLink: Pseudo-user ${withXId} appears to exist, fetching JWT...`);
-		if (getJWTForPseudo(pseudoShare)) return;
-		// If this fails, push ahead and try creating the pseudouser
-	}
+	// **** REMOVED CODE PATH ****
+	// Reuse of existing pseudo-users has BAD EFFECTS, DO NOT DO IT.
+	// (a) The YouAgain server doesn't block creation of a user with an already-existing ID
+	//  - it just updates the created/oldestValid fields, breaking previously-generated share links.
+	// (b) We don't get link-level revocation of shares - deleting campaign_x_shared_by_user_y@pseudo
+	//  will break ALL previous share links for Campaign X created by User Y (and recreating it
+	//  will reinstate them)
+	// (c) Database rows are not expensive.
+
+	// // Is there already a pseudo-user owned by the logged-in user which has the resource shared to it?
+	// const shares = await getShareListPV(shareId).promise;
+	// const pseudoShare = shares.find(s => s._to === withXId);
+	// if (pseudoShare) {
+	// 	console.log(`ShareByLink: Pseudo-user ${withXId} appears to exist, fetching JWT...`);
+	// 	if (getJWTForPseudo(pseudoShare)) return;
+	// 	// If this fails, push ahead and try creating the pseudouser
+	// }
 
 	// No pseudo-user for this resource, so register a new one.
 	console.log('ShareByLink: Registering new pseudo-user...');
